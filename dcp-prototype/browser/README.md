@@ -5,14 +5,14 @@ Serve artifacts to users.
 
 ### Install Dependencies
 
-The consumer requires Python 3.7 to run.
+The browser requires Python 3.7 to run.
 
 Clone the repo and install dependencies:
 ```
 git clona git@github.com:chanzuckerberg/dcp-prototype.git
 cd dcp-prototype/
 pip install -r requirements-dev.txt
-cd dcp-prototype/dcp-prototype/consumer
+cd dcp-prototype/dcp-prototype/browser
 pip install -r requirements.txt
 ```
 
@@ -26,5 +26,5 @@ export AWS_DEFAULT_REGION=us-east-1
 export AWS_DEFAULT_OUTPUT=json
 cd dcp-prototype/
 source ./dcp-prototype/environment
-make -C infra plan COMPONENT=consumer
+make -C infra plan COMPONENT=browser
 ```

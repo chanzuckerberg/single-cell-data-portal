@@ -1,6 +1,6 @@
 #make bucket
 resource "aws_s3_bucket" "browser" {
-  bucket_prefix = "dcp-consumer-${var.DCP_DEPLOYMENT_STAGE}"
+  bucket_prefix = "dcp-browser-${var.DCP_DEPLOYMENT_STAGE}"
   acl    = "public-read"
   force_destroy = true
   server_side_encryption_configuration {
