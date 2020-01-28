@@ -1,3 +1,3 @@
 lint:
-	flake8 $(MODULES) dcp-prototype
+	flake8 dcp-prototype infra
 
