@@ -1,0 +1,14 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build: lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Black Code Formatter
+      uses: Bento007/flake8-black-action@v0.1.0
+      with:
+        args: flake8 $(MODULES) dcp-prototype
