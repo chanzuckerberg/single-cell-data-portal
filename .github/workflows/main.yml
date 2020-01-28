@@ -11,5 +11,5 @@ jobs:
         run: |
           pip install yapf
           cd $GITHUB_WORKSPACE
-          yapf --recursive --diff --verbose.
+          yapf --recursive --diff --verbose .
         shell: bash
