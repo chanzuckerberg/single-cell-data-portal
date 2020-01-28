@@ -1,13 +1,15 @@
 name: CI
 
-on: [pull_request]
+on: [push]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Run linter
-      run: |
-        pip install yapf
-        yapf --recursive --diff .
+      - uses: actions/checkout@v2
+      - name: Run linter
+        run: |
+          pip install yapf
+          cd $GITHUB_WORKSPACE
+          yapf --recursive --diff --verbose.
+        shell: bash
