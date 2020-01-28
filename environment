@@ -1,0 +1,9 @@
+# Resolve the location of this file and set DCP_HOME to the root
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+export DCP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+set -a
+DCP_TERRAFORM_BACKEND_BUCKET_TEMPLATE=dcp-infra
+DCP_DEPLOYMENT_STAGE=dev
+set +a
