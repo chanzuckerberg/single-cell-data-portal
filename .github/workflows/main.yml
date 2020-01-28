@@ -3,13 +3,12 @@ name: CI
 on: [push]
 
 jobs:
-  lint:
+  build: lint
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Run linter
-        run: |
-          pip install yapf
-          cd $GITHUB_WORKSPACE
-          yapf --recursive --diff --verbose .
-        shell: bash
+    - name: Black Code Formatter
+      uses: lgeiger/black-action@v1.0.1
+      with:
+        args: -t py37 --check .
