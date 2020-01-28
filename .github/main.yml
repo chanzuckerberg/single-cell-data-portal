@@ -9,6 +9,6 @@ jobs:
 
     steps:
     - name: Black Code Formatter
-      uses: Bento007/flake8-black-action@v0.1.0
+      uses: actions/flake8-black
       with:
         args: dcp-prototype infra
