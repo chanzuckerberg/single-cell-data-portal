@@ -1,4 +1,4 @@
 #!/bin/sh -l
 
 echo run flake8
-flake8 $*
+sh -c "flake8 $*"
