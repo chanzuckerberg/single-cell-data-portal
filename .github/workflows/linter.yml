@@ -6,6 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Python Code Quality and Lint
-        uses: Bento007/flake8-black-action@v0.1.0
+        uses: Bento007/flake8-black-action
         with:
           args: "."
