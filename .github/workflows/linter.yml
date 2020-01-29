@@ -8,4 +8,4 @@ jobs:
       - name: Python Code Quality and Lint
         uses: Bento007/flake8-black-action@master
         with:
-          args: "."
+          args: "dcp-prototype"
