@@ -1,4 +1,5 @@
 [flake8]
 # Recommend matching the black line length (default 88),
 max-line-length=88
-ignore=E301, E302, E305, E401, F401, W503, W504, W605, E252
+extend-ignore = E203,
+# See https://github.com/PyCQA/pycodestyle/issues/373
