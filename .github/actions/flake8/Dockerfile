@@ -6,7 +6,7 @@ LABEL "com.github.actions.icon"="bell"
 LABEL "com.github.actions.color"="purple"
 
 COPY requirements.txt /requirements.txt
-COPY ../../../.flake8 /.flake8
+COPY .flake8 /.flake8
 RUN pip3 install -r /requirements.txt
 
 COPY entrypoint.sh /entrypoint.sh
