@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 
-black:
+beautify:
 	black .
 
 lint:
