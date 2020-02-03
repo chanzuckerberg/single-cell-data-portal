@@ -1,2 +1,2 @@
 black
-flake8-blacks
+flake8-black
