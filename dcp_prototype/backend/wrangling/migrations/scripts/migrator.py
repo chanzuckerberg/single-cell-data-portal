@@ -2,7 +2,7 @@ import sys
 
 sys.path.insert(0, "")  # noqa
 from argparse import ArgumentParser
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.dataset_metadata import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.dataset_metadata import (  # noqa
     DatasetMetadata,
 )
 from pandas import read_csv
@@ -12,7 +12,8 @@ import os.path
 
 def generate_metadata_spreadsheet_name(project_name):
     """
-    Given a project name, generates a name for the spreadsheet that will be generated based on this project's metadata.
+    Given a project name, generates a name for the spreadsheet that will be generated
+    based on this project's metadata.
     """
     replace_spaces = project_name.replace(" ", "_")
     replace_slashes = replace_spaces.replace("/", "_")
@@ -21,9 +22,10 @@ def generate_metadata_spreadsheet_name(project_name):
 
 def generate_single_spreadsheet(input_filename):
     """
-    For a given filename which should be a TSV file containing all of the flattened metadata representing a single
-    project from DCP 1.0, transforms that project's metadata into the DCP 2.0 metadata schema and projects it into an
-    XLSX spreadsheet for manual validation.
+    For a given filename which should be a TSV file containing all of the flattened
+    metadata representing a single project from DCP 1.0, transforms that project's
+    metadata into the DCP 2.0 metadata schema and projects it into an XLSX spreadsheet
+    for manual validation.
     """
 
     metadata_tsv = read_csv(
@@ -42,16 +44,19 @@ def generate_single_spreadsheet(input_filename):
 
     print(f"Processing dataset: {dataset_metadata.project_name}")
     print(
-        f"Total rows: {metadata_tsv.shape[0]}. Total filenames: {len(file_names)}. Total unique filenames: {len(set(file_names))}"
+        f"Total rows: {metadata_tsv.shape[0]}. Total filenames: {len(file_names)}. "
+        f"Total unique filenames: {len(set(file_names))}"
     )
     print(
-        f"Total rows: {metadata_tsv.shape[0]}. Total file_uuids: {len(file_uuids)}. Total unique file_uuids: {len(set(file_uuids))}"
+        f"Total rows: {metadata_tsv.shape[0]}. Total file_uuids: {len(file_uuids)}. "
+        f"Total unique file_uuids: {len(set(file_uuids))}"
     )
     dataset_metadata.export_to_spreadsheet(
         generate_metadata_spreadsheet_name(dataset_metadata.project_name)
     )
     print(
-        f"Completed generating spreadsheet: {generate_metadata_spreadsheet_name(dataset_metadata.project_name)}"
+        f"Completed generating spreadsheet: "
+        f"{generate_metadata_spreadsheet_name(dataset_metadata.project_name)}"
     )
 
 
@@ -62,14 +67,16 @@ if __name__ == "__main__":
         "--input_file",
         nargs=1,
         required=False,
-        help="A TSV file that was part of DCP 1.0 to be transformed into a valid DCP 2.0 spreadsheet.",
+        help="A TSV file that was part of DCP 1.0 to be transformed into a valid DCP "
+        "2.0 spreadsheet.",
     )
     parser.add_argument(
         "-d",
         "--input_directory",
         nargs=1,
         required=False,
-        help="A data directory contains TSV files that were a part of DCP 1.0 to be transformed into a valid DCP 2.0 spreadsheets.",
+        help="A data directory contains TSV files that were a part of DCP 1.0 to be "
+        "transformed into a valid DCP 2.0 spreadsheets.",
     )
 
     arguments = parser.parse_args()

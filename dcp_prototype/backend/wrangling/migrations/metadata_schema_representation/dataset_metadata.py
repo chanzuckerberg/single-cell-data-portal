@@ -1,22 +1,22 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (  # noqa
     BiosamplePrep,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (  # noqa
     LibraryPrepProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library import (  # noqa
     Library,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (  # noqa
     Project,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (  # noqa
     Contributor,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequence_file import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequence_file import (  # noqa
     SequenceFile,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequencing_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequencing_protocol import (  # noqa
     SequencingProtocol,
 )
 
