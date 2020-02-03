@@ -34,79 +34,24 @@ class DatasetMetadata:
         self.map_sequence_file_ids_from_old_to_new = {}
         self.libraries = []
 
-    def export_to_spreadsheet(self):
-        biosample_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_biosample_prep_ids_from_old_to_new.values()
-        )
-        biosample_metadata_data_frame = DataFrame(
-            biosample_data_frame_dict, columns=biosample_data_frame_dict.keys()
-        )
+        self.saved_full_metadata_structure = {}
 
-        library_prep_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_library_prep_protocol_ids_from_old_to_new.values()
-        )
-        library_prep_metadata_data_frame = DataFrame(
-            library_prep_data_frame_dict, columns=library_prep_data_frame_dict.keys()
-        )
-
-        library_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.libraries
-        )
-        library_metadata_data_frame = DataFrame(
-            library_data_frame_dict, columns=library_data_frame_dict.keys()
-        )
-
-        project_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_project_ids_from_old_to_new.values()
-        )
-        project_metadata_data_frame = DataFrame(
-            project_data_frame_dict, columns=project_data_frame_dict.keys()
-        )
-
-        contributor_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_contributor_ids_from_old_to_new.values()
-        )
-        contributor_metadata_data_frame = DataFrame(
-            contributor_data_frame_dict, columns=contributor_data_frame_dict.keys()
-        )
-
-        sequencing_protocol_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_sequencing_protocol_ids_from_old_to_new.values()
-        )
-        sequencing_protocol_metadata_data_frame = DataFrame(
-            sequencing_protocol_data_frame_dict,
-            columns=sequencing_protocol_data_frame_dict.keys(),
-        )
-
-        sequence_file_data_frame_dict = self.transform_metadata_entities_to_data_frame(
-            self.map_sequence_file_ids_from_old_to_new.values()
-        )
-        sequence_file_metadata_data_frame = DataFrame(
-            sequence_file_data_frame_dict, columns=sequence_file_data_frame_dict.keys()
-        )
-
-        with ExcelWriter("metadata_spreadsheet.xlsx") as excel_writer:
-            biosample_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Biosample Prep", index=False
-            )
-            library_prep_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Library Prep Protocol", index=False
-            )
-            library_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Library", index=False
-            )
-            project_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Project", index=False
-            )
-            contributor_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Contributor", index=False
-            )
-            sequencing_protocol_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Sequencing Protocol", index=False
-            )
-            sequence_file_metadata_data_frame.to_excel(
-                excel_writer, sheet_name="Sequence File", index=False
-            )
+    def export_to_spreadsheet(self, spreadsheet_filename):
+        with ExcelWriter(spreadsheet_filename) as excel_writer:
+            for (
+                sheet_name,
+                entity_entries,
+            ) in self.saved_full_metadata_structure.items():
+                entity_transformation_to_dictionary_format = self.transform_metadata_entities_to_data_frame(
+                    entity_entries
+                )
+                entity_transformation_to_data_frame_format = DataFrame(
+                    entity_transformation_to_dictionary_format,
+                    columns=entity_transformation_to_dictionary_format.keys(),
+                )
+                entity_transformation_to_data_frame_format.to_excel(
+                    excel_writer, sheet_name=sheet_name, index=False
+                )
 
     def transform_metadata_entities_to_data_frame(self, metadata_entities_list):
         dict_form_of_data = {}
@@ -115,6 +60,34 @@ class DatasetMetadata:
                 dict_form_of_data, metadata_entity.to_dictionary()
             )
         return dict_form_of_data
+
+    def save(self):
+        self.saved_full_metadata_structure[
+            "Biosample Prep"
+        ] = self.map_biosample_prep_ids_from_old_to_new.values()
+        self.saved_full_metadata_structure[
+            "Library Prep Protocol"
+        ] = self.map_library_prep_protocol_ids_from_old_to_new.values()
+        self.saved_full_metadata_structure["Library"] = self.libraries
+        self.saved_full_metadata_structure[
+            "Project"
+        ] = self.map_project_ids_from_old_to_new.values()
+        self.saved_full_metadata_structure[
+            "Contributors"
+        ] = self.map_contributor_ids_from_old_to_new.values()
+        self.saved_full_metadata_structure[
+            "Sequencing Protocol"
+        ] = self.map_sequencing_protocol_ids_from_old_to_new.values()
+        self.saved_full_metadata_structure[
+            "Sequence File"
+        ] = self.map_sequence_file_ids_from_old_to_new.values()
+
+        if self.saved_full_metadata_structure["Project"]:
+            self.project_name = list(self.saved_full_metadata_structure["Project"])[
+                0
+            ].project_short_name
+        else:
+            self.project_name = "For some reason this project got no name."
 
     def parse_row_of_metadata(self, row):
         biosample_prep_old_id = row.get(
