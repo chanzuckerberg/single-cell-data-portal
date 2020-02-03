@@ -31,12 +31,7 @@ class LibraryPrepProtocol:
     def populate_associated_biosample(self, biosample_prep: BiosamplePrep):
         self.biosample_prep = biosample_prep
 
-    def pretty_print(self):
-        for attr, value in self.__dict__.items():
-            print(f"{attr} : {value}")
-
     def to_dictionary(self):
         dictionary_representation = self.__dict__
         dictionary_representation["biosample_prep"] = self.biosample_prep.id
         return dictionary_representation
-

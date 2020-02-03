@@ -7,6 +7,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.e
 )
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
 
+
 class Project:
     def __init__(self):
         self.id = hca_accession_generator(self.__class__.__name__)
@@ -26,16 +27,14 @@ class Project:
         self.publication_doi = row.get("project.publications.doi")
         self.external_accessions = row.get("project.geo_series_accessions")
 
-    def pretty_print(self):
-        for attr, value in self.__dict__.items():
-            print(f"{attr} : {value}")
-
     def to_dictionary(self):
         dictionary_representation = {}
         for contributor in self.contributors:
             for key, value in self.__dict__.items():
                 if key == "contributors":
-                    merge_dictionary_into(dictionary_representation, {key : contributor.id})
+                    merge_dictionary_into(
+                        dictionary_representation, {key: contributor.id}
+                    )
                 else:
-                    merge_dictionary_into(dictionary_representation, {key : value})
+                    merge_dictionary_into(dictionary_representation, {key: value})
         return dictionary_representation

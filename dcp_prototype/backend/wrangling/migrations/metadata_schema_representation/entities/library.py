@@ -39,11 +39,6 @@ class Library:
             and self.sequencing_protocol == other.sequencing_protocol
         )
 
-    def pretty_print(self):
-        print(self.library_prep_protocol.pretty_print())
-        print(self.project.pretty_print())
-        print(self.sequencing_protocol.pretty_print())
-
     def to_dictionary(self):
         return {
             "id": self.id,

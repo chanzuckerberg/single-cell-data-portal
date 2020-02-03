@@ -6,6 +6,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.e
 )
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
 
+
 class SequencingProtocol:
     def __init__(self):
         self.id = hca_accession_generator(self.__class__.__name__)
@@ -30,16 +31,14 @@ class SequencingProtocol:
     def add_associated_sequencing_file(self, sequence_file: SequenceFile):
         self.sequence_files.append(sequence_file)
 
-    def pretty_print(self):
-        for attr, value in self.__dict__.items():
-            print(f"{attr} : {value}")
-
     def to_dictionary(self):
         dictionary_representation = {}
         for sequence_file in self.sequence_files:
             for key, value in self.__dict__.items():
                 if key == "sequence_files":
-                    merge_dictionary_into(dictionary_representation, {key: sequence_file.id})
+                    merge_dictionary_into(
+                        dictionary_representation, {key: sequence_file.id}
+                    )
                 else:
                     merge_dictionary_into(dictionary_representation, {key: value})
         return dictionary_representation
