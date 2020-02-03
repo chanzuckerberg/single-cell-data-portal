@@ -1,7 +1,7 @@
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequence_file import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequence_file import (  # noqa
     SequenceFile,
 )
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into

@@ -1,13 +1,13 @@
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (  # noqa
     Project,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (  # noqa
     LibraryPrepProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequencing_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequencing_protocol import (  # noqa
     SequencingProtocol,
 )
 

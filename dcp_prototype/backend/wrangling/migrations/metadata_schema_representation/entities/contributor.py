@@ -2,8 +2,6 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
 
-from pandas import Series
-
 
 class Contributor:
     def __init__(self):
