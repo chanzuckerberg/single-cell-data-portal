@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  description: |
+    DCP 2.0 Consumer backend API
+  version: "1.0.0"
+  title: DCP 2.0 Consumer 
+servers:
+# Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://api.browser.humancellatlas.org/v1'
+tags:
+  - name: project
+    description: API used to access project information
+  - name: download
+    description: API used to download data
+paths:
+  /projects:
+    get:
+      tags:
+        - project
+      summary: Retrieve filterable information on all projects
+      operationId: getProjects
+      security:
+        - consumer_auth:
+            - 'search:projects'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+  /projects/{project_uuid}:
+    get:
+      tags:
+        - project
+      summary: |
+        Retrieve detailed information about a project. This includes a list of 
+        downloadable files.
+      operationId: getProjectsUuid
+      security:
+        - consumer_auth:
+            - 'read:project'
+      parameters: 
+        - name: project_uuid
+          in: path
+          description: The uuid of the project
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+  /project/{project_uuid}/files:
+    parameters: 
+      - name: project_uuid
+        in: path
+        description: The uuid of the project
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - project
+        - download
+      summary: Request to download all project files
+      operationId: getProjectFiles
+      security:
+        - consumer_auth:
+          - 'download:data'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+  /project/{project_uuid}/files/{file_uuid}:
+    parameters: 
+      - name: project_uuid
+        in: path
+        description: The uuid of the project
+        required: true
+        schema:
+          type: string
+      - name: file_uuid
+        in: path
+        description: The uuid of the file
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - project
+        - download
+      summary: Request to download a project file
+      operationId: getProjectFilesUuid
+      security:
+        - consumer_auth:
+          - 'download:data'
+      responses:
+        '200':
+          description: Return a download URL. 
+        '400':
+          description: Bad Request    
+components:
+  securitySchemes:
+    consumer_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'http://humancellatlas.auth0/oauth/authorize'
+          scopes:
+            'read:project': read a projects metadata
+            'download:data': download project data
