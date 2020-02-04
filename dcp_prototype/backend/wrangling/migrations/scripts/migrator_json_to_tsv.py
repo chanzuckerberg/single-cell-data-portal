@@ -128,6 +128,14 @@ def should_process_file(full_file_path):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
+        "-i",
+        "--input_file",
+        nargs=1,
+        required=False,
+        help="A TSV file that was part of DCP 1.0 to be transformed into a valid DCP "
+        "2.0 spreadsheet.",
+    )
+    parser.add_argument(
         "-d",
         "--input_directory",
         nargs=1,
@@ -137,8 +145,15 @@ if __name__ == "__main__":
     )
 
     arguments = parser.parse_args()
+    if arguments.input_file:
+        input_file = arguments.input_file[0]
+        generate_tsv_from_bundle(input_file)
 
     if arguments.input_directory:
         input_directory = arguments.input_directory[0]
         print(f"Files in directory to parse: {listdir(input_directory)}")
-        generate_tsv_from_bundle(input_directory)
+        for file in listdir(input_directory):
+            full_file_path = os.path.join(input_directory, file)
+            if os.path.isfile(full_file_path):
+                print(f"Working with input spreadsheet at {full_file_path}")
+                generate_tsv_from_bundle(full_file_path)
