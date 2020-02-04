@@ -9,27 +9,27 @@ db/new_migration:
 	alembic -c=./config/database.ini revision --message $(MESSAGE)
 
 db/connect:
-	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id dcp/upload/${DEPLOYMENT_STAGE}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
+	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id dcp/backend/ledger/${DEPLOYMENT_STAGE}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
 	psql --dbname $(DATABASE_URI)
 
 db/download:
-	# Usage: make db/download FROM=dev    - downloads DB to upload_dev-<date>.sqlc
-	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id dcp/upload/${FROM}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
-	$(eval OUTFILE = $(shell date +upload_${FROM}-%Y%m%d%H%M.sqlc))
+	# Usage: make db/download FROM=dev    - downloads DB to ledger_dev-<date>.sqlc
+	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id dcp/backend/ledger/${FROM}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
+	$(eval OUTFILE = $(shell date +ledger_${FROM}-%Y%m%d%H%M.sqlc))
 	pg_dump -Fc --dbname=$(DATABASE_URI) --file=$(OUTFILE)
 
 db/import:
-	# Usage: make db/import FROM=dev    - imports upload_dev.sqlc into upload_local
-	pg_restore --clean --no-owner --dbname upload_local upload_$(FROM).sqlc
+	# Usage: make db/import FROM=dev    - imports ledger_dev.sqlc into ledger_local
+	pg_restore --clean --no-owner --dbname ledger_local ledger_$(FROM).sqlc
 
 db/import/schema:
-	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema  - imports upload_dev.sqlc into upload_local
-	pg_restore --schema-only --clean --no-owner --dbname upload_local upload_$(DEPLOYMENT_STAGE).sqlc
+	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema  - imports ledger_dev.sqlc into ledger_local
+	pg_restore --schema-only --clean --no-owner --dbname ledger_local ledger_$(DEPLOYMENT_STAGE).sqlc
 	# Also import alembic schema version
-	pg_restore --data-only --table=alembic_version --no-owner --dbname upload_local upload_$(DEPLOYMENT_STAGE).sqlc
+	pg_restore --data-only --table=alembic_version --no-owner --dbname ledger_local ledger_$(DEPLOYMENT_STAGE).sqlc
 
 db/dump_schema:
-	pg_dump --schema-only --dbname=upload_local
+	pg_dump --schema-only --dbname=ledger_local
 
 db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/before
