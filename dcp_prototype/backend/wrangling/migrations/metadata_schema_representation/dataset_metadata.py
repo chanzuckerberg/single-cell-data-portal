@@ -67,8 +67,9 @@ class DatasetMetadata:
                 sheet_name,
                 entity_entries,
             ) in self.saved_full_metadata_structure.items():
-                entity_transformation_to_dictionary_format = self._transform_metadata_entities_to_data_frame(
-                    entity_entries
+                entity_transformation_to_dictionary_format = \
+                    self._transform_metadata_entities_to_data_frame(
+                        entity_entries
                 )
                 entity_transformation_to_data_frame_format = DataFrame(
                     entity_transformation_to_dictionary_format,
