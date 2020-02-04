@@ -118,6 +118,9 @@ class DatasetMetadata:
 
         self.publish_mode = True
 
+    def parse_flattened_row_of_json(self, row):
+        pass
+
     def parse_row_of_metadata(self, row):
         """
         Read in a row of data from a metadata TSV file. Each row should represent the

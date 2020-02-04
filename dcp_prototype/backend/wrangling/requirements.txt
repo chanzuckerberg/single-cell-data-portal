@@ -1,3 +1,4 @@
+flatten_json
 objgraph
 openpyxl
 pandas
