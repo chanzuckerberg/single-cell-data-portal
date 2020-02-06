@@ -54,6 +54,7 @@ class LibraryPrepProtocol:
         self.biosample_prep = biosample_prep
 
     def to_dictionary(self):
+        print(self.__dict__)
         dictionary_representation = self.__dict__
         dictionary_representation["biosample_prep"] = self.biosample_prep.id
         return dictionary_representation
