@@ -13,7 +13,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
 
 resource "aws_rds_cluster" "ledger" {
   apply_immediately       = "false"
-  cluster_identifier      = "ledger-${var.deployment_stage}"
+  cluster_identifier      = "dcp-ledger-${var.deployment_stage}"
   engine                  = "aurora-postgresql"
   engine_version          = "9.6.12"
   availability_zones      = ["us-east-1a", "us-east-1c", "us-east-1d"]
@@ -27,6 +27,7 @@ resource "aws_rds_cluster" "ledger" {
   storage_encrypted       = "true"
   vpc_security_group_ids  = ["${aws_security_group.rds_postgres.id}"]
   db_cluster_parameter_group_name = "default.aurora-postgresql9.6"
+  final_snapshot_identifier = "dcp-ledger-${var.deployment_stage}"
 }
 
 resource "aws_default_vpc" "default" {

@@ -1,2 +1,3 @@
 alembic==1.3.3
 dcplib==3.12.0
+psycopg2==2.8.4
