@@ -29,7 +29,16 @@ class SequencingProtocol:
         )
 
     def add_associated_sequencing_file(self, sequence_file: SequenceFile):
-        self.sequence_files.append(sequence_file)
+        if sequence_file.id not in [
+            sequence_file.id for sequence_file in self.sequence_files
+        ]:
+            self.sequence_files.append(sequence_file)
+
+    def populate_from_dcp_one_json_data_frame(self, row):
+        self.paired_end_sequencing = row.get("paired_end")
+        self.instrument_manufacturer_model = row.get(
+            "instrument_manufacturer_model.ontology"
+        )
 
     def to_dictionary(self):
         dictionary_representation = {}

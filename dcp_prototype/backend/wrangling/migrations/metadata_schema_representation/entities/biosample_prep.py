@@ -10,6 +10,10 @@ class BiosamplePrep:
         self.organ_ontology = None
         self.developmental_stage = None
         self.disease_onotology_label = None
+        self.other_associated_ids = []
+
+    def add_associated_id(self, id):
+        self.other_associated_ids.append(id)
 
     def populate_from_dcp_one_data_row(self, row):
         self.organ_ontology = row.get("specimen_from_organism.organ.ontology_label")
@@ -18,5 +22,14 @@ class BiosamplePrep:
         )
         self.disease_onotology_label = row.get("donor_organism.diseases.ontology_label")
 
+    def populate_from_dcp_one_json_data_frame(self, row):
+        self.organ_ontology = None  # TODO
+        self.developmental_stage = row.get("development_stage.ontology")
+        self.disease_onotology_label = row.get("diseases.0.ontology")
+
     def to_dictionary(self):
-        return self.__dict__
+        dictionary_rep = {}
+        for key, value in self.__dict__.items():
+            if key != "other_associated_ids":
+                dictionary_rep[key] = value
+        return dictionary_rep

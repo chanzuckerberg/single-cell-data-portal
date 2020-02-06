@@ -32,6 +32,9 @@ class Library:
     ):
         self.sequencing_protocol = sequencing_protocol
 
+    def is_complete(self):
+        return self.library_prep_protocol and self.project and self.sequencing_protocol
+
     def __eq__(self, other):
         return (
             self.library_prep_protocol == other.library_prep_protocol
