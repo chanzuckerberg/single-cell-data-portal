@@ -1,11 +1,9 @@
-Ledger
-
 ORM Documentation
 https://docs.sqlalchemy.org/en/13/orm/tutorial.html
 
 Simple code samples are provided below. Please look at official documentation above for wide range of supported features and functions.
 
-{code}
+```
 from dcp_prototype.backend.ledger.code.common.ledger_orm import DBSessionMaker, BiosamplePrep, LibraryPrepProtocol
 
 session_maker = DBSessionMaker()
@@ -24,3 +22,4 @@ session.commit()
 record = db.query(BiosamplePrep).get('biosample_prep_id')
 session.delete(record)
 session.commit()
+```
