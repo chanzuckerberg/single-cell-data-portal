@@ -120,6 +120,8 @@ class DatasetMetadata:
         self.publish_mode = True
 
     def parse_flattened_row_of_json(self, row, entity_type):
+        self.publish_mode = False
+
         if entity_type is "biosample_prep":
             biosample_prep_old_id = row.get("provenance.document_id")
             if (
