@@ -78,7 +78,7 @@ class BiosamplePrep(Base):
     category = Column(String(), nullable=True)
     organ_ontology = Column(String(), nullable=True)
     developmental_stage = Column(String(), nullable=True)
-    disease_ontology_label = Column(String(), nullable=True)
+    disease_ontology = Column(String(), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
         DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow

@@ -26,7 +26,7 @@ def upgrade():
         Column("category", String, nullable=True),
         Column("organ_ontology", String, nullable=True),
         Column("developmental_stage", String, nullable=True),
-        Column("disease_ontology_label", String, nullable=True),
+        Column("disease_ontology", String, nullable=True),
         Column(
             "created_at",
             DateTime(timezone=True),
