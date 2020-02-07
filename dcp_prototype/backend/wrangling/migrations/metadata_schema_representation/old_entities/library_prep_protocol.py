@@ -2,16 +2,6 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
     CellSuspension,
 )
 import logging
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (
-    LibraryPrepProtocol,
-)
-
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_transformer,
-)
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (
-    BiosamplePrep,
-)
 
 
 class LibraryPrepProtocol:
@@ -56,23 +46,3 @@ class LibraryPrepProtocol:
             "cell_suspension"
         ] = self.cell_suspension.corresponding_old_id
         return dictionary_representation
-
-    def convert_to_new_entity(self):
-        new_library_prep = LibraryPrepProtocol()
-
-        new_library_prep.id = hca_accession_transformer(
-            LibraryPrepProtocol.__class__.__name__, self.corresponding_old_id
-        )
-        new_library_prep.biosample_prep = hca_accession_transformer(
-            BiosamplePrep.__class__.__name__, self.cell_suspension.corresponding_old_id
-        )
-        new_library_prep.input_nucleic_acid_molecule_ontology = (
-            self.input_nucleic_acid_molecule_ontology
-        )
-        new_library_prep.library_construction_method_ontology = (
-            self.library_construction_method_ontology
-        )
-        new_library_prep.nucleic_acid_source = self.nucleic_acid_source
-        new_library_prep.end_bias = self.end_bias
-
-        return new_library_prep

@@ -335,5 +335,3 @@ class DatasetMetadata:
                     self.libraries.append(attempted_new_library)
 
                 link_index += 1
-
-    def convert_to_new_entities(self):
