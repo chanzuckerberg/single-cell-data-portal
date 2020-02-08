@@ -25,7 +25,7 @@ paths:
           description: OK
         '400':
           description: Bad Request
-  /projects/{project_uuid}:
+  /projects/{projectUUID}:
     get:
       tags:
         - project
@@ -34,7 +34,7 @@ paths:
         downloadable files.
       operationId: getProjectsUuid
       parameters: 
-        - name: project_uuid
+        - name: projectUUID
           in: path
           description: The uuid of the project
           required: true
@@ -45,47 +45,64 @@ paths:
           description: OK
         '400':
           description: Bad Request
-  /project/{project_uuid}/files:
-    parameters: 
-      - name: project_uuid
-        in: path
-        description: The uuid of the project
-        required: true
-        schema:
-          type: string
-    get:
+        '404':
+          description: File Not Found
+  /projects/{projectUUID}/files/{fileUUID}:
+    post:
       tags:
         - project
         - download
-      summary: Request to download all project files
-      operationId: getProjectFiles
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Bad Request
-  /project/{project_uuid}/files/{file_uuid}:
-    parameters: 
-      - name: project_uuid
-        in: path
-        description: The uuid of the project
-        required: true
-        schema:
-          type: string
-      - name: file_uuid
-        in: path
-        description: The uuid of the file
-        required: true
-        schema:
-          type: string
-    get:
-      tags:
-        - project
-        - download
-      summary: Request to download a project file
+      summary: Request to download a file
       operationId: getProjectFilesUuid
+      parameters:
+        - name: projectUUID
+          in: path
+          description: The uuid of the project
+          required: true
+          schema:
+            type: string
+        - name: fileUUID
+          in: path
+          description: The uuid of the file
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Return a download URL. 
         '400':
           description: Bad Request
+        '404':
+          description: File Not Found
+  /files:
+    post:
+      tags:
+        - download
+      summary: |
+        Given a manifest of files, generate a presigned url to zip and download those files. 
+      description: Given a manifest of files, generate a presigned url to zip and download those files. If projectUUID is specified and no files then the whole project will be packaged. If projectUUID is specified with files, only the selected files will be package. The files will be package into a zip and organized by projectUUID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  projectUUID:
+                    description: A projectUUID containing files to download.
+                    type: string
+                  files:
+                    description: A list of fileUUIDs associated with a project.
+                    type: array
+                    items: 
+                      type: string
+                required: 
+                  - projectUUID
+      responses:
+        '200':
+          description: Return a download URL. 
+        '400':
+          description: Bad Request      
+        '404':
+          description: File Not Found
