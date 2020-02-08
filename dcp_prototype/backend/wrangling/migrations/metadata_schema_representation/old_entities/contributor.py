@@ -1,3 +1,17 @@
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.project import (
+    Project,
+)
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (
+    Project,
+)
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (
+    Contributor,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
+
+
 class Contributor:
     def __init__(self):
         self.name = None
@@ -9,6 +23,11 @@ class Contributor:
         self.country = None
         self.contributor_role_ontology = None
         self.orcid_id = None
+
+        self.project = None
+
+    def set_project(self, project: Project):
+        self.project = project
 
     def populate_from_dcp_one_json_data_frame(self, row, index_in_project_row):
         prefix = f"contributors.{str(index_in_project_row)}."

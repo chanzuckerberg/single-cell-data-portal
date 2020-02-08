@@ -7,6 +7,21 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.project import (
     Project,
 )
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library import (
+    Library,
+)
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (
+    LibraryPrepProtocol,
+)
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (
+    Project,
+)
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.sequencing_protocol import (
+    SequencingProtocol,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
 
 
 class Library:
@@ -46,3 +61,22 @@ class Library:
             and self.sequencing_protocol.corresponding_old_id
             == other.sequencing_protocol.corresponding_old_id
         )
+
+    def convert_to_new_entity(self):
+        new_library = Library()
+
+        new_library.library_prep_protocol = hca_accession_transformer(
+            LibraryPrepProtocol.__class__.__name__,
+            self.library_prep_protocol.corresponding_old_id,
+        )
+        new_library.project = hca_accession_transformer(
+            Project.__class__.__name__, self.project.corresponding_old_id
+        )
+        new_library.sequencing_protocol = hca_accession_transformer(
+            (
+                SequencingProtocol.__class__.__name__,
+                self.sequencing_protocol.corresponding_old_id,
+            )
+        )
+
+        return new_library
