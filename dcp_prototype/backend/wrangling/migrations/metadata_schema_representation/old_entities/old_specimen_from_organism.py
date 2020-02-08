@@ -1,11 +1,11 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.donor_organism import (
-    DonorOrganism,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (
+    OldDonorOrganism,
 )
 
 import logging
 
 
-class SpecimenFromOrganism:
+class OldSpecimenFromOrganism:
     def __init__(self):
         self.corresponding_old_id = None
         self.organ = None
@@ -16,7 +16,7 @@ class SpecimenFromOrganism:
         self.corresponding_old_id = row.get("provenance.document_id")
         self.organ = row.get("organ.ontology")
 
-    def set_donor_organism(self, donor_organism: DonorOrganism):
+    def set_donor_organism(self, donor_organism: OldDonorOrganism):
         if (
             self.donor_organism
             and self.donor_organism.corresponding_old_id

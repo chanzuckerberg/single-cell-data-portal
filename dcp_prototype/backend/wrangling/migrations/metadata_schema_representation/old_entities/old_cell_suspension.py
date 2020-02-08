@@ -1,11 +1,18 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.specimen_from_organism import (
-    SpecimenFromOrganism,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (
+    OldSpecimenFromOrganism,
 )
 
+from dcp_prototype.backend.ledger.code.common.ledger_orm import BiosamplePrep
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (
+    BiosamplePrep,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
 import logging
 
 
-class CellSuspension:
+class OldCellSuspension:
     def __init__(self):
         self.corresponding_old_id = None
 
@@ -14,7 +21,9 @@ class CellSuspension:
     def populate_from_dcp_one_json_data_frame(self, row):
         self.corresponding_old_id = row.get("provenance.document_id")
 
-    def set_specimen_from_organism(self, specimen_from_organism: SpecimenFromOrganism):
+    def set_specimen_from_organism(
+        self, specimen_from_organism: OldSpecimenFromOrganism
+    ):
         if (
             self.specimen_from_organism
             and self.specimen_from_organism.corresponding_old_id
@@ -37,15 +46,14 @@ class CellSuspension:
         return dictionary_representation
 
     def convert_to_new_entity(self):
-        biosample_prep = BiosamplePrep()
-        biosample_prep.organ_ontology = self.specimen_from_organism.organ
-        biosample_prep.developmental_stage = (
-            self.specimen_from_organism.donor_organism.developmental_stage
-        )
-        biosample_prep.disease_onotology_label = (
-            self.specimen_from_organism.donor_organism.disease_onotology_label
-        )
-        biosample_prep.id = hca_accession_transformer(
+        biosample_prep_id = hca_accession_transformer(
             BiosamplePrep.__class__.__name__, self.corresponding_old_id
+        )
+        biosample_prep = BiosamplePrep(
+            id=biosample_prep_id,
+            category="primary_specimen",
+            organ_ontology=self.specimen_from_organism.organ,
+            developmental_stage=self.specimen_from_organism.donor_organism.developmental_stage,
+            disease_ontology=self.specimen_from_organism.donor_organism.disease_onotology_label,
         )
         return biosample_prep

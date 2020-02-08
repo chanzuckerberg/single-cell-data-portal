@@ -1,15 +1,17 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.contributor import (
-    Contributor,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_contributor import (
+    OldContributor,
 )
 
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
 import logging
 
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_transformer
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import Project
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
+from dcp_prototype.backend.ledger.code.common.ledger_orm import Project
 
 
-class Project:
+class OldProject:
     def __init__(self):
         self.corresponding_old_id = None
         self.project_short_name = None
@@ -44,12 +46,12 @@ class Project:
 
         contributor_index = 0
         while row.get("contributors." + str(contributor_index) + ".name"):
-            contributor = Contributor()
+            contributor = OldContributor()
             contributor.populate_from_dcp_one_json_data_frame(row, contributor_index)
             self.add_associated_contributor(contributor)
             contributor_index += 1
 
-    def add_associated_contributor(self, contributor: Contributor):
+    def add_associated_contributor(self, contributor: OldContributor):
         if contributor not in self.contributors:
             self.contributors.append(contributor)
 
@@ -66,11 +68,16 @@ class Project:
         return dictionary_representation
 
     def convert_to_new_entity(self):
-        new_project = Project()
+        project_id = hca_accession_transformer(
+            Project.__class__.__name__, self.corresponding_old_id
+        )
 
-        new_project.project_short_name = self.project_short_name
-        new_project.publication_title = self.publication_title
-        new_project.publication_doi = self.publication_doi
-        new_project.external_accessions = self.external_accessions
+        project = Project(
+            id=project_id,
+            project_short_name=self.project_short_name,
+            publication_title=self.publication_title,
+            publication_doi=self.publication_doi,
+            external_accessions=self.external_accessions,
+        )
 
-        return new_project
+        return project

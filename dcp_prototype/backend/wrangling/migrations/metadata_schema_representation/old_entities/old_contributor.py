@@ -1,18 +1,19 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.project import (
-    Project,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_project import (
+    OldProject,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import (
-    Project,
-)
+
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (
     Contributor,
 )
+
+from dcp_prototype.backend.ledger.code.common.ledger_orm import Contributor, Project
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_generator,
     hca_accession_transformer,
 )
 
 
-class Contributor:
+class OldContributor:
     def __init__(self):
         self.name = None
         self.email = None
@@ -26,7 +27,7 @@ class Contributor:
 
         self.project = None
 
-    def set_project(self, project: Project):
+    def set_project(self, project: OldProject):
         self.project = project
 
     def populate_from_dcp_one_json_data_frame(self, row, index_in_project_row):
@@ -52,3 +53,24 @@ class Contributor:
 
     def to_dictionary(self):
         return self.__dict__
+
+    def convert_to_new_entity(self):
+        contributor_id = hca_accession_generator(Contributor.__class__.__name__)
+        project_id = hca_accession_transformer(
+            Project.__class__.__name__, self.project.corresponding_old_id
+        )
+        contributor = Contributor(
+            id=contributor_id,
+            name=self.name,
+            email=self.email,
+            phone_number=self.phone_number,
+            corresponding_contributor=self.corresponding_contributor,
+            lab=self.lab,
+            street_address=self.street_address,
+            country=self.country,
+            contributor_role_ontology=self.contributor_role_ontology,
+            orcid_id=self.orcid_id,
+            project_id=project_id,
+        )
+
+        return contributor

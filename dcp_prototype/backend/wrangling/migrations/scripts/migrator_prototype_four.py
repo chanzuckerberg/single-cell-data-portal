@@ -7,8 +7,8 @@ from os import listdir, mkdir
 import os.path
 import json
 from flatten_json import flatten
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.dataset_metadata import (  # noqa
-    DatasetMetadata,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_dataset_metadata import (  # noqa
+    OldDatasetMetadata,
 )
 import hashlib
 from shutil import copyfile, rmtree
@@ -88,7 +88,7 @@ def generate_tsv_from_bundle(input_directory):
     for manual validation.
     """
 
-    dataset_metadata = DatasetMetadata()
+    dataset_metadata = OldDatasetMetadata()
 
     ordered_files = order_file_list(listdir(input_directory))
 

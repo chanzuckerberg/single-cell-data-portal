@@ -1,29 +1,29 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.project import (
-    Project,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_project import (
+    OldProject,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.sequencing_protocol import (
-    SequencingProtocol,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (
+    OldSequencingProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.library_prep_protocol import (
-    LibraryPrepProtocol,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library_prep_protocol import (
+    OldLibraryPrepProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.library import (
-    Library,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library import (
+    OldLibrary,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.cell_suspension import (
-    CellSuspension,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (
+    OldCellSuspension,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.contributor import (
-    Contributor,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_contributor import (
+    OldContributor,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.sequence_file import (
-    SequenceFile,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequence_file import (
+    OldSequenceFile,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.donor_organism import (
-    DonorOrganism,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (
+    OldDonorOrganism,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.specimen_from_organism import (
-    SpecimenFromOrganism,
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (
+    OldSpecimenFromOrganism,
 )
 
 
@@ -32,7 +32,7 @@ from pandas import DataFrame, ExcelWriter
 import random
 
 
-class DatasetMetadata:
+class OldDatasetMetadata:
     def __init__(self):
         self.donor_organisms = {}
         self.specimens = {}
@@ -127,7 +127,7 @@ class DatasetMetadata:
 
     def parse_flattened_row_of_json(self, row, entity_type):
         if entity_type == "donor_organism":
-            donor_organism = DonorOrganism()
+            donor_organism = OldDonorOrganism()
             donor_organism.populate_from_dcp_one_json_data_frame(row)
             if donor_organism.corresponding_old_id not in self.donor_organisms.keys():
                 self.donor_organisms[
@@ -135,7 +135,7 @@ class DatasetMetadata:
                 ] = donor_organism
 
         if entity_type == "specimen_from_organism":
-            specimen_from_organism = SpecimenFromOrganism()
+            specimen_from_organism = OldSpecimenFromOrganism()
             specimen_from_organism.populate_from_dcp_one_json_data_frame(row)
             if specimen_from_organism.corresponding_old_id not in self.specimens.keys():
                 self.specimens[
@@ -143,7 +143,7 @@ class DatasetMetadata:
                 ] = specimen_from_organism
 
         if entity_type == "cell_suspension":
-            cell_suspension = CellSuspension()
+            cell_suspension = OldCellSuspension()
             cell_suspension.populate_from_dcp_one_json_data_frame(row)
             if cell_suspension.corresponding_old_id not in self.cell_suspensions.keys():
                 self.cell_suspensions[
@@ -151,13 +151,13 @@ class DatasetMetadata:
                 ] = cell_suspension
 
         if entity_type == "library_preparation_protocol":
-            library_prep = LibraryPrepProtocol()
+            library_prep = OldLibraryPrepProtocol()
             library_prep.populate_from_dcp_one_json_data_frame(row)
             if library_prep.corresponding_old_id not in self.library_preps.keys():
                 self.library_preps[library_prep.corresponding_old_id] = library_prep
 
         if entity_type == "project":
-            project = Project()
+            project = OldProject()
             project.populate_from_dcp_one_json_data_frame(row)
             if project.corresponding_old_id not in self.projects.keys():
                 self.projects[project.corresponding_old_id] = project
@@ -166,13 +166,13 @@ class DatasetMetadata:
                     self.contributors[contributor.name] = contributor
 
         if entity_type == "sequencing_protocol":
-            protocol = SequencingProtocol()
+            protocol = OldSequencingProtocol()
             protocol.populate_from_dcp_one_json_data_frame(row)
             if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
                 self.sequencing_protocols[protocol.corresponding_old_id] = protocol
 
         if entity_type == "sequence_file":
-            sequence_file = SequenceFile()
+            sequence_file = OldSequenceFile()
             sequence_file.populate_from_dcp_one_json_data_frame(row)
             if sequence_file.corresponding_old_id not in self.files.keys():
                 self.files[sequence_file.corresponding_old_id] = sequence_file
@@ -187,7 +187,7 @@ class DatasetMetadata:
                     link_index += 1
                     continue
 
-                attempted_new_library = Library()
+                attempted_new_library = OldLibrary()
                 attempted_new_library.populate_associated_project(
                     random.choice(list(self.projects.values()))
                 )

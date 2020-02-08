@@ -1,4 +1,4 @@
-class DonorOrganism:
+class OldDonorOrganism:
     def __init__(self):
         self.corresponding_old_id = None
         self.developmental_stage = None

@@ -1,10 +1,17 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.sequencing_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (
+    OldSequencingProtocol,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
+from dcp_prototype.backend.ledger.code.common.ledger_orm import (
+    SequenceFile,
     SequencingProtocol,
 )
 import logging
 
 
-class SequenceFile:
+class OldSequenceFile:
     def __init__(self):
         self.corresponding_old_id = None
         self.filename = None
@@ -12,6 +19,7 @@ class SequenceFile:
         self.flowcell_id = None
         self.lane_index = None
         self.read_index = None
+        self.s3_uri = None
 
         self.sequencing_protocol = None
 
@@ -22,7 +30,10 @@ class SequenceFile:
         self.lane_index = row.get("lane_index")
         self.read_index = row.get("read_index")
 
-    def set_sequencing_protocol(self, sequencing_protocol: SequencingProtocol):
+    def set_s3_uri(self, uri):
+        self.s3_uri = uri
+
+    def set_sequencing_protocol(self, sequencing_protocol: OldSequencingProtocol):
         if (
             self.sequencing_protocol
             and self.sequencing_protocol.corresponding_old_id
@@ -44,3 +55,25 @@ class SequenceFile:
             "sequencing_protocol"
         ] = self.sequencing_protocol.corresponding_old_id
         return dictionary_representation
+
+    def convert_to_new_entity(self):
+        sequence_file_id = hca_accession_transformer(
+            SequenceFile.__class__.__name__, self.corresponding_old_id
+        )
+        sequencing_protocol_id = hca_accession_transformer(
+            SequencingProtocol.__class__.__name__,
+            self.sequencing_protocol.corresponding_old_id,
+        )
+
+        sequence_file = SequenceFile(
+            id=sequence_file_id,
+            filename=self.filename,
+            file_format=self.file_format,
+            flowcell_id=self.flowcell_id,
+            lane_index=self.lane_index,
+            read_index=self.read_index,
+            s3_uri=self.s3_uri,
+            sequencing_protocol_id=sequencing_protocol_id,
+        )
+
+        return sequence_file
