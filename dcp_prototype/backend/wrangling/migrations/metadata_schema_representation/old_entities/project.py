@@ -5,6 +5,9 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
 import logging
 
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_transformer
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.project import Project
+
 
 class Project:
     def __init__(self):
@@ -62,3 +65,13 @@ class Project:
                 else:
                     merge_dictionary_into(dictionary_representation, {key: value})
         return dictionary_representation
+
+    def convert_to_new_entity(self):
+        new_project = Project()
+
+        new_project.project_short_name = self.project_short_name
+        new_project.publication_title = self.publication_title
+        new_project.publication_doi = self.publication_doi
+        new_project.external_accessions = self.external_accessions
+
+        return new_project

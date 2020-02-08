@@ -1,7 +1,12 @@
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.specimen_from_organism import (
     SpecimenFromOrganism,
 )
-
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (
+    BiosamplePrep,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_transformer,
+)
 import logging
 
 
@@ -35,3 +40,17 @@ class CellSuspension:
             "specimen_from_organism"
         ] = self.specimen_from_organism.corresponding_old_id
         return dictionary_representation
+
+    def convert_to_new_entity(self):
+        biosample_prep = BiosamplePrep()
+        biosample_prep.organ_ontology = self.specimen_from_organism.organ
+        biosample_prep.developmental_stage = (
+            self.specimen_from_organism.donor_organism.developmental_stage
+        )
+        biosample_prep.disease_onotology_label = (
+            self.specimen_from_organism.donor_organism.disease_onotology_label
+        )
+        biosample_prep.id = hca_accession_transformer(
+            BiosamplePrep.__class__.__name__, self.corresponding_old_id
+        )
+        return biosample_prep

@@ -10,3 +10,6 @@ def hca_accession_generator(entity):
     """
 
     return ID_GENERATOR_PREFIX + "-" + entity + "-" + str(uuid4())
+
+def hca_accession_transformer(entity, uuid):
+    return ID_GENERATOR_PREFIX + "-" + entity + "-" + str(uuid)
