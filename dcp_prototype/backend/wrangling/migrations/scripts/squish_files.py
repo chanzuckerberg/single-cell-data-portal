@@ -137,7 +137,8 @@ def _copy_files(source_directory, target_directory, count_by_file_type, checksum
                 copyfile(source_file_path, os.path.join(target_directory, filename))
             else:
                 print(
-                    f"Skipping over file {filename} because it has already been copied over."
+                    f"Skipping over file {filename} because it has already been copied "
+                    f"over."
                 )
 
 
