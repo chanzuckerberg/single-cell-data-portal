@@ -1,16 +1,9 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_project import (
-    OldProject,
-)
-
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (
-    Contributor,
-)
 
 from dcp_prototype.backend.ledger.code.common.ledger_orm import Contributor, Project
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
-    hca_accession_transformer,
 )
+from copy import deepcopy
 
 
 class OldContributor:
@@ -52,13 +45,11 @@ class OldContributor:
         self.orcid_id = row.get(prefix + "orcid_id")
 
     def to_dictionary(self):
-        return self.__dict__
+        return deepcopy(self.__dict__)
 
-    def convert_to_new_entity(self):
-        contributor_id = hca_accession_generator(Contributor.__class__.__name__)
-        project_id = hca_accession_transformer(
-            Project.__class__.__name__, self.project.corresponding_old_id
-        )
+    def convert_to_new_entity(self, project: Project):
+        contributor_id = hca_accession_generator(Contributor.__name__)
+
         contributor = Contributor(
             id=contributor_id,
             name=self.name,
@@ -70,7 +61,7 @@ class OldContributor:
             country=self.country,
             contributor_role_ontology=self.contributor_role_ontology,
             orcid_id=self.orcid_id,
-            project_id=project_id,
+            project=project,
         )
 
         return contributor

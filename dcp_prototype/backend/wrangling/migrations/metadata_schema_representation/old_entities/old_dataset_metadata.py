@@ -39,10 +39,10 @@ class OldDatasetMetadata:
         self.cell_suspensions = {}
         self.library_preps = {}
         self.libraries = []
-        self.projects = {}
-        self.contributors = {}
-        self.files = {}
-        self.sequencing_protocols = {}
+        self.projects = []
+        self.contributors = []
+        self.sequence_files = []
+        self.sequencing_protocols = []
 
         self.publish_mode = False
         self.old_metadata_structure = {}
@@ -102,9 +102,15 @@ class OldDatasetMetadata:
 
         self.publish_mode = True
 
-        self.old_metadata_structure["Donor Organism"] = self.donor_organisms.values()
-        self.old_metadata_structure["Specimen From Organism"] = self.specimens.values()
-        self.old_metadata_structure["Cell Suspensions"] = self.cell_suspensions.values()
+        self.old_metadata_structure[
+            "Donor Organism"
+        ] = self.old_donor_organisms.values()
+        self.old_metadata_structure[
+            "Specimen From Organism"
+        ] = self.old_specimens.values()
+        self.old_metadata_structure[
+            "Cell Suspensions"
+        ] = self.old_cell_suspensions.values()
         self.old_metadata_structure[
             "Library Prep Protocols"
         ] = self.library_preps.values()
@@ -168,9 +174,9 @@ class OldDatasetMetadata:
         if entity_type == "sequencing_protocol":
             protocol = OldSequencingProtocol()
             protocol.populate_from_dcp_one_json_data_frame(row)
+
             if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
                 self.sequencing_protocols[protocol.corresponding_old_id] = protocol
-
         if entity_type == "sequence_file":
             sequence_file = OldSequenceFile()
             sequence_file.populate_from_dcp_one_json_data_frame(row)
@@ -337,3 +343,46 @@ class OldDatasetMetadata:
                 link_index += 1
 
     def convert_to_new_entities(self):
+        biosample_preps = {}
+        for id, biosample_prep in self.old_cell_suspensions.items():
+            biosample_preps[id] = biosample_prep.convert_to_new_entity()
+
+        protocols = {}
+        for id, sequencing_protocol in self.old_sequencing_protocols.items():
+            protocols[id] = sequencing_protocol.convert_to_new_entity()
+
+        projects = {}
+        for id, project in self.old_projects.items():
+            projects[id] = project.convert_to_new_entity()
+
+            for contributor in project.contributors:
+                self.contributors.append(
+                    contributor.convert_to_new_entity(projects[id])
+                )
+
+        library_preps = {}
+        for id, library_prep in self.old_library_preps.items():
+            library_preps[id] = library_prep.convert_to_new_entity(
+                biosample_preps[library_prep.cell_suspension.corresponding_old_id]
+            )
+
+        files = {}
+        for id, file in self.old_files.items():
+            files[id] = file.convert_to_new_entity(
+                protocols[file.sequencing_protocol.corresponding_old_id]
+            )
+
+        for library in self.old_libraries:
+            self.libraries.append(
+                library.convert_to_new_entity(
+                    library_preps[library.library_prep_protocol.corresponding_old_id],
+                    projects[library.project.corresponding_old_id],
+                    protocols[library.sequencing_protocol.corresponding_old_id],
+                )
+            )
+
+        self.biosample_preps = biosample_preps.values()
+        self.sequencing_protocols = protocols.values()
+        self.library_preps = library_preps.values()
+        self.projects = projects.values()
+        self.sequence_files = files.values()

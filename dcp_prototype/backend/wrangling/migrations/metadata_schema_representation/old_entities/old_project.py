@@ -10,6 +10,8 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
 )
 from dcp_prototype.backend.ledger.code.common.ledger_orm import Project
 
+from copy import deepcopy
+
 
 class OldProject:
     def __init__(self):
@@ -56,9 +58,11 @@ class OldProject:
             self.contributors.append(contributor)
 
     def to_dictionary(self):
+        dict_copy = deepcopy(self.__dict__)
         dictionary_representation = {}
+
         for contributor in self.contributors:
-            for key, value in self.__dict__.items():
+            for key, value in dict_copy.items():
                 if key == "contributors":
                     merge_dictionary_into(
                         dictionary_representation, {key: contributor.name},
@@ -69,7 +73,7 @@ class OldProject:
 
     def convert_to_new_entity(self):
         project_id = hca_accession_transformer(
-            Project.__class__.__name__, self.corresponding_old_id
+            Project.__name__, self.corresponding_old_id
         )
 
         project = Project(

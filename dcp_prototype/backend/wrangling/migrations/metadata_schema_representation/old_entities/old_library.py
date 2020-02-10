@@ -58,25 +58,19 @@ class OldLibrary:
             == other.sequencing_protocol.corresponding_old_id
         )
 
-    def convert_to_new_entity(self):
-        library_id = hca_accession_generator(Library.__class__.__name__)
-        library_prep_id = hca_accession_transformer(
-            LibraryPrepProtocol.__class__.__name__,
-            self.library_prep_protocol.corresponding_old_id,
-        )
-        project_id = hca_accession_transformer(
-            Project.__class__.__name__, self.project.corresponding_old_id
-        )
-        sequencing_protocol_id = hca_accession_transformer(
-            SequencingProtocol.__class__.__name__,
-            self.sequencing_protocol.corresponding_old_id,
-        )
+    def convert_to_new_entity(
+        self,
+        library_prep: LibraryPrepProtocol,
+        project: Project,
+        sequencing_protocol: SequencingProtocol,
+    ):
+        library_id = hca_accession_generator(Library.__name__)
 
         library = Library(
             id=library_id,
-            library_prep_protocol_id=library_prep_id,
-            sequencing_protocol_id=sequencing_protocol_id,
-            project_id=project_id,
+            library_prep_protocol=library_prep,
+            sequencing_protocol=sequencing_protocol,
+            project=project,
         )
 
         return library

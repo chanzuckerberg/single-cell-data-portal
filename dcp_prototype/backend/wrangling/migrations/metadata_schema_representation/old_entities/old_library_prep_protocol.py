@@ -2,9 +2,6 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
     OldCellSuspension,
 )
 import logging
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.library_prep_protocol import (
-    LibraryPrepProtocol,
-)
 
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_transformer,
@@ -13,6 +10,7 @@ from dcp_prototype.backend.ledger.code.common.ledger_orm import (
     LibraryPrepProtocol,
     BiosamplePrep,
 )
+from copy import deepcopy
 
 
 class OldLibraryPrepProtocol:
@@ -52,18 +50,15 @@ class OldLibraryPrepProtocol:
         self.cell_suspension = cell_suspension
 
     def to_dictionary(self):
-        dictionary_representation = self.__dict__
+        dictionary_representation = deepcopy(self.__dict__)
         dictionary_representation[
             "cell_suspension"
         ] = self.cell_suspension.corresponding_old_id
         return dictionary_representation
 
-    def convert_to_new_entity(self):
+    def convert_to_new_entity(self, biosample_prep: BiosamplePrep):
         library_prep_id = hca_accession_transformer(
-            LibraryPrepProtocol.__class__.__name__, self.corresponding_old_id
-        )
-        biosample_id = hca_accession_transformer(
-            BiosamplePrep.__class__.__name__, self.cell_suspension.corresponding_old_id
+            LibraryPrepProtocol.__name__, self.corresponding_old_id
         )
 
         library_prep = LibraryPrepProtocol(
@@ -72,7 +67,7 @@ class OldLibraryPrepProtocol:
             library_construction_method_ontology=self.library_construction_method_ontology,
             nucleic_acid_source=self.nucleic_acid_source,
             end_bias=self.end_bias,
-            biosample_prep_id=biosample_id,
+            biosample_prep=biosample_prep,
         )
 
         return library_prep

@@ -2,6 +2,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
     OldDonorOrganism,
 )
 
+from copy import deepcopy
 import logging
 
 
@@ -32,7 +33,7 @@ class OldSpecimenFromOrganism:
         self.donor_organism = donor_organism
 
     def to_dictionary(self):
-        dictionary_representation = self.__dict__
+        dictionary_representation = deepcopy(self.__dict__)
         dictionary_representation[
             "donor_organism"
         ] = self.donor_organism.corresponding_old_id

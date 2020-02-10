@@ -9,6 +9,7 @@ from dcp_prototype.backend.ledger.code.common.ledger_orm import (
     SequencingProtocol,
 )
 import logging
+from copy import deepcopy
 
 
 class OldSequenceFile:
@@ -50,19 +51,15 @@ class OldSequenceFile:
         self.sequencing_protocol = sequencing_protocol
 
     def to_dictionary(self):
-        dictionary_representation = self.__dict__
+        dictionary_representation = deepcopy(self.__dict__)
         dictionary_representation[
             "sequencing_protocol"
         ] = self.sequencing_protocol.corresponding_old_id
         return dictionary_representation
 
-    def convert_to_new_entity(self):
+    def convert_to_new_entity(self, sequencing_protocol: SequencingProtocol):
         sequence_file_id = hca_accession_transformer(
-            SequenceFile.__class__.__name__, self.corresponding_old_id
-        )
-        sequencing_protocol_id = hca_accession_transformer(
-            SequencingProtocol.__class__.__name__,
-            self.sequencing_protocol.corresponding_old_id,
+            SequenceFile.__name__, self.corresponding_old_id
         )
 
         sequence_file = SequenceFile(
@@ -73,7 +70,7 @@ class OldSequenceFile:
             lane_index=self.lane_index,
             read_index=self.read_index,
             s3_uri=self.s3_uri,
-            sequencing_protocol_id=sequencing_protocol_id,
+            sequencing_protocol=sequencing_protocol,
         )
 
         return sequence_file

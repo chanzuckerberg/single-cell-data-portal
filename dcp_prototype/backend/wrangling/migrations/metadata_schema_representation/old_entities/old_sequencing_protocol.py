@@ -2,6 +2,7 @@ from dcp_prototype.backend.ledger.code.common.ledger_orm import SequencingProtoc
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_transformer,
 )
+from copy import deepcopy
 
 
 class OldSequencingProtocol:
@@ -18,11 +19,11 @@ class OldSequencingProtocol:
         )
 
     def to_dictionary(self):
-        return self.__dict__
+        return deepcopy(self.__dict__)
 
     def convert_to_new_entity(self):
         protocol_id = hca_accession_transformer(
-            SequencingProtocol.__class__.__name__, self.corresponding_old_id
+            SequencingProtocol.__name__, self.corresponding_old_id
         )
 
         sequencing_protocol = SequencingProtocol(

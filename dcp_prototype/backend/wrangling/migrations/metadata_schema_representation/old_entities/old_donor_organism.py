@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class OldDonorOrganism:
     def __init__(self):
         self.corresponding_old_id = None
@@ -10,4 +13,4 @@ class OldDonorOrganism:
         self.disease_onotology_label = row.get("diseases.0.ontology")
 
     def to_dictionary(self):
-        return self.__dict__
+        return deepcopy(self.__dict__)
