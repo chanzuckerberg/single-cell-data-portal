@@ -1,7 +1,6 @@
 # coding: utf-8
 import os
 import sys
-from datetime import datetime
 
 from sqlalchemy import create_engine, Column, DateTime, ForeignKey, String, text
 from sqlalchemy.orm import relationship, sessionmaker
