@@ -1,0 +1,39 @@
+# DCP Browser environment variables
+#
+# Source this file in your bash shell using "source environment".
+#
+# The environment variables set in this file are appropriate for the
+# HCA Fusillade development environment. Individual environment variable
+# values are overridden when deployed, based on the deployment stage.
+
+# Resolve the location of this file and set APP_HOME to the root
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+export APP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+set -a
+AWS_PROFILE=czi-hca-dev
+AWS_REGION=us-east-1
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
+
+APP_NAME=$(jq -r .app_name .chalice/config.json)
+
+STAGE="${DEPLOYMENT_STAGE:-${STAGE:-dev}}"
+
+TF_DATA_DIR=.terraform.$STAGE
+TFSTATE_FILE=$TF_DATA_DIR/remote.tfstate
+TF_CLI_ARGS_output="--state $TFSTATE_FILE"
+TF_CLI_ARGS_init="--backend-config $APP_HOME/$TF_DATA_DIR/aws_config.json"
+TF_S3_BUCKET=org-dcp-infra-$AWS_ACCOUNT_ID
+
+# This is set for build reproducibility
+PYTHONHASHSEED=0
+
+# See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
+AWS_SDK_LOAD_CONFIG=1
+
+EXPORT_ENV_VARS_TO_TF="APP_NAME STAGE AWS_ACCOUNT_ID"
+EXPORT_ENV_VARS_TO_LAMBDA=$EXPORT_ENV_VARS_TO_TF
+set +a
+
+for v in $EXPORT_ENV_VARS_TO_TF; do echo "variable $v { default = \"${!v}\" }"; done > terraform/variables.tf

@@ -1,2 +1,8 @@
 black
 flake8-black
+chalice
+aws-sam-translator
+furl
+requests
+boto3
+awscli

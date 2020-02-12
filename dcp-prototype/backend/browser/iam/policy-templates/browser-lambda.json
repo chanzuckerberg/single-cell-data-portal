@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:List*",
+        "s3:Get*",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::$SERVICE_S3_BUCKET",
+        "arn:aws:s3:::$SERVICE_S3_BUCKET/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:Get*"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:*:$AWS_ACCOUNT_ID:secret:$APP_NAME/$STAGE/*"
+      ]
+    }
+  ]
+}

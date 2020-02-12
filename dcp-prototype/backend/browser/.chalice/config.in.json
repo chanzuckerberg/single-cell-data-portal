@@ -1,0 +1,19 @@
+{
+  "stages": {
+    "dev": {
+      "api_gateway_stage": "api",
+      "iam_policy_file": "policy-dev.json",
+      "lambda_memory_size": 256,
+      "lambda_timeout": 30,
+      "environment_variables": {
+        "EXAMPLE_VAR": "example-value"
+      },
+      "tags": {
+        "created-from": "backend browser"
+      }
+    }
+  },
+  "version": "2.0",
+  "app_name": "browser",
+  "autogen_policy": false
+}
