@@ -2,7 +2,7 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
 
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor import (  # noqa
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.contributor_metadata_node import (  # noqa
     Contributor,
 )
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into

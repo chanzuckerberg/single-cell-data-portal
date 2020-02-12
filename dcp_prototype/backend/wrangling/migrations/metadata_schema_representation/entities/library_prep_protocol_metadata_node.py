@@ -1,7 +1,7 @@
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep import (  # noqa
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.entities.biosample_prep_metadata_node import (  # noqa
     BiosamplePrep,
 )
 import logging
