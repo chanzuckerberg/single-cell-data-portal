@@ -6,7 +6,7 @@ Create Date: 2020-02-04 14:23:22.436636
 
 """
 from alembic import op
-from sqlalchemy import Column, String
+from sqlalchemy import ARRAY, Column, String
 from sqlalchemy import text
 from sqlalchemy.types import DateTime
 
@@ -119,7 +119,7 @@ def upgrade():
         Column("project_title", String, nullable=True),
         Column("publication_title", String, nullable=True),
         Column("publication_doi", String, nullable=True),
-        Column("external_accessions", String, nullable=True),
+        Column("external_accessions", ARRAY(String), nullable=True),
         Column(
             "created_at",
             DateTime(timezone=True),
@@ -294,7 +294,7 @@ def upgrade():
         Column("algorithm", String, nullable=True),
         Column("genome_reference", String, nullable=True),
         Column("genomic_annotation", String, nullable=True),
-        Column("genomic_annotation_biotypes", String, nullable=True),
+        Column("genomic_annotation_biotypes", ARRAY(String), nullable=True),
         Column(
             "created_at",
             DateTime(timezone=True),
@@ -356,6 +356,7 @@ def upgrade():
         Column("filename", String, nullable=True),
         Column("file_format", String, nullable=True),
         Column("file_size", String, nullable=True),
+        Column("s3_uri", String, nullable=True),
         Column(
             "created_at",
             DateTime(timezone=True),

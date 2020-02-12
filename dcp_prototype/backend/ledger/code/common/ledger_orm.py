@@ -2,7 +2,7 @@
 import os
 import sys
 
-from sqlalchemy import create_engine, Column, DateTime, ForeignKey, String, text
+from sqlalchemy import ARRAY, create_engine, Column, DateTime, ForeignKey, String, text
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -32,7 +32,7 @@ class AlignmentProtocol(Base):
     algorithm = Column(String)
     genome_reference = Column(String)
     genomic_annotation = Column(String)
-    genomic_annotation_biotypes = Column(String)
+    genomic_annotation_biotypes = Column(ARRAY(String()))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -85,6 +85,7 @@ class ExpressionFile(Base):
     filename = Column(String)
     file_format = Column(String)
     file_size = Column(String)
+    s3_uri = Column(String, nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -111,7 +112,7 @@ class Project(Base):
     project_title = Column(String)
     publication_title = Column(String)
     publication_doi = Column(String)
-    external_accessions = Column(String)
+    external_accessions = Column(ARRAY(String()))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -150,8 +151,8 @@ class SequencingProtocol(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class AnalysisFileQuantificationProtocolExpressionFileProcessJ(Base):
-    __tablename__ = "analysis_file_quantification_protocol_expression_file_process_j"
+class AnalysisFileQuantificationProtocolExpressionFileProcessJoin(Base):
+    __tablename__ = "analysis_file_quantification_protocol_expression_file_process_join"
 
     id = Column(String, primary_key=True)
     analysis_file_id = Column(ForeignKey("analysis_file.id"), nullable=False)
