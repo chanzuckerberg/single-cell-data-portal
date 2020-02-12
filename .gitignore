@@ -127,6 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+chalice.tf.json
 
 # Data files
 **/data/

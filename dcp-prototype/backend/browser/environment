@@ -16,7 +16,7 @@ AWS_PROFILE=czi-hca-dev
 AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
 
-APP_NAME=$(jq -r .app_name .chalice/config.json)
+APP_NAME=$(jq -r .app_name .chalice/config.in.json)
 
 STAGE="${DEPLOYMENT_STAGE:-${STAGE:-dev}}"
 

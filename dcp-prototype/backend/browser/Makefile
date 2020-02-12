@@ -1,7 +1,6 @@
 SHELL=/bin/bash -o pipefail
-S3_TFVARS_FILE=s3://$(TF_STATE_BUCKET)/terraform/envs/$(STAGE)/terraform.tfvars
 
-ifndef APP_NAME
+ifndef STAGE
 $(error Please run "source environment" in the repo root directory before running make commands)
 endif
 

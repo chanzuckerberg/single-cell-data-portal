@@ -37,7 +37,7 @@ npm-debug.log
 .coverage.*
 
 # Terraform files
-.terraform
+.terraform*
 backend.tf
 providers.tf
 variables.tf
