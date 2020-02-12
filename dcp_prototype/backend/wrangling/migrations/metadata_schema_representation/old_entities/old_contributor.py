@@ -1,5 +1,4 @@
-
-from dcp_prototype.backend.ledger.code.common.ledger_orm import Contributor, Project
+from dcp_prototype.backend.ledger.code.common.ledger_orm import Contributor
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
 )
@@ -17,11 +16,6 @@ class OldContributor:
         self.country = None
         self.contributor_role_ontology = None
         self.orcid_id = None
-
-        self.project = None
-
-    def set_project(self, project: OldProject):
-        self.project = project
 
     def populate_from_dcp_one_json_data_frame(self, row, index_in_project_row):
         prefix = f"contributors.{str(index_in_project_row)}."
@@ -47,7 +41,7 @@ class OldContributor:
     def to_dictionary(self):
         return deepcopy(self.__dict__)
 
-    def convert_to_new_entity(self, project: Project):
+    def convert_to_new_entity(self):
         contributor_id = hca_accession_generator(Contributor.__name__)
 
         contributor = Contributor(
@@ -61,7 +55,6 @@ class OldContributor:
             country=self.country,
             contributor_role_ontology=self.contributor_role_ontology,
             orcid_id=self.orcid_id,
-            project=project,
         )
 
         return contributor

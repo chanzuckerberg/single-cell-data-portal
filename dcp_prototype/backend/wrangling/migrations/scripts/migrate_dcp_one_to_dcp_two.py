@@ -27,6 +27,7 @@ ENTITY_TYPES = [
     "sequence_file",
     "links",
     "sequencing_protocol",
+    "analysis_file"
 ]
 
 S3_CLIENT = boto3.client("s3")
@@ -171,7 +172,7 @@ def generate_metadata_structure(input_directory):
 
 
 def should_process_file(full_file_path):
-    if "analysis" in full_file_path:
+    if "analysis_p" in full_file_path:
         return False
     if "zarr" in full_file_path:
         return False
@@ -203,30 +204,10 @@ def export_old_metadata_to_s3_orm(
                 continue
     print(f"Completed uploading all files to S3")
 
-    dataset_metadata.convert_to_new_entities()
-
     # Upload to DB
     print(f"Commit dataset to DB")
     session_maker = DBSessionMaker()
-    session = session_maker.session()
-
-    for biosample_prep in dataset_metadata.biosample_preps:
-        session.add(biosample_prep)
-    for sequence_protocol in dataset_metadata.sequencing_protocols:
-        session.add(sequence_protocol)
-    for project in dataset_metadata.projects:
-        session.add(project)
-    for contributor in dataset_metadata.contributors:
-        session.add(contributor)
-    for sequence_file in dataset_metadata.sequence_files:
-        session.add(sequence_file)
-    for library_prep in dataset_metadata.library_preps:
-        session.add(library_prep)
-    for library in dataset_metadata.libraries:
-        session.add(library)
-
-    session.commit()
-
+    dataset_metadata.export_to_database(session_maker)
 
 def export_file_to_s3(full_source_file_path, filename):
     s3_uri = f"s3://{BUCKET_NAME}/{filename}"

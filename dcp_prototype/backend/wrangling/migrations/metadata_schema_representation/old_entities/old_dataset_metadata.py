@@ -7,14 +7,8 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library_prep_protocol import (
     OldLibraryPrepProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library import (
-    OldLibrary,
-)
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (
     OldCellSuspension,
-)
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_contributor import (
-    OldContributor,
 )
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequence_file import (
     OldSequenceFile,
@@ -25,24 +19,50 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (
     OldSpecimenFromOrganism,
 )
-
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_analysis_file import (
+    OldAnalysisFile,
+)
 
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
 from pandas import DataFrame, ExcelWriter
 import random
+from dcp_prototype.backend.ledger.code.common.ledger_orm import (
+    DBSessionMaker,
+    AlignmentProtocol,
+    Library,
+    ProjectContributorJoin,
+    SequenceFileAlignmentProtocolAnalysisFileProcessJoin,
+    BiosamplePrepLibraryLibraryPrepProtocolProcessJoin,
+    LibrarySequenceFileSequencingProtocolProcessJoin,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.constants import (
+    SS2_ALIGNMENT_PROTOCOL,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_generator,
+    hca_accession_transformer,
+)
 
 
 class OldDatasetMetadata:
-    def __init__(self):
+    def __init__(self, sequencing_technology="ss2"):
+        self.sequencing_technology = sequencing_technology
+
         self.donor_organisms = {}
         self.specimens = {}
         self.cell_suspensions = {}
         self.library_preps = {}
+        self.projects = {}
+        self.contributors = {}
+        self.sequence_files = {}
+        self.sequencing_protocols = {}
+        self.analysis_files = {}
+
         self.libraries = []
-        self.projects = []
-        self.contributors = []
-        self.sequence_files = []
-        self.sequencing_protocols = []
+        self.project_contributor_links = []
+        self.sequence_file_analysis_file_links = []
+        self.biosample_library_prep_project_links = []
+        self.project_sequencing_protocol_sequence_file_links = []
 
         self.publish_mode = False
         self.old_metadata_structure = {}
@@ -74,6 +94,137 @@ class OldDatasetMetadata:
                 entity_transformation_to_data_frame_format.to_excel(
                     excel_writer, sheet_name=sheet_name, index=False
                 )
+
+    def export_to_database(self, db_session_maker: DBSessionMaker):
+        session = db_session_maker.session()
+
+        # STEP 1: POPULATE ENTITIES
+
+        # BiosamplePrep table population
+        biosample_preps = {}
+        for id, old_biosample_prep in self.cell_suspensions.items():
+            biosample_prep = old_biosample_prep.convert_to_new_entity()
+            biosample_preps[id] = biosample_prep
+            session.add(biosample_prep)
+
+        # LibraryPrepProtocol table population
+        library_prep_protocols = {}
+        for id, old_library_prep in self.library_preps.items():
+            library_prep = old_library_prep.convert_to_new_entity()
+            library_prep_protocols[id] = library_prep
+            session.add(library_prep)
+
+        # Project table population
+        projects = {}
+        for id, old_project in self.projects.items():
+            project = old_project.convert_to_new_entity()
+            projects[id] = project
+            session.add(project)
+
+        # Contributor table population
+        contributors = {}
+        for id, old_contributor in self.contributors.items():
+            contributor = old_contributor.convert_to_new_entity()
+            contributors[id] = contributor
+            session.add(contributor)
+
+        # SequenceProtocol table population
+        sequencing_protocols = {}
+        for id, old_sequencing_protocol in self.old_sequencing_protocols.items():
+            sequencing_protocol = old_sequencing_protocol.convert_to_new_entity()
+            sequencing_protocols[id] = sequencing_protocol
+            session.add(sequencing_protocol)
+
+        # SequenceFile table population
+        sequence_files = {}
+        for id, old_sequence_file in self.sequence_files.items():
+            sequence_file = old_sequence_file.convert_to_new_entity()
+            sequence_files[id] = sequence_file
+            session.add(sequence_file)
+
+        # AnalysisFile table population
+        analysis_files = {}
+        for id, old_analysis_file in self.analysis_files.items():
+            analysis_file = old_analysis_file.convert_to_new_entity()
+            analysis_files[id] = analysis_file
+            session.add(sequence_file)
+
+        # AlignmentProtocol table population
+        alignment_protocols = {}
+        alignment_protocol = SS2_ALIGNMENT_PROTOCOL
+        alignment_protocol.id = hca_accession_generator(AlignmentProtocol.__name__)
+        alignment_protocols[alignment_protocol.id] = alignment_protocol
+        session.add(alignment_protocol)
+
+        # STEP 2: POPULATE LINKS
+
+        # Library table population
+        libraries = {}
+        for id, project in projects:
+            library_id = hca_accession_transformer(Library.__name__, id)
+            library = Library(id=library_id, project=project)
+            libraries[id] = library
+            session.add(library)
+
+        # ProjectContributorJoin table population
+        for link in self.project_contributor_links:
+            project = projects.get(link[0].corresponding_old_id)
+            contributor = contributors.get(link[1].corresponding_old_id)
+            id = hca_accession_generator(ProjectContributorJoin.__name__)
+            project_contributor = ProjectContributorJoin(
+                id=id, project=project, contributor=contributor
+            )
+            session.add(project_contributor)
+
+        # SequenceFileAlignmentProtocolAnalysisFileProcessJoin table population
+        for link in self.sequence_file_analysis_file_links:
+            sequence_file = sequence_files.get(link[0].corresponding_old_id)
+            analysis_file = analysis_files.get(link[1].corresponding_old_id)
+            alignment_protocol = random.choice(list(alignment_protocols.values()))
+            id = hca_accession_generator(
+                SequenceFileAlignmentProtocolAnalysisFileProcessJoin.__name__
+            )
+            join_object = SequenceFileAlignmentProtocolAnalysisFileProcessJoin(
+                id=id,
+                sequence_file=sequence_file,
+                analysis_file=analysis_file,
+                alignment_protocol=alignment_protocol,
+            )
+            session.add(join_object)
+
+        # BiosamplePrepLibraryLibraryPrepProtocolProcessJoin table population
+        for link in self.biosample_library_prep_project_links:
+            biosample = biosample_preps.get(link[0].corresponding_old_id)
+            library_prep = library_prep_protocols.get(link[1].corresponding_old_id)
+            library = libraries.get(link[2].corresponding_old_id)
+            id = hca_accession_generator(
+                BiosamplePrepLibraryLibraryPrepProtocolProcessJoin.__name__
+            )
+            join_object = BiosamplePrepLibraryLibraryPrepProtocolProcessJoin(
+                id=id,
+                biosample_prep=biosample,
+                library=library,
+                library_prep_protocol=library_prep,
+            )
+            session.add(join_object)
+
+        # LibrarySequenceFileSequencingProtocolProcessJoin table population
+        for link in self.project_sequencing_protocol_sequence_file_links:
+            library = libraries.get(link[0].corresponding_old_id)
+            sequencing_protocol = sequencing_protocols.get(link[1].corresponding_old_id)
+            sequence_file = sequence_files.get(link[2].corresponding_old_id)
+            id = hca_accession_generator(
+                LibrarySequenceFileSequencingProtocolProcessJoin.__name__
+            )
+            join_object = LibrarySequenceFileSequencingProtocolProcessJoin(
+                id=id,
+                library=library,
+                sequence_file=sequence_file,
+                sequencing_protocol=sequencing_protocol,
+            )
+            session.add(join_object)
+
+        session.commit()
 
     def _transform_metadata_entities_to_data_frame(self, metadata_entities_list):
         """
@@ -164,12 +315,14 @@ class OldDatasetMetadata:
 
         if entity_type == "project":
             project = OldProject()
-            project.populate_from_dcp_one_json_data_frame(row)
+            contributors = project.populate_from_dcp_one_json_data_frame(row)
             if project.corresponding_old_id not in self.projects.keys():
                 self.projects[project.corresponding_old_id] = project
-            for contributor in project.contributors:
-                if contributor.name not in self.contributors.keys():
-                    self.contributors[contributor.name] = contributor
+
+                for contributor in contributors:
+                    if contributor.name not in self.contributors.keys():
+                        self.contributors[contributor.name] = contributor
+                        self.project_contributor_links.append((project, contributor))
 
         if entity_type == "sequencing_protocol":
             protocol = OldSequencingProtocol()
@@ -177,212 +330,161 @@ class OldDatasetMetadata:
 
             if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
                 self.sequencing_protocols[protocol.corresponding_old_id] = protocol
+
         if entity_type == "sequence_file":
             sequence_file = OldSequenceFile()
             sequence_file.populate_from_dcp_one_json_data_frame(row)
-            if sequence_file.corresponding_old_id not in self.files.keys():
-                self.files[sequence_file.corresponding_old_id] = sequence_file
+            if sequence_file.corresponding_old_id not in self.sequence_files.keys():
+                self.sequence_files[sequence_file.corresponding_old_id] = sequence_file
+
+        if entity_type == "analysis_file":
+            analysis_file = OldAnalysisFile()
+            analysis_file.populate_from_dcp_one_json_data_frame(row)
+            if analysis_file.corresponding_old_id not in self.analysis_files.keys():
+                self.analysis_files[analysis_file.corresponding_old_id] = analysis_file
 
         if entity_type == "links":
-            link_index = 0
+            self.parse_links_dot_json(row)
 
-            while row.get(f"links.{str(link_index)}.process"):
-                link_index_prefix = f"links.{str(link_index)}."
+    def parse_links_dot_json(self, row):
+        link_index = 0
 
-                if row.get(f"{link_index_prefix}input_type") == "file":
-                    link_index += 1
-                    continue
+        while row.get(f"links.{str(link_index)}.process"):
+            link_index_prefix = f"links.{str(link_index)}."
 
-                attempted_new_library = OldLibrary()
-                attempted_new_library.populate_associated_project(
-                    random.choice(list(self.projects.values()))
-                )
+            # Link together Sequence Files and Analysis Files
+            if row.get(f"{link_index_prefix}input_type") == "file":
+                input_index = 0
+                while row.get(f"{link_index_prefix}inputs{str(input_index)}"):
+                    seq_file_id = row.get(
+                        f"{link_index_prefix}inputs{str(input_index)}"
+                    )
 
-                if (
-                    row.get(f"{link_index_prefix}input_type") == "biomaterial"
-                    and row.get(f"{link_index_prefix}output_type") == "file"
-                ):
-                    protocol_index = 0
-                    while row.get(
-                        f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
-                    ):
-                        protocol_type = row.get(
-                            f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
+                    output_index = 0
+                    while row.get(f"{link_index_prefix}inputs{str(output_index)}"):
+                        anal_file_id = row.get(
+                            f"{link_index_prefix}inputs{str(output_index)}"
                         )
-                        if protocol_type == "sequencing_protocol":
-                            protocol_id = row.get(
-                                f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_id"
-                            )
-                            associated_sequence_protocol = self.sequencing_protocols.get(
-                                protocol_id
-                            )
 
-                            # Add to library generation
-                            attempted_new_library.populate_associated_sequencing_protocol(
-                                associated_sequence_protocol
+                        self.sequence_file_analysis_file_links.append(
+                            (
+                                self.sequence_files.get(seq_file_id),
+                                self.analysis_files.get(anal_file_id),
                             )
+                        )
 
-                            # Link together sequence files and sequence protocol
-                            file_index = 0
-                            while row.get(
+                        output_index += 1
+
+                    input_index += 1
+
+            elif (
+                row.get(f"{link_index_prefix}input_type") == "biomaterial"
+                and row.get(f"{link_index_prefix}output_type") == "file"
+            ):
+                protocol_index = 0
+                while row.get(
+                    f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
+                ):
+                    protocol_type = row.get(
+                        f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
+                    )
+                    protocol_id = row.get(
+                        f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_id"
+                    )
+
+                    # Link together sequence files and sequence protocol and project
+                    if protocol_type == "sequencing_protocol":
+                        file_index = 0
+                        while row.get(f"{link_index_prefix}outputs.{str(file_index)}"):
+                            sequence_file_id = row.get(
                                 f"{link_index_prefix}outputs.{str(file_index)}"
-                            ):
-                                sequence_file_id = row.get(
-                                    f"{link_index_prefix}outputs.{str(file_index)}"
-                                )
-
-                                file = self.files.get(sequence_file_id)
-                                if file:
-                                    file.set_sequencing_protocol(
-                                        associated_sequence_protocol
-                                    )
-                                    self.files[file.corresponding_old_id] = file
-
-                                file_index += 1
-
-                        if protocol_type == "library_preparation_protocol":
-                            protocol_id = row.get(
-                                f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_id"
                             )
 
-                            associated_library_prep = self.library_preps.get(
-                                protocol_id
+                            self.project_sequencing_protocol_sequence_file_links.append(
+                                (
+                                    random.choice(list(self.projects.values())),
+                                    self.sequencing_protocols.get(protocol_id),
+                                    self.sequence_files.get(sequence_file_id),
+                                )
                             )
 
-                            # Add to library generation
-                            attempted_new_library.populate_associated_library_prep_protocol(
-                                associated_library_prep
-                            )
+                            file_index += 1
 
-                            # Link cell suspension and library prep together
-                            input_index = 0
-                            while row.get(
-                                f"{link_index_prefix}inputs.{str(input_index)}"
-                            ):
-                                suspension_id = row.get(
-                                    f"{link_index_prefix}inputs.{str(input_index)}"
-                                )
-                                associated_library_prep.set_cell_suspension(
-                                    self.cell_suspensions.get(suspension_id)
-                                )
-
-                                input_index += 1
-
-                        protocol_index += 1
-
-                if (
-                    row.get(f"{link_index_prefix}input_type") == "biomaterial"
-                    and row.get(f"{link_index_prefix}output_type") == "biomaterial"
-                ):
-                    # If a link has no protocols associated, then the link is between
-                    # donor organism and specimen
-                    if row.get(
-                        f"{link_index_prefix}protocols.0.protocol_type"
-                    ) == None or not row.get(
-                        f"{link_index_prefix}protocols.0.protocol_type"
-                    ):
-                        output_index = 0
-                        while row.get(
-                            f"{link_index_prefix}outputs.{str(output_index)}"
-                        ):
-                            specimen_id = row.get(
-                                f"{link_index_prefix}outputs.{str(output_index)}"
-                            )
-                            specimen = self.specimens.get(specimen_id)
-
-                            # Link together specimen and donor organism
-                            input_index = 0
-                            while row.get(
-                                f"{link_index_prefix}inputs.{str(input_index)}"
-                            ):
-                                donor_id = row.get(
-                                    f"{link_index_prefix}inputs.{str(input_index)}"
-                                )
-                                specimen.set_donor_organism(
-                                    self.donor_organisms.get(donor_id)
-                                )
-
-                                input_index += 1
-
-                            output_index += 1
-
-                    # If a link has protocols associated with it, then the link is
-                    # between specimen and cell suspension
-                    else:
-                        output_index = 0
-                        while row.get(
-                            f"{link_index_prefix}outputs.{str(output_index)}"
-                        ):
+                    # Link together biosample, library prep, and project
+                    elif protocol_type == "library_preparation_protocol":
+                        input_index = 0
+                        while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
                             suspension_id = row.get(
-                                f"{link_index_prefix}outputs.{str(output_index)}"
-                            )
-                            suspension = self.cell_suspensions.get(suspension_id)
-
-                            # Link together specimen and suspension
-                            input_index = 0
-                            while row.get(
                                 f"{link_index_prefix}inputs.{str(input_index)}"
-                            ):
-                                specimen_id = row.get(
-                                    f"{link_index_prefix}inputs.{str(input_index)}"
+                            )
+
+                            self.biosample_library_prep_project_links.append(
+                                (
+                                    self.cell_suspensions.get(suspension_id),
+                                    self.library_preps.get(protocol_id),
+                                    random.choice(list(self.projects.values())),
                                 )
-                                suspension.set_specimen_from_organism(
-                                    self.specimens.get(specimen_id)
-                                )
+                            )
 
-                                input_index += 1
+                            input_index += 1
 
-                            output_index += 1
+                    protocol_index += 1
 
-                if (
-                    attempted_new_library.is_complete()
-                    and attempted_new_library not in self.libraries
+            # Link together donor organism -> specimen from organism -> cell suspension
+            # that will form a BiosamplePrep.
+            elif (
+                row.get(f"{link_index_prefix}input_type") == "biomaterial"
+                and row.get(f"{link_index_prefix}output_type") == "biomaterial"
+            ):
+                # If a link has no protocols associated, then the link is between
+                # donor organism and specimen
+                if row.get(
+                    f"{link_index_prefix}protocols.0.protocol_type"
+                ) == None or not row.get(
+                    f"{link_index_prefix}protocols.0.protocol_type"
                 ):
-                    self.libraries.append(attempted_new_library)
+                    output_index = 0
+                    while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
+                        specimen_id = row.get(
+                            f"{link_index_prefix}outputs.{str(output_index)}"
+                        )
+                        specimen = self.specimens.get(specimen_id)
 
-                link_index += 1
+                        # Link together specimen and donor organism
+                        input_index = 0
+                        while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
+                            donor_id = row.get(
+                                f"{link_index_prefix}inputs.{str(input_index)}"
+                            )
+                            specimen.set_donor_organism(
+                                self.donor_organisms.get(donor_id)
+                            )
 
-    def convert_to_new_entities(self):
-        biosample_preps = {}
-        for id, biosample_prep in self.old_cell_suspensions.items():
-            biosample_preps[id] = biosample_prep.convert_to_new_entity()
+                            input_index += 1
 
-        protocols = {}
-        for id, sequencing_protocol in self.old_sequencing_protocols.items():
-            protocols[id] = sequencing_protocol.convert_to_new_entity()
+                        output_index += 1
 
-        projects = {}
-        for id, project in self.old_projects.items():
-            projects[id] = project.convert_to_new_entity()
+                # If a link has protocols associated with it, then the link is between specimen and cell suspension
+                else:
+                    output_index = 0
+                    while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
+                        suspension_id = row.get(
+                            f"{link_index_prefix}outputs.{str(output_index)}"
+                        )
+                        suspension = self.cell_suspensions.get(suspension_id)
 
-            for contributor in project.contributors:
-                self.contributors.append(
-                    contributor.convert_to_new_entity(projects[id])
-                )
+                        # Link together specimen and suspension
+                        input_index = 0
+                        while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
+                            specimen_id = row.get(
+                                f"{link_index_prefix}inputs.{str(input_index)}"
+                            )
+                            suspension.set_specimen_from_organism(
+                                self.specimens.get(specimen_id)
+                            )
 
-        library_preps = {}
-        for id, library_prep in self.old_library_preps.items():
-            library_preps[id] = library_prep.convert_to_new_entity(
-                biosample_preps[library_prep.cell_suspension.corresponding_old_id]
-            )
+                            input_index += 1
 
-        files = {}
-        for id, file in self.old_files.items():
-            files[id] = file.convert_to_new_entity(
-                protocols[file.sequencing_protocol.corresponding_old_id]
-            )
+                        output_index += 1
 
-        for library in self.old_libraries:
-            self.libraries.append(
-                library.convert_to_new_entity(
-                    library_preps[library.library_prep_protocol.corresponding_old_id],
-                    projects[library.project.corresponding_old_id],
-                    protocols[library.sequencing_protocol.corresponding_old_id],
-                )
-            )
-
-        self.biosample_preps = biosample_preps.values()
-        self.sequencing_protocols = protocols.values()
-        self.library_preps = library_preps.values()
-        self.projects = projects.values()
-        self.sequence_files = files.values()
+            link_index += 1
