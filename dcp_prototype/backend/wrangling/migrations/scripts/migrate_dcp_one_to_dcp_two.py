@@ -83,19 +83,26 @@ def generate_metadata_structure_from_s3_uri(s3_uri):
     exists primarily in JSON files in the given S3 bucket.
     """
 
-    dataset_metadata = OldDatasetMetadata(s3_uri)
+    dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
 
     BUCKET_NAME = urlparse(s3_uri).netloc
     PREFIX = urlparse(s3_uri).path
     if PREFIX.startswith("/"):
         PREFIX = PREFIX[1:]
-    response = S3_CLIENT.list_objects(Bucket=BUCKET_NAME, Prefix=PREFIX)
 
-    bucket_objects = response.get("Contents")
+    paginator = S3_CLIENT.get_paginator("list_objects")
+    page_iterator = paginator.paginate(Bucket=BUCKET_NAME, Prefix=PREFIX)
+
     file_list = []
-    for object in bucket_objects:
-        object_filename = object.get("Key")
-        file_list.append(object_filename.split("/")[-1])
+    for page in page_iterator:
+        bucket_objects = page.get("Contents")
+        print(len(bucket_objects))
+
+        for object in bucket_objects:
+            object_filename = object.get("Key")
+            if should_process_file(object_filename):
+                file_list.append(object_filename.split("/")[-1])
+
     file_list = order_file_list(file_list)
 
     print(f"Files in directory to parse: {file_list}")
@@ -104,7 +111,7 @@ def generate_metadata_structure_from_s3_uri(s3_uri):
         if not should_process_file(filename):
             continue
 
-        file_prefix = PREFIX + "/" + filename
+        file_prefix = PREFIX + filename
 
         print(f"Working with JSON input file: {file_prefix}")
         object = S3_RESOURCE.Object(BUCKET_NAME, file_prefix)
@@ -117,17 +124,6 @@ def generate_metadata_structure_from_s3_uri(s3_uri):
             dataset_metadata.parse_flattened_row_of_json(
                 metadata_row, get_entity_type(filename)
             )
-
-    dataset_metadata.save()
-
-    print(f"Processing dataset: {dataset_metadata.project_name}")
-    dataset_metadata.export_to_spreadsheet(
-        generate_metadata_tsv_name(dataset_metadata.project_name)
-    )
-    print(
-        f"Completed generating spreadsheet: "
-        f"{generate_metadata_tsv_name(dataset_metadata.project_name)}"
-    )
 
     return dataset_metadata
 
@@ -167,10 +163,10 @@ def generate_metadata_structure(input_directory):
 
     dataset_metadata.save()
 
-    print(f"Processing dataset: {dataset_metadata.project_name}")
-    dataset_metadata.export_to_spreadsheet(
-        generate_metadata_tsv_name(dataset_metadata.project_name)
-    )
+    # print(f"Processing dataset: {dataset_metadata.project_name}")
+    # dataset_metadata.export_to_spreadsheet(
+    #    generate_metadata_tsv_name(dataset_metadata.project_name)
+    # )
     print(
         f"Completed generating spreadsheet: "
         f"{generate_metadata_tsv_name(dataset_metadata.project_name)}"

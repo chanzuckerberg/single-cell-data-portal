@@ -56,7 +56,7 @@ class OldLibraryPrepProtocol:
         ] = self.cell_suspension.corresponding_old_id
         return dictionary_representation
 
-    def convert_to_new_entity(self, biosample_prep: BiosamplePrep):
+    def convert_to_new_entity(self):
         library_prep_id = hca_accession_transformer(
             LibraryPrepProtocol.__name__, self.corresponding_old_id
         )
@@ -67,7 +67,6 @@ class OldLibraryPrepProtocol:
             library_construction_method_ontology=self.library_construction_method_ontology,  # noqa
             nucleic_acid_source=self.nucleic_acid_source,
             end_bias=self.end_bias,
-            biosample_prep=biosample_prep,
         )
 
         return library_prep

@@ -131,7 +131,7 @@ class OldDatasetMetadata:
 
         # SequenceProtocol table population
         sequencing_protocols = {}
-        for id, old_sequencing_protocol in self.old_sequencing_protocols.items():
+        for id, old_sequencing_protocol in self.sequencing_protocols.items():
             sequencing_protocol = old_sequencing_protocol.convert_to_new_entity()
             sequencing_protocols[id] = sequencing_protocol
             session.add(sequencing_protocol)
@@ -148,7 +148,7 @@ class OldDatasetMetadata:
         for id, old_analysis_file in self.analysis_files.items():
             analysis_file = old_analysis_file.convert_to_new_entity()
             analysis_files[id] = analysis_file
-            session.add(sequence_file)
+            session.add(analysis_file)
 
         # AlignmentProtocol table population
         alignment_protocols = {}
@@ -161,7 +161,7 @@ class OldDatasetMetadata:
 
         # Library table population
         libraries = {}
-        for id, project in projects:
+        for id, project in projects.items():
             library_id = hca_accession_transformer(Library.__name__, id)
             library = Library(id=library_id, project=project)
             libraries[id] = library
@@ -170,7 +170,7 @@ class OldDatasetMetadata:
         # ProjectContributorJoin table population
         for link in self.project_contributor_links:
             project = projects.get(link[0].corresponding_old_id)
-            contributor = contributors.get(link[1].corresponding_old_id)
+            contributor = contributors.get(link[1].name)
             id = hca_accession_generator(ProjectContributorJoin.__name__)
             project_contributor = ProjectContributorJoin(
                 id=id, project=project, contributor=contributor

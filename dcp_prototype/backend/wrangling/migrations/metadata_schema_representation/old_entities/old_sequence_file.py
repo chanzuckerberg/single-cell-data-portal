@@ -57,7 +57,7 @@ class OldSequenceFile:
         ] = self.sequencing_protocol.corresponding_old_id
         return dictionary_representation
 
-    def convert_to_new_entity(self, sequencing_protocol: SequencingProtocol):
+    def convert_to_new_entity(self):
         sequence_file_id = hca_accession_transformer(
             SequenceFile.__name__, self.corresponding_old_id
         )
@@ -70,7 +70,6 @@ class OldSequenceFile:
             lane_index=self.lane_index,
             read_index=self.read_index,
             s3_uri=self.s3_uri,
-            sequencing_protocol=sequencing_protocol,
         )
 
         return sequence_file

@@ -29,11 +29,13 @@ class OldProject:
             self.external_accessions.append(
                 row.get(f"geo_series_accessions.{str(accession_index)}")
             )
+            accession_index += 1
         accession_index = 0
         while row.get(f"insdc_project_accessions.{str(accession_index)}"):
             self.external_accessions.append(
                 row.get(f"insdc_project_accessions.{str(accession_index)}")
             )
+            accession_index += 1
 
         # Log in case there are multiple publications
         if row.get("publications.1.title"):
@@ -64,7 +66,7 @@ class OldProject:
 
         project = Project(
             id=project_id,
-            project_short_name=self.project_short_name,
+            project_title=self.project_short_name,
             publication_title=self.publication_title,
             publication_doi=self.publication_doi,
             external_accessions=self.external_accessions,
