@@ -45,30 +45,30 @@ paths:
           description: Bad Request
         '404':
           description: File Not Found
-  /projects/{project_uuid}/files/{file_uuid}:
-    post:
-      tags:
-        - project
-        - download
-      summary: Request to download a file
-      operationId: getProjectFilesUuid
-      parameters:
-        - name: project_uuid
-          in: path
-          description: The uuid of the project
-          required: true
-          schema:
-            type: string
-        - name: file_uuid
-          in: path
-          description: The uuid of the file
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Return a download URL.
-        '400':
-          description: Bad Request
-        '404':
-          description: File Not Found
+    /files/{file_uuid}:
+        post:
+          tags:
+            - project
+            - download
+          summary: Request to download a file
+          operationId: getProjectFilesUuid
+          parameters:
+            - name: project_uuid
+              in: path
+              description: The uuid of the project
+              required: true
+              schema:
+                type: string
+            - name: file_uuid
+              in: path
+              description: The uuid of the file
+              required: true
+              schema:
+                type: string
+          responses:
+            '200':
+              description: Return a download URL.
+            '400':
+              description: Bad Request
+            '404':
+              description: File Not Found
