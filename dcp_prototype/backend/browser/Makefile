@@ -1,4 +1,5 @@
 SHELL=/bin/bash -o pipefail
+tests:=$(wildcard tests/test*.py)
 
 ifndef STAGE
 $(error Please run "source environment" in the repo root directory before running make commands)
@@ -62,5 +63,15 @@ destroy: init
 
 clean:
 	rm -rf dist .terraform* .chalice/deployments
+
+test: package lint $(tests)
+	coverage combine
+	rm -f .coverage.*
+
+$(tests): %.py : lint
+	coverage run -p --source=browser $*.py -v
+
+unittest: package
+	python -m unittest discover -p test_*api.py -t . -v
 
 .PHONY: deploy package init destroy clean lint test
