@@ -1,4 +1,7 @@
+boto3
+botocore
 objgraph
 openpyxl
 pandas
+urllib
 xlrd
