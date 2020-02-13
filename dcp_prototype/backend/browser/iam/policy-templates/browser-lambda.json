@@ -21,16 +21,6 @@
         "arn:aws:s3:::$SERVICE_S3_BUCKET",
         "arn:aws:s3:::$SERVICE_S3_BUCKET/*"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "secretsmanager:DescribeSecret",
-        "secretsmanager:Get*"
-      ],
-      "Resource": [
-        "arn:aws:secretsmanager:*:$AWS_ACCOUNT_ID:secret:$APP_NAME/$STAGE/*"
-      ]
     }
   ]
 }

@@ -1,6 +1,20 @@
 SHELL=/bin/bash -o pipefail
 tests:=$(wildcard tests/test*.py)
 
+export APP_NAME=$(jq -r .app_name .chalice/config.in.json)
+
+export TF_DATA_DIR=.terraform.$(STAGE)
+export TFSTATE_FILE=$(TF_DATA_DIR)/remote.tfstate
+export TF_CLI_ARGS_output="--state $(TFSTATE_FILE)"
+export TF_CLI_ARGS_init="--backend-config=$(APP_HOME)/$(TF_DATA_DIR)/aws_config.json"
+export TF_S3_BUCKET=org-dcp-infra-$(AWS_ACCOUNT_ID)
+
+# This is set for build reproducibility
+export PYTHONHASHSEED=0
+
+# See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
+export AWS_SDK_LOAD_CONFIG=1
+
 ifndef STAGE
 $(error Please run "source environment" in the repo root directory before running make commands)
 endif
@@ -17,7 +31,7 @@ plan: init package
 	jq -f scripts/preprocess_chalice_tf_config.jq dist/chalice.tf.json > terraform/chalice.tf.json
 	terraform plan
 
-# init-tf prepares the repo for Terraform commands. It assembles the partial S3 backend config as a JSON file, `aws_config.json`.
+# init prepares the repo for Terraform commands. It assembles the partial S3 backend config as a JSON file, `aws_config.json`.
 # This file is referenced by the TF_CLI_ARGS_init environment variable, which is set by running `source environment`.
 init:
 	-rm -f $(TF_DATA_DIR)/*.tfstate

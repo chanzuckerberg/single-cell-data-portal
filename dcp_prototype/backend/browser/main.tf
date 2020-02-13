@@ -11,8 +11,6 @@ terraform {
 
 provider "aws" {
   version = "~> 2.33"
-  region  = "us-east-1"
-  profile = "czi-hca-dev"
 }
 
 provider "external" {
