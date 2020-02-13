@@ -44,3 +44,5 @@ variables.tf
 
 .chalice/deployments/
 .chalice/venv/
+
+*.tf.json
