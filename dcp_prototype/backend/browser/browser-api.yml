@@ -3,7 +3,7 @@ info:
   description: |
     DCP 2.0 Consumer backend API
   version: "1.0.0"
-  title: DCP 2.0 Consumer
+  title: DCP 2.0 Browser API
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
