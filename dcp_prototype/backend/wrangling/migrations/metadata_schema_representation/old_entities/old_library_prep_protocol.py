@@ -1,4 +1,4 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (  # noqa
     OldCellSuspension,
 )
 import logging
@@ -64,7 +64,7 @@ class OldLibraryPrepProtocol:
         library_prep = LibraryPrepProtocol(
             id=library_prep_id,
             input_nucleic_acid_molecule=self.input_nucleic_acid_molecule_ontology,
-            library_construction_method_ontology=self.library_construction_method_ontology,
+            library_construction_method_ontology=self.library_construction_method_ontology,  # noqa
             nucleic_acid_source=self.nucleic_acid_source,
             end_bias=self.end_bias,
             biosample_prep=biosample_prep,

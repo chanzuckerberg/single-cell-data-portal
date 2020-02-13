@@ -1,4 +1,4 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_contributor import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_contributor import (  # noqa
     OldContributor,
 )
 import logging

@@ -1,4 +1,4 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (  # noqa
     OldSpecimenFromOrganism,
 )
 
@@ -51,7 +51,7 @@ class OldCellSuspension:
             id=biosample_prep_id,
             category="primary_specimen",
             organ_ontology=self.specimen_from_organism.organ,
-            developmental_stage=self.specimen_from_organism.donor_organism.developmental_stage,
-            disease_ontology=self.specimen_from_organism.donor_organism.disease_onotology_label,
+            developmental_stage=self.specimen_from_organism.donor_organism.developmental_stage,  # noqa
+            disease_ontology=self.specimen_from_organism.donor_organism.disease_onotology_label,  # noqa
         )
         return biosample_prep

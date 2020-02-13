@@ -1,4 +1,4 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (  # noqa
     OldDonorOrganism,
 )
 

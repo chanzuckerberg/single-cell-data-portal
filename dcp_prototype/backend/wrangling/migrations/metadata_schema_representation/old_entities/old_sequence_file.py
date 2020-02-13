@@ -1,4 +1,4 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (  # noqa
     OldSequencingProtocol,
 )
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (

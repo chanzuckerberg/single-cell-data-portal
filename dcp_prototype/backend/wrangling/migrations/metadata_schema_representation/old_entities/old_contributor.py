@@ -27,7 +27,7 @@ class OldContributor:
             True
             if corresponding_contributor
             and (
-                corresponding_contributor.uppe() == "YES"
+                corresponding_contributor.upper() is "YES"
                 or corresponding_contributor.upper() is "TRUE"
             )
             else False

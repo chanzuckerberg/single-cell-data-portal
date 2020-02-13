@@ -1,25 +1,25 @@
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_project import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_project import (  # noqa
     OldProject,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (  # noqa
     OldSequencingProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library_prep_protocol import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_library_prep_protocol import (  # noqa
     OldLibraryPrepProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_cell_suspension import (  # noqa
     OldCellSuspension,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequence_file import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequence_file import (  # noqa
     OldSequenceFile,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_donor_organism import (  # noqa
     OldDonorOrganism,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_specimen_from_organism import (  # noqa
     OldSpecimenFromOrganism,
 )
-from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_analysis_file import (
+from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_analysis_file import (  # noqa
     OldAnalysisFile,
 )
 
@@ -389,10 +389,12 @@ class OldDatasetMetadata:
                     f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
                 ):
                     protocol_type = row.get(
-                        f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
+                        f"{link_index_prefix}protocols.{str(protocol_index)}."
+                        f"protocol_type"
                     )
                     protocol_id = row.get(
-                        f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_id"
+                        f"{link_index_prefix}protocols.{str(protocol_index)}."
+                        f"protocol_id"
                     )
 
                     # Link together sequence files and sequence protocol and project
@@ -443,7 +445,7 @@ class OldDatasetMetadata:
                 # donor organism and specimen
                 if row.get(
                     f"{link_index_prefix}protocols.0.protocol_type"
-                ) == None or not row.get(
+                ) is None or not row.get(
                     f"{link_index_prefix}protocols.0.protocol_type"
                 ):
                     output_index = 0
@@ -467,7 +469,8 @@ class OldDatasetMetadata:
 
                         output_index += 1
 
-                # If a link has protocols associated with it, then the link is between specimen and cell suspension
+                # If a link has protocols associated with it, then the link is between
+                # specimen and cell suspension
                 else:
                     output_index = 0
                     while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
