@@ -1,8 +1,6 @@
 SHELL=/bin/bash -o pipefail
 tests:=$(wildcard tests/test*.py)
 
-export APP_NAME=$(jq -r .app_name .chalice/config.in.json)
-
 export TF_DATA_DIR=.terraform.$(STAGE)
 export TFSTATE_FILE=$(TF_DATA_DIR)/remote.tfstate
 export TF_CLI_ARGS_output="--state $(TFSTATE_FILE)"

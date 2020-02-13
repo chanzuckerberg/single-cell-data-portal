@@ -42,7 +42,3 @@ IAM role is set from the file `iam/policy-template/{app_name}-lambda.json`. Edit
 if your Lambda needs access to other AWS APIs. You can also edit the Makefile to parameterize this file or generate 
 it from a template as needed. (The setting `autogen_policy` must be set to `false` in `.chalice/config.json` for 
 Chalice to use this file.)
-
-
-##
-- brew install jq moreutils gettext

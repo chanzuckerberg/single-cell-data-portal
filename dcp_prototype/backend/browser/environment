@@ -8,6 +8,8 @@ while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 export APP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
 set -a
+APP_NAME=$(jq -r .app_name .chalice/config.in.json)
+
 AWS_PROFILE=czi-hca-dev
 AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
