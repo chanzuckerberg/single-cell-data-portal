@@ -44,6 +44,5 @@ it from a template as needed. (The setting `autogen_policy` must be set to `fals
 Chalice to use this file.)
 
 
-
 ##
 - brew install jq moreutils gettext

@@ -10,7 +10,9 @@ from furl import furl
 class ChaliceTestHarness:
     def __init__(self):
         project_dir = os.path.join(os.path.dirname(__file__), "..")
-        config = CLIFactory(project_dir=project_dir).create_config_obj(chalice_stage_name="dev")
+        config = CLIFactory(project_dir=project_dir).create_config_obj(
+            chalice_stage_name="dev"
+        )
         self._chalice_app = config.chalice_app
         self._gateway = LocalGateway(self._chalice_app, config)
 
@@ -27,10 +29,10 @@ class ChaliceTestHarness:
             resp_obj.headers = error.headers
             resp_obj.body = error.body
         else:
-            resp_obj.status_code = response['statusCode']
-            resp_obj.headers = response['headers']
-            resp_obj.body = response['body']
-        resp_obj.headers['Content-Length'] = str(len(body))
+            resp_obj.status_code = response["statusCode"]
+            resp_obj.headers = response["headers"]
+            resp_obj.body = response["body"]
+        resp_obj.headers["Content-Length"] = str(len(body))
         return resp_obj
 
 
@@ -39,10 +41,10 @@ class TestChaliceApp(unittest.TestCase):
         self.app = ChaliceTestHarness()
 
     def test_root_route(self):
-        res = self.app.get('/')
+        res = self.app.get("/")
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
