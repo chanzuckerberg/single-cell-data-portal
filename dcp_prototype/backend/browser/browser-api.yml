@@ -5,7 +5,7 @@ info:
   version: "1.0.0"
   title: DCP 2.0 Consumer
 servers:
-# Added by API Auto Mocking Plugin
+  # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
     url: 'https://api.browser.humancellatlas.org/v1'
 tags:
@@ -46,29 +46,29 @@ paths:
         '404':
           description: File Not Found
     /files/{file_uuid}:
-        post:
-          tags:
-            - project
-            - download
-          summary: Request to download a file
-          operationId: getProjectFilesUuid
-          parameters:
-            - name: project_uuid
-              in: path
-              description: The uuid of the project
-              required: true
-              schema:
-                type: string
-            - name: file_uuid
-              in: path
-              description: The uuid of the file
-              required: true
-              schema:
-                type: string
-          responses:
-            '200':
-              description: Return a download URL.
-            '400':
-              description: Bad Request
-            '404':
-              description: File Not Found
+      post:
+        tags:
+          - project
+          - download
+        summary: Request to download a file
+        operationId: getProjectFilesUuid
+        parameters:
+          - name: project_uuid
+            in: path
+            description: The uuid of the project
+            required: true
+            schema:
+              type: string
+          - name: file_uuid
+            in: path
+            description: The uuid of the file
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Return a download URL.
+          '400':
+            description: Bad Request
+          '404':
+            description: File Not Found
