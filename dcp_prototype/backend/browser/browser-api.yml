@@ -50,12 +50,6 @@ paths:
         - download
       summary: Request to download a file
       parameters:
-        - name: project_uuid
-          in: path
-          description: The uuid of the project
-          required: true
-          schema:
-            type: string
         - name: file_uuid
           in: path
           description: The uuid of the file
