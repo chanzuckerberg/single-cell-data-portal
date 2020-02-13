@@ -51,6 +51,11 @@ def get_entity_type(filename):
 
 
 def order_file_list(file_list):
+    """
+    Order files to process to construct metadata schema such that links are processed
+    last. This is done so that all entities exist before linkage and linking will not
+    occur between unknown entities.
+    """
     ordered_file_list = []
 
     for file in file_list:
@@ -73,6 +78,11 @@ def order_file_list(file_list):
 
 
 def generate_metadata_structure_from_s3_uri(s3_uri):
+    """
+    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata
+    exists primarily in JSON files in the given S3 bucket.
+    """
+
     dataset_metadata = OldDatasetMetadata(s3_uri)
 
     BUCKET_NAME = urlparse(s3_uri).netloc
@@ -124,10 +134,8 @@ def generate_metadata_structure_from_s3_uri(s3_uri):
 
 def generate_metadata_structure(input_directory):
     """
-    For a given filename which should be a TSV file containing all of the flattened
-    metadata representing a single project from DCP 1.0, transforms that project's
-    metadata into the DCP 2.0 metadata schema and projects it into an XLSX spreadsheet
-    for manual validation.
+    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists
+    primarily in JSON files in the given input directory.
     """
 
     if "s3" in input_directory:
@@ -172,6 +180,10 @@ def generate_metadata_structure(input_directory):
 
 
 def should_process_file(full_file_path):
+    """
+    Returns whether a file, originally from a bundle, needs to be processed in order to
+    construct the metadata schema representing the project.
+    """
     if "analysis_p" in full_file_path:
         return False
     if "zarr" in full_file_path:
@@ -182,8 +194,30 @@ def should_process_file(full_file_path):
 
 
 def export_old_metadata_to_s3_orm(
-    dataset_metadata: OldDatasetMetadata, input_directory
+    dataset_metadata: OldDatasetMetadata, input_directory, should_upload_to_s3
 ):
+    """
+    Uploads the dataset metadata schema that has been constructed directly to the Ledger
+    database using its ORM classes and if the Sequence/Analysis files are local, uploads
+    them to an S3 bucket.
+    """
+
+    # Upload local files if input directory is not already an S3 bucket.
+    if should_upload_to_s3:
+        export_local_files_to_s3(dataset_metadata, input_directory)
+
+    # Upload to DB
+    print(f"Committing dataset to Ledger DB")
+    session_maker = DBSessionMaker()
+    dataset_metadata.export_to_database(session_maker)
+    print(f"Completed updating Ledger DB with dataset metadata")
+
+
+def export_local_files_to_s3(dataset_metadata: OldDatasetMetadata, input_directory):
+    """
+    Export local files that are directly referenced in the metadata schema to S3.
+    """
+    print(f"Uploading local files related to the project to S3")
 
     # Upload FASTQs into S3 and backpopulate dataset_metadata sequence_files
     for filename in listdir(input_directory):
@@ -194,24 +228,29 @@ def export_old_metadata_to_s3_orm(
             export_file_to_s3(source_location, filename)
             continue
 
-        # Find SequenceFile object with similar filename and update it with the S3 URI
+        # Find a SequenceFile object with similar filename and update it with the S3 URI
         # if it is a FASTQ file
-        for sequence_file_id, sequence_file in dataset_metadata.old_files.items():
+        for sequence_file_id, sequence_file in dataset_metadata.sequence_files.items():
             if sequence_file.filename == filename:
                 s3_uri = export_file_to_s3(source_location, filename)
-                sequence_file.set_s3_uri(s3_uri)
-                dataset_metadata.old_files[sequence_file_id] = sequence_file
+                sequence_file.s3_uri = s3_uri
+                dataset_metadata.sequence_files[sequence_file_id] = sequence_file
                 continue
-    print(f"Completed uploading all files to S3")
 
-    # Upload to DB
-    print(f"Commit dataset to DB")
-    session_maker = DBSessionMaker()
-    dataset_metadata.export_to_database(session_maker)
+        # Find an AnalysisFile object with similar filename and update it with the S3
+        # URI if it is not a FASTQ or a JSON file (likely a Zarr or BAM file).
+        for analysis_file_id, analysis_file in dataset_metadata.analysis_files.items():
+            if analysis_file.filename == filename:
+                s3_uri = export_file_to_s3(source_location, filename)
+                sequence_file.s3_uri = s3_uri
+                dataset_metadata.analysis_files[analysis_file_id] = analysis_file
+                continue
+
+    print(f"Completed uploading all files to S3")
 
 
 def export_file_to_s3(full_source_file_path, filename):
-    s3_uri = f"s3://{BUCKET_NAME}/{filename}"
+    s3_uri = f"s3://{BUCKET_NAME}/{PREFIX}/{filename}"
 
     try:
         S3_CLIENT.head_object(Bucket=BUCKET_NAME, Key=PREFIX + filename)
@@ -241,6 +280,22 @@ if __name__ == "__main__":
         "project to be transformed into a valid DCP 2.0 metadata and inputted into"
         " the DCP 2.0 ledger.",
     )
+    parser.add_argument(
+        "-b",
+        "--bucket",
+        nargs="+",
+        required=False,
+        help="The bucket into which files should be transfered if transferring local "
+        "files as part of the project's metadata migration.",
+    )
+    parser.add_argument(
+        "-p",
+        "--prefix",
+        nargs="+",
+        required=False,
+        help="The bucket's prefix into which files should be transfered if transferring"
+        " local files as part of the project's metadata migration.",
+    )
 
     arguments = parser.parse_args()
 
@@ -252,5 +307,21 @@ if __name__ == "__main__":
                 print(f"ERROR: Input directory, if an S3 bucket, must end in a slash!")
                 sys.exit()
 
+            # Ensure a new bucket and prefix are not given because the metadata will
+            # already be entirely read from the S3 bucket. No files will be uploaded to
+            # S3.
+            if arguments.bucket or arguments.prefix:
+                print(
+                    f"ERROR: Cannot entire a bucket or prefix will designating that the"
+                    f" metadata schema will be read from an S3 bucket."
+                )
+
+    if arguments.bucket:
+        BUCKET_NAME = arguments.bucket[0]
+    if arguments.prefix:
+        PREFIX = arguments.prefix[0]
+
     old_metadata = generate_metadata_structure(input_directory)
-    export_old_metadata_to_s3_orm(old_metadata, input_directory)
+    export_old_metadata_to_s3_orm(
+        old_metadata, input_directory, "s3" not in input_directory
+    )

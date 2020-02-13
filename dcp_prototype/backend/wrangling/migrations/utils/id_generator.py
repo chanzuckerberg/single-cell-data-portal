@@ -11,5 +11,10 @@ def hca_accession_generator(entity):
 
     return ID_GENERATOR_PREFIX + "-" + entity + "-" + str(uuid4())
 
+
 def hca_accession_transformer(entity, uuid):
+    """
+    Generates an accession number retaining a given uuid using the standard pattern for
+    all HCA accessions.
+    """
     return ID_GENERATOR_PREFIX + "-" + entity + "-" + str(uuid)

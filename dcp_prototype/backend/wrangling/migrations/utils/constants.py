@@ -4,6 +4,7 @@ from dcp_prototype.backend.ledger.code.common.ledger_orm import AlignmentProtoco
 # in the DCP.
 ID_GENERATOR_PREFIX = "HCA"
 
+# Alignment protocol for SmartSeq2 data used to migration DCP 1.0 data to DCP 2.0.
 SS2_ALIGNMENT_PROTOCOL = AlignmentProtocol(
     software="HCA Smart-Seq2 Workflow",
     algorithm="HISAT2",
@@ -59,6 +60,7 @@ SS2_ALIGNMENT_PROTOCOL = AlignmentProtocol(
     ],
 )
 
+# Alignment protocol for 10x data used to migration DCP 1.0 data to DCP 2.0.
 X10_ALIGNMENT_PROTOCOL = AlignmentProtocol(
     software="HCA Optimus Workflow",
     algorithm="STAR",
