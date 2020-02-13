@@ -75,7 +75,7 @@ def squish_files(
         COUNT_BY_FILE_TYPE = json.load(json_file)
 
     if "s3" in target_directory:
-        s3_session = boto3.session("s3")
+        s3_session = boto3.client("s3")
         bucket = urlparse(target_directory).netloc
         key = urlparse(target_directory).path[1:]
         print(f"Copying files to S3 bucket and key: {bucket}/{key}")
@@ -163,7 +163,7 @@ def _copy_files_to_s3(
 
                 print(f"Uploading file to S3: {filename}")
                 try:
-                    session.upload_file(source_file_path, bucket, key)
+                    session.upload_file(source_file_path, bucket, key + filename)
                 except ClientError as e:
                     print(e)
             else:
