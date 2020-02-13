@@ -27,7 +27,7 @@ ENTITY_TYPES = [
     "sequence_file",
     "links",
     "sequencing_protocol",
-    "analysis_file"
+    "analysis_file",
 ]
 
 S3_CLIENT = boto3.client("s3")
@@ -73,7 +73,7 @@ def order_file_list(file_list):
 
 
 def generate_metadata_structure_from_s3_uri(s3_uri):
-    dataset_metadata = OldDatasetMetadata()
+    dataset_metadata = OldDatasetMetadata(s3_uri)
 
     BUCKET_NAME = urlparse(s3_uri).netloc
     PREFIX = urlparse(s3_uri).path
@@ -209,6 +209,7 @@ def export_old_metadata_to_s3_orm(
     session_maker = DBSessionMaker()
     dataset_metadata.export_to_database(session_maker)
 
+
 def export_file_to_s3(full_source_file_path, filename):
     s3_uri = f"s3://{BUCKET_NAME}/{filename}"
 
@@ -245,6 +246,11 @@ if __name__ == "__main__":
 
     if arguments.input_directory:
         input_directory = arguments.input_directory[0]
+        if "s3" in input_directory:
+            # Ensure that input directory ends in a slash
+            if not input_directory[-1] == "/":
+                print(f"ERROR: Input directory, if an S3 bucket, must end in a slash!")
+                sys.exit()
 
     old_metadata = generate_metadata_structure(input_directory)
     export_old_metadata_to_s3_orm(old_metadata, input_directory)

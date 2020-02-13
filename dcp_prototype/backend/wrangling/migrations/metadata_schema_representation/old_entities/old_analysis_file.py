@@ -18,7 +18,7 @@ class OldAnalysisFile:
         self.file_format = row.get("file_core.format")
 
     def set_s3_uri(self, uri):
-        self.s3_uri = uri
+        self.s3_uri = uri + self.filename
 
     def to_dictionary(self):
         return deepcopy(self.__dict__)

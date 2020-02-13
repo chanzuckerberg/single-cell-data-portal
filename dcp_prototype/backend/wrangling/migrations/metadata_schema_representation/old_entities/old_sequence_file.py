@@ -32,7 +32,7 @@ class OldSequenceFile:
         self.read_index = row.get("read_index")
 
     def set_s3_uri(self, uri):
-        self.s3_uri = uri
+        self.s3_uri = uri + self.filename
 
     def set_sequencing_protocol(self, sequencing_protocol: OldSequencingProtocol):
         if (

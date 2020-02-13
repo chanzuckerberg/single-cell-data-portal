@@ -45,8 +45,9 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
 
 
 class OldDatasetMetadata:
-    def __init__(self, sequencing_technology="ss2"):
+    def __init__(self, sequencing_technology="ss2", s3_uri=None):
         self.sequencing_technology = sequencing_technology
+        self.s3_uri = s3_uri
 
         self.donor_organisms = {}
         self.specimens = {}
@@ -334,12 +335,14 @@ class OldDatasetMetadata:
         if entity_type == "sequence_file":
             sequence_file = OldSequenceFile()
             sequence_file.populate_from_dcp_one_json_data_frame(row)
+            sequence_file.set_s3_uri(self.s3_uri)
             if sequence_file.corresponding_old_id not in self.sequence_files.keys():
                 self.sequence_files[sequence_file.corresponding_old_id] = sequence_file
 
         if entity_type == "analysis_file":
             analysis_file = OldAnalysisFile()
             analysis_file.populate_from_dcp_one_json_data_frame(row)
+            analysis_file.set_s3_uri(self.s3_uri)
             if analysis_file.corresponding_old_id not in self.analysis_files.keys():
                 self.analysis_files[analysis_file.corresponding_old_id] = analysis_file
 
