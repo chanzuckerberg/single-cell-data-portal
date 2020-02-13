@@ -19,7 +19,6 @@ paths:
       tags:
         - project
       summary: Retrieve filterable information on all projects
-      operationId: getProjects
       responses:
         '200':
           description: OK
@@ -30,7 +29,6 @@ paths:
       summary: |
         Retrieve detailed information about a project. This includes a list of
         downloadable files.
-      operationId: getProjectsUuid
       parameters:
         - name: project_uuid
           in: path
@@ -51,7 +49,6 @@ paths:
         - project
         - download
       summary: Request to download a file
-      operationId: getProjectFilesUuid
       parameters:
         - name: project_uuid
           in: path
