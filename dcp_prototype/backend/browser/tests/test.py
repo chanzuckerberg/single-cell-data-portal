@@ -4,7 +4,6 @@ import os, sys, json, unittest, functools
 import requests
 from chalice.cli import CLIFactory
 from chalice.local import LocalGateway, LocalGatewayException
-from furl import furl
 
 
 class ChaliceTestHarness:

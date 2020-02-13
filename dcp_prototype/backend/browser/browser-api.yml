@@ -7,14 +7,14 @@ info:
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: 'https://api.browser.humancellatlas.org/v1'
+    url: 'https://api.browser.humancellatlas.org/'
 tags:
   - name: project
     description: API used to access project information
   - name: download
     description: API used to download data
 paths:
-  /projects:
+  /projects/:
     get:
       tags:
         - project

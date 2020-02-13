@@ -1,0 +1,10 @@
+# The following packages are pinned to match the versions provided in the Lambda runtime.
+# Their contents are deleted from the Lambda package by `make prune`.
+# See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+boto3==1.9.42
+botocore==1.12.42
+awscli==1.16.52
+PyYAML==5.1.1
+
+# Werkzeug pinned to the 0.15 series due to a hanging bug encountered in v0.16
+Werkzeug >= 0.15.6, < 0.16
