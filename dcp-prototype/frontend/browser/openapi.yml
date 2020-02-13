@@ -3,7 +3,7 @@ info:
   description: |
     DCP 2.0 Consumer backend API
   version: "1.0.0"
-  title: DCP 2.0 Consumer 
+  title: DCP 2.0 Consumer
 servers:
 # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
@@ -23,16 +23,16 @@ paths:
       responses:
         '200':
           description: OK
-  /projects/{projectUUID}:
+  /projects/{project_uuid}:
     get:
       tags:
         - project
       summary: |
-        Retrieve detailed information about a project. This includes a list of 
+        Retrieve detailed information about a project. This includes a list of
         downloadable files.
       operationId: getProjectsUuid
-      parameters: 
-        - name: projectUUID
+      parameters:
+        - name: project_uuid
           in: path
           description: The uuid of the project
           required: true
@@ -45,7 +45,7 @@ paths:
           description: Bad Request
         '404':
           description: File Not Found
-  /projects/{projectUUID}/files/{fileUUID}:
+  /projects/{project_uuid}/files/{file_uuid}:
     post:
       tags:
         - project
@@ -53,13 +53,13 @@ paths:
       summary: Request to download a file
       operationId: getProjectFilesUuid
       parameters:
-        - name: projectUUID
+        - name: project_uuid
           in: path
           description: The uuid of the project
           required: true
           schema:
             type: string
-        - name: fileUUID
+        - name: file_uuid
           in: path
           description: The uuid of the file
           required: true
@@ -67,40 +67,8 @@ paths:
             type: string
       responses:
         '200':
-          description: Return a download URL. 
+          description: Return a download URL.
         '400':
           description: Bad Request
-        '404':
-          description: File Not Found
-  /files:
-    post:
-      tags:
-        - download
-      summary: |
-        Given a manifest of files, generate a presigned url to zip and download those files. 
-      description: Given a manifest of files, generate a presigned url to zip and download those files. If projectUUID is specified and no files then the whole project will be packaged. If projectUUID is specified with files, only the selected files will be package. The files will be package into a zip and organized by projectUUID.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  projectUUID:
-                    description: A projectUUID containing files to download.
-                    type: string
-                  files:
-                    description: A list of fileUUIDs associated with a project.
-                    type: array
-                    items: 
-                      type: string
-                required: 
-                  - projectUUID
-      responses:
-        '200':
-          description: Return a download URL. 
-        '400':
-          description: Bad Request      
         '404':
           description: File Not Found
