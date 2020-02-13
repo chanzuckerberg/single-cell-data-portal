@@ -2,7 +2,10 @@ from shutil import copyfile, rmtree
 import os
 import json
 import hashlib
+from urllib.parse import urlparse
 from argparse import ArgumentParser
+import boto3
+from botocore.exceptions import ClientError
 
 COUNT_BY_FILE_TYPE = {
     "analysis_file": 0,
@@ -71,31 +74,103 @@ def squish_files(
     with open(count_file) as json_file:
         COUNT_BY_FILE_TYPE = json.load(json_file)
 
-    if not os.path.isdir(target_directory):
-        os.mkdir(target_directory)
-    elif os.path.isdir(target_directory) and clear_if_exists:
-        rmtree(target_directory)
-    elif os.path.isdir(target_directory) and not clear_if_exists:
-        for file in os.listdir(target_directory):
-            with open(os.path.join(target_directory, file), "rb") as file_reader:
+    if "s3" in target_directory:
+        s3_session = boto3.session("s3")
+        bucket = urlparse(target_directory).netloc
+        key = urlparse(target_directory).path[1:]
+        print(f"Copying files to S3 bucket and key: {bucket}/{key}")
+        _copy_files_to_s3(
+            source_directory,
+            target_directory,
+            COUNT_BY_FILE_TYPE,
+            checksums,
+            s3_session,
+            bucket,
+            key,
+        )
+
+    else:
+        if not os.path.isdir(target_directory):
+            os.mkdir(target_directory)
+        elif os.path.isdir(target_directory) and clear_if_exists:
+            rmtree(target_directory)
+        elif os.path.isdir(target_directory) and not clear_if_exists:
+            for file in os.listdir(target_directory):
+                with open(os.path.join(target_directory, file), "rb") as file_reader:
+                    contents = file_reader.read()
+                checksums.append(hashlib.md5(contents).hexdigest())
+
+        # Prepopulate checksums with existing file checksums in target directory.
+        for filename in os.listdir(target_directory):
+            target_file_path = os.path.join(target_directory, filename)
+            with open(target_file_path, "rb") as file_reader:
                 contents = file_reader.read()
             checksums.append(hashlib.md5(contents).hexdigest())
 
-    # Prepopulate checksums with existing file checksums in target directory.
-    for filename in os.listdir(target_directory):
-        target_file_path = os.path.join(target_directory, filename)
-        with open(target_file_path, "rb") as file_reader:
-            contents = file_reader.read()
-        checksums.append(hashlib.md5(contents).hexdigest())
-
-    print(f"Processing directory {source_directory}")
-    _copy_files(source_directory, target_directory, COUNT_BY_FILE_TYPE, checksums)
+        print(f"Processing directory {source_directory}")
+        _copy_files(source_directory, target_directory, COUNT_BY_FILE_TYPE, checksums)
 
     # Store updated count files
     if count_file:
         json_file_pointer = open(count_file, "w")
         json_file_pointer.write(json.dumps(COUNT_BY_FILE_TYPE))
         json_file_pointer.close()
+
+
+def _copy_files_to_s3(
+    source_directory,
+    target_directory,
+    count_by_file_type,
+    checksums,
+    session,
+    bucket,
+    key,
+):
+    for filename in os.listdir(source_directory):
+        # Skip hidden files
+        if filename.startswith("."):
+            continue
+
+        source_file_path = os.path.join(source_directory, filename)
+        if os.path.isdir(source_file_path):
+            print(f"Processing directory {source_file_path}")
+            _copy_files_to_s3(
+                source_file_path,
+                target_directory,
+                count_by_file_type,
+                checksums,
+                session,
+                bucket,
+                key,
+            )
+        elif os.path.isfile(source_file_path):
+            with open(source_file_path, "rb") as file_reader:
+                contents = file_reader.read()
+            file_checksum = hashlib.md5(contents).hexdigest()
+
+            print(f"Processing file: {source_file_path} with checksum {file_checksum}")
+
+            if file_checksum not in checksums:
+                checksums.append(file_checksum)
+
+                if ".json" in filename:
+                    for file_type in COUNT_BY_FILE_TYPE.keys():
+                        if file_type in filename:
+                            filename = (
+                                f"{file_type}_{str(COUNT_BY_FILE_TYPE[file_type])}.json"
+                            )
+                            COUNT_BY_FILE_TYPE[file_type] += 1
+
+                print(f"Uploading file to S3: {filename}")
+                try:
+                    session.upload_file(source_file_path, bucket, key)
+                except ClientError as e:
+                    print(e)
+            else:
+                print(
+                    f"Skipping over file {filename} because it has already been copied "
+                    f"over."
+                )
 
 
 def _copy_files(source_directory, target_directory, count_by_file_type, checksums):
