@@ -190,7 +190,7 @@ def export_old_metadata_to_s3_orm(
         source_location = os.path.join(input_directory, filename)
 
         # Just upload the file if this is not a FASTQ file
-        if ".fastq" not in filename:
+        if ".json" in filename:
             export_file_to_s3(source_location, filename)
             continue
 
