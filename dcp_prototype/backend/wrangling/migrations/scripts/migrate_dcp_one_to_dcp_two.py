@@ -137,7 +137,7 @@ def generate_metadata_structure(input_directory):
     if "s3" in input_directory:
         return generate_metadata_structure_from_s3_uri(input_directory)
 
-    dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
+    dataset_metadata = OldDatasetMetadata(s3_uri=f"s3://{BUCKET_NAME}/{PREFIX}")
 
     ordered_files = order_file_list(listdir(input_directory))
     print(f"Files in directory to parse: {ordered_files}")
