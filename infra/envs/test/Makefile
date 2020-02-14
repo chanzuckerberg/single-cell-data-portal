@@ -7,7 +7,8 @@ default: plan
 
 init:
 	terraform init \
-    -backend-config="bucket=org-dcp-infra-${ACCOUNT_ID}"
+    -backend-config="bucket=org-dcp-infra-${ACCOUNT_ID}" \
+    -backend-config="key=terraform/envs/$(DEPLOYMENT_STAGE)/state.tfstate"
 
 plan: retrieve-vars
 	terraform plan -detailed-exitcode
