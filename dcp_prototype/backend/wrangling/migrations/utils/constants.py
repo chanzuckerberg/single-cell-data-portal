@@ -1,4 +1,7 @@
-from dcp_prototype.backend.ledger.code.common.ledger_orm import AlignmentProtocol
+from dcp_prototype.backend.ledger.code.common.ledger_orm import (
+    AlignmentProtocol,
+    QuantificationProtocol,
+)
 
 # Prefix that will be used for every single ID that is generated for every single entity
 # in the DCP.
@@ -114,4 +117,10 @@ X10_ALIGNMENT_PROTOCOL = AlignmentProtocol(
         "unprocessed_pseudogene",
         "vaultRNA",
     ],
+)
+
+SS2_QUANTIFICATION_PROTOCOL = QuantificationProtocol(quantification_software="RSEM")
+
+X10_QUANTIFICATION_PROTOCOL = QuantificationProtocol(
+    quantification_software="HCA Single Cell Tools"
 )
