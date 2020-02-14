@@ -9,18 +9,6 @@
         "logs:PutLogEvents"
       ],
       "Resource": "arn:aws:logs:*:*:*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:List*",
-        "s3:Get*",
-        "s3:PutObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::$SERVICE_S3_BUCKET",
-        "arn:aws:s3:::$SERVICE_S3_BUCKET/*"
-      ]
     }
   ]
 }
