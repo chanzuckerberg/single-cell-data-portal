@@ -8,7 +8,7 @@ terraform {
   required_version = "=0.12.20"
 
   backend "s3" {
-    key     = "terraform/envs/test/state.tfstate"
+    key     = "terraform/envs/${var.deployment_stage}/state.tfstate"
     encrypt = true
     region  = "us-east-1"
     profile = "czi-hca-dev"
