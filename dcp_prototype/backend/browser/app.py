@@ -28,6 +28,6 @@ def get_project(project_uuid):
     return 200
 
 
-@app.route("/projects/{project_uuid}/files/{file_uuid}", methods=['POST'])
+@app.route("/files/{file_uuid}", methods=['POST'])
 def post_file(file_uuid):
     return 200
