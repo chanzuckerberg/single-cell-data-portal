@@ -210,7 +210,11 @@ class OldDatasetMetadata:
             session.add(join_object)
 
         # LibrarySequenceFileSequencingProtocolProcessJoin table population
+        skipped_count = 0
         for link in self.project_sequencing_protocol_sequence_file_links:
+            if link[0] is None or link[1] is None or link[2] is None:
+                skipped_count += 1
+                continue
             library = libraries.get(link[0].corresponding_old_id)
             sequencing_protocol = sequencing_protocols.get(link[1].corresponding_old_id)
             sequence_file = sequence_files.get(link[2].corresponding_old_id)
@@ -225,6 +229,8 @@ class OldDatasetMetadata:
             )
             session.add(join_object)
 
+        print(f"Had to skip {skipped_count} objects.")
+        print(f"Beginning commit to database")
         session.commit()
 
     def _transform_metadata_entities_to_data_frame(self, metadata_entities_list):
