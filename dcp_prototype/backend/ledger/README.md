@@ -1,4 +1,6 @@
-Requirements
+This readme is very incomplete. More to come as we get past M1/M2.
+
+## Env Requirements
 ```
 export DEPLOYMENT_STAGE={environment_in_use}
 export AWS_PROFILE={aws_profile_in_user}
