@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import ProjectsList from "../components/projectsList"
+import { Heading } from "theme-ui"
 
 /*
   Mock API
@@ -24,7 +25,9 @@ const IndexPage = () => {
   return (
     <Layout>
       <SEO title="Home" />
-      <h1>Explore Data</h1>
+      <Heading as="h1" sx={{ mb: 4 }}>
+        Explore Data
+      </Heading>
       {!projects ? "Loading projects..." : <ProjectsList projects={projects} />}
     </Layout>
   )
