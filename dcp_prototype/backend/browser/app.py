@@ -22,14 +22,14 @@ def index():
 
 @app.route("/projects", methods=["GET"])
 def projects():
-    return 200
+    return {"projects": []}
 
 
 @app.route("/projects/{project_uuid}", methods=["GET"])
 def get_project(project_uuid):
-    return 200
+    return {"project_uuid": {}}
 
 
 @app.route("/files/{file_uuid}", methods=["POST"])
 def post_file(file_uuid):
-    return 200
+    return {"hello": "world"}

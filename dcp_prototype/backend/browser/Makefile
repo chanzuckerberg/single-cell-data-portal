@@ -3,7 +3,7 @@ tests:=$(wildcard tests/test*.py)
 
 export TF_DATA_DIR=.terraform.$(STAGE)
 export TFSTATE_FILE=$(TF_DATA_DIR)/remote.tfstate
-export TF_CLI_ARGS_output="--state $(TFSTATE_FILE)"
+export TF_CLI_ARGS_output="--state=$(TFSTATE_FILE)"
 export TF_CLI_ARGS_init="--backend-config=$(APP_HOME)/$(TF_DATA_DIR)/aws_config.json"
 export TF_S3_BUCKET=org-dcp-infra-$(AWS_ACCOUNT_ID)
 
@@ -17,17 +17,16 @@ ifndef STAGE
 $(error Please run "source environment" in the repo root directory before running make commands)
 endif
 
-deploy: init package
-	export LAMBDA_SHA=$(shell sha256sum dist/deployment.zip | cut -f 1 -d ' ' | base64)
-	aws s3 cp dist/deployment.zip s3://$(TF_S3_BUCKET)/$(LAMBDA_SHA).zip
-	jq -f scripts/preprocess_chalice_tf_config.jq dist/chalice.tf.json > terraform/chalice.tf.json
+deploy: init package chalice_terraform
 	terraform apply
 
-plan: init package
+plan: init package chalice_terraform
+	terraform plan
+
+chalice_terraform:
 	$(eval export LAMBDA_SHA=$(shell sha256sum dist/deployment.zip | cut -f 1 -d ' ' | base64))
 	aws s3 cp dist/deployment.zip s3://$(TF_S3_BUCKET)/$(LAMBDA_SHA).zip
 	jq -f scripts/preprocess_chalice_tf_config.jq dist/chalice.tf.json > terraform/chalice.tf.json
-	terraform plan
 
 # init prepares the repo for Terraform commands. It assembles the partial S3 backend config as a JSON file, `aws_config.json`.
 # This file is referenced by the TF_CLI_ARGS_init environment variable, which is set by running `source environment`.

@@ -16,4 +16,8 @@ AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
 
 STAGE="${DEPLOYMENT_STAGE:-${STAGE:-dev}}"
 
+EXPORT_ENV_VARS_TO_TF="APP_NAME STAGE"
+EXPORT_ENV_VARS_TO_LAMBDA=$EXPORT_ENV_VARS_TO_TF
 set +a
+
+for v in $EXPORT_ENV_VARS_TO_TF; do echo "variable $v { default = \"${!v}\" }"; done > terraform/variables.tf
