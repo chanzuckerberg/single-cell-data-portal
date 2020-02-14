@@ -4,10 +4,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_transformer,
 )
-from dcp_prototype.backend.ledger.code.common.ledger_orm import (
-    SequenceFile,
-    SequencingProtocol,
-)
+from dcp_prototype.backend.ledger.code.common.ledger_orm import SequenceFile
 import logging
 from copy import deepcopy
 

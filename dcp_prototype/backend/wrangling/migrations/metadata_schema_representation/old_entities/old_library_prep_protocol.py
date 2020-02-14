@@ -6,10 +6,7 @@ import logging
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_transformer,
 )
-from dcp_prototype.backend.ledger.code.common.ledger_orm import (
-    LibraryPrepProtocol,
-    BiosamplePrep,
-)
+from dcp_prototype.backend.ledger.code.common.ledger_orm import LibraryPrepProtocol
 from copy import deepcopy
 
 
