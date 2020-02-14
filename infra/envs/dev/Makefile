@@ -6,6 +6,7 @@ S3_TFVARS_FILE=s3://$(TF_STATE_BUCKET)/terraform/envs/$(DEPLOYMENT_STAGE)/terraf
 default: plan
 
 init:
+	envsubst < main.tf.in > main.tf
 	terraform init \
     -backend-config="bucket=org-dcp-infra-${ACCOUNT_ID}"
 
