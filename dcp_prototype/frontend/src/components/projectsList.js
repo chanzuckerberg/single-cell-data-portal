@@ -1,47 +1,90 @@
 import { Link } from "gatsby"
 import React from "react"
+import { Flex, Box } from "theme-ui"
+import ProjectsListHeading from "./projectsListHeading"
 
 const ProjectsList = ({ projects }) => {
   return (
-    <div>
+    <>
+      <ProjectsListHeading />
       {projects.map(project => {
         return (
-          <div key={project.id}>
-            <h3> {project.short_name} </h3>
-            <Link to={`/project?id=${project.id}`}>{project.title}</Link>
-            <p> {project.total_cells} cells </p>
-            <p>
-              Organs:
-              {project.organs.map(organ => (
-                <span key={organ}>{organ}</span>
-              ))}
-            </p>
-            <p>
-              Assays:
-              {project.organs.map(assay => (
-                <span key={assay}>{assay}</span>
-              ))}
-            </p>
-            <p>
-              Species:
-              {project.organs.map(species => (
-                <span key={species}>{species}</span>
-              ))}
-            </p>
-          </div>
+          <Flex
+            sx={{
+              fontSize: [1],
+              mb: [4],
+            }}
+            key={project.id}
+          >
+            <Box
+              sx={{
+                fontSize: [1],
+                boxSizing: "border-box",
+                flexGrow: 0,
+                flexShrink: 0,
+                width: "20%", // Default to full width
+                // padding: [0],
+                overflow: "hidden", // Or flex might break
+                listStyle: "none",
+              }}
+            >
+              <Flex sx={{ flexDirection: "column" }}>
+                {project.assays.map(assay => (
+                  <Box key={assay}>{assay}</Box>
+                ))}
+              </Flex>
+            </Box>
+            <Box
+              sx={{
+                fontSize: [1],
+                boxSizing: "border-box",
+                flexGrow: 0,
+                flexShrink: 0,
+                width: "20%", // Default to full width
+                // padding: [0],
+                overflow: "hidden", // Or flex might break
+                listStyle: "none",
+              }}
+            >
+              <Flex sx={{ flexDirection: "column" }}>
+                {project.species.map(species => (
+                  <Box key={species}>{species}</Box>
+                ))}
+              </Flex>
+            </Box>
+            <Box
+              sx={{
+                fontSize: [1],
+                boxSizing: "border-box",
+                flexGrow: 0,
+                flexShrink: 0,
+                width: "20%", // Default to full width
+                // padding: [0],
+                overflow: "hidden", // Or flex might break
+                listStyle: "none",
+              }}
+            >
+              {project.total_cells} cells
+            </Box>
+            <Box
+              sx={{
+                fontSize: [1],
+                boxSizing: "border-box",
+                flexGrow: 0,
+                flexShrink: 0,
+                width: "40%", // Default to full width
+                // padding: [0],
+                overflow: "hidden", // Or flex might break
+                listStyle: "none",
+              }}
+            >
+              <Link to={`/project?id=${project.id}`}>{project.title}</Link>
+            </Box>
+          </Flex>
         )
       })}
-    </div>
+    </>
   )
 }
 
 export default ProjectsList
-
-// short_name: "MouseGastrulationAtlas"
-// title: "A single-cell molecular map of mouse gastrulation and early organogenesis"
-// total_file_size: 339089
-// id: "19"
-// assays: ["10X 3' v1 sequencing"]
-// total_cells: 339089
-// organs: ["embryo"]
-// species: ["Mus musculus"]

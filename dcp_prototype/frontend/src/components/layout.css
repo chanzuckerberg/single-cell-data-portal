@@ -1,8 +1,26 @@
-html {
-  font-family: sans-serif;
+html,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+div {
+  font-family: "Ropa Sans", sans-serif;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
+
+div[role="group"][tabindex] {
+  background-color: white;
+}
+
+html {
+  background-color: white;
+}
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;

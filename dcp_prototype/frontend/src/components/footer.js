@@ -1,14 +1,14 @@
 import { Link } from "gatsby"
 import React from "react"
-import Logo from "./logo1"
+import Logo from "./logo2"
 import { Flex, Box } from "theme-ui"
 
 const Header = ({ siteTitle }) => {
   return (
     <Box
       sx={{
-        background: `#f5f5f5`,
-        marginBottom: [4],
+        background: `black`,
+        mt: [4],
       }}
     >
       <Flex
@@ -22,23 +22,17 @@ const Header = ({ siteTitle }) => {
         }}
       >
         <Box sx={{ width: 200 }}>
-          <Link
-            to="/"
-            style={{
-              color: `black`,
-              textDecoration: `none`,
-            }}
-          >
+          <Link to="/">
             <Logo />
           </Link>
         </Box>
-        <Box>Explore</Box>
-        <Box>Guides</Box>
-        <Box>Metadata</Box>
-        <Box>Pipelines</Box>
-        <Box>Analysis Tools</Box>
-        <Box>Contribute</Box>
-        <Box>APIs</Box>
+        <Box sx={{ color: "white" }}>Explore</Box>
+        <Box sx={{ color: "white" }}>Guides</Box>
+        <Box sx={{ color: "white" }}>Metadata</Box>
+        <Box sx={{ color: "white" }}>Pipelines</Box>
+        <Box sx={{ color: "white" }}>Analysis Tools</Box>
+        <Box sx={{ color: "white" }}>Contribute</Box>
+        <Box sx={{ color: "white" }}>APIs</Box>
       </Flex>
     </Box>
   )

@@ -21,11 +21,10 @@ const IndexPage = () => {
         setProjects(resultData)
       })
   }, [])
-  console.log(projects)
   return (
     <Layout>
       <SEO title="Home" />
-      <h1>Projects </h1>
+      <h1>Explore Data</h1>
       {!projects ? "Loading projects..." : <ProjectsList projects={projects} />}
     </Layout>
   )
