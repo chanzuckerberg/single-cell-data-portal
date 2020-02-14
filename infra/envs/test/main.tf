@@ -31,3 +31,15 @@ module "ledger" {
   db_instance_count = "${var.db_instance_count}"
   preferred_maintenance_window = "${var.preferred_maintenance_window}"
 }
+
+module "browser" {
+  source = "../../modules/backend/browser"
+
+  deployment_stage = "${var.deployment_stage}"
+
+  // Database
+  db_username = "${var.browser_db_username}"
+  db_password = "${var.browser_db_password}"
+  db_instance_count = "${var.browser_db_instance_count}"
+  preferred_maintenance_window = "${var.browser_preferred_maintenance_window}"
+}
