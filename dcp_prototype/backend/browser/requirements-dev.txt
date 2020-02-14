@@ -1,0 +1,6 @@
+chalice
+aws-sam-translator
+furl
+requests
+-r requirements.txt
+-r ../../../requirements-dev.txt
