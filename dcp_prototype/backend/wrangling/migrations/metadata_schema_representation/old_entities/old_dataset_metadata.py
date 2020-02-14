@@ -364,15 +364,15 @@ class OldDatasetMetadata:
             # Link together Sequence Files and Analysis Files
             if row.get(f"{link_index_prefix}input_type") == "file":
                 input_index = 0
-                while row.get(f"{link_index_prefix}inputs{str(input_index)}"):
+                while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
                     seq_file_id = row.get(
-                        f"{link_index_prefix}inputs{str(input_index)}"
+                        f"{link_index_prefix}inputs.{str(input_index)}"
                     )
 
                     output_index = 0
-                    while row.get(f"{link_index_prefix}inputs{str(output_index)}"):
+                    while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
                         anal_file_id = row.get(
-                            f"{link_index_prefix}inputs{str(output_index)}"
+                            f"{link_index_prefix}outputs.{str(output_index)}"
                         )
 
                         self.sequence_file_analysis_file_links.append(
