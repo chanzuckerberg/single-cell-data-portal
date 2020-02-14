@@ -178,7 +178,11 @@ class OldDatasetMetadata:
             session.add(project_contributor)
 
         # SequenceFileAlignmentProtocolAnalysisFileProcessJoin table population
+        skipped_count = 0
         for link in self.sequence_file_analysis_file_links:
+            if link[0] is None or link[1] is None:
+                skipped_count += 1
+                continue
             sequence_file = sequence_files.get(link[0].corresponding_old_id)
             analysis_file = analysis_files.get(link[1].corresponding_old_id)
             alignment_protocol = random.choice(list(alignment_protocols.values()))
@@ -192,6 +196,10 @@ class OldDatasetMetadata:
                 alignment_protocol=alignment_protocol,
             )
             session.add(join_object)
+        print(
+            f"Had to skip {skipped_count} objects for "
+            f"SequenceFileAlignmentProtocolAnalysisFileProcessJoin."
+        )
 
         # BiosamplePrepLibraryLibraryPrepProtocolProcessJoin table population
         for link in self.biosample_library_prep_project_links:
