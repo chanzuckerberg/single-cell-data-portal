@@ -1,4 +1,8 @@
-# Chalice App Template
+# Browser Backend
+
+This application serve as the API for the browser frontend.
+
+# Chalice App Template Instructions
 
 To deploy the app, type `make deploy` in this directory.
 
@@ -33,8 +37,7 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-The test suite in `test/test.py` runs Chalice in local mode for unit testing. You can invoke it using `make test`. This
-test is also configured to run on [Travis CI](https://travis-ci.com).
+The test suite in `test/test.py` runs Chalice in local mode for unit testing. You can invoke it using `make test`.
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This
