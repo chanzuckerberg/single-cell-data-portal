@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, json, unittest, functools
+import os, unittest, functools
 import requests
 from chalice.cli import CLIFactory
 from chalice.local import LocalGateway, LocalGatewayException
