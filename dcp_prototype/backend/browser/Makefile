@@ -1,7 +1,7 @@
 SHELL=/bin/bash -o pipefail
 tests:=$(wildcard tests/test*.py)
 
-export TF_DATA_DIR=.terraform.$(STAGE)
+export TF_DATA_DIR=.terraform.$(DEPLOYMENT_STAGE)
 export TFSTATE_FILE=$(TF_DATA_DIR)/remote.tfstate
 export TF_CLI_ARGS_output="--state=$(TFSTATE_FILE)"
 export TF_CLI_ARGS_init="--backend-config=$(APP_HOME)/$(TF_DATA_DIR)/aws_config.json"
@@ -13,7 +13,7 @@ export PYTHONHASHSEED=0
 # See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
 export AWS_SDK_LOAD_CONFIG=1
 
-ifndef STAGE
+ifndef DEPLOYMENT_STAGE
 $(error Please run "source environment" in the repo root directory before running make commands)
 endif
 
@@ -33,20 +33,20 @@ chalice_terraform:
 init:
 	-rm -f $(TF_DATA_DIR)/*.tfstate
 	mkdir -p $(TF_DATA_DIR)
-	jq -n ".region=env.AWS_REGION | .bucket=env.TF_S3_BUCKET | .key=env.APP_NAME+env.STAGE" > $(TF_DATA_DIR)/aws_config.json
+	jq -n ".region=env.AWS_REGION | .bucket=env.TF_S3_BUCKET | .key=env.APP_NAME+env.DEPLOYMENT_STAGE" > $(TF_DATA_DIR)/aws_config.json
 	terraform init
 
 build-chalice-config:
-	envsubst < iam/policy-templates/$(APP_NAME)-lambda.json > .chalice/policy-$(STAGE).json
+	envsubst < iam/policy-templates/$(APP_NAME)-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
 	cd .chalice; jq .app_name=env.APP_NAME < config.in.json > config.json
 	cd .chalice; for var in $$EXPORT_ENV_VARS_TO_LAMBDA; do \
-            jq .stages.$(STAGE).environment_variables.$$var=env.$$var config.json | sponge config.json; \
+            jq .stages.$(DEPLOYMENT_STAGE).environment_variables.$$var=env.$$var config.json | sponge config.json; \
         done
-	cd .chalice; V=$$(git describe --tags --always) jq .stages.$(STAGE).environment_variables.VERSION=env.V config.json | sponge config.json
-	cd .chalice; jq .stages.$(STAGE).tags.env=env.STAGE config.json | sponge config.json
-	cd .chalice; jq .stages.$(STAGE).tags.service=env.APP_NAME config.json | sponge config.json
-	cd .chalice; jq .stages.$(STAGE).tags.owner=env.OWNER config.json | sponge config.json
-	cd .chalice; jq .stages.$(STAGE).api_gateway_stage=env.STAGE config.json | sponge config.json
+	cd .chalice; V=$$(git describe --tags --always) jq .stages.$(DEPLOYMENT_STAGE).environment_variables.VERSION=env.V config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.env=env.DEPLOYMENT_STAGE config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.service=env.APP_NAME config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.owner=env.OWNER config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).api_gateway_stage=env.DEPLOYMENT_STAGE config.json | sponge config.json
 
 # package prepares a Lambda zipfile with the help of the Chalice packager (which also emits a SAM template).
 # We also inject any wheels found in vendor.in, and rewrite the zipfile to make the build reproducible.
@@ -57,7 +57,7 @@ package: build-chalice-config
 	find vendor -name '*.pyc' -delete
 	find vendor -exec touch -t 201901010000 {} \; # Reset mtimes on all vendor files to make zipfile contents reproducible
 	shopt -s nullglob; for wheel in vendor.in/*/*.whl; do pip install --target vendor --upgrade $$wheel; done
-	chalice package --pkg-format terraform --stage $(STAGE) dist
+	chalice package --pkg-format terraform --stage $(DEPLOYMENT_STAGE) dist
 	cd dist; mkdir deployment; cd deployment; unzip -q -o ../deployment.zip
 	$(MAKE) prune
 	find dist/deployment -exec touch -t 201901010000 {} \; # Reset mtimes on all dep files to make zipfile contents reproducible
@@ -67,7 +67,7 @@ package: build-chalice-config
 # Remove unused dependencies that consume substantial space in the package.
 # See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 prune:
-	cd dist/deployment; rm -rf awscli* boto3* botocore* cryptography* swagger_ui_bundle/vendor/swagger-ui-2* connexion/vendor/swagger-ui*
+	cd dist/deployment; rm -rf awscli* boto3* botocore*
 
 destroy: init
 	terraform destroy
@@ -86,3 +86,6 @@ unittest: package
 	python -m unittest discover -p test_*api.py -t . -v
 
 .PHONY: deploy package init destroy clean lint test
+
+convert:
+	cat terraform/chalice.tf.json | jq .data.template_file.chalice
