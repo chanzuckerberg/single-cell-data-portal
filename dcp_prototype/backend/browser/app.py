@@ -1,14 +1,9 @@
-import os, logging
+import logging
 
 from chalice import Chalice
 
-
 app = Chalice(app_name="browser")
 logger = logging.getLogger(__name__)
-
-swagger_spec_path = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), f'{os.environ["APP_NAME"]}-api.yml'
-)
 
 
 @app.route("/")
