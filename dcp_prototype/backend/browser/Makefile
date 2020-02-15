@@ -86,6 +86,3 @@ unittest: package
 	python -m unittest discover -p test_*api.py -t . -v
 
 .PHONY: deploy package init destroy clean lint test
-
-convert:
-	cat terraform/chalice.tf.json | jq .data.template_file.chalice
