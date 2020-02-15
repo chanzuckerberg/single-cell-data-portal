@@ -74,7 +74,11 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
 
     # AnalysisFileQuantificationProtocolExpressionFileProcessJoin table population
     for analysis_file_entity in session.query(AnalysisFile):
+        join_object_id = hca_accession_generator(
+            AnalysisFileQuantificationProtocolExpressionFileProcessJoin.__name__
+        )
         join_object = AnalysisFileQuantificationProtocolExpressionFileProcessJoin(
+            id=join_object_id,
             analysis_file=analysis_file_entity,
             expression_file=random.choice(list(expression_files.values())),
             quantification_protocol=random.choice(
