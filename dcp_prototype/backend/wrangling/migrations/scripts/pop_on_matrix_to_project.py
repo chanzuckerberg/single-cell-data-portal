@@ -1,19 +1,21 @@
 from argparse import ArgumentParser
 import sys
+
+sys.path.insert(0, "")  # noqa
 import boto3
 from urllib.parse import urlparse
+from dcp_prototype.backend.wrangling.migrations.utils.constants import (
+    SS2_QUANTIFICATION_PROTOCOL,
+)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
+    hca_accession_generator,
+)
 from dcp_prototype.backend.ledger.code.common.ledger_orm import (
     DBSessionMaker,
     QuantificationProtocol,
     ExpressionFile,
     AnalysisFileQuantificationProtocolExpressionFileProcessJoin,
     AnalysisFile,
-)
-from dcp_prototype.backend.wrangling.migrations.utils.constants import (
-    SS2_QUANTIFICATION_PROTOCOL,
-)
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_generator,
 )
 import os
 import random
@@ -30,12 +32,12 @@ def upload_matrix_to_s3(matrix_file, s3_bucket):
     file_prefix = prefix + filename
     full_s3_file_path = s3_bucket + filename
 
-    object = S3_RESOURCE.Object(bucket, file_prefix)
-    if object:
-        print(f"Matrix file {file_prefix} already exists! Skipping upload.")
-        return
-
-    S3_CLIENT.upload_file(matrix_file, bucket, file_prefix)
+    try:
+        S3_RESOURCE.Object(bucket, file_prefix).load()
+        print(f"Matrix file s3://{file_prefix} already exists! Skipping upload.")
+    except:
+        S3_CLIENT.upload_file(matrix_file, bucket, file_prefix)
+        print(f"Uploaded matrix file {file_prefix} to S3.")
 
     return full_s3_file_path, os.path.getsize(matrix_file)
 
@@ -65,6 +67,7 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
         file_size=matrix_file_size,
         s3_uri=matrix_file_s3_uri,
     )
+    expression_files[expression_file_id] = expression_file
     session.add(expression_file)
 
     # STEP 2: POPULATE JOIN TABLES
@@ -81,8 +84,7 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
         session.add(join_object)
 
     print(f"Beginning commit to database")
-    #session.commit()
-    print(len(session.new))
+    session.commit()
     print(f"Finished commit to database")
 
 
