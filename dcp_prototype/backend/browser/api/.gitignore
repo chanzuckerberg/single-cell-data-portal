@@ -1,0 +1,6 @@
+.chalice/deployments/
+.chalice/venv/
+.chalice/deployed/
+chalicelib
+vendor
+vendor.in

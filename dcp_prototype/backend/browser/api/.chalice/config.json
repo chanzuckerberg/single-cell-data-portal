@@ -1,0 +1,12 @@
+{
+  "version": "2.0",
+  "app_name": "browser-api",
+  "stages": {
+    "test": {
+      "api_gateway_stage": "api",
+      "environment_variables": {
+        "DEPLOYMENT_STAGE": "test"
+      }
+    }
+  }
+}
