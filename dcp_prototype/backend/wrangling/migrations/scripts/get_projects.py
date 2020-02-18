@@ -2,15 +2,22 @@ from dcplib.etl import DSSExtractor
 
 if __name__ == "__main__":
     projects = [
-        "HumanMousePancreas",
+        "KidneySingleCellAtlas",
+        "HumanColonicMesenchymeIBD",
+        "scRNAseqSystemicComparison",
+        "Tabula Muris",
+        "Diabetic Nephropathy snRNA-seq",
+        "Mouse Endoderm Project",
+        "snRNA-seq_for_human_retina",
+        "1M Immune Cells",
         "1M Neurons",
+        "HumanMousePancreas",
         "MouseGastrulationAtlas",
         "HumanTissueTcellActivation",
         "WongAdultRetina",
         "HPSI human cerebral organoids",
         "BM_PC",
         "Multiplexed scRNA-seq with barcoded antibodies",
-        "1M Immune Cells",
         "Drop-seq, DroNc-seq, Fluidigm C1 Comparison",
         "SingleCellLiverLandscape",
         "HDCA-Sweden-10x",
@@ -23,14 +30,8 @@ if __name__ == "__main__":
         "Reprogrammed_Dendritic_Cells",
         "Single cell transcriptome analysis of human pancreas",
         "Single cell RNAseq characterization of cell types produced over time in an in vitro model of human inhibitory interneuron differentiation",
-        "Healthy and type 2 diabetes pancreas",
-        "KidneySingleCellAtlas",
-        "HumanColonicMesenchymeIBD",
-        "scRNAseqSystemicComparison",
-        "Tabula Muris",
-        "Diabetic Nephropathy snRNA-seq",
-        "Mouse Endoderm Project",
-        "snRNA-seq_for_human_retina"]
+        "Healthy and type 2 diabetes pancreas"
+    ]
     for project in projects:
         query = {"query": {
             "bool": {"must": [{"term": {"files.project_json.project_core.project_short_name": f"{project}"}}]}}}

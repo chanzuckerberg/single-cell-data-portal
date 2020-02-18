@@ -21,7 +21,7 @@ projects = [
         "Mouse Melanoma",
         "CD4+ cytotoxic T lymphocytes",
         "Human Hematopoietic Profiling",
-        "Fetal/Maternal Interface",
+        "Fetal-Maternal-Interface",
         "Kidney biopsy scRNA-seq",
         "Reprogrammed_Dendritic_Cells",
         "Single cell transcriptome analysis of human pancreas",
