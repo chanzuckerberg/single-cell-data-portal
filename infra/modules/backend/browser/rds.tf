@@ -20,7 +20,7 @@ resource "aws_rds_cluster" "browser" {
   master_username                 = var.db_username
   master_password                 = var.db_password
   backup_retention_period         = 7
-  port                            = 5432
+  port                            = 3306
   preferred_backup_window         = "07:27-07:57"
   preferred_maintenance_window    = var.preferred_maintenance_window
   storage_encrypted               = "true"
@@ -41,8 +41,8 @@ resource "aws_security_group" "rds_mysql" {
   vpc_id        = aws_default_vpc.default.id
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "all"
