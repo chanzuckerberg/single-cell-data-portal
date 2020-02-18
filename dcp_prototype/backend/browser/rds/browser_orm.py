@@ -175,6 +175,7 @@ class ContributorJoinProject(Base):
     project = relationship("Project")
 
 
+# uncomment to drop and recreate all tables
 # engine.execute("DROP TABLE tissue_join_project, species_join_project, library_prep_protocol_join_project, contributor_join_project, external_accession, file, library_prep_protocol, project, species, tissue, contributor, data_repository;")
 # Base.metadata.create_all(engine)
 # tables = engine.execute("SHOW TABLES;")
