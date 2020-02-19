@@ -55,7 +55,7 @@ def delete_directory(directory):
 
 
 def squish_files(
-    source_directory, target_directory, count_file, checksums=[], clear_if_exists=True, s3=False
+    source_directory, target_directory, count_file, checksums=[], clear_if_exists=True
 ):
     """
     Copies and flattens all files (not directories) that exist in `directory` to
@@ -167,8 +167,7 @@ def _copy_files_to_s3(
 
                 print(f"Uploading file to S3: {filename}")
                 try:
-                    # session.upload_file(source_file_path, bucket, key + filename)
-                    s3.meta.client.upload_file(source_file_path, 'hca-dcp-one-backup-data', f"{key}/{filename}")
+                    s3.meta.client.upload_file(source_file_path, bucket, f"{key}/{filename}")
 
                 except ClientError as e:
                     print(e)
@@ -216,7 +215,6 @@ def _copy_files(source_directory, target_directory, count_by_file_type, checksum
                             COUNT_BY_FILE_TYPE[file_type] += 1
 
                 copyfile(source_file_path, os.path.join(target_directory, filename))
-
             else:
                 print(
                     f"Skipping over file {filename} because it has already been copied "
