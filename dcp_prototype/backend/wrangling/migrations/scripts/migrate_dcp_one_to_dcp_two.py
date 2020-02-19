@@ -41,33 +41,40 @@ def get_entity_type(filename):
             return key
 
 
-def order_file_list(file_list):
+def gather_group_file_list(file_list):
     """
-    Order files to process to construct metadata schema such that links are processed
-    last. This is done so that all entities exist before linkage and linking will not
+    process files into groups that can be processed simultaneously.
+    In particular, links need to be processed last.
+    This is done so that all entities exist before linkage and linking will not
     occur between unknown entities.
     """
-    ordered_file_list = []
+
+    # group1 will contain all the non-links files, sorted by type, then by name
+    group1 = []
+    # group2 contains just the links files.
+    group2 = []
+
     tstart = time.time()
 
     for file in file_list:
         if "donor_organism" in file:
-            ordered_file_list.append((1, file))
+            group1.append((1, file))
         elif "specimen" in file:
-            ordered_file_list.append((2, file))
+            group1.append((2, file))
         elif "cell_suspension" in file:
-            ordered_file_list.append((3, file))
+            group1.append((3, file))
         elif "links" not in file:
-            ordered_file_list.append((4, file))
+            group1.append((4, file))
         elif "links" in file:
-            ordered_file_list.append((5, file))
+            group2.append(file)
 
-    ordered_file_list.sort()
-    ordered_file_list = [x[1] for x in ordered_file_list]
+    group1.sort()
+    group1 = [x[1] for x in group1]
+    group2.sort()
 
     tend = time.time()
-    print("order_file_list:", (tend-tstart))
-    return ordered_file_list
+    print("group_file_list:", (tend-tstart))
+    return [group1, group2]
 
 
 def consume_file(prefix, bucket, filequeue, dataset_metadata):
@@ -79,7 +86,7 @@ def consume_file(prefix, bucket, filequeue, dataset_metadata):
             break
 
         # sanity check that the file should be processes
-        if not should_process_file(filename):
+        if ".json" not in filename:
             continue
 
         file_prefix = prefix + filename
@@ -122,37 +129,37 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
     print("Gather objects: ", end="", flush=True)
     for object in filtered_iterator:
         object_filename = object.get("Key")
-        if should_process_file(object_filename):
-            file_list.append(object_filename.split("/")[-1])
-            if len(file_list) % 1000 == 0:
-                print(len(file_list), end=" ", flush=True)
+        file_list.append(object_filename.split("/")[-1])
+        if len(file_list) % 1000 == 0:
+            print(len(file_list), end=" ", flush=True)
 
     print()
-    file_list = order_file_list(file_list)
+    group_file_list = gather_group_file_list(file_list)
 
     # print(f"Files in directory to parse: {file_list}")
     print(f"Files in directory to parse: {len(file_list)}")
 
-    filequeue = queue.Queue()
     tstart = time.time()
+    for group_files in group_file_list:
+        print(f"Files in group to parse: {len(group_files)}")
+        filequeue = queue.Queue()
 
-    for filename in file_list:
-        if not should_process_file(filename):
-            continue
-        filequeue.put(filename)
+        for filename in group_files:
+            filequeue.put(filename)
 
-    threads = []
-    for i in range(num_threads):
-        t = threading.Thread(target=consume_file,
-                             args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
-        t.start()
-        threads.append(t)
+        threads = []
+        for i in range(num_threads):
+            t = threading.Thread(
+                target=consume_file,
+                args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
+            t.start()
+            threads.append(t)
 
-    filequeue.join()
-    for i in range(num_threads):
-        filequeue.put(None)
-    for t in threads:
-        t.join()
+        filequeue.join()
+        for i in range(num_threads):
+            filequeue.put(None)
+        for t in threads:
+            t.join()
 
     tend = time.time()
     print(f"Process file time (t={num_threads}): {(tend-tstart)}")
@@ -170,12 +177,16 @@ def generate_metadata_structure(input_directory, num_threads):
 
     dataset_metadata = OldDatasetMetadata(s3_uri=f"s3://{BUCKET_NAME}/{PREFIX}")
 
-    ordered_files = order_file_list(listdir(input_directory))
+    groups = gather_group_file_list(listdir(input_directory))
+    ordered_files = []
+    for group in groups:
+        ordered_files.extend(group)
+
     print(f"Files in directory to parse: {ordered_files}")
 
     for file in ordered_files:
         full_file_path = os.path.join(input_directory, file)
-        if not should_process_file(full_file_path):
+        if ".json" not in full_file_path:
             continue
         if os.path.isfile(full_file_path):
             print(f"Working with JSON input file at {full_file_path}")
@@ -204,20 +215,6 @@ def generate_metadata_structure(input_directory, num_threads):
     )
 
     return dataset_metadata
-
-
-def should_process_file(full_file_path):
-    """
-    Returns whether a file, originally from a bundle, needs to be processed in order to
-    construct the metadata schema representing the project.
-    """
-    if "analysis_p" in full_file_path:
-        return False
-    if "zarr" in full_file_path:
-        return False
-    if ".json" not in full_file_path:
-        return False
-    return True
 
 
 def export_old_metadata_to_s3_orm(
