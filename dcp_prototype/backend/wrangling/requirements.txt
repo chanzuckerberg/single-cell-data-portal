@@ -1,3 +1,7 @@
+boto3
+dcplib
+flatten_json
+hca
 objgraph
 openpyxl
 pandas
