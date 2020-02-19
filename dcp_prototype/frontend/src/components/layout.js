@@ -32,6 +32,8 @@ const Layout = ({ children }) => {
         style={{
           margin: `0 auto`,
           maxWidth: 960,
+          minHeight:
+            "100vh" /* for now. better: height minus footer, or go to sticky */,
           padding: `0 1.0875rem 1.45rem`,
         }}
       >

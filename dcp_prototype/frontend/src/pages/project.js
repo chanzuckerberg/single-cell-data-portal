@@ -3,18 +3,19 @@ import React, { useState, useEffect } from "react"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
-import FilesList from "../components/filesList"
+import ProjectOverview from "../components/projectOverview"
+import { api_prefix } from "../globals"
+import { Flex, Box, Heading } from "theme-ui"
 
 const SecondPage = props => {
   const [project, setProject] = useState(null)
+  const [files, setFiles] = useState(null)
   const searchObj = searchStringAsObj(props.location.search.slice(1))
   const id = searchObj?.id
 
   useEffect(() => {
     if (id) {
-      fetch(
-        `https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/project/${id}`
-      )
+      fetch(`${api_prefix}/projects/${id}`)
         .then(response => response.json()) // parse JSON from request
         .then(resultData => {
           setProject(resultData)
@@ -24,19 +25,51 @@ const SecondPage = props => {
     }
   }, [id]) /* don't rerender if this hasn't changed */
 
+  useEffect(() => {
+    if (id) {
+      fetch(`${api_prefix}/projects/${id}/files`)
+        .then(response => response.json()) // parse JSON from request
+        .then(resultData => {
+          setFiles(resultData)
+        })
+    } else {
+      return null
+    }
+  }, [id]) /* don't rerender if this hasn't changed */
+
+  /*
+    /projects/id
+    /projects/id/files
+    /files/id
+  */
+
   return (
     <Layout>
       <SEO title="Projects" />
-      <h1>Project</h1>
-      <div>
-        {!project?.files ? (
+      <Heading as="h1" sx={{ mb: 4 }}>
+        Explore Project
+      </Heading>
+      <Flex>
+        {!project ? (
           "Loading project..."
         ) : (
-          <FilesList files={project.files} />
+          <ProjectOverview project={project} />
         )}
-      </div>
+      </Flex>
+      {!project ? null : (
+        <Box>
+          <Heading as="h3" sx={{ mb: 4 }}>
+            Download files
+          </Heading>
+          <Heading as="h3" sx={{ mb: 4 }}>
+            ...
+          </Heading>
+        </Box>
+      )}
     </Layout>
   )
 }
 
 export default SecondPage
+
+// <Flex>{!files ? null : <FilesList files={files} />}</Flex>

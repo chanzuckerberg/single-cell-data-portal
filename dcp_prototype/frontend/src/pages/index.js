@@ -4,6 +4,7 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import ProjectsList from "../components/projectsList"
 import { Heading } from "theme-ui"
+import { api_prefix } from "../globals"
 
 /*
   Mock API
@@ -16,7 +17,7 @@ const IndexPage = () => {
   // Client-side Runtime Data Fetching
   const [projects, setProjects] = useState(null)
   useEffect(() => {
-    fetch(`https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/projects`)
+    fetch(`${api_prefix}/projects`)
       .then(response => response.json()) // parse JSON from request
       .then(resultData => {
         setProjects(resultData)
