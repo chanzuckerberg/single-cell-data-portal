@@ -1,11 +1,19 @@
+"""
+(12/19) Temporary script used to load a preliminary artifact CSV sample.
+"""
+
 import os
 import pandas
+import sys
 from math import ceil
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from db_config import BrowserDbConfig
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
+from browser.config.db_config import BrowserDbConfig
 
 stage = os.environ['DEPLOYMENT_STAGE']
 db_name = f"browser_{stage}"

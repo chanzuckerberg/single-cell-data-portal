@@ -8,20 +8,15 @@ from sqlalchemy.ext.declarative import declarative_base
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.rds.db_config import BrowserDbConfig
+from browser.config.db_config import BrowserDbConfig
 
-
-stage = os.environ['DEPLOYMENT_STAGE']
-db_name = f"browser_{stage}"
 
 Base = declarative_base()
-engine = create_engine(BrowserDbConfig().database_uri)
-conn = engine.connect()
-engine.execute(f"USE {db_name}")
 
 
 class DBSessionMaker:
     def __init__(self):
+        engine = create_engine(BrowserDbConfig().database_uri)
         Base.metadata.bind = engine
         self.session_maker = sessionmaker()
         self.session_maker.bind = engine
@@ -35,16 +30,16 @@ class Project(Base):
 
     id = Column(String(64), primary_key=True)
     title = Column(String(255))
-    label = Column(String(100))  # NA
-    description = Column(String(3000))  # NA
+    label = Column(String(100))
+    description = Column(String(3000))
     category = Column(String(32))
     developmental_stage = Column(String(32))
-    disease_ontology = Column(String(16))  # multiple
-    sample_type = Column(String(32))  # NA
-    organ_part = Column(String(32))  # NA
-    analysis_protocol = Column(String(64))  # NA
-    cell_count = Column(Integer)  # NA
-    donor_count = Column(Integer)  # NA
+    disease_ontology = Column(String(16))
+    sample_type = Column(String(32))
+    organ_part = Column(String(32))
+    analysis_protocol = Column(String(64))
+    cell_count = Column(Integer)
+    donor_count = Column(Integer)
     publication_title = Column(String(128))
     publication_doi = Column(String(32))
     contact_name = Column(String(32))
@@ -59,9 +54,9 @@ class File(Base):
     project_id = Column(ForeignKey("project.id"), nullable=False)
     filename = Column(String(80))
     file_format = Column(String(8))
-    file_size = Column(Integer)  # NA
-    flowcell_id = Column(String(64))  # NA
-    lane_index = Column(String(8))  # NA
+    file_size = Column(Integer)
+    flowcell_id = Column(String(64))
+    lane_index = Column(String(8))
     read_index = Column(String(8))
     s3_uri = Column(String(200))
     created_at = Column(DateTime(True), nullable=False)
@@ -173,11 +168,3 @@ class ContributorJoinProject(Base):
 
     contributor = relationship("Contributor")
     project = relationship("Project")
-
-
-# uncomment to drop and recreate all tables
-# engine.execute("DROP TABLE tissue_join_project, species_join_project, library_prep_protocol_join_project, contributor_join_project, external_accession, file, library_prep_protocol, project, species, tissue, contributor, data_repository;")
-# Base.metadata.create_all(engine)
-# tables = engine.execute("SHOW TABLES;")
-# tables = [t[0] for t in tables]
-# print(tables)
