@@ -1,5 +1,6 @@
 """
-(12/19) Temporary script used to load a preliminary artifact CSV sample.
+(2/19/20) Temporary script used to load a preliminary artifact CSV sample.
+          To be succeeded by ETL job(s) from a JSON artifact.
 """
 
 import os
