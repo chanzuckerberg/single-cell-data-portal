@@ -32,7 +32,7 @@ const Header = ({ siteTitle }) => {
             <Logo />
           </Link>
         </Box>
-        <Box>Explore</Box>
+        <Box>Data</Box>
         <Box>Guides</Box>
         <Box>Metadata</Box>
         <Box>Pipelines</Box>
