@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, "")  # noqa
 import boto3
+from botocore.exceptions import ClientError
 from urllib.parse import urlparse
 from dcp_prototype.backend.wrangling.migrations.utils.constants import (
     SS2_QUANTIFICATION_PROTOCOL,
@@ -35,7 +36,7 @@ def upload_matrix_to_s3(matrix_file, s3_bucket):
     try:
         S3_RESOURCE.Object(bucket, file_prefix).load()
         print(f"Matrix file s3://{file_prefix} already exists! Skipping upload.")
-    except:
+    except ClientError:
         S3_CLIENT.upload_file(matrix_file, bucket, file_prefix)
         print(f"Uploaded matrix file {file_prefix} to S3.")
 
