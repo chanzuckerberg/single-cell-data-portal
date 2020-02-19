@@ -1,7 +1,7 @@
 import os
 import sys
 
-from sqlalchemy import create_engine, Table, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import create_engine
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa

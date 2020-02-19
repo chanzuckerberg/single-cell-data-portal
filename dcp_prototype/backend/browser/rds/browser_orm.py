@@ -1,7 +1,7 @@
 import os
 import sys
 
-from sqlalchemy import create_engine, Table, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -130,7 +130,9 @@ class LibraryPrepProtocolJoinProject(Base):
     __tablename__ = "library_prep_protocol_join_project"
 
     id = Column(Integer, primary_key=True)
-    library_prep_protocol_id = Column(ForeignKey("library_prep_protocol.id"), nullable=False)
+    library_prep_protocol_id = Column(
+        ForeignKey("library_prep_protocol.id"), nullable=False
+    )
     project_id = Column(ForeignKey("project.id"), nullable=False)
 
     library_prep_protocol = relationship("LibraryPrepProtocol")
