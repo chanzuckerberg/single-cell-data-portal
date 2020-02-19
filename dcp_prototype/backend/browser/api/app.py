@@ -1,6 +1,7 @@
 import os
 import sys
 
+import chalice
 from chalice import Chalice
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
@@ -33,14 +34,19 @@ def get_projects():
             'cell_count': project.cell_count,
         })
 
-    return projects
+    return chalice.Response(status_code=200,
+                            headers={
+                                'Content-Type': "application/json",
+                                'Access-Control-Allow-Origin': "*"
+                            },
+                            body=projects)
 
 
 @app.route('/projects/{project_id}')
 def get_project(project_id):
     session = DBSessionMaker().session()
     project = session.query(Project).get(project_id)
-    return {
+    response_body = {
         'id': project.id,
         'title': project.title,
         'label': project.label,
@@ -63,6 +69,13 @@ def get_project(project_id):
         'contact_email': project.contact_email
     }
 
+    return chalice.Response(status_code=200,
+                            headers={
+                                'Content-Type': "application/json",
+                                'Access-Control-Allow-Origin': "*"
+                            },
+                            body=response_body)
+
 
 @app.route('/projects/{project_id}/files')
 def get_project_files(project_id):
@@ -78,7 +91,13 @@ def get_project_files(project_id):
             'library_construction_method_ontology': file.library_construction_method_ontology,
             'tissue_ontology': file.tissue_ontology
         })
-    return files
+
+    return chalice.Response(status_code=200,
+                            headers={
+                                'Content-Type': "application/json",
+                                'Access-Control-Allow-Origin': "*"
+                            },
+                            body=files)
 
 
 @app.route('/files/{file_id}')
