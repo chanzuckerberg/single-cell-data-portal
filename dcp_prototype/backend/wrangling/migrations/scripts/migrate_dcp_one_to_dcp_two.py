@@ -52,15 +52,15 @@ def order_file_list(file_list):
 
     for file in file_list:
         if "donor_organism" in file:
-            ordered_file_list.append((1,file))
+            ordered_file_list.append((1, file))
         elif "specimen" in file:
-            ordered_file_list.append((2,file))
+            ordered_file_list.append((2, file))
         elif "cell_suspension" in file:
-            ordered_file_list.append((3,file))
+            ordered_file_list.append((3, file))
         elif "links" not in file:
-            ordered_file_list.append((4,file))
+            ordered_file_list.append((4, file))
         elif "links" in file:
-            ordered_file_list.append((5,file))
+            ordered_file_list.append((5, file))
 
     ordered_file_list.sort()
     ordered_file_list = [x[1] for x in ordered_file_list]
@@ -68,6 +68,7 @@ def order_file_list(file_list):
     tend = time.time()
     print("order_file_list:", (tend-tstart))
     return ordered_file_list
+
 
 def consume_file(prefix, bucket, filequeue, dataset_metadata):
     while True:
@@ -115,7 +116,7 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
 
     paginator = S3_CLIENT.get_paginator("list_objects")
     page_iterator = paginator.paginate(Bucket=BUCKET_NAME, Prefix=PREFIX)
-    filtered_iterator = page_iterator.search( "Contents[?contains(Key, `.json`)][]")
+    filtered_iterator = page_iterator.search("Contents[?contains(Key, `.json`)][]")
 
     file_list = []
     print("Gather objects: ", end="", flush=True)
@@ -124,12 +125,12 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
         if should_process_file(object_filename):
             file_list.append(object_filename.split("/")[-1])
             if len(file_list) % 1000 == 0:
-                print(len(file_list),end=" ", flush=True)
+                print(len(file_list), end=" ", flush=True)
 
     print()
     file_list = order_file_list(file_list)
 
-    #print(f"Files in directory to parse: {file_list}")
+    # print(f"Files in directory to parse: {file_list}")
     print(f"Files in directory to parse: {len(file_list)}")
 
     filequeue = queue.Queue()
@@ -142,7 +143,8 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
 
     threads = []
     for i in range(num_threads):
-        t= threading.Thread(target=consume_file, args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
+        t = threading.Thread(target=consume_file,
+                             args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
         t.start()
         threads.append(t)
 
@@ -358,9 +360,9 @@ if __name__ == "__main__":
     tend = time.time()
     print("Generate metadata structure:", (tend-tstart))
 
-    tstart=time.time()
+    tstart = time.time()
     export_old_metadata_to_s3_orm(
         old_metadata, input_directory, "s3" not in input_directory
     )
-    tend=time.time()
+    tend = time.time()
     print("export_old_metadata_to_s3_orm:", (tend-tstart))

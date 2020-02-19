@@ -56,6 +56,7 @@ ENTITY_TYPES = [
     "analysis_file",
 ]
 
+
 class OldDatasetMetadata:
     def __init__(self, sequencing_technology="ss2", s3_uri=None):
         self.sequencing_technology = sequencing_technology
@@ -86,7 +87,6 @@ class OldDatasetMetadata:
         self.locks = {}
         for etype in ENTITY_TYPES:
             self.locks[etype] = threading.Lock()
-
 
     def export_to_spreadsheet(self, spreadsheet_filename):
         """
@@ -285,15 +285,9 @@ class OldDatasetMetadata:
 
         self.publish_mode = True
 
-        self.old_metadata_structure[
-            "Donor Organism"
-        ] = self.donor_organisms.values()
-        self.old_metadata_structure[
-            "Specimen From Organism"
-        ] = self.specimens.values()
-        self.old_metadata_structure[
-            "Cell Suspensions"
-        ] = self.cell_suspensions.values()
+        self.old_metadata_structure["Donor Organism"] = self.donor_organisms.values()
+        self.old_metadata_structure["Specimen From Organism"] = self.specimens.values()
+        self.old_metadata_structure["Cell Suspensions"] = self.cell_suspensions.values()
         self.old_metadata_structure[
             "Library Prep Protocols"
         ] = self.library_preps.values()
@@ -319,7 +313,10 @@ class OldDatasetMetadata:
             donor_organism = OldDonorOrganism()
             donor_organism.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if donor_organism.corresponding_old_id not in self.donor_organisms.keys():
+                if (
+                    donor_organism.corresponding_old_id
+                    not in self.donor_organisms.keys()
+                ):
                     self.donor_organisms[
                         donor_organism.corresponding_old_id
                     ] = donor_organism
@@ -328,7 +325,10 @@ class OldDatasetMetadata:
             specimen_from_organism = OldSpecimenFromOrganism()
             specimen_from_organism.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if specimen_from_organism.corresponding_old_id not in self.specimens.keys():
+                if (
+                    specimen_from_organism.corresponding_old_id
+                    not in self.specimens.keys()
+                ):
                     self.specimens[
                         specimen_from_organism.corresponding_old_id
                     ] = specimen_from_organism
@@ -337,7 +337,10 @@ class OldDatasetMetadata:
             cell_suspension = OldCellSuspension()
             cell_suspension.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if cell_suspension.corresponding_old_id not in self.cell_suspensions.keys():
+                if (
+                    cell_suspension.corresponding_old_id
+                    not in self.cell_suspensions.keys()
+                ):
                     self.cell_suspensions[
                         cell_suspension.corresponding_old_id
                     ] = cell_suspension
@@ -359,13 +362,18 @@ class OldDatasetMetadata:
                     for contributor in contributors:
                         if contributor.name not in self.contributors.keys():
                             self.contributors[contributor.name] = contributor
-                            self.project_contributor_links.append((project, contributor))
+                            self.project_contributor_links.append(
+                                (project, contributor)
+                            )
 
         if entity_type == "sequencing_protocol":
             protocol = OldSequencingProtocol()
             protocol.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
+                if (
+                    protocol.corresponding_old_id
+                    not in self.sequencing_protocols.keys()
+                ):
                     self.sequencing_protocols[protocol.corresponding_old_id] = protocol
 
         if entity_type == "sequence_file":
@@ -374,7 +382,9 @@ class OldDatasetMetadata:
             sequence_file.set_s3_uri(self.s3_uri)
             with self.locks[entity_type]:
                 if sequence_file.corresponding_old_id not in self.sequence_files.keys():
-                    self.sequence_files[sequence_file.corresponding_old_id] = sequence_file
+                    self.sequence_files[
+                        sequence_file.corresponding_old_id
+                    ] = sequence_file
 
         if entity_type == "analysis_file":
             analysis_file = OldAnalysisFile()
@@ -382,7 +392,9 @@ class OldDatasetMetadata:
             analysis_file.set_s3_uri(self.s3_uri)
             with self.locks[entity_type]:
                 if analysis_file.corresponding_old_id not in self.analysis_files.keys():
-                    self.analysis_files[analysis_file.corresponding_old_id] = analysis_file
+                    self.analysis_files[
+                        analysis_file.corresponding_old_id
+                    ] = analysis_file
 
         if entity_type == "links":
             with self.locks[entity_type]:
