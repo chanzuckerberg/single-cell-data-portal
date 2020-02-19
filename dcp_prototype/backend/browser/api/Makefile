@@ -1,9 +1,9 @@
 build:
-	mkdir -p chalicelib/browser/rds
-	cp ../rds/__init__.py chalicelib/browser/rds
-	cp ../rds/browser_orm.py chalicelib/browser/rds
-	cp ../rds/db_config.py chalicelib/browser/rds
 	mkdir -p chalicelib/config
+	mkdir -p chalicelib/browser/rds
+	mkdir -p chalicelib/browser/config
+	cp -R ../rds chalicelib/browser
+	cp -R ../config chalicelib/browser
 	cp browser-api.yml chalicelib/config/browser-api.yml
 	shopt -s nullglob; for wheel in vendor.in/*/*.whl; do unzip -q -o -d vendor $$wheel; done
 
