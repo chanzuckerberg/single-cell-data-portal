@@ -3,4 +3,3 @@
 .chalice/deployed/
 chalicelib
 vendor
-vendor.in
