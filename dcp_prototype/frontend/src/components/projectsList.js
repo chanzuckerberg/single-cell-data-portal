@@ -64,7 +64,7 @@ const ProjectsList = ({ projects }) => {
                 listStyle: "none",
               }}
             >
-              {project.total_cells} cells
+              {project.total_cells || "unknown"}
             </Box>
             <Box
               sx={{

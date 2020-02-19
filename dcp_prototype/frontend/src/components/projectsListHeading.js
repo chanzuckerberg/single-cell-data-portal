@@ -33,7 +33,7 @@ const ProjectsListHeading = ({ projects }) => {
           fontWeight: 700,
         }}
       >
-        Cells
+        Species
       </Box>
 
       <Box
@@ -49,8 +49,9 @@ const ProjectsListHeading = ({ projects }) => {
           fontWeight: 700,
         }}
       >
-        Species
+        Cells
       </Box>
+
       <Box
         sx={{
           fontSize: [3],
