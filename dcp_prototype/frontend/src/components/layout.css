@@ -14,19 +14,19 @@ div {
 }
 
 div[role="group"][tabindex] {
-  background-color: white !important;
+  background-color: white !important; /* gatsby seems to be inserting global CSS using emotion, but we don't know how. The color is #6363CE */
   min-height: 100vh;
 }
 
 html {
-  background-color: white !important;
+  background-color: white !important; /* gatsby seems to be inserting global CSS using emotion, but we don't know how. The color is #6363CE */
   min-height: 100vh;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: white !important;
+  background-color: white !important; /* gatsby seems to be inserting global CSS using emotion, but we don't know how. The color is #6363CE */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
