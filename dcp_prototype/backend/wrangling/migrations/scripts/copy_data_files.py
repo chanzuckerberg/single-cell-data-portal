@@ -33,6 +33,28 @@ def compose_blob_key(file_info: typing.Dict[str, str]) -> str:
     ))
 
 
+def list_files_in_bucket(project, continuation_token=None, keys=[]) -> list:
+    s3 = boto3.client("s3")
+    if continuation_token:
+        response = s3.list_objects_v2(
+            Bucket='dunitz-prod-copy',
+            Prefix=f"{project}/blobs",
+            ContinuationToken=continuation_token
+        )
+    else:
+        response = s3.list_objects_v2(
+            Bucket='dunitz-prod-copy',
+            Prefix=f"{project}/blobs"
+        )
+    if response['KeyCount'] > 0:
+        for x in response['Contents']:
+            keys.append(x['Key'])
+    if response['IsTruncated'] is True:
+        list_files_in_bucket(project, response['NextContinuationToken'], keys)
+
+    return keys
+
+
 def copy_between_s3_buckets(key, project):
     s3 = boto3.resource('s3')
     copy_source = {
@@ -61,14 +83,19 @@ def list_data_files_for_project(input_directory, project_name):
     return project_data_files
 
 
-def move_data_files(project_data_files, project):
+def move_data_files(project_data_files, project, precopied_files):
     files_moved = 0
+    already_there = 0
     dispatch_executor_class = concurrent.futures.ThreadPoolExecutor
-    with dispatch_executor_class(max_workers=1) as executor:
+    with dispatch_executor_class(max_workers=20) as executor:
         print(f"{len(project_data_files)} files to copy over for {project}")
         futures = []
         for file_info in project_data_files:
             blob_name = compose_blob_key(file_info)
+            key = f"{project}/{blob_name}"
+            if key in precopied_files:
+                already_there += 1
+                continue
             f = executor.submit(copy_between_s3_buckets, blob_name, project)
             futures.append(f)
 
@@ -76,8 +103,9 @@ def move_data_files(project_data_files, project):
             try:
                 extract_result = future.result()
                 files_moved += 1
-                if files_moved % 50 == 0:
-                    print(f"{files_moved} files moved (out of {len(project_data_files)} for project {project}")
+                if files_moved % 500 == 0:
+                    print(
+                        f"{files_moved} files moved (out of {len(project_data_files)}) for project {project}. *{already_there} files were already in the bucket")
             except Exception as e:
                 print(f"Something went wrong: {e}")
 
@@ -98,4 +126,6 @@ if __name__ == "__main__":
         input_directory = arguments.input_directory[0]
     for project in os.listdir(input_directory):
         project_data_files = list_data_files_for_project(input_directory, project)
-        move_data_files(project_data_files, project)
+        precopied_files = list_files_in_bucket(project)
+
+        move_data_files(project_data_files, project, precopied_files)
