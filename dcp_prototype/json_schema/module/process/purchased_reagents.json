@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information describing purchased kits or reagents used in a protocol.",
+    "additionalProperties": false,
+    "title": "Purchased reagents",
+    "name": "purchased_reagents",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/process/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/purchased_reagents"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "retail_name": {
+            "description": "The retail name of the kit/reagent.",
+            "type": "string",
+            "example": "SureCell WTA 3' Library Prep Kit; CytoTune iPS 2.0 Sendai Reprogramming Kit",
+            "user_friendly": "Retail name"
+        },
+        "catalog_number": {
+            "description": "The catalog number of the kit/reagent.",
+            "type": "string",
+            "example": "20014279",
+            "user_friendly": "Catalog number"
+        },
+        "manufacturer": {
+            "description": "The manufacturer of the kit/reagent.",
+            "type": "string",
+            "example": "Illumina; ThermoFisher Scientific",
+            "user_friendly": "Manufacturer"
+        },
+        "lot_number": {
+            "description": "The batch or lot number of the kit/reagent.",
+            "type": "string",
+            "example": "10001A",
+            "user_friendly": "Batch/lot number"
+        },
+        "expiry_date": {
+            "description": "The date of expiration for the kit/reagent.",
+            "type": "string",
+            "example": "2018-01-31; 2018-01",
+            "user_friendly": "Expiry date",
+            "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$",
+            "guidelines": "Enter the date in date format: yyyy-mm-dd. Supplying partial date is allowed."
+        },
+        "kit_titer": {
+            "description": "Appropriate titer and volume recommendations found in kit/reagent Certificate of Analysis.",
+            "type": "string",
+            "example": "3.0x10^7",
+            "user_friendly": "Titer"
+	    }
+	}
+}

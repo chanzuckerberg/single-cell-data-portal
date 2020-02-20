@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about a single microscope channel.",
+    "additionalProperties": false,
+    "required": [
+        "channel_id",
+        "excitation_wavelength",
+        "filter_range",
+        "exposure_time",
+        "multiplexed"
+    ],
+    "title": "Channel",
+    "name": "channel",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/protocol/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/channel"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "channel_id": {
+            "description": "User given ID.  If there is an accompanying codebook, this name should correspond to the channel id used in the codebook.",
+            "type": "string",
+            "example": "1; A",
+            "user_friendly": "Channel ID"
+        },
+        "excitation_wavelength": {
+            "description": "Excitation wavelength of the lightsource in nanometers.",
+            "type": "number",
+            "example": "640",
+            "user_friendly": "Excitation wavelength"
+        },
+        "filter_range": {
+            "description": "Emission filter in nanometers.",
+            "type": "string",
+            "example": "461/70",
+            "user_friendly": "Filter range",
+            "guidelines": "Enter in CWL/BW format."
+        },
+        "multiplexed": {
+            "description": "Whether multiple targets were detected simultaneously in this channel.",
+            "type": "string",
+            "enum":[
+                "yes",
+                "no"
+            ],
+            "example": "Should be one of: yes, or no.",
+            "user_friendly": "Multiplexed experiment"
+        },
+        "target_fluorophore": {
+            "description": "The name of the fluorophore this channel is designed to assay.",
+            "type": "string",
+            "example": "Alexa 647",
+            "user_friendly": "Target fluorophore"
+        },
+        "exposure_time": {
+            "description": "Acquisition time for a single image per channel, in milliseconds.",
+            "type": "number",
+            "example": "400",
+            "user_friendly": "Exposure time",
+            "guidelines": "Enter value in milliseconds."
+        }
+    }
+}

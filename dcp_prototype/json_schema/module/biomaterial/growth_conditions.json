@@ -1,0 +1,109 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relating to how a biomaterial was grown and/or maintained in a laboratory setting.",
+    "additionalProperties": false,
+    "title": "Growth conditions",
+    "name": "growth_conditions",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/growth_conditions"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "passage_number": {
+            "description": "The number of passages that the biomaterial has been through.",
+            "maximum": 1000,
+            "minimum": 0,
+            "type": "integer",
+            "example": 22,
+            "user_friendly": "Passage number",
+            "guidelines": "Enter a single integer."
+        },
+        "growth_medium": {
+            "description": "The solid, liquid, or semi-solid medium used to support growth.",
+            "type": "string",
+            "example": "human placental cord serum; RPMI 1640 + 2mM Glutamine + 10-20% FBS",
+            "user_friendly": "Growth medium"
+        },
+        "culture_environment": {
+            "description": "Cell culture environment in which cells are grown.",
+            "type": "string",
+            "example": "Adherent cell culture; Suspension cell culture",
+            "user_friendly": "Culture environment"
+        },
+        "mycoplasma_testing_method": {
+            "description": "The method by which the biomaterial was tested for mycoplasma contamination.",
+            "type": "string",
+            "enum": [
+                "Direct DNA stain",
+                "Indirect DNA stain",
+                "Broth and agar culture",
+                "PCR",
+                "Nested PCR",
+                "ELISA",
+                "Autoradiography",
+                "Immunostaining",
+                "Cell-based assay",
+                "Microbiological assay"
+            ],
+            "example": "Should be one of: Direct DNA stain, Indirect DNA stain, Broth and agar culture, PCR, Nested PCR, ELISA, Autoradiography, Immunostaining, Cell-based assay, or Microbiological assay.",
+            "user_friendly": "Mycoplasma testing method"
+        },
+        "mycoplasma_testing_results": {
+            "description": "Whether the biomaterial passed or failed the mycoplasma test.",
+            "type": "string",
+            "enum": [
+                "pass",
+                "fail"
+            ],
+            "example": "Should be one of: pass, or fail.",
+            "user_friendly": "Mycoplasma testing results"
+        },
+        "drug_treatment": {
+            "description": "Description of drugs added to the growth medium.",
+            "type": "string",
+            "example": "100 ug/mL ampicillin; 15 ug/mL tetracycline",
+            "user_friendly": "Drug treatment",
+            "guidelines": "Provide the drug name and concentration with units. List multiple drugs separated by commas."
+        },
+        "feeder_layer_type": {
+            "description": "Type of feeder layer cells on which biomaterial was grown.",
+            "type": "string",
+            "enum": [
+                "feeder-free",
+                "feeder-dependent, JK1 feeder cells",
+                "feeder-dependent, SNL 76/7 feeder cells",
+                "feeder-dependent, human marrow stromal cells",
+                "feeder-dependent, bovine embryonic fibroblast cells",
+                "feeder-dependent, mouse embryonic fibroblast cells",
+                "feeder-dependent, mouse fibroblast STO cells",
+                "feeder-dependent, mouse bone marrow stromal cells",
+                "feeder-dependent, mouse yolk sac-derived endothelial cells",
+                "feeder-dependent, human foreskin fibroblast cells",
+                "feeder-dependent, human newborn fibroblast cells",
+                "feeder-dependent, human fetal lung fibroblast cells",
+                "feeder-dependent, human uterine endometrial cells",
+                "feeder-dependent, human breast parenchymal cells",
+                "feeder-dependent, human embryonic fibroblast cells",
+                "feeder-dependent, human adipose stromal cells",
+                "feeder-dependent, human amniotic epithelial cells",
+                "feeder-dependent, human placental fibroblast cells",
+                "feeder-dependent, human umbilical cord stromal cells",
+                "feeder-dependent, human fetal muscle cells",
+                "feeder-dependent, human fetal skin cells",
+                "feeder-dependent, human fetal liver stromal cells",
+                "feeder-dependent, human fallopian tubal epithelial cells",
+                "feeder-dependent, human amniotic mesenchymal cells"
+            ],
+            "example": "feeder-free; feeder-dependent, mouse embryonic fibroblast cells",
+            "user_friendly": "Feeder layer type"
+        }
+    }
+}

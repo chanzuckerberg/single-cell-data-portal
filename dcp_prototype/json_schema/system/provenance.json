@@ -1,0 +1,74 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Provenance information added or generated at time of ingest." ,
+    "additionalProperties": false,
+    "required": [
+        "document_id",
+        "submission_date"
+    ],
+    "title": "Provenance",
+    "name": "provenance",
+	"type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/system/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/provenance"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_major_version": {
+            "description": "The major version number of the schema.",
+            "type": "integer",
+            "pattern": "^[0-9]{1,}$",
+            "user_friendly": "Schema major version",
+            "example": "4; 10"
+        },
+        "schema_minor_version": {
+            "description": "The minor version number of the schema.",
+            "type": "integer",
+            "pattern": "^[0-9]{1,}$",
+            "user_friendly": "Schema minor version",
+            "example": "6; 15"
+        },
+        "submission_date": {
+            "description": "When project was first submitted to database.",
+            "type": "string",
+            "format": "date-time",
+            "user_friendly": "Submission date"
+        },
+        "submitter_id": {
+            "description": "ID of individual who first submitted project.",
+            "type": "string",
+            "user_friendly": "Submitter ID"
+        },
+        "update_date": {
+            "description": "When project was last updated.",
+            "type": "string",
+            "format": "date-time",
+            "user_friendly": "Update date"
+        },
+        "updater_id": {
+            "description": "ID of individual who last updated project.",
+            "type": "string",
+            "user_friendly": "Updater ID"
+        },
+        "document_id": {
+            "description": "Identifier for document.",
+            "type": "string",
+            "pattern": ".{8}-.{4}-.{4}-.{4}-.{12}",
+            "comment": "This structure supports the current ingest API. It may change in the future.",
+            "user_friendly": "Document ID"
+        },
+        "accession": {
+            "description": "A unique accession for this entity, provided by the broker.",
+            "type": "string",
+            "user_friendly": "Accession"
+        }
+
+    }
+}

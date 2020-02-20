@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a microscopy-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Microscopy ontology",
+    "name": "microscopy_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/microscopy_ontology",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version number in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The name of the type of microscopy used in an imaging experiment.",
+            "type": "string",
+            "example": "confocal microscopy; fluorescence microscopy",
+            "user_friendly": "Microscopy"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:hcao", "obo:fbbi"],
+                "classes": ["FBbi:00000241"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "example": "FBbi:00000251; FBbi:00000246",
+            "user_friendly": "Microscopy ontology ID"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "example": "confocal microscopy; fluorescence microscopy",
+            "user_friendly": "Microscopy ontology label"
+        }
+    }
+}

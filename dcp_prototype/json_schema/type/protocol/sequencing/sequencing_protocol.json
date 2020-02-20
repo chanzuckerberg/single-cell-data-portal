@@ -1,0 +1,78 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the sequencing protocol.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core",
+        "instrument_manufacturer_model",
+        "paired_end",
+        "method"
+    ],
+    "title": "Sequencing protocol",
+    "name": "sequencing_protocol",
+    "type": "object",
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/sequencing_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core" : {
+            "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+         "instrument_manufacturer_model": {
+            "description": "The manufacturer and model of the sequencer.",
+            "type": "object",
+            "$ref": "module/ontology/instrument_ontology.json",
+            "user_friendly": "Instrument manufacturer and model"
+        },
+        "local_machine_name": {
+            "description": "Local name for the particular machine used for sequencing.",
+            "type": "string",
+            "user_friendly": "Local machine name",
+            "example": "Machine1; HSMA-20"
+        },
+        "paired_end": {
+            "description": "Whether the sequenced molecule was sequenced from both ends.",
+            "type": "boolean",
+            "example": "Should be one of: yes, or no.",
+            "guidelines": "If 3' 10x v2 was used, enter no.",
+            "user_friendly": "Paired end"
+        },
+        "method": {
+            "description": "The general method for sequencing.",
+            "type": "object",
+            "$ref": "module/ontology/sequencing_ontology.json",
+            "user_friendly": "Sequencing method"
+        },
+        "10x": {
+            "description": "Fields specific for 10x experiments.",
+            "type": "object",
+            "$ref": "module/process/sequencing/10x.json",
+            "user_friendly": "10x-specific"
+        }
+    }
+}

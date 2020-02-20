@@ -1,0 +1,513 @@
+{
+    "migrations": [
+        {
+            "source_schema": "cell_suspension",
+            "property": "total_estimated_cells",
+            "target_schema": "cell_suspension",
+            "replaced_by": "estimated_cell_count",
+            "effective_from": "9.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "library_preparation_protocol",
+            "property": "library_construction_approach",
+            "target_schema": "library_preparation_protocol",
+            "replaced_by": "library_construction_method",
+            "effective_from": "5.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "sequencing_protocol",
+            "property": "sequencing_approach",
+            "target_schema": "sequencing_protocol",
+            "replaced_by": "method",
+            "effective_from": "10.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "dissociation_protocol",
+            "property": "dissociation_method",
+            "target_schema": "dissociation_protocol",
+            "replaced_by": "method",
+            "effective_from": "6.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "dissociation_protocol",
+            "property": "protocol_reagents",
+            "target_schema": "dissociation_protocol",
+            "replaced_by": "reagents",
+            "effective_from": "6.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "collection_protocol",
+            "property": "collection_method",
+            "target_schema": "collection_protocol",
+            "replaced_by": "method",
+            "effective_from": "9.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "collection_protocol",
+            "property": "protocol_reagents",
+            "target_schema": "collection_protocol",
+            "replaced_by": "reagents",
+            "effective_from": "9.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "sequence_file",
+            "property": "insdc_run",
+            "target_schema": "sequence_file",
+            "replaced_by": "insdc_run_accessions",
+            "effective_from": "8.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "specimen_from_organism",
+            "property": "state_of_specimen.gross_image",
+            "target_schema": "specimen_from_organism",
+            "replaced_by": "state_of_specimen.gross_images",
+            "effective_from": "8.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "specimen_from_organism",
+            "property": "state_of_specimen.microscopic_image",
+            "target_schema": "specimen_from_organism",
+            "replaced_by": "state_of_specimen.microscopic_images",
+            "effective_from": "8.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "process",
+            "property": "insdc_experiment.insdc_experiment",
+            "target_schema": "process",
+            "replaced_by": "insdc_experiment.insdc_experiment_accession",
+            "effective_from": "7.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_process",
+            "property": "outputs",
+            "effective_from": "9.0.0",
+            "reason": "Field not used and violated metadata entity model",
+            "type": "deprecated property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "plate_based_sequencing.cell_quality",
+            "target_schema": "cell_suspension",
+            "replaced_by": "plate_based_sequencing.well_quality",
+            "effective_from": "10.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "specimen_from_organism",
+            "property": "organ_part",
+            "target_schema": "specimen_from_organism",
+            "replaced_by": "organ_parts",
+            "effective_from": "9.0.0",
+            "reason": "Field change to array",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "plate_based_sequencing.plate_id",
+            "target_schema": "cell_suspension",
+            "replaced_by": "plate_based_sequencing.plate_label",
+            "effective_from": "11.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "plate_based_sequencing.well_id",
+            "target_schema": "cell_suspension",
+            "replaced_by": "plate_based_sequencing.well_label",
+            "effective_from": "11.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_line",
+            "property": "cell_line_type",
+            "target_schema": "cell_line",
+            "replaced_by": "type",
+            "effective_from": "12.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "project",
+            "property": "contributors.project_role",
+            "target_schema": "project",
+            "replaced_by": "contributors.project_role.text",
+            "effective_from": "12.0.0",
+            "reason": "Field standardization",
+            "type": "moved property"
+        },
+        {
+            "source_schema": "project",
+            "property": "publications.publication_title",
+            "target_schema": "project",
+            "replaced_by": "publications.title",
+            "effective_from": "13.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "project",
+            "property": "publications.publication_url",
+            "target_schema": "project",
+            "replaced_by": "publications.url",
+            "effective_from": "13.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_line",
+            "property": "publication.publication_title",
+            "target_schema": "cell_line",
+            "replaced_by": "publication.title",
+            "effective_from": "13.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_line",
+            "property": "publication.publication_url",
+            "target_schema": "cell_line",
+            "replaced_by": "publication.url",
+            "effective_from": "13.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "differentiation_protocol",
+            "property": "differentiation_method",
+            "target_schema": "differentiation_protocol",
+            "replaced_by": "method",
+            "effective_from": "2.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_line",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "cell_line",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "14.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_line",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "cell_line",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "14.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "cell_suspension",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "12.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "cell_suspension",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "12.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "donor_organism",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "donor_organism",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "15.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "donor_organism",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "donor_organism",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "15.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "imaged_specimen",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "imaged_specimen",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "3.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "imaged_specimen",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "imaged_specimen",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "3.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "organoid",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "organoid",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "11.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "organoid",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "organoid",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "11.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "specimen_from_organism",
+            "property": "biomaterial_core.biosd_biomaterial",
+            "target_schema": "specimen_from_organism",
+            "replaced_by": "biomaterial_core.biosamples_accession",
+            "effective_from": "10.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "specimen_from_organism",
+            "property": "biomaterial_core.insdc_biomaterial",
+            "target_schema": "specimen_from_organism",
+            "replaced_by": "biomaterial_core.insdc_sample_accession",
+            "effective_from": "10.0.0",
+            "reason": "Field clarification",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "enrichment_protocol",
+            "property": "enrichment_method",
+            "target_schema": "enrichment_protocol",
+            "replaced_by": "method",
+            "effective_from": "3.0.0",
+            "reason": "Adherence to style guide",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "enrichment_protocol",
+            "property": "min_size_selected",
+            "target_schema": "enrichment_protocol",
+            "replaced_by": "minimum_size",
+            "effective_from": "3.0.0",
+            "reason": "Adherence to style guide",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "enrichment_protocol",
+            "property": "max_size_selected",
+            "target_schema": "enrichment_protocol",
+            "replaced_by": "maximum_size",
+            "effective_from": "3.0.0",
+            "reason": "Adherence to style guide",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "process",
+            "property": "process_core.process_location",
+            "target_schema": "process",
+            "replaced_by": "process_core.location",
+            "effective_from": "8.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_process",
+            "property": "process_core.process_location",
+            "target_schema": "analysis_process",
+            "replaced_by": "process_core.location",
+            "effective_from": "10.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "process",
+            "property": "process_core.operator",
+            "target_schema": "process",
+            "replaced_by": "process_core.operators",
+            "effective_from": "8.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_process",
+            "property": "process_core.operator",
+            "target_schema": "analysis_process",
+            "replaced_by": "process_core.operators",
+            "effective_from": "10.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "ipsc_induction_protocol",
+            "property": "ipsc_induction_method",
+            "target_schema": "ipsc_induction_protocol",
+            "replaced_by": "method",
+            "effective_from": "3.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "ipsc_induction_protocol",
+            "property": "ipsc_induction_factors",
+            "target_schema": "ipsc_induction_protocol",
+            "replaced_by": "reprogramming_factors",
+            "effective_from": "3.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "ipsc_induction_protocol",
+            "property": "protocol_reagents",
+            "target_schema": "ipsc_induction_protocol",
+            "replaced_by": "reagents",
+            "effective_from": "3.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "ipsc_induction_protocol",
+            "property": "ipsc_induction_produced_in_house",
+            "effective_from": "3.0.0",
+            "reason": "Redundant with process.location",
+            "type": "deprecated property"
+        },
+        {
+            "source_schema": "cell_suspension",
+            "property": "selected_cell_type",
+            "target_schema": "cell_suspension",
+            "replaced_by": "selected_cell_types",
+            "effective_from": "13.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_file",
+            "property": "file_core.file_format",
+            "target_schema": "analysis_file",
+            "replaced_by": "file_core.format",
+            "effective_from": "6.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "image_file",
+            "property": "file_core.file_format",
+            "target_schema": "image_file",
+            "replaced_by": "file_core.format",
+            "effective_from": "2.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "reference_file",
+            "property": "file_core.file_format",
+            "target_schema": "reference_file",
+            "replaced_by": "file_core.format",
+            "effective_from": "3.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "sequence_file",
+            "property": "file_core.file_format",
+            "target_schema": "sequence_file",
+            "replaced_by": "file_core.format",
+            "effective_from": "9.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "supplementary_file",
+            "property": "file_core.file_format",
+            "target_schema": "supplementary_file",
+            "replaced_by": "file_core.format",
+            "effective_from": "2.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "project",
+            "property": "contributors.contact_name",
+            "target_schema": "project",
+            "replaced_by": "contributors.name",
+            "effective_from": "14.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "process",
+            "property": "process_type",
+            "target_schema": "process",
+            "replaced_by": "type",
+            "effective_from": "9.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_process",
+            "property": "process_type",
+            "target_schema": "analysis_process",
+            "replaced_by": "type",
+            "effective_from": "11.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "protocol",
+            "property": "protocol_type",
+            "target_schema": "protocol",
+            "replaced_by": "type",
+            "effective_from": "7.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        },
+        {
+            "source_schema": "analysis_protocol",
+            "property": "protocol_type",
+            "target_schema": "analysis_protocol",
+            "replaced_by": "type",
+            "effective_from": "9.0.0",
+            "reason": "Schema consistency update",
+            "type": "renamed property"
+        }
+    ]
+}

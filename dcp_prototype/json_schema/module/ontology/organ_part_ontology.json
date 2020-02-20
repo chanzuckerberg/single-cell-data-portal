@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with an anatomy-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Organ part ontology",
+    "name": "organ_part_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/organ_part_ontology"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The text for the term as the user provides it.",
+            "type": "string",
+            "user_friendly": "Organ part",
+            "example": "bone marrow; islet of Langerhans"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:hcao", "obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
+            "user_friendly": "Organ part ontology ID",
+            "example": "UBERON:0002371; UBERON:0000006"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "user_friendly": "Organ part ontology label",
+            "example": "bone marrow; islet of Langerhans"
+        }
+    }
+}

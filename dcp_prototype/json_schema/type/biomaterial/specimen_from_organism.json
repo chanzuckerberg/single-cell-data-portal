@@ -1,0 +1,111 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the specimen that was collected from the donor organism.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "biomaterial_core",
+	    "organ"
+    ],
+    "title": "Specimen from organism",
+    "name": "specimen_from_organism",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/specimen_from_organism"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "biomaterial"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "biomaterial_core" : {
+            "description": "Core biomaterial-level information.",
+            "type": "object",
+            "$ref": "core/biomaterial/biomaterial_core.json",
+            "user_friendly": "Biomaterial core"
+        },
+        "genus_species": {
+            "description": "The scientific binomial name for the species of the specimen.",
+            "type" : "array",
+            "items":{
+                "$ref": "module/ontology/species_ontology.json"
+            },
+            "user_friendly": "Genus species"
+        },
+        "organ": {
+            "description": "The organ that the biomaterial came from.",
+            "type": "object",
+            "$ref": "module/ontology/organ_ontology.json",
+            "guidelines": "Blood and connective tissue are considered organs.",
+            "user_friendly": "Organ"
+        },
+        "organ_parts": {
+            "description": "A term for a specific part of the organ that the biomaterial came from.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/organ_part_ontology.json"
+            },
+            "guidelines": "The term organ part is very broadly defined here.",
+            "user_friendly": "Organ part"
+        },
+        "diseases": {
+            "description": "Short description of known disease(s) of the specimen.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/disease_ontology.json"
+	        },
+            "user_friendly": "Known disease(s)",
+            "guidelines": "Enter normal if no known diseases."
+        },
+        "state_of_specimen": {
+            "description": "State of the specimen at the time of collection.",
+            "type": "object",
+            "$ref": "module/biomaterial/state_of_specimen.json",
+            "user_friendly": "State of specimen"
+        },
+        "preservation_storage": {
+            "description": "Information about how a specimen was preserved and/or stored over a period of time.",
+            "type": "object",
+            "$ref": "module/biomaterial/preservation_storage.json",
+            "user_friendly": "Preservation/Storage"
+        },
+        "collection_time": {
+            "description": "When the biomaterial was collected.",
+            "type": "string",
+            "user_friendly": "Time of collection",
+            "example": "2016-01-21T00:00:00Z; 2016-03",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ. Supplying partial date is allowed.",
+            "oneOf": [
+                 {
+                    "format": "date-time"
+                 },
+                 {
+                    "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$"
+                 }
+              ]
+        },
+        "purchased_specimen": {
+            "description": "Information about a purchased specimen.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Purchased specimen"
+        }
+    }
+}

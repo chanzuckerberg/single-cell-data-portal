@@ -1,0 +1,107 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about how a biomaterial is treated to become an induced pluripotent stem cell.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core",
+        "method"
+    ],
+    "title": "iPSC induction protocol",
+    "name": "ipsc_induction_protocol",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/biomaterial_collection/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/ipsc_induction_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core": {
+            "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "method": {
+            "description": "Induction method applied to primary cell culture to induce pluripotent stem cell generation.",
+            "type": "string",
+            "enum": [
+                "lentivirus",
+                "sendai virus",
+                "Gun particle",
+                "piggyBac transposon",
+                "miRNA viral",
+                "adenovirus",
+                "cre-loxP",
+                "plasmid",
+                "retroviral"
+            ],
+            "user_friendly": "Induction method",
+            "comment": "Consider making this field an ontology in the future",
+            "example": "Should be one of: lentivirus, sendai virus, Gun particle, piggyBac transposon, miRNA viral, adenovirus, cre-loxP, plasmid, or retroviral."
+        },
+        "reprogramming_factors": {
+            "description": "Reprogramming factors added to primary cell culture to induce pluripotency.",
+            "type": "string",
+            "user_friendly": "Reprogramming factors",
+            "example": "POU5F1; SOX2; KLF4; c-MYC"
+	    },
+        "ipsc_induction_kit": {
+            "description": "Kit used to induce pluripotent stem cell generation.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Induction kit"
+        },
+        "pluripotency_test": {
+            "description": "Description of how pluripotency was tested in induced pluripotent stem cells.",
+            "type": "string",
+            "user_friendly": "Pluripotency test",
+            "example": "Teratoma formation; PluriTest; Rt-PCR"
+        },
+        "percent_pluripotency": {
+            "description": "Percent of iPSCs that passed the pluripotency test.",
+            "type": "number",
+            "example": 97.2,
+            "user_friendly": "Percent pluripotency"
+        },
+        "pluripotency_vector_removed": {
+            "description": "Whether a viral vector was removed after induction.",
+            "type": "string",
+            "enum": [
+                "yes",
+                "no",
+                "unknown"
+            ],
+            "user_friendly": "Pluripotent vector removed",
+            "example": "Should be one of: yes, no, or unknown."
+        },
+        "reagents": {
+            "description": "Additional purchased reagents used in this protocol.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "module/process/purchased_reagents.json"
+            },
+            "user_friendly": "Additional reagents"
+        }
+    }
+}

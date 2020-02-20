@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a file format-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "File format ontology",
+    "name": "file_format_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/file_format"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The name of the file format.",
+            "type": "string",
+            "example": "FASTQ; JSON",
+            "user_friendly": "File format"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:edam"],
+                "classes": ["format:1915"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "example": "format:1930; format:3464",
+            "user_friendly": "File format ontology ID"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "example": "FASTQ; JSON",
+            "user_friendly": "File format ontology label"
+        }
+    }
+}

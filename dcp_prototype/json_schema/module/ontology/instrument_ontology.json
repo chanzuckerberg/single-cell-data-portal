@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a instrument-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Instrument ontology",
+    "name": "instrument_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/instrument_ontology",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version number in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The full name of the instrument used.",
+            "type": "string",
+            "user_friendly": "Instrument",
+            "example": "Illumina HiSeq 2500; ONT MinION"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:efo"],
+                "classes": ["EFO:0000548"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "user_friendly": "Instrument ontology ID",
+            "example": "EFO:0008565; EFO:0008632"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "user_friendly": "Instrument ontology label",
+            "example": "Illumina HiSeq 2500; ONT MinION"
+        }
+    }
+}

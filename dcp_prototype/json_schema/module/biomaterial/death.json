@@ -1,0 +1,93 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relating to the death of an organism.",
+    "additionalProperties": false,
+    "required": [
+    	"cause_of_death"
+    ],
+    "title": "Death",
+    "name": "death",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/death"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "cause_of_death": {
+            "description": "Conditions resulting in death.",
+            "type": "string",
+            "user_friendly": "Cause of death",
+            "example": "Hypoxic brain damage; Sudden cardiac arrest",
+            "guidelines": "Determined from death report for human donor or from research lab for mouse."
+        }, 
+        "cold_perfused": {
+            "description": "Whether perfusion with cold fluid was used to help preserve tissues before heart stopped.",
+            "type": "boolean",
+            "user_friendly": "Cold perfused",
+            "example": "Should be one of: yes, no.",
+            "guidelines": "Enter yes if cold perfused. Otherwise, enter no."
+        },  
+        "days_on_ventilator": {
+            "description": "Number of days on ventilator before death occurred.",
+            "maximum": 10000, 
+            "minimum": 0, 
+            "type": "number",
+            "example": 4,
+            "user_friendly": "Number of days on ventilator"
+        }, 
+        "hardy_scale": {
+            "description": "Value on 4-point Hardy scale cause of death classification.",
+            "maximum": 4, 
+            "minimum": 0, 
+            "type": "integer",
+            "example": 0,
+            "user_friendly": "Value on Hardy scale",
+            "guidelines": "Enter: 0 for ventilator case, 1 for violent and fast death, 2 for fast death of natural causes, 3 for intermediate death, or 4 for slow death."
+        }, 
+        "time_of_death": {
+            "description": "Date and time when death was declared.",
+            "type": "string",
+            "user_friendly": "Time of death",
+            "example": "2016-01-21T00:00:00Z; 2016-03",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ. Supplying partial date is allowed.",
+            "oneOf": [
+                 {
+                    "format": "date-time"
+                 },
+                 {
+                    "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$"
+                 }
+              ]
+        },
+        "organ_donation_death_type": {
+            "description": "Type of death preceding organ donation.",
+            "type": "string",
+            "enum": [
+                "Donation after circulatory death (DCD)",
+                "Donation after brainstem death (DBD)"
+            ],
+            "user_friendly": "Organ donation death type",
+            "example": "Should be one of: Donation after circulatory death (DCD), or Donation after brainstem death (DBD).",
+            "guidelines": "Enter value for organ donors only."
+        },
+        "normothermic_regional_perfusion": {
+            "description": "Whether entire body was perfused with warm oxygenated blood.",
+            "type": "string",
+            "enum": [
+                "yes",
+                "no",
+                "unknown"
+            ],
+            "user_friendly": "Normothermic regional perfusion",
+            "example": "Should be one of: yes, no, or unknown.",
+            "guidelines": "Enter yes if entire body (but not limbs) was perfused with warm oxygenated blood. Otherwise, enter no."
+        }
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a time unit-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Time unit ontology",
+    "name": "time_unit_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/time_unit_ontology"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The name of a time unit being used.",
+            "type": "string",
+            "example": "second; week",
+            "user_friendly": "Time unit"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:efo", "obo:uo"],
+                "classes": ["UO:0000003", "UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "example": "UO:0000010; UO:0000034",
+            "user_friendly": "Time unit ontology ID"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "example": "second; week",
+            "user_friendly": "Time unit ontology label"
+        }
+    }
+}

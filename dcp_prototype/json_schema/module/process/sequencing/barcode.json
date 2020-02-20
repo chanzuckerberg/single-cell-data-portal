@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about barcodes used in a protocol.",
+    "additionalProperties": false,
+    "required": [
+        "barcode_offset",
+        "barcode_length",
+        "barcode_read"
+    ],
+    "title": "Barcode",
+    "name": "barcode",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/process/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/barcode"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "barcode_read": {
+            "description": "The read in which the barcode is found.",
+            "type": "string",
+            "enum": [
+                "Read 1",
+                "Read 2",
+                "i7 Index",
+                "i5 Index"
+            ],
+            "user_friendly": "Barcode-containing read",
+            "example": "Should be one of: Read 1, Read 2, i7 Index, or i5 Index."
+        },
+        "barcode_offset": {
+            "description": "The 0-based offset of start of barcode in read.",
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 0,
+            "example": 0,
+            "user_friendly": "Barcode offset",
+            "guidelines": "Enter 0 for beginning of read."
+        }, 
+        "barcode_length": {
+            "description": "Length of barcode in nucleotides.",
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 0,
+            "example": 28,
+            "user_friendly": "Barcode length"
+        },
+        "white_list_file": {
+            "description": "Name of file containing legitimate barcode sequences.",
+            "type": "string",
+            "guidelines": "Unused for randomly generated barcodes.",
+            "user_friendly": "White list barcode file",
+            "example": "barcode_whitelist_file.txt"
+        }
+    }
+}

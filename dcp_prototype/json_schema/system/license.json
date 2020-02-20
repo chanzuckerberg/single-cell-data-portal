@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the project license.",
+    "additionalProperties": false,
+    "title": "License",
+    "name": "license",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/system/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/license"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "identifier": {
+            "type": "string",
+            "description": "Identifier of the license under which this dataset is made available.",
+            "example": "CC-BY",
+            "user_friendly": "License identifier"
+        },
+        "full_name": {
+            "type": "string",
+            "description": "Full name of the license under which this dataset is made available.",
+            "example": "Attribution 4.0 International (CC BY 4.0)",
+            "user_friendly": "License description"
+        },
+        "url": {
+            "type": "string",
+            "description": "URL of the license under which this data is available.",
+            "example": "https://creativecommons.org/licenses/by/4.0/",
+            "user_friendly": "License URL"
+        }
+    }
+}

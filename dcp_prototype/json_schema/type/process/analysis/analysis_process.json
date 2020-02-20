@@ -1,0 +1,226 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the analysis process.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "process_core",
+        "type",
+        "timestamp_start_utc",
+        "timestamp_stop_utc",
+        "input_bundles",
+        "reference_bundle",
+        "tasks",
+        "inputs",
+        "analysis_run_type"
+    ],
+    "title": "Analysis process",
+    "name": "analysis_process",
+    "type": "object",
+    "definitions": {
+        "task": {
+            "additionalProperties": false,
+            "required": [
+                "task_name",
+                "start_time",
+                "stop_time",
+                "disk_size",
+                "docker_image",
+                "cpus",
+                "memory",
+                "zone"
+            ],
+            "type": "object",
+            "properties": {
+                "disk_size": {
+                    "description": "Name of the disk volume mounted to the VM for the task.",
+                    "type": "string",
+                    "example": "local-disk 11 HDD",
+                    "user_friendly": "Disk name",
+                    "guidelines": "Indicate both disk type and disk size."
+                },
+                "task_name": {
+                    "description": "Name of the task.",
+                    "type": "string",
+                    "example": "CollectDuplicationMetrics; RSEMExpression",
+                    "user_friendly": "Task name"
+                },
+                "zone": {
+                    "description": "Name of the Google Cloud zone where the task was run.",
+                    "type": "string",
+                    "example": "us-central1-b; europe-north1-a",
+                    "user_friendly": "Zone"
+                },
+                "log_err": {
+                    "description": "Path where standard error is logged.",
+                    "type": "string",
+                    "user_friendly": "Log error"
+                },
+                "start_time": {
+                    "description": "Date and time when the task started.",
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2019-04-23T20:25:25.969Z",
+                    "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ.",
+                    "user_friendly": "Start time"
+                },
+                "cpus": {
+                    "description": "Number of CPUs used to run this task.",
+                    "type": "integer",
+                    "example": 2,
+                    "user_friendly": "CPUs"
+                },
+                "log_out": {
+                    "description": "Path where standard output is logged.",
+                    "type": "string",
+                    "user_friendly": "Log out"
+                },
+                "stop_time": {
+                    "description": "Date and time when the task finished.",
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2019-04-23T20:28:29.830Z",
+                    "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ.",
+                    "user_friendly": "Stop time"
+                },
+                "memory": {
+                    "description": "Amount of memory allocated for this task.",
+                    "type": "string",
+                    "example": "7.5 GB",
+                    "user_friendly": "Memory"
+                },
+                "docker_image": {
+                    "description": "Name of docker image where the task is stored and executed.",
+                    "type": "string",
+                    "example": "quay.io/humancellatlas/secondary-analysis-picard:v0.2.2-2.10.10",
+                    "user_friendly": "Docker image"
+                }
+            }
+        },
+        "parameter": {
+            "additionalProperties": false,
+            "required": [
+                "parameter_name",
+                "parameter_value"
+            ],
+            "type": "object",
+            "properties": {
+                "checksum": {
+                    "description": "MD5 checksum of the file.",
+                    "type": "string",
+                    "user_friendly": "Checksum",
+                    "example": "e09a986c2e630130b1849d4bf9a94c06"
+                },
+                "parameter_name": {
+                    "description": "Name of parameter.",
+                    "type": "string",
+                    "example": "stranded; rsem_ref_index",
+                    "user_friendly": "Parameter name"
+                },
+                "parameter_value": {
+                    "description": "Path to file for or value of parameter.",
+                    "type": "string",
+                    "example": "NONE; gs://hca-dcp-mint-test-data/reference/GRCh38_Gencode/gencode_v27_primary.tar",
+                    "user_friendly": "Parameter value"
+                }
+            }
+        }
+    },
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/process/analysis/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/analysis_process"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "process"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "process_core" : {
+            "description": "Core process-level information.",
+            "type": "object",
+            "$ref": "core/process/process_core.json",
+            "user_friendly": "Process core"
+        },
+        "type": {
+            "description": "The type of process.",
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
+            "user_friendly": "Process type"
+        },
+        "inputs": {
+            "description": "Input parameters used in the pipeline run.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "type/process/analysis/analysis_process.json#/definitions/parameter"
+            },
+            "user_friendly": "Input parameters"
+        },
+        "tasks": {
+            "description": "Information about steps in the workflow.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "type/process/analysis/analysis_process.json#/definitions/task"
+            },
+            "user_friendly": "Workflow tasks"
+        },
+        "input_bundles": {
+            "description": "UUID(s) of the input bundle(s) used in running the pipeline.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "user_friendly": "Input bundles",
+            "example": "b816d2d6-5f10-4447-4194-3d0a804454d6"
+        },
+        "timestamp_start_utc": {
+            "description": "Initial start time of the full pipeline in UTC.",
+            "type": "string",
+            "format": "date-time",
+            "user_friendly": "Start timestamp (UTC)",
+            "example": "2018-01-21T09:34:27Z",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ."
+        },
+       "timestamp_stop_utc": {
+            "description": "Terminal stop time of the full pipeline in UTC.",
+            "type": "string",
+            "format": "date-time",
+            "user_friendly": "Stop timestamp (UTC)",
+            "example": "2018-01-21T11:35:01Z",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ."
+        },
+        "analysis_run_type": {
+            "description": "Whether the analysis was run or was copied forward as an optimization.",
+            "type": "string",
+            "enum": [
+                "run",
+                "copy-forward"
+            ],
+            "user_friendly": "Analysis run type",
+            "example": "Should be one of: run, or copy-forward."
+        },
+        "reference_bundle": {
+            "description": "UUID of the bundle containing the reference used in running the pipeline.",
+            "type": "string",
+            "user_friendly": "Reference bundle",
+            "example": "b816d2d6-5f10-4447-4194-3d0a804454d6"
+        }
+    }
+}

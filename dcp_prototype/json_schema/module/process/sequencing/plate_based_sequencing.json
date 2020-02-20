@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information specific to plate-based sequencing experiments.",
+    "additionalProperties": false,
+    "required": [
+        "plate_label"
+    ],
+    "title": "Plate-based sequencing",
+    "name": "plate_based_sequencing",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/process/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/plate_based_sequencing"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "plate_label": {
+            "description": "A label or name for the plate on which the well is located.",
+            "type": "string",
+            "user_friendly": "Plate label",
+            "example": "2217",
+            "guidelines": "Plate label should be unique in the project."
+        },
+        "well_label": {
+            "description": "A label or name for the well in which the cell is located.",
+            "type": "string",
+            "user_friendly": "Well label",
+            "example": "A1",
+            "guidelines": "Well label should be unique for the plate."
+        },
+        "well_quality": {
+            "description": "Quality of well if imaged before sequencing.",
+            "type": "string",
+            "enum": [
+                "OK",
+                "control, 2-cell well",
+                "control, empty well",
+                "low quality cell"
+            ],
+            "user_friendly": "Well quality",
+            "example": "Should be one of: 'OK', 'control, 2-cell well', 'control, empty well', or 'low quality cell'."
+        }
+    }
+}

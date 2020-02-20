@@ -1,0 +1,150 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the imaging protocol.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core",
+        "microscopy_technique",
+        "magnification",
+        "numerical_aperture",
+        "overlapping_tiles",
+        "channel",
+        "probe",
+        "pixel_size"
+    ],
+    "title": "Imaging Protocol",
+    "name": "imaging_protocol",
+    "type": "object",
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/imaging/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/imaging_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core" : {
+	        "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "microscope_setup_description": {
+            "description": "Description of the microscope setup.",
+            "type": "string",
+            "user_friendly": "Microscope setup description",
+            "example": "Motorized stage (SCAN IM 112 x 74, Marzhauser), sCMOS camera (Zyla 4.2; Andor), 60x, Plan-Apo, 1.3 NA, silicone oil objective (UPLSAPO60XS2; Olympus).",
+            "guidelines": "Include manufacturer and model information about the stand, camera, and objective."
+         },
+        "microscopy_technique": {
+            "description": "The type of microscopy.",
+            "type": "object",
+            "$ref": "module/ontology/microscopy_ontology.json",
+            "user_friendly": "Microscopy technique"
+        },
+        "magnification": {
+            "description": "Magnification of the objective used for imaging.",
+            "type": "string",
+            "user_friendly": "Magnification",
+            "example": "60x; 100x"
+         },
+        "numerical_aperture": {
+            "description": "Numerical aperture of the objective.",
+            "type": "number",
+            "user_friendly": "Numerical aperture",
+            "example": "1.3; 0.75"
+         },
+        "immersion_medium_type": {
+            "description": "Immersion medium used for imaging.",
+            "type": "string",
+            "user_friendly": "Immersion medium",
+            "example": "oil; air"
+         },
+        "immersion_medium_refractive_index": {
+            "description": "Refractive index of the immersion medium used for imaging.",
+            "type": "number",
+            "user_friendly": "Refractive index of the immersion medium",
+            "example": "1.5; 1"
+         },
+        "pixel_size": {
+            "description": "Pixel size in nanometers.",
+            "type": "number",
+            "user_friendly": "Pixel size",
+            "example": "109"
+         },
+        "number_of_tiles": {
+            "description": "Number of XY tiles in the experiment.",
+            "type": "integer",
+            "user_friendly": "Number of tiles",
+            "example": "2000"
+         },
+        "tile_size_y": {
+            "description": "Y size of the tile in micrometers.",
+            "type": "number",
+            "user_friendly": "Tile size Y",
+            "example": "100"
+         },
+        "tile_size_x": {
+            "description": "X size of the tile in micrometers.",
+            "type": "number",
+            "user_friendly": "Tile size X",
+            "example": "100"
+         },
+        "z_stack_step_size": {
+            "description": "Z-stack step size in nanometers.",
+            "type": "number",
+            "user_friendly": "Z stack step size",
+            "example": "200"
+         },
+        "number_of_z_steps": {
+            "description": "Number of steps in a Z stack.",
+            "type": "integer",
+            "user_friendly": "Number of Z steps",
+            "example": "40"
+         },
+        "overlapping_tiles": {
+            "description": "Whether tiles were collected with overlap.",
+            "type": "string",
+            "user_friendly": "Overlapping tiles",
+            "example": "Should be one of: yes, or no.",
+            "enum": [
+                "yes",
+                "no"
+            ]
+         },
+        "channel": {
+            "description": "Information about each channel used in the imaging protocol.",
+            "type": "array",
+            "items": {
+                "$ref": "module/protocol/channel.json"
+            },
+            "user_friendly": "Channel"
+        },
+        "probe": {
+            "description": "Information about each probe in the imaging experiment.",
+            "type": "array",
+            "items": {
+                "$ref": "module/protocol/probe.json"
+            },
+            "user_friendly": "Probe"
+        }
+    }
+}

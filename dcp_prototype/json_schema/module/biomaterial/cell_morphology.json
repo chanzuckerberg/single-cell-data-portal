@@ -1,0 +1,71 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relating to pathological and morphological features of cells.",
+    "additionalProperties": false,
+    "title": "Cell morphology",
+    "name": "cell_morphology",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/cell_morphology"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "cell_morphology": {
+            "description": "General description of the morphology of cells.",
+            "type": "string",
+            "user_friendly": "Cell morphology",
+            "example": "adherent cells; form single layer colonies"
+        },
+        "cell_size": {
+            "description": "Size of cells in Cell size unit.",
+            "type": "string",
+            "pattern": "^[0-9]+\\.?[0-9]*-?[0-9]*\\.?[0-9]*$",
+            "example": "15; 20-30",
+            "user_friendly": "Cell size",
+            "guidelines": "Enter a single value or a range. Average value is acceptable."
+        },
+        "cell_size_unit": {
+            "description": "The unit in which the Cell size is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/length_unit_ontology.json",
+            "user_friendly": "Cell size unit"
+        },
+        "percent_cell_viability": {
+            "description": "Percent of cells determined to be viable.",
+            "type": "number",
+            "example": 98.7,
+            "user_friendly": "Percent cell viability",
+            "guidelines": "Enter a single number. Average value is acceptable."
+        },
+        "cell_viability_method": {
+            "description": "The method by which cell viability was determined.",
+            "type": "string",
+            "example": "Fluorescein diacetate hydrolysis; ATP test",
+            "user_friendly": "Cell viability method"
+        },
+        "cell_viability_result": {
+            "description": "Result of the cell viability test.",
+            "type": "string",
+            "enum": [
+                "pass",
+                "fail"
+            ],
+            "example": "Should be one of: pass, fail",
+            "user_friendly": "Cell viability result"
+        },
+        "percent_necrosis": {
+            "description" : "Percent of cells identified to be necrotic.",
+            "type": "number",
+            "example": 10,
+            "user_friendly": "Percent necrotic cells",
+            "guidelines": "Enter a single number. Average value is acceptable."
+        }
+    }
+}

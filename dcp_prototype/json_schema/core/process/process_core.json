@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relevant to how a biomaterial or file was converted into another biomaterial or file.",
+    "additionalProperties": false,
+    "required": [
+        "process_id"
+    ],
+    "title": "Process core",
+    "name": "process_core",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/core/process/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/process_core"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "process_id": {
+            "description": "A unique ID for the process.",
+            "type": "string",
+            "user_friendly": "Process ID"
+        },
+        "process_name": {
+            "description": "A short, descriptive name for the process that need not be unique.",
+            "type": "string",
+            "user_friendly": "Process name"
+        },
+        "process_description": {
+            "description": "A general description of the process.",
+            "type": "string",
+            "user_friendly": "Process description"
+        },
+         "location": {
+            "description": "Location where the process took place.",
+            "type": "string",
+            "example": "Wellcome Trust Sanger Institute; Cancer Institute Stanford University",
+            "user_friendly": "Location"
+         },
+         "operators": {
+           "description": "Identifier for individual(s) who executed the process.",
+           "type": "array",
+           "example": "Technician 1; JD; John Doe",
+           "items":{
+                "type": "string"
+           },
+           "user_friendly": "Operator(s)",
+           "guidelines": "Enter either the name(s) or identifier(s) of the individual(s)."
+         }
+    }
+}
+

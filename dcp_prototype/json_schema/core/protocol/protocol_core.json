@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about an intended protocol that was followed in the project.",
+    "additionalProperties": false,
+    "required": [
+        "protocol_id"
+    ],
+    "title": "Protocol core",
+    "name": "protocol_core",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/core/protocol/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/protocol_core"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "protocol_id":{
+            "description": "A unique ID for the protocol.",
+            "type": "string",
+            "user_friendly": "Protocol ID",
+            "guidelines": "Protocol ID should have no spaces."
+        },
+        "protocol_name": {
+            "description": "A short name for the protocol.",
+            "type": "string",
+            "user_friendly": "Protocol name"
+        },
+        "protocol_description": {
+            "description": "A general description of the protocol.",
+            "type": "string",
+            "user_friendly": "Protocol description"
+        },
+        "publication_doi": {
+            "description": "The publication digital object identifier (doi) for the protocol.",
+            "type": "string",
+            "example": "10.1101/193219",
+            "user_friendly": "Publication DOI"
+        },
+        "protocols_io_doi": {
+            "description": "The protocols.io digital object identifier (doi) for the protocol.",
+            "type": "string",
+            "example": "10.17504/protocols.io.mgjc3un",
+            "user_friendly": "protocols.io DOI"
+        },
+        "document": {
+            "description": "A filename of a PDF document containing the details of the protocol.",
+            "type": "string",
+            "pattern": "^.*.pdf$",
+            "user_friendly": "Document filename",
+            "example": "my_cool_protocol.pdf"
+        }
+    }
+}

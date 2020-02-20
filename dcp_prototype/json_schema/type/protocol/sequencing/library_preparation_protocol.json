@@ -1,0 +1,173 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about how a sequencing library was prepared.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core",
+        "library_construction_method",
+        "input_nucleic_acid_molecule",
+        "nucleic_acid_source",
+        "end_bias",
+        "strand"
+    ],
+    "title": "Library preparation protocol",
+    "name": "library_preparation_protocol",
+    "type": "object",
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/library_preparation_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core" : {
+            "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "cell_barcode": {
+            "description": "Information about cell identifier barcodes.",
+            "type": "object",
+            "$ref": "module/process/sequencing/barcode.json",
+            "user_friendly": "Cell barcode"
+        },
+        "input_nucleic_acid_molecule": {
+            "description": "Starting nucleic acid molecule isolated for sequencing.",
+            "type": "object",
+            "$ref": "module/ontology/biological_macromolecule_ontology.json",
+            "user_friendly": "Input nucleic acid molecule"
+        },
+        "nucleic_acid_source": {
+            "description": "Source cells or organelles from which nucleic acid molecules were collected.",
+            "type": "string",
+            "enum": [
+                "bulk cell",
+                "single cell",
+                "single nucleus",
+                "bulk nuclei",
+                "mitochondria"
+            ],
+            "user_friendly": "Nucleic acid source",
+            "example": "Should be one of: single cell, bulk cell, single nucleus, bulk nuclei, or mitochondria."
+        },
+        "library_construction_method": {
+            "description": "The general method for sequencing library construction.",
+            "type": "object",
+            "$ref": "module/ontology/library_construction_ontology.json",
+            "user_friendly": "Library construction method"
+        },
+        "library_construction_kit": {
+            "description": "Name of kit used to construct the sequencing library.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Library construction kit"
+        },
+        "nucleic_acid_conversion_kit": {
+            "description": "Name of kit used to convert RNA to DNA for sequencing.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Nucleic acid conversion kit"
+        },
+        "end_bias": {
+            "description": "The type of tag or end bias the library has.",
+            "type": "string",
+            "example": "Should be one of: 3 prime tag, 3 prime end bias, 5 prime tag, 5 prime end bias, or full length.",
+            "enum": [
+                "3 prime tag",
+                "3 prime end bias",
+                "5 prime tag",
+                "5 prime end bias",
+                "full length"
+            ],
+            "user_friendly": "End bias",
+            "guidelines": "Enter 'full length' if there is no tag or end bias."
+        },
+        "primer": {
+            "description": "Primer used for cDNA synthesis from RNA.",
+            "type": "string",
+            "enum": [
+                "poly-dT",
+                "random"
+            ],
+            "user_friendly": "Primer",
+            "example": "Should be one of: poly-dT, or random."
+        },
+        "strand": {
+            "description": "Library strandedness.",
+            "type": "string",
+            "enum": [
+                "first",
+                "second",
+                "unstranded",
+                "not provided"
+            ],
+            "example": "Should be one of: first, second, unstranded, or not provided.",
+            "user_friendly": "Strand",
+            "guidelines": "Enter 'first' if sequenced molecule is only the strand generated during first strand synthesis. Enter 'second' if sequenced molecule is only the strand generated during second strand synthesis. Enter 'unstranded' if both strands were sequenced."
+        },
+        "spike_in_kit": {
+            "description": "Information about a spike-in kit.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Spike-in kit"
+        },
+        "spike_in_dilution": {
+            "description": "Dilution of spike-in.",
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 1,
+            "user_friendly": "Spike-in dilution",
+            "example": 100
+        },
+        "umi_barcode": {
+            "description": "Information about unique molecular identifier (UMI) barcodes.",
+            "type": "object",
+            "$ref": "module/process/sequencing/barcode.json",
+            "user_friendly": "UMI barcode"
+        },
+        "library_preamplification_method": {
+            "description": "The method used to amplify RNA prior to adaptor ligation.",
+            "type": "object",
+            "$ref": "module/ontology/library_amplification_ontology.json",
+            "user_friendly": "Library pre-amplification method"
+        },
+        "cdna_library_amplification_method": {
+            "description": "The method used to amplify cDNA library prior to sequencing.",
+            "type": "object",
+            "$ref": "module/ontology/library_amplification_ontology.json",
+            "user_friendly": "cDNA library amplification method"
+        },
+        "nominal_length": {
+            "description": "Average (insert) size of the fragments being sequenced.",
+            "type": "integer",
+            "user_friendly": "Nominal length",
+            "example": 250
+        },
+        "nominal_sdev": {
+            "description": "Standard deviation of the (insert) size of the fragments being sequenced.",
+            "type": "integer",
+            "user_friendly": "Nominal standard deviation",
+            "example": 30
+        }
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about probes used to detect targets.",
+    "additionalProperties": false,
+    "required": [
+        "probe_label",
+        "target_label",
+        "assay_type"
+    ],
+    "title": "Probe",
+    "name": "probe",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/protocol/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/probe"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "probe_label": {
+            "description": "The label of a probe used to detect target in this experiment.",
+            "type": "string",
+            "example": "ACTA1; cFos",
+            "user_friendly": "Probe label"
+        },
+         "probe_sequence": {
+            "pattern": "[ATGCUatgcu]+",
+            "description": "Sequence of a probe used to detect target.",
+            "type": "string",
+            "user_friendly": "Probe sequence",
+            "guidelines": "Only include transcript-specific hybridization region.",
+            "example": "AGGCTATAGCGGAGCTACG; aggctatagcggagctacg"
+        },
+        "target_name": {
+            "description": "The name of the target molecule.",
+            "type": "string",
+            "example": "ACTA1_exon1; nuclear cFos",
+            "user_friendly": "Target name"
+        },
+        "target_codebook_label": {
+            "description": "A label used in the codebook for the target.",
+            "type": "string",
+            "example": "AKT1; CFOS",
+            "user_friendly": "Target label in codebook",
+            "guidelines": "Leave blank if experiment did not use codebook."
+        },
+         "target_label": {
+            "description": "An identifier for the target molecule.",
+            "type": "string",
+            "example": "CHEBI:85345; ENSG00000170345",
+            "user_friendly": "Target label",
+            "guidelines": "For small molecules this should be from the ChEBI ontology. For gene products this should be a standard gene or gene product identifier from e.g. Ensembl or UniProt."
+        },
+        "subcellular_structure": {
+            "description": "Target subcellular structure.",
+            "type": "object",
+            "$ref": "module/ontology/cellular_component_ontology.json",
+            "user_friendly": "Target subcellular structure",
+            "guidelines": "This should be a term from the GO cell component ontology."
+        },
+        "probe_reagents": {
+            "description": "Name of reagents used to construct the probe.",
+            "type": "object",
+            "$ref": "module/process/purchased_reagents.json",
+            "user_friendly": "Probe construction reagents"
+        },
+        "assay_type": {
+            "description": "Type of assay used to detect target.",
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
+            "example": "MERFISH; in situ sequencing",
+            "user_friendly": "Assay type"
+        },
+        "fluorophore": {
+            "description": "Fluorophore used to detect target.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "example": "Cy5; Alexa 488",
+            "user_friendly": "Fluorophore"
+        },
+        "channel_label": {
+            "description": "Channel label used to assay signal.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "example": "1; A",
+            "user_friendly": "Channel",
+            "guidelines": "Should be the same as in Channel tab."
+        }
+    }
+}

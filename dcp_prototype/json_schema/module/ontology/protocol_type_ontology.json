@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a protocol-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Protocol type ontology",
+    "name": "protocol_type_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/protocol_type_ontology"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The name of a protocol type used.",
+            "type": "string",
+            "example": "dissociation protocol; enrichment protocol",
+            "user_friendly": "Protocol type"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:efo", "obo:obi"],
+                "classes": ["OBI:0000272"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },"example": "EFO:0009088; EFO:0009089",
+            "user_friendly": "Protocol type ontology ID"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "example": "dissociation protocol; enrichment protocol",
+            "user_friendly": "Protocol type ontology label"
+        }
+    }
+}

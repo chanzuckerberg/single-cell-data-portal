@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about other organisms that this organism is related to.",
+    "additionalProperties": false,
+    "title": "Familial relationship",
+    "name": "familial_relationship",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+          "description": "The URL reference to the schema.",
+          "type": "string",
+          "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/familial_relationship"
+        },
+        "schema_version": {
+          "description": "The version number of the schema in major.minor.patch format.",
+          "type": "string",
+          "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+          "example": "4.6.1"
+        },
+        "parent": {
+          "description": "The individual's parent.",
+          "type": "string",
+          "user_friendly": "Parent",
+          "guidelines": "Enter the ID of the parent of this individual."
+        },
+        "child": {
+          "description": "The individual's child.",
+          "type": "string",
+          "user_friendly": "Child",
+          "guidelines": "Enter the ID of the child of this individual."
+        },
+        "sibling": {
+          "description": "The individual's sibling.",
+          "type": "string",
+          "user_friendly": "Sibling",
+          "guidelines": "Enter the ID of the sibling of this individual."
+        }
+    }
+}

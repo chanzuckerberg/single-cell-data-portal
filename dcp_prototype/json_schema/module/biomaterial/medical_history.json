@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the medical history of a donor.",
+    "additionalProperties": false,
+    "title": "Medical history",
+    "name": "medical_history",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/medical_history"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "alcohol_history": {
+            "description": "Estimated amount of alcohol consumed per day.",
+            "type": "string",
+            "user_friendly": "Alcohol history",
+            "example": "3-6 alcohol units/day; 1 drink per day",
+            "guidelines": "Enter the amount consumed per day using units such as alcohol units (10mL or 8g of alcohol) or drinks (14g of alcohol)."
+        },
+        "medication": {
+            "description": "Medications the individual was taking at time of biomaterial collection.",
+            "type": "string",
+            "user_friendly": "Medications",
+            "example": "Naproxen 500mg/day; Citalopram 20mg/day",
+            "guidelines": "Enter the medication and dosage. Separate multiple medications with commas."
+        },
+        "smoking_history": {
+            "description": "Estimated number of cigarettes smoked per day.",
+            "type": "string",
+            "user_friendly": "Smoking history",
+            "example": "20 cigarettes/day for 25 years, stopped 2000",
+            "guidelines": "Enter an estimated number of cigarettes smoked per day and for how many years."
+        },
+        "nutritional_state": {
+            "description": "Nutritional state of individual at time of biomaterial collection.",
+            "type": "string",
+            "enum": [
+                "normal",
+                "fasting",
+                "feeding tube removed"
+            ],
+            "user_friendly": "Nutritional state",
+            "example": "Should be one of: normal, fasting, or feeding tube removed."
+        },
+        "test_results": {
+            "description": "Results from medical tests performed on the individual.",
+            "type": "string",
+            "user_friendly": "Test results",
+            "example": "lipid panel shows normal level of LDL (124 mg/dL); HIV, HBV, HCV: Negative"
+        },
+        "treatment": {
+            "description": "Treatments the individual has undergone prior to biomaterial collection.",
+            "type": "string",
+            "user_friendly": "Treatments",
+            "example": "Patient treated with antibiotics for a urinary tract infection; Patient treated with chemotherapy (Epirubicin, cisplatin, capecitabine) to treat stomach cancer"
+        }
+    }
+}

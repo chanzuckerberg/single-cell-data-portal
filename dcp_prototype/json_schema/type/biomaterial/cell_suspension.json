@@ -1,0 +1,94 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the suspension of cells or nuclei derived from the collected or cultured specimen.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "biomaterial_core"
+    ],
+    "title": "Cell suspension",
+    "name": "cell_suspension",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/cell_suspension"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "biomaterial"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "biomaterial_core" : {
+            "description": "Core biomaterial-level information.",
+            "type": "object",
+            "$ref": "core/biomaterial/biomaterial_core.json",
+            "user_friendly": "Biomaterial core"
+        },
+        "cell_morphology": {
+            "description": "Features relating to the morphology of cells in a biomaterial.",
+            "type": "object",
+            "$ref": "module/biomaterial/cell_morphology.json",
+            "user_friendly": "Cell morphology"
+        },
+        "growth_conditions": {
+            "description": "Features relating to the growth and/or maintenance of a biomaterial.",
+            "type": "object",
+            "$ref": "module/biomaterial/growth_conditions.json",
+            "user_friendly": "Growth conditions"
+        },
+        "genus_species": {
+            "description": "The scientific binomial name for the species of the suspension.",
+            "type" : "array",
+            "items":{
+                "$ref": "module/ontology/species_ontology.json"
+            },
+            "user_friendly": "Genus species"
+        },
+        "selected_cell_types": {
+            "description" : "The cell type(s) selected to be present in the suspension.",
+            "type": "array",
+            "items": {
+		        "$ref": "module/ontology/cell_type_ontology.json"
+	        },
+            "user_friendly": "Selected cell type(s)",
+            "guidelines": "Enter the cell type(s) selected for, not the cell type(s) determined to be present post-analysis."
+       },
+        "estimated_cell_count": {
+            "description": "Estimated number of cells in the suspension.",
+            "type": "integer",
+            "maximum": 1000000000,
+            "minimum": 0,
+            "example": "1; 2100",
+            "user_friendly": "Estimated cell count",
+            "guidelines": "Enter 1 for well-based assays."
+        },
+        "plate_based_sequencing" : {
+            "description": "Fields specific for plate-based sequencing experiments.",
+            "type": "object",
+            "$ref": "module/process/sequencing/plate_based_sequencing.json",
+            "user_friendly": "Plate-based sequencing"
+        },
+        "timecourse": {
+            "description": "Information relating to a timecourse associated with this cell suspension.",
+            "type": "object",
+            "$ref": "module/biomaterial/timecourse.json",
+            "user_friendly": "Timecourse"
+        }
+     }
+}

@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relating to a timecourse.",
+    "additionalProperties": false,
+    "required": [
+        "value",
+        "unit"
+    ],
+    "title": "Timecourse",
+    "name": "timecourse",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/timecourse"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "value": {
+            "description": "The numerical value in Timecourse unit associated with a time interval used in the experiment.",
+            "pattern": "^[0-9]+\\.?[0-9]*-?[0-9]*\\.?[0-9]*$",
+            "type": "string",
+            "example": "2; 5.5-10.5",
+            "user_friendly": "Timecourse value",
+            "guidelines": "Enter either a single value or a range of values. Indicate a range using a hyphen."
+        },
+        "unit": {
+            "description": "The unit in which the Timecourse value is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Timecourse unit"
+        },
+        "relevance": {
+            "description": "Relevance of the Timecourse value/unit to the experiment.",
+            "type": "string",
+            "example": "Collection after tumor cells injected into the mammary gland; Time tissue underwent liberase digestion",
+            "user_friendly": "Timecourse relevance"
+        }
+    }
+}

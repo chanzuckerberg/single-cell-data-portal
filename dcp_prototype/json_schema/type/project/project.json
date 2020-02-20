@@ -1,0 +1,133 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A project entity contains information about the overall project.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "project_core",
+        "funders"
+    ],
+    "title": "Project",
+    "name": "project",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/project/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/project"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "project"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "project_core" : {
+            "description": "Core project-level information.",
+            "type": "object",
+            "$ref": "core/project/project_core.json",
+            "user_friendly": "Project core"
+        },
+        "contributors": {
+            "description": "People contributing to any aspect of the project.",
+            "type": "array",
+            "items": {
+                "$ref": "module/project/contact.json"
+            },
+            "user_friendly": "Contributors"
+        },
+        "supplementary_links": {
+            "description": "External link(s) pointing to code, supplementary data files, or analysis files associated with the project which will not be uploaded.",
+            "type": "array",
+            "example": "https://github.com/czbiohub/tabula-muris; http://celltag.org/",
+            "items": {
+                "type": "string"
+            },
+            "user_friendly": "Supplementary link(s)"
+        },
+        "publications": {
+            "description": "Publications resulting from this project.",
+            "type": "array",
+            "items": {
+                "$ref": "module/project/publication.json"
+            },
+            "user_friendly": "Publications"
+        },
+        "insdc_project_accessions": {
+            "description": "An International Nucleotide Sequence Database Collaboration (INSDC) project accession.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[D|E|S]RP[0-9]+$"
+            },
+            "example": "SRP000000",
+            "user_friendly": "INSDC project accession",
+            "guidelines": "Enter accession if project has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRP, SRP, or ERP, respectively."
+        },
+        "geo_series_accessions": {
+            "description": "A Gene Expression Omnibus (GEO) series accession.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^GSE.*$"
+            },
+            "example": "GSE00000",
+            "user_friendly": "GEO series accession",
+            "guidelines": "Enter accession if project has been archived. Accession must start with GSE."
+        },
+        "array_express_accessions": {
+            "description": "An ArrayExpress accession.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^E-....-.*$"
+            },
+            "example": "E-AAAA-00",
+            "user_friendly": "ArrayExpress accession",
+            "guidelines": "Enter accession if project has been archived. Accession must start with E-."
+        },
+        "insdc_study_accessions": {
+            "description": "An International Nucleotide Sequence Database Collaboration (INSDC) study accession.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^PRJ[E|N|D][a-zA-Z][0-9]+$"
+            },
+            "example": "PRJNA000000",
+            "user_friendly": "INSDC study accession",
+            "guidelines": "Enter accession if study has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with PRJD, PRJN, or PRJE, respectively."
+        },
+        "biostudies_accessions": {
+            "description": "A BioStudies study accession.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^S-[A-Z]{4}[0-9]+$"
+            },
+            "example": "S-EXMP1; S-HCAS33",
+            "user_friendly": "BioStudies accession",
+            "guidelines": "Enter accession if study has been archived."
+        },
+        "funders": {
+            "description": "Funding source(s) supporting the project.",
+            "type": "array",
+            "items": {
+                "$ref": "module/project/funder.json"
+            },
+            "user_friendly": "Funding source(s)"
+        }
+    }
+}

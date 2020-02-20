@@ -1,0 +1,45 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"description": "Information specific to 10x experiments.",
+	"additionalProperties": false,
+	"title": "10x-specific",
+	"name": "10x",
+	"type": "object",
+	"properties": {
+		"describedBy":  {
+			"description": "The URL reference to the schema.",
+			"type": "string",
+			"pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/process/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/10x"
+		},
+		"schema_version": {
+			"description": "The version number of the schema in major.minor.patch format.",
+			"type": "string",
+			"pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+			"example": "4.6.1"
+		},
+		"fastq_method": {
+			"description": "Method used for the generation of fastq files from bcl files.",
+			"type": "string",
+			"example": "Cellranger mkfastq; bcl2fastq2",
+			"user_friendly": "Fastq creation method"
+		},
+		"fastq_method_version": {
+			"description": "Version of the program used for fastq generation.",
+			"type": "string",
+			"example": "Cellranger 2.1.1; v2.20",
+			"user_friendly": "Fastq creation method version"
+		},
+		"pooled_channels": {
+			"description": "The number of channels pooled within a sequencing lane.",
+			"type": "number",
+			"example": 4,
+			"user_friendly": "Pooled channels"
+		},
+		"drop_uniformity": {
+			"description": "Whether drop uniformity was achieved as a result of visual inspection of emulsion after a 10x run.",
+			"type": "boolean",
+			"example": "Should be one of: yes, or no.",
+			"user_friendly": "Drop uniformity"
+		}
+    }
+}

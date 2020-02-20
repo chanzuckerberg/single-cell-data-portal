@@ -1,0 +1,74 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about how a biomaterial is enriched for a feature or characteristic of interest.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core",
+        "method"
+    ],
+    "title": "Enrichment protocol",
+    "name": "enrichment_protocol",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/biomaterial_collection/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/enrichment_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+         "protocol_core" : {
+            "description": "Core protocol-level information.",
+             "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "method": {
+            "description": "The method by which enrichment was achieved.",
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
+            "user_friendly": "Enrichment method"
+        },
+        "markers": {
+            "description": "A list of markers used to enrich for or against certain cells.",
+            "type": "string",
+            "example": "CD4+ CD8-; HLA-G+",
+            "user_friendly": "Markers",
+            "guidelines": "Format as a space-delimited list of markers with +/- where + means enriched for and - means enriched against."
+        },
+        "minimum_size": {
+            "description": "Minimum cell or organelle size passing selection, in microns.",
+            "type": "number",
+            "maximum": 10000,
+            "minimum": 0.01,
+            "user_friendly": "Minimum size selected",
+            "example": 70
+        },
+        "maximum_size": {
+            "description": "Maximum cell or organelle size passing selection, in microns.",
+            "type": "number",
+            "maximum": 10000,
+            "minimum": 0.01,
+            "user_friendly": "Maximum size selected",
+            "example": 90
+        }
+    }
+}

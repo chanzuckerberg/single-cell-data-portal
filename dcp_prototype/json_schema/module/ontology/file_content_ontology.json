@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that describes the contents of a file.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "File content ontology",
+    "name": "file_content_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/file_content_ontology",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version number in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "General description of the contents of the file.",
+            "type": "string",
+            "example": "DNA sequence (raw); Sequence alignment",
+            "user_friendly": "Content description"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:edam"],
+                "classes": ["data:0006"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "example": "data:3497; data:0863",
+            "user_friendly": "Content description ontology ID"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "example": "DNA sequence (raw); Sequence alignment",
+            "user_friendly": "Content description ontology label"
+        }
+    }
+}

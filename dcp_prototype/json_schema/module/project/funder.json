@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the project funding source.",
+    "additionalProperties": false,
+    "required": [
+        "grant_id",
+        "organization"
+    ],
+    "title": "Funder",
+    "name": "funder",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/project/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/funder"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "grant_title": {
+            "description": "The name of the grant funding the project.",
+            "type": "string",
+            "example": "Study of single cells in the human body.",
+            "user_friendly": "Grant title",
+            "guidelines": "Enter a title of approximately 30 words."
+        },
+        "grant_id": {
+            "description": "The unique grant identifier or reference.",
+            "type": "string",
+            "example": "BB/P0000001/1",
+            "user_friendly": "Grant ID"
+        },
+        "organization": {
+            "description": "The name of the funding organization.",
+            "type": "string",
+            "example": "Biotechnology and Biological Sciences Research Council (BBSRC); California Institute of Regenerative Medicine (CIRM)",
+            "user_friendly": "Funding organization"
+        }
+
+    }
+}

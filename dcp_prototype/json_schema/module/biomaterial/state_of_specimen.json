@@ -1,0 +1,92 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "State of specimen at time of collection.",
+    "additionalProperties": false,
+    "title": "State of specimen",
+    "name": "state_of_specimen",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/state_of_specimen"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "autolysis_score": {
+            "description": "State of tissue breakdown due to self-digestion.",
+            "type": "string",
+            "enum": [
+                "none", 
+                "mild", 
+                "moderate"
+            ],
+            "user_friendly": "Autolysis score",
+            "example": "Should be one of: none, mild, or moderate."
+        }, 
+        "gross_description": {
+            "description": "Color, size, and other aspects of specimen as visible to naked eye.",
+            "type": "string",
+            "user_friendly": "Gross description",
+            "example": "focal wedge shaped region of tan-orange discoloration; cystic"
+        },
+        "gross_images": {
+            "description": "List of filenames of photographs of specimen without magnification.",
+            "type": "array",
+            "items": {
+                "pattern": "^.*.jpg$|^.*.jpeg$|^.*.tiff$|^.*.png$", 
+                "type": "string"
+            },
+            "user_friendly": "Gross image",
+            "example": "my_gross_image_file.jpg",
+            "guidelines": "File must be of format JPEG, TIFF, or PNG."
+        }, 
+        "ischemic_temperature": {
+            "description": "Whether specimen experienced warm or cold ischemia.",
+            "type": "string",
+            "enum": [
+                "warm",
+                "cold"
+            ],
+            "user_friendly": "Ischemic temperature",
+            "example": "Should be one of: warm, or cold."
+        }, 
+        "ischemic_time": {
+            "description": "Duration of time, in seconds, between when the specimen stopped receiving oxygen and when it was preserved or processed.",
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "example": 7200,
+            "user_friendly": "Ischemic time"
+        }, 
+        "microscopic_description": {
+            "description": "How the specimen looks under the microscope and how it compares with normal cells.",
+            "type": "string",
+            "user_friendly": "Microscopic description",
+            "example": "Mixture of different cell sizes apparent; Dead cells are quite faint on microscope"
+        }, 
+        "microscopic_images": {
+            "description": "List of filenames of photographs of specimen under microscope.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^.*.jpg$|^.*.jpeg$|^.*.tiff$|^.*.png$"
+            },
+            "user_friendly": "Microscopic image",
+            "example": "my_microscopic_image_file.jpg",
+            "guidelines": "File must be of format JPEG, TIFF, or PNG."
+        },
+        "postmortem_interval": {
+            "description": "Duration of time between when death was declared and when the specimen was preserved or processed.",
+            "type": "integer",
+            "minimum": 0,
+            "example": 2400,
+            "user_friendly": "Post-mortem interval",
+            "guidelines": "Enter time in seconds."
+        }
+    }
+}

@@ -1,0 +1,98 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about how a cell is differentiated to a desired cell type or organoid.",
+    "additionalProperties": false,
+    "required": [
+      "describedBy",
+      "schema_type",
+      "protocol_core",
+      "method"
+    ],
+    "title": "Differentiation protocol",
+    "name": "differentiation_protocol",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/biomaterial_collection/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/differentiation_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core": {
+            "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "method": {
+            "description": "Method applied to cell culture to induce a specific differentiation response.",
+            "type": "string",
+            "user_friendly": "Differentiation method",
+            "comment": "Consider making this an ontology in the future.",
+            "example": "Embryoid Body; Monolayer; Inductive Co-Culture"
+        },
+        "media":{
+            "description": "Culture media used to induce a specific differentiation response.",
+            "type": "string",
+            "user_friendly": "Differentiation media",
+            "example": "RPMI 1640 + B27; Neurobasal Media; StemPro-34 Serum-Free Medium"
+        },
+        "small_molecules":{
+            "description": "Small molecules added to stem cell medium to induce a specific differentiation response.",
+            "type": "string",
+            "user_friendly": "Small molecules",
+            "example": "Retinoic Acid; CHIR99021 (GSK-inhibitor); Activin A; BMP4"
+        },
+        "target_cell_yield": {
+            "description": "Percent of target cells obtained after directed differentiation of origin cell.",
+            "type": "number",
+            "example": 95,
+            "user_friendly": "Percent target cell yield"
+        },
+        "reagents": {
+            "description": "A list of purchased reagents used in the differentiation protocol.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "module/process/purchased_reagents.json"
+            },
+            "user_friendly": "Differentiation reagents"
+        },
+        "target_pathway": {
+            "description": "Targeted pathway for specific differentiation response.",
+            "type": "string",
+            "user_friendly": "Target pathway",
+            "example": "Wnt pathway; Hedgehog signaling pathway",
+            "comment": "Consider making this an ontology in the future."
+        },
+        "validation_method": {
+            "description": "Method used to validate origin cell successfully differentiated to target cell.",
+            "type": "string",
+            "user_friendly": "Differentiation validation method",
+            "example": "Pancreatic Cell DTZ Detection Assay; qPCR; Flow Cytometry; Immunocytochemistry Staining"
+        },
+        "validation_result": {
+            "description": "Result confirming successful differentiation to target cell type.",
+            "type": "string",
+            "user_friendly": "Validation result",
+            "example": "CD103 Positive; Nestin Positive; HCN4 Positive; CD11C Negative"
+        }
+    }
+}

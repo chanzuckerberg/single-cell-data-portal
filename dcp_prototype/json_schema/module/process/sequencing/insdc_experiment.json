@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information relating to an INSDC experiment.",
+    "additionalProperties": false,
+    "required": [
+        "insdc_experiment_accession"
+    ],
+    "title": "INSDC experiment",
+    "name": "insdc_experiment",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/process/sequencing/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/insdc_experiment"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "insdc_experiment_accession": {
+            "description": "An International Nucleotide Sequence Database Collaboration (INSDC) experiment accession.",
+            "pattern": "^[D|E|S]RX[0-9]+$",
+            "type": "string",
+            "user_friendly": "INSDC experiment accession",
+            "example": "SRX0000000",
+            "guidelines": "Enter accession if experiment has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRX, SRX, or ERX, respecitvely."
+        }
+	}
+}

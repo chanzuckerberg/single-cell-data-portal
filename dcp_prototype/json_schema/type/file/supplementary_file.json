@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Supplementary files belonging to a project.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "file_core"
+    ],
+    "title": "Supplementary file",
+    "name": "supplementary_file",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern": "^(http|https)://schema.(.*?)humancellatlas.org/type/file/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/supplementary_file"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "file"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "file_core" : {
+            "description": "Core file-level information.",
+            "type": "object",
+            "$ref": "core/file/file_core.json",
+            "user_friendly": "File core"
+        },
+        "file_description" : {
+            "description": "A short description of the file contents.",
+            "type": "string",
+            "example": "Protocol for FACS enrichment; Image of spleen sample collection location",
+            "user_friendly": "File description",
+            "guidelines": "File description could include information about how the file was generated."
+        }
+    }
+}

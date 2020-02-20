@@ -1,0 +1,88 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about any biological material that was generated/used in the project including everything from a whole organism to subcellular components.",
+    "additionalProperties": false,
+    "required": [
+        "biomaterial_id",
+        "ncbi_taxon_id"
+    ],
+    "title": "Biomaterial core",
+    "name": "biomaterial_core",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/core/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/biomaterial_core"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "example": "4.6.1"
+        },
+        "biomaterial_id":{
+            "description": "A unique ID for the biomaterial.",
+            "type": "string",
+            "user_friendly": "Biomaterial ID"
+        },
+        "biomaterial_name": {
+            "description": "A short, descriptive name for the biomaterial that need not be unique.",
+            "type": "string",
+            "user_friendly": "Biomaterial name"
+        },
+        "biomaterial_description": {
+            "description": "A general description of the biomaterial.",
+            "type": "string",
+            "user_friendly": "Biomaterial description"
+        },
+        "ncbi_taxon_id" : {
+            "description": "A taxonomy ID (taxonID) from NCBI.",
+            "type" : "array",
+            "items":{
+                "type": "integer"
+            },
+            "user_friendly": "NCBI taxon ID",
+            "example": 9606
+        },
+        "genotype": {
+            "description": "Genotype of the biomaterial.",
+            "type": "string",
+            "user_friendly": "Genotype",
+            "example": "DRB1 0401 protective allele; HLA-B*3901 allele"
+        },
+        "supplementary_files": {
+            "description": "A list of filenames of biomaterial-level supplementary files.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "user_friendly": "Supplementary files",
+            "example": "sample_site_image.jpg"
+        },
+        "biosamples_accession": {
+            "description": "A BioSamples accession.",
+            "type": "string",
+            "pattern": "^SAM(D|N|E([AG]?))[0-9]+$",
+            "user_friendly": "BioSamples accession",
+            "example": "SAMN00000000",
+            "guidelines": "Enter accession if sample has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with SAMD, SAMN, or SAME, respectively."
+        },
+        "insdc_sample_accession": {
+            "description": "An International Nucleotide Sequence Database Collaboration (INSDC) sample accession.",
+            "type": "string",
+            "pattern": "^[DES]RS[0-9]+$",
+            "user_friendly": "INSDC sample accession",
+            "example": "SRS0000000",
+            "guidelines": "Enter accession if sample has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRS, SRS, or ERS, respecitvely."
+        },
+        "HDBR_accession": {
+            "description": "A Human Developmental Biology Resource (HDBR) sample accession.",
+            "type": "string",
+            "pattern": "(^[0-9]{5})(,\\s[0-9]{1,},\\s[a-zA-Z]+$){0,1}",
+            "user_friendly": "HDBR accession",
+            "example": "34526; 14758, 2, liver",
+            "guidelines": "Enter accession if sample has been obtained from the Human Developmental Biology Resource (HDBR)."
+        }
+    }
+}

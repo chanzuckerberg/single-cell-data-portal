@@ -1,0 +1,166 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the cell line or cell culture biomaterial.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "biomaterial_core",
+        "type",
+        "model_organ"
+    ],
+    "title": "Cell line",
+    "name": "cell_line",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/cell_line"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "biomaterial"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "biomaterial_core" : {
+            "description": "Core biomaterial-level information.",
+            "type": "object",
+            "$ref": "core/biomaterial/biomaterial_core.json",
+            "user_friendly": "Biomaterial core"
+        },
+        "supplier": {
+           "description": "The supplier of the cell line.",
+           "type": "string",
+           "example": "HipSci; ATCC",
+           "user_friendly": "Supplier"
+        },
+        "catalog_number": {
+            "description": "The supplier catalogue number for the cell line.",
+            "type": "string",
+            "example": "77650057",
+            "user_friendly": "Catalog number"
+        },
+        "lot_number": {
+            "description": "The supplier lot or batch number for the cell line.",
+            "type": "string",
+            "example": "24.10.14",
+            "user_friendly": "Lot/batch number"
+        },
+        "catalog_url": {
+            "description": "The supplier catalogue URL for the cell line.",
+            "type": "string",
+            "user_friendly": "Catalog URL",
+            "example": "www.phe-culturecollections.org.uk/products/celllines/ipsc/detail.jsp?refId=77650057&collection=ecacc_ipsc"
+        },
+        "cell_cycle": {
+            "description": "The cell cycle phase if the cell line is synchronized growing cells or the phase is known.",
+            "type": "object",
+            "$ref": "module/ontology/cell_cycle_ontology.json",
+            "user_friendly": "Cell cycle"
+        },
+        "type": {
+            "description": "The type of cell line.",
+            "type": "string",
+            "enum": [
+                "primary",
+                "immortalized",
+                "stem cell",
+                "stem cell-derived",
+                "induced pluripotent",
+                "synthetic"
+            ],
+            "example": "Should be one of: primary, immortalized, stem cell, stem cell-derived, induced pluripotent, or synthetic.",
+            "user_friendly": "Cell line type"
+        },
+        "model_organ": {
+            "description": "Organ for which this cell line is a model.",
+            "type": "object",
+            "$ref": "module/ontology/organ_ontology.json",
+            "user_friendly": "Organ model"
+        },
+        "cell_morphology": {
+            "description": "Features relating to the morphology of the cells.",
+            "type": "object",
+            "$ref": "module/biomaterial/cell_morphology.json",
+            "user_friendly": "Cell morphology"
+        },
+        "growth_conditions": {
+            "description": "Features relating to the growth and/or maintenance of the cell lines.",
+            "type": "object",
+            "$ref": "module/biomaterial/growth_conditions.json",
+            "user_friendly": "Growth conditions"
+        },
+        "confluency": {
+            "description": "The percent a plate surface is covered by cells.",
+            "type": "number",
+            "example": 60,
+            "user_friendly": "Percent confluency"
+        },
+        "cell_type": {
+            "description": "The cell type that the cell line represents.",
+            "type": "object",
+            "$ref": "module/ontology/cell_type_ontology.json",
+            "user_friendly": "Cell type"
+        },
+        "karyotype": {
+            "description": "The karyotype of the cell line.",
+            "type": "string",
+            "user_friendly": "Karyotype",
+            "example": "sex chromosome complement of XY; del(2) (q11)"
+        },
+        "tissue": {
+            "description": "The tissue that the cell line was derived from.",
+            "type": "object",
+            "$ref": "module/ontology/organ_part_ontology.json",
+            "user_friendly": "Tissue"
+        },
+        "date_established": {
+            "description": "Date when the cell line was established.",
+            "type": "string",
+            "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$",
+            "user_friendly": "Date established",
+            "example": "2017-03-19; 2002/03; 1995",
+            "guidelines": "Enter the date established in date format: yyyy-mm-dd. Supplying partial date is allowed."
+        },
+        "disease": {
+            "description": "Short description of any disease association to the cell type.",
+            "type": "object",
+            "$ref": "module/ontology/disease_ontology.json",
+            "user_friendly": "Disease"
+        },
+        "genus_species": {
+            "description": "The scientific binomial name for the species of the cell line.",
+            "type" : "array",
+            "items":{
+                "$ref": "module/ontology/species_ontology.json"
+            },
+            "user_friendly": "Genus species"
+        },
+        "publication": {
+            "description": "A publication that cites the cell line creation.",
+            "type": "object",
+            "$ref": "module/project/publication.json",
+            "user_friendly": "Publication"
+        },
+        "timecourse": {
+            "description": "Information relating to a timecourse associated with this cell line.",
+            "type": "object",
+            "$ref": "module/biomaterial/timecourse.json",
+            "user_friendly": "Timecourse"
+        }
+    }
+}

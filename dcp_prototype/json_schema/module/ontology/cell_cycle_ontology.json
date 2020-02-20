@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A term that may be associated with a cell cycle-related ontology term.",
+    "additionalProperties": false,
+    "required": [
+        "text"
+    ],
+    "title": "Cell cycle ontology",
+    "name": "cell_cycle_ontology",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/cell_cycle_ontology",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version number in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "text": {
+            "description": "The name of a cell cycle of the cells in the specimen.",
+            "type": "string",
+            "user_friendly": "Cell cycle",
+            "example": "meiotic cell cycle; mitotic G1 phase"
+        },
+        "ontology": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:hcao", "obo:go"],
+                "classes": ["GO:0007049", "GO:0022403"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "user_friendly": "Cell cycle ontology ID",
+            "example": "GO:0051321; GO:0000080"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology field. This may differ from the user-supplied value in the text field.",
+            "type": "string",
+            "user_friendly": "Cell cycle ontology label",
+            "example": "meiotic cell cycle; mitotic G1 phase"
+        }
+    }
+}

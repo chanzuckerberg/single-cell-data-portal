@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about a process completed in the experiment.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "process_core"
+    ],
+    "title": "Process",
+    "name": "process",
+    "type": "object",
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/process/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/process"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "process"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "process_core" : {
+            "description": "Core process-level information.",
+            "type": "object",
+            "$ref": "core/process/process_core.json",
+            "user_friendly": "Process core"
+        },
+        "start_time": {
+            "description": "Date and time the process started.",
+            "type": "string",
+            "oneOf": [
+                {
+                    "format": "date-time"
+                },
+                {
+                    "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$"
+                }
+            ],
+            "user_friendly": "Start time",
+            "example": "2019-01-16T12:00:00Z; 2019/01/16",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ."
+        },
+        "end_time": {
+            "description": "Date and time the process ended.",
+            "type": "string",
+            "oneOf": [
+                {
+                    "format": "date-time"
+                },
+                {
+                    "pattern": "^((19|20)\\d\\d){1}([- \\./][01]\\d){0,1}([- \\./][0-3]\\d){0,1}$"
+                }
+            ],
+            "user_friendly": "End time",
+            "example": "2019-01-16T12:00:00Z; 2019/01/16",
+            "guidelines": "Enter the time in date-time format: yyyy-mm-ddThh:mm:ssZ."
+        },
+        "length_of_time": {
+            "description": "Length of time the process took to execute in Length of time unit.",
+            "pattern": "^[0-9]+\\.?[0-9]*-?[0-9]*\\.?[0-9]*$",
+            "type": "string",
+            "user_friendly": "Length of time",
+            "example": "10; 55-60",
+            "guidelines": "Enter a single value or a range of values separated by a hyphen."
+         },
+        "length_of_time_unit": {
+            "description": "The unit in which Length of time is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Length of time unit"
+        },
+        "type": {
+            "description": "The type of process.",
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
+            "user_friendly": "Process type"
+        },
+        "deviation_from_protocol": {
+            "description": "A deviation from the protocol provided.",
+            "type": "string",
+            "user_friendly": "Deviation from protocol",
+            "example": "Skipped ACK lysis step; Used 100um filter instead of 40um filter"
+        },
+        "insdc_experiment" : {
+            "description": "An International Nucleotide Sequence Database Collaboration (INSDC) experiment accession.",
+            "type": "object",
+            "$ref": "module/process/sequencing/insdc_experiment.json",
+            "user_friendly": "INSDC experiment accession"
+        }
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "A reference file used by a secondary reference pipeline.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "file_core",
+        "ncbi_taxon_id",
+        "genus_species",
+        "assembly_type",
+        "reference_type",
+        "reference_version"
+    ],
+    "title": "Reference file",
+    "name": "reference_file",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern": "^(http|https)://schema.(.*?)humancellatlas.org/type/file/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/reference_file"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "file"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "file_core" : {
+            "description": "Core file-level information.",
+            "type": "object",
+            "$ref": "core/file/file_core.json",
+            "user_friendly": "File core"
+        },
+        "ncbi_taxon_id" : {
+            "description": "A taxonomy ID (taxonID) from NCBI.",
+            "type": "integer",
+            "user_friendly": "NCBI taxon ID",
+            "example": "9606; 10090",
+            "guidelines": "NCBI taxonIDs can be looked up at https://www.ncbi.nlm.nih.gov/taxonomy."
+        },
+        "genus_species": {
+            "description": "The scientific binomial name for the species of this reference.",
+            "type": "object",
+            "$ref": "module/ontology/species_ontology.json",
+            "user_friendly": "Genus species"
+        },
+        "reference_type": {
+            "description": "The type of the reference file.",
+            "type": "string",
+            "enum": [
+                "genome sequence",
+                "transcriptome sequence",
+                "annotation reference",
+                "transcriptome index",
+                "genome sequence index"
+            ],
+            "user_friendly": "Reference type",
+            "example": "Should be one of: genome sequence, transcriptome sequence, annotation reference, transcriptome index, or genome sequence index."
+        },
+        "assembly_type": {
+            "description": "The assembly type of the genome reference file.",
+            "type": "string",
+            "enum": [
+                "primary assembly",
+                "complete assembly",
+                "patch assembly"
+            ],
+            "user_friendly": "Genome assembly type",
+            "example": "Should be one of: primary assembly, complete assembly, or patch assembly."
+        },
+        "reference_version": {
+            "description": "The genome version of the reference file.",
+            "type": "string",
+            "example": "GencodeV27; Ensembl 87",
+            "user_friendly": "Reference version"
+        }
+    }
+}

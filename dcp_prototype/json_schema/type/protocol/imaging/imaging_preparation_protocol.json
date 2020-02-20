@@ -1,0 +1,110 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the preparation protocol of the imaged specimen used in an imaging experiment.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "protocol_core"
+    ],
+    "title": "Imaging preparation protocol",
+    "name": "imaging_preparation_protocol",
+    "type": "object",
+    "properties": {
+         "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/protocol/imaging/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/imaging_preparation_protocol"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "protocol"
+            ]
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "protocol_core" : {
+	        "description": "Core protocol-level information.",
+            "type": "object",
+            "$ref": "core/protocol/protocol_core.json",
+            "user_friendly": "Protocol core"
+        },
+        "fresh_slicing_method" : {
+            "description": "The method by which fresh tissue was sliced.",
+            "type": "string",
+            "user_friendly": "Fresh slicing method",
+            "example": "vibrotome"
+        },
+        "imaged_slice_thickness": {
+            "description": "Thickness of the imaged slice in micrometres.",
+            "type" : "number",
+            "example": "10",
+            "user_friendly": "Imaged slice thickness"
+        },
+        "final_slicing_method" : {
+            "description": "The method by which the final slice was obtained.",
+            "type": "string",
+            "user_friendly": "Final slicing method",
+            "example": "cryosectioning"
+        },
+        "post_resection_interval" : {
+            "description": "Length of time between surgical resection and fresh slicing of tissue.",
+            "type": "number",
+            "user_friendly": "Time between resection and fresh slicing",
+            "example": "5"
+        },
+        "post_resection_interval_unit": {
+            "description": "The unit of time in which the post resection interval is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Post resection interval time unit",
+            "example": "day"
+        },
+        "pre_final_slice_preservation_method": {
+            "description": "Tissue preservation method used prior to final slicing.",
+            "type": "object",
+            "$ref": "module/biomaterial/preservation_storage.json",
+            "user_friendly": "Pre-final slice preservation method",
+            "example": "freezing"
+        },
+        "post_final_slicing_interval": {
+            "description": "Length of time between secondary slicing and hybridization.",
+            "type" : "number",
+            "example": "7",
+            "user_friendly": "Post final slicing interval"
+        },
+        "post_final_slicing_interval_unit": {
+            "description": "The unit of time in which the post final slicing interval is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Post final slicing interval time unit",
+            "example": "day"
+        },
+        "fiducial_marker": {
+            "description": "Fiducial markers for the alignment of images taken across multiple rounds of imaging.",
+            "type" : "string",
+            "user_friendly": "Fiducial marker",
+            "example": "beads"
+        },
+        "expansion_factor": {
+            "description": "Factor by which the imaged tissue was expanded in one dimension.",
+            "type" : "number",
+            "example": "3",
+            "user_friendly": "Expansion factor"
+        }
+    }
+}
+
+
+        
