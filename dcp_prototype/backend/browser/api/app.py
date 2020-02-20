@@ -111,5 +111,3 @@ def get_file(file_id):
                                 'Access-Control-Allow-Origin': "*"
                             },
                             body=response_body)
-
-
