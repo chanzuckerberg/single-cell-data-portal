@@ -7,13 +7,14 @@ from chalice import Chalice
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.rds.browser_orm import (DBSessionMaker,
-                                     Project, File,
-                                     LibraryPrepProtocol, Tissue, Species,
-                                     LibraryPrepProtocolJoinProject, TissueJoinProject,
-                                     SpeciesJoinProject)
+from browser.code.rds.browser_orm import (DBSessionMaker,
+                                          Project, File,
+                                          LibraryPrepProtocol, Tissue, Species,
+                                          LibraryPrepProtocolJoinProject, TissueJoinProject,
+                                          SpeciesJoinProject)
 
 app = Chalice(app_name='browser-api')
+session = DBSessionMaker().session()
 
 
 @app.route('/')
@@ -23,15 +24,14 @@ def index():
 
 @app.route('/projects')
 def get_projects():
-    session = DBSessionMaker().session()
     projects = []
     for project in session.query(Project).all():
         projects.append({
             'id': project.id,
             'title': project.title,
-            'assays': _get_project_assays(session, project.id),
-            'tissues': _get_project_tissues(session, project.id),
-            'species': _get_project_species(session, project.id),
+            'assays': _get_project_assays(project.id),
+            'tissues': _get_project_tissues(project.id),
+            'species': _get_project_species(project.id),
             'cell_count': project.cell_count,
         })
 
@@ -45,15 +45,14 @@ def get_projects():
 
 @app.route('/projects/{project_id}')
 def get_project(project_id):
-    session = DBSessionMaker().session()
     project = session.query(Project).get(project_id)
     response_body = {
         'id': project.id,
         'title': project.title,
         'label': project.label,
-        'assays': _get_project_assays(session, project.id),
-        'tissues': _get_project_tissues(session, project.id),
-        'species': _get_project_species(session, project.id),
+        'assays': _get_project_assays(project.id),
+        'tissues': _get_project_tissues(project.id),
+        'species': _get_project_species(project.id),
         'description': project.description,
         'category': project.category,
         'developmental_stage': project.developmental_stage,
@@ -80,7 +79,6 @@ def get_project(project_id):
 
 @app.route('/projects/{project_id}/files')
 def get_project_files(project_id):
-    session = DBSessionMaker().session()
     files = []
     for file in session.query(File).filter(File.project_id == project_id).limit(100):
         files.append({
@@ -104,7 +102,6 @@ def get_project_files(project_id):
 
 @app.route('/files/{file_id}')
 def get_file(file_id):
-    session = DBSessionMaker().session()
     file = session.query(File).get(file_id)
     response_body = {
         's3_uri': file.s3_uri
@@ -117,7 +114,7 @@ def get_file(file_id):
                             body=response_body)
 
 
-def _get_project_assays(session, project_id):
+def _get_project_assays(project_id):
     assays = []
     for result in session.query(
         LibraryPrepProtocolJoinProject, LibraryPrepProtocol
@@ -131,7 +128,7 @@ def _get_project_assays(session, project_id):
     return assays
 
 
-def _get_project_tissues(session, project_id):
+def _get_project_tissues(project_id):
     tissues = []
     for result in session.query(TissueJoinProject, Tissue).filter(
             TissueJoinProject.tissue_id == Tissue.id,
@@ -141,7 +138,7 @@ def _get_project_tissues(session, project_id):
     return tissues
 
 
-def _get_project_species(session, project_id):
+def _get_project_species(project_id):
     species = []
     for result in session.query(SpeciesJoinProject, Species).filter(
             SpeciesJoinProject.species_id == Species.id,
