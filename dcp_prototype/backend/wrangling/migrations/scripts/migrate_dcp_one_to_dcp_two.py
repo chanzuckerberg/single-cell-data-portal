@@ -80,6 +80,11 @@ def gather_group_file_list(file_list):
 
 
 def consume_file(prefix, bucket, filequeue, dataset_metadata):
+
+    # thread local session and client
+    session = boto3.session.Session()
+    s3_client = session.client("s3")
+
     while True:
         filename = filequeue.get()
 
@@ -96,8 +101,8 @@ def consume_file(prefix, bucket, filequeue, dataset_metadata):
         qsize = filequeue.qsize()
         if qsize % 1000 == 0 and qsize > 0:
             print(f"Working with JSON input file: {file_prefix}, queued size={qsize}")
-        object = S3_RESOURCE.Object(bucket, file_prefix)
-        object_body = object.get()["Body"].read()
+        object = s3_client.get_object(Bucket=bucket, Key=file_prefix)
+        object_body = object["Body"].read()
 
         tsv_generated_data_frame = json_normalize(flatten(json.loads(object_body), separator="."))
         entity_type = get_entity_type(filename)
