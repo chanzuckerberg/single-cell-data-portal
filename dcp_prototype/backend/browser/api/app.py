@@ -7,11 +7,11 @@ from chalice import Chalice
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.code.rds.browser_orm import (DBSessionMaker,
-                                          Project, File,
-                                          LibraryPrepProtocol, Tissue, Species,
-                                          LibraryPrepProtocolJoinProject, TissueJoinProject,
-                                          SpeciesJoinProject)
+from browser.code.common.browser_orm import (DBSessionMaker,
+                                             Project, File,
+                                             LibraryPrepProtocol, Tissue, Species,
+                                             LibraryPrepProtocolJoinProject, TissueJoinProject,
+                                             SpeciesJoinProject)
 
 app = Chalice(app_name='browser-api')
 session = DBSessionMaker().session()
