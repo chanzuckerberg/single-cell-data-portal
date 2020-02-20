@@ -152,9 +152,7 @@ class LibraryPrepProtocolJoinProject(Base):
     __tablename__ = "library_prep_protocol_join_project"
 
     id = Column(Integer, primary_key=True)
-    library_prep_protocol_id = Column(
-        ForeignKey("library_prep_protocol.id"), nullable=False
-    )
+    library_prep_protocol_id = Column(ForeignKey("library_prep_protocol.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))

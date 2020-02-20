@@ -1,7 +1,13 @@
 SHELL:=/bin/bash
 
-beautify:
+.PHONY: fmt
+fmt:
 	black .
 
+.PHONY: lint
 lint:
-	flake8 --config=./.github/actions/flake8/.flake8 .
+	flake8 dcp_prototype tests
+
+.PHONY: unit-test
+unit-test:
+	python -m pytest -s tests

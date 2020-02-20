@@ -4,9 +4,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 import logging
 from copy import deepcopy
 
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_transformer,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_transformer
 from dcp_prototype.backend.ledger.code.common.ledger_orm import Project
 
 
@@ -26,15 +24,11 @@ class OldProject:
 
         accession_index = 0
         while row.get(f"geo_series_accessions.{str(accession_index)}"):
-            self.external_accessions.append(
-                row.get(f"geo_series_accessions.{str(accession_index)}")
-            )
+            self.external_accessions.append(row.get(f"geo_series_accessions.{str(accession_index)}"))
             accession_index += 1
         accession_index = 0
         while row.get(f"insdc_project_accessions.{str(accession_index)}"):
-            self.external_accessions.append(
-                row.get(f"insdc_project_accessions.{str(accession_index)}")
-            )
+            self.external_accessions.append(row.get(f"insdc_project_accessions.{str(accession_index)}"))
             accession_index += 1
 
         # Log in case there are multiple publications
@@ -60,9 +54,7 @@ class OldProject:
         return deepcopy(self.__dict__)
 
     def convert_to_new_entity(self):
-        project_id = hca_accession_transformer(
-            Project.__name__, self.corresponding_old_id
-        )
+        project_id = hca_accession_transformer(Project.__name__, self.corresponding_old_id)
 
         project = Project(
             id=project_id,

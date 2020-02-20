@@ -3,9 +3,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 )
 
 from dcp_prototype.backend.ledger.code.common.ledger_orm import BiosamplePrep
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_transformer,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_transformer
 import logging
 from copy import deepcopy
 
@@ -19,13 +17,10 @@ class OldCellSuspension:
     def populate_from_dcp_one_json_data_frame(self, row):
         self.corresponding_old_id = row.get("provenance.document_id")
 
-    def set_specimen_from_organism(
-        self, specimen_from_organism: OldSpecimenFromOrganism
-    ):
+    def set_specimen_from_organism(self, specimen_from_organism: OldSpecimenFromOrganism):
         if (
             self.specimen_from_organism
-            and self.specimen_from_organism.corresponding_old_id
-            != specimen_from_organism.corresponding_old_id
+            and self.specimen_from_organism.corresponding_old_id != specimen_from_organism.corresponding_old_id
         ):
             logging.log(
                 logging.WARNING,
@@ -38,15 +33,11 @@ class OldCellSuspension:
 
     def to_dictionary(self):
         dictionary_representation = deepcopy(self.__dict__)
-        dictionary_representation[
-            "specimen_from_organism"
-        ] = self.specimen_from_organism.corresponding_old_id
+        dictionary_representation["specimen_from_organism"] = self.specimen_from_organism.corresponding_old_id
         return dictionary_representation
 
     def convert_to_new_entity(self):
-        biosample_prep_id = hca_accession_transformer(
-            BiosamplePrep.__name__, self.corresponding_old_id
-        )
+        biosample_prep_id = hca_accession_transformer(BiosamplePrep.__name__, self.corresponding_old_id)
         biosample_prep = BiosamplePrep(
             id=biosample_prep_id,
             category="primary_specimen",

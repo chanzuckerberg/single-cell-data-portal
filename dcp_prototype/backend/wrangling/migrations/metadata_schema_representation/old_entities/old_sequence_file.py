@@ -1,9 +1,7 @@
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_sequencing_protocol import (  # noqa
     OldSequencingProtocol,
 )
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_transformer,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_transformer
 from dcp_prototype.backend.ledger.code.common.ledger_orm import SequenceFile
 import logging
 from copy import deepcopy
@@ -34,8 +32,7 @@ class OldSequenceFile:
     def set_sequencing_protocol(self, sequencing_protocol: OldSequencingProtocol):
         if (
             self.sequencing_protocol
-            and self.sequencing_protocol.corresponding_old_id
-            != sequencing_protocol.corresponding_old_id
+            and self.sequencing_protocol.corresponding_old_id != sequencing_protocol.corresponding_old_id
         ):
             logging.log(
                 logging.WARNING,
@@ -49,15 +46,11 @@ class OldSequenceFile:
 
     def to_dictionary(self):
         dictionary_representation = deepcopy(self.__dict__)
-        dictionary_representation[
-            "sequencing_protocol"
-        ] = self.sequencing_protocol.corresponding_old_id
+        dictionary_representation["sequencing_protocol"] = self.sequencing_protocol.corresponding_old_id
         return dictionary_representation
 
     def convert_to_new_entity(self):
-        sequence_file_id = hca_accession_transformer(
-            SequenceFile.__name__, self.corresponding_old_id
-        )
+        sequence_file_id = hca_accession_transformer(SequenceFile.__name__, self.corresponding_old_id)
 
         sequence_file = SequenceFile(
             id=sequence_file_id,
