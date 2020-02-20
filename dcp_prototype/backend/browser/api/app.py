@@ -10,7 +10,8 @@ sys.path.insert(0, pkg_root)  # noqa
 from browser.rds.browser_orm import (DBSessionMaker,
                                      Project, File,
                                      LibraryPrepProtocol, Tissue, Species,
-                                     LibraryPrepProtocolJoinProject, TissueJoinProject, SpeciesJoinProject)
+                                     LibraryPrepProtocolJoinProject, TissueJoinProject,
+                                     SpeciesJoinProject)
 
 app = Chalice(app_name='browser-api')
 
@@ -88,7 +89,8 @@ def get_project_files(project_id):
             'file_format': file.file_format,
             'file_size': file.file_size,
             'species': file.species,
-            'library_construction_method_ontology': file.library_construction_method_ontology,
+            'library_construction_method_ontology':
+                file.library_construction_method_ontology,
             'tissue_ontology': file.tissue_ontology
         })
 
@@ -117,9 +119,13 @@ def get_file(file_id):
 
 def _get_project_assays(session, project_id):
     assays = []
-    for result in session.query(LibraryPrepProtocolJoinProject, LibraryPrepProtocol).filter(
-            LibraryPrepProtocolJoinProject.library_prep_protocol_id == LibraryPrepProtocol.id,
-            LibraryPrepProtocolJoinProject.project_id == project_id).all():
+    for result in session.query(
+        LibraryPrepProtocolJoinProject, LibraryPrepProtocol
+    ).filter(
+        (LibraryPrepProtocolJoinProject.library_prep_protocol_id ==
+         LibraryPrepProtocol.id),
+        LibraryPrepProtocolJoinProject.project_id == project_id
+    ).all():
         assays.append(result.LibraryPrepProtocol.construction_method_ontology)
 
     return assays
