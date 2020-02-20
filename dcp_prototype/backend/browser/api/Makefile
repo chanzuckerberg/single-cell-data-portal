@@ -1,9 +1,7 @@
 build:
+	mkdir -p chalicelib/browser/code
 	mkdir -p chalicelib/config
-	mkdir -p chalicelib/browser/rds
-	mkdir -p chalicelib/browser/config
-	cp -R ../rds chalicelib/browser
-	cp -R ../config chalicelib/browser
+	cp -R ../code chalicelib/browser
 	cp browser-api.yml chalicelib/config/browser-api.yml
 
 deploy: build
