@@ -51,31 +51,31 @@ def gather_group_file_list(file_list):
     """
 
     # group1 will contain all the non-links files, sorted by type, then by name
-    group1 = []
+    entity_group = []
     # group2 contains just the links files.
-    group2 = []
+    link_group = []
 
     tstart = time.time()
 
     for file in file_list:
         if "donor_organism" in file:
-            group1.append((1, file))
+            entity_group.append((1, file))
         elif "specimen" in file:
-            group1.append((2, file))
+            entity_group.append((2, file))
         elif "cell_suspension" in file:
-            group1.append((3, file))
+            entity_group.append((3, file))
         elif "links" not in file:
-            group1.append((4, file))
+            entity_group.append((4, file))
         elif "links" in file:
-            group2.append(file)
+            link_group.append(file)
 
-    group1.sort()
-    group1 = [x[1] for x in group1]
-    group2.sort()
+    entity_group.sort()
+    entity_group = [x[1] for x in entity_group]
+    link_group.sort()
 
     tend = time.time()
     print("group_file_list:", (tend-tstart))
-    return [group1, group2]
+    return [entity_group, link_group]
 
 
 def consume_file(prefix, bucket, filequeue, dataset_metadata):
@@ -137,7 +137,6 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
     print()
     group_file_list = gather_group_file_list(file_list)
 
-    # print(f"Files in directory to parse: {file_list}")
     print(f"Files in directory to parse: {len(file_list)}")
 
     tstart = time.time()
@@ -149,18 +148,18 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
             filequeue.put(filename)
 
         threads = []
-        for i in range(num_threads):
-            t = threading.Thread(
+        for _ in range(num_threads):
+            thread = threading.Thread(
                 target=consume_file,
                 args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
-            t.start()
-            threads.append(t)
+            thread.start()
+            threads.append(thread)
 
         filequeue.join()
-        for i in range(num_threads):
+        for _ in range(num_threads):
             filequeue.put(None)
-        for t in threads:
-            t.join()
+        for thread in threads:
+            thread.join()
 
     tend = time.time()
     print(f"Process file time (t={num_threads}): {(tend-tstart)}")
