@@ -24,6 +24,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 )
 
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
+from dcp_prototype.backend.wrangling.migrations.utils.constants import ENTITY_TYPES
 from pandas import DataFrame, ExcelWriter
 import random
 from dcp_prototype.backend.ledger.code.common.ledger_orm import (
@@ -42,6 +43,7 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
     hca_accession_transformer,
 )
+import threading
 
 
 class OldDatasetMetadata:
@@ -70,6 +72,10 @@ class OldDatasetMetadata:
         self.new_metadata_structure = {}
 
         self.project_name = ""
+
+        self.locks = {}
+        for etype in ENTITY_TYPES:
+            self.locks[etype] = threading.Lock()
 
     def export_to_spreadsheet(self, spreadsheet_filename):
         """
@@ -268,15 +274,9 @@ class OldDatasetMetadata:
 
         self.publish_mode = True
 
-        self.old_metadata_structure[
-            "Donor Organism"
-        ] = self.old_donor_organisms.values()
-        self.old_metadata_structure[
-            "Specimen From Organism"
-        ] = self.old_specimens.values()
-        self.old_metadata_structure[
-            "Cell Suspensions"
-        ] = self.old_cell_suspensions.values()
+        self.old_metadata_structure["Donor Organism"] = self.donor_organisms.values()
+        self.old_metadata_structure["Specimen From Organism"] = self.specimens.values()
+        self.old_metadata_structure["Cell Suspensions"] = self.cell_suspensions.values()
         self.old_metadata_structure[
             "Library Prep Protocols"
         ] = self.library_preps.values()
@@ -286,7 +286,7 @@ class OldDatasetMetadata:
         self.old_metadata_structure[
             "Sequencing Protocols"
         ] = self.sequencing_protocols.values()
-        self.old_metadata_structure["Sequence Files"] = self.files.values()
+        self.old_metadata_structure["Sequence Files"] = self.sequence_files.values()
 
         if self.old_metadata_structure["Projects"]:
             self.project_name = list(self.old_metadata_structure["Projects"])[
@@ -301,67 +301,93 @@ class OldDatasetMetadata:
         if entity_type == "donor_organism":
             donor_organism = OldDonorOrganism()
             donor_organism.populate_from_dcp_one_json_data_frame(row)
-            if donor_organism.corresponding_old_id not in self.donor_organisms.keys():
-                self.donor_organisms[
+            with self.locks[entity_type]:
+                if (
                     donor_organism.corresponding_old_id
-                ] = donor_organism
+                    not in self.donor_organisms.keys()
+                ):
+                    self.donor_organisms[
+                        donor_organism.corresponding_old_id
+                    ] = donor_organism
 
         if entity_type == "specimen_from_organism":
             specimen_from_organism = OldSpecimenFromOrganism()
             specimen_from_organism.populate_from_dcp_one_json_data_frame(row)
-            if specimen_from_organism.corresponding_old_id not in self.specimens.keys():
-                self.specimens[
+            with self.locks[entity_type]:
+                if (
                     specimen_from_organism.corresponding_old_id
-                ] = specimen_from_organism
+                    not in self.specimens.keys()
+                ):
+                    self.specimens[
+                        specimen_from_organism.corresponding_old_id
+                    ] = specimen_from_organism
 
         if entity_type == "cell_suspension":
             cell_suspension = OldCellSuspension()
             cell_suspension.populate_from_dcp_one_json_data_frame(row)
-            if cell_suspension.corresponding_old_id not in self.cell_suspensions.keys():
-                self.cell_suspensions[
+            with self.locks[entity_type]:
+                if (
                     cell_suspension.corresponding_old_id
-                ] = cell_suspension
+                    not in self.cell_suspensions.keys()
+                ):
+                    self.cell_suspensions[
+                        cell_suspension.corresponding_old_id
+                    ] = cell_suspension
 
         if entity_type == "library_preparation_protocol":
             library_prep = OldLibraryPrepProtocol()
             library_prep.populate_from_dcp_one_json_data_frame(row)
-            if library_prep.corresponding_old_id not in self.library_preps.keys():
-                self.library_preps[library_prep.corresponding_old_id] = library_prep
+            with self.locks[entity_type]:
+                if library_prep.corresponding_old_id not in self.library_preps.keys():
+                    self.library_preps[library_prep.corresponding_old_id] = library_prep
 
         if entity_type == "project":
             project = OldProject()
             contributors = project.populate_from_dcp_one_json_data_frame(row)
-            if project.corresponding_old_id not in self.projects.keys():
-                self.projects[project.corresponding_old_id] = project
+            with self.locks[entity_type]:
+                if project.corresponding_old_id not in self.projects.keys():
+                    self.projects[project.corresponding_old_id] = project
 
-                for contributor in contributors:
-                    if contributor.name not in self.contributors.keys():
-                        self.contributors[contributor.name] = contributor
-                        self.project_contributor_links.append((project, contributor))
+                    for contributor in contributors:
+                        if contributor.name not in self.contributors.keys():
+                            self.contributors[contributor.name] = contributor
+                            self.project_contributor_links.append(
+                                (project, contributor)
+                            )
 
         if entity_type == "sequencing_protocol":
             protocol = OldSequencingProtocol()
             protocol.populate_from_dcp_one_json_data_frame(row)
-
-            if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
-                self.sequencing_protocols[protocol.corresponding_old_id] = protocol
+            with self.locks[entity_type]:
+                if (
+                    protocol.corresponding_old_id
+                    not in self.sequencing_protocols.keys()
+                ):
+                    self.sequencing_protocols[protocol.corresponding_old_id] = protocol
 
         if entity_type == "sequence_file":
             sequence_file = OldSequenceFile()
             sequence_file.populate_from_dcp_one_json_data_frame(row)
             sequence_file.set_s3_uri(self.s3_uri)
-            if sequence_file.corresponding_old_id not in self.sequence_files.keys():
-                self.sequence_files[sequence_file.corresponding_old_id] = sequence_file
+            with self.locks[entity_type]:
+                if sequence_file.corresponding_old_id not in self.sequence_files.keys():
+                    self.sequence_files[
+                        sequence_file.corresponding_old_id
+                    ] = sequence_file
 
         if entity_type == "analysis_file":
             analysis_file = OldAnalysisFile()
             analysis_file.populate_from_dcp_one_json_data_frame(row)
             analysis_file.set_s3_uri(self.s3_uri)
-            if analysis_file.corresponding_old_id not in self.analysis_files.keys():
-                self.analysis_files[analysis_file.corresponding_old_id] = analysis_file
+            with self.locks[entity_type]:
+                if analysis_file.corresponding_old_id not in self.analysis_files.keys():
+                    self.analysis_files[
+                        analysis_file.corresponding_old_id
+                    ] = analysis_file
 
         if entity_type == "links":
-            self.parse_links_dot_json(row)
+            with self.locks[entity_type]:
+                self.parse_links_dot_json(row)
 
     def parse_links_dot_json(self, row):
         link_index = 0

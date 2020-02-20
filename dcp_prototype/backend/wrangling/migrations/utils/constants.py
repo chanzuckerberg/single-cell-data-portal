@@ -124,3 +124,15 @@ SS2_QUANTIFICATION_PROTOCOL = QuantificationProtocol(quantification_software="RS
 X10_QUANTIFICATION_PROTOCOL = QuantificationProtocol(
     quantification_software="HCA Single Cell Tools"
 )
+
+ENTITY_TYPES = [
+    "donor_organism",
+    "specimen_from_organism",
+    "cell_suspension",
+    "library_preparation_protocol",
+    "project",
+    "sequence_file",
+    "links",
+    "sequencing_protocol",
+    "analysis_file",
+]

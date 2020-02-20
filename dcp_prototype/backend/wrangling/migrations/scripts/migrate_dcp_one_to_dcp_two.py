@@ -1,5 +1,4 @@
 import sys
-
 sys.path.insert(0, "")  # noqa
 import boto3
 from argparse import ArgumentParser
@@ -14,21 +13,14 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 )
 import json
 from dcp_prototype.backend.ledger.code.common.ledger_orm import DBSessionMaker
+from dcp_prototype.backend.wrangling.migrations.utils.constants import ENTITY_TYPES
+
+import queue
+import threading
+import time
 
 BUCKET_NAME = "hca-dcp-one-backup-data"
 PREFIX = "single_cell_transcriptome_analysis_of_human_pancreas_metadata"
-
-ENTITY_TYPES = [
-    "donor_organism",
-    "specimen_from_organism",
-    "cell_suspension",
-    "library_preparation_protocol",
-    "project",
-    "sequence_file",
-    "links",
-    "sequencing_protocol",
-    "analysis_file",
-]
 
 S3_CLIENT = boto3.client("s3")
 S3_RESOURCE = boto3.resource("s3")
@@ -50,34 +42,74 @@ def get_entity_type(filename):
             return key
 
 
-def order_file_list(file_list):
+def gather_group_file_list(file_list):
     """
-    Order files to process to construct metadata schema such that links are processed
-    last. This is done so that all entities exist before linkage and linking will not
+    process files into groups that can be processed simultaneously.
+    In particular, links need to be processed last.
+    This is done so that all entities exist before linkage and linking will not
     occur between unknown entities.
     """
-    ordered_file_list = []
+
+    # group1 will contain all the non-links files, sorted by type, then by name
+    entity_group = []
+    # group2 contains just the links files.
+    link_group = []
+
+    tstart = time.time()
 
     for file in file_list:
         if "donor_organism" in file:
-            ordered_file_list.append(file)
-    for file in file_list:
-        if "specimen" in file:
-            ordered_file_list.append(file)
-    for file in file_list:
-        if "cell_suspension" in file:
-            ordered_file_list.append(file)
-    for file in file_list:
-        if file not in ordered_file_list and "links" not in file:
-            ordered_file_list.append(file)
-    for file in file_list:
-        if file not in ordered_file_list and "links" in file:
-            ordered_file_list.append(file)
+            entity_group.append((1, file))
+        elif "specimen" in file:
+            entity_group.append((2, file))
+        elif "cell_suspension" in file:
+            entity_group.append((3, file))
+        elif "links" not in file:
+            entity_group.append((4, file))
+        elif "links" in file:
+            link_group.append(file)
 
-    return ordered_file_list
+    entity_group.sort()
+    entity_group = [x[1] for x in entity_group]
+    link_group.sort()
+
+    tend = time.time()
+    print("group_file_list:", (tend-tstart))
+    return [entity_group, link_group]
 
 
-def generate_metadata_structure_from_s3_uri(s3_uri):
+def consume_file(prefix, bucket, filequeue, dataset_metadata):
+    while True:
+        filename = filequeue.get()
+
+        # check for more files to process
+        if filename is None:
+            break
+
+        # sanity check that the file should be processes
+        if ".json" not in filename:
+            continue
+
+        file_prefix = prefix + filename
+
+        qsize = filequeue.qsize()
+        if qsize % 1000 == 0 and qsize > 0:
+            print(f"Working with JSON input file: {file_prefix}, queued size={qsize}")
+        object = S3_RESOURCE.Object(bucket, file_prefix)
+        object_body = object.get()["Body"].read()
+
+        tsv_generated_data_frame = json_normalize(
+            flatten(json.loads(object_body), separator=".")
+        )
+        entity_type = get_entity_type(filename)
+        for row in tsv_generated_data_frame.iterrows():
+            metadata_row = row[1]
+            dataset_metadata.parse_flattened_row_of_json(metadata_row, entity_type)
+
+        filequeue.task_done()
+
+
+def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
     """
     Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata
     exists primarily in JSON files in the given S3 bucket.
@@ -92,59 +124,69 @@ def generate_metadata_structure_from_s3_uri(s3_uri):
 
     paginator = S3_CLIENT.get_paginator("list_objects")
     page_iterator = paginator.paginate(Bucket=BUCKET_NAME, Prefix=PREFIX)
+    filtered_iterator = page_iterator.search("Contents[?contains(Key, `.json`)][]")
 
     file_list = []
-    for page in page_iterator:
-        bucket_objects = page.get("Contents")
-        print(len(bucket_objects))
+    print("Gather objects: ", end="", flush=True)
+    for object in filtered_iterator:
+        object_filename = object.get("Key")
+        file_list.append(object_filename.split("/")[-1])
+        if len(file_list) % 1000 == 0:
+            print(len(file_list), end=" ", flush=True)
 
-        for object in bucket_objects:
-            object_filename = object.get("Key")
-            if should_process_file(object_filename):
-                file_list.append(object_filename.split("/")[-1])
+    print()
+    group_file_list = gather_group_file_list(file_list)
 
-    file_list = order_file_list(file_list)
+    print(f"Files in directory to parse: {len(file_list)}")
 
-    print(f"Files in directory to parse: {file_list}")
+    tstart = time.time()
+    for group_files in group_file_list:
+        print(f"Files in group to parse: {len(group_files)}")
+        filequeue = queue.Queue()
 
-    for filename in file_list:
-        if not should_process_file(filename):
-            continue
+        for filename in group_files:
+            filequeue.put(filename)
 
-        file_prefix = PREFIX + filename
+        threads = []
+        for _ in range(num_threads):
+            thread = threading.Thread(
+                target=consume_file,
+                args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
+            thread.start()
+            threads.append(thread)
 
-        print(f"Working with JSON input file: {file_prefix}")
-        object = S3_RESOURCE.Object(BUCKET_NAME, file_prefix)
-        object_body = object.get()["Body"].read()
-        tsv_generated_data_frame = json_normalize(
-            flatten(json.loads(object_body), separator=".")
-        )
-        for row in tsv_generated_data_frame.iterrows():
-            metadata_row = row[1]
-            dataset_metadata.parse_flattened_row_of_json(
-                metadata_row, get_entity_type(filename)
-            )
+        filequeue.join()
+        for _ in range(num_threads):
+            filequeue.put(None)
+        for thread in threads:
+            thread.join()
 
+    tend = time.time()
+    print(f"Process file time (t={num_threads}): {(tend-tstart)}")
     return dataset_metadata
 
 
-def generate_metadata_structure(input_directory):
+def generate_metadata_structure(input_directory, num_threads):
     """
     Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists
     primarily in JSON files in the given input directory.
     """
 
     if "s3" in input_directory:
-        return generate_metadata_structure_from_s3_uri(input_directory)
+        return generate_metadata_structure_from_s3_uri(input_directory, num_threads)
 
     dataset_metadata = OldDatasetMetadata(s3_uri=f"s3://{BUCKET_NAME}/{PREFIX}")
 
-    ordered_files = order_file_list(listdir(input_directory))
+    groups = gather_group_file_list(listdir(input_directory))
+    ordered_files = []
+    for group in groups:
+        ordered_files.extend(group)
+
     print(f"Files in directory to parse: {ordered_files}")
 
     for file in ordered_files:
         full_file_path = os.path.join(input_directory, file)
-        if not should_process_file(full_file_path):
+        if ".json" not in full_file_path:
             continue
         if os.path.isfile(full_file_path):
             print(f"Working with JSON input file at {full_file_path}")
@@ -173,20 +215,6 @@ def generate_metadata_structure(input_directory):
     )
 
     return dataset_metadata
-
-
-def should_process_file(full_file_path):
-    """
-    Returns whether a file, originally from a bundle, needs to be processed in order to
-    construct the metadata schema representing the project.
-    """
-    if "analysis_p" in full_file_path:
-        return False
-    if "zarr" in full_file_path:
-        return False
-    if ".json" not in full_file_path:
-        return False
-    return True
 
 
 def export_old_metadata_to_s3_orm(
@@ -292,6 +320,13 @@ if __name__ == "__main__":
         help="The bucket's prefix into which files should be transfered if transferring"
         " local files as part of the project's metadata migration.",
     )
+    parser.add_argument(
+        "-t",
+        "--threads",
+        required=False,
+        default=1,
+        type=int,
+        help="Number of threads to use when reading files")
 
     arguments = parser.parse_args()
 
@@ -317,7 +352,14 @@ if __name__ == "__main__":
     if arguments.prefix:
         PREFIX = arguments.prefix[0]
 
-    old_metadata = generate_metadata_structure(input_directory)
+    tstart = time.time()
+    old_metadata = generate_metadata_structure(input_directory, arguments.threads)
+    tend = time.time()
+    print("Generate metadata structure:", (tend-tstart))
+
+    tstart = time.time()
     export_old_metadata_to_s3_orm(
         old_metadata, input_directory, "s3" not in input_directory
     )
+    tend = time.time()
+    print("export_old_metadata_to_s3_orm:", (tend-tstart))
