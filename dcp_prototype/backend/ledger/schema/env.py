@@ -67,15 +67,11 @@ def run_migrations_online():
         alembic_config[key] = db_config[key]
 
     if os.environ["DEPLOYMENT_STAGE"] != db_name:
-        raise Exception(
-            "Deployment stage os environ var and target db arg are different"
-        )
+        raise Exception("Deployment stage os environ var and target db arg are different")
 
     alembic_config["sqlalchemy.url"] = LedgerDbConfig().database_uri
 
-    engine = engine_from_config(
-        alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool
-    )
+    engine = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
 
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

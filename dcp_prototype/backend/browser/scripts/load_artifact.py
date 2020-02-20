@@ -105,9 +105,7 @@ for index, row in projects_df.iterrows():
     )
 
     # tissue
-    engine.execute(
-        f"INSERT INTO tissue VALUES (NULL, '{organ_ontology}', DEFAULT, DEFAULT)"
-    )
+    engine.execute(f"INSERT INTO tissue VALUES (NULL, '{organ_ontology}', DEFAULT, DEFAULT)")
 
     # species
     engine.execute(f"INSERT INTO species VALUES (NULL, '{species}', DEFAULT, DEFAULT)")
@@ -120,21 +118,14 @@ for index, row in projects_df.iterrows():
 
     # lpp x project
     engine.execute(
-        f"INSERT INTO library_prep_protocol_join_project VALUES "
-        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
+        f"INSERT INTO library_prep_protocol_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
     )
 
     # tissue x project
-    engine.execute(
-        f"INSERT INTO tissue_join_project VALUES "
-        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
-    )
+    engine.execute(f"INSERT INTO tissue_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)")
 
     # species x project
-    engine.execute(
-        f"INSERT INTO species_join_project VALUES "
-        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
-    )
+    engine.execute(f"INSERT INTO species_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)")
 
     # contributor x project
 
@@ -144,24 +135,18 @@ files_df = pandas.read_csv("files.csv")
 files_df["file_size"].fillna(0, inplace=True)
 files_df.fillna("", inplace=True)
 files_df.insert(
-    1,
-    "project_id",
-    ["HCA-Project-cddab57b-6868-4be4-806f-395ed9dd635a"] * files_df.shape[0],
+    1, "project_id", ["HCA-Project-cddab57b-6868-4be4-806f-395ed9dd635a"] * files_df.shape[0],
 )
 
 items = []
 for index, row in files_df.iterrows():
-    items.append(
-        ", ".join([f"'{str(v)}'" if isinstance(v, str) else str(v) for v in row.array])
-    )
+    items.append(", ".join([f"'{str(v)}'" if isinstance(v, str) else str(v) for v in row.array]))
 
 chunk_size = 100
 num_chunks = ceil(len(items) / chunk_size)
 for i in range(num_chunks):
     chunk = items[
-        i * chunk_size : len(items)
-        if len(items) < i * chunk_size + chunk_size
-        else i * chunk_size + chunk_size
+        i * chunk_size : len(items) if len(items) < i * chunk_size + chunk_size else i * chunk_size + chunk_size
     ]
     values = ", ".join([f"({item})" for item in chunk])
     engine.execute(f"INSERT INTO file VALUES {values}")

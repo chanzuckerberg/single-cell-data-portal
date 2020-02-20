@@ -1,4 +1,5 @@
 import sys
+
 sys.path.insert(0, "")  # noqa
 import boto3
 from argparse import ArgumentParser
@@ -74,7 +75,7 @@ def gather_group_file_list(file_list):
     link_group.sort()
 
     tend = time.time()
-    print("group_file_list:", (tend-tstart))
+    print("group_file_list:", (tend - tstart))
     return [entity_group, link_group]
 
 
@@ -98,9 +99,7 @@ def consume_file(prefix, bucket, filequeue, dataset_metadata):
         object = S3_RESOURCE.Object(bucket, file_prefix)
         object_body = object.get()["Body"].read()
 
-        tsv_generated_data_frame = json_normalize(
-            flatten(json.loads(object_body), separator=".")
-        )
+        tsv_generated_data_frame = json_normalize(flatten(json.loads(object_body), separator="."))
         entity_type = get_entity_type(filename)
         for row in tsv_generated_data_frame.iterrows():
             metadata_row = row[1]
@@ -149,9 +148,7 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
 
         threads = []
         for _ in range(num_threads):
-            thread = threading.Thread(
-                target=consume_file,
-                args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
+            thread = threading.Thread(target=consume_file, args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
             thread.start()
             threads.append(thread)
 
@@ -193,15 +190,11 @@ def generate_metadata_structure(input_directory, num_threads):
 
             with open(full_file_path) as json_file_object:
                 input_file_contents = json_file_object.read()
-            tsv_generated_data_frame = json_normalize(
-                flatten(json.loads(input_file_contents), separator=".")
-            )
+            tsv_generated_data_frame = json_normalize(flatten(json.loads(input_file_contents), separator="."))
 
             for row in tsv_generated_data_frame.iterrows():
                 metadata_row = row[1]
-                dataset_metadata.parse_flattened_row_of_json(
-                    metadata_row, get_entity_type(full_file_path)
-                )
+                dataset_metadata.parse_flattened_row_of_json(metadata_row, get_entity_type(full_file_path))
 
     dataset_metadata.save()
 
@@ -209,17 +202,12 @@ def generate_metadata_structure(input_directory, num_threads):
     # dataset_metadata.export_to_spreadsheet(
     #    generate_metadata_tsv_name(dataset_metadata.project_name)
     # )
-    print(
-        f"Completed generating spreadsheet: "
-        f"{generate_metadata_tsv_name(dataset_metadata.project_name)}"
-    )
+    print(f"Completed generating spreadsheet: " f"{generate_metadata_tsv_name(dataset_metadata.project_name)}")
 
     return dataset_metadata
 
 
-def export_old_metadata_to_s3_orm(
-    dataset_metadata: OldDatasetMetadata, input_directory, should_upload_to_s3
-):
+def export_old_metadata_to_s3_orm(dataset_metadata: OldDatasetMetadata, input_directory, should_upload_to_s3):
     """
     Uploads the dataset metadata schema that has been constructed directly to the Ledger
     database using its ORM classes and if the Sequence/Analysis files are local, uploads
@@ -321,12 +309,8 @@ if __name__ == "__main__":
         " local files as part of the project's metadata migration.",
     )
     parser.add_argument(
-        "-t",
-        "--threads",
-        required=False,
-        default=1,
-        type=int,
-        help="Number of threads to use when reading files")
+        "-t", "--threads", required=False, default=1, type=int, help="Number of threads to use when reading files"
+    )
 
     arguments = parser.parse_args()
 
@@ -355,11 +339,9 @@ if __name__ == "__main__":
     tstart = time.time()
     old_metadata = generate_metadata_structure(input_directory, arguments.threads)
     tend = time.time()
-    print("Generate metadata structure:", (tend-tstart))
+    print("Generate metadata structure:", (tend - tstart))
 
     tstart = time.time()
-    export_old_metadata_to_s3_orm(
-        old_metadata, input_directory, "s3" not in input_directory
-    )
+    export_old_metadata_to_s3_orm(old_metadata, input_directory, "s3" not in input_directory)
     tend = time.time()
-    print("export_old_metadata_to_s3_orm:", (tend-tstart))
+    print("export_old_metadata_to_s3_orm:", (tend - tstart))
