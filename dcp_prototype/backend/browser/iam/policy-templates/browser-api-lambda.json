@@ -8,7 +8,7 @@
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      "Resource": "arn:aws:logs:*:*:*"
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/$APP_NAME-$DEPLOYMENT_STAGE:*"
     },
     {
       "Effect": "Allow",
@@ -17,7 +17,7 @@
         "secretsmanager:GetSecretValue"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:us-east-1:856863240400:secret:dcp/backend/browser/test/*"
+        "arn:aws:secretsmanager:us-east-1:856863240400:secret:dcp/backend/browser/$DEPLOYMENT_STAGE/*"
       ]
     }
   ]

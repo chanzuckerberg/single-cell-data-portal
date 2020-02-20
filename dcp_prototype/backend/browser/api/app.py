@@ -10,7 +10,7 @@ sys.path.insert(0, pkg_root)  # noqa
 from browser.code.common.browser_orm import DBSessionMaker, Project, File
 from browser.code.common.db_utils import _get_project_assays, _get_project_tissues, _get_project_species
 
-app = Chalice(app_name="browser-api")
+app = Chalice(app_name=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
 session = DBSessionMaker().session()
 
 
