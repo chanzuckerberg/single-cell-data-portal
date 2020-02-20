@@ -26,7 +26,7 @@ const Header = ({ siteTitle }) => {
             <Logo />
           </Link>
         </Box>
-        <Box sx={{ color: "white" }}>Explore</Box>
+        <Box sx={{ color: "white" }}>Data</Box>
         <Box sx={{ color: "white" }}>Guides</Box>
         <Box sx={{ color: "white" }}>Metadata</Box>
         <Box sx={{ color: "white" }}>Pipelines</Box>
