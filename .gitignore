@@ -77,8 +77,9 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Intellij
+# IDEs
 .idea
+tags
 
 # macOS
 .DS_Store

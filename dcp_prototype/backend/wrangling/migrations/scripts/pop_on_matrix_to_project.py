@@ -5,12 +5,8 @@ sys.path.insert(0, "")  # noqa
 import boto3
 from botocore.exceptions import ClientError
 from urllib.parse import urlparse
-from dcp_prototype.backend.wrangling.migrations.utils.constants import (
-    SS2_QUANTIFICATION_PROTOCOL,
-)
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_generator,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.constants import SS2_QUANTIFICATION_PROTOCOL
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_generator
 from dcp_prototype.backend.ledger.code.common.ledger_orm import (
     DBSessionMaker,
     QuantificationProtocol,
@@ -52,9 +48,7 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
     # QuantificationProtocol table population
     quantification_protocols = {}
     quantification_protocol = SS2_QUANTIFICATION_PROTOCOL
-    quantification_protocol.id = hca_accession_generator(
-        QuantificationProtocol.__name__
-    )
+    quantification_protocol.id = hca_accession_generator(QuantificationProtocol.__name__)
     quantification_protocols[quantification_protocol.id] = quantification_protocol
     session.add(quantification_protocol)
 
@@ -75,16 +69,12 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
 
     # AnalysisFileQuantificationProtocolExpressionFileProcessJoin table population
     for analysis_file_entity in session.query(AnalysisFile):
-        join_object_id = hca_accession_generator(
-            AnalysisFileQuantificationProtocolExpressionFileProcessJoin.__name__
-        )
+        join_object_id = hca_accession_generator(AnalysisFileQuantificationProtocolExpressionFileProcessJoin.__name__)
         join_object = AnalysisFileQuantificationProtocolExpressionFileProcessJoin(
             id=join_object_id,
             analysis_file=analysis_file_entity,
             expression_file=random.choice(list(expression_files.values())),
-            quantification_protocol=random.choice(
-                list(quantification_protocols.values())
-            ),
+            quantification_protocol=random.choice(list(quantification_protocols.values())),
         )
         session.add(join_object)
 
@@ -96,11 +86,7 @@ def export_to_database(matrix_file_s3_uri, matrix_file_size):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
-        "-i",
-        "--input_matrix",
-        nargs="+",
-        required=False,
-        help="A matrix to be uploaded to S3.",
+        "-i", "--input_matrix", nargs="+", required=False, help="A matrix to be uploaded to S3.",
     )
     parser.add_argument(
         "-b",

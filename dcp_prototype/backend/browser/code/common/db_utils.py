@@ -29,10 +29,7 @@ def _get_project_assays(project_id, session=None):
     for result in (
         session.query(LibraryPrepProtocolJoinProject, LibraryPrepProtocol)
         .filter(
-            (
-                LibraryPrepProtocolJoinProject.library_prep_protocol_id
-                == LibraryPrepProtocol.id
-            ),
+            (LibraryPrepProtocolJoinProject.library_prep_protocol_id == LibraryPrepProtocol.id),
             LibraryPrepProtocolJoinProject.project_id == project_id,
         )
         .all()
@@ -55,10 +52,7 @@ def _get_project_tissues(project_id, session=None):
     tissues = []
     for result in (
         session.query(TissueJoinProject, Tissue)
-        .filter(
-            TissueJoinProject.tissue_id == Tissue.id,
-            TissueJoinProject.project_id == project_id,
-        )
+        .filter(TissueJoinProject.tissue_id == Tissue.id, TissueJoinProject.project_id == project_id,)
         .all()
     ):
         tissues.append(result.Tissue.tissue_ontology)
@@ -79,10 +73,7 @@ def _get_project_species(project_id, session=None):
     species = []
     for result in (
         session.query(SpeciesJoinProject, Species)
-        .filter(
-            SpeciesJoinProject.species_id == Species.id,
-            SpeciesJoinProject.project_id == project_id,
-        )
+        .filter(SpeciesJoinProject.species_id == Species.id, SpeciesJoinProject.project_id == project_id,)
         .all()
     ):
         species.append(result.Species.species_ontology)

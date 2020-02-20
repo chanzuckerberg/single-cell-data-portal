@@ -36,9 +36,7 @@ from dcp_prototype.backend.ledger.code.common.ledger_orm import (
     BiosamplePrepLibraryLibraryPrepProtocolProcessJoin,
     LibrarySequenceFileSequencingProtocolProcessJoin,
 )
-from dcp_prototype.backend.wrangling.migrations.utils.constants import (
-    SS2_ALIGNMENT_PROTOCOL,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.constants import SS2_ALIGNMENT_PROTOCOL
 from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_generator,
     hca_accession_transformer,
@@ -98,9 +96,7 @@ class OldDatasetMetadata:
                     entity_transformation_to_dictionary_format,
                     columns=entity_transformation_to_dictionary_format.keys(),
                 )
-                entity_transformation_to_data_frame_format.to_excel(
-                    excel_writer, sheet_name=sheet_name, index=False
-                )
+                entity_transformation_to_data_frame_format.to_excel(excel_writer, sheet_name=sheet_name, index=False)
 
     def export_to_database(self, db_session_maker: DBSessionMaker):
         session = db_session_maker.session()
@@ -178,9 +174,7 @@ class OldDatasetMetadata:
             project = projects.get(link[0].corresponding_old_id)
             contributor = contributors.get(link[1].name)
             id = hca_accession_generator(ProjectContributorJoin.__name__)
-            project_contributor = ProjectContributorJoin(
-                id=id, project=project, contributor=contributor
-            )
+            project_contributor = ProjectContributorJoin(id=id, project=project, contributor=contributor)
             session.add(project_contributor)
 
         # SequenceFileAlignmentProtocolAnalysisFileProcessJoin table population
@@ -192,34 +186,21 @@ class OldDatasetMetadata:
             sequence_file = sequence_files.get(link[0].corresponding_old_id)
             analysis_file = analysis_files.get(link[1].corresponding_old_id)
             alignment_protocol = random.choice(list(alignment_protocols.values()))
-            id = hca_accession_generator(
-                SequenceFileAlignmentProtocolAnalysisFileProcessJoin.__name__
-            )
+            id = hca_accession_generator(SequenceFileAlignmentProtocolAnalysisFileProcessJoin.__name__)
             join_object = SequenceFileAlignmentProtocolAnalysisFileProcessJoin(
-                id=id,
-                sequence_file=sequence_file,
-                analysis_file=analysis_file,
-                alignment_protocol=alignment_protocol,
+                id=id, sequence_file=sequence_file, analysis_file=analysis_file, alignment_protocol=alignment_protocol,
             )
             session.add(join_object)
-        print(
-            f"Had to skip {skipped_count} objects for "
-            f"SequenceFileAlignmentProtocolAnalysisFileProcessJoin."
-        )
+        print(f"Had to skip {skipped_count} objects for " f"SequenceFileAlignmentProtocolAnalysisFileProcessJoin.")
 
         # BiosamplePrepLibraryLibraryPrepProtocolProcessJoin table population
         for link in self.biosample_library_prep_project_links:
             biosample = biosample_preps.get(link[0].corresponding_old_id)
             library_prep = library_prep_protocols.get(link[1].corresponding_old_id)
             library = libraries.get(link[2].corresponding_old_id)
-            id = hca_accession_generator(
-                BiosamplePrepLibraryLibraryPrepProtocolProcessJoin.__name__
-            )
+            id = hca_accession_generator(BiosamplePrepLibraryLibraryPrepProtocolProcessJoin.__name__)
             join_object = BiosamplePrepLibraryLibraryPrepProtocolProcessJoin(
-                id=id,
-                biosample_prep=biosample,
-                library=library,
-                library_prep_protocol=library_prep,
+                id=id, biosample_prep=biosample, library=library, library_prep_protocol=library_prep,
             )
             session.add(join_object)
 
@@ -232,14 +213,9 @@ class OldDatasetMetadata:
             library = libraries.get(link[0].corresponding_old_id)
             sequencing_protocol = sequencing_protocols.get(link[1].corresponding_old_id)
             sequence_file = sequence_files.get(link[2].corresponding_old_id)
-            id = hca_accession_generator(
-                LibrarySequenceFileSequencingProtocolProcessJoin.__name__
-            )
+            id = hca_accession_generator(LibrarySequenceFileSequencingProtocolProcessJoin.__name__)
             join_object = LibrarySequenceFileSequencingProtocolProcessJoin(
-                id=id,
-                library=library,
-                sequence_file=sequence_file,
-                sequencing_protocol=sequencing_protocol,
+                id=id, library=library, sequence_file=sequence_file, sequencing_protocol=sequencing_protocol,
             )
             session.add(join_object)
 
@@ -256,9 +232,7 @@ class OldDatasetMetadata:
 
         dict_form_of_data = {}
         for metadata_entity in metadata_entities_list:
-            dict_form_of_data = merge_dictionary_into(
-                dict_form_of_data, metadata_entity.to_dictionary()
-            )
+            dict_form_of_data = merge_dictionary_into(dict_form_of_data, metadata_entity.to_dictionary())
         return dict_form_of_data
 
     def save(self):
@@ -277,21 +251,15 @@ class OldDatasetMetadata:
         self.old_metadata_structure["Donor Organism"] = self.donor_organisms.values()
         self.old_metadata_structure["Specimen From Organism"] = self.specimens.values()
         self.old_metadata_structure["Cell Suspensions"] = self.cell_suspensions.values()
-        self.old_metadata_structure[
-            "Library Prep Protocols"
-        ] = self.library_preps.values()
+        self.old_metadata_structure["Library Prep Protocols"] = self.library_preps.values()
         self.old_metadata_structure["Libraries"] = self.libraries
         self.old_metadata_structure["Projects"] = self.projects.values()
         self.old_metadata_structure["Contributors"] = self.contributors.values()
-        self.old_metadata_structure[
-            "Sequencing Protocols"
-        ] = self.sequencing_protocols.values()
+        self.old_metadata_structure["Sequencing Protocols"] = self.sequencing_protocols.values()
         self.old_metadata_structure["Sequence Files"] = self.sequence_files.values()
 
         if self.old_metadata_structure["Projects"]:
-            self.project_name = list(self.old_metadata_structure["Projects"])[
-                0
-            ].project_short_name
+            self.project_name = list(self.old_metadata_structure["Projects"])[0].project_short_name
         else:
             self.project_name = "For some reason this project got no name."
 
@@ -302,37 +270,22 @@ class OldDatasetMetadata:
             donor_organism = OldDonorOrganism()
             donor_organism.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if (
-                    donor_organism.corresponding_old_id
-                    not in self.donor_organisms.keys()
-                ):
-                    self.donor_organisms[
-                        donor_organism.corresponding_old_id
-                    ] = donor_organism
+                if donor_organism.corresponding_old_id not in self.donor_organisms.keys():
+                    self.donor_organisms[donor_organism.corresponding_old_id] = donor_organism
 
         if entity_type == "specimen_from_organism":
             specimen_from_organism = OldSpecimenFromOrganism()
             specimen_from_organism.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if (
-                    specimen_from_organism.corresponding_old_id
-                    not in self.specimens.keys()
-                ):
-                    self.specimens[
-                        specimen_from_organism.corresponding_old_id
-                    ] = specimen_from_organism
+                if specimen_from_organism.corresponding_old_id not in self.specimens.keys():
+                    self.specimens[specimen_from_organism.corresponding_old_id] = specimen_from_organism
 
         if entity_type == "cell_suspension":
             cell_suspension = OldCellSuspension()
             cell_suspension.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if (
-                    cell_suspension.corresponding_old_id
-                    not in self.cell_suspensions.keys()
-                ):
-                    self.cell_suspensions[
-                        cell_suspension.corresponding_old_id
-                    ] = cell_suspension
+                if cell_suspension.corresponding_old_id not in self.cell_suspensions.keys():
+                    self.cell_suspensions[cell_suspension.corresponding_old_id] = cell_suspension
 
         if entity_type == "library_preparation_protocol":
             library_prep = OldLibraryPrepProtocol()
@@ -351,18 +304,13 @@ class OldDatasetMetadata:
                     for contributor in contributors:
                         if contributor.name not in self.contributors.keys():
                             self.contributors[contributor.name] = contributor
-                            self.project_contributor_links.append(
-                                (project, contributor)
-                            )
+                            self.project_contributor_links.append((project, contributor))
 
         if entity_type == "sequencing_protocol":
             protocol = OldSequencingProtocol()
             protocol.populate_from_dcp_one_json_data_frame(row)
             with self.locks[entity_type]:
-                if (
-                    protocol.corresponding_old_id
-                    not in self.sequencing_protocols.keys()
-                ):
+                if protocol.corresponding_old_id not in self.sequencing_protocols.keys():
                     self.sequencing_protocols[protocol.corresponding_old_id] = protocol
 
         if entity_type == "sequence_file":
@@ -371,9 +319,7 @@ class OldDatasetMetadata:
             sequence_file.set_s3_uri(self.s3_uri)
             with self.locks[entity_type]:
                 if sequence_file.corresponding_old_id not in self.sequence_files.keys():
-                    self.sequence_files[
-                        sequence_file.corresponding_old_id
-                    ] = sequence_file
+                    self.sequence_files[sequence_file.corresponding_old_id] = sequence_file
 
         if entity_type == "analysis_file":
             analysis_file = OldAnalysisFile()
@@ -381,9 +327,7 @@ class OldDatasetMetadata:
             analysis_file.set_s3_uri(self.s3_uri)
             with self.locks[entity_type]:
                 if analysis_file.corresponding_old_id not in self.analysis_files.keys():
-                    self.analysis_files[
-                        analysis_file.corresponding_old_id
-                    ] = analysis_file
+                    self.analysis_files[analysis_file.corresponding_old_id] = analysis_file
 
         if entity_type == "links":
             with self.locks[entity_type]:
@@ -399,21 +343,14 @@ class OldDatasetMetadata:
             if row.get(f"{link_index_prefix}input_type") == "file":
                 input_index = 0
                 while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
-                    seq_file_id = row.get(
-                        f"{link_index_prefix}inputs.{str(input_index)}"
-                    )
+                    seq_file_id = row.get(f"{link_index_prefix}inputs.{str(input_index)}")
 
                     output_index = 0
                     while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
-                        anal_file_id = row.get(
-                            f"{link_index_prefix}outputs.{str(output_index)}"
-                        )
+                        anal_file_id = row.get(f"{link_index_prefix}outputs.{str(output_index)}")
 
                         self.sequence_file_analysis_file_links.append(
-                            (
-                                self.sequence_files.get(seq_file_id),
-                                self.analysis_files.get(anal_file_id),
-                            )
+                            (self.sequence_files.get(seq_file_id), self.analysis_files.get(anal_file_id),)
                         )
 
                         output_index += 1
@@ -425,25 +362,15 @@ class OldDatasetMetadata:
                 and row.get(f"{link_index_prefix}output_type") == "file"
             ):
                 protocol_index = 0
-                while row.get(
-                    f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"
-                ):
-                    protocol_type = row.get(
-                        f"{link_index_prefix}protocols.{str(protocol_index)}."
-                        f"protocol_type"
-                    )
-                    protocol_id = row.get(
-                        f"{link_index_prefix}protocols.{str(protocol_index)}."
-                        f"protocol_id"
-                    )
+                while row.get(f"{link_index_prefix}protocols.{str(protocol_index)}.protocol_type"):
+                    protocol_type = row.get(f"{link_index_prefix}protocols.{str(protocol_index)}." f"protocol_type")
+                    protocol_id = row.get(f"{link_index_prefix}protocols.{str(protocol_index)}." f"protocol_id")
 
                     # Link together sequence files and sequence protocol and project
                     if protocol_type == "sequencing_protocol":
                         file_index = 0
                         while row.get(f"{link_index_prefix}outputs.{str(file_index)}"):
-                            sequence_file_id = row.get(
-                                f"{link_index_prefix}outputs.{str(file_index)}"
-                            )
+                            sequence_file_id = row.get(f"{link_index_prefix}outputs.{str(file_index)}")
 
                             self.project_sequencing_protocol_sequence_file_links.append(
                                 (
@@ -459,9 +386,7 @@ class OldDatasetMetadata:
                     elif protocol_type == "library_preparation_protocol":
                         input_index = 0
                         while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
-                            suspension_id = row.get(
-                                f"{link_index_prefix}inputs.{str(input_index)}"
-                            )
+                            suspension_id = row.get(f"{link_index_prefix}inputs.{str(input_index)}")
 
                             self.biosample_library_prep_project_links.append(
                                 (
@@ -483,27 +408,19 @@ class OldDatasetMetadata:
             ):
                 # If a link has no protocols associated, then the link is between
                 # donor organism and specimen
-                if row.get(
-                    f"{link_index_prefix}protocols.0.protocol_type"
-                ) is None or not row.get(
+                if row.get(f"{link_index_prefix}protocols.0.protocol_type") is None or not row.get(
                     f"{link_index_prefix}protocols.0.protocol_type"
                 ):
                     output_index = 0
                     while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
-                        specimen_id = row.get(
-                            f"{link_index_prefix}outputs.{str(output_index)}"
-                        )
+                        specimen_id = row.get(f"{link_index_prefix}outputs.{str(output_index)}")
                         specimen = self.specimens.get(specimen_id)
 
                         # Link together specimen and donor organism
                         input_index = 0
                         while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
-                            donor_id = row.get(
-                                f"{link_index_prefix}inputs.{str(input_index)}"
-                            )
-                            specimen.set_donor_organism(
-                                self.donor_organisms.get(donor_id)
-                            )
+                            donor_id = row.get(f"{link_index_prefix}inputs.{str(input_index)}")
+                            specimen.set_donor_organism(self.donor_organisms.get(donor_id))
 
                             input_index += 1
 
@@ -514,20 +431,14 @@ class OldDatasetMetadata:
                 else:
                     output_index = 0
                     while row.get(f"{link_index_prefix}outputs.{str(output_index)}"):
-                        suspension_id = row.get(
-                            f"{link_index_prefix}outputs.{str(output_index)}"
-                        )
+                        suspension_id = row.get(f"{link_index_prefix}outputs.{str(output_index)}")
                         suspension = self.cell_suspensions.get(suspension_id)
 
                         # Link together specimen and suspension
                         input_index = 0
                         while row.get(f"{link_index_prefix}inputs.{str(input_index)}"):
-                            specimen_id = row.get(
-                                f"{link_index_prefix}inputs.{str(input_index)}"
-                            )
-                            suspension.set_specimen_from_organism(
-                                self.specimens.get(specimen_id)
-                            )
+                            specimen_id = row.get(f"{link_index_prefix}inputs.{str(input_index)}")
+                            suspension.set_specimen_from_organism(self.specimens.get(specimen_id))
 
                             input_index += 1
 

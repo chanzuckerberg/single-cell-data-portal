@@ -121,9 +121,7 @@ X10_ALIGNMENT_PROTOCOL = AlignmentProtocol(
 
 SS2_QUANTIFICATION_PROTOCOL = QuantificationProtocol(quantification_software="RSEM")
 
-X10_QUANTIFICATION_PROTOCOL = QuantificationProtocol(
-    quantification_software="HCA Single Cell Tools"
-)
+X10_QUANTIFICATION_PROTOCOL = QuantificationProtocol(quantification_software="HCA Single Cell Tools")
 
 ENTITY_TYPES = [
     "donor_organism",

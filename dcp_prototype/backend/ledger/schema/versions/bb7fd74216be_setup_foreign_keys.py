@@ -16,9 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    op.create_foreign_key(
-        "library_project", "library", "project", ["project_id"], ["id"]
-    )
+    op.create_foreign_key("library_project", "library", "project", ["project_id"], ["id"])
 
     op.create_foreign_key(
         "library_process_to_biosample_prep",
@@ -45,19 +43,11 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "project_contributor_join_project",
-        "project_contributor_join",
-        "project",
-        ["project_id"],
-        ["id"],
+        "project_contributor_join_project", "project_contributor_join", "project", ["project_id"], ["id"],
     )
 
     op.create_foreign_key(
-        "project_contributor_join_contributor",
-        "project_contributor_join",
-        "contributor",
-        ["contributor_id"],
-        ["id"],
+        "project_contributor_join_contributor", "project_contributor_join", "contributor", ["contributor_id"], ["id"],
     )
 
     op.create_foreign_key(
@@ -85,11 +75,7 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "bam_qc_metric_analysis_file",
-        "bam_qc_metric",
-        "analysis_file",
-        ["analysis_file_id"],
-        ["id"],
+        "bam_qc_metric_analysis_file", "bam_qc_metric", "analysis_file", ["analysis_file_id"], ["id"],
     )
 
     op.create_foreign_key(

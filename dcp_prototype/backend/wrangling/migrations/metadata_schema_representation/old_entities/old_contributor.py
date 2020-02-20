@@ -1,7 +1,5 @@
 from dcp_prototype.backend.ledger.code.common.ledger_orm import Contributor
-from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
-    hca_accession_generator,
-)
+from dcp_prototype.backend.wrangling.migrations.utils.id_generator import hca_accession_generator
 from copy import deepcopy
 
 
@@ -26,10 +24,7 @@ class OldContributor:
         self.corresponding_contributor = (
             True
             if corresponding_contributor
-            and (
-                corresponding_contributor.upper() == "YES"
-                or corresponding_contributor.upper() == "TRUE"
-            )
+            and (corresponding_contributor.upper() == "YES" or corresponding_contributor.upper() == "TRUE")
             else False
         )
         self.lab = row.get(prefix + "laboratory")
