@@ -24,6 +24,7 @@ from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.o
 )
 
 from dcp_prototype.backend.wrangling.migrations.utils.util import merge_dictionary_into
+from dcp_prototype.backend.wrangling.migrations.utils.constants import ENTITY_TYPES
 from pandas import DataFrame, ExcelWriter
 import random
 from dcp_prototype.backend.ledger.code.common.ledger_orm import (
@@ -43,18 +44,6 @@ from dcp_prototype.backend.wrangling.migrations.utils.id_generator import (
     hca_accession_transformer,
 )
 import threading
-
-ENTITY_TYPES = [
-    "donor_organism",
-    "specimen_from_organism",
-    "cell_suspension",
-    "library_preparation_protocol",
-    "project",
-    "sequence_file",
-    "links",
-    "sequencing_protocol",
-    "analysis_file",
-]
 
 
 class OldDatasetMetadata:

@@ -9,10 +9,11 @@ import os.path
 from botocore.exceptions import ClientError
 from flatten_json import flatten
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_dataset_metadata import (  # noqa
-    ENTITY_TYPES, OldDatasetMetadata,
+    OldDatasetMetadata,
 )
 import json
 from dcp_prototype.backend.ledger.code.common.ledger_orm import DBSessionMaker
+from dcp_prototype.backend.wrangling.migrations.utils.constants import ENTITY_TYPES
 
 import queue
 import threading
