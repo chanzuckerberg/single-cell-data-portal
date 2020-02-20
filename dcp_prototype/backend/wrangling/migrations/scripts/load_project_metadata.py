@@ -1,3 +1,4 @@
+import concurrent.futures
 import json
 from argparse import ArgumentParser
 import sys
@@ -6,15 +7,31 @@ sys.path.insert(0, "")  # noqa
 from dcp_prototype.backend.wrangling.migrations.scripts.squish_files import squish_files, reset_counts
 
 
-def load_project_metadata(input_directory, output_directory, count_file, project_file):
+def load_project_metadata(input_directory, output_directory, project_file, max_workers, should_reset):
     with open(project_file) as json_file:
         data = json.load(json_file)
-        for project in data:
-            project = project.replace(" ", "-").replace("/", "-").replace(".", "")
-            full_input_directory = f"{input_directory}/{project}/bundles"
-            full_output_directory = f"{output_directory}/{project}"
-            reset_counts(count_file)
-            squish_files(full_input_directory, full_output_directory, count_file)
+        dispatch_executor_class = concurrent.futures.ThreadPoolExecutor
+        with dispatch_executor_class(max_workers=max_workers) as executor:
+            futures = []
+            projects_loaded = 0
+            for project in data:
+                project = project.replace(" ", "-").replace("/", "-").replace(".", "")
+                full_input_directory = f"{input_directory}/{project}/bundles"
+                full_output_directory = f"{output_directory}/{project}"
+                count_file = f"{input_directory}/{project}/count_file.json"
+                if should_reset:
+                    reset_counts(count_file)
+                f = executor.submit(squish_files, full_input_directory, full_output_directory, count_file,
+                                    clear_if_exists=should_reset)
+                futures.append(f)
+
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                    projects_loaded += 1
+                    print(f"{projects_loaded} projects loaded so far (out of {len(data)})")
+                except Exception as e:
+                    print(f"Something went wrong: {e}")
 
 
 if __name__ == "__main__":
@@ -36,13 +53,11 @@ if __name__ == "__main__":
              " that is a numbering of the file.",
     )
     parser.add_argument(
-        "-c",
-        "--count_file",
+        "-m",
+        "--max_workers",
         nargs="+",
-        required=True,
-        help="A count file that keeps track of the number of a particular file that the"
-             " script has processed. This file allows for multiple runs of the script "
-             "while retaining previous counts.",
+        required=False,
+        help="The number of threads for extraction, default is 1",
     )
     parser.add_argument(
         "-p",
@@ -51,6 +66,7 @@ if __name__ == "__main__":
         required=True,
         help="A file containing a list of projects to load metadata for",
     )
+    parser.add_argument("-r", "--reset", action="store_true")
 
     arguments = parser.parse_args()
 
@@ -58,9 +74,12 @@ if __name__ == "__main__":
         input_directory = arguments.input_directory[0]
     if arguments.output_directory:
         output_directory = arguments.output_directory[0]
-    if arguments.count_file:
-        count_file = arguments.count_file[0]
+    if arguments.max_workers:
+        max_workers = int(arguments.max_workers[0])
+    else:
+        max_workers = 1
     if arguments.project_file:
         project_file = arguments.project_file[0]
+    should_reset = arguments.reset
 
-    load_project_metadata(input_directory, output_directory, count_file, project_file)
+    load_project_metadata(input_directory, output_directory, project_file, max_workers, should_reset)

@@ -41,7 +41,7 @@ def reset_counts(counts_file_path):
     print("Resetting file type counts.")
     for file_type in COUNT_BY_FILE_TYPE.keys():
         COUNT_BY_FILE_TYPE[file_type] = 0
-    with open(counts_file_path, "w") as counts_file_pointer:
+    with open(counts_file_path, "w+") as counts_file_pointer:
         counts_file_pointer.write(json.dumps(COUNT_BY_FILE_TYPE))
 
 
@@ -75,8 +75,12 @@ def squish_files(
 
     global COUNT_BY_FILE_TYPE
 
-    with open(count_file) as json_file:
-        COUNT_BY_FILE_TYPE = json.load(json_file)
+    try:
+        with open(count_file) as json_file:
+            COUNT_BY_FILE_TYPE = json.load(json_file)
+    except OSError as e:
+        with open(count_file, "w+") as counts_file_pointer:
+            counts_file_pointer.write(json.dumps(COUNT_BY_FILE_TYPE))
 
     if "s3" in target_directory:
         s3_session = boto3.client("s3")

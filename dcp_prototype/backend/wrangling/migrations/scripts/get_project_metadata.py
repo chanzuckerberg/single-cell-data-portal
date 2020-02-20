@@ -32,7 +32,7 @@ if __name__ == "__main__":
     )
     arguments = parser.parse_args()
     if arguments.max_workers:
-        max_workers = arguments.max_workers[0]
+        max_workers = int(arguments.max_workers[0])
     else:
         max_workers = 1
     if arguments.project_file:
