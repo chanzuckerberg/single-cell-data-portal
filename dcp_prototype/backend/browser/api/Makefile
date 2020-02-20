@@ -5,7 +5,6 @@ build:
 	cp -R ../rds chalicelib/browser
 	cp -R ../config chalicelib/browser
 	cp browser-api.yml chalicelib/config/browser-api.yml
-	shopt -s nullglob; for wheel in vendor.in/*/*.whl; do unzip -q -o -d vendor $$wheel; done
 
 deploy: build
 	chalice deploy --no-autogen-policy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE) --connection-timeout 240
