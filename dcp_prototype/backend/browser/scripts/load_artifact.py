@@ -14,7 +14,7 @@ from sqlalchemy.ext.declarative import declarative_base
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.config.db_config import BrowserDbConfig
+from browser.code.config.db_config import BrowserDbConfig
 
 stage = os.environ["DEPLOYMENT_STAGE"]
 db_name = f"browser_{stage}"
