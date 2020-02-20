@@ -94,21 +94,23 @@ for index, row in projects_df.iterrows():
         f"'{developmental_stage}', '{disease_ontology}', '{sample_type}', "
         f"'{organ_part}', '{analysis_protocol}', {cell_count}, {donor_count}, "
         f"'{publication_title}', '{publication_doi}', '{contact_name}', "
-        f"'{contact_institution}', '{contact_email}')"
+        f"'{contact_institution}', '{contact_email}', DEFAULT, DEFAULT)"
     )
 
     # library prep protocol
     engine.execute(
         f"INSERT INTO library_prep_protocol VALUES ("
         f"NULL, '{library_construction_method_ontology}', "
-        f"'{end_bias}', '{nucleic_acid_source}')"
+        f"'{end_bias}', '{nucleic_acid_source}', DEFAULT, DEFAULT)"
     )
 
     # tissue
-    engine.execute(f"INSERT INTO tissue VALUES (NULL, '{organ_ontology}')")
+    engine.execute(
+        f"INSERT INTO tissue VALUES (NULL, '{organ_ontology}', DEFAULT, DEFAULT)"
+    )
 
     # species
-    engine.execute(f"INSERT INTO species VALUES (NULL, '{species}')")
+    engine.execute(f"INSERT INTO species VALUES (NULL, '{species}', DEFAULT, DEFAULT)")
 
     # data repository
 
@@ -119,14 +121,20 @@ for index, row in projects_df.iterrows():
     # lpp x project
     engine.execute(
         f"INSERT INTO library_prep_protocol_join_project VALUES "
-        f"(NULL, 1, '{project_id}')"
+        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
     )
 
     # tissue x project
-    engine.execute(f"INSERT INTO tissue_join_project VALUES (NULL, 1, '{project_id}')")
+    engine.execute(
+        f"INSERT INTO tissue_join_project VALUES "
+        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
+    )
 
     # species x project
-    engine.execute(f"INSERT INTO species_join_project VALUES (NULL, 1, '{project_id}')")
+    engine.execute(
+        f"INSERT INTO species_join_project VALUES "
+        f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
+    )
 
     # contributor x project
 

@@ -1,7 +1,15 @@
 import os
 import sys
 
-from sqlalchemy import create_engine, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import (
+    create_engine,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    text,
+)
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -45,6 +53,8 @@ class Project(Base):
     contact_name = Column(String(32))
     contact_institution = Column(String(64))
     contact_email = Column(String(32))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class File(Base):
@@ -59,8 +69,8 @@ class File(Base):
     lane_index = Column(String(8))
     read_index = Column(String(8))
     s3_uri = Column(String(200))
-    created_at = Column(DateTime(True), nullable=False)
-    updated_at = Column(DateTime(True), nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     species = Column(String(16))
     library_construction_method_ontology = Column(String(16))
     tissue_ontology = Column(String(16))
@@ -82,6 +92,8 @@ class LibraryPrepProtocol(Base):
     construction_method_ontology = Column(String(16))
     end_bias = Column(String(16))
     nucleic_acid_source = Column(String(16))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class Tissue(Base):
@@ -89,6 +101,8 @@ class Tissue(Base):
 
     id = Column(Integer, primary_key=True)
     tissue_ontology = Column(String(16))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class Species(Base):
@@ -96,6 +110,8 @@ class Species(Base):
 
     id = Column(Integer, primary_key=True)
     species_ontology = Column(String(16))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class DataRepository(Base):
@@ -103,6 +119,8 @@ class DataRepository(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(32))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class Contributor(Base):
@@ -112,6 +130,8 @@ class Contributor(Base):
     name = Column(String(32))
     institution = Column(String(32))
     email = Column(String(32))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class ExternalAccession(Base):
@@ -121,6 +141,8 @@ class ExternalAccession(Base):
     project_id = Column(ForeignKey("project.id"), nullable=False)
     data_repository_id = Column(ForeignKey("data_repository.id"), nullable=False)
     accession = Column(String(32))
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
     project = relationship("Project")
     data_repository = relationship("DataRepository")
@@ -134,6 +156,8 @@ class LibraryPrepProtocolJoinProject(Base):
         ForeignKey("library_prep_protocol.id"), nullable=False
     )
     project_id = Column(ForeignKey("project.id"), nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
     library_prep_protocol = relationship("LibraryPrepProtocol")
     project = relationship("Project")
@@ -145,6 +169,8 @@ class TissueJoinProject(Base):
     id = Column(Integer, primary_key=True)
     tissue_id = Column(ForeignKey("tissue.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
     tissue = relationship("Tissue")
     project = relationship("Project")
@@ -156,6 +182,8 @@ class SpeciesJoinProject(Base):
     id = Column(Integer, primary_key=True)
     species_id = Column(ForeignKey("species.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
     species = relationship("Species")
     project = relationship("Project")
@@ -167,6 +195,8 @@ class ContributorJoinProject(Base):
     id = Column(Integer, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
     contributor = relationship("Contributor")
     project = relationship("Project")
