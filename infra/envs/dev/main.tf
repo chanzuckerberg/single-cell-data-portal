@@ -31,3 +31,9 @@ module "ledger" {
   db_instance_count = "${var.db_instance_count}"
   preferred_maintenance_window = "${var.preferred_maintenance_window}"
 }
+
+module "browser_frontend" {
+  source = "../../modules/frontend/browser"
+
+  deployment_stage = "${var.deployment_stage}"
+}
