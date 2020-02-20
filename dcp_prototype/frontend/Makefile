@@ -9,8 +9,10 @@ deploy: init
 	npm run build
 	aws s3 sync ./public s3://$(BROWSER_S3)/
 
+.PHONY: init
 init:
 	npm install
 
+.PHONY: clean
 clean:
 	npm run clean
