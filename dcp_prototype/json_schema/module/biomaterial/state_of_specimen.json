@@ -56,13 +56,19 @@
             "example": "Should be one of: warm, or cold."
         }, 
         "ischemic_time": {
-            "description": "Duration of time, in seconds, between when the specimen stopped receiving oxygen and when it was preserved or processed.",
+            "description": "Duration of time between when the specimen stopped receiving oxygen and when it was preserved or processed.",
             "type": "integer",
             "maximum": 1000000,
             "minimum": 0,
             "example": 7200,
             "user_friendly": "Ischemic time"
-        }, 
+        },
+        "ischemic_time_unit": {
+            "description": "The unit in which the ischemic time value is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Ischemic time unit"
+        },
         "microscopic_description": {
             "description": "How the specimen looks under the microscope and how it compares with normal cells.",
             "type": "string",
@@ -86,7 +92,13 @@
             "minimum": 0,
             "example": 2400,
             "user_friendly": "Post-mortem interval",
-            "guidelines": "Enter time in seconds."
+            "guidelines": "Enter time"
+        },
+        "postmortem_interval_unit": {
+            "description": "The unit in which the post-mortem interval value is expressed.",
+            "type": "object",
+            "$ref": "module/ontology/time_unit_ontology.json",
+            "user_friendly": "Post-mortem interval unit"
         }
     }
 }
