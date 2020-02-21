@@ -122,13 +122,9 @@
          },
         "overlapping_tiles": {
             "description": "Whether tiles were collected with overlap.",
-            "type": "string",
+            "type": "boolean",
             "user_friendly": "Overlapping tiles",
-            "example": "Should be one of: yes, or no.",
-            "enum": [
-                "yes",
-                "no"
-            ]
+            "example": "Should be one of: yes, or no."
          },
         "channel": {
             "description": "Information about each channel used in the imaging protocol.",

@@ -85,12 +85,7 @@
         },
         "pluripotency_vector_removed": {
             "description": "Whether a viral vector was removed after induction.",
-            "type": "string",
-            "enum": [
-                "yes",
-                "no",
-                "unknown"
-            ],
+            "type": "boolean",
             "user_friendly": "Pluripotent vector removed",
             "example": "Should be one of: yes, no, or unknown."
         },

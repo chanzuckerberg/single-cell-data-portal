@@ -79,15 +79,10 @@
         },
         "normothermic_regional_perfusion": {
             "description": "Whether entire body was perfused with warm oxygenated blood.",
-            "type": "string",
-            "enum": [
-                "yes",
-                "no",
-                "unknown"
-            ],
+            "type": "boolean",
             "user_friendly": "Normothermic regional perfusion",
             "example": "Should be one of: yes, no, or unknown.",
-            "guidelines": "Enter yes if entire body (but not limbs) was perfused with warm oxygenated blood. Otherwise, enter no."
+            "guidelines": "Enter true if entire body (but not limbs) was perfused with warm oxygenated blood. Otherwise, enter false."
         }
     }
 }

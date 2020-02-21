@@ -45,11 +45,7 @@
         },
         "multiplexed": {
             "description": "Whether multiple targets were detected simultaneously in this channel.",
-            "type": "string",
-            "enum":[
-                "yes",
-                "no"
-            ],
+            "type": "boolean",
             "example": "Should be one of: yes, or no.",
             "user_friendly": "Multiplexed experiment"
         },
