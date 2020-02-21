@@ -156,9 +156,7 @@ class AnalysisFileQuantificationProtocolExpressionFileProcessJoin(Base):
 
     id = Column(String, primary_key=True)
     analysis_file_id = Column(ForeignKey("analysis_file.id"), nullable=False)
-    quantification_protocol_id = Column(
-        ForeignKey("quantification_protocol.id"), nullable=False
-    )
+    quantification_protocol_id = Column(ForeignKey("quantification_protocol.id"), nullable=False)
     expression_file_id = Column(ForeignKey("expression_file.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
@@ -227,9 +225,7 @@ class BiosamplePrepLibraryLibraryPrepProtocolProcessJoin(Base):
 
     id = Column(String, primary_key=True)
     biosample_prep_id = Column(ForeignKey("biosample_prep.id"), nullable=False)
-    library_prep_protocol_id = Column(
-        ForeignKey("library_prep_protocol.id"), nullable=False
-    )
+    library_prep_protocol_id = Column(ForeignKey("library_prep_protocol.id"), nullable=False)
     library_id = Column(ForeignKey("library.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
@@ -245,9 +241,7 @@ class LibrarySequenceFileSequencingProtocolProcessJoin(Base):
     id = Column(String, primary_key=True)
     library_id = Column(ForeignKey("library.id"), nullable=False)
     sequence_file_id = Column(ForeignKey("sequence_file.id"), nullable=False)
-    sequencing_protocol_id = Column(
-        ForeignKey("sequencing_protocol.id"), nullable=False
-    )
+    sequencing_protocol_id = Column(ForeignKey("sequencing_protocol.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 

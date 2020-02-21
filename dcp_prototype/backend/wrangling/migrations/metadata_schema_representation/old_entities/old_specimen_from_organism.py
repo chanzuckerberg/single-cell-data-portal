@@ -18,11 +18,7 @@ class OldSpecimenFromOrganism:
         self.organ = row.get("organ.ontology")
 
     def set_donor_organism(self, donor_organism: OldDonorOrganism):
-        if (
-            self.donor_organism
-            and self.donor_organism.corresponding_old_id
-            != donor_organism.corresponding_old_id
-        ):
+        if self.donor_organism and self.donor_organism.corresponding_old_id != donor_organism.corresponding_old_id:
             logging.log(
                 logging.WARNING,
                 f"WARNING: Specimen with ID {self.corresponding_old_id} already has "
@@ -34,7 +30,5 @@ class OldSpecimenFromOrganism:
 
     def to_dictionary(self):
         dictionary_representation = deepcopy(self.__dict__)
-        dictionary_representation[
-            "donor_organism"
-        ] = self.donor_organism.corresponding_old_id
+        dictionary_representation["donor_organism"] = self.donor_organism.corresponding_old_id
         return dictionary_representation
