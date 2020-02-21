@@ -35,6 +35,11 @@
             "user_friendly": "File format",
             "example": "fastq; tif"
         },
+        "compression_format": {
+            "description": "The compression format of the file.",
+            "type": "string",
+            "user_friendly": "Compression format"
+        },
         "content_description": {
             "description": "General description of the contents of the file.",
             "type": "array",

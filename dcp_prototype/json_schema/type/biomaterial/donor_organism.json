@@ -77,13 +77,7 @@
         },
         "is_living": {
             "description": "Whether organism was alive at time of biomaterial collection.",
-            "type": "string",
-            "enum": [
-                "yes",
-                "no",
-                "unknown",
-                "not applicable"
-            ],
+            "type": "boolean",
             "user_friendly": "Alive at collection",
             "example": "Should be one of: yes, no, not applicable, or unknown.",
             "guidelines": "Enter yes if organism was alive at time of biomaterial collection, no if organism was dead, unknown if not known, and not applicable for ex vivo embryo."
