@@ -114,7 +114,7 @@
             "items": {
                 "$ref": "module/ontology/disease_ontology.json"
 	        },
-            "user_friendly": "Known disease(s)",
+            "user_friendly": "Disease status",
             "guidelines": "Enter 'normal' if no known disease."
         },
         "death": {
@@ -138,7 +138,7 @@
             "user_friendly": "Medical history"
         },
         "gestational_age": {
-            "description": "Gestational age of pregnancy in Gesational age units measured from the last menstrual period.",
+            "description": "Gestational age of pregnancy in Gestational age units measured from the last menstrual period.",
             "pattern": "^[0-9]+\\.?[0-9]*-?[0-9]*\\.?[0-9]*$",
             "type": "string",
             "user_friendly": "Gestational age",

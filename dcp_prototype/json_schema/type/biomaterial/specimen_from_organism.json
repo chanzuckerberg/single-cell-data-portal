@@ -71,7 +71,7 @@
             "items": {
                 "$ref": "module/ontology/disease_ontology.json"
 	        },
-            "user_friendly": "Known disease(s)",
+            "user_friendly": "Disease status",
             "guidelines": "Enter normal if no known diseases."
         },
         "state_of_specimen": {
