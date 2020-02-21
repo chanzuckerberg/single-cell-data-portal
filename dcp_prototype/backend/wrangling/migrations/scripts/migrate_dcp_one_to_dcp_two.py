@@ -24,7 +24,6 @@ BUCKET_NAME = "hca-dcp-one-backup-data"
 PREFIX = "single_cell_transcriptome_analysis_of_human_pancreas_metadata"
 
 S3_CLIENT = boto3.client("s3")
-S3_RESOURCE = boto3.resource("s3")
 
 
 def generate_metadata_tsv_name(project_name):
