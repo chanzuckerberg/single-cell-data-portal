@@ -2,7 +2,7 @@
 import os
 import sys
 
-from sqlalchemy import ARRAY, create_engine, Column, DateTime, ForeignKey, String, text
+from sqlalchemy import ARRAY, BigInteger, Column, create_engine, DateTime, Enum, ForeignKey, String, text
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -25,7 +25,7 @@ class DBSessionMaker:
 
 
 class AlignmentProtocol(Base):
-    __tablename__ = "alignment_protocol"
+    __tablename__ = 'alignment_protocol'
 
     id = Column(String, primary_key=True)
     software = Column(String)
@@ -37,88 +37,113 @@ class AlignmentProtocol(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class AnalysisFile(Base):
-    __tablename__ = "analysis_file"
-
-    id = Column(String, primary_key=True)
-    filename = Column(String)
-    file_format = Column(String)
-    file_output_type = Column(String)
-    s3_uri = Column(String, nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-
 class BiosamplePrep(Base):
-    __tablename__ = "biosample_prep"
+    __tablename__ = 'biosample_prep'
 
     id = Column(String, primary_key=True)
+    donor_development_stage_at_collection = Column(String)
+    donor_species = Column(String)
+    organ = Column(String)
+    system = Column(String)
     category = Column(String)
-    organ_ontology = Column(String)
-    developmental_stage = Column(String)
-    disease_ontology = Column(String)
+    name = Column(String)
+    diseases = Column(ARRAY(String()))
+    biosample_diseases = Column(ARRAY(String()))
+    selected_cell_markers = Column(ARRAY(String()))
+    selected_cell_types = Column(ARRAY(String()))
+    cell_isolated_method = Column(String)
+    protocols_used = Column(ARRAY(String()))
+    biosample_summary = Column(String)
+    collection_method = Column(String)
+    differentiation_method = Column(String)
+    dissociation_method = Column(String)
+    donor_accession = Column(String)
+    donor_ethnicity = Column(String)
+    donor_sex = Column(String)
+    donor_strain = Column(String)
+    enrichment_method = Column(String)
+    induction_method = Column(String)
+    percent_cell_viability = Column(String)
+    reprogramming_factors = Column(ARRAY(String()))
+    suspension_type = Column(String)
+    target_pathway = Column(String)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class Contributor(Base):
-    __tablename__ = "contributor"
+    __tablename__ = 'contributor'
 
     id = Column(String, primary_key=True)
     name = Column(String)
-    email = Column(String)
-    phone_number = Column(String)
-    corresponding_contributor = Column(String)
-    lab = Column(String)
-    street_address = Column(String)
-    country = Column(String)
-    contributor_role_ontology = Column(String)
-    orcid_id = Column(String)
+    institution = Column(String)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class ExpressionFile(Base):
-    __tablename__ = "expression_file"
+class File(Base):
+    __tablename__ = 'file'
 
     id = Column(String, primary_key=True)
-    filename = Column(String)
-    file_format = Column(String)
-    file_size = Column(String)
+    type = Column(Enum('EXPRESSION', 'ANALYSIS', 'SEQUENCE', name='file_type_enum'), nullable=False)
+    filename = Column(String, nullable=False)
+    file_format = Column(String, nullable=False)
+    file_size = Column(BigInteger, nullable=False)
     s3_uri = Column(String, nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class LibraryPrepProtocol(Base):
-    __tablename__ = "library_prep_protocol"
+    __tablename__ = 'library_prep_protocol'
 
     id = Column(String, primary_key=True)
-    input_nucleic_acid_molecule = Column(String)
-    library_construction_method_ontology = Column(String)
-    nucleic_acid_source = Column(String)
-    end_bias = Column(String)
-    barcoded_read = Column(String)
-    barcoded_offset = Column(String)
-    barcoded_length = Column(String)
+    input_nucleic_acid_molecule_ontology = Column(String, nullable=False)
+    library_construction_method_ontology = Column(String, nullable=False)
+    nucleic_acid_source = Column(String, nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+
+
+class Process(Base):
+    __tablename__ = 'process'
+
+    id = Column(String, primary_key=True)
+    input_id = Column(String, nullable=False)
+    output_id = Column(String, nullable=False)
+    protocol_id = Column(String, nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class Project(Base):
-    __tablename__ = "project"
+    __tablename__ = 'project'
 
     id = Column(String, primary_key=True)
     project_title = Column(String)
-    publication_title = Column(String)
-    publication_doi = Column(String)
-    external_accessions = Column(ARRAY(String()))
+    project_description = Column(String)
+    array_express_accessions = Column(ARRAY(String()))
+    biostudies_accessions = Column(ARRAY(String()))
+    geo_series_accessions = Column(ARRAY(String()))
+    insdc_project_accessions = Column(ARRAY(String()))
+    publication_id = Column(String, nullable=False)
+    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+
+
+class Publication(Base):
+    __tablename__ = 'publication'
+
+    id = Column(String, primary_key=True)
+    doi = Column(String)
+    pmid = Column(String)
+    title = Column(String)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
 class QuantificationProtocol(Base):
-    __tablename__ = "quantification_protocol"
+    __tablename__ = 'quantification_protocol'
 
     id = Column(String, primary_key=True)
     quantification_software = Column(String)
@@ -126,125 +151,37 @@ class QuantificationProtocol(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class SequenceFile(Base):
-    __tablename__ = "sequence_file"
-
-    id = Column(String, primary_key=True)
-    filename = Column(String)
-    file_format = Column(String)
-    file_size = Column(String)
-    flowcell_id = Column(String)
-    lane_index = Column(String)
-    read_index = Column(String)
-    s3_uri = Column(String, nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-
 class SequencingProtocol(Base):
-    __tablename__ = "sequencing_protocol"
+    __tablename__ = 'sequencing_protocol'
 
     id = Column(String, primary_key=True)
-    paired_end_sequencing = Column(String)
+    paired_end = Column(String)
     instrument_manufacturer_model = Column(String)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class AnalysisFileQuantificationProtocolExpressionFileProcessJoin(Base):
-    __tablename__ = "analysis_file_quantification_protocol_expression_file_process_join"
-
-    id = Column(String, primary_key=True)
-    analysis_file_id = Column(ForeignKey("analysis_file.id"), nullable=False)
-    quantification_protocol_id = Column(ForeignKey("quantification_protocol.id"), nullable=False)
-    expression_file_id = Column(ForeignKey("expression_file.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-    analysis_file = relationship("AnalysisFile")
-    expression_file = relationship("ExpressionFile")
-    quantification_protocol = relationship("QuantificationProtocol")
-
-
-class BamQcMetric(Base):
-    __tablename__ = "bam_qc_metric"
-
-    id = Column(String, primary_key=True)
-    analysis_file_id = Column(ForeignKey("analysis_file.id"), nullable=False)
-    percent_mapped_to_genome = Column(String)
-    percent_reads_mapped_to_intergenic = Column(String)
-    percent_reads_mapped_uniquely = Column(String)
-    percent_reads_mapped_multiple = Column(String)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-    analysis_file = relationship("AnalysisFile")
-
-
 class Library(Base):
-    __tablename__ = "library"
+    __tablename__ = 'library'
 
     id = Column(String, primary_key=True)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
+    cell_count = Column(String, nullable=False)
+    assay_category = Column(String, nullable=False)
+    project_id = Column(ForeignKey('project.id'), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
-    project = relationship("Project")
+    project = relationship('Project')
 
 
 class ProjectContributorJoin(Base):
-    __tablename__ = "project_contributor_join"
+    __tablename__ = 'project_contributor_join'
 
     id = Column(String, primary_key=True)
-    contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
+    contributor_id = Column(ForeignKey('contributor.id'), nullable=False)
+    project_id = Column(ForeignKey('project.id'), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
-    contributor = relationship("Contributor")
-    project = relationship("Project")
-
-
-class SequenceFileAlignmentProtocolAnalysisFileProcessJoin(Base):
-    __tablename__ = "sequence_file_alignment_protocol_analysis_file_process_join"
-
-    id = Column(String, primary_key=True)
-    sequence_file_id = Column(ForeignKey("sequence_file.id"), nullable=False)
-    analysis_file_id = Column(ForeignKey("analysis_file.id"), nullable=False)
-    alignment_protocol_id = Column(ForeignKey("alignment_protocol.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-    alignment_protocol = relationship("AlignmentProtocol")
-    analysis_file = relationship("AnalysisFile")
-    sequence_file = relationship("SequenceFile")
-
-
-class BiosamplePrepLibraryLibraryPrepProtocolProcessJoin(Base):
-    __tablename__ = "biosample_prep_library_library_prep_protocol_process_join"
-
-    id = Column(String, primary_key=True)
-    biosample_prep_id = Column(ForeignKey("biosample_prep.id"), nullable=False)
-    library_prep_protocol_id = Column(ForeignKey("library_prep_protocol.id"), nullable=False)
-    library_id = Column(ForeignKey("library.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-    biosample_prep = relationship("BiosamplePrep")
-    library = relationship("Library")
-    library_prep_protocol = relationship("LibraryPrepProtocol")
-
-
-class LibrarySequenceFileSequencingProtocolProcessJoin(Base):
-    __tablename__ = "library_sequence_file_sequencing_protocol_process_join"
-
-    id = Column(String, primary_key=True)
-    library_id = Column(ForeignKey("library.id"), nullable=False)
-    sequence_file_id = Column(ForeignKey("sequence_file.id"), nullable=False)
-    sequencing_protocol_id = Column(ForeignKey("sequencing_protocol.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-
-    library = relationship("Library")
-    sequence_file = relationship("SequenceFile")
-    sequencing_protocol = relationship("SequencingProtocol")
+    contributor = relationship('Contributor')
+    project = relationship('Project')
