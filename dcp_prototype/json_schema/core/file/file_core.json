@@ -30,10 +30,10 @@
         },
         "format": {
             "description": "The format of the file.",
-            "type": "string",
+            "type": "object",
+            "$ref": "module/ontology/file_format_ontology.json",
             "user_friendly": "File format",
-            "guidelines": "Indicate the full file extension including compression extensions.",
-            "example": "fastq.gz; tif"
+            "example": "fastq; tif"
         },
         "content_description": {
             "description": "General description of the contents of the file.",
