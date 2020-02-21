@@ -54,6 +54,15 @@
             "user_friendly": "Markers",
             "guidelines": "Format as a space-delimited list of markers with +/- where + means enriched for and - means enriched against."
         },
+        "selected_cell_types": {
+            "description" : "The cell type(s) selected to be present in the suspension.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/cell_type_ontology.json"
+            },
+            "user_friendly": "Selected cell type(s)",
+            "guidelines": "Enter the cell type(s) selected for, not the cell type(s) determined to be present post-analysis."
+       },
         "minimum_size": {
             "description": "Minimum cell or organelle size passing selection, in microns.",
             "type": "number",
