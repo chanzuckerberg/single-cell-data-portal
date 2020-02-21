@@ -55,11 +55,27 @@
             "user_friendly": "Read index",
             "guidelines": "If a sequencing experiment is single-end, enter 'read1'."
         },
+        "local_machine": {
+            "description": "The local machine that this file was sequenced from.",
+            "type": "string",
+            "user_friendly": "Local machine"
+        },
+        "flowcell_id": {
+            "description": "The flowcell that this file was sequenced from.",
+            "type": "string",
+            "user_friendly": "Flowcell ID"
+        },
         "lane_index": {
             "description": "The lane that this file was sequenced from.",
             "type": "integer",
             "example": 1,
             "user_friendly": "Lane index"
+        },
+        "read_count": {
+            "description": "The number of reads in this file.",
+            "type": "integer",
+            "minimum": 0,
+            "user_friendly": "Read count"
         },
         "read_length": {
             "description": "The length of a sequenced read in this file, in nucleotides.",
