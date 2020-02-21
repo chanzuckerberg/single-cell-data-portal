@@ -17,8 +17,8 @@ def get_project_metadata(project_file, max_workers):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
-        "-m",
-        "--max_workers",
+        "-t",
+        "--threads",
         nargs="+",
         required=False,
         help="The number of threads for extraction, default is 1",
@@ -31,10 +31,10 @@ if __name__ == "__main__":
         help="A file containing a list of projects to retrieve metadata for",
     )
     arguments = parser.parse_args()
-    if arguments.max_workers:
-        max_workers = int(arguments.max_workers[0])
+    if arguments.threads:
+        threads = int(arguments.threads[0])
     else:
-        max_workers = 1
+        threads = 1
     if arguments.project_file:
         project_file = arguments.project_file[0]
-    get_project_metadata(project_file, max_workers)
+    get_project_metadata(project_file, threads)

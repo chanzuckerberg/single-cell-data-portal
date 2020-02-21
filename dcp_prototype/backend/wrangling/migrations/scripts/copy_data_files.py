@@ -1,3 +1,5 @@
+import sys
+
 import boto3
 import concurrent.futures
 import json
@@ -7,6 +9,12 @@ import typing
 from argparse import ArgumentParser
 
 from boto3.s3.transfer import TransferConfig
+sys.path.insert(0, "")  # noqa
+from dcp_prototype.backend.wrangling.migrations.utils.util import list_files_in_bucket
+
+s3 = boto3.resource('s3')
+SOURCE_BUCKET = 'org-hca-dss-prod'
+DESTINATION_BUCKET = 'dunitz-prod-copy'
 
 
 class FileMetadata:
@@ -30,34 +38,6 @@ def compose_blob_key(file_info: typing.Dict[str, str]) -> str:
     ))
 
 
-def list_files_in_bucket(project: str, continuation_token: str = None, keys: typing.List[str] = []) -> list:
-    """
-    Lists all files in a bucket (hard-coded to dunitz-prod-copy) with the prefix {project}/blobs
-    :param project: Name of project files belong to
-    :param continuation_token: s3 will return a max of 1000 files, pass in the continuation token to get the next 1000 for a project
-    :param keys: list of all of the file blob names
-    :return: list of all of the file blob names
-    """
-    s3 = boto3.client("s3")
-    if continuation_token:
-        response = s3.list_objects_v2(
-            Bucket='dunitz-prod-copy',
-            Prefix=f"{project}/blobs",
-            ContinuationToken=continuation_token
-        )
-    else:
-        response = s3.list_objects_v2(
-            Bucket='dunitz-prod-copy',
-            Prefix=f"{project}/blobs"
-        )
-    if response['KeyCount'] > 0:
-        for x in response['Contents']:
-            keys.append(x['Key'])
-    if response['IsTruncated'] is True:
-        list_files_in_bucket(project, response['NextContinuationToken'], keys)
-    return keys
-
-
 def copy_between_s3_buckets(key: str, project: str, max_concurrency: int = 20):
     """
     Copy file between s3 buckets
@@ -67,12 +47,11 @@ def copy_between_s3_buckets(key: str, project: str, max_concurrency: int = 20):
     """
     config = TransferConfig(max_concurrency=max_concurrency)
 
-    s3 = boto3.resource('s3')
     copy_source = {
-        'Bucket': 'org-hca-dss-prod',
+        'Bucket': SOURCE_BUCKET,
         'Key': key
     }
-    s3.meta.client.copy(copy_source, 'dunitz-prod-copy', f'{project}/{key}', Config=config)
+    s3.meta.client.copy(copy_source, DESTINATION_BUCKET, f'{project}/{key}', Config=config)
 
 
 def list_data_files_for_project(directory_path: str) -> typing.List[typing.Dict[str, str]]:
@@ -94,8 +73,8 @@ def list_data_files_for_project(directory_path: str) -> typing.List[typing.Dict[
                 if "metadata" in file_info["content-type"]:
                     continue
                 else:
-                    project_data_files.append(file_info)
-    return project_data_files
+                    project_data_files.append(compose_blob_key(file_info))
+    return list(set(project_data_files))
 
 
 def move_data_files(project_data_files: typing.List[str], project: str, precopied_files: typing.List[str]):
@@ -111,8 +90,7 @@ def move_data_files(project_data_files: typing.List[str], project: str, precopie
     with dispatch_executor_class(max_workers=20) as executor:
         print(f"{len(project_data_files)} files to copy over for {project}")
         futures = []
-        for file_info in project_data_files:
-            blob_name = compose_blob_key(file_info)
+        for blob_name in project_data_files:
             key = f"{project}/{blob_name}"
             if key in precopied_files:
                 already_there += 1
@@ -142,13 +120,11 @@ if __name__ == "__main__":
              "nested under {project_name}/bundle_manifests/",
     )
     arguments = parser.parse_args()
-
     if arguments.input_directory:
         input_directory = arguments.input_directory[0]
+
     for project in os.listdir(input_directory):
         directory_path = os.path.join(input_directory, project, 'bundle_manifests')
-
         project_data_files = list_data_files_for_project(directory_path)
-        pre_copied_files = list_files_in_bucket(project)
-
+        pre_copied_files = list_files_in_bucket(DESTINATION_BUCKET, f"{project}/blobs")
         move_data_files(project_data_files, project, pre_copied_files)
