@@ -74,6 +74,15 @@
             "type": "object",
             "$ref": "module/biomaterial/timecourse.json",
             "user_friendly": "Timecourse"
+        },
+        "suspension_type": {
+            "description": "Information relating to a timecourse associated with this cell suspension.",
+            "type": "string",
+            "enum": [
+                "nucleus",
+                "cell"
+            ],
+            "user_friendly": "Suspension type"
         }
      }
 }
