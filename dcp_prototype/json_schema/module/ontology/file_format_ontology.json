@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of the file format.",
-            "type": "string",
-            "example": "FASTQ; JSON",
-            "user_friendly": "File format"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

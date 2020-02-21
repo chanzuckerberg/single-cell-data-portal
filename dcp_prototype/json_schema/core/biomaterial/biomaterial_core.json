@@ -36,15 +36,6 @@
             "type": "string",
             "user_friendly": "Biomaterial description"
         },
-        "ncbi_taxon_id" : {
-            "description": "A taxonomy ID (taxonID) from NCBI.",
-            "type" : "array",
-            "items":{
-                "type": "integer"
-            },
-            "user_friendly": "NCBI taxon ID",
-            "example": 9606
-        },
         "genotype": {
             "description": "Genotype of the biomaterial.",
             "type": "string",

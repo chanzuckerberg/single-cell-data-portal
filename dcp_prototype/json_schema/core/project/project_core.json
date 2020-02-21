@@ -22,13 +22,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "project_short_name": {
-            "description": "A short name for the project.",
-            "type": "string",
-            "example": "CoolOrganProject.",
-            "user_friendly": "Project label",
-            "guidelines": "Project label is a short label by which you refer to the project. It should have no spaces and should be fewer than 50 characters."
-        },
         "project_title": {
             "description": "An official title for the project.",
             "type": "string",

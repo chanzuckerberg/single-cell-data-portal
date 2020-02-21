@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of a library construction approach being used.",
-            "type": "string",
-            "user_friendly": "Library construction",
-            "example": "10X v2 sequencing; Smart-seq2"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

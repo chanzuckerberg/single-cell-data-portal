@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of a sequencing approach being used.",
-            "type": "string",
-            "example": "tag based single cell RNA sequencing; full length single cell RNA sequencing",
-            "user_friendly": "Sequencing approach"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

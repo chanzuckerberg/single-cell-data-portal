@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The full name of the instrument used.",
-            "type": "string",
-            "user_friendly": "Instrument",
-            "example": "Illumina HiSeq 2500; ONT MinION"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The primary role of the contributor in the project.",
-            "type": "string",
-            "example": "principal investigator; experimental scientist",
-            "user_friendly": "Contributor role"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

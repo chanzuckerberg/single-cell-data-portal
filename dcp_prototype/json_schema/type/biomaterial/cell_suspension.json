@@ -46,12 +46,6 @@
             "$ref": "module/biomaterial/cell_morphology.json",
             "user_friendly": "Cell morphology"
         },
-        "growth_conditions": {
-            "description": "Features relating to the growth and/or maintenance of a biomaterial.",
-            "type": "object",
-            "$ref": "module/biomaterial/growth_conditions.json",
-            "user_friendly": "Growth conditions"
-        },
         "genus_species": {
             "description": "The scientific binomial name for the species of the suspension.",
             "type" : "array",
@@ -69,15 +63,6 @@
             "user_friendly": "Selected cell type(s)",
             "guidelines": "Enter the cell type(s) selected for, not the cell type(s) determined to be present post-analysis."
        },
-        "estimated_cell_count": {
-            "description": "Estimated number of cells in the suspension.",
-            "type": "integer",
-            "maximum": 1000000000,
-            "minimum": 0,
-            "example": "1; 2100",
-            "user_friendly": "Estimated cell count",
-            "guidelines": "Enter 1 for well-based assays."
-        },
         "plate_based_sequencing" : {
             "description": "Fields specific for plate-based sequencing experiments.",
             "type": "object",

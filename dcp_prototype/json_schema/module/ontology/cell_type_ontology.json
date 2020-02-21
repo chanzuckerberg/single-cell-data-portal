@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of a cell type supplied by a user.",
-            "type": "string",
-            "user_friendly": "Cell type",
-            "example": "bone marrow hematopoietic cell; cardiac muscle cell"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

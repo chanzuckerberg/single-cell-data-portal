@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of the species to which the organism belongs.",
-            "type": "string",
-            "example": "Homo sapiens; Mus musculus",
-            "user_friendly": "Species"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

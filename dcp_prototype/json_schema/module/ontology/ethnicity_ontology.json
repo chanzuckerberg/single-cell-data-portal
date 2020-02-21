@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The ethnicity of the human donor.",
-            "type": "string",
-            "user_friendly": "Ethnicity",
-            "example": "European; Hispanic or Latin American"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

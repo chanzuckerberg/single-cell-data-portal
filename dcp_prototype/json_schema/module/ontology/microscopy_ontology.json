@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of the type of microscopy used in an imaging experiment.",
-            "type": "string",
-            "example": "confocal microscopy; fluorescence microscopy",
-            "user_friendly": "Microscopy"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of the biological macromolecule being used.",
-            "type": "string",
-            "example": "polyA RNA; mRNA",
-            "user_friendly": "Biological macromolecule"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",

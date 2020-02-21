@@ -20,12 +20,6 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
-        "text": {
-            "description": "The name of a cell cycle of the cells in the specimen.",
-            "type": "string",
-            "user_friendly": "Cell cycle",
-            "example": "meiotic cell cycle; mitotic G1 phase"
-        },
         "ontology": {
             "description": "An ontology term identifier in the form prefix:accession.",
             "type": "string",
