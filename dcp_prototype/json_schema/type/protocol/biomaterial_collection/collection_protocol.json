@@ -41,7 +41,7 @@
             "$ref": "core/protocol/protocol_core.json",
             "user_friendly": "Protocol core"
         },
-        "method": {
+        "collection_method": {
             "description": "Method used to collect the biomaterial.",
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",

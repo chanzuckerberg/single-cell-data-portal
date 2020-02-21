@@ -41,7 +41,7 @@
             "$ref": "core/protocol/protocol_core.json",
             "user_friendly": "Protocol core"
         },
-        "method": {
+        "induction_method": {
             "description": "Induction method applied to primary cell culture to induce pluripotent stem cell generation.",
             "type": "string",
             "enum": [

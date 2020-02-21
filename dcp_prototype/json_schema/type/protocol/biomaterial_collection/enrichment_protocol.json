@@ -41,7 +41,7 @@
             "$ref": "core/protocol/protocol_core.json",
             "user_friendly": "Protocol core"
         },
-        "method": {
+        "enrichment_method": {
             "description": "The method by which enrichment was achieved.",
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",

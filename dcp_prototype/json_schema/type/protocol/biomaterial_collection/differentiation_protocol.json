@@ -41,7 +41,7 @@
             "$ref": "core/protocol/protocol_core.json",
             "user_friendly": "Protocol core"
         },
-        "method": {
+        "differentiation_method": {
             "description": "Method applied to cell culture to induce a specific differentiation response.",
             "type": "string",
             "user_friendly": "Differentiation method",

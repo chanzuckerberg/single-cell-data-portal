@@ -41,7 +41,7 @@
             "$ref": "core/protocol/protocol_core.json",
             "user_friendly": "Protocol core"
         },
-        "method": {
+        "dissociation_method": {
             "description": "How cells or organelles were dissociated.",
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",

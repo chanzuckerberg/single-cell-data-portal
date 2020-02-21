@@ -62,7 +62,7 @@
             "guidelines": "If 3' 10x v2 was used, enter no.",
             "user_friendly": "Paired end"
         },
-        "method": {
+        "sequencing_method": {
             "description": "The general method for sequencing.",
             "type": "object",
             "$ref": "module/ontology/sequencing_ontology.json",
