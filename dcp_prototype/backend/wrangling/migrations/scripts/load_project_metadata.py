@@ -19,7 +19,7 @@ from dcp_prototype.backend.wrangling.migrations.utils.util import list_files_in_
 s3 = boto3.resource('s3')
 
 
-def load_files(source_directory, target_directory, checksums=[] , clear_if_exists=False):
+def load_files(source_directory, target_directory, checksums={}, clear_if_exists=False):
     """
     Copies and flattens all files (not directories) that exist in `directory` to
     `new_directory_path`. Files will be named based on their uuid and version (with the exception of links.json files
@@ -57,7 +57,7 @@ def load_files(source_directory, target_directory, checksums=[] , clear_if_exist
             target_file_path = os.path.join(target_directory, filename)
             with open(target_file_path, "rb") as file_reader:
                 contents = file_reader.read()
-            checksums.append(hashlib.md5(contents).hexdigest())
+            checksums[hashlib.md5(contents).hexdigest()] = filename
 
         print(f"Processing directory {source_directory}")
         _copy_files(source_directory, target_directory, checksums)
@@ -98,10 +98,10 @@ def _copy_files_to_s3(
                         file_name = file_checksum
                     else:
                         print(f"Issue with file: {source_file_path}")
-            if file_checksum not in checksums:
+            if file_checksum not in checksums.values():
                 try:
                     s3.meta.client.upload_file(source_file_path, bucket, f"{key}/{file_name}")
-                    checksums.append(file_checksum)
+                    checksums[file_checksum] = f"{key}.{file_name}"
                 except ClientError as e:
                     print(f"error: {e} with file: {file_name}")
 
@@ -136,8 +136,7 @@ def _copy_files(source_directory, target_directory, checksums):
             print(f"Processing file: {source_file_path} with checksum {file_checksum}")
 
             if file_checksum not in checksums:
-                checksums.append(file_checksum)
-
+                checksums['file_checksum'] = f"{uuid}.{version}"
                 copyfile(source_file_path, os.path.join(target_directory, file_name))
             else:
                 print(
@@ -149,7 +148,7 @@ def _copy_files(source_directory, target_directory, checksums):
 def load_project_metadata(input_directory, output_directory, project_file, max_workers):
     with open(project_file) as json_file:
         data = json.load(json_file)
-        dispatch_executor_class = concurrent.futures.ThreadPoolExecutor
+        dispatch_executor_class = concurrent.futures.ProcessPoolExecutor
         with dispatch_executor_class(max_workers=max_workers) as executor:
             futures = []
             projects_loaded = 0

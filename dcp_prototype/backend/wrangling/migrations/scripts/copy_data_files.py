@@ -38,7 +38,7 @@ def compose_blob_key(file_info: typing.Dict[str, str]) -> str:
     ))
 
 
-def copy_between_s3_buckets(key: str, project: str, max_concurrency: int = 20):
+def copy_between_s3_buckets(key: str, project: str, max_concurrency: int = 50):
     """
     Copy file between s3 buckets
     :param key: File name
@@ -77,7 +77,7 @@ def list_data_files_for_project(directory_path: str) -> typing.List[typing.Dict[
     return list(set(project_data_files))
 
 
-def move_data_files(project_data_files: typing.List[str], project: str, precopied_files: typing.List[str]):
+def move_data_files(project_data_files: typing.List[str], project: str, precopied_files: typing.Dict[str, str]):
     """
     Parallelize calls to copy files between s3 buckets (if not already in destination bucket)
     :param project_data_files: List of files to copy
@@ -87,15 +87,18 @@ def move_data_files(project_data_files: typing.List[str], project: str, precopie
     files_moved = 0
     already_there = 0
     dispatch_executor_class = concurrent.futures.ThreadPoolExecutor
-    with dispatch_executor_class(max_workers=20) as executor:
+    with dispatch_executor_class(max_workers=50) as executor:
         print(f"{len(project_data_files)} files to copy over for {project}")
         futures = []
         for blob_name in project_data_files:
             key = f"{project}/{blob_name}"
-            if key in precopied_files:
+            try:
+                precopied_files[key]
                 already_there += 1
                 continue
-            f = executor.submit(copy_between_s3_buckets, blob_name, project)
+            # if its not  already copied
+            except KeyError:
+                f = executor.submit(copy_between_s3_buckets, blob_name, project)
             futures.append(f)
 
         for future in concurrent.futures.as_completed(futures):
