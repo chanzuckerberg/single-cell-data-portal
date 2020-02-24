@@ -30,6 +30,13 @@
                 "biomaterial"
             ]
         },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "parttern": "HCAOD[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
         "provenance" : {
             "description": "Provenance information provided by the system.",
             "type": "object",
@@ -49,11 +56,19 @@
             },
             "user_friendly": "Genus species"
         },
-        "model_organ": {
-            "description":  "Organ for which this organoid is a model system.",
+        "model_system": {
+            "description": "The organ system(s) for which the biomaterial is a model for.",
             "type": "object",
             "$ref": "module/ontology/organ_ontology.json",
-            "user_friendly": "Organ model"
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "user_friendly": "Model organ system"
+        },
+        "model_organ": {
+            "description": "The organ(s) for which the biomaterial is a model for.",
+            "type": "object",
+            "$ref": "module/ontology/organ_ontology.json",
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "user_friendly": "Model organ"
         },
         "model_organ_part": {
             "description":  "Organ part for which this organoid is a model system.",

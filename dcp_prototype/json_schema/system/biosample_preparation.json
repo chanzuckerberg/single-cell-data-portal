@@ -1,0 +1,185 @@
+{
+    "$schema": "",
+    "description": "Summarizes the provenance of the biosample that is input to the library preparation protocol.",
+    "additionalProperties": false,
+    "required": "all",
+    "title": "Biosample preparation",
+    "name": "biosample_preparation",
+    "type": "object",
+	"properties": {
+		"accession": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Accession",
+			"parttern": "HCABP[0-9]{5}[A-Z]{5}",
+			"guidelines": "Do not submit. Assigned by the system."
+		},
+		"biosample_category": {
+			"description": "",
+			"type": "string",
+			"enum": [
+				"primary tissue",
+				"cell line",
+				"organoid"
+			],
+			"user_friendly": "Biosample category",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"biosample_diseases": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Biosample diseases",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"biosample_name": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Biosample name",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"biosample_summary": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Biosample summary",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"cell_isolation_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Cell isolation method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"collection_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Collection method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"differentiation_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Differentiation method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"dissociation_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Dissociation method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_accession": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Donorr accession",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_development_stage_at_collection": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Development stage",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_diseases": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Donor diseases",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_ethnicity": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Donor ethnicity",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_sex": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Donor sex",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_species": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Donor species",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"donor_strain": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Strain",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"enrichment_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Enrichment method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"induction_method": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Inductioon method",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"library_preparation_process": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Library preparation process",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"organ": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Organ",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"percent_cell_viability": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Percent cell viability",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"protocols_used": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Protocols used",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"reprogramming_factors": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Reprogramming factors",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"selected_cell_markers": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Cell markers",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"selected_cell_types": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Selected cell types",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"suspension_type": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Suspension type",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"system": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "System",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"target_pathway": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Target pathway",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		}
+	}
+}

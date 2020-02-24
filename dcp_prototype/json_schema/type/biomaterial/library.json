@@ -1,0 +1,35 @@
+{
+    "$schema": "",
+    "description": "",
+    "additionalProperties": false,
+    "required": "all",
+    "title": "Library",
+    "name": "library",
+    "type": "object",
+	"properties": {
+		"accession": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Accession",
+			"parttern": "HCALB[0-9]{5}[A-Z]{5}",
+			"guidelines": "Do not submit. Assigned by the system."
+		},
+		"cell_count": {
+			"description": "",
+			"type": "integer",
+			"user_friendly": "Cell count",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"assay_category": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Assay category",
+			"guidelines": "Do not submit. Calculated from other submitted fields."
+		},
+		"project_accession": {
+			"description": "",
+			"type": "string",
+			"user_friendly": "Project accession"
+		}
+	}
+}

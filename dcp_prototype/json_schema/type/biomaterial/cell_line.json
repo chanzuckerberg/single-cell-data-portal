@@ -31,6 +31,13 @@
                 "biomaterial"
             ]
         },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "parttern": "HCACL[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
         "provenance" : {
             "description": "Provenance information provided by the system.",
             "type": "object",
@@ -86,11 +93,19 @@
             "example": "Should be one of: primary, immortalized, stem cell, stem cell-derived, induced pluripotent, or synthetic.",
             "user_friendly": "Cell line type"
         },
-        "model_organ": {
-            "description": "Organ for which this cell line is a model.",
+        "model_system": {
+            "description": "The organ system(s) for which the biomaterial is a model for.",
             "type": "object",
             "$ref": "module/ontology/organ_ontology.json",
-            "user_friendly": "Organ model"
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "user_friendly": "Model organ system"
+        },
+        "model_organ": {
+            "description": "The organ(s) for which the biomaterial is a model for.",
+            "type": "object",
+            "$ref": "module/ontology/organ_ontology.json",
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "user_friendly": "Model organ"
         },
         "cell_morphology": {
             "description": "Features relating to the morphology of the cells.",
@@ -122,11 +137,11 @@
             "user_friendly": "Karyotype",
             "example": "sex chromosome complement of XY; del(2) (q11)"
         },
-        "tissue": {
-            "description": "The tissue that the cell line was derived from.",
+        "cell_line_name": {
+            "description": "The name of the cell line.",
             "type": "object",
             "$ref": "module/ontology/organ_part_ontology.json",
-            "user_friendly": "Tissue"
+            "user_friendly": "Cell line name"
         },
         "date_established": {
             "description": "Date when the cell line was established.",

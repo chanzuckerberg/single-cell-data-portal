@@ -29,6 +29,13 @@
                 "biomaterial"
             ]
         },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "parttern": "HCASU[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
         "provenance" : {
             "description": "Provenance information provided by the system.",
             "type": "object",
@@ -54,15 +61,6 @@
             },
             "user_friendly": "Genus species"
         },
-        "selected_cell_types": {
-            "description" : "The cell type(s) selected to be present in the suspension.",
-            "type": "array",
-            "items": {
-		        "$ref": "module/ontology/cell_type_ontology.json"
-	        },
-            "user_friendly": "Selected cell type(s)",
-            "guidelines": "Enter the cell type(s) selected for, not the cell type(s) determined to be present post-analysis."
-       },
         "plate_based_sequencing" : {
             "description": "Fields specific for plate-based sequencing experiments.",
             "type": "object",

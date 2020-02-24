@@ -21,6 +21,13 @@
             "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
             "example": "4.6.1"
         },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "parttern": "HCAFL[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
         "file_name": {
             "description": "The name of the file.",
             "type": "string",

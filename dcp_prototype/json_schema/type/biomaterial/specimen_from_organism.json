@@ -30,6 +30,13 @@
                 "biomaterial"
             ]
         },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "parttern": "HCASP[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
         "provenance" : {
             "description": "Provenance information provided by the system.",
             "type": "object",
@@ -49,11 +56,18 @@
             },
             "user_friendly": "Genus species"
         },
-        "organ": {
-            "description": "The organ that the biomaterial came from.",
+        "system": {
+            "description": "The organ system(s) that the biomaterial is within.",
             "type": "object",
             "$ref": "module/ontology/organ_ontology.json",
-            "guidelines": "Blood and connective tissue are considered organs.",
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "user_friendly": "Organ system"
+        },
+        "organ": {
+            "description": "The organ(s) that the biomaterial is a part of.",
+            "type": "object",
+            "$ref": "module/ontology/organ_ontology.json",
+            "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
             "user_friendly": "Organ"
         },
         "organ_parts": {
@@ -121,7 +135,7 @@
             "$ref": "module/ontology/time_unit_ontology.json",
             "user_friendly": "Age unit"
         },
-        "development_stage": {
+        "donor_development_stage_at_collection": {
             "description": "A classification of the developmental stage of the organism.",
             "type": "object",
             "$ref": "module/ontology/development_stage_ontology.json",
