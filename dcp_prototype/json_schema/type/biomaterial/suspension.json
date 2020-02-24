@@ -33,7 +33,7 @@
             "description": "",
             "type": "string",
             "user_friendly": "Accession",
-            "parttern": "HCASU[0-9]{5}[A-Z]{5}",
+            "pattern": "HCASU[0-9]{5}[A-Z]{5}",
             "guidelines": "Do not submit. Assigned by the system."
         },
         "provenance" : {

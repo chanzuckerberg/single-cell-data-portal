@@ -11,7 +11,7 @@
 			"description": "",
 			"type": "string",
 			"user_friendly": "Accession",
-			"parttern": "HCABP[0-9]{5}[A-Z]{5}",
+			"pattern": "HCABP[0-9]{5}[A-Z]{5}",
 			"guidelines": "Do not submit. Assigned by the system."
 		},
 		"biosample_category": {
