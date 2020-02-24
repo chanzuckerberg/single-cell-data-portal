@@ -39,6 +39,6 @@
             "type": "object",
             "$ref": "core/file/file_core.json",
             "user_friendly": "File core"
-        },
+        }
     }
 }
