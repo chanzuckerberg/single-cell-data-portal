@@ -151,11 +151,11 @@
             "example": "2017-03-19; 2002/03; 1995",
             "guidelines": "Enter the date established in date format: yyyy-mm-dd. Supplying partial date is allowed."
         },
-        "disease": {
+        "diseases": {
             "description": "Short description of any disease association to the cell type.",
             "type": "object",
             "$ref": "module/ontology/disease_ontology.json",
-            "user_friendly": "Disease"
+            "user_friendly": "Diseases"
         },
         "genus_species": {
             "description": "The scientific binomial name for the species of the cell line.",

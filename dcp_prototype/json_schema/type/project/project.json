@@ -74,7 +74,7 @@
                 "pattern": "^[D|E|S]RP[0-9]+$"
             },
             "example": "SRP000000",
-            "user_friendly": "INSDC project accession",
+            "user_friendly": "INSDC project accessions",
             "guidelines": "Enter accession if project has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRP, SRP, or ERP, respectively."
         },
         "geo_series_accessions": {
@@ -85,7 +85,7 @@
                 "pattern": "^GSE.*$"
             },
             "example": "GSE00000",
-            "user_friendly": "GEO series accession",
+            "user_friendly": "GEO series accessions",
             "guidelines": "Enter accession if project has been archived. Accession must start with GSE."
         },
         "array_express_accessions": {
@@ -96,7 +96,7 @@
                 "pattern": "^E-....-.*$"
             },
             "example": "E-AAAA-00",
-            "user_friendly": "ArrayExpress accession",
+            "user_friendly": "ArrayExpress accessions",
             "guidelines": "Enter accession if project has been archived. Accession must start with E-."
         },
         "insdc_study_accessions": {
@@ -107,7 +107,7 @@
                 "pattern": "^PRJ[E|N|D][a-zA-Z][0-9]+$"
             },
             "example": "PRJNA000000",
-            "user_friendly": "INSDC study accession",
+            "user_friendly": "INSDC study accessions",
             "guidelines": "Enter accession if study has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with PRJD, PRJN, or PRJE, respectively."
         },
         "biostudies_accessions": {
@@ -118,7 +118,7 @@
                 "pattern": "^S-[A-Z]{4}[0-9]+$"
             },
             "example": "S-EXMP1; S-HCAS33",
-            "user_friendly": "BioStudies accession",
+            "user_friendly": "BioStudies accessions",
             "guidelines": "Enter accession if study has been archived."
         },
         "funders": {

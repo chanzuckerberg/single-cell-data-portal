@@ -36,7 +36,7 @@
             "example": "R1.fastq.gz; codebook.json"
         },
         "format": {
-            "description": "The format of the file.",
+            "description": "The format of the uncompressed file.",
             "type": "object",
             "$ref": "module/ontology/file_format_ontology.json",
             "user_friendly": "File format",

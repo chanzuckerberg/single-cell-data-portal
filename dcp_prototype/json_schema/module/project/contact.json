@@ -45,7 +45,7 @@
         "institution": {
             "description": "Name of primary institute where the individual works.",
             "type": "string",
-            "user_friendly": "Institute",
+            "user_friendly": "Institution",
             "example": "EMBL-EBI; University of Washington"
         },
         "laboratory": {

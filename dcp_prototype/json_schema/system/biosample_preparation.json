@@ -70,7 +70,7 @@
 		"donor_accession": {
 			"description": "",
 			"type": "string",
-			"user_friendly": "Donorr accession",
+			"user_friendly": "Donor accession",
 			"guidelines": "Do not submit. Calculated from other submitted fields."
 		},
 		"donor_development_stage_at_collection": {
@@ -118,7 +118,7 @@
 		"induction_method": {
 			"description": "",
 			"type": "string",
-			"user_friendly": "Inductioon method",
+			"user_friendly": "Induction method",
 			"guidelines": "Do not submit. Calculated from other submitted fields."
 		},
 		"library_preparation_process": {
@@ -172,7 +172,7 @@
 		"system": {
 			"description": "",
 			"type": "string",
-			"user_friendly": "System",
+			"user_friendly": "Organ System",
 			"guidelines": "Do not submit. Calculated from other submitted fields."
 		},
 		"target_pathway": {
