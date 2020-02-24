@@ -10,4 +10,10 @@ lint:
 
 .PHONY: unit-test
 unit-test:
-	python -m pytest -s tests
+	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
+		--source=dcp_prototype/backend, \
+		--omit=.coverage,venv \
+		-m unittest discover \
+		--start-directory tests/ \
+		--top-level-directory . \
+		--verbose

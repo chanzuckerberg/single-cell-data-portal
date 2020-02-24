@@ -29,6 +29,24 @@ const ProjectsList = ({ projects }) => {
               }}
             >
               <Flex sx={{ flexDirection: "column" }}>
+                {project.tissues.map(tissue=> (
+                  <Box key={tissue}>{tissue}</Box>
+                ))}
+              </Flex>
+            </Box>
+            <Box
+              sx={{
+                fontSize: [1],
+                boxSizing: "border-box",
+                flexGrow: 0,
+                flexShrink: 0,
+                width: "20%", // Default to full width
+                // padding: [0],
+                overflow: "hidden", // Or flex might break
+                listStyle: "none",
+              }}
+            >
+              <Flex sx={{ flexDirection: "column" }}>
                 {project.assays.map(assay => (
                   <Box key={assay}>{assay}</Box>
                 ))}

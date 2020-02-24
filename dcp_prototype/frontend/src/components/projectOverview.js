@@ -38,12 +38,12 @@ const ProjectOverview = ({ project }) => {
               Project Details
             </Heading>
             <Text>Project Label: {project.label}</Text>
-            <Text>Species: {project.species.map(species => species)}</Text>
+            <Text>Species: {project.species.join(", ")}</Text>
             <Text>Sample type: {project.sample_type}</Text>
             <Text>Organ Part: {project.organ_part}</Text>
             <Text>
               Analysis Protocols:
-              {project.analysis_protocol.map(protocol => protocol)}
+              {project.analysis_protocol.join(", ")}
             </Text>
             <Text>Cell count: {project.cell_count}</Text>
             <Text>Donor count: {project.donor_count}</Text>

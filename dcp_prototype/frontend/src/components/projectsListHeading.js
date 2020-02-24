@@ -17,7 +17,23 @@ const ProjectsListHeading = ({ projects }) => {
           fontWeight: 700,
         }}
       >
-        Assays
+        Organ
+      </Box>
+
+      <Box
+        sx={{
+          fontSize: [3],
+          boxSizing: "border-box",
+          flexGrow: 0,
+          flexShrink: 0,
+          width: "20%", // Default to full width
+          // padding: [0],
+          overflow: "hidden", // Or flex might break
+          listStyle: "none",
+          fontWeight: 700,
+        }}
+      >
+        Assay
       </Box>
 
       <Box
@@ -65,7 +81,7 @@ const ProjectsListHeading = ({ projects }) => {
           fontWeight: 700,
         }}
       >
-        Project Title
+        Project name
       </Box>
     </Flex>
   )
