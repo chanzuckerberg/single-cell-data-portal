@@ -113,7 +113,7 @@ def upgrade():
     )
 
     # File
-    file_type_enum = ENUM('EXPRESSION', 'ANALYSIS', 'SEQUENCE', name='file_type_enum', create_type=False)
+    file_type_enum = ENUM("EXPRESSION", "ANALYSIS", "SEQUENCE", name="file_type_enum", create_type=False)
     file_type_enum.create(op.get_bind(), checkfirst=True)
     op.create_table(
         "file",
