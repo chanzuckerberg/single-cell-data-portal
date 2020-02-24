@@ -1,5 +1,6 @@
 # DCP Prototype
 ![Push Tests](https://github.com/HumanCellAtlas/dcp-prototype/workflows/Push%20Tests/badge.svg)
+![Code Coverage](https://codecov.io/gh/humancellatlas/dcp-prototype/branch/master/graph/badge.svg)
 
 The Data Coordination platform (DCP) for the Human Cell Atlas (HCA) stores, organizes, serves, and enables the exploration of cell atlases.
 
