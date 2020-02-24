@@ -2,4 +2,4 @@ pytest
 black
 flake8-black
 chalice==1.12.0
-coverage
+coverage>=2.0.15
