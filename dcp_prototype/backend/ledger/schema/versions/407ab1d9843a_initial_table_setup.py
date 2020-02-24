@@ -31,10 +31,10 @@ def upgrade():
         Column("category", String, nullable=True),
         Column("name", String, nullable=True),
         Column("diseases", ARRAY(String), nullable=True),
-        Column("biosample_diseases", ARRAY(String), nullable=True),
+        Column("donor_diseases", ARRAY(String), nullable=True),
         Column("selected_cell_markers", ARRAY(String), nullable=True),
         Column("selected_cell_types", ARRAY(String), nullable=True),
-        Column("cell_isolated_method", String, nullable=True),
+        Column("cell_isolation_method", String, nullable=True),
         Column("protocols_used", ARRAY(String), nullable=True),
         Column("biosample_summary", String, nullable=True),
         Column("collection_method", String, nullable=True),
@@ -79,8 +79,8 @@ def upgrade():
     op.create_table(
         "library",
         Column("id", String, nullable=False, primary_key=True),
-        Column("cell_count", String, nullable=False),
-        Column("assay_category", String, nullable=False),
+        Column("cell_count", String, nullable=True),
+        Column("assay_category", String, nullable=True),
         Column("project_id", String, nullable=False),
         Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
         Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
@@ -101,8 +101,8 @@ def upgrade():
     op.create_table(
         "project",
         Column("id", String, nullable=False, primary_key=True),
-        Column("project_title", String, nullable=True),
-        Column("project_description", String, nullable=True),
+        Column("title", String, nullable=True),
+        Column("description", String, nullable=True),
         Column("array_express_accessions", ARRAY(String), nullable=True),
         Column("biostudies_accessions", ARRAY(String), nullable=True),
         Column("geo_series_accessions", ARRAY(String), nullable=True),
@@ -140,7 +140,6 @@ def upgrade():
     # Project x Contributor Join
     op.create_table(
         "project_contributor_join",
-        Column("id", String, nullable=False, primary_key=True),
         Column("contributor_id", String, nullable=False),
         Column("project_id", String, nullable=False),
         Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
@@ -169,13 +168,42 @@ def upgrade():
         Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
     )
 
-    # Process
+    # Biosample Prep x Library x Library Prep Protocol
     op.create_table(
-        "process",
-        Column("id", String, nullable=False, primary_key=True),
-        Column("input_id", String, nullable=False),
-        Column("output_id", String, nullable=False),
-        Column("protocol_id", String, nullable=False),
+        "biosample_prep_library_library_prep_protocol_process_join",
+        Column("biosample_prep_id", String, nullable=False),
+        Column("library_id", String, nullable=False),
+        Column("library_prep_protocol_id", String, nullable=False),
+        Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+        Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+    )
+
+    # Library x Sequence File x Sequencing Protocol
+    op.create_table(
+        "library_sequence_file_sequencing_protocol_process_join",
+        Column("library_id", String, nullable=False),
+        Column("sequence_file_id", String, nullable=False),
+        Column("sequencing_protocol_id", String, nullable=False),
+        Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+        Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+    )
+
+    # Sequence File x Analysis File x Alignment Protocol
+    op.create_table(
+        "sequence_file_analysis_file_alignment_protocol_process_join",
+        Column("analysis_file_id", String, nullable=False),
+        Column("sequence_file_id", String, nullable=False),
+        Column("alignment_protocol_id", String, nullable=False),
+        Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+        Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
+    )
+
+    # Analysis File x Expression File x Quantification Protocol
+    op.create_table(
+        "analysis_file_expression_file_quantification_protocol_process_join",
+        Column("analysis_file_id", String, nullable=False),
+        Column("expression_file_id", String, nullable=False),
+        Column("quantification_protocol_id", String, nullable=False),
         Column("created_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
         Column("updated_at", DateTime(timezone=True), nullable=False, server_default=text("now()"),),
     )
