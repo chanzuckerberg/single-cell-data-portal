@@ -15,8 +15,7 @@ sys.path.insert(0, "")  # noqa
 from dcp_prototype.backend.wrangling.migrations.utils.util import list_files_in_bucket
 
 
-
-s3 = boto3.resource('s3')
+s3 = boto3.resource("s3")
 
 
 def load_files(source_directory, target_directory, checksums={}, clear_if_exists=False):
@@ -33,18 +32,12 @@ def load_files(source_directory, target_directory, checksums={}, clear_if_exists
     """
 
     if "s3" in target_directory:
-        bucket = urlparse(target_directory).netloc.split('.')[0]
+        bucket = urlparse(target_directory).netloc.split(".")[0]
         key = urlparse(target_directory).path[1:]
 
         print(f"Copying files to S3 bucket and key: {bucket}/{key}")
         checksums = list_files_in_bucket(bucket=bucket, key=key, checksums=True)
-        _copy_files_to_s3(
-            source_directory,
-            target_directory,
-            checksums,
-            bucket,
-            key
-        )
+        _copy_files_to_s3(source_directory, target_directory, checksums, bucket, key)
 
     else:
         if not os.path.isdir(target_directory):
@@ -64,11 +57,7 @@ def load_files(source_directory, target_directory, checksums={}, clear_if_exists
 
 
 def _copy_files_to_s3(
-        source_directory,
-        target_directory,
-        checksums,
-        bucket,
-        key,
+    source_directory, target_directory, checksums, bucket, key,
 ):
     for filename in os.listdir(source_directory):
         # Skip hidden files
@@ -78,11 +67,7 @@ def _copy_files_to_s3(
         source_file_path = os.path.join(source_directory, filename)
         if os.path.isdir(source_file_path):
             _copy_files_to_s3(
-                source_file_path,
-                target_directory,
-                checksums,
-                bucket,
-                key,
+                source_file_path, target_directory, checksums, bucket, key,
             )
         elif os.path.isfile(source_file_path):
             with open(source_file_path, "rb") as file_reader:
@@ -90,11 +75,11 @@ def _copy_files_to_s3(
                 data = json.loads(contents)
                 try:
                     file_checksum = hashlib.md5(contents).hexdigest()
-                    uuid = data['provenance']['document_id']
-                    version = data['provenance']['update_date'].replace(":", "")
+                    uuid = data["provenance"]["document_id"]
+                    version = data["provenance"]["update_date"].replace(":", "")
                     file_name = f"{uuid}.{version}.json"
                 except KeyError:
-                    if source_file_path.split('/')[-1] == "links.json":
+                    if source_file_path.split("/")[-1] == "links.json":
                         file_name = file_checksum
                     else:
                         print(f"Issue with file: {source_file_path}")
@@ -121,28 +106,23 @@ def _copy_files(source_directory, target_directory, checksums):
         source_file_path = os.path.join(source_directory, filename)
         if os.path.isdir(source_file_path):
             print(f"Processing directory {source_file_path}")
-            _copy_files(
-                source_file_path, target_directory, checksums
-            )
+            _copy_files(source_file_path, target_directory, checksums)
         elif os.path.isfile(source_file_path):
             with open(source_file_path, "rb") as file_reader:
                 contents = file_reader.read()
                 data = json.loads(contents)
-                uuid = data['provenance']['document_id']
-                version = data['provenance']['update_date'].replace(":", "")
+                uuid = data["provenance"]["document_id"]
+                version = data["provenance"]["update_date"].replace(":", "")
                 file_name = f"{uuid}.{version}.json"
             file_checksum = hashlib.md5(contents).hexdigest()
 
             print(f"Processing file: {source_file_path} with checksum {file_checksum}")
 
             if file_checksum not in checksums:
-                checksums['file_checksum'] = f"{uuid}.{version}"
+                checksums["file_checksum"] = f"{uuid}.{version}"
                 copyfile(source_file_path, os.path.join(target_directory, file_name))
             else:
-                print(
-                    f"Skipping over file {filename} because it has already been copied "
-                    f"over."
-                )
+                print(f"Skipping over file {filename} because it has already been copied " f"over.")
 
 
 def load_project_metadata(input_directory, output_directory, project_file, max_workers):
@@ -175,7 +155,8 @@ if __name__ == "__main__":
         "--input_directory",
         nargs="+",
         required=True,
-        help="A data directory containing the metadata files for one or more projects"
+        help="A data directory containing the metadata files for one or more projects nested under "
+        "{projet_name}/bundles/{bundle_id}/",
     )
     parser.add_argument(
         "-o",
@@ -183,15 +164,11 @@ if __name__ == "__main__":
         nargs="+",
         required=True,
         help="An output directory to which the files from the input directory will be "
-             "copied to and de-duped. File names will be retained except for the suffix"
-             " that is a numbering of the file.",
+        "copied to and de-duped. File names will be retained except for the suffix"
+        " that is a numbering of the file.",
     )
     parser.add_argument(
-        "-t",
-        "--threads",
-        nargs="+",
-        required=False,
-        help="The number of threads for extraction, default is 1",
+        "-t", "--threads", nargs="+", required=False, help="The number of threads for extraction, default is 1",
     )
     parser.add_argument(
         "-p",
