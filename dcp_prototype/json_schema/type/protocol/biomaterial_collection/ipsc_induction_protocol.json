@@ -43,20 +43,9 @@
         },
         "induction_method": {
             "description": "Induction method applied to primary cell culture to induce pluripotent stem cell generation.",
-            "type": "string",
-            "enum": [
-                "lentivirus",
-                "sendai virus",
-                "Gun particle",
-                "piggyBac transposon",
-                "miRNA viral",
-                "adenovirus",
-                "cre-loxP",
-                "plasmid",
-                "retroviral"
-            ],
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
             "user_friendly": "Induction method",
-            "comment": "Consider making this field an ontology in the future",
             "example": "Should be one of: lentivirus, sendai virus, Gun particle, piggyBac transposon, miRNA viral, adenovirus, cre-loxP, plasmid, or retroviral."
         },
         "reprogramming_factors": {

@@ -43,12 +43,6 @@
 			"user_friendly": "Biosample summary",
 			"guidelines": "Do not submit. Calculated from other submitted fields."
 		},
-		"cell_isolation_method": {
-			"description": "",
-			"type": "string",
-			"user_friendly": "Cell isolation method",
-			"guidelines": "Do not submit. Calculated from other submitted fields."
-		},
 		"collection_method": {
 			"description": "",
 			"type": "string",

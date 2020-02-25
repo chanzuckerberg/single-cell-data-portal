@@ -43,9 +43,9 @@
         },
         "differentiation_method": {
             "description": "Method applied to cell culture to induce a specific differentiation response.",
-            "type": "string",
+            "type": "object",
+            "$ref": "module/ontology/process_type_ontology.json",
             "user_friendly": "Differentiation method",
-            "comment": "Consider making this an ontology in the future.",
             "example": "Embryoid Body; Monolayer; Inductive Co-Culture"
         },
         "media":{

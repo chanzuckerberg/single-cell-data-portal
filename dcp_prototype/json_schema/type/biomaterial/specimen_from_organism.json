@@ -70,7 +70,7 @@
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
             "user_friendly": "Organ"
         },
-        "organ_parts": {
+        "organ_part": {
             "description": "A term for a specific part of the organ that the biomaterial came from.",
             "type": "array",
             "items": {
