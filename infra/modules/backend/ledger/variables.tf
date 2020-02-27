@@ -16,3 +16,7 @@ variable "db_instance_count" {
 variable "preferred_maintenance_window" {
   type = string
 }
+
+variable "log_bucket" {
+  type = string
+}

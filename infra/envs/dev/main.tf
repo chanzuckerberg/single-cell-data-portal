@@ -20,6 +20,13 @@ provider "aws" {
   profile = "czi-hca-dev"
 }
 
+module "logs" {
+  source = "../../modules/logs"
+
+  deployment_stage = "${var.deployment_stage}"
+  log_retention_time = 30
+}
+
 module "ledger" {
   source = "../../modules/backend/ledger"
 
@@ -30,6 +37,8 @@ module "ledger" {
   db_password = "${var.db_password}"
   db_instance_count = "${var.db_instance_count}"
   preferred_maintenance_window = "${var.preferred_maintenance_window}"
+  log_bucket = module.logs.log_bucket
+
 }
 
 module "browser_frontend" {
