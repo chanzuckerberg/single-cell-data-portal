@@ -24,7 +24,7 @@ module "logs" {
   source = "../../modules/logs"
 
   deployment_stage = "${var.deployment_stage}"
-  log_retention_time = 30
+  log_retention_time = var.log_retention_time
 }
 
 module "ledger" {
