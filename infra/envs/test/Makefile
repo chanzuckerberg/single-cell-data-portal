@@ -1,6 +1,6 @@
 ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
 DEPLOYMENT_STAGE=test
-TF_STATE_BUCKET=org-dcp-infra-856863240400
+TF_STATE_BUCKET=org-dcp-infra-$(ACCOUNT_ID)
 S3_TFVARS_FILE=s3://$(TF_STATE_BUCKET)/terraform/envs/$(DEPLOYMENT_STAGE)/terraform.tfvars
 
 default: plan
