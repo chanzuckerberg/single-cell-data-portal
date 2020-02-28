@@ -1,14 +1,14 @@
 resource "aws_rds_cluster_instance" "cluster_instances" {
-  count                           = var.db_instance_count
-  identifier                      = "browser-cluster-${var.deployment_stage}-${count.index}"
-  cluster_identifier              = aws_rds_cluster.browser.id
-  instance_class                  = "db.r4.large"
-  publicly_accessible             = "true"
-  engine                          = "aurora-mysql"
-  engine_version                  = "5.7.mysql_aurora.2.07.1"
-  auto_minor_version_upgrade      = "true"
-  performance_insights_enabled    = "true"
-  preferred_maintenance_window =    var.preferred_maintenance_window
+  count                        = var.db_instance_count
+  identifier                   = "browser-cluster-${var.deployment_stage}-${count.index}"
+  cluster_identifier           = aws_rds_cluster.browser.id
+  instance_class               = "db.r4.large"
+  publicly_accessible          = "true"
+  engine                       = "aurora-mysql"
+  engine_version               = "5.7.mysql_aurora.2.07.1"
+  auto_minor_version_upgrade   = "true"
+  performance_insights_enabled = "true"
+  preferred_maintenance_window = var.preferred_maintenance_window
 }
 
 resource "aws_rds_cluster" "browser" {
@@ -36,9 +36,9 @@ resource "aws_default_vpc" "default" {
 }
 
 resource "aws_security_group" "rds_mysql" {
-  name          = "dcp-browser-${var.deployment_stage}-rds-mysql-sg"
-  description   = "DCP browser rds security group"
-  vpc_id        = aws_default_vpc.default.id
+  name        = "dcp-browser-${var.deployment_stage}-rds-mysql-sg"
+  description = "DCP browser rds security group"
+  vpc_id      = aws_default_vpc.default.id
 
   ingress {
     from_port   = 3306
