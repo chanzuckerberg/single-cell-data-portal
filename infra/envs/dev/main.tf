@@ -26,9 +26,9 @@ module "ledger" {
   deployment_stage = "${var.deployment_stage}"
 
   // Database
-  db_username = "${var.db_username}"
-  db_password = "${var.db_password}"
-  db_instance_count = "${var.db_instance_count}"
+  db_username                  = "${var.db_username}"
+  db_password                  = "${var.db_password}"
+  db_instance_count            = "${var.db_instance_count}"
   preferred_maintenance_window = "${var.preferred_maintenance_window}"
 }
 
