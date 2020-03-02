@@ -47,7 +47,18 @@ def gather_group_file_list(file_list):
     This is done so that all entities exist before linkage and linking will not
     occur between unknown entities.
 
-    All files should end with .json except link files
+    All entity files, except link files, look this this:
+        UUID.DATE.json
+    All link files look like:
+        UUID (but without dashes)
+
+    E.g.
+    this is an entity file (non-link)
+        eeb749e6-ce21-4bf4-a53a-005398a00862.2019-09-20T102839.972Z.json
+
+    this is a link file
+        f83094a5b135e7ca4ff9e2974ce36489
+
     """
 
     entity_group = [fname for fname in file_list if fname.endswith(".json")]
@@ -64,7 +75,7 @@ def process_file_data(filename, object_data, dataset_metadata):
             dataset_metadata.parse_flattened_row_of_json(metadata_row, entity_type)
 
 
-def consume_file(filequeue, dataset_metadata):
+def consume_file_local(filequeue, dataset_metadata):
     while True:
         filename = filequeue.get()
 
@@ -198,7 +209,7 @@ def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadat
 
         threads = []
         for _ in range(num_threads):
-            thread = threading.Thread(target=consume_file, args=(filequeue, dataset_metadata))
+            thread = threading.Thread(target=consume_file_local, args=(filequeue, dataset_metadata))
             thread.start()
             threads.append(thread)
 
