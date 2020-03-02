@@ -4,10 +4,8 @@ sys.path.insert(0, "")  # noqa
 import boto3
 from argparse import ArgumentParser
 from pandas.io.json import json_normalize
-from os import listdir
 from urllib.parse import urlparse
 import os.path
-from botocore.exceptions import ClientError
 from flatten_json import flatten
 from dcp_prototype.backend.wrangling.migrations.metadata_schema_representation.old_entities.old_dataset_metadata import (  # noqa
     OldDatasetMetadata,
@@ -19,27 +17,27 @@ from dcp_prototype.backend.wrangling.migrations.utils.constants import ENTITY_TY
 import queue
 import threading
 import time
-
-BUCKET_NAME = "hca-dcp-one-backup-data"
-PREFIX = "single_cell_transcriptome_analysis_of_human_pancreas_metadata"
-
-S3_CLIENT = boto3.client("s3")
+import tarfile
 
 
-def generate_metadata_tsv_name(project_name):
-    """
-    Given a project name, generates a name for the spreadsheet that will be generated
-    based on this project's metadata.
-    """
-    replace_spaces = project_name.replace(" ", "_")
-    replace_slashes = replace_spaces.replace("/", "_")
-    return replace_slashes + "_metadata.xlsx"
-
-
-def get_entity_type(filename):
-    for key in ENTITY_TYPES:
-        if key in filename:
-            return key
+def get_entity_type(object_name, object_data):
+    desc = object_data.get("describedBy")
+    if desc:
+        path = urlparse(desc).path
+        entity_type = os.path.basename(path)
+        if entity_type not in ENTITY_TYPES:
+            if entity_type in (
+                "enrichment_protocol",
+                "analysis_process",
+                "analysis_protocol",
+                "process",
+                "dissociation_protocol",
+            ):
+                return None
+            raise RuntimeError(f"object {object_name} did not have an expected describedBy field: {entity_type}")
+        return entity_type
+    else:
+        raise RuntimeError(f"object {object_name} did not have a describedBy field")
 
 
 def gather_group_file_list(file_list):
@@ -48,37 +46,72 @@ def gather_group_file_list(file_list):
     In particular, links need to be processed last.
     This is done so that all entities exist before linkage and linking will not
     occur between unknown entities.
+
+    All entity files, except link files, look this this:
+        UUID.DATE.json
+    All link files look like:
+        UUID (but without dashes)
+
+    E.g.
+    this is an entity file (non-link)
+        eeb749e6-ce21-4bf4-a53a-005398a00862.2019-09-20T102839.972Z.json
+
+    this is a link file
+        f83094a5b135e7ca4ff9e2974ce36489
+
     """
 
-    # group1 will contain all the non-links files, sorted by type, then by name
-    entity_group = []
-    # group2 contains just the links files.
-    link_group = []
-
-    tstart = time.time()
-
-    for file in file_list:
-        if "donor_organism" in file:
-            entity_group.append((1, file))
-        elif "specimen" in file:
-            entity_group.append((2, file))
-        elif "cell_suspension" in file:
-            entity_group.append((3, file))
-        elif "links" not in file:
-            entity_group.append((4, file))
-        elif "links" in file:
-            link_group.append(file)
-
-    entity_group.sort()
-    entity_group = [x[1] for x in entity_group]
-    link_group.sort()
-
-    tend = time.time()
-    print("group_file_list:", (tend - tstart))
+    entity_group = [fname for fname in file_list if fname.endswith(".json")]
+    link_group = [fname for fname in file_list if not fname.endswith(".json")]
     return [entity_group, link_group]
 
 
-def consume_file(prefix, bucket, filequeue, dataset_metadata):
+def process_file_data(filename, object_data, dataset_metadata):
+    tsv_generated_data_frame = json_normalize(flatten(object_data, separator="."))
+    entity_type = get_entity_type(filename, object_data)
+    if entity_type:
+        for row in tsv_generated_data_frame.iterrows():
+            metadata_row = row[1]
+            dataset_metadata.parse_flattened_row_of_json(metadata_row, entity_type)
+
+
+def consume_file_local(filequeue, dataset_metadata):
+    while True:
+        filename = filequeue.get()
+
+        # check for more files to process
+        if filename is None:
+            break
+
+        qsize = filequeue.qsize()
+        if qsize % 1000 == 0 and qsize > 0:
+            print(f"Working with JSON input file: {filename}, queued size={qsize}")
+
+        with open(filename) as json_file:
+            object_data = json.load(json_file)
+            process_file_data(filename, object_data, dataset_metadata)
+            filequeue.task_done()
+
+
+def consume_file_tar(filequeue, dataset_metadata):
+    while True:
+        item = filequeue.get()
+
+        # check for more files to process
+        if item is None:
+            break
+
+        filename, buf = item
+        qsize = filequeue.qsize()
+        if qsize % 1000 == 0 and qsize > 0:
+            print(f"Working with tarinfo: queued size={qsize}")
+
+        object_data = json.loads(buf)
+        process_file_data(filename, object_data, dataset_metadata)
+        filequeue.task_done()
+
+
+def consume_file_s3(prefix, bucket, filequeue, dataset_metadata):
 
     # thread local session and client
     session = boto3.session.Session()
@@ -91,10 +124,6 @@ def consume_file(prefix, bucket, filequeue, dataset_metadata):
         if filename is None:
             break
 
-        # sanity check that the file should be processes
-        if ".json" not in filename:
-            continue
-
         file_prefix = prefix + filename
 
         qsize = filequeue.qsize()
@@ -102,40 +131,36 @@ def consume_file(prefix, bucket, filequeue, dataset_metadata):
             print(f"Working with JSON input file: {file_prefix}, queued size={qsize}")
         object = s3_client.get_object(Bucket=bucket, Key=file_prefix)
         object_body = object["Body"].read()
+        object_data = json.loads(object_body)
 
-        tsv_generated_data_frame = json_normalize(flatten(json.loads(object_body), separator="."))
-        entity_type = get_entity_type(filename)
-        for row in tsv_generated_data_frame.iterrows():
-            metadata_row = row[1]
-            dataset_metadata.parse_flattened_row_of_json(metadata_row, entity_type)
-
+        process_file_data(filename, object_data, dataset_metadata)
         filequeue.task_done()
 
 
-def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
+def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadata):
     """
     Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata
     exists primarily in JSON files in the given S3 bucket.
     """
 
-    dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
-
-    BUCKET_NAME = urlparse(s3_uri).netloc
+    bucket_name = urlparse(s3_uri).netloc
     PREFIX = urlparse(s3_uri).path
     if PREFIX.startswith("/"):
         PREFIX = PREFIX[1:]
 
-    paginator = S3_CLIENT.get_paginator("list_objects")
-    page_iterator = paginator.paginate(Bucket=BUCKET_NAME, Prefix=PREFIX)
-    filtered_iterator = page_iterator.search("Contents[?contains(Key, `.json`)][]")
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects")
+    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=PREFIX)
 
     file_list = []
     print("Gather objects: ", end="", flush=True)
-    for object in filtered_iterator:
-        object_filename = object.get("Key")
-        file_list.append(object_filename.split("/")[-1])
-        if len(file_list) % 1000 == 0:
-            print(len(file_list), end=" ", flush=True)
+    for page in page_iterator:
+        bucket_objects = page.get("Contents")
+        for object in bucket_objects:
+            object_filename = object.get("Key")
+            file_list.append(object_filename.split("/")[-1])
+            if len(file_list) % 1000 == 0:
+                print(len(file_list), end=" ", flush=True)
 
     print()
     group_file_list = gather_group_file_list(file_list)
@@ -152,7 +177,7 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
 
         threads = []
         for _ in range(num_threads):
-            thread = threading.Thread(target=consume_file, args=(PREFIX, BUCKET_NAME, filequeue, dataset_metadata))
+            thread = threading.Thread(target=consume_file_s3, args=(PREFIX, bucket_name, filequeue, dataset_metadata))
             thread.start()
             threads.append(thread)
 
@@ -167,61 +192,76 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads):
     return dataset_metadata
 
 
-def generate_metadata_structure(input_directory, num_threads):
-    """
-    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists
-    primarily in JSON files in the given input directory.
-    """
+def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadata):
 
-    if "s3" in input_directory:
-        return generate_metadata_structure_from_s3_uri(input_directory, num_threads)
+    file_list = os.listdir(input_dir)
+    group_file_list = gather_group_file_list(file_list)
 
-    dataset_metadata = OldDatasetMetadata(s3_uri=f"s3://{BUCKET_NAME}/{PREFIX}")
+    print(f"Files in directory to parse: {len(file_list)}")
 
-    groups = gather_group_file_list(listdir(input_directory))
-    ordered_files = []
-    for group in groups:
-        ordered_files.extend(group)
+    tstart = time.time()
+    for group_files in group_file_list:
+        print(f"Files in group to parse: {len(group_files)}")
+        filequeue = queue.Queue()
 
-    print(f"Files in directory to parse: {ordered_files}")
+        for filename in group_files:
+            filequeue.put(os.path.join(input_dir, filename))
 
-    for file in ordered_files:
-        full_file_path = os.path.join(input_directory, file)
-        if ".json" not in full_file_path:
-            continue
-        if os.path.isfile(full_file_path):
-            print(f"Working with JSON input file at {full_file_path}")
+        threads = []
+        for _ in range(num_threads):
+            thread = threading.Thread(target=consume_file_local, args=(filequeue, dataset_metadata))
+            thread.start()
+            threads.append(thread)
 
-            with open(full_file_path) as json_file_object:
-                input_file_contents = json_file_object.read()
-            tsv_generated_data_frame = json_normalize(flatten(json.loads(input_file_contents), separator="."))
+        filequeue.join()
+        for _ in range(num_threads):
+            filequeue.put(None)
+        for thread in threads:
+            thread.join()
 
-            for row in tsv_generated_data_frame.iterrows():
-                metadata_row = row[1]
-                dataset_metadata.parse_flattened_row_of_json(metadata_row, get_entity_type(full_file_path))
-
-    dataset_metadata.save()
-
-    # print(f"Processing dataset: {dataset_metadata.project_name}")
-    # dataset_metadata.export_to_spreadsheet(
-    #    generate_metadata_tsv_name(dataset_metadata.project_name)
-    # )
-    print(f"Completed generating spreadsheet: " f"{generate_metadata_tsv_name(dataset_metadata.project_name)}")
-
+    tend = time.time()
+    print(f"Process file time (t={num_threads}): {(tend - tstart)}")
     return dataset_metadata
 
 
-def export_old_metadata_to_s3_orm(dataset_metadata: OldDatasetMetadata, input_directory, should_upload_to_s3):
-    """
-    Uploads the dataset metadata schema that has been constructed directly to the Ledger
-    database using its ORM classes and if the Sequence/Analysis files are local, uploads
-    them to an S3 bucket.
-    """
+def generate_metadata_structure_from_targz(input_source, num_threads, dataset_metadata):
 
-    # Upload local files if input directory is not already an S3 bucket.
-    if should_upload_to_s3:
-        export_local_files_to_s3(dataset_metadata, input_directory)
+    index = 0
+    with tarfile.open(input_source, "r:gz") as tar:
+        members = tar.getmembers()
+        entity_group = []
+        link_group = []
+        for index, member in enumerate(members):
+            buf = tar.extractfile(member).read()
+            if member.name.endswith(".json"):
+                entity_group.append((member.name, buf))
+            else:
+                link_group.append((member.name, buf))
 
+            if index > 0 and index % 1000 == 0:
+                print(index, end=" ", flush=True)
+
+    print(index)
+    group_file_list = [entity_group, link_group]
+    print(f"Files in directory to parse: {len(members)}")
+
+    tstart = time.time()
+    for group_files in group_file_list:
+        print(f"Files in group to parse: {len(group_files)}")
+        index = 0
+        for filename, buf in group_files:
+            object_data = json.loads(buf)
+            process_file_data(filename, object_data, dataset_metadata)
+            index += 1
+            if index % 1000 == 0:
+                print("processed ", index)
+
+    tend = time.time()
+    print(f"Process file time (t={num_threads}): {(tend - tstart)}")
+    return dataset_metadata
+
+
+def export_old_metadata_to_s3_orm(dataset_metadata: OldDatasetMetadata):
     # Upload to DB
     print(f"Committing dataset to Ledger DB")
     session_maker = DBSessionMaker()
@@ -229,123 +269,82 @@ def export_old_metadata_to_s3_orm(dataset_metadata: OldDatasetMetadata, input_di
     print(f"Completed updating Ledger DB with dataset metadata")
 
 
-def export_local_files_to_s3(dataset_metadata: OldDatasetMetadata, input_directory):
-    """
-    Export local files that are directly referenced in the metadata schema to S3.
-    """
-    print(f"Uploading local files related to the project to S3")
-
-    # Upload FASTQs into S3 and backpopulate dataset_metadata sequence_files
-    for filename in listdir(input_directory):
-        source_location = os.path.join(input_directory, filename)
-
-        # Just upload the file if this is not a FASTQ file
-        if ".json" in filename:
-            export_file_to_s3(source_location, filename)
-            continue
-
-        # Find a SequenceFile object with similar filename and update it with the S3 URI
-        # if it is a FASTQ file
-        for sequence_file_id, sequence_file in dataset_metadata.sequence_files.items():
-            if sequence_file.filename == filename:
-                s3_uri = export_file_to_s3(source_location, filename)
-                sequence_file.s3_uri = s3_uri
-                dataset_metadata.sequence_files[sequence_file_id] = sequence_file
-                continue
-
-        # Find an AnalysisFile object with similar filename and update it with the S3
-        # URI if it is not a FASTQ or a JSON file (likely a Zarr or BAM file).
-        for analysis_file_id, analysis_file in dataset_metadata.analysis_files.items():
-            if analysis_file.filename == filename:
-                s3_uri = export_file_to_s3(source_location, filename)
-                sequence_file.s3_uri = s3_uri
-                dataset_metadata.analysis_files[analysis_file_id] = analysis_file
-                continue
-
-    print(f"Completed uploading all files to S3")
-
-
-def export_file_to_s3(full_source_file_path, filename):
-    s3_uri = f"s3://{BUCKET_NAME}/{PREFIX}/{filename}"
-
-    try:
-        S3_CLIENT.head_object(Bucket=BUCKET_NAME, Key=PREFIX + filename)
-        print(f"Found file {filename} so not re-uploading to S3.")
-        return s3_uri
-    except Exception:
-        pass
-
-    print(f"Uploading file {filename}")
-    try:
-        S3_CLIENT.upload_file(full_source_file_path, BUCKET_NAME, PREFIX + filename)
-    except ClientError as e:
-        print(e)
-        return False
-
-    return s3_uri
-
-
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser()
     parser.add_argument(
         "-i",
-        "--input_directory",
-        nargs="+",
-        required=False,
-        help="A data directory contains all files that were a part of a single DCP 1.0 "
-        "project to be transformed into a valid DCP 2.0 metadata and inputted into"
-        " the DCP 2.0 ledger.",
+        "--input-source",
+        required=True,
+        help="input_source contains all metadata files that were part of a single DCP 1.0 project."
+        " It may be one of the following:  An s3 bucket containing json files."
+        " A directory containing json files."
+        " An s3 object in the tar.gz format containing the json files."
+        " Or a local tar.gz file containing the json files.",
     )
-    parser.add_argument(
-        "-b",
-        "--bucket",
-        nargs="+",
-        required=False,
-        help="The bucket into which files should be transfered if transferring local "
-        "files as part of the project's metadata migration.",
-    )
-    parser.add_argument(
-        "-p",
-        "--prefix",
-        nargs="+",
-        required=False,
-        help="The bucket's prefix into which files should be transfered if transferring"
-        " local files as part of the project's metadata migration.",
-    )
+
     parser.add_argument(
         "-t", "--threads", required=False, default=1, type=int, help="Number of threads to use when reading files"
     )
 
+    parser.add_argument("-s", "--s3uri", help="The source of the data (s3uri)")
+
     arguments = parser.parse_args()
 
-    if arguments.input_directory:
-        input_directory = arguments.input_directory[0]
-        if "s3" in input_directory:
-            # Ensure that input directory ends in a slash
-            if not input_directory[-1] == "/":
-                print(f"ERROR: Input directory, if an S3 bucket, must end in a slash!")
-                sys.exit()
+    input_source = arguments.input_source
+    input_tarfile = None
+    num_threads = arguments.threads
 
-            # Ensure a new bucket and prefix are not given because the metadata will
-            # already be entirely read from the S3 bucket. No files will be uploaded to
-            # S3.
-            if arguments.bucket or arguments.prefix:
-                print(
-                    f"ERROR: Cannot entire a bucket or prefix will designating that the"
-                    f" metadata schema will be read from an S3 bucket."
-                )
+    s3_uri = arguments.s3uri
 
-    if arguments.bucket:
-        BUCKET_NAME = arguments.bucket[0]
-    if arguments.prefix:
-        PREFIX = arguments.prefix[0]
+    if "s3" in input_source:
+
+        bucket = urlparse(input_source).netloc
+        path = urlparse(input_source).path
+        if path.startswith("/"):
+            path = path[1:]
+
+        if input_source.endswith(".tar.gz"):
+            if s3_uri is None:
+                dpath = path.replace(".tar.gz", "")
+                s3_uri = f"s3://{bucket}/{dpath}"
+
+            input_tarfile = os.path.basename(path)
+            if os.path.exists(input_tarfile):
+                print("Error, cannot overwrite {input_tarfile}")
+                sys.exit(1)
+            s3_client = boto3.client("s3")
+            s3_client.download_file(bucket, path, input_tarfile)
+            if s3_uri is None:
+                print("You must specify an s3uri")
+                sys.exit(1)
+            dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
+            generate_metadata_structure_from_targz(input_tarfile, num_threads, dataset_metadata)
+        else:
+            if not input_source.endswith("/"):
+                input_source += "/"
+
+            if s3_uri is None:
+                s3_uri = f"s3://{bucket}/{path}"
+
+            dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
+            generate_metadata_structure_from_s3_uri(input_source, num_threads, dataset_metadata)
+
+    else:
+        if s3_uri is None:
+            print("You must specify an s3uri")
+            sys.exit(1)
+        dataset_metadata = OldDatasetMetadata(s3_uri=s3_uri)
+        if input_source.endswith(".tar.gz"):
+            input_tarfile = input_source
+            generate_metadata_structure_from_targz(input_tarfile, num_threads, dataset_metadata)
+        else:
+            generate_metadata_structure_from_dir(input_source, num_threads, dataset_metadata)
 
     tstart = time.time()
-    old_metadata = generate_metadata_structure(input_directory, arguments.threads)
-    tend = time.time()
-    print("Generate metadata structure:", (tend - tstart))
-
-    tstart = time.time()
-    export_old_metadata_to_s3_orm(old_metadata, input_directory, "s3" not in input_directory)
+    export_old_metadata_to_s3_orm(dataset_metadata)
     tend = time.time()
     print("export_old_metadata_to_s3_orm:", (tend - tstart))
+
+
+if __name__ == "__main__":
+    main()
