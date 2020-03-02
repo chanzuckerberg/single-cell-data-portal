@@ -25,8 +25,10 @@ Example use:
 
 Concrete example:
 ```
+    # location in S3 where the DCP projects are found
     export BUCKET=s3://hca-dcp-one-backup-data/dcp-one-copy
-    ecport PROJECT=Single-cell-transcriptome-analysis-of-human-pancreas
+    # name of the DCP project to process
+    export PROJECT=Single-cell-transcriptome-analysis-of-human-pancreas
     python3 migrations/scripts/migrate_dcp_one_to_dcp_two.py -i $BUCKET/$PROJECT.tar.gz 
 ```
 
@@ -45,8 +47,11 @@ to s3 at the <s3output> location.
 
 Concrete example:
 ```
+    # location in S3 where the DCP projects are found
     export BUCKET=s3://hca-dcp-one-backup-data/dcp-one-copy
-    ecport PROJECT=Single-cell-transcriptome-analysis-of-human-pancreas
+    # name of the DCP project to process
+    export PROJECT=Single-cell-transcriptome-analysis-of-human-pancreas
+    mkdir $PROJECT
     python3 migrations/scripts/metadata_aggregator.py -i $BUCKET/$PROJECT -d $PROJECT --threads 10 -o $BUCKET/$PROJECT.tar.gz 
 ``` 
 

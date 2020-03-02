@@ -143,7 +143,6 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadat
 
     file_list = []
     print("Gather objects: ", end="", flush=True)
-    stop = False
     for page in page_iterator:
         bucket_objects = page.get("Contents")
         for object in bucket_objects:
@@ -151,8 +150,6 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadat
             file_list.append(object_filename.split("/")[-1])
             if len(file_list) % 1000 == 0:
                 print(len(file_list), end=" ", flush=True)
-        if stop:
-            break
 
     print()
     group_file_list = gather_group_file_list(file_list)

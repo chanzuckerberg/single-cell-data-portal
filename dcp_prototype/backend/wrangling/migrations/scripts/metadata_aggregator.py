@@ -14,7 +14,12 @@ import sys
 The files can then be tarred and gzipped, then copied back to S3."""
 
 
-def download_file(prefix, bucket, filequeue, download_dir):
+def download_single_file_from_s3(prefix, bucket, filequeue, download_dir):
+    """The function runs in a thread.
+    While there are files to process, the thread grabs the next filename from the filequeue,
+    and downloads that single file into the download_dir.
+    """
+
     session = boto3.session.Session()
     s3_client = session.client("s3")
     while True:
@@ -38,7 +43,8 @@ def download_file(prefix, bucket, filequeue, download_dir):
         filequeue.task_done()
 
 
-def download_files(s3_uri, num_threads, dirname):
+def download_all_files_from_s3(s3_uri, num_threads, dirname):
+    """Download all the files from s3 for a project into a local directory"""
 
     bucket_name = urlparse(s3_uri).netloc
     prefix = urlparse(s3_uri).path
@@ -56,9 +62,11 @@ def download_files(s3_uri, num_threads, dirname):
         bucket_objects = page.get("Contents")
         for object in bucket_objects:
             object_filename = object.get("Key")
+            # data_files is a prefix for all the project datafiles (matrix, loom, bam)
             if "data_files" in object_filename:
                 continue
             parts = object_filename.split("/")
+            # Make sure that only the top level objects are downloaded.
             if len(parts) == prefixparts + 1:
                 filequeue.put(parts[-1])
                 nfiles += 1
@@ -68,7 +76,7 @@ def download_files(s3_uri, num_threads, dirname):
     print(nfiles)
     threads = []
     for _ in range(num_threads):
-        thread = threading.Thread(target=download_file, args=(prefix, bucket_name, filequeue, dirname))
+        thread = threading.Thread(target=download_single_file_from_s3, args=(prefix, bucket_name, filequeue, dirname))
         thread.start()
         threads.append(thread)
 
@@ -111,10 +119,10 @@ def upload_to_s3(src_file, dest_s3_uri):
     return True
 
 
-def aggregate(input_directory, num_threads, dirname, output_object):
+def combine_s3_files_into_one_aggregate_file(input_directory, num_threads, dirname, output_object):
     if dirname.endswith("/"):
         dirname = dirname[:-1]
-    download_files(input_directory, num_threads, dirname)
+    download_all_files_from_s3(input_directory, num_threads, dirname)
     tarname = create_tarfile(dirname)
     if output_object:
         return upload_to_s3(tarname, output_object)
@@ -124,7 +132,7 @@ def aggregate(input_directory, num_threads, dirname, output_object):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-i", "--input_directory", help="A data directory contains metadata files that were a part of a single DCP 1.0"
+        "-i", "--input_directory", help="An s3 prefix contains metadata files that were a part of a single DCP 1.0"
     )
     parser.add_argument(
         "-d",
@@ -152,9 +160,14 @@ def main():
 
     if arguments.download_dir is None:
         with tempfile.TemporaryDirectory() as dirname:
-            ret = aggregate(input_directory, arguments.threads, dirname, arguments.output_object)
+            ret = combine_s3_files_into_one_aggregate_file(
+                input_directory, arguments.threads, dirname, arguments.output_object
+            )
+
     else:
-        ret = aggregate(input_directory, arguments.threads, arguments.download_dir, arguments.output_object)
+        ret = combine_s3_files_into_one_aggregate_file(
+            input_directory, arguments.threads, arguments.download_dir, arguments.output_object
+        )
 
     if ret:
         sys.exit(0)
