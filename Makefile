@@ -3,6 +3,7 @@ SHELL:=/bin/bash
 .PHONY: fmt
 fmt:
 	black .
+	terraform fmt -recursive infra
 
 .PHONY: lint
 lint:
