@@ -5,9 +5,7 @@ This file provide a brief overview of the wrangler scripts, and their usage.
 ### migrations/scripts/migrate_dcp_one_to_dcp_two.py
 
 This script reads the files that were a part of a single DCP 1.0 project, 
-transforms them into valid DCP 2.0 metadata objects, and inputs them into 
-the DCP 2.0 ledger.  Specify the location to the DCP 1.0 files, and the number
-of threads to use for accessing S3.
+transforms them into the new artifact schema, and outputs a json file. 
 
 The location can be one of the following:
  * an s3 bucket containing metadata files and individual object
@@ -18,9 +16,16 @@ The location can be one of the following:
 It is much much faster to use a tar.gz file.
 When using a .tar.gz file it is no longer necessary to run with multiple threads.
 
+If specified, the --output-file is the location where the json is saved.
+If not specified, the output goes to standard out.
+
+If --output-file is specified, and --append is specified, then the new project
+will be combined with the existing output file.  It will add a new project if it is new,
+or replace an existing project if it is repeated.
+
 Example use:
 ```
-    python3 migrations/scripts/migrate_dcp_one_to_dcp_two.py -i <source> --threads <nthreads>
+    python3 migrations/scripts/migrate_dcp_one_to_dcp_two.py -i <source> --threads <nthreads> --output-file <output> --append
 ```
 
 Concrete example:
@@ -29,7 +34,7 @@ Concrete example:
     export BUCKET=s3://hca-dcp-one-backup-data/dcp-one-copy
     # name of the DCP project to process
     export PROJECT=Single-cell-transcriptome-analysis-of-human-pancreas
-    python3 migrations/scripts/migrate_dcp_one_to_dcp_two.py -i $BUCKET/$PROJECT.tar.gz 
+    python3 migrations/scripts/migrate_dcp_one_to_dcp_two.py -i $BUCKET/$PROJECT.tar.gz  --output-file artifact.json --append
 ```
 
 ### migrations/scripts/metadata_aggregator.py
