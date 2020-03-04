@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-
+import { login, isAuthenticated } from "../util/auth"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
@@ -14,7 +14,16 @@ const SecondPage = props => {
   const id = searchObj?.id
 
   useEffect(() => {
+      if (!isAuthenticated()) {
+        login()
+        return <p>Redirecting to login...</p>
+      }
+    }
+  )
+
+  useEffect(() => {
     if (id) {
+      // TODO send authorization token in requests to backend
       fetch(`${api_prefix}/projects/${id}`)
         .then(response => response.json()) // parse JSON from request
         .then(resultData => {
@@ -27,6 +36,7 @@ const SecondPage = props => {
 
   useEffect(() => {
     if (id) {
+      // TODO send authorization token in requests to backend
       fetch(`${api_prefix}/projects/${id}/files`)
         .then(response => response.json()) // parse JSON from request
         .then(resultData => {
@@ -45,7 +55,7 @@ const SecondPage = props => {
 
   return (
     <Layout>
-      <SEO title="Projects" />
+      <SEO title="Projects"/>
       <Heading as="h1" sx={{ mb: 4 }}>
         Explore Project
       </Heading>
@@ -53,7 +63,7 @@ const SecondPage = props => {
         {!project ? (
           "Loading project..."
         ) : (
-          <ProjectOverview project={project} />
+          <ProjectOverview project={project}/>
         )}
       </Flex>
       {!project ? null : (
