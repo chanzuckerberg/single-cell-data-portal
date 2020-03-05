@@ -3,3 +3,4 @@ black
 flake8-black
 chalice==1.12.0
 coverage>=2.0.15
+jsonschema
