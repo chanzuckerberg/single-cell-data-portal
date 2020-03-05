@@ -4,3 +4,5 @@ flake8-black
 chalice==1.12.0
 coverage>=2.0.15
 jsonschema
+boto3>=1.11.17
+botocore>=1.14.17
