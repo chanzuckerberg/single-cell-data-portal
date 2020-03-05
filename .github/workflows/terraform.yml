@@ -24,8 +24,6 @@ jobs:
           args: '-var="env=dev"'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run:
-          -
       - name: 'Terraform Init'
         uses: hashicorp/terraform-github-actions@master
         with:
