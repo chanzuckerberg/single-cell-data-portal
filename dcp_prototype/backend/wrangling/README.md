@@ -64,3 +64,19 @@ This script has already been run on all the 29 DCP 1.0 projects, therefore it ma
 However if the project data changes, then potentially this may need to be rerun.  
 Although if the project metadata needs to be regenerated, then it is simpler to produce the tar.gz 
 locally and then upload that file.
+
+### migrations/scripts/create_artifact.py
+
+Create an artifact from all the dcp1 projects.
+By default it chooses all the .tar.gz files in s3://hca-dcp-one-backup-data/dcp-one-copy/ .
+That location can be changes with a command line parameter.
+
+Example use:
+```
+    python3 migrations/scripts/create_artifact.py  [-i <s3 source>] -o <output json file>
+```
+
+Concrete example:
+```
+    python3 migrations/scripts/create_artifact.py  -o Artifact.json
+```

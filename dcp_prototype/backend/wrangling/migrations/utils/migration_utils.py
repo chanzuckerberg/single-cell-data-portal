@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 import os
 import threading
 import pkg_resources
+import sys
 
 
 class MetadataBase(object):
@@ -324,3 +325,32 @@ def get_entity_type(object_name, object_data):
         return entity_type
     else:
         raise RuntimeError(f"object {object_name} did not have a describedBy field")
+
+
+def combine_projects(artifact_file, new_artifact):
+    out_project = new_artifact.get("projects")[0]
+    title = out_project.get("title")
+    if os.path.exists(artifact_file):
+        with open(artifact_file) as json_file:
+            data = json.load(json_file)
+            projects = data.get("projects")
+            if projects is None:
+                print(f"expected 'projects' in {artifact_file}")
+                sys.exit(1)
+
+            do_append = True
+            for index, project in enumerate(projects):
+                if project.get("title") == title:
+                    print(f"replaced project {title} in {artifact_file}")
+                    projects[index] = out_project
+                    do_append = False
+                    break
+            if do_append:
+                print(f"append project {title} in {artifact_file}")
+                projects.append(out_project)
+            out_dict = data
+    else:
+        out_dict = new_artifact
+        print(f"write project {title} to {artifact_file}")
+
+    return out_dict

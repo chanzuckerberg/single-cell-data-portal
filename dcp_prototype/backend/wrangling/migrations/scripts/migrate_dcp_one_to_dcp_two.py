@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import os.path
 import json
 
-from dcp_prototype.backend.wrangling.migrations.utils.migration_utils import DatasetMetadata
+from dcp_prototype.backend.wrangling.migrations.utils.migration_utils import DatasetMetadata, combine_projects
 
 from dcp_prototype.backend.wrangling.migrations.utils.gather_dcp1_data import (
     generate_metadata_structure_from_targz,
@@ -86,9 +86,9 @@ def main():
             generate_metadata_structure_from_dir(input_source, num_threads, dataset_metadata)
 
     dataset_metadata.process()
-    result_project = dataset_metadata.to_dict()
+    result_artifact = dataset_metadata.to_dict()
 
-    okay = dataset_metadata.validate(result_project)
+    okay = dataset_metadata.validate(result_artifact)
     if not okay:
         print("result failed schema validation")
         sys.exit(1)
@@ -96,36 +96,25 @@ def main():
     for key, value in dataset_metadata.missing.items():
         print("MISSING:", key, value)
 
-    out_dict = result_project
-    title = out_dict.get("projects")[0].get("title")
+    out_project = result_artifact.get("projects")[0]
+    title = out_project.get("title")
     output_file = arguments.output_file
     if output_file:
         if arguments.append and os.path.exists(output_file):
-            with open(output_file) as json_file:
-                data = json.load(json_file)
-                projects = data.get("projects")
-                if projects is None:
-                    print(f"expected 'projects' in {output_file}")
-                    sys.exit(1)
-
-                do_append = True
-                for index, project in enumerate(projects):
-                    if project.get("title") == title:
-                        print(f"replaced project {title} in {output_file}")
-                        projects[index] = out_dict
-                        do_append = False
-                        break
-                if do_append:
-                    print(f"append project {title} in {output_file}")
-                    projects.append(out_dict)
-                out_dict = data
+            result_artifact = combine_projects(output_file, result_artifact)
         else:
             print(f"write project {title} to {output_file}")
 
+        okay = dataset_metadata.validate(result_artifact)
+        if not okay:
+            print("result failed schema validation")
+            sys.exit(1)
+
         with open(arguments.output_file, "w") as json_file:
-            json_file.write(json.dumps(out_dict, indent=2))
+            json_file.write(json.dumps(result_artifact, indent=2))
+
     else:
-        print(json.dumps(out_dict, indent=2))
+        print(json.dumps(result_artifact, indent=2))
 
 
 if __name__ == "__main__":
