@@ -19,9 +19,8 @@ jobs:
         with:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: 'fmt'
-          tf_actions_working_dir: './infra/envs/dev'
+          tf_actions_working_dir: './infra'
           tf_actions_comment: false
-          args: '-var="env=dev"'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Terraform Init'
