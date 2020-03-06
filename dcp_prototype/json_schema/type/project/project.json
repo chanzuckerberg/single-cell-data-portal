@@ -35,11 +35,25 @@
             "type": "object",
             "$ref": "system/provenance.json"
         },
-        "project_core" : {
-            "description": "Core project-level information.",
-            "type": "object",
-            "$ref": "core/project/project_core.json",
-            "user_friendly": "Project core"
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "pattern": "HCAPR[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
+        "project_title": {
+            "description": "An official title for the project.",
+            "type": "string",
+            "example": "Study of single cells in the human body.",
+            "user_friendly": "Project title",
+            "guidelines": "Project title should be fewer than 30 words, such as a title of a grant proposal or a publication."
+        },
+        "project_description": {
+            "description": "A longer description of the project which includes research goals and experimental approach.",
+            "type": "string",
+            "user_friendly": "Project description",
+            "guidelines": "Project description should be fewer than 300 words, such as an abstract from a grant application or publication."
         },
         "contributors": {
             "description": "People contributing to any aspect of the project.",
