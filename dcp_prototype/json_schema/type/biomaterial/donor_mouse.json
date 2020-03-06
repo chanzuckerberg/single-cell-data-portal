@@ -1,0 +1,124 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information about the donor from which a specimen was collected.",
+    "additionalProperties": false,
+    "required": [
+        "describedBy",
+        "schema_type",
+        "biomaterial_core",
+        "is_living",
+        "sex",
+        "development_stage"
+    ],
+    "title": "Donor organism",
+    "name": "donor_organism",
+    "type": "object",
+    "properties": {
+        "describedBy":  {
+            "description": "The URL reference to the schema.",
+            "type": "string",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/type/biomaterial/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/donor_organism"
+        },
+        "schema_version": {
+            "description": "The version number of the schema in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "schema_type": {
+            "description": "The type of the metadata schema entity.",
+            "type": "string",
+            "enum": [
+                "biomaterial"
+            ]
+        },
+        "accession": {
+            "description": "",
+            "type": "string",
+            "user_friendly": "Accession",
+            "pattern": "HCADR[0-9]{5}[A-Z]{5}",
+            "guidelines": "Do not submit. Assigned by the system."
+        },
+        "provenance" : {
+            "description": "Provenance information provided by the system.",
+            "type": "object",
+            "$ref": "system/provenance.json"
+        },
+        "biomaterial_core" : {
+            "description": "Core biomaterial-level information.",
+            "type": "object",
+            "$ref": "core/biomaterial/biomaterial_core.json",
+            "user_friendly": "Biomaterial core"
+        },
+        "genus_species": {
+            "description": "The scientific binomial name for the species of the organism.",
+            "type" : "array",
+            "items":{
+                "$ref": "module/ontology/species_ontology.json"
+            },
+            "user_friendly": "Genus species"
+        },
+        "sex": {
+            "description": "The biological sex of the organism.",
+            "type": "string",
+            "enum": [
+                "female", 
+                "male", 
+                "mixed", 
+                "unknown"
+            ],
+            "user_friendly": "Biological sex",
+            "example": "Should be one of: male, female, mixed, or unknown."
+        },
+        "is_living": {
+            "description": "Whether organism was alive at time of biomaterial collection.",
+            "type": "boolean",
+            "user_friendly": "Alive at collection",
+            "example": "Should be one of: yes, no, not applicable, or unknown.",
+            "guidelines": "Enter yes if organism was alive at time of biomaterial collection, no if organism was dead, unknown if not known, and not applicable for ex vivo embryo."
+        }, 
+        "diseases": {
+            "description": "Short description of known disease(s) of the organism.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/disease_ontology.json"
+	        },
+            "user_friendly": "Disease status",
+            "guidelines": "Enter 'normal' if no known disease."
+        },
+        "death": {
+            "description": "Information about conditions of death of the organism.",
+            "type": "object",
+            "$ref": "module/biomaterial/death.json",
+            "user_friendly": "Death conditions"
+        },
+        "familial_relationships": {
+            "description": "Information about other organisms related to this organism.",
+            "type": "array",
+            "items": {
+                "$ref": "module/biomaterial/familial_relationship.json"
+                },
+            "user_friendly": "Familial relationship"
+        },
+        "medical_history": {
+            "description": "Information about the medical history of the organism.",
+            "type": "object",
+            "$ref": "module/biomaterial/medical_history.json",
+            "user_friendly": "Medical history"
+        },
+        "timecourse": {
+            "description": "Information relating to a timecourse associated with this biomaterial.",
+            "type": "object",
+            "$ref": "module/biomaterial/timecourse.json",
+            "user_friendly": "Timecourse"
+        },
+        "strain": {
+            "description": "The name of the mouse strain.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/strain_ontology.json"
+            },
+            "user_friendly": "Mouse strain"
+        }
+    }
+}

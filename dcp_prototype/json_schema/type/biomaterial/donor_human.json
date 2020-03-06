@@ -50,18 +50,6 @@
             "$ref": "core/biomaterial/biomaterial_core.json",
             "user_friendly": "Biomaterial core"
         },
-        "human_specific": {
-            "description": "Fields specific to human (homo sapiens) organisms.",
-            "type": "object",
-            "$ref": "module/biomaterial/human_specific.json",
-            "user_friendly": "Human-specific"
-        },
-        "mouse_specific": {
-            "description": "Fields specific to mouse (mus musculus) organisms.",
-            "type": "object",
-            "$ref": "module/biomaterial/mouse_specific.json",
-            "user_friendly": "Mouse-specific"
-        },
         "genus_species": {
             "description": "The scientific binomial name for the species of the organism.",
             "type" : "array",
@@ -123,6 +111,15 @@
             "type": "object",
             "$ref": "module/biomaterial/timecourse.json",
             "user_friendly": "Timecourse"
+        },
+        "ethnicity": {
+            "description": "Ethnicity of the donor.",
+            "type": "array",
+            "items": {
+                "$ref": "module/ontology/ethnicity_ontology.json"
+            },
+            "user_friendly": "Ethnicity",
+            "guidelines": "Enter one or more ethnicities, separated by a comma."
         }
     }
 }
