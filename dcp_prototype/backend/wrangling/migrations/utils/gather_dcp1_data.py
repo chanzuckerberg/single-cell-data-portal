@@ -16,10 +16,8 @@ import tarfile
 
 def gather_group_file_list(file_list):
     """
-    process files into groups that can be processed simultaneously.
-    In particular, links need to be processed last.
-    This is done so that all entities exist before linkage and linking will not
-    occur between unknown entities.
+    Process files into groups that can be processed simultaneously. In particular, links need to be processed last.
+    This is done so that all entities exist before linkage and linking will not ßoccur between unknown entities.
 
     All entity files, except link files, look this this:
         UUID.DATE.json
@@ -27,10 +25,10 @@ def gather_group_file_list(file_list):
         UUID (but without dashes)
 
     E.g.
-    this is an entity file (non-link)
+    This is an entity file (non-link)
         eeb749e6-ce21-4bf4-a53a-005398a00862.2019-09-20T102839.972Z.json
 
-    this is a link file
+    This is a link file
         f83094a5b135e7ca4ff9e2974ce36489
 
     """
@@ -44,7 +42,7 @@ def consume_file_local(filequeue, dataset_metadata):
     while True:
         filename = filequeue.get()
 
-        # check for more files to process
+        # Check for more files to process
         if filename is None:
             break
 
@@ -62,7 +60,7 @@ def consume_file_tar(filequeue, dataset_metadata):
     while True:
         item = filequeue.get()
 
-        # check for more files to process
+        # Check for more files to process
         if item is None:
             break
 
@@ -77,15 +75,14 @@ def consume_file_tar(filequeue, dataset_metadata):
 
 
 def consume_file_s3(prefix, bucket, filequeue, dataset_metadata):
-
-    # thread local session and client
+    # Thread local session and client
     session = boto3.session.Session()
     s3_client = session.client("s3")
 
     while True:
         filename = filequeue.get()
 
-        # check for more files to process
+        # Check for more files to process
         if filename is None:
             break
 
@@ -155,7 +152,6 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadat
 
 
 def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadata):
-
     file_list = os.listdir(input_dir)
     group_file_list = gather_group_file_list(file_list)
 
@@ -184,7 +180,6 @@ def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadat
 
 
 def generate_metadata_structure_from_targz(input_source, num_threads, dataset_metadata):
-
     index = 0
     print("open ", input_source)
     with tarfile.open(input_source, "r:gz") as tar:
@@ -228,10 +223,10 @@ def main():
         "--input-source",
         required=True,
         help="input_source contains all metadata files that were part of a single DCP 1.0 project."
-        " It may be one of the following:  An s3 bucket containing json files."
-        " A directory containing json files."
-        " An s3 object in the tar.gz format containing the json files."
-        " Or a local tar.gz file containing the json files.",
+             " It may be one of the following:  An s3 bucket containing json files."
+             " A directory containing json files."
+             " An s3 object in the tar.gz format containing the json files."
+             " Or a local tar.gz file containing the json files.",
     )
 
     parser.add_argument(
@@ -243,7 +238,7 @@ def main():
         "--output-file",
         default=None,
         help="If provided, the json output will be save at this file.  "
-        "If not provided, the json output will go to stdout",
+             "If not provided, the json output will go to stdout",
     )
 
     parser.add_argument(
@@ -251,12 +246,11 @@ def main():
         "--append",
         action="store_true",
         help="If provided, the json output will be save at this file.  "
-        "If not provided, the json output will go to stdout",
+             "If not provided, the json output will go to stdout",
     )
     arguments = parser.parse_args()
 
     input_source = arguments.input_source
-    input_tarfile = None
     num_threads = arguments.threads
 
     if "s3" in input_source:

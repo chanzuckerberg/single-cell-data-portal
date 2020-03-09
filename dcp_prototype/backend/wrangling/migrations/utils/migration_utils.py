@@ -1,10 +1,12 @@
 import json
-import jsonschema
-from urllib.parse import urlparse
 import os
-import threading
-import pkg_resources
 import sys
+import threading
+from urllib.parse import urlparse
+
+import jsonschema
+import pkg_resources
+
 from dcp_prototype.backend.wrangling.migrations.utils.migration_schema_classes import (
     MetadataBase,
     MetadataArtifact,
@@ -30,16 +32,15 @@ def append_string(object, attr, value):
 
 
 def process_mapping(source, source_tuple, dest_object, dest_attr, mapfunc):
-    """This function locates attributes from source_tuple and maps them into attributes in
-    dest_attr.  The purpose of this and related functions is to make writing the mappings
-    much more clear and concise.
+    """This function locates attributes from source_tuple and maps them into attributes in dest_attr.  The purpose of
+    this and related functions is to make writing the mappings much more clear and concise.
 
     source_tuple is a tuple of strings (keys).  Each key in the tuple represents a key in the 'source' dictionary.
-    The function picks off the first key, and descends into the subtree represented by that key in the
-    source directory.  process_mapping is then called recursively on the remaining keys in source_tuple.
-    A special key "*" means that the source subtree is a list, and all members of the list should be processed.
-    As a convenience, source_tuple may be a single string, in which case it is treated as a tuple of size one.
-    This is useful when a top level key of the source dictionary is being mapped.
+    The function picks off the first key, and descends into the subtree represented by that key in the source
+    directory.  `process_mapping` is then called recursively on the remaining keys in source_tuple. A special key "*"
+    means that the source subtree is a list, and all members of the list should be processed. As a convenience,
+    source_tuple may be a single string, in which case it is treated as a tuple of size one. This is useful when a
+    top level key of the source dictionary is being mapped.
 
     dest_attr is is the name of the attribute in the dest_object.
 

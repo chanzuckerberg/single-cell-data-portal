@@ -22,40 +22,35 @@ def main():
         "-i",
         "--input-source",
         required=True,
-        help="input_source contains all metadata files that were part of a single DCP 1.0 project."
-        " It may be one of the following:  An s3 bucket containing json files."
-        " A directory containing json files."
-        " An s3 object in the tar.gz format containing the json files."
-        " Or a local tar.gz file containing the json files.",
+        help="input_source contains all metadata files that were part of a single DCP 1.0 project. It may be one of "
+             "the following:\n1. An s3 bucket containing json files.\n2. A directory containing json files.\n3. An s3 "
+             "object in the tar.gz format containing the json files.\n4.Or a local tar.gz file containing the json "
+             "files.",
     )
-
     parser.add_argument(
         "-t", "--threads", required=False, default=1, type=int, help="Number of threads to use when reading files"
     )
-
     parser.add_argument(
         "-o",
         "--output-file",
         default=None,
-        help="If provided, the json output will be save at this file.  "
-        "If not provided, the json output will go to stdout",
+        help="If provided, the JSON output will be save at this file. If not provided, the JSON output will go to "
+             "stdout.",
     )
-
     parser.add_argument(
         "-a",
         "--append",
         action="store_true",
-        help="If provided, the json output will be save at this file.  "
-        "If not provided, the json output will go to stdout",
+        help="If provided, the JSON output will be save at this file. If not provided, the JSON output will go to "
+             "stdout.",
     )
     arguments = parser.parse_args()
 
     input_source = arguments.input_source
-    input_tarfile = None
+    output_file = arguments.output_file
     num_threads = arguments.threads
 
     if "s3" in input_source:
-
         bucket = urlparse(input_source).netloc
         path = urlparse(input_source).path
         if path.startswith("/"):
@@ -64,7 +59,7 @@ def main():
         if input_source.endswith(".tar.gz"):
             input_tarfile = os.path.basename(path)
             if os.path.exists(input_tarfile):
-                print("Error, cannot overwrite {input_tarfile}")
+                print("ERROR: Cannot overwrite {input_tarfile}")
                 sys.exit(1)
             s3_client = boto3.client("s3")
             s3_client.download_file(bucket, path, input_tarfile)
@@ -90,7 +85,7 @@ def main():
 
     okay = dataset_metadata.validate(result_artifact)
     if not okay:
-        print("result failed schema validation")
+        print("Result failed schema validation")
         sys.exit(1)
 
     for key, value in dataset_metadata.missing.items():
@@ -98,19 +93,18 @@ def main():
 
     out_project = result_artifact.get("projects")[0]
     title = out_project.get("title")
-    output_file = arguments.output_file
     if output_file:
         if arguments.append and os.path.exists(output_file):
             result_artifact = combine_projects(output_file, result_artifact)
         else:
-            print(f"write project {title} to {output_file}")
+            print(f"Write project {title} to {output_file}")
 
         okay = dataset_metadata.validate(result_artifact)
         if not okay:
-            print("result failed schema validation")
+            print("Result failed schema validation")
             sys.exit(1)
 
-        with open(arguments.output_file, "w") as json_file:
+        with open(output_file, "w") as json_file:
             json_file.write(json.dumps(result_artifact, indent=2))
 
     else:

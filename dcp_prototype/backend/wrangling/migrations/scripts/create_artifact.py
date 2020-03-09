@@ -14,8 +14,9 @@ from dcp_prototype.backend.wrangling.migrations.utils.gather_dcp1_data import ge
 
 
 def process_project(project_filename, output_filename):
-    """Process a project, produce the schema artifact for that project, and combine it with data
-    already in the output file"""
+    """Process a project, produce the schema artifact for that project, and combine it with data already in the
+    output file"""
+
     dataset_metadata = DatasetMetadata()
     generate_metadata_structure_from_targz(project_filename, 1, dataset_metadata)
     dataset_metadata.process()
@@ -23,13 +24,13 @@ def process_project(project_filename, output_filename):
 
     okay = dataset_metadata.validate(result_artifact)
     if not okay:
-        print("result failed schema validation")
+        print("Result failed schema validation")
         sys.exit(1)
 
     result_artifact = combine_projects(output_filename, result_artifact)
     okay = dataset_metadata.validate(result_artifact)
     if not okay:
-        print("result failed schema validation")
+        print("Result failed schema validation")
         sys.exit(1)
 
     with open(output_filename, "w") as json_file:
@@ -48,10 +49,14 @@ def main():
     arguments = parser.parse_args()
 
     input_directory = arguments.input_directory
+    output_filename = arguments.output_file
+
     if input_directory.startswith("s3:"):
         projects = []
+
         bucket_name = urlparse(input_directory).netloc
         prefix = urlparse(input_directory).path
+
         if prefix.startswith("/"):
             prefix = prefix[1:]
         client = boto3.client("s3")
@@ -66,14 +71,14 @@ def main():
                 print(f"Processing {s3name}")
                 tarfile = os.path.join(dirname, os.path.basename(s3name))
                 client.download_file(bucket_name, s3name, tarfile)
-                process_project(tarfile, arguments.output_file)
+                process_project(tarfile, output_filename)
     else:
-        projects = [fname for fname in os.listdir(input_directory) if fname.endswith(".tar.gz")]
-        print(projects)
+        projects = [filename for filename in os.listdir(input_directory) if filename.endswith(".tar.gz")]
+        print(f"Processing local projects: {projects}")
         for project in projects:
             print(f"Processing {project}")
             tarfile = os.path.join(input_directory, project)
-            process_project(tarfile, arguments.output_file)
+            process_project(tarfile, output_filename)
 
 
 if __name__ == "__main__":
