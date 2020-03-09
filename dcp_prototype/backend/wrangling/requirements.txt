@@ -2,8 +2,8 @@ boto3
 dcplib
 flatten_json
 hca
+jsonschema
 objgraph
 openpyxl
 pandas
 xlrd
-jsonschema

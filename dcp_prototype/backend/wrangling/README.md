@@ -47,7 +47,7 @@ Example use:
     python3 migrations/scripts/metadata_aggregator.py -i <s3dir> -d <localdir> --threads <nthreads> -o <s3output>
 ```
 
-This will pull files from s3dir, copy them into localdir (using nthreads), and then uploads the resuling tar.gz file back
+This will pull files from s3dir, copy them into localdir (using nthreads), and then uploads the resulting tar.gz file back
 to s3 at the <s3output> location.
 
 Concrete example:
@@ -73,10 +73,10 @@ That location can be changes with a command line parameter.
 
 Example use:
 ```
-    python3 migrations/scripts/create_artifact.py  [-i <s3 source>] -o <output json file>
+    python3 migrations/scripts/create_artifact.py [-i <s3 source>] -o <output json file>
 ```
 
 Concrete example:
 ```
-    python3 migrations/scripts/create_artifact.py  -o Artifact.json
+    python3 migrations/scripts/create_artifact.py -o Artifact.json
 ```

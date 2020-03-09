@@ -1,8 +1,8 @@
-pytest
 black
-flake8-black
+botocore>=1.14.17
+boto3>=1.11.17
 chalice==1.12.0
 coverage>=2.0.15
+flake8-black
 jsonschema
-boto3>=1.11.17
-botocore>=1.14.17
+pytest
