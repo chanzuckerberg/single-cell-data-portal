@@ -1,0 +1,161 @@
+{
+  "projects": [
+    {
+      "title": "WongAdultRetina",
+      "id": "8185730f-4113-40d3-9cc3-929271784c2b",
+      "publication_title": "A single\u2010cell transcriptome atlas of the adult human retina",
+      "publication_doi": "10.15252/embj.2018100811",
+      "publication_pmid": "31436334",
+      "array_express_accessions": [
+        "E-MTAB-7316"
+      ],
+      "insdc_project_accessions": [],
+      "geo_series_accessions": [],
+      "biostudies_accessions": [],
+      "protocols_io_doi": [],
+      "contributors": [
+        {
+          "name": "Samuel,W,Lukowski",
+          "institution": "University of Queensland"
+        },
+        {
+          "name": "Camden,Y,Lo",
+          "institution": "Monash University"
+        },
+        {
+          "name": "Alexei,A,Sharov",
+          "institution": "National Institutes of Health"
+        },
+        {
+          "name": "Quan,,Nguyen",
+          "institution": "University of Queensland"
+        },
+        {
+          "name": "Lyujie,,Fang",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Sandy,SC,Hung",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Ling,,Zhu",
+          "institution": "University of Sydney"
+        },
+        {
+          "name": "Ting,,Zhang",
+          "institution": "University of Sydney"
+        },
+        {
+          "name": "Ulrike,,Gr\u00fcnert",
+          "institution": "University of Sydney"
+        },
+        {
+          "name": "Tu,,Nguyen",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Anne,,Senabouth",
+          "institution": "University of Queensland"
+        },
+        {
+          "name": "Jafar,S,Jabbari",
+          "institution": "Australian Genome Research Facility"
+        },
+        {
+          "name": "Emily,,Welby",
+          "institution": "UCL Great Ormond Street Institute of Child Health"
+        },
+        {
+          "name": "Jane,C,Sowden",
+          "institution": "UCL Great Ormond Street Institute of Child Health"
+        },
+        {
+          "name": "Hayley,S,Nguyen",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Adrienne,,Mackey",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Graeme,,Pollock",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Trevor,D,Lamb",
+          "institution": "The Australian National University"
+        },
+        {
+          "name": "Peng-Yuna,,Wang",
+          "institution": "Swinburne University of Technology"
+        },
+        {
+          "name": "Alex,W,Hewitt",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Mark,C,Gillies",
+          "institution": "University of Sydney"
+        },
+        {
+          "name": "Joseph,E,Powell",
+          "institution": "Garvan Institute of Medical Research"
+        },
+        {
+          "name": "Raymond,CB,Wong",
+          "institution": "Centre for Eye Research Australia"
+        },
+        {
+          "name": "Marion,F,Shadbolt",
+          "institution": "EMBL-EBI"
+        }
+      ],
+      "donor_development_stages_at_collection": [
+        "human adult stage"
+      ],
+      "donor_species": [
+        "Homo sapiens"
+      ],
+      "donor_diseases": [
+        "normal",
+        "cataract (disease)"
+      ],
+      "biosample_names": [
+        "17-011 retina",
+        "17-010 retina",
+        "SC retina"
+      ],
+      "biosample_categories": [
+        "retinal neural layer"
+      ],
+      "biosample_diseases": [
+        "normal"
+      ],
+      "organs": [
+        "eye"
+      ],
+      "paired_end": [
+        false
+      ],
+      "cell_isolation_methods": [
+        "enzymatic dissociation"
+      ],
+      "selected_cell_types": [],
+      "nucleic_acid_sources": [
+        "single cell"
+      ],
+      "input_nucleic_acid_molecules": [
+        "polyA RNA"
+      ],
+      "library_construction_methods": [
+        "10X v2 sequencing"
+      ],
+      "selected_cell_markers": [],
+      "systems": [],
+      "assay_categories": [],
+      "cell_count": 0
+    }
+  ],
+  "files": []
+}
