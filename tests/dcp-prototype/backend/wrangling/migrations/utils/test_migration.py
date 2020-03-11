@@ -14,7 +14,7 @@ class TestMigration(unittest.TestCase):
         expectedfile = pkg_resources.resource_filename(__name__, "WongAdultRetina.json")
 
         dataset_metadata = DatasetMetadata()
-        generate_metadata_structure_from_targz(infile, 1, dataset_metadata)
+        generate_metadata_structure_from_targz(infile, dataset_metadata)
         dataset_metadata.process()
         result_project = dataset_metadata.to_dict()
         with open(expectedfile) as jfile:
