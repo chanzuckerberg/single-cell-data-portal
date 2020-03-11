@@ -10,7 +10,7 @@ import argparse
 import boto3
 from botocore.exceptions import ClientError
 
-"""This is a script to download all flattened DCP-1.0 metadata files from S3. The files can then be tarred and 
+"""This is a script to download all flattened DCP-1.0 metadata files from S3. The files can then be tarred and
 gzipped, then copied back to S3."""
 
 
