@@ -23,9 +23,9 @@ def main():
         "--input-source",
         required=True,
         help="input_source contains all metadata files that were part of a single DCP 1.0 project. It may be one of "
-        "the following:\n1. An s3 bucket containing json files.\n2. A directory containing json files.\n3. An s3 "
-        "object in the tar.gz format containing the json files.\n4.Or a local tar.gz file containing the json "
-        "files.",
+             "the following:\n1. An s3 bucket containing json files.\n2. A directory containing json files.\n3. An s3 "
+             "object in the tar.gz format containing the json files.\n4.Or a local tar.gz file containing the json "
+             "files.",
     )
     parser.add_argument(
         "-t", "--threads", required=False, default=1, type=int, help="Number of threads to use when reading files"
@@ -35,14 +35,14 @@ def main():
         "--output-file",
         default=None,
         help="If provided, the JSON output will be save at this file. If not provided, the JSON output will go to "
-        "stdout.",
+             "stdout.",
     )
     parser.add_argument(
         "-a",
         "--append",
         action="store_true",
         help="If provided, the JSON output will be save at this file. If not provided, the JSON output will go to "
-        "stdout.",
+             "stdout.",
     )
     arguments = parser.parse_args()
 

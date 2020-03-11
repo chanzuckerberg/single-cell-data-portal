@@ -107,7 +107,7 @@ class DatasetMetadata(object):
             # FIXME, the schema is not yet committed to main.
             # Validate should fail if the data cannot be validated.
             print(f"Warning, the schema could not be validated: {schema_file}")
-            return False
+            return True
 
         try:
             jsonschema.validate(data, schema)

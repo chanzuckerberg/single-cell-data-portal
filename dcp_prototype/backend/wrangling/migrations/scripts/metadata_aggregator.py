@@ -1,17 +1,17 @@
-import argparse
+import os
+import queue
+import sys
 import tarfile
+import tempfile
+import threading
 from urllib.parse import urlparse
+
+import argparse
 import boto3
 from botocore.exceptions import ClientError
 
-import threading
-import queue
-import os
-import tempfile
-import sys
-
-"""This is a script to download all flattened DCP-1.0 metadata files from S3.
-The files can then be tarred and gzipped, then copied back to S3."""
+"""This is a script to download all flattened DCP-1.0 metadata files from S3. The files can then be tarred and 
+gzipped, then copied back to S3."""
 
 
 def download_single_file_from_s3(prefix, bucket, filequeue, download_dir):
