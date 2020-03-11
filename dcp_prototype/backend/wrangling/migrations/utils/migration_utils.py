@@ -4,6 +4,7 @@ import sys
 import threading
 from urllib.parse import urlparse
 
+import dcp_prototype
 import jsonschema
 import pkg_resources
 
@@ -15,20 +16,20 @@ from dcp_prototype.backend.wrangling.migrations.utils.migration_schema_classes i
 )
 
 
-def set_string(object, attr, value):
+def set_string(entity, attr, value):
     """Used in process_mapping:  set a string value to an attribute in an object"""
-    setattr(object, attr, str(value))
+    setattr(entity, attr, str(value))
 
 
-def unique_append_string(object, attr, value):
+def unique_append_string(entity, attr, value):
     """Used in process_mapping:  append a value to a list attribute in an object, if it does not exist"""
-    if value not in getattr(object, attr):
-        getattr(object, attr).append(value)
+    if value not in getattr(entity, attr):
+        getattr(entity, attr).append(value)
 
 
-def append_string(object, attr, value):
+def append_string(entity, attr, value):
     """Used in process_mapping:  append a value to a list attribute in an object"""
-    getattr(object, attr).append(value)
+    getattr(entity, attr).append(value)
 
 
 def process_mapping(source, source_tuple, dest_object, dest_attr, mapfunc):
@@ -91,6 +92,7 @@ class DatasetMetadata(object):
 
     def __init__(self):
         self.artifact = MetadataArtifact()
+        self.project = MetadataProject()
         self.entity_data = {}
         self.missing = {}
         self.lock = threading.Lock()
@@ -98,15 +100,13 @@ class DatasetMetadata(object):
     def validate(self, data):
         """Validate the data with the current artifact schema"""
         try:
-            import dcp_prototype
-
             schema_file = pkg_resources.resource_filename(dcp_prototype.__name__, "backend/v0.0.0.json")
             schema_data = open(schema_file).read()
             schema = json.loads(schema_data)
         except FileNotFoundError:
             # FIXME, the schema is not yet committed to main.
-            # validate should fail if the data cannot be validated.
-            print(f"Warning, the schema could not be validates: {schema_file}")
+            # Validate should fail if the data cannot be validated.
+            print(f"Warning, the schema could not be validated: {schema_file}")
             return True
 
         try:
@@ -123,14 +123,13 @@ class DatasetMetadata(object):
             self.entity_data.setdefault(entity_type, []).append(object_data)
 
     def process_project(self):
-        """Process the one and only project entityyy"""
+        """Process the one and only project entity"""
         data = self.entity_data.get("project", [])
         if len(data) != 1:
             print("Error, only one project expected, found ", len(data))
             return False
 
         data = data[0]
-        self.project = MetadataProject()
         self.artifact.projects.append(self.project)
         mapping = (
             (("project_core", "project_short_name"), "title", set_string),

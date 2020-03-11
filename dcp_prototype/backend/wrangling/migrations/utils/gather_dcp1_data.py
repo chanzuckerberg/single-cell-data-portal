@@ -87,8 +87,8 @@ def consume_file_s3(prefix, bucket, filequeue, dataset_metadata):
         qsize = filequeue.qsize()
         if qsize % 1000 == 0 and qsize > 0:
             print(f"Working with JSON input file: {file_prefix}, queued size={qsize}")
-        object = s3_client.get_object(Bucket=bucket, Key=file_prefix)
-        object_body = object["Body"].read()
+        metadata_object = s3_client.get_object(Bucket=bucket, Key=file_prefix)
+        object_body = metadata_object["Body"].read()
         object_data = json.loads(object_body)
 
         dataset_metadata.add_entity(filename, object_data)
@@ -97,25 +97,25 @@ def consume_file_s3(prefix, bucket, filequeue, dataset_metadata):
 
 def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadata):
     """
-    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata
-    exists primarily in JSON files in the given S3 bucket.
+    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists primarily in JSON files in the
+    given S3 bucket.
     """
 
     bucket_name = urlparse(s3_uri).netloc
-    PREFIX = urlparse(s3_uri).path
-    if PREFIX.startswith("/"):
-        PREFIX = PREFIX[1:]
+    prefix = urlparse(s3_uri).path
+    if prefix.startswith("/"):
+        prefix = prefix[1:]
 
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects")
-    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=PREFIX)
+    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
 
     file_list = []
     print("Gather objects: ", end="", flush=True)
     for page in page_iterator:
         bucket_objects = page.get("Contents")
-        for object in bucket_objects:
-            object_filename = object.get("Key")
+        for metadata_object in bucket_objects:
+            object_filename = metadata_object.get("Key")
             file_list.append(object_filename.split("/")[-1])
             if len(file_list) % 1000 == 0:
                 print(len(file_list), end=" ", flush=True)
@@ -134,7 +134,7 @@ def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadat
 
         threads = []
         for _ in range(num_threads):
-            thread = threading.Thread(target=consume_file_s3, args=(PREFIX, bucket_name, filequeue, dataset_metadata))
+            thread = threading.Thread(target=consume_file_s3, args=(prefix, bucket_name, filequeue, dataset_metadata))
             thread.start()
             threads.append(thread)
 
@@ -175,7 +175,7 @@ def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadat
     return dataset_metadata
 
 
-def generate_metadata_structure_from_targz(input_source, num_threads, dataset_metadata):
+def generate_metadata_structure_from_targz(input_source, dataset_metadata):
     index = 0
     print("open ", input_source)
     with tarfile.open(input_source, "r:gz") as tar:

@@ -1,17 +1,17 @@
-import argparse
+import os
+import queue
+import sys
 import tarfile
+import tempfile
+import threading
 from urllib.parse import urlparse
+
+import argparse
 import boto3
 from botocore.exceptions import ClientError
 
-import threading
-import queue
-import os
-import tempfile
-import sys
-
-"""This is a script to download all flattened DCP-1.0 metadata files from S3.
-The files can then be tarred and gzipped, then copied back to S3."""
+"""This is a script to download all flattened DCP-1.0 metadata files from S3. The files can then be tarred and
+gzipped, then copied back to S3."""
 
 
 def download_single_file_from_s3(prefix, bucket, filequeue, download_dir):
@@ -60,8 +60,8 @@ def download_all_files_from_s3(s3_uri, num_threads, dirname):
     prefixparts = len(prefix.split("/"))
     for page in page_iterator:
         bucket_objects = page.get("Contents")
-        for object in bucket_objects:
-            object_filename = object.get("Key")
+        for project_object in bucket_objects:
+            object_filename = project_object.get("Key")
             # data_files is a prefix for all the project datafiles (matrix, loom, bam)
             if "data_files" in object_filename:
                 continue

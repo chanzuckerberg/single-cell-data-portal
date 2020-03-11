@@ -64,7 +64,7 @@ def main():
             s3_client = boto3.client("s3")
             s3_client.download_file(bucket, path, input_tarfile)
             dataset_metadata = DatasetMetadata()
-            generate_metadata_structure_from_targz(input_tarfile, num_threads, dataset_metadata)
+            generate_metadata_structure_from_targz(input_tarfile, dataset_metadata)
         else:
             if not input_source.endswith("/"):
                 input_source += "/"
@@ -76,7 +76,7 @@ def main():
         dataset_metadata = DatasetMetadata()
         if input_source.endswith(".tar.gz"):
             input_tarfile = input_source
-            generate_metadata_structure_from_targz(input_tarfile, num_threads, dataset_metadata)
+            generate_metadata_structure_from_targz(input_tarfile, dataset_metadata)
         else:
             generate_metadata_structure_from_dir(input_source, num_threads, dataset_metadata)
 
