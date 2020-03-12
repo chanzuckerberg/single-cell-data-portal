@@ -35,19 +35,28 @@
             "description": "The title of the publication.",
             "type": "string",
             "user_friendly": "Publication title",
-            "example": "Study of single cells in the human body."
+            "example": "Study of single cells in the human body.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "doi": {
             "description": "The publication digital object identifier (doi) of the publication.",
             "type": "string",
             "example": "10.1016/j.cell.2016.07.054",
-            "user_friendly": "Publication DOI"
+            "user_friendly": "Publication DOI",
+            "core_usage": [
+                "project page"
+            ]
         }, 
         "pmid": {
             "description": "The PubMed ID of the publication.",
             "type": "integer",
             "example": "27565351",
-            "user_friendly": "Publication PMID"
+            "user_friendly": "Publication PMID",
+            "core_usage": [
+                "project page"
+            ]
         },
         "url": {
             "description": "A URL for the publication.",

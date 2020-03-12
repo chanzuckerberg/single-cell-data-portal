@@ -47,6 +47,13 @@
             "description": "The manufacturer and model of the sequencer.",
             "type": "object",
             "$ref": "module/ontology/instrument_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0000548"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Instrument manufacturer and model"
         },
         "local_machine_name": {
@@ -60,12 +67,22 @@
             "type": "boolean",
             "example": "Should be one of: yes, or no.",
             "guidelines": "If 3' 10x v2 was used, enter no.",
-            "user_friendly": "Paired end"
+            "user_friendly": "Paired end",
+            "core_usage": [
+                "project page"
+            ]
         },
         "sequencing_method": {
             "description": "The general method for sequencing.",
             "type": "object",
             "$ref": "module/ontology/sequencing_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["OBI:0000070"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Sequencing method"
         },
         "10x": {

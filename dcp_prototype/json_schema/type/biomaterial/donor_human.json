@@ -37,7 +37,10 @@
             "type": "string",
             "user_friendly": "Accession",
             "pattern": "HCADR[0-9]{5}[A-Z]{5}",
-            "guidelines": "Do not submit. Assigned by the system."
+            "guidelines": "Do not submit. Assigned by the system.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "provenance" : {
             "description": "Provenance information provided by the system.",
@@ -53,8 +56,13 @@
         "genus_species": {
             "description": "The scientific binomial name for the species of the organism.",
             "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:NCBITaxon"],
+                "classes": ["OBI:0100026","NCBITaxon:2759"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
             },
             "user_friendly": "Genus species"
         },
@@ -68,7 +76,10 @@
                 "unknown"
             ],
             "user_friendly": "Biological sex",
-            "example": "Should be one of: male, female, mixed, or unknown."
+            "example": "Should be one of: male, female, mixed, or unknown.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "is_living": {
             "description": "Whether organism was alive at time of biomaterial collection.",
@@ -80,10 +91,16 @@
         "diseases": {
             "description": "Short description of known disease(s) of the organism.",
             "type": "array",
-            "items": {
-                "$ref": "module/ontology/disease_ontology.json"
-	        },
+            "$ref": "module/ontology.json",
             "user_friendly": "Disease status",
+            "graph_restriction": {
+                "ontologies": ["obo:mondo","obo:efo"],
+                "classes": ["MONDO:0000001",
+                "PATO:0000461"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "guidelines": "Enter 'normal' if no known disease."
         },
         "death": {
@@ -115,10 +132,15 @@
         "ethnicity": {
             "description": "Ethnicity of the donor.",
             "type": "array",
-            "items": {
-                "$ref": "module/ontology/ethnicity_ontology.json"
-            },
+            "$ref": "module/ontology.json",
             "user_friendly": "Ethnicity",
+            "graph_restriction": {
+                "ontologies": ["obo:hancestro"],
+                "classes": ["HANCESTRO:0004"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "guidelines": "Enter one or more ethnicities, separated by a comma."
         }
     }

@@ -66,7 +66,14 @@
         "ischemic_time_unit": {
             "description": "The unit in which the ischemic time value is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003","UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Ischemic time unit"
         },
         "microscopic_description": {
@@ -92,12 +99,19 @@
             "minimum": 0,
             "example": 2400,
             "user_friendly": "Post-mortem interval",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003","UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "guidelines": "Enter time"
         },
         "postmortem_interval_unit": {
             "description": "The unit in which the post-mortem interval value is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
             "user_friendly": "Post-mortem interval unit"
         }
     }

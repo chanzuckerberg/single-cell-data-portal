@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Information from the ontology database based on a lookup of the ontology term",
+    "additionalProperties": false,
+    "required": [
+        "ontology_term",
+        "ontology_label"
+    ],
+    "title": "Ontology",
+    "name": "ontology",
+    "type": "object",
+    "properties": {
+        "describedBy": {
+            "description": "The URL reference to the schema.",
+            "pattern" : "^(http|https)://schema.(.*?)humancellatlas.org/module/ontology/(([0-9]{1,}.[0-9]{1,}.[0-9]{1,})|([a-zA-Z]*?))/ontology",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version number in major.minor.patch format.",
+            "type": "string",
+            "pattern": "^[0-9]{1,}.[0-9]{1,}.[0-9]{1,}$",
+            "example": "4.6.1"
+        },
+        "ontology_term": {
+            "description": "An ontology term identifier in the form prefix:accession.",
+            "type": "string",
+            "user_friendly": "Ontology ID"
+        },
+        "synonyms" : {
+            "description": "The synonyms for the ontology label based on the ontology lookup of the ontology_term.",
+            "type": "array",
+            "user_friendly": "Synonyms"
+        },
+        "ontology_label": {
+            "description": "The preferred label for the ontology term referred to in the ontology_term field.",
+            "type": "string",
+            "user_friendly": "Ontology label"
+        }
+    }
+}

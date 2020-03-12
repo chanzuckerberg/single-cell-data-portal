@@ -46,6 +46,13 @@
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",
             "user_friendly": "Differentiation method",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "example": "Embryoid Body; Monolayer; Inductive Co-Culture"
         },
         "media":{
@@ -80,7 +87,10 @@
             "type": "string",
             "user_friendly": "Target pathway",
             "example": "Wnt pathway; Hedgehog signaling pathway",
-            "comment": "Consider making this an ontology in the future."
+            "comment": "Consider making this an ontology in the future.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "validation_method": {
             "description": "Method used to validate origin cell successfully differentiated to target cell.",

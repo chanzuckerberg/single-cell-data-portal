@@ -81,13 +81,27 @@
         "length_of_time_unit": {
             "description": "The unit in which Length of time is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003","UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Length of time unit"
         },
         "type": {
             "description": "The type of process.",
             "type": "object",
-            "$ref": "module/ontology/process_type_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Process type"
         },
         "deviation_from_protocol": {

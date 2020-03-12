@@ -38,8 +38,15 @@
         "format": {
             "description": "The format of the uncompressed file.",
             "type": "object",
-            "$ref": "module/ontology/file_format_ontology.json",
+            "$ref": "module/ontology.json",
             "user_friendly": "File format",
+            "graph_restriction": {
+                "ontologies": ["obo:edam"],
+                "classes": ["format:1915"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "example": "fastq; tif"
         },
         "compression_format": {
@@ -51,10 +58,14 @@
             "description": "General description of the contents of the file.",
             "type": "array",
             "user_friendly": "Content description",
-            "items":{
-                "type": "object",
-                "$ref": "module/ontology/file_content_ontology.json"
-            }
+            "graph_restriction": {
+                "ontologies": ["obo:edam"],
+                "classes": ["data:0006"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
+            "$ref": "module/ontology.json"
         },
         "checksum": {
             "description": "MD5 checksum of the file.",

@@ -43,8 +43,15 @@
         "type": {
             "description": "The type of protocol.",
             "type": "object",
-            "$ref": "module/ontology/process_type_ontology.json",
+            "$ref": "module/ontology.json",
             "user_friendly": "Protocol type",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "example": "sample enrichment"
         }
     }

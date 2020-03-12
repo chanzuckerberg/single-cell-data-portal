@@ -58,6 +58,13 @@
             "description": "The type of microscopy.",
             "type": "object",
             "$ref": "module/ontology/microscopy_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:fbbi"],
+                "classes": ["FBbi:00000241"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Microscopy technique"
         },
         "magnification": {

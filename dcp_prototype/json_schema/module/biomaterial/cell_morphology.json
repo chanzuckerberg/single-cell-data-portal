@@ -34,7 +34,14 @@
         "cell_size_unit": {
             "description": "The unit in which the Cell size is expressed.",
             "type": "object",
-            "$ref": "module/ontology/length_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000001"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Cell size unit"
         },
         "percent_cell_viability": {

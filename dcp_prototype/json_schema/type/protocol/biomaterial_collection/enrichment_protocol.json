@@ -45,6 +45,13 @@
             "description": "The method by which enrichment was achieved.",
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Enrichment method"
         },
         "markers": {
@@ -52,7 +59,10 @@
             "type": "string",
             "example": "CD4+ CD8-; HLA-G+",
             "user_friendly": "Markers",
-            "guidelines": "Format as a space-delimited list of markers with +/- where + means enriched for and - means enriched against."
+            "guidelines": "Format as a space-delimited list of markers with +/- where + means enriched for and - means enriched against.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "selected_cell_types": {
             "description" : "The cell type(s) selected to be present in the suspension.",
@@ -61,6 +71,13 @@
                 "$ref": "module/ontology/cell_type_ontology.json"
             },
             "user_friendly": "Selected cell type(s)",
+            "graph_restriction": {
+                "ontologies": ["obo:hcao","obo:cl"],
+                "classes": ["CL:0000003"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "guidelines": "Enter the cell type(s) selected for, not the cell type(s) determined to be present post-analysis."
        },
         "minimum_size": {

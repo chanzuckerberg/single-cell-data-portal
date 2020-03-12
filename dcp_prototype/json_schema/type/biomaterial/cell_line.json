@@ -76,7 +76,14 @@
         "cell_cycle": {
             "description": "The cell cycle phase if the cell line is synchronized growing cells or the phase is known.",
             "type": "object",
-            "$ref": "module/ontology/cell_cycle_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:go"],
+                "classes": ["GO:0007049","GO:0022403"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Cell cycle"
         },
         "type": {
@@ -96,15 +103,29 @@
         "model_system": {
             "description": "The organ system(s) for which the biomaterial is a model for.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Model organ system"
         },
         "model_organ": {
             "description": "The organ(s) for which the biomaterial is a model for.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Model organ"
         },
         "cell_morphology": {
@@ -128,7 +149,14 @@
         "cell_type": {
             "description": "The cell type that the cell line represents.",
             "type": "object",
-            "$ref": "module/ontology/cell_type_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:cl"],
+                "classes": ["CL:0000003"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Cell type"
         },
         "karyotype": {
@@ -140,7 +168,14 @@
         "cell_line_name": {
             "description": "The name of the cell line.",
             "type": "object",
-            "$ref": "module/ontology/organ_part_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Cell line name"
         },
         "date_established": {
@@ -154,16 +189,15 @@
         "diseases": {
             "description": "Short description of any disease association to the cell type.",
             "type": "object",
-            "$ref": "module/ontology/disease_ontology.json",
-            "user_friendly": "Diseases"
-        },
-        "genus_species": {
-            "description": "The scientific binomial name for the species of the cell line.",
-            "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:mondo","obo:efo"],
+                "classes": ["MONDO:0000001","PATO:0000461"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
             },
-            "user_friendly": "Genus species"
+            "user_friendly": "Diseases"
         },
         "publication": {
             "description": "A publication that cites the cell line creation.",

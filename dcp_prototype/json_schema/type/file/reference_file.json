@@ -55,7 +55,15 @@
         "genus_species": {
             "description": "The scientific binomial name for the species of this reference.",
             "type": "object",
-            "$ref": "module/ontology/species_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:NCBITaxon"],
+                "classes": ["OBI:0100026",
+                "NCBITaxon:2759"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Genus species"
         },
         "reference_type": {

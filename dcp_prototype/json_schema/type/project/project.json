@@ -40,20 +40,32 @@
             "type": "string",
             "user_friendly": "Accession",
             "pattern": "HCAPR[0-9]{5}[A-Z]{5}",
-            "guidelines": "Do not submit. Assigned by the system."
+            "guidelines": "Do not submit. Assigned by the system.",
+            "core_usage": [
+                "project table",
+                "project page",
+                "matrix"
+            ]
         },
         "project_title": {
             "description": "An official title for the project.",
             "type": "string",
             "example": "Study of single cells in the human body.",
             "user_friendly": "Project title",
-            "guidelines": "Project title should be fewer than 30 words, such as a title of a grant proposal or a publication."
+            "guidelines": "Project title should be fewer than 30 words, such as a title of a grant proposal or a publication.",
+            "core_usage": [
+                "project table",
+                "project page"
+            ]
         },
         "project_description": {
             "description": "A longer description of the project which includes research goals and experimental approach.",
             "type": "string",
             "user_friendly": "Project description",
-            "guidelines": "Project description should be fewer than 300 words, such as an abstract from a grant application or publication."
+            "guidelines": "Project description should be fewer than 300 words, such as an abstract from a grant application or publication.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "contributors": {
             "description": "People contributing to any aspect of the project.",
@@ -89,7 +101,10 @@
             },
             "example": "SRP000000",
             "user_friendly": "INSDC project accessions",
-            "guidelines": "Enter accession if project has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRP, SRP, or ERP, respectively."
+            "guidelines": "Enter accession if project has been archived. Accession can be from the DDBJ, NCBI, or EMBL-EBI and must start with DRP, SRP, or ERP, respectively.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "geo_series_accessions": {
             "description": "A Gene Expression Omnibus (GEO) series accession.",
@@ -100,7 +115,10 @@
             },
             "example": "GSE00000",
             "user_friendly": "GEO series accessions",
-            "guidelines": "Enter accession if project has been archived. Accession must start with GSE."
+            "guidelines": "Enter accession if project has been archived. Accession must start with GSE.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "array_express_accessions": {
             "description": "An ArrayExpress accession.",
@@ -111,7 +129,10 @@
             },
             "example": "E-AAAA-00",
             "user_friendly": "ArrayExpress accessions",
-            "guidelines": "Enter accession if project has been archived. Accession must start with E-."
+            "guidelines": "Enter accession if project has been archived. Accession must start with E-.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "insdc_study_accessions": {
             "description": "An International Nucleotide Sequence Database Collaboration (INSDC) study accession.",
@@ -133,7 +154,10 @@
             },
             "example": "S-EXMP1; S-HCAS33",
             "user_friendly": "BioStudies accessions",
-            "guidelines": "Enter accession if study has been archived."
+            "guidelines": "Enter accession if study has been archived.",
+            "core_usage": [
+                "project page"
+            ]
         },
         "funders": {
             "description": "Funding source(s) supporting the project.",

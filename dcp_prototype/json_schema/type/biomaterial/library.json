@@ -12,19 +12,29 @@
 			"type": "string",
 			"user_friendly": "Accession",
 			"pattern": "HCALB[0-9]{5}[A-Z]{5}",
-			"guidelines": "Do not submit. Assigned by the system."
+			"guidelines": "Do not submit. Assigned by the system.",
+            "core_usage": [
+                "matrix"
+            ]
 		},
 		"cell_count": {
 			"description": "",
 			"type": "integer",
 			"user_friendly": "Cell count",
-			"guidelines": "Do not submit. Calculated from other submitted fields."
+			"guidelines": "Do not submit. Calculated from other submitted fields.",
+            "core_usage": [
+                "project table",
+                "project page"
+            ]
 		},
 		"assay_category": {
 			"description": "",
 			"type": "string",
 			"user_friendly": "Assay category",
-			"guidelines": "Do not submit. Calculated from other submitted fields."
+			"guidelines": "Do not submit. Calculated from other submitted fields.",
+            "core_usage": [
+                "project table"
+            ]
 		},
 		"project_accession": {
 			"description": "",

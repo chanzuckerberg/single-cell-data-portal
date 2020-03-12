@@ -46,13 +46,23 @@
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",
             "user_friendly": "Induction method",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "example": "Should be one of: lentivirus, sendai virus, Gun particle, piggyBac transposon, miRNA viral, adenovirus, cre-loxP, plasmid, or retroviral."
         },
         "reprogramming_factors": {
             "description": "Reprogramming factors added to primary cell culture to induce pluripotency.",
             "type": "string",
             "user_friendly": "Reprogramming factors",
-            "example": "POU5F1; SOX2; KLF4; c-MYC"
+            "example": "POU5F1; SOX2; KLF4; c-MYC",
+            "core_usage": [
+                "biosample_preparation"
+            ]
 	    },
         "ipsc_induction_kit": {
             "description": "Kit used to induce pluripotent stem cell generation.",

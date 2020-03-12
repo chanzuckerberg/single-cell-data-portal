@@ -26,7 +26,10 @@
             "type": "string",
             "example": "John,D,Doe; Jane,,Smith",
             "guidelines": "Enter in the format: first name,middle name or initial,last name.",
-            "user_friendly": "Contact name"
+            "user_friendly": "Contact name",
+            "core_usage": [
+                "project page"
+            ]
         },
         "email": {
             "description": "Email address for the individual.",
@@ -46,7 +49,10 @@
             "description": "Name of primary institute where the individual works.",
             "type": "string",
             "user_friendly": "Institution",
-            "example": "EMBL-EBI; University of Washington"
+            "example": "EMBL-EBI; University of Washington",
+            "core_usage": [
+                "project page"
+            ]
         },
         "laboratory": {
             "description": "Name of lab or department within the institute where the individual works.",
@@ -76,8 +82,15 @@
         "project_role": {
             "description": "Primary role of the individual in the project.",
             "type": "object",
-            "$ref": "module/ontology/contributor_role_ontology.json",
+            "$ref": "module/ontology.json",
             "example": "principal investigator; computational scientist",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002012"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Project role"
         },
         "orcid_id": {

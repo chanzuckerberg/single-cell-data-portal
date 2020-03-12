@@ -59,8 +59,15 @@
         "subcellular_structure": {
             "description": "Target subcellular structure.",
             "type": "object",
-            "$ref": "module/ontology/cellular_component_ontology.json",
+            "$ref": "module/ontology.json",
             "user_friendly": "Target subcellular structure",
+            "graph_restriction": {
+                "ontologies": ["obo:hcao","obo:go"],
+                "classes": ["GO:0005575"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "guidelines": "This should be a term from the GO cell component ontology."
         },
         "probe_reagents": {
@@ -72,7 +79,14 @@
         "assay_type": {
             "description": "Type of assay used to detect target.",
             "type": "object",
-            "$ref": "module/ontology/process_type_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "example": "MERFISH; in situ sequencing",
             "user_friendly": "Assay type"
         },

@@ -48,32 +48,45 @@
             "$ref": "core/biomaterial/biomaterial_core.json",
             "user_friendly": "Biomaterial core"
         },
-        "genus_species": {
-            "description": "The scientific binomial name for the species of the organoid.",
-            "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
-            },
-            "user_friendly": "Genus species"
-        },
         "model_system": {
             "description": "The organ system(s) for which the biomaterial is a model for.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Model organ system"
         },
         "model_organ": {
             "description": "The organ(s) for which the biomaterial is a model for.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Model organ"
         },
         "model_organ_part": {
             "description":  "Organ part for which this organoid is a model system.",
             "type": "object",
-            "$ref": "module/ontology/organ_part_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Organ part model"
         },
         "age": {
@@ -85,7 +98,14 @@
         "age_unit": {
             "description": "The unit in which Organoid age is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003","UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Organoid age unit"
         },
         "size": {
@@ -97,7 +117,14 @@
         "size_unit": {
             "description": "The unit in which the Organoid size is expressed.",
             "type": "object",
-            "$ref": "module/ontology/length_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000001"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Organoid size unit"
         },
         "morphology": {

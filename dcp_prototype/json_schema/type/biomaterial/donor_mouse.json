@@ -37,7 +37,10 @@
             "type": "string",
             "user_friendly": "Accession",
             "pattern": "HCADR[0-9]{5}[A-Z]{5}",
-            "guidelines": "Do not submit. Assigned by the system."
+            "guidelines": "Do not submit. Assigned by the system.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "provenance" : {
             "description": "Provenance information provided by the system.",
@@ -53,8 +56,13 @@
         "genus_species": {
             "description": "The scientific binomial name for the species of the organism.",
             "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:NCBITaxon"],
+                "classes": ["OBI:0100026","NCBITaxon:2759"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
             },
             "user_friendly": "Genus species"
         },
@@ -68,7 +76,10 @@
                 "unknown"
             ],
             "user_friendly": "Biological sex",
-            "example": "Should be one of: male, female, mixed, or unknown."
+            "example": "Should be one of: male, female, mixed, or unknown.",
+            "core_usage": [
+                "biosample_preparation"
+            ]
         },
         "is_living": {
             "description": "Whether organism was alive at time of biomaterial collection.",
@@ -80,10 +91,15 @@
         "diseases": {
             "description": "Short description of known disease(s) of the organism.",
             "type": "array",
-            "items": {
-                "$ref": "module/ontology/disease_ontology.json"
-	        },
+            "$ref": "module/ontology.json",
             "user_friendly": "Disease status",
+            "graph_restriction": {
+                "ontologies": ["obo:mondo","obo:efo"],
+                "classes": ["MONDO:0000001","PATO:0000461"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "guidelines": "Enter 'normal' if no known disease."
         },
         "death": {
@@ -100,12 +116,6 @@
                 },
             "user_friendly": "Familial relationship"
         },
-        "medical_history": {
-            "description": "Information about the medical history of the organism.",
-            "type": "object",
-            "$ref": "module/biomaterial/medical_history.json",
-            "user_friendly": "Medical history"
-        },
         "timecourse": {
             "description": "Information relating to a timecourse associated with this biomaterial.",
             "type": "object",
@@ -115,8 +125,13 @@
         "strain": {
             "description": "The name of the mouse strain.",
             "type": "array",
-            "items": {
-                "$ref": "module/ontology/strain_ontology.json"
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:NCBITaxon"],
+                "classes": ["NCBITaxon:10090"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
             },
             "user_friendly": "Mouse strain"
         }

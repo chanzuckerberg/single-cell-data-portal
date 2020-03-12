@@ -55,6 +55,13 @@
             "description": "Starting nucleic acid molecule isolated for sequencing.",
             "type": "object",
             "$ref": "module/ontology/biological_macromolecule_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:chebi","obo:obi"],
+                "classes": ["EFO:0004446"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Input nucleic acid molecule"
         },
         "nucleic_acid_source": {
@@ -68,12 +75,23 @@
                 "mitochondria"
             ],
             "user_friendly": "Nucleic acid source",
-            "example": "Should be one of: single cell, bulk cell, single nucleus, bulk nuclei, or mitochondria."
+            "example": "Should be one of: single cell, bulk cell, single nucleus, bulk nuclei, or mitochondria.",
+            "core_usage": [
+                "project facet",
+                "project page"
+            ]
         },
         "library_construction_method": {
             "description": "The general method for sequencing library construction.",
             "type": "object",
             "$ref": "module/ontology/library_construction_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["OBI:0000711"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Library construction method"
         },
         "library_construction_kit": {
@@ -149,12 +167,26 @@
             "description": "The method used to amplify RNA prior to adaptor ligation.",
             "type": "object",
             "$ref": "module/ontology/library_amplification_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0009107"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Library pre-amplification method"
         },
         "cdna_library_amplification_method": {
             "description": "The method used to amplify cDNA library prior to sequencing.",
             "type": "object",
             "$ref": "module/ontology/library_amplification_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0009107"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "cDNA library amplification method"
         },
         "nominal_length": {

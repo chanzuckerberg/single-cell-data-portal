@@ -46,7 +46,11 @@
             "description": "The protocols.io digital object identifier (doi) for the protocol.",
             "type": "string",
             "example": "10.17504/protocols.io.mgjc3un",
-            "user_friendly": "protocols.io DOI"
+            "user_friendly": "protocols.io DOI",
+            "core_usage": [
+                "biosample_preparation",
+                "project page"
+            ]
         },
         "document": {
             "description": "A filename of a PDF document containing the details of the protocol.",

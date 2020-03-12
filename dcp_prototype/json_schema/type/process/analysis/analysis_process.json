@@ -161,6 +161,13 @@
             "description": "The type of process.",
             "type": "object",
             "$ref": "module/ontology/process_type_ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0002694"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Process type"
         },
         "inputs": {

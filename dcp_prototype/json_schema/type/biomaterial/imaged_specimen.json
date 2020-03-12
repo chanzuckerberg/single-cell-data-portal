@@ -61,8 +61,13 @@
         "internal_anatomical_structures": {
             "description": "Internal (landmark) structures visible in the overview image that are informative about the broader anatomical context/location of the sample.",
             "type": "array",
-            "items": {
-                "$ref": "module/ontology/organ_part_ontology.json"
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
             },
             "user_friendly": "Internal tissue structures"
         }

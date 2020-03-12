@@ -26,7 +26,11 @@
             "description": "The type of the metadata schema entity.",
             "type": "string",
             "enum": [
-                "biomaterial"
+                "cell",
+                "nucleus"
+            ],
+            "core_usage": [
+                "biosample_preparation"
             ]
         },
         "accession": {
@@ -52,14 +56,6 @@
             "type": "object",
             "$ref": "module/biomaterial/cell_morphology.json",
             "user_friendly": "Cell morphology"
-        },
-        "genus_species": {
-            "description": "The scientific binomial name for the species of the suspension.",
-            "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
-            },
-            "user_friendly": "Genus species"
         },
         "plate_based_sequencing" : {
             "description": "Fields specific for plate-based sequencing experiments.",

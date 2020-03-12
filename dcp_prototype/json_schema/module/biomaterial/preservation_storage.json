@@ -46,7 +46,15 @@
         "storage_time_unit": {
             "description": "The unit in which Storage time is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003",
+                "UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Storage time unit"
         },
         "preservation_method": {

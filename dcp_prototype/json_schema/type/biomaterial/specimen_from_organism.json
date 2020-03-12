@@ -48,44 +48,64 @@
             "$ref": "core/biomaterial/biomaterial_core.json",
             "user_friendly": "Biomaterial core"
         },
-        "genus_species": {
-            "description": "The scientific binomial name for the species of the specimen.",
-            "type" : "array",
-            "items":{
-                "$ref": "module/ontology/species_ontology.json"
-            },
-            "user_friendly": "Genus species"
-        },
         "system": {
             "description": "The organ system(s) that the biomaterial is within.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Organ system"
         },
         "organ": {
             "description": "The organ(s) that the biomaterial is a part of.",
             "type": "object",
-            "$ref": "module/ontology/organ_ontology.json",
+            "$ref": "module/ontology.json",
             "guidelines": "Do not submit. Assigned by the system based on ontological relationships.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Organ"
         },
         "organ_part": {
             "description": "A term for a specific part of the organ that the biomaterial came from.",
             "type": "array",
             "items": {
-                "$ref": "module/ontology/organ_part_ontology.json"
+                "$ref": "module/ontology.json"
             },
             "guidelines": "The term organ part is very broadly defined here.",
+            "graph_restriction": {
+                "ontologies": ["obo:uberon"],
+                "classes": ["UBERON:0000465"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "user_friendly": "Organ part"
         },
         "diseases": {
             "description": "Short description of known disease(s) of the specimen.",
             "type": "array",
             "items": {
-                "$ref": "module/ontology/disease_ontology.json"
+                "$ref": "module/ontology.json"
 	        },
             "user_friendly": "Disease status",
+            "graph_restriction": {
+                "ontologies": ["obo:mondo","obo:efo"],
+                "classes": ["MONDO:0000001","PATO:0000461"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": true
+            },
             "guidelines": "Enter normal if no known diseases."
         },
         "state_of_specimen": {
@@ -132,13 +152,28 @@
         "donor_age_unit": {
             "description": "The unit in which Age is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003",
+                "UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Age unit"
         },
         "donor_development_stage_at_collection": {
             "description": "A classification of the developmental stage of the organism.",
             "type": "object",
-            "$ref": "module/ontology/development_stage_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo"],
+                "classes": ["EFO:0000399","HsapDv:0000000","UBERON:0000105"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Development stage"
         },
         "donor_gestational_age": {
@@ -152,7 +187,14 @@
         "donor_gestational_age_unit": {
             "description": "The unit in which Gestational age is expressed.",
             "type": "object",
-            "$ref": "module/ontology/time_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000003","UO:0000149"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Gestational age unit"
         },
         "donor_height": {
@@ -166,7 +208,14 @@
         "donor_height_unit": {
             "description": "The unit in which Height is expressed.",
             "type": "object",
-            "$ref": "module/ontology/length_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000001"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Height unit"
         },
         "donor_weight": {
@@ -180,7 +229,14 @@
         "donor_weight_unit": {
             "description": "The unit in which Weight is expressed.",
             "type": "object",
-            "$ref": "module/ontology/mass_unit_ontology.json",
+            "$ref": "module/ontology.json",
+            "graph_restriction": {
+                "ontologies": ["obo:efo","obo:uo"],
+                "classes": ["UO:0000002"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            },
             "user_friendly": "Weight unit"
         },
         "donor_body_mass_index": {
