@@ -1,0 +1,40 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/protocol/sequencing/6.2.0/library_preparation_protocol",
+    "schema_type": "protocol",
+    "protocol_core": {
+        "protocol_id": "10X_3GEX_v2",
+        "protocol_name": "10X V2 library preparation",
+        "protocol_description": "10X Genomics 3' Gene Expression protocol, version 2 chemistry"
+    },
+    "cell_barcode": {
+        "barcode_read": "Read 1",
+        "barcode_offset": 0,
+        "barcode_length": 26
+    },
+    "input_nucleic_acid_molecule": {
+        "text": "polyA RNA",
+        "ontology": "OBI:0000869",
+        "ontology_label": "polyA RNA"
+    },
+    "nucleic_acid_source": "single cell",
+    "library_construction_method": {
+        "text": "10X v2 sequencing",
+        "ontology": "EFO:0009310",
+        "ontology_label": "10X v2 sequencing"
+    },
+    "end_bias": "3 prime tag",
+    "primer": "poly-dT",
+    "strand": "first",
+    "cdna_library_amplification_method": {
+        "text": "PCR",
+        "ontology": "OBI:0000415",
+        "ontology_label": "PCR"
+    },
+    "provenance": {
+        "document_id": "fa99959f-faa2-4d69-a092-48333e59f5f3",
+        "submission_date": "2019-09-13T08:37:50.482Z",
+        "update_date": "2019-09-13T08:37:53.809Z",
+        "schema_major_version": 6,
+        "schema_minor_version": 2
+    }
+}

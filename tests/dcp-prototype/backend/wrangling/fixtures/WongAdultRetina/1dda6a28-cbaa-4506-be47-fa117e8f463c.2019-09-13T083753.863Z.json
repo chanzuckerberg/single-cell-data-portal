@@ -1,0 +1,46 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/biomaterial/10.4.0/specimen_from_organism",
+    "schema_type": "biomaterial",
+    "biomaterial_core": {
+        "biomaterial_id": "17-011-R",
+        "biomaterial_name": "17-011 retina",
+        "biomaterial_description": "17-011 donor retina (right eye)",
+        "ncbi_taxon_id": [
+            9606
+        ]
+    },
+    "genus_species": [
+        {
+            "text": "Homo Sapiens",
+            "ontology": "NCBITaxon:9606",
+            "ontology_label": "Homo sapiens"
+        }
+    ],
+    "organ": {
+        "text": "right eye",
+        "ontology": "UBERON:0000970",
+        "ontology_label": "eye"
+    },
+    "organ_parts": [
+        {
+            "text": "Neural retina",
+            "ontology": "UBERON:0003902",
+            "ontology_label": "retinal neural layer"
+        }
+    ],
+    "diseases": [
+        {
+            "text": "Normal",
+            "ontology": "PATO:0000461",
+            "ontology_label": "normal"
+        }
+    ],
+    "collection_time": "2017-05-26",
+    "provenance": {
+        "document_id": "1dda6a28-cbaa-4506-be47-fa117e8f463c",
+        "submission_date": "2019-09-13T08:37:50.423Z",
+        "update_date": "2019-09-13T08:37:53.863Z",
+        "schema_major_version": 10,
+        "schema_minor_version": 4
+    }
+}

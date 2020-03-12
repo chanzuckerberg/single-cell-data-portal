@@ -1,0 +1,46 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/biomaterial/15.5.0/donor_organism",
+    "schema_type": "biomaterial",
+    "biomaterial_core": {
+        "biomaterial_id": "17-010",
+        "biomaterial_name": "Donor",
+        "biomaterial_description": "post-mortem donor",
+        "ncbi_taxon_id": [
+            9606
+        ]
+    },
+    "genus_species": [
+        {
+            "text": "Homo Sapiens",
+            "ontology": "NCBITaxon:9606",
+            "ontology_label": "Homo sapiens"
+        }
+    ],
+    "sex": "female",
+    "is_living": "no",
+    "development_stage": {
+        "text": "Adult",
+        "ontology": "HsapDv:0000087",
+        "ontology_label": "human adult stage"
+    },
+    "organism_age": "80",
+    "organism_age_unit": {
+        "text": "year",
+        "ontology": "UO:0000036",
+        "ontology_label": "year"
+    },
+    "diseases": [
+        {
+            "text": "Cataract on left eye, right eye has normal ocular history",
+            "ontology": "MONDO:0005129",
+            "ontology_label": "cataract (disease)"
+        }
+    ],
+    "provenance": {
+        "document_id": "66b7152c-8e94-412b-b0e4-f8fbf554df5a",
+        "submission_date": "2019-09-13T08:37:50.391Z",
+        "update_date": "2019-09-13T08:37:53.837Z",
+        "schema_major_version": 15,
+        "schema_minor_version": 5
+    }
+}

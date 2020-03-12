@@ -1,0 +1,21 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/protocol/biomaterial_collection/9.2.0/collection_protocol",
+    "schema_type": "protocol",
+    "protocol_core": {
+        "protocol_id": "Wong-retina collection",
+        "protocol_name": "Retina collection",
+        "protocol_description": "Post-mortem eye globes were collected by the Lions Eye Donation Service (Royal Victorian Eye and Ear Hospital) for donor cornea transplantation. The remaining eye globes were used for dissection to extract the neural retina. The lens, iris and vitreous were removed and the choroid/RPE layers were excluded from the sample collection."
+    },
+    "method": {
+        "text": "collecting specimen from organ postmortem",
+        "ontology": "EFO:0009627",
+        "ontology_label": "collecting specimen from organ postmortem"
+    },
+    "provenance": {
+        "document_id": "3030903f-4a4b-4b30-ab93-3b10183181e0",
+        "submission_date": "2019-09-13T08:37:50.464Z",
+        "update_date": "2019-09-13T08:37:53.821Z",
+        "schema_major_version": 9,
+        "schema_minor_version": 2
+    }
+}

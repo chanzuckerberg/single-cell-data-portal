@@ -1,0 +1,15 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/file/6.0.0/analysis_file",
+    "file_core": {
+        "file_name": "merged-gene-metrics.csv.gz",
+        "format": "unknown"
+    },
+    "schema_type": "file",
+    "provenance": {
+        "document_id": "e49b8d21-044f-412e-bba9-9d39096462ce",
+        "submission_date": "2019-09-14T02:29:11.729Z",
+        "update_date": "2019-09-14T02:47:30.377Z",
+        "schema_major_version": 6,
+        "schema_minor_version": 0
+    }
+}

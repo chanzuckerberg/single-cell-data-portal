@@ -1,0 +1,18 @@
+{
+    "computational_method": "Optimus",
+    "describedBy": "https://schema.humancellatlas.org/type/protocol/analysis/9.0.0/analysis_protocol",
+    "protocol_core": {
+        "protocol_id": "optimus_v1.3.5"
+    },
+    "schema_type": "protocol",
+    "type": {
+        "text": "analysis"
+    },
+    "provenance": {
+        "document_id": "48b19e39-d136-4a11-8c62-5ca842d0e062",
+        "submission_date": "2019-09-14T07:09:06.259Z",
+        "update_date": "2019-09-14T07:09:12.006Z",
+        "schema_major_version": 9,
+        "schema_minor_version": 0
+    }
+}

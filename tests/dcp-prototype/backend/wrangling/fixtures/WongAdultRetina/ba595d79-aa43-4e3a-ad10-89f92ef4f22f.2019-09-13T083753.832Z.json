@@ -1,0 +1,22 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/protocol/biomaterial_collection/3.1.0/enrichment_protocol",
+    "schema_type": "protocol",
+    "protocol_core": {
+        "protocol_id": "wong-cell-size-selection",
+        "protocol_name": "MACS Smart Strainer filtering",
+        "protocol_description": "The dissociated neural retina was filtered to ensure single cell suspension using a 30\u00b5m MACS Smart Strainer (Miltenyi)"
+    },
+    "method": {
+        "text": "cell size selection",
+        "ontology": "EFO:0009337",
+        "ontology_label": "cell size selection"
+    },
+    "maximum_size": 30.0,
+    "provenance": {
+        "document_id": "ba595d79-aa43-4e3a-ad10-89f92ef4f22f",
+        "submission_date": "2019-09-13T08:37:50.476Z",
+        "update_date": "2019-09-13T08:37:53.832Z",
+        "schema_major_version": 3,
+        "schema_minor_version": 1
+    }
+}

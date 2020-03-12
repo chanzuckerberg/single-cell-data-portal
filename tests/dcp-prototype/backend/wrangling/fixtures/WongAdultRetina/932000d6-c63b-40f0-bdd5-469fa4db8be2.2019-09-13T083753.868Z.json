@@ -1,0 +1,27 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/biomaterial/13.3.0/cell_suspension",
+    "schema_type": "biomaterial",
+    "biomaterial_core": {
+        "biomaterial_id": "SC-L-B",
+        "biomaterial_name": "SC left retina B",
+        "biomaterial_description": "Library B for SC left retina",
+        "ncbi_taxon_id": [
+            9606
+        ]
+    },
+    "genus_species": [
+        {
+            "text": "Homo Sapiens",
+            "ontology": "NCBITaxon:9606",
+            "ontology_label": "Homo sapiens"
+        }
+    ],
+    "estimated_cell_count": 10000,
+    "provenance": {
+        "document_id": "932000d6-c63b-40f0-bdd5-469fa4db8be2",
+        "submission_date": "2019-09-13T08:37:50.444Z",
+        "update_date": "2019-09-13T08:37:53.868Z",
+        "schema_major_version": 13,
+        "schema_minor_version": 3
+    }
+}

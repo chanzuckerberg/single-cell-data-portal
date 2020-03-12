@@ -1,0 +1,422 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/project/14.1.0/project",
+    "schema_type": "project",
+    "project_core": {
+        "project_short_name": "WongAdultRetina",
+        "project_title": "A single-cell transcriptome atlas of the adult human retina",
+        "project_description": "The retina is a specialized neural tissue that senses light and initiates image processing. Although the functional organization of specific retina cells has been well studied, the molecular profile of many cell types remains unclear in humans. To comprehensively profile the human retina, we performed single\u2010cell RNA sequencing on 20,009 cells from three donors and compiled a reference transcriptome atlas. Using unsupervised clustering analysis, we identified 18 transcriptionally distinct cell populations representing all known neural retinal cells: rod photoreceptors, cone photoreceptors, M\u00fcller glia, bipolar cells, amacrine cells, retinal ganglion cells, horizontal cells, astrocytes, and microglia. Our data captured molecular profiles for healthy and putative early degenerating rod photoreceptors, and revealed the loss of\u00a0MALAT1\u00a0expression with longer post\u2010mortem time, which potentially suggested a novel role of\u00a0MALAT1\u00a0in rod photoreceptor degeneration. We have demonstrated the use of this retina transcriptome atlas to benchmark pluripotent stem cell\u2010derived cone photoreceptors and an adult M\u00fcller glia cell line. This work provides an important reference with unprecedented insights into the transcriptional landscape of human retinal cells, which is fundamental to understanding retinal biology and disease."
+    },
+    "supplementary_links": [
+        "https://github.com/satijalab/seurat",
+        "https://github.com/powellgenomicslab/ascend",
+        "https://github.com/IMB-Computational-Genomics-Lab/scGPS"
+    ],
+    "array_express_accessions": [
+        "E-MTAB-7316"
+    ],
+    "contributors": [
+        {
+            "name": "Samuel,W,Lukowski",
+            "email": "s.lukowski@imb.uq.edu.au",
+            "institution": "University of Queensland",
+            "laboratory": "Institute for Molecular Bioscience",
+            "address": "306 Carmody Rd, St Lucia QLD 4072",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Bioinformatician",
+                "ontology": "EFO:0009742",
+                "ontology_label": "computational scientist"
+            },
+            "orcid_id": "0000-0002-8598-7902"
+        },
+        {
+            "name": "Camden,Y,Lo",
+            "email": "lo.camden@gmail.com",
+            "institution": "Monash University",
+            "address": "Wellington Rd, Clayton VIC 3800",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Bioinformatician",
+                "ontology": "EFO:0009742",
+                "ontology_label": "computational scientist"
+            }
+        },
+        {
+            "name": "Alexei,A,Sharov",
+            "email": "sharoval@mail.nih.gov",
+            "institution": "National Institutes of Health",
+            "laboratory": "National Institute for Aging",
+            "address": "251 Bayview Blvd, Baltimore, MD 21224",
+            "country": "USA",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Bioinformatician",
+                "ontology": "EFO:0009742",
+                "ontology_label": "computational scientist"
+            }
+        },
+        {
+            "name": "Quan,,Nguyen",
+            "email": "quan.nguyen@imb.uq.edu.au",
+            "institution": "University of Queensland",
+            "laboratory": "Institute for Molecular Bioscience",
+            "address": "306 Carmody Rd, St Lucia QLD 4072",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Bioinformatician",
+                "ontology": "EFO:0009742",
+                "ontology_label": "computational scientist"
+            },
+            "orcid_id": "0000-0001-7870-5703"
+        },
+        {
+            "name": "Lyujie,,Fang",
+            "email": "fanglyujie@foxmail.com",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Cellular Reprogramming Unit",
+            "address": "Melbourne, Vic",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            },
+            "orcid_id": "0000-0002-2286-0023"
+        },
+        {
+            "name": "Sandy,SC,Hung",
+            "email": "sandy.hung@unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Clinical Genetics Unit",
+            "address": "Melbourne, Vic",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            }
+        },
+        {
+            "name": "Ling,,Zhu",
+            "email": "ling.zhu@sydney.edu.au",
+            "institution": "University of Sydney",
+            "laboratory": "Save Sight Institute",
+            "address": "Sydney, NSW",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            },
+            "orcid_id": "0000-0003-0776-1630"
+        },
+        {
+            "name": "Ting,,Zhang",
+            "email": "Ting.zhang@sydney.edu.au",
+            "institution": "University of Sydney",
+            "laboratory": "Save Sight Institute",
+            "address": "Sydney, NSW",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            },
+            "orcid_id": "0000-0001-8074-8999"
+        },
+        {
+            "name": "Ulrike,,Gr\u00fcnert",
+            "email": "ulrike.grunert@sydney.edu.au",
+            "institution": "University of Sydney",
+            "laboratory": "Save Sight Institute",
+            "address": "Sydney, NSW",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            }
+        },
+        {
+            "name": "Tu,,Nguyen",
+            "email": "thanhn3@student.unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Cellular Reprogramming Unit",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            },
+            "orcid_id": "0000-0002-6165-1822"
+        },
+        {
+            "name": "Anne,,Senabouth",
+            "email": "a.senabouth@imb.uq.edu.au",
+            "institution": "University of Queensland",
+            "laboratory": "Institute for Molecular Bioscience",
+            "address": "306 Carmody Rd, St Lucia QLD 4072",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            }
+        },
+        {
+            "name": "Jafar,S,Jabbari",
+            "email": "Jafar.Jabbari@agrf.org.au",
+            "institution": "Australian Genome Research Facility",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            }
+        },
+        {
+            "name": "Emily,,Welby",
+            "email": "emily.welby@nih.gov",
+            "institution": "UCL Great Ormond Street Institute of Child Health",
+            "laboratory": "Stem Cells and Regenerative Medicine Section, NIHR Great Ormond Street Hospital Biomedical Research Centre",
+            "address": "London",
+            "country": "UK",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Experimental scientist",
+                "ontology": "EFO:0009741",
+                "ontology_label": "experimental scientist"
+            }
+        },
+        {
+            "name": "Jane,C,Sowden",
+            "email": "j.sowden@ucl.ac.uk",
+            "institution": "UCL Great Ormond Street Institute of Child Health",
+            "laboratory": "Stem Cells and Regenerative Medicine Section, NIHR Great Ormond Street Hospital Biomedical Research Centre",
+            "address": "London",
+            "country": "UK",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            }
+        },
+        {
+            "name": "Hayley,S,Nguyen",
+            "email": "hayley.waugh229@gmail.com",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Lions Eye Donation Services",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Eye bank coordinator",
+                "ontology": "EFO:0001729",
+                "ontology_label": "biomaterial provider"
+            }
+        },
+        {
+            "name": "Adrienne,,Mackey",
+            "email": "amackey@unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Lions Eye Donation Services",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Eye bank coordinator",
+                "ontology": "EFO:0001729",
+                "ontology_label": "biomaterial provider"
+            }
+        },
+        {
+            "name": "Graeme,,Pollock",
+            "email": "gpollock@unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Lions Eye Donation Services",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Eye bank director",
+                "ontology": "EFO:0001729",
+                "ontology_label": "biomaterial provider"
+            }
+        },
+        {
+            "name": "Trevor,D,Lamb",
+            "email": "trevor.lamb@anu.edu.au",
+            "institution": "The Australian National University",
+            "laboratory": "John Curtin School of Medical Research",
+            "address": "Canberra, ACT",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            }
+        },
+        {
+            "name": "Peng-Yuna,,Wang",
+            "email": "pengyuanwang@swin.edu.au",
+            "institution": "Swinburne University of Technology",
+            "laboratory": "Department of Chemistry and Biotechnology",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            }
+        },
+        {
+            "name": "Alex,W,Hewitt",
+            "email": "alex.hewitt@unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Clinical Genetics Unit",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            }
+        },
+        {
+            "name": "Mark,C,Gillies",
+            "email": "mark.gillies@sydney.edu.au",
+            "institution": "University of Sydney",
+            "laboratory": "Save Sight Institute",
+            "address": "Sydney, NSW",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            }
+        },
+        {
+            "name": "Joseph,E,Powell",
+            "email": "j.powell@garvan.org.au",
+            "institution": "Garvan Institute of Medical Research",
+            "laboratory": "Garvan\u2010Weizmann Centre for Cellular Genomics",
+            "address": "Sydney, NSW",
+            "country": "Australia",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            },
+            "orcid_id": "0000-0001-9031-6356"
+        },
+        {
+            "name": "Raymond,CB,Wong",
+            "email": "wongcb@unimelb.edu.au",
+            "institution": "Centre for Eye Research Australia",
+            "laboratory": "Cellular Reprogramming Unit",
+            "address": "Melbourne, Vic.",
+            "country": "Australia",
+            "corresponding_contributor": true,
+            "project_role": {
+                "text": "Principal Investigator",
+                "ontology": "EFO:0009736",
+                "ontology_label": "principal investigator"
+            },
+            "orcid_id": "0000-0002-8092-9455"
+        },
+        {
+            "name": "Marion,F,Shadbolt",
+            "email": "mshadbolt@ebi.ac.uk",
+            "institution": "EMBL-EBI",
+            "laboratory": "Human Cell Atlas Data Coordination Platform",
+            "address": "Wellcome Genome Campus, Hinxton, Cambridge. CB10 1SA.",
+            "country": "UK",
+            "corresponding_contributor": false,
+            "project_role": {
+                "text": "Human Cell Atlas wrangler",
+                "ontology": "EFO:0009737",
+                "ontology_label": "data curator"
+            },
+            "orcid_id": "0000-0001-7505-5418"
+        }
+    ],
+    "funders": [
+        {
+            "grant_title": "Building a reference transcriptomic atlas for the human retina at a single cell level",
+            "grant_id": "not provided",
+            "organization": "Opthalmic Research Institute of Australia"
+        },
+        {
+            "grant_title": "LOUISA JEAN de BRETTEVILLE BEQUEST",
+            "grant_id": "not provided",
+            "organization": "University of Melbourne De Brettville Trust"
+        },
+        {
+            "grant_id": "not provided",
+            "organization": "Kel and Rosie Day Foundation"
+        },
+        {
+            "grant_id": "not provided",
+            "organization": "Great Ormond Street Hospital Children's Charity"
+        }
+    ],
+    "publications": [
+        {
+            "authors": [
+                "Lukowski SW",
+                "Lo CY",
+                "Sharov AA",
+                "Nguyen Q",
+                "Fang L",
+                "Hung SS",
+                "Zhu L",
+                "Zhang T",
+                "Gr\u00fcnert U",
+                "Nguyen T",
+                "Senabouth A",
+                "Jabbari JS",
+                "Welby E",
+                "Sowden JC",
+                "Waugh HS",
+                "Mackey A",
+                "Pollock G",
+                "Lamb TD",
+                "Wang PY",
+                "Hewitt AW",
+                "Gillies MC",
+                "Powell JE",
+                "Wong RC"
+            ],
+            "title": "A single\u2010cell transcriptome atlas of the adult human retina",
+            "doi": "10.15252/embj.2018100811",
+            "pmid": 31436334,
+            "url": "https://www.ncbi.nlm.nih.gov/pubmed/31436334"
+        }
+    ],
+    "provenance": {
+        "document_id": "8185730f-4113-40d3-9cc3-929271784c2b",
+        "submission_date": "2019-09-13T08:37:50.384Z",
+        "update_date": "2019-09-13T08:37:53.825Z",
+        "schema_major_version": 14,
+        "schema_minor_version": 1
+    }
+}

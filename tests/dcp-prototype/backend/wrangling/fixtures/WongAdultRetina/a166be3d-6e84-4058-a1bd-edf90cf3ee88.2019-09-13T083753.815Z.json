@@ -1,0 +1,32 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/protocol/sequencing/10.1.0/sequencing_protocol",
+    "schema_type": "protocol",
+    "protocol_core": {
+        "protocol_id": "HiSeq2500_200cycle",
+        "protocol_name": "200 cycle",
+        "protocol_description": "Single\u2010cell libraries were sequenced in 100\u00a0bp paired\u2010end configuration using an Illumina Hi\u2010Seq 2500 at the Australian Genome Research Facility"
+    },
+    "instrument_manufacturer_model": {
+        "text": "Illumina HiSeq 2500",
+        "ontology": "EFO:0008565",
+        "ontology_label": "Illumina HiSeq 2500"
+    },
+    "paired_end": false,
+    "method": {
+        "text": "3' single cell RNA sequencing",
+        "ontology": "EFO:0008440",
+        "ontology_label": "tag based single cell RNA sequencing"
+    },
+    "10x": {
+        "fastq_method": "mkfastq",
+        "fastq_method_version": "cellranger 2.2.0",
+        "drop_uniformity": true
+    },
+    "provenance": {
+        "document_id": "a166be3d-6e84-4058-a1bd-edf90cf3ee88",
+        "submission_date": "2019-09-13T08:37:50.490Z",
+        "update_date": "2019-09-13T08:37:53.815Z",
+        "schema_major_version": 10,
+        "schema_minor_version": 1
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "describedBy": "https://schema.humancellatlas.org/type/file/6.0.0/analysis_file",
+    "file_core": {
+        "file_name": "1d3e48d7-d80f-4b99-85bd-04ff393288e7.zarr!expression_matrix!cell_id!22",
+        "format": "unknown"
+    },
+    "schema_type": "file",
+    "provenance": {
+        "document_id": "31ecb21f-e8d8-4869-afe9-a0c226daf62a",
+        "submission_date": "2019-09-14T07:24:04.383Z",
+        "update_date": "2019-09-14T07:48:46.074Z",
+        "schema_major_version": 6,
+        "schema_minor_version": 0
+    }
+}
