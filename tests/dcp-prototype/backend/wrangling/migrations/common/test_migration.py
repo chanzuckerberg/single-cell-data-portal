@@ -4,8 +4,10 @@ import unittest
 import pkg_resources
 
 from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import DatasetMetadata
-from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import \
-    generate_metadata_structure_from_targz, generate_metadata_structure_from_dir
+from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import (
+    generate_metadata_structure_from_targz,
+    generate_metadata_structure_from_dir,
+)
 
 
 class TestMigration(unittest.TestCase):

@@ -6,7 +6,7 @@ import pkg_resources
 import dcp_prototype
 
 
-class ArtifactValidator():
+class ArtifactValidator:
     """
     This class is a general purpose validator to ensure that given data is compatible with the DCP artifact
     specification.

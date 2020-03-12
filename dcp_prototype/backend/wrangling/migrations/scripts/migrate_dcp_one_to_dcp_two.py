@@ -84,7 +84,7 @@ def main():
     dataset_metadata.process()
     result_artifact = dataset_metadata.to_dict()
 
-    artifact_validator =ArtifactValidator()
+    artifact_validator = ArtifactValidator()
 
     okay = artifact_validator.validate(result_artifact)
     if not okay:
