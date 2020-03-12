@@ -1,0 +1,21 @@
+{
+  "$id": "http://data.humancellatlas.org.com/bogo_artifact_schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bogo Schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "A person's name"
+    },
+    "cell_types_discovered": {
+      "type": "integer",
+      "description": "The number of cell types the person has discovered",
+      "minimum": 0
+    },
+    "nickname": {
+      "type": "string",
+      "description": "The person's nickname"
+    }
+  }
+}

@@ -176,7 +176,7 @@ def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadat
 
 
 def generate_metadata_structure_from_targz(input_source, dataset_metadata):
-    print("open ", input_source)
+    print(f"Reading from tar.gz input source: {input_source}")
     with tarfile.open(input_source, "r:gz") as tar:
         print("get members")
         members = tar.getmembers()
