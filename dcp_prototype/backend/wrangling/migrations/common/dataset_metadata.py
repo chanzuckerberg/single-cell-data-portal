@@ -3,10 +3,6 @@ import os
 import sys
 import threading
 
-import jsonschema
-import pkg_resources
-
-import dcp_prototype
 from dcp_prototype.backend.wrangling.migrations.common.metadata import (
     MetadataBase,
     MetadataArtifact,
@@ -50,25 +46,6 @@ class DatasetMetadata:
         self.process_dissociation_protocol()
         self.process_library_preparation_protocol()
         self.process_enrichment_protocols()
-
-    def validate(self, data):
-        """Validate the data with the current artifact schema"""
-        try:
-            schema_file = pkg_resources.resource_filename(dcp_prototype.__name__, "backend/v0.0.0.json")
-            schema_data = open(schema_file).read()
-            schema = json.loads(schema_data)
-        except FileNotFoundError:
-            # FIXME, the schema is not yet committed to main.
-            # Validate should fail if the data cannot be validated.
-            print(f"Warning, the schema could not be validated: {schema_file}")
-            return True
-
-        try:
-            jsonschema.validate(data, schema)
-            return True
-        except jsonschema.ValidationError as e:
-            print("validation error: ", e)
-            return False
 
     def process_project(self):
         """Process the one and only project entity"""
