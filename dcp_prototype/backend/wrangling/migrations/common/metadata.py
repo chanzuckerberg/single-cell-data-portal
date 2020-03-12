@@ -1,7 +1,5 @@
 """This module contains simple python classes that correspond to the artifact schema"""
 
-import json
-
 
 class MetadataBase(object):
     """Base class for the metadata objects"""
