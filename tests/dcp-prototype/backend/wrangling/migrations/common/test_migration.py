@@ -3,15 +3,15 @@ import pkg_resources
 import json
 
 
-from dcp_prototype.backend.wrangling.migrations.utils.migration_utils import DatasetMetadata
-from dcp_prototype.backend.wrangling.migrations.utils.gather_dcp1_data import generate_metadata_structure_from_targz
+from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import DatasetMetadata
+from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import generate_metadata_structure_from_targz
 
 
 class TestMigration(unittest.TestCase):
     def test_end2end(self):
         """A simple end to end test case"""
-        infile = pkg_resources.resource_filename(__name__, "WongAdultRetina.tar.gz")
-        expectedfile = pkg_resources.resource_filename(__name__, "WongAdultRetina.json")
+        infile = pkg_resources.resource_filename(__name__, "../../fixtures/WongAdultRetina.tar.gz")
+        expectedfile = pkg_resources.resource_filename(__name__, "../../fixtures/WongAdultRetina.json")
 
         dataset_metadata = DatasetMetadata()
         generate_metadata_structure_from_targz(infile, dataset_metadata)

@@ -7,9 +7,9 @@ from urllib.parse import urlparse
 import os.path
 import json
 
-from dcp_prototype.backend.wrangling.migrations.utils.migration_utils import DatasetMetadata, combine_projects
+from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import DatasetMetadata, combine_projects
 
-from dcp_prototype.backend.wrangling.migrations.utils.gather_dcp1_data import (
+from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import (
     generate_metadata_structure_from_targz,
     generate_metadata_structure_from_s3_uri,
     generate_metadata_structure_from_dir,

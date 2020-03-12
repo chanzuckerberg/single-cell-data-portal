@@ -6,10 +6,6 @@ import json
 class MetadataBase(object):
     """Base class for the metadata objects"""
 
-    def to_json(self):
-        """return the object as json text"""
-        return json.dumps(self, MetadataBase.serialize)
-
     @staticmethod
     def serialize(obj):
         """A method used by json.dumps to serialize a python object"""
@@ -73,7 +69,7 @@ class MetadataProject(MetadataBase):
 
 
 class MetadataContributor(MetadataBase):
-    """defines the contributor data, as defined in the artifact schema"""
+    """Defines the contributor data, as defined in the artifact schema"""
 
     def __init__(self):
         self.name = ""
@@ -81,7 +77,7 @@ class MetadataContributor(MetadataBase):
 
 
 class MetadataArtifact(MetadataBase):
-    """defines the top level artifact data as defined by the artifact schema."""
+    """Defines the top level artifact data as defined by the artifact schema."""
 
     def __init__(self):
         self.projects = []

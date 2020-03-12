@@ -8,9 +8,10 @@ import os
 import tempfile
 import json
 
-from dcp_prototype.backend.wrangling.migrations.utils.migration_utils import DatasetMetadata, combine_projects
+from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import combine_projects
+from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import DatasetMetadata
 
-from dcp_prototype.backend.wrangling.migrations.utils.gather_dcp1_data import generate_metadata_structure_from_targz
+from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import generate_metadata_structure_from_targz
 
 
 def process_project(project_filename, output_filename):

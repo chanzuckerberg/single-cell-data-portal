@@ -13,7 +13,7 @@ import tarfile
 def gather_group_file_list(file_list):
     """
     Process files into groups that can be processed simultaneously. In particular, links need to be processed last.
-    This is done so that all entities exist before linkage and linking will not ßoccur between unknown entities.
+    This is done so that all entities exist before linkage and linking will not occur between unknown entities.
 
     All entity files, except link files, look this this:
         UUID.DATE.json
@@ -97,8 +97,8 @@ def consume_file_s3(prefix, bucket, filequeue, dataset_metadata):
 
 def generate_metadata_structure_from_s3_uri(s3_uri, num_threads, dataset_metadata):
     """
-    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists primarily in JSON files in the
-    given S3 bucket.
+    Transforms a project's metadata into the DCP 2.0 metadata schema. Metadata exists in JSON files in the given S3
+    bucket.
     """
 
     bucket_name = urlparse(s3_uri).netloc
@@ -176,7 +176,6 @@ def generate_metadata_structure_from_dir(input_dir, num_threads, dataset_metadat
 
 
 def generate_metadata_structure_from_targz(input_source, dataset_metadata):
-    index = 0
     print("open ", input_source)
     with tarfile.open(input_source, "r:gz") as tar:
         print("get members")
@@ -195,7 +194,6 @@ def generate_metadata_structure_from_targz(input_source, dataset_metadata):
             if index > 0 and index % 1000 == 0:
                 print(index, end=" ", flush=True)
 
-    print(index)
     group_file_list = [entity_group, link_group]
     print(f"Files in directory to parse: {len(members)}")
 
