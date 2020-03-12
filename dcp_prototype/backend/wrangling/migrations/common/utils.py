@@ -18,7 +18,8 @@ def append_value_to_attribute(entity, attr, value):
 
     if type(getattr(entity, attr)) is not list:
         raise RuntimeError(
-            f"ERROR: Attempted to append a value {value} to a non-list attribute {attr} for entity object {entity}.")
+            f"ERROR: Attempted to append a value {value} to a non-list attribute {attr} for entity object {entity}."
+        )
 
     getattr(entity, attr).append(value)
 
@@ -31,7 +32,8 @@ def append_unique_value_to_attribute(entity, attr, value):
 
     if type(getattr(entity, attr)) is not list:
         raise RuntimeError(
-            f"ERROR: Attempted to append a value {value} to a non-list attribute {attr} for entity object {entity}.")
+            f"ERROR: Attempted to append a value {value} to a non-list attribute {attr} for entity object {entity}."
+        )
 
     if value not in getattr(entity, attr):
         getattr(entity, attr).append(value)

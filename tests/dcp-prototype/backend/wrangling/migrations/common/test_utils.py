@@ -1,7 +1,11 @@
 import unittest
 
-from dcp_prototype.backend.wrangling.migrations.common.utils import set_attribute_value, get_entity_type, \
-    append_value_to_attribute, append_unique_value_to_attribute
+from dcp_prototype.backend.wrangling.migrations.common.utils import (
+    set_attribute_value,
+    get_entity_type,
+    append_value_to_attribute,
+    append_unique_value_to_attribute,
+)
 
 
 class TestUtils(unittest.TestCase):
@@ -149,7 +153,7 @@ class TestUtils(unittest.TestCase):
         entity_name = "donor_organism_12345.json"
         entity_data = {
             "describedBy": f"https://schema.humancellatlas.org/type/biomaterial/15.5.0/{expected_entity_type}",
-            "another_exciting_field": "some exciting value"
+            "another_exciting_field": "some exciting value",
         }
 
         actual_entity_type = get_entity_type(entity_name, entity_data)
@@ -158,9 +162,7 @@ class TestUtils(unittest.TestCase):
 
     def test_get_entity_type_no_described_by_field_fails(self):
         entity_name = "donor_organism_12345.json"
-        entity_data = {
-            "another_exciting_field": "some exciting value"
-        }
+        entity_data = {"another_exciting_field": "some exciting value"}
 
         with self.assertRaises(RuntimeError) as error:
             get_entity_type(entity_name, entity_data)

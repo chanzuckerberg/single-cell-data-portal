@@ -13,11 +13,15 @@ from dcp_prototype.backend.wrangling.migrations.common.metadata import (
     MetadataProject,
     MetadataContributor,
 )
-from dcp_prototype.backend.wrangling.migrations.common.utils import set_attribute_value, get_entity_type, \
-    append_value_to_attribute, append_unique_value_to_attribute
+from dcp_prototype.backend.wrangling.migrations.common.utils import (
+    set_attribute_value,
+    get_entity_type,
+    append_value_to_attribute,
+    append_unique_value_to_attribute,
+)
 
 
-class DatasetMetadata():
+class DatasetMetadata:
     """
     This class performs the mapping from DCP 1.0 metadata to the new artifact schema. All the DCP 1.0 data object are
     first added with the add_entity function. When all data is gathered, the process function is called. The data
@@ -103,8 +107,11 @@ class DatasetMetadata():
     def process_donor_organism(self):
         mapping = (
             (("genus_species", "*", "ontology_label"), "donor_species", append_unique_value_to_attribute),
-            (("development_stage", "ontology_label"), "donor_development_stages_at_collection",
-             append_unique_value_to_attribute),
+            (
+                ("development_stage", "ontology_label"),
+                "donor_development_stages_at_collection",
+                append_unique_value_to_attribute,
+            ),
             (("diseases", "*", "ontology_label"), "donor_diseases", append_unique_value_to_attribute),
         )
         for data in self.entity_data.get("donor_organism", []):
@@ -134,17 +141,24 @@ class DatasetMetadata():
     def process_library_preparation_protocol(self):
         mapping = (
             ("nucleic_acid_source", "nucleic_acid_sources", append_unique_value_to_attribute),
-            (("input_nucleic_acid_molecule", "ontology_label"), "input_nucleic_acid_molecules",
-             append_unique_value_to_attribute),
-            (("library_construction_method", "ontology_label"), "library_construction_methods",
-             append_unique_value_to_attribute),
+            (
+                ("input_nucleic_acid_molecule", "ontology_label"),
+                "input_nucleic_acid_molecules",
+                append_unique_value_to_attribute,
+            ),
+            (
+                ("library_construction_method", "ontology_label"),
+                "library_construction_methods",
+                append_unique_value_to_attribute,
+            ),
         )
         for data in self.entity_data.get("library_preparation_protocol", []):
             self.process_mappings("library_preparation_protocol", data, self.project, mapping, self.missing)
 
     def process_cell_suspension(self):
         mapping = (
-            (("selected_cell_types", "*", "ontology_label"), "selected_cell_types", append_unique_value_to_attribute),)
+            (("selected_cell_types", "*", "ontology_label"), "selected_cell_types", append_unique_value_to_attribute),
+        )
         for data in self.entity_data.get("cell_suspension", []):
             self.process_mappings("cell_suspension", data, self.project, mapping, self.missing)
 
@@ -213,8 +227,7 @@ class DatasetMetadata():
             leftover = source_tuple[1:]
 
             if current == "*":
-                # "*" signifies that the source is an array, and that we should
-                # process all entries
+                # "*" signifies that the source is an array, and that we should process all entries
                 for item in source:
                     self.process_mapping(item, leftover, dest_object, dest_attr, mapfunc)
 

@@ -33,4 +33,3 @@ class TestGatherDcpOneData(unittest.TestCase):
 
         self.assertEqual(len(ordered_list_of_files[0]), 0)
         self.assertEqual(set(ordered_list_of_files[1]), set(non_json_ending_file))
-
