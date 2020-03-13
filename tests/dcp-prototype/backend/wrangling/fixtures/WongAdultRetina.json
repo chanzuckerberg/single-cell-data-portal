@@ -122,12 +122,10 @@
         "cataract (disease)"
       ],
       "biosample_names": [
-        "17-011 retina",
-        "17-010 retina",
-        "SC retina"
+        "retinal neural layer"
       ],
       "biosample_categories": [
-        "retinal neural layer"
+        "primary tissue"
       ],
       "biosample_diseases": [
         "normal"

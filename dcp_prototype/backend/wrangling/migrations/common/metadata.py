@@ -39,7 +39,6 @@ class MetadataProject(MetadataBase):
 
         # specimen_from_organism
         self.biosample_names = []
-        self.biosample_categories = []
         self.biosample_diseases = []
         self.organs = []
 
@@ -59,6 +58,9 @@ class MetadataProject(MetadataBase):
 
         # enrichment_protocol
         self.selected_cell_markers = []
+
+        # server_data
+        self.biosample_categories = []
 
         # TODO: NOT PROCESSED YET
         self.systems = []

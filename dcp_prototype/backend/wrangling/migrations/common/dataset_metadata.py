@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import threading
+import requests
 
 from dcp_prototype.backend.wrangling.migrations.common.metadata import (
     MetadataBase,
@@ -46,6 +47,10 @@ class DatasetMetadata:
         self.process_dissociation_protocol()
         self.process_library_preparation_protocol()
         self.process_enrichment_protocols()
+        self.process_cell_suspension()
+        self.process_organoid()
+        self.process_cell_line()
+        self.process_from_hca_server()
 
     def process_project(self):
         """Process the one and only project entity"""
@@ -94,12 +99,21 @@ class DatasetMetadata:
         for data in self.entity_data.get("donor_organism", []):
             self.process_mappings("donor_organism", data, self.project, mapping, self.missing)
 
+        # This is a special case for one project that lacks an ontology_label for genus_species.
+        # An alternative approach to solve this problem is to provide a list of source mappings for
+        # each destination mapping, in order of preference.  Then iterate through each source mapping
+        # until a match is found.  However, since this only impacts one attribute for one project,
+        # it's simpler to make a special case.
+        if not self.project.donor_species:
+            mapping = ((("genus_species", "*", "text"), "donor_species", append_unique_value_to_attribute),)
+            for data in self.entity_data.get("donor_organism", []):
+                self.process_mappings("donor_organism", data, self.project, mapping, self.missing)
+
     def process_specimen_from_organism(self):
         # specimen_from_organism
         mapping = (
-            (("biomaterial_core", "biomaterial_name"), "biosample_names", append_unique_value_to_attribute),
             (("organ", "ontology_label"), "organs", append_unique_value_to_attribute),
-            (("organ_parts", "*", "ontology_label"), "biosample_categories", append_unique_value_to_attribute),
+            (("organ_parts", "*", "ontology_label"), "biosample_names", append_unique_value_to_attribute),
             (("diseases", "*", "ontology_label"), "biosample_diseases", append_unique_value_to_attribute),
         )
         for data in self.entity_data.get("specimen_from_organism", []):
@@ -141,41 +155,43 @@ class DatasetMetadata:
 
     def process_enrichment_protocols(self):
         mapping = (("markers", "selected_cell_markers", append_unique_value_to_attribute),)
-        for data in self.entity_data.get("cell_suspension", []):
-            self.process_mappings("cell_suspension", data, self.project, mapping, self.missing)
+        for data in self.entity_data.get("enrichment_protocol", []):
+            self.process_mappings("enrichment_protocol", data, self.project, mapping, self.missing)
+
+    def process_organoid(self):
+        mapping = ((("model_organ", "ontology_label"), "organs", append_unique_value_to_attribute),)
+        for data in self.entity_data.get("organoid", []):
+            self.process_mappings("organoid", data, self.project, mapping, self.missing)
+
+    def process_cell_line(self):
+        mapping = ((("model_organ", "ontology_label"), "organs", append_unique_value_to_attribute),)
+
+        for data in self.entity_data.get("cell_line", []):
+            self.process_mappings("cell_line", data, self.project, mapping, self.missing)
+
+    def process_from_hca_server(self):
+        resp = requests.get(f"https://service.explore.data.humancellatlas.org/repository/projects/{self.project.id}")
+        if resp.status_code != 200:
+            print("Error", self.project.id, self.project.title)
+            raise RuntimeError(f"Unable to retrieve server metadata: {self.project.id}")
+
+        server_data = resp.json()
+        category_map = dict(specimens="primary tissue", cellLines="cell line", organoids="organoid")
+        mapping = (
+            (
+                ("samples", "*", "sampleEntityType", "*"),
+                "biosample_categories",
+                lambda entity, attr, value, category_map=category_map: append_unique_value_to_attribute(
+                    entity, attr, category_map.get(value, "unexpected")
+                ),
+            ),
+        )
+        self.process_mappings("server_data", server_data, self.project, mapping, self.missing)
 
     def to_dict(self):
         """Return the artifact data as a dict"""
         jdata = json.dumps(self.artifact, default=MetadataBase.serialize)
         return json.loads(jdata)
-
-    def combine_projects(artifact_file, new_artifact):
-        out_project = new_artifact.get("projects")[0]
-        title = out_project.get("title")
-        if os.path.exists(artifact_file):
-            with open(artifact_file) as json_file:
-                data = json.load(json_file)
-                projects = data.get("projects")
-                if projects is None:
-                    print(f"expected 'projects' in {artifact_file}")
-                    sys.exit(1)
-
-                do_append = True
-                for index, project in enumerate(projects):
-                    if project.get("title") == title:
-                        print(f"replaced project {title} in {artifact_file}")
-                        projects[index] = out_project
-                        do_append = False
-                        break
-                if do_append:
-                    print(f"append project {title} in {artifact_file}")
-                    projects.append(out_project)
-                out_dict = data
-        else:
-            out_dict = new_artifact
-            print(f"write project {title} to {artifact_file}")
-
-        return out_dict
 
     def process_mapping(self, source, source_tuple, dest_object, dest_attr, mapfunc):
         """This function locates attributes from source_tuple and maps them into attributes in dest_attr.  The
@@ -224,3 +240,33 @@ class DatasetMetadata:
             except KeyError as e:
                 if source_tuple not in missing:
                     missing[source_tuple] = (label, dest_attr, e)
+
+
+def combine_projects(artifact_file, new_artifact):
+    """Combine a json output from a new artifact into an existing artifact file"""
+    out_project = new_artifact.get("projects")[0]
+    title = out_project.get("title")
+    if os.path.exists(artifact_file):
+        with open(artifact_file) as json_file:
+            data = json.load(json_file)
+            projects = data.get("projects")
+            if projects is None:
+                print(f"expected 'projects' in {artifact_file}")
+                sys.exit(1)
+
+            do_append = True
+            for index, project in enumerate(projects):
+                if project.get("title") == title:
+                    print(f"replaced project {title} in {artifact_file}")
+                    projects[index] = out_project
+                    do_append = False
+                    break
+            if do_append:
+                print(f"append project {title} in {artifact_file}")
+                projects.append(out_project)
+            out_dict = data
+    else:
+        out_dict = new_artifact
+        print(f"write project {title} to {artifact_file}")
+
+    return out_dict

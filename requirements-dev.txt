@@ -6,3 +6,4 @@ coverage>=2.0.15
 flake8-black
 jsonschema
 pytest
+requests>=2.22.0
