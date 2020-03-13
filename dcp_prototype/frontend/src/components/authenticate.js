@@ -10,22 +10,19 @@ const Authenticate = () => {
       <Button onClick={logout}>
         Logout
       </Button>
-      <Box>
-        {!user ? (
-          "..."
-        ) : (
+
+      {!user ? (<Box>...</Box>) : (
           <Image src={user.picture}
-                 alt="Profile"
-                 className="nav-user-profile rounded-circle"
-                 width="50"  />
+                 width="48"
+                 height="48"
+          />
         )}
-      </Box>
+
     </>):
     (<>
       <Button onClick={loginWithRedirect}>
         Login/Register
       </Button>
-      <Box width="50"> </Box>
       </>)
 }
 
