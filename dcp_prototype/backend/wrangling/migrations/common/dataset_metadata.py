@@ -5,6 +5,7 @@ import threading
 
 import jsonschema
 import pkg_resources
+import requests
 
 import dcp_prototype
 from dcp_prototype.backend.wrangling.migrations.common.metadata import (
@@ -53,15 +54,7 @@ class DatasetMetadata:
         self.process_cell_suspension()
         self.process_organoid()
         self.process_cell_line()
-
-        # NOTE: this may not be the proper way to get the biosample_category.
-        # This need to be reviewed and checked.
-        if self.entity_data.get("organoid"):
-            self.project.biosample_categories.append("organoid")
-        elif self.entity_data.get("cell_line"):
-            self.project.biosample_categories.append("cell line")
-        elif self.entity_data.get("specimen_from_organism"):
-            self.project.biosample_categories.append("primary tissue")
+        self.process_from_hca_server()
 
     def validate(self, data):
         """Validate the data with the current artifact schema"""
@@ -198,6 +191,25 @@ class DatasetMetadata:
 
         for data in self.entity_data.get("cell_line", []):
             self.process_mappings("cell_line", data, self.project, mapping, self.missing)
+
+    def process_from_hca_server(self):
+        resp = requests.get(f"https://service.explore.data.humancellatlas.org/repository/projects/{self.project.id}")
+        if resp.status_code != 200:
+            print("Error", self.project.id, self.project.title)
+            raise RuntimeError(f"Unable to retrieve server metadata: {self.project.id}")
+
+        server_data = resp.json()
+        category_map = dict(specimens="primary tissue", cellLines="cell line", organoids="organoid")
+        mapping = (
+            (
+                ("samples", "*", "sampleEntityType", "*"),
+                "biosample_categories",
+                lambda entity, attr, value, category_map=category_map: append_unique_value_to_attribute(
+                    entity, attr, category_map.get(value, "unexpected")
+                ),
+            ),
+        )
+        self.process_mappings("server_data", server_data, self.project, mapping, self.missing)
 
     def to_dict(self):
         """Return the artifact data as a dict"""
