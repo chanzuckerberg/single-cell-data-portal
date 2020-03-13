@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { login, isAuthenticated } from "../util/auth"
+import { useAuth0 } from "../contexts/auth0Context"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
@@ -12,14 +12,7 @@ const SecondPage = props => {
   const [files, setFiles] = useState(null)
   const searchObj = searchStringAsObj(props.location.search.slice(1))
   const id = searchObj?.id
-
-  useEffect(() => {
-      if (!isAuthenticated()) {
-        login()
-        return <p>Redirecting to login...</p>
-      }
-    }
-  )
+  const { loading, loginWithRedirect, isAuthenticated} = useAuth0()
 
   useEffect(() => {
     if (id) {
@@ -46,6 +39,15 @@ const SecondPage = props => {
       return null
     }
   }, [id]) /* don't rerender if this hasn't changed */
+
+  if(loading){
+    return <p>Loading...</p>
+  }
+
+  if (!isAuthenticated) {
+    loginWithRedirect()
+    return <p>Redirecting to login...</p>
+  }
 
   /*
     /projects/id

@@ -2,6 +2,7 @@ import { Link } from "gatsby"
 import React from "react"
 import Logo from "./logo1"
 import { Flex, Box } from "theme-ui"
+import Authenticate from "./authenticate"
 
 const Header = ({ siteTitle }) => {
   return (
@@ -39,6 +40,8 @@ const Header = ({ siteTitle }) => {
         <Box>Analysis Tools</Box>
         <Box>Contribute</Box>
         <Box>APIs</Box>
+        <Box>|</Box>
+        <Authenticate/>
       </Flex>
     </Box>
   )
