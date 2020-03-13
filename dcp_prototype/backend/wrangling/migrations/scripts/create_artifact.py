@@ -10,6 +10,7 @@ import json
 
 from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import combine_projects
 from dcp_prototype.backend.wrangling.migrations.common.dataset_metadata import DatasetMetadata
+from dcp_prototype.backend.wrangling.migrations.common.artifact_validation import ArtifactValidator
 
 from dcp_prototype.backend.wrangling.migrations.common.gather_dcp_one_data import generate_metadata_structure_from_targz
 
@@ -18,18 +19,20 @@ def process_project(project_filename, output_filename):
     """Process a project, produce the schema artifact for that project, and combine it with data already in the
     output file"""
 
+    artifact_validator = ArtifactValidator()
+
     dataset_metadata = DatasetMetadata()
     generate_metadata_structure_from_targz(project_filename, dataset_metadata)
     dataset_metadata.process()
     result_artifact = dataset_metadata.to_dict()
 
-    okay = dataset_metadata.validate(result_artifact)
+    okay = artifact_validator.validate(result_artifact)
     if not okay:
         print("Result failed schema validation")
         sys.exit(1)
 
     result_artifact = combine_projects(output_filename, result_artifact)
-    okay = dataset_metadata.validate(result_artifact)
+    okay = artifact_validator.validate(result_artifact)
     if not okay:
         print("Result failed schema validation")
         sys.exit(1)
