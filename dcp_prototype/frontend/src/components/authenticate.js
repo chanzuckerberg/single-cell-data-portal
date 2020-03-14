@@ -24,7 +24,7 @@ const Authenticate = () => {
       {!loading && !isAuthenticated && (
         <>
           <Button onClick={loginWithRedirect}>
-            Login/Register
+            Login/Sign-up
           </Button>
         </>
       )}

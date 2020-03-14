@@ -6,17 +6,17 @@ import searchStringAsObj from "../util/searchStringAsObj"
 import ProjectOverview from "../components/projectOverview"
 import { api_prefix } from "../globals"
 import { Flex, Box, Heading } from "theme-ui"
+import Authenticate from "../components/authenticate"
 
 const SecondPage = props => {
   const [project, setProject] = useState(null)
   const [files, setFiles] = useState(null)
   const searchObj = searchStringAsObj(props.location.search.slice(1))
   const id = searchObj?.id
-  const { loading, loginWithRedirect, isAuthenticated} = useAuth0()
+  const { loading, isAuthenticated, getTokenSilently } = useAuth0()
 
   useEffect(() => {
     if (id) {
-      // TODO send authorization token in requests to backend
       fetch(`${api_prefix}/projects/${id}`)
         .then(response => response.json()) // parse JSON from request
         .then(resultData => {
@@ -28,26 +28,18 @@ const SecondPage = props => {
   }, [id]) /* don't rerender if this hasn't changed */
 
   useEffect(() => {
-    if (id) {
+    if (id && !loading && isAuthenticated) {
       // TODO send authorization token in requests to backend
-      fetch(`${api_prefix}/projects/${id}/files`)
-        .then(response => response.json()) // parse JSON from request
-        .then(resultData => {
-          setFiles(resultData)
-        })
+      getTokenSilently().then(accessToken =>
+        fetch(`${api_prefix}/projects/${id}/files`)
+          .then(response => response.json()) // parse JSON from request
+          .then(resultData => {
+            setFiles(resultData)
+          }))
     } else {
       return null
     }
-  }, [id]) /* don't rerender if this hasn't changed */
-
-  if(loading){
-    return <p>Loading...</p>
-  }
-
-  if (!isAuthenticated) {
-    loginWithRedirect()
-    return <p>Redirecting to login...</p>
-  }
+  }, [id, isAuthenticated]) /* don't rerender if this hasn't changed */
 
   /*
     /projects/id
@@ -73,9 +65,20 @@ const SecondPage = props => {
           <Heading as="h3" sx={{ mb: 4 }}>
             Download files
           </Heading>
-          <Heading as="h3" sx={{ mb: 4 }}>
-            ...
-          </Heading>
+          {isAuthenticated ? (
+            <Heading as="h4" sx={{ mb: 4 }}>
+              ...
+            </Heading>) : (
+            <Flex>
+              <Box sx={{ flex: '1 1 auto' }}>
+                <Heading as="h4" sx={{ mb: 4 }}>
+                  Log in or sign-up to view and download data.
+                </Heading>
+              </Box>
+              <Box><Authenticate/></Box>
+            </Flex>
+          )}
+
         </Box>
       )}
     </Layout>
