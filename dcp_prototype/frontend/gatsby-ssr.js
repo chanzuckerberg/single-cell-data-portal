@@ -5,7 +5,7 @@
  */
 
 import React from "react"
-import { Auth0Provider} from "./src/contexts/auth0Context"
+import { Auth0Provider } from "./src/contexts/auth0Context"
 
 export const wrapRootElement = ({ element }) => {
   return <Auth0Provider>{element}</Auth0Provider>

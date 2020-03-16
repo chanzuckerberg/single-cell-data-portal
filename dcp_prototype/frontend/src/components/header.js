@@ -1,7 +1,7 @@
 import { Link } from "gatsby"
 import React from "react"
 import Logo from "./logo1"
-import { Flex, Box } from "theme-ui"
+import { Box, Flex } from "theme-ui"
 import Authenticate from "./authenticate"
 
 const Header = ({ siteTitle }) => {
@@ -30,7 +30,7 @@ const Header = ({ siteTitle }) => {
               textDecoration: `none`,
             }}
           >
-            <Logo />
+            <Logo/>
           </Link>
         </Box>
         <Box>Data</Box>

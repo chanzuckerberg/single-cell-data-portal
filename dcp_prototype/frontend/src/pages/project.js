@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useAuth0 } from "../contexts/auth0Context"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
 import ProjectOverview from "../components/projectOverview"
 import { api_prefix } from "../globals"
-import { Flex, Box, Heading } from "theme-ui"
-import Authenticate from "../components/authenticate"
+import { Box, Flex, Heading } from "theme-ui"
 import LoginSignup from "../components/login-signup"
 
 const SecondPage = props => {
