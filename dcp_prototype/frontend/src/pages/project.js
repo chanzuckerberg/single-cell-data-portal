@@ -7,6 +7,7 @@ import ProjectOverview from "../components/projectOverview"
 import { api_prefix } from "../globals"
 import { Flex, Box, Heading } from "theme-ui"
 import Authenticate from "../components/authenticate"
+import LoginSignup from "../components/login-signup"
 
 const SecondPage = props => {
   const [project, setProject] = useState(null)
@@ -69,16 +70,10 @@ const SecondPage = props => {
             <Heading as="h4" sx={{ mb: 4 }}>
               ...
             </Heading>) : (
-            <Flex>
-              <Box sx={{ flex: '1 1 auto' }}>
-                <Heading as="h4" sx={{ mb: 4 }}>
-                  Log in or sign-up to view and download data.
-                </Heading>
-              </Box>
-              <Box><Authenticate/></Box>
-            </Flex>
+            <Box sx={{ flex: "1 1 auto" }}>
+              <LoginSignup/>
+            </Box>
           )}
-
         </Box>
       )}
     </Layout>
