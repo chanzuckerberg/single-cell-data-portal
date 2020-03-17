@@ -12,7 +12,9 @@ const ProjectsList = ({ projects }) => {
           <Flex
             sx={{
               fontSize: [1],
-              mb: [4],
+              paddingBottom: [5],
+              paddingTop: "10px",
+              borderTop: "#e5e5e5 1px solid",
             }}
             key={project.id}
           >
@@ -22,9 +24,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
-                overflow: "hidden", // Or flex might break
+                width: "200px", // Narrower so Project Name has more width
+                margin: "0px",
+                marginRight: 6,                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -40,9 +42,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
-                overflow: "hidden", // Or flex might break
+                width: "170px", // Narrower so Project Name has more width
+                margin: "0px",
+                marginRight: 6,                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -58,9 +60,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
-                overflow: "hidden", // Or flex might break
+                width: "120px", // Narrower so Project Name has more width
+                margin: "0px",
+                marginRight: 6,                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -76,13 +78,15 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
+                width: "100px", // Narrower so Project Name has more width
+                margin: "0px",
+                marginRight: 8,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
+                textAlign: "right", // since it holds numbers
               }}
             >
-              {project.cell_count || "unknown"}
+              {project.cell_count || "Unspecified"}
             </Box>
             <Box
               sx={{
@@ -90,8 +94,8 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "40%", // Default to full width
-                // padding: [0],
+                width: `calc(100% - 830px)`, // calculating the remaining width to allot to project name, after accounting for page margins, and the other columns' widths + their margins
+                margin: "0px",
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}

@@ -8,7 +8,7 @@ const Header = ({ siteTitle }) => {
     <Box
       sx={{
         background: `black`,
-        mt: [4],
+        mt: "0px",
       }}
     >
       <Flex
@@ -16,23 +16,38 @@ const Header = ({ siteTitle }) => {
           alignItems: "center",
           justifyContent: "space-between",
           fontWeight: 700,
-          margin: `0 auto`,
-          maxWidth: 960,
+          margin: `0px`,
+          maxWidth: "100%",
           padding: [3],
+          paddingLeft: 5,
         }}
       >
-        <Box sx={{ width: 200 }}>
-          <Link to="/">
+        <Box sx={{ width: 112 }}>
+          <a href="https://www.humancellatlas.org/">
             <Logo />
-          </Link>
+          </a>
         </Box>
-        <Box sx={{ color: "white" }}>Data</Box>
-        <Box sx={{ color: "white" }}>Guides</Box>
-        <Box sx={{ color: "white" }}>Metadata</Box>
-        <Box sx={{ color: "white" }}>Pipelines</Box>
-        <Box sx={{ color: "white" }}>Analysis Tools</Box>
-        <Box sx={{ color: "white" }}>Contribute</Box>
-        <Box sx={{ color: "white" }}>APIs</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Data</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Guides</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Metadata</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Pipelines</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Analysis Tools</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>Contribute</Box>
+        <Box sx={{ color: "white",
+          display: `none`,
+        }}>APIs</Box>
       </Flex>
     </Box>
   )

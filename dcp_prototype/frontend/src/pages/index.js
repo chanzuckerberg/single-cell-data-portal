@@ -25,8 +25,10 @@ const IndexPage = () => {
   }, [])
   return (
     <Layout>
-      <SEO title="Home" />
-      <Heading as="h1" sx={{ mb: 4 }}>
+      <SEO title="Explore Data" />
+      <Heading as="h1" sx={{
+        mb: 6,
+        mt: 6 }}>
         Explore Data
       </Heading>
       {!projects ? "Loading projects..." : <ProjectsList projects={projects} />}
