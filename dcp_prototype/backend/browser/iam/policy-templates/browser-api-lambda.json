@@ -17,7 +17,7 @@
         "secretsmanager:GetSecretValue"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:us-east-1:856863240400:secret:dcp/backend/browser/$DEPLOYMENT_STAGE/*"
+        "arn:aws:secretsmanager:us-east-1:$ACCOUNT_ID:secret:dcp/backend/browser/$DEPLOYMENT_STAGE/*"
       ]
     }
   ]

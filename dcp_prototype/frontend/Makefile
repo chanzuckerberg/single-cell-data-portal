@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-export BROWSER_S3=dcp-static-site-$(DEPLOYMENT_STAGE)
+export BROWSER_S3=dcp-site-deployment-$(DEPLOYMENT_STAGE)
 
 ifndef DEPLOYMENT_STAGE
 $(error Please set the DEPLOYMENT_STAGE environment before deploying)
