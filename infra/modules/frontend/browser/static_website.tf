@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "gatsby_static_bucket" {
 
-  bucket = "dcp-static-site-${var.deployment_stage}"
+  bucket = "dcp-site-deployment-${var.deployment_stage}"
 
   website {
     index_document = "index.html"
