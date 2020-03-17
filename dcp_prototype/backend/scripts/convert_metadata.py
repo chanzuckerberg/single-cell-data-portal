@@ -6,9 +6,10 @@ Modifies the loom file in place and ends up dropping quite a few of the
 fields from DCP/1.
 """
 
+import argparse
 import loompy
-import sys
 
+# Map from dcp/1 matrix metadata fields to dcp/2
 METADATA_MAP = {
     "CellID": "CellID",
     "barcode": None,
@@ -60,21 +61,6 @@ METADATA_MAP = {
     "analysis_working_group_approval_status": None,
 }
 
-ds = loompy.connect(sys.argv[1])
-
-for dcp1, dcp2 in METADATA_MAP.items():
-    if dcp1 not in ds.ca:
-        continue
-    if not dcp2:
-        continue
-    ds.ca[dcp2] = ds.ca[dcp1]
-
-for dcp1 in METADATA_MAP:
-    if dcp1 not in ds.ca:
-        continue
-    if dcp1 != METADATA_MAP[dcp1]:
-        delattr(ds.ca, dcp1)
-
 
 def get_category(org):
     """Get the "biosample category" based on the organ. The organ field in
@@ -89,12 +75,41 @@ def get_category(org):
 
 
 def strip_category(org):
+    """Remove the category annotation stuck to the end of organ fields
+    in dcp/1 metadata.
+    """
     return org.rstrip(" (organoid)").rstrip(" (cell line)")
 
 
-categories = [get_category(o) for o in ds.ca["biosample_preparation.organ"]]
-ds.ca["biosample_preparation.biosample_category"] = categories
+def convert_loom_metadata(loom_path):
+    """Convert the metadata in loom_path from dcp/1 to dcp/2"""
+
+    ds = loompy.connect(loom_path)
+
+    for dcp1, dcp2 in METADATA_MAP.items():
+        if dcp1 not in ds.ca:
+            continue
+        if not dcp2:
+            continue
+        ds.ca[dcp2] = ds.ca[dcp1]
+
+    for dcp1 in METADATA_MAP:
+        if dcp1 not in ds.ca:
+            continue
+        if dcp1 != METADATA_MAP[dcp1]:
+            delattr(ds.ca, dcp1)
+
+    categories = [get_category(o) for o in ds.ca["biosample_preparation.organ"]]
+    ds.ca["biosample_preparation.biosample_category"] = categories
+
+    organs = [strip_category(o) for o in ds.ca["biosample_preparation.organ"]]
+    ds.ca["biosample_preparation.organ"] = organs
+
+    ds.close()
 
 
-organs = [strip_category(o) for o in ds.ca["biosample_preparation.organ"]]
-ds.ca["biosample_preparation.organ"] = organs
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("loom_file", help="Loom file to modify in place to have dcp/2 metadata")
+    args = parser.parse_args()
+    convert_loom_metadata(args.loom_file)
