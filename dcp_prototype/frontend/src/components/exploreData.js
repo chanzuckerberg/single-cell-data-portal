@@ -9,10 +9,6 @@ const ExploreData = ({ project, files }) => {
   ))
 
   return (
-    <Box>
-      <Heading as="h3" sx={{ mb: 4 }}>
-        Explore data
-      </Heading>
       <Flex>
         <Button onClick={() => fetch(`${api_prefix}/files/${matrix_files[0].id}`)
             .then(response => response.json()) // parse JSON from request
@@ -23,7 +19,6 @@ const ExploreData = ({ project, files }) => {
         >Download matrix</Button>
         <Button>Open in cellxgene</Button>
       </Flex>
-    </Box>
   )
 }
 export default ExploreData

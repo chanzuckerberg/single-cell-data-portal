@@ -67,9 +67,8 @@ const SecondPage = props => {
             Download files
           </Heading>
           {isAuthenticated ? (
-            <Heading as="h4" sx={{ mb: 4 }}>
-              ...
-            </Heading>) : (
+                <ExploreData project={project} files={files}/>
+            ) : (
             <Box sx={{ flex: "1 1 auto" }}>
               <LoginSignup/>
             </Box>
