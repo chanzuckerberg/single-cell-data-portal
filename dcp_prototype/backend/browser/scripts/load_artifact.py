@@ -3,151 +3,141 @@
           To be succeeded by ETL job(s) from a JSON artifact.
 """
 
+import json
 import os
-import pandas
 import sys
-from math import ceil
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+import boto3
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.code.config.db_config import BrowserDbConfig
+from browser.scripts.mock import mock
 
-stage = os.environ["DEPLOYMENT_STAGE"]
-db_name = f"browser_{stage}"
-
-Base = declarative_base()
-engine = create_engine(BrowserDbConfig().database_uri)
-conn = engine.connect()
-engine.execute(f"USE {db_name}")
-
-# project
-projects_df = pandas.read_csv("projects.csv")
-for index, row in projects_df.iterrows():
-    project_id = row["project_id"]
-    title = row["project_title"]
-    label = "Single cell transcriptome analysis of human pancreas"
-    description = (
-        "As organisms age, cells accumulate genetic and "
-        "epigenetic changes that eventually lead to "
-        "impaired organ function or catastrophic failure "
-        "such as cancer. Here we describe a single-cell "
-        "transcriptome analysis of 2544 human pancreas "
-        "cells from donors, spanning six decades of life. "
-        "We find that islet cells from older donors have "
-        "increased levels of disorder as measured both "
-        "by noise in the transcriptome and by the number "
-        "of cells which display inappropriate hormone "
-        "expression, revealing a transcriptional instability "
-        "associated with aging. By analyzing the spectrum "
-        "of somatic mutations in single cells from "
-        "previously-healthy donors, we find a specific "
-        "age-dependent mutational signature characterized "
-        "by C to A and C to G transversions, indicators "
-        "of oxidative stress, which is absent in single "
-        "cells from human brain tissue or in a tumor cell "
-        "line. Cells carrying a high load of such mutations "
-        "also express higher levels of stress and senescence "
-        "markers, including FOS, JUN, and the cytoplasmic "
-        "superoxide dismutase SOD1, markers previously linked "
-        "to pancreatic diseases with substantial age-dependent "
-        "risk, such as type 2 diabetes mellitus and adenocarcinoma. "
-        "Thus, our single-cell approach unveils gene expression "
-        "changes and somatic mutations acquired in aging human "
-        "tissue, and identifies molecular pathways induced by "
-        "these genetic changes that could influence human "
-        "disease. Also, our results demonstrate the feasibility "
-        "of using single-cell RNA-seq data from primary "
-        "cells to derive meaningful insights into the "
-        "genetic processes that operate on aging human "
-        "tissue and to determine which molecular mechanisms "
-        "are coordinated with these processes. Examination "
-        "of single cells from primary human pancreas tissue"
-    )
-    category = row["category"]
-    developmental_stage = row["developmental_stage"]
-    disease_ontology = row["disease_ontology"]
-    sample_type = "specimens"
-    organ_part = "islet of Langerhans"
-    analysis_protocol = "smartseq2_v2.3.0,smartseq2_v2.4.0"
-    cell_count = 2544
-    donor_count = 8
-    publication_title = row["publication_title"]
-    publication_doi = row["publication_doi"]
-    contact_name = row["contributor_name"]
-    contact_institution = row["contributor_lab"]
-    contact_email = row["contributor_email"]
-
-    organ_ontology = row["organ_ontology"]
-    species = row["species"]
-    external_accessions = row["external_accessions"]
-    library_construction_method_ontology = row["library_construction_method_ontology"]
-    nucleic_acid_source = row["nucleic_acid_source"]
-    end_bias = row["end_bias"]
-
-    engine.execute(
-        f"INSERT INTO project VALUES ("
-        f"'{project_id}', '{title}', '{label}', '{description}', '{category}', "
-        f"'{developmental_stage}', '{disease_ontology}', '{sample_type}', "
-        f"'{organ_part}', '{analysis_protocol}', {cell_count}, {donor_count}, "
-        f"'{publication_title}', '{publication_doi}', '{contact_name}', "
-        f"'{contact_institution}', '{contact_email}', DEFAULT, DEFAULT)"
-    )
-
-    # library prep protocol
-    engine.execute(
-        f"INSERT INTO library_prep_protocol VALUES ("
-        f"NULL, '{library_construction_method_ontology}', "
-        f"'{end_bias}', '{nucleic_acid_source}', DEFAULT, DEFAULT)"
-    )
-
-    # tissue
-    engine.execute(f"INSERT INTO tissue VALUES (NULL, '{organ_ontology}', DEFAULT, DEFAULT)")
-
-    # species
-    engine.execute(f"INSERT INTO species VALUES (NULL, '{species}', DEFAULT, DEFAULT)")
-
-    # data repository
-
-    # contributor
-
-    # external accession
-
-    # lpp x project
-    engine.execute(
-        f"INSERT INTO library_prep_protocol_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)"
-    )
-
-    # tissue x project
-    engine.execute(f"INSERT INTO tissue_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)")
-
-    # species x project
-    engine.execute(f"INSERT INTO species_join_project VALUES " f"(NULL, 1, '{project_id}', DEFAULT, DEFAULT)")
-
-    # contributor x project
-
-
-# file
-files_df = pandas.read_csv("files.csv")
-files_df["file_size"].fillna(0, inplace=True)
-files_df.fillna("", inplace=True)
-files_df.insert(
-    1, "project_id", ["HCA-Project-cddab57b-6868-4be4-806f-395ed9dd635a"] * files_df.shape[0],
+from browser.code.common.browser_orm import (
+    DBSessionMaker,
+    Project,
+    File,
+    LibraryConstructionMethod,
+    Organ,
+    Species,
+    Contributor,
+    DataRepository,
+    ExternalAccession,
+    LibraryConstructionMethodJoinProject,
+    OrganJoinProject,
+    SpeciesJoinProject,
+    ContributorJoinProject,
 )
 
-items = []
-for index, row in files_df.iterrows():
-    items.append(", ".join([f"'{str(v)}'" if isinstance(v, str) else str(v) for v in row.array]))
+session = DBSessionMaker().session()
 
-chunk_size = 100
-num_chunks = ceil(len(items) / chunk_size)
-for i in range(num_chunks):
-    chunk = items[
-        i * chunk_size : len(items) if len(items) < i * chunk_size + chunk_size else i * chunk_size + chunk_size
-    ]
-    values = ", ".join([f"({item})" for item in chunk])
-    engine.execute(f"INSERT INTO file VALUES {values}")
-    print(i * chunk_size)
+s3 = boto3.client("s3")
+s3.download_file("dcp-test-artifacts", "Artifact.Mar18.json", "artifact.json")
+
+with open("artifact.json", "r") as f:
+    data = json.load(f)
+
+organs = {}
+species = {}
+libraries = {}
+contributors = {}
+
+# populate data repository
+data_repo_names = ["Array Express", "INSDC Project", "GEO Series", "Biostudies"]
+session.add_all([DataRepository(name=name) for name in data_repo_names])
+session.commit()
+
+# populate project
+for project in data["projects"]:
+    session.add(
+        Project(
+            id=project["id"],
+            title=project["title"],
+            description=mock[project["id"]]["description"],
+            biosample_categories=",".join(project["biosample_categories"]),
+            development_stages=",".join(project["donor_development_stages_at_collection"]),
+            diseases=",".join(project["donor_diseases"]),
+            cell_isolation_methods=",".join(project["cell_isolation_methods"]),
+            cell_types=",".join(project["selected_cell_types"]),
+            cell_count=mock[project["id"]]["cell_count"],
+            paired_end=",".join([str(e) for e in project["paired_end"]]),
+            nucleic_acid_sources=",".join(project["nucleic_acid_sources"]),
+            input_nucleic_acid_molecules=",".join(project["input_nucleic_acid_molecules"]),
+            publication_title=project["publication_title"],
+            publication_doi=project["publication_doi"],
+        )
+    )
+    session.commit()
+
+    # populate organ + project join
+    for o in project["organs"]:
+        if o not in organs:
+            organs[o] = len(organs) + 1
+            session.add(Organ(name=o))
+        session.add(OrganJoinProject(organ_id=organs[o], project_id=project["id"]))
+
+    # populate species + project join
+    for s in project["donor_species"]:
+        if s not in species:
+            species[s] = len(species) + 1
+            session.add(Species(name=s))
+        session.add(SpeciesJoinProject(species_id=species[s], project_id=project["id"]))
+
+    # populate library_construction_method + project join
+    for l in project["library_construction_methods"]:
+        if l not in libraries:
+            libraries[l] = len(libraries) + 1
+            session.add(LibraryConstructionMethod(name=l))
+        session.add(
+            LibraryConstructionMethodJoinProject(library_construction_method_id=libraries[l], project_id=project["id"])
+        )
+
+    # populate contributors + project join
+    for c in project["contributors"]:
+        if c["name"] not in contributors:
+            contributors[c["name"]] = {"key": len(contributors) + 1, "institution": c["institution"]}
+
+            names = c["name"].split(",")
+            if len(names) == 3:
+                first = names[0]
+                middle = names[1]
+                last = names[2]
+            elif len(names) == 2:
+                first = names[0]
+                middle = ""
+                last = names[1]
+            else:
+                first, last = c["name"].split(" ")
+                middle = ""
+
+            session.add(Contributor(first_name=first, middle_name=middle, last_name=last, institution=c["institution"]))
+        session.add(ContributorJoinProject(contributor_id=contributors[c["name"]]["key"], project_id=project["id"]))
+
+    # populate external accessions
+    for accession in project["array_express_accessions"]:
+        session.add(ExternalAccession(project_id=project["id"], data_repository_id=1, accession=accession))
+    for accession in project["insdc_project_accessions"]:
+        session.add(ExternalAccession(project_id=project["id"], data_repository_id=2, accession=accession))
+    for accession in project["geo_series_accessions"]:
+        session.add(ExternalAccession(project_id=project["id"], data_repository_id=3, accession=accession))
+    for accession in project["biostudies_accessions"]:
+        session.add(ExternalAccession(project_id=project["id"], data_repository_id=4, accession=accession))
+    session.commit()
+
+# file
+session.add_all(
+    File(
+        id=file["id"],
+        project_id=file["project_id"],
+        filename=file["filename"],
+        file_format=file["file_format"],
+        file_size=file["file_size"],
+        file_type=file["type"],
+        s3_uri=file["s3_uri"],
+    )
+    for file in data["files"]
+)
+
+session.commit()
+session.close()
