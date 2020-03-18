@@ -19,6 +19,16 @@
       "Resource": [
         "arn:aws:secretsmanager:us-east-1:$ACCOUNT_ID:secret:dcp/backend/browser/$DEPLOYMENT_STAGE/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::dcp-browser-bucket-$DEPLOYMENT_STAGE",
+        "arn:aws:s3:::dcp-browser-bucket-$DEPLOYMENT_STAGE/*"
+      ]
     }
   ]
 }

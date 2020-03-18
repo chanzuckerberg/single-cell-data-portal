@@ -8,7 +8,13 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib")
 sys.path.insert(0, pkg_root)  # noqa
 
 from browser.code.common.browser_orm import DBSessionMaker, Project, File
-from browser.code.common.db_utils import _get_project_assays, _get_project_tissues, _get_project_species
+from browser.code.common.db_utils import (
+    get_project_assays,
+    get_project_tissues,
+    get_project_species,
+    get_downloadable_project_files,
+)
+from browser.code.common.s3_utils import generate_file_url
 
 app = Chalice(app_name=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
 session = DBSessionMaker().session()
@@ -27,9 +33,9 @@ def get_projects():
             {
                 "id": project.id,
                 "title": project.title,
-                "assays": _get_project_assays(project.id),
-                "tissues": _get_project_tissues(project.id),
-                "species": _get_project_species(project.id),
+                "assays": get_project_assays(project.id),
+                "tissues": get_project_tissues(project.id),
+                "species": get_project_species(project.id),
                 "cell_count": project.cell_count,
             }
         )
@@ -46,9 +52,9 @@ def get_project(project_id):
         "id": project.id,
         "title": project.title,
         "label": project.label,
-        "assays": _get_project_assays(project.id),
-        "tissues": _get_project_tissues(project.id),
-        "species": _get_project_species(project.id),
+        "assays": get_project_assays(project.id),
+        "tissues": get_project_tissues(project.id),
+        "species": get_project_species(project.id),
         "description": project.description,
         "category": project.category,
         "developmental_stage": project.developmental_stage,
@@ -74,19 +80,7 @@ def get_project(project_id):
 
 @app.route("/projects/{project_id}/files")
 def get_project_files(project_id):
-    files = []
-    for file in session.query(File).filter(File.project_id == project_id).limit(100):
-        files.append(
-            {
-                "id": file.id,
-                "filename": file.filename,
-                "file_format": file.file_format,
-                "file_size": file.file_size,
-                "species": file.species,
-                "library_construction_method_ontology": file.library_construction_method_ontology,
-                "tissue_ontology": file.tissue_ontology,
-            }
-        )
+    files = get_downloadable_project_files(project_id, session)
 
     return chalice.Response(
         status_code=200, headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, body=files
@@ -96,7 +90,11 @@ def get_project_files(project_id):
 @app.route("/files/{file_id}")
 def get_file(file_id):
     file = session.query(File).get(file_id)
-    response_body = {"s3_uri": file.s3_uri}
+
+    file_prefix = f"{file.project_id}/{file.filename}"
+    download_url = generate_file_url(file_prefix)
+
+    response_body = {"url": download_url}
     return chalice.Response(
         status_code=200,
         headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
