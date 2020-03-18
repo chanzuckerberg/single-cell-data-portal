@@ -4,6 +4,7 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
 import ProjectOverview from "../components/projectOverview"
+import ExploreData from "../components/exploreData"
 import { api_prefix } from "../globals"
 import { Box, Flex, Heading } from "theme-ui"
 import LoginSignup from "../components/login-signup"
@@ -66,9 +67,8 @@ const SecondPage = props => {
             Download files
           </Heading>
           {isAuthenticated ? (
-            <Heading as="h4" sx={{ mb: 4 }}>
-              ...
-            </Heading>) : (
+                <ExploreData project={project} files={files}/>
+            ) : (
             <Box sx={{ flex: "1 1 auto" }}>
               <LoginSignup/>
             </Box>
