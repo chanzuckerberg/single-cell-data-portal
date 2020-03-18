@@ -3,7 +3,9 @@ dcplib
 flatten_json
 hca
 jsonschema
+botocore
 objgraph
 openpyxl
 pandas
+urllib
 xlrd
