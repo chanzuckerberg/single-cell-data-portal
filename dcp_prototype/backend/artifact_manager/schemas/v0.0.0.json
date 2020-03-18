@@ -6,7 +6,7 @@
    "$schema":"http://json-schema.org/draft-07/schema#",
    "$id":"http://data.humancellatlas.org.com/artifact.json",
    "type":"object",
-   "title":"The Artifact Schema",
+   "title":"Single-cell Artifact Schema",
    "description":"Schema for the Artifact object underlying Browser, cellxgene, etc.",
    "required":[
       "meta",
@@ -379,9 +379,7 @@
                "file_format",
                "file_size",
                "s3_uri",
-               "library_construction_method",
-               "organ",
-               "species"
+               "project_id"
             ],
             "properties":{
                "id":{
@@ -414,9 +412,9 @@
                },
                "file_size":{
                   "$id":"#/properties/files/items/properties/file_size",
-                  "type":"string",
+                  "type":"integer",
                   "examples":[
-                     "4365"
+                     4365
                   ]
                },
                "s3_uri":{
@@ -426,27 +424,9 @@
                      "s3://sample_bucket/sample_key"
                   ]
                },
-               "library_construction_method":{
-                  "$id":"#/properties/files/items/properties/library_construction_method",
-                  "type":"string",
-                  "examples":[
-                     "ss2"
-                  ]
-               },
-               "organ":{
-                  "$id":"#/properties/files/items/properties/organ",
-                  "type":"string",
-                  "examples":[
-                     "brain"
-                  ]
-               },
-               "species":{
-                  "$id":"#/properties/files/items/properties/species",
-                  "type":"string",
-                  "examples":[
-                     "Homo Sapiens"
-                  ]
-               }
+               "project_id":{
+                   "$ref":"#/properties/projects/items/properties/id"
+                }
             }
          }
       }
