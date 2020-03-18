@@ -9,6 +9,7 @@ from sqlalchemy import (
     Integer,
     String,
     text,
+    BigInteger,
 )
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -38,21 +39,18 @@ class Project(Base):
 
     id = Column(String(64), primary_key=True)
     title = Column(String(255))
-    label = Column(String(100))
     description = Column(String(3000))
-    category = Column(String(32))
-    developmental_stage = Column(String(32))
-    disease_ontology = Column(String(16))
-    sample_type = Column(String(32))
-    organ_part = Column(String(32))
-    analysis_protocol = Column(String(64))
+    biosample_categories = Column(String(32))
+    development_stages = Column(String(150))
+    diseases = Column(String(1000))
+    cell_isolation_methods = Column(String(100))
+    cell_types = Column(String(150))
     cell_count = Column(Integer)
-    donor_count = Column(Integer)
-    publication_title = Column(String(128))
+    paired_end = Column(String(16))
+    nucleic_acid_sources = Column(String(64))
+    input_nucleic_acid_molecules = Column(String(100))
+    publication_title = Column(String(200))
     publication_doi = Column(String(32))
-    contact_name = Column(String(32))
-    contact_institution = Column(String(64))
-    contact_email = Column(String(32))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -64,43 +62,27 @@ class File(Base):
     project_id = Column(ForeignKey("project.id"), nullable=False)
     filename = Column(String(80))
     file_format = Column(String(8))
-    file_size = Column(Integer)
-    flowcell_id = Column(String(64))
-    lane_index = Column(String(8))
-    read_index = Column(String(8))
+    file_size = Column(BigInteger)
+    file_type = Column(String(20))
     s3_uri = Column(String(200))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    species = Column(String(16))
-    library_construction_method_ontology = Column(String(16))
-    tissue_ontology = Column(String(16))
-    paired_end_sequencing = Column(String(16))
-    instrument_manufacturer_model_ontology = Column(String(32))
-    file_output_type = Column(String(32))
-    software = Column(String(32))
-    algorithm = Column(String(32))
-    genome_reference = Column(String(32))
-    genomic_annotation = Column(String(32))
-    genomic_annotation_biotypes = Column(String(32))
-    quantification_software = Column(String(32))
 
 
-class LibraryPrepProtocol(Base):
-    __tablename__ = "library_prep_protocol"
+class LibraryConstructionMethod(Base):
+    __tablename__ = "library_construction_method"
 
     id = Column(Integer, primary_key=True)
-    construction_method_ontology = Column(String(16))
-    end_bias = Column(String(16))
-    nucleic_acid_source = Column(String(16))
+    name = Column(String(64))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
 
-class Tissue(Base):
-    __tablename__ = "tissue"
+class Organ(Base):
+    __tablename__ = "organ"
 
     id = Column(Integer, primary_key=True)
-    tissue_ontology = Column(String(16))
+    name = Column(String(32))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -109,7 +91,7 @@ class Species(Base):
     __tablename__ = "species"
 
     id = Column(Integer, primary_key=True)
-    species_ontology = Column(String(16))
+    name = Column(String(16))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -127,9 +109,10 @@ class Contributor(Base):
     __tablename__ = "contributor"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(32))
-    institution = Column(String(32))
-    email = Column(String(32))
+    first_name = Column(String(16))
+    middle_name = Column(String(16))
+    last_name = Column(String(32))
+    institution = Column(String(100))
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
@@ -148,29 +131,29 @@ class ExternalAccession(Base):
     data_repository = relationship("DataRepository")
 
 
-class LibraryPrepProtocolJoinProject(Base):
-    __tablename__ = "library_prep_protocol_join_project"
+class LibraryConstructionMethodJoinProject(Base):
+    __tablename__ = "library_construction_method_join_project"
 
     id = Column(Integer, primary_key=True)
-    library_prep_protocol_id = Column(ForeignKey("library_prep_protocol.id"), nullable=False)
+    library_construction_method_id = Column(ForeignKey("library_construction_method.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
-    library_prep_protocol = relationship("LibraryPrepProtocol")
+    library_construction_method = relationship("LibraryConstructionMethod")
     project = relationship("Project")
 
 
-class TissueJoinProject(Base):
-    __tablename__ = "tissue_join_project"
+class OrganJoinProject(Base):
+    __tablename__ = "organ_join_project"
 
     id = Column(Integer, primary_key=True)
-    tissue_id = Column(ForeignKey("tissue.id"), nullable=False)
+    organ_id = Column(ForeignKey("organ.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
-    tissue = relationship("Tissue")
+    organ = relationship("Organ")
     project = relationship("Project")
 
 
