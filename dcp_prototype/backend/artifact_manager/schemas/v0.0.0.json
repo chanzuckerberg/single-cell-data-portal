@@ -7,11 +7,57 @@
    "$id":"http://data.humancellatlas.org.com/artifact.json",
    "type":"object",
    "title":"The Artifact Schema",
+   "description":"Schema for the Artifact object underlying Browser, cellxgene, etc.",
    "required":[
+      "meta",
       "projects",
       "files"
    ],
    "properties":{
+      "meta":{
+        "$id":"#/properties/meta",
+        "type":"object",
+        "required":[
+          "artifact_title",
+          "artifact_version",
+          "created_on",
+          "schema_version",
+          "schema_name"
+        ],
+        "properties":{
+          "artifact_title":{
+            "$id":"#/properties/meta/properties/artifact_title",
+            "type":"string",
+            "description":"Descriptive title for the artifact",
+            "examples": [
+              "3/20/2020 Demo Artifact",
+              "HCA v3 10x Artifact"
+            ]
+          },
+          "artifact_version":{
+            "$id":"#/properties/meta/properties/artifact_version",
+            "type":"string",
+            "description":"Version of the artifact (not the schema)"
+          },
+          "created_on":{
+            "$id":"#/properties/meta/properties/created_on",
+            "type":"string",
+            "type":"string",
+            "format":"date-time",
+            "description":"Date and time this version of the artifact was created"
+          },
+          "schema_version":{
+            "$id":"#/properties/meta/properties/schema_version",
+            "type":"string",
+            "description":"Version of the artifact schema this artifact definition follows"
+          },
+          "schema_name":{
+            "$id":"#/properties/meta/properties/schema_name",
+            "type":"string",
+            "description":"Name of the artifact schema this artifact definition follows"
+          }
+        }
+      },
       "projects":{
          "$id":"#/properties/projects",
          "type":"array",
