@@ -185,11 +185,11 @@
                },
                "selected_cell_types":{
                   "$id":"#/properties/projects/items/properties/selected_cell_types",
-                  "type":"array",
+                  "type":"array"
                },
                "selected_cell_markers":{
                   "$id":"#/properties/projects/items/properties/selected_cell_markers",
-                  "type":"array",
+                  "type":"array"
                },
                "input_nucleic_acid_molecules":{
                   "$id":"#/properties/projects/items/properties/input_nucleic_acid_molecules",
@@ -270,7 +270,7 @@
                },
                "protocols_io_doi":{
                   "$id":"#/properties/projects/items/properties/protocols_io_doi",
-                  "type":"array",
+                  "type":"array"
                },
                "publication_title":{
                   "$id":"#/properties/projects/items/properties/publication_title",
@@ -295,19 +295,19 @@
                },
                "insdc_project_accessions":{
                   "$id":"#/properties/projects/items/properties/insdc_project_accessions",
-                  "type":"array",
+                  "type":"array"
                },
                "geo_series_accessions":{
                   "$id":"#/properties/projects/items/properties/geo_series_accessions",
-                  "type":"array",
+                  "type":"array"
                },
                "array_express_accessions":{
                   "$id":"#/properties/projects/items/properties/array_express_accessions",
-                  "type":"array",
+                  "type":"array"
                },
                "biostudies_accessions":{
                   "$id":"#/properties/projects/items/properties/biostudies_accessions",
-                  "type":"array",
+                  "type":"array"
                },
                "cell_count":{
                   "$id":"#/properties/projects/items/properties/cell_count",
