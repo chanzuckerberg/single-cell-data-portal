@@ -31,10 +31,11 @@ const Layout = ({ children }) => {
       <div
         style={{
           margin: `0 auto`,
-          maxWidth: 960,
+          maxWidth: 1440,
           minHeight:
-            "100vh" /* for now. better: height minus footer, or go to sticky */,
-          padding: `0 1.0875rem 1.45rem`,
+            // "100vh", /* for now. better: height minus footer, or go to sticky */
+            `calc(100vh - 85px - 60px - 48px)`, // height minus footer, minus header, minus margin between header and "Explore Data"; only way I coudl get footer to level with bottom of screen
+          padding: `0 32px`, // since this file seems not to recognize the theme arrays
         }}
       >
         <main>{children}</main>
