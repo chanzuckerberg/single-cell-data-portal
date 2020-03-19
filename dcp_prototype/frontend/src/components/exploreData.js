@@ -4,6 +4,7 @@ import { Flex, Button, Text } from "theme-ui"
 import { api_prefix } from "../globals"
 
 const ExploreData = ({ project, files }) => {
+  const cxg_url = "http://cellxgene-dev.us-west-2.elasticbeanstalk.com/"
 
   return (
     !files || !files.length ? <Text>No files available for download</Text> : (
@@ -15,7 +16,9 @@ const ExploreData = ({ project, files }) => {
             })}>
             Download matrix
         </Button>
-        <Button>Open in cellxgene</Button>
+        <Button onClick={() => window.open(cxg_url + project.title + ".cxg")}>
+            Visualize in cellxgene
+        </Button>
       </Flex>
     )
   )
