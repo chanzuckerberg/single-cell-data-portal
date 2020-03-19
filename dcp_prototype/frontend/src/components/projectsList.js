@@ -24,9 +24,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "200px", // Narrower so Project Name has more width
-                margin: "0px",
-                marginRight: 6,                overflow: "hidden", // Or flex might break
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
+                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -42,9 +42,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "170px", // Narrower so Project Name has more width
-                margin: "0px",
-                marginRight: 6,                overflow: "hidden", // Or flex might break
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
+                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -60,9 +60,9 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "120px", // Narrower so Project Name has more width
-                margin: "0px",
-                marginRight: 6,                overflow: "hidden", // Or flex might break
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
+                overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
@@ -78,9 +78,8 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "100px", // Narrower so Project Name has more width
-                margin: "0px",
-                marginRight: 8,
+                width: `12%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 7,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
                 textAlign: "right", // since it holds numbers
@@ -94,8 +93,7 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: `calc(100% - 830px)`, // calculating the remaining width to allot to project name, after accounting for page margins, and the other columns' widths + their margins
-                margin: "0px",
+                width: `40%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
