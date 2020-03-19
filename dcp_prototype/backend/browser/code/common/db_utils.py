@@ -6,7 +6,6 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from browser.code.common.browser_orm import (
     DBSessionMaker,
-    Project,
     File,
     LibraryConstructionMethod,
     Organ,
@@ -34,7 +33,7 @@ def get_project_assays(project_id, session=None):
         session.query(LibraryConstructionMethodJoinProject, LibraryConstructionMethod)
         .filter(
             (LibraryConstructionMethodJoinProject.library_construction_method_id == LibraryConstructionMethod.id),
-            LibraryConstructionMethodJoinProject.project_id == project_id
+            LibraryConstructionMethodJoinProject.project_id == project_id,
         )
         .all()
     ):
@@ -89,15 +88,21 @@ def get_project_contributors(project_id, session=None):
     if not session:
         session = DBSessionMaker().session()
 
-    contributor_query = session.query(Contributor, ContributorJoinProject).filter(
-        Contributor.id == ContributorJoinProject.contributor_id,
-        ContributorJoinProject.project_id == project_id
-    ).all()
+    contributor_query = (
+        session.query(Contributor, ContributorJoinProject)
+        .filter(
+            Contributor.id == ContributorJoinProject.contributor_id, ContributorJoinProject.project_id == project_id
+        )
+        .all()
+    )
 
-    contributors = [{
-        'name': f"{result.Contributor.first_name} {result.Contributor.last_name}",
-        'institution': f"{result.Contributor.institution}"
-    } for result in contributor_query]
+    contributors = [
+        {
+            "name": f"{result.Contributor.first_name} {result.Contributor.last_name}",
+            "institution": f"{result.Contributor.institution}",
+        }
+        for result in contributor_query
+    ]
 
     return contributors
 
@@ -120,7 +125,7 @@ def get_downloadable_project_files(project_id, session=None):
                 "filename": file.filename,
                 "file_format": file.file_format,
                 "file_type": file.file_type,
-                "file_size": file.file_size
+                "file_size": file.file_size,
             }
         )
 
