@@ -12,7 +12,9 @@ const ProjectsList = ({ projects }) => {
           <Flex
             sx={{
               fontSize: [1],
-              mb: [4],
+              paddingBottom: [5],
+              paddingTop: "10px",
+              borderTop: "#e5e5e5 1px solid",
             }}
             key={project.id}
           >
@@ -22,15 +24,15 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
             >
               <Flex sx={{ flexDirection: "column" }}>
-                {project.tissues.map(tissue=> (
-                  <Box key={tissue}>{tissue}</Box>
+                {project.organs.map(organ=> (
+                  <Box key={organ}>{organ}</Box>
                 ))}
               </Flex>
             </Box>
@@ -40,8 +42,8 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
@@ -58,8 +60,8 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 6,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
@@ -76,13 +78,14 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "20%", // Default to full width
-                // padding: [0],
+                width: `12%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                paddingRight: 7,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
+                textAlign: "right", // since it holds numbers
               }}
             >
-              {project.cell_count || "unknown"}
+              {project.cell_count || "Unspecified"}
             </Box>
             <Box
               sx={{
@@ -90,8 +93,7 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: "40%", // Default to full width
-                // padding: [0],
+                width: `40%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}

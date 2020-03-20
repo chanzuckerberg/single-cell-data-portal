@@ -6,12 +6,12 @@ const ProjectsListHeading = ({ projects }) => {
     <Flex sx={{ mb: [4] }}>
       <Box
         sx={{
-          fontSize: [3],
+          fontSize: [2],
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: "20%", // Default to full width
-          // padding: [0],
+          width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          paddingRight: 6,
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,
@@ -22,12 +22,12 @@ const ProjectsListHeading = ({ projects }) => {
 
       <Box
         sx={{
-          fontSize: [3],
+          fontSize: [2],
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: "20%", // Default to full width
-          // padding: [0],
+          width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          paddingRight: 6,
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,
@@ -38,12 +38,12 @@ const ProjectsListHeading = ({ projects }) => {
 
       <Box
         sx={{
-          fontSize: [3],
+          fontSize: [2],
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: "20%", // Default to full width
-          // padding: [0],
+          width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          paddingRight: 6,
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,
@@ -54,15 +54,16 @@ const ProjectsListHeading = ({ projects }) => {
 
       <Box
         sx={{
-          fontSize: [3],
+          fontSize: [2],
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: "20%", // Default to full width
-          // padding: [0],
+          width: `12%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          paddingRight: 7,
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,
+          textAlign: "right", // since it holds numbers
         }}
       >
         Cells
@@ -70,12 +71,11 @@ const ProjectsListHeading = ({ projects }) => {
 
       <Box
         sx={{
-          fontSize: [3],
+          fontSize: [2],
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: "40%", // Default to full width
-          // padding: [0],
+          width: `40%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,

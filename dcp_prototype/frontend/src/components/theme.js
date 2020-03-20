@@ -1,14 +1,14 @@
 export default {
-  space: [0, 4, 8, 16, 32, 64, 128, 256, 512],
+  space: [12, 14, 16, 20, 24, 32, 48, 64, 96],
   fonts: {
-    body: "Ropa Sans",
-    heading: "Ropa Sans",
+    body: "Montserrat",
+    heading: "Roboto",
     monospace: "Menlo, monospace",
   },
   breakpoints: ["40em", "56em", "64em"],
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 96],
   fontWeights: {
-    body: 400,
+    body: 500,
     heading: 700,
     bold: 700,
   },
@@ -20,7 +20,7 @@ export default {
     text: "#000",
     background: "#fff",
     primary: "red",
-    secondary: "steelblue",
+    secondary: "#1c7cc705",
     muted: "#f6f6f6",
   },
   styles: {

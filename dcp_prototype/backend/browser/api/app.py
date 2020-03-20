@@ -10,8 +10,9 @@ sys.path.insert(0, pkg_root)  # noqa
 from browser.code.common.browser_orm import DBSessionMaker, Project, File
 from browser.code.common.db_utils import (
     get_project_assays,
-    get_project_tissues,
+    get_project_organs,
     get_project_species,
+    get_project_contributors,
     get_downloadable_project_files,
 )
 from browser.code.common.s3_utils import generate_file_url
@@ -34,7 +35,7 @@ def get_projects():
                 "id": project.id,
                 "title": project.title,
                 "assays": get_project_assays(project.id),
-                "tissues": get_project_tissues(project.id),
+                "organs": get_project_organs(project.id),
                 "species": get_project_species(project.id),
                 "cell_count": project.cell_count,
             }
@@ -48,27 +49,26 @@ def get_projects():
 @app.route("/projects/{project_id}")
 def get_project(project_id):
     project = session.query(Project).get(project_id)
+
     response_body = {
         "id": project.id,
         "title": project.title,
-        "label": project.label,
         "assays": get_project_assays(project.id),
-        "tissues": get_project_tissues(project.id),
+        "organs": get_project_organs(project.id),
         "species": get_project_species(project.id),
+        "contributors": get_project_contributors(project.id),
         "description": project.description,
-        "category": project.category,
-        "developmental_stage": project.developmental_stage,
-        "disease_ontology": project.disease_ontology,
-        "sample_type": project.sample_type,
-        "organ_part": project.organ_part,
-        "analysis_protocol": project.analysis_protocol.split(","),
+        "biosample_categories": project.biosample_categories.split(","),
+        "development_stages": project.development_stages.split(","),
+        "diseases": project.diseases.split(","),
+        "cell_isolation_methods": project.cell_isolation_methods.split(","),
+        "cell_types": project.cell_types.split(","),
         "cell_count": project.cell_count,
-        "donor_count": project.donor_count,
+        "paired_end": project.paired_end.split(","),
+        "nucleic_acid_sources": project.nucleic_acid_sources.split(","),
+        "input_nucleic_acid_molecules": project.input_nucleic_acid_molecules.split(","),
         "publication_title": project.publication_title,
         "publication_doi": project.publication_doi,
-        "contact_name": project.contact_name,
-        "contact_institution": project.contact_institution,
-        "contact_email": project.contact_email,
     }
 
     return chalice.Response(
@@ -90,8 +90,10 @@ def get_project_files(project_id):
 @app.route("/files/{file_id}")
 def get_file(file_id):
     file = session.query(File).get(file_id)
+    project = session.query(Project).get(file.project_id)
 
-    file_prefix = f"{file.project_id}/{file.filename}"
+    # file_prefix = f"{project.title}/{file.filename}"
+    file_prefix = f"{project.title}/matrix.loom"
     download_url = generate_file_url(file_prefix)
 
     response_body = {"url": download_url}

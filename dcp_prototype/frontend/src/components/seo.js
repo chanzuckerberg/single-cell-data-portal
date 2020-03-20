@@ -69,8 +69,9 @@ function SEO({ description, lang, meta, title }) {
         },
       ].concat(meta)}
     >
+
       <link
-        href="https://fonts.googleapis.com/css?family=Ropa+Sans:400,400i&display=swap"
+        href="https://fonts.googleapis.com/css?family=Montserrat:500,700|Roboto&display=swap"
         rel="stylesheet"
       />
     </Helmet>
