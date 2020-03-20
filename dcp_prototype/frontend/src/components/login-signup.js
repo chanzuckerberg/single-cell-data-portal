@@ -1,6 +1,6 @@
 import React from "react"
 import { useAuth0 } from "../contexts/auth0Context"
-import { Heading } from "theme-ui"
+import { Text } from "theme-ui"
 
 const LoginSignup = () => {
   const { isAuthenticated, loading, loginWithRedirect } = useAuth0()
@@ -8,10 +8,10 @@ const LoginSignup = () => {
   return (
     <>
       {!loading && !isAuthenticated && (
-        <Heading as="h4" sx={{ color: "primary", fontSize: 1 }}>
+        <Text sx={{ color: "primary", fontSize: 1 }}>
           <a href="#" onClick={loginWithRedirect}>Log in</a> or <a href="#" onClick={loginWithRedirect}>sign-up</a> to
           view and download data.
-        </Heading>)}
+        </Text>)}
     </>
   )
 }
