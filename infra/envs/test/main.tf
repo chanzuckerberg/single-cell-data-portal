@@ -48,10 +48,26 @@ module "siteCert" {
   source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
 
   # the cert domain name
+  cert_domain_name = "*.dev.single-cell.czi.technology"
+  # the route53 zone for validating the `cert_domain_name`
+  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
+
+  # variables for tags
+  env     = "${var.deployment_stage}"
+  project = "single-cell"
+  service = "browser"
+  owner   = "czi-single-cell"
+}
+
+module "siteCert_Browser" {
+  source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
+
+  # the cert domain name
   cert_domain_name = "browser.dev.single-cell.czi.technology"
+  cert_subject_alternative_names = {"www.browser.dev.single-cell.czi.technology"= "Z3GU3D81Z7R7CN"}
 
   # the route53 zone for validating the `cert_domain_name`
-  aws_route53_zone_id = "Z0921546EDJ5WWGRFFKB"
+  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
 
   # variables for tags
   env     = "${var.deployment_stage}"
@@ -63,8 +79,8 @@ module "siteCert" {
 module "site" {
   source = "github.com/chanzuckerberg/cztack//aws-single-page-static-site?ref=v0.29.0"
 
-  aws_route53_zone_id            = "Z0921546EDJ5WWGRFFKB"
-  aws_acm_cert_arn = "arn:aws:acm:us-east-1:699936264352:certificate/1cd4873a-16ed-4b0a-a9be-0d7f61c77040"
+  aws_route53_zone_id            = "Z3GU3D81Z7R7CN"
+  aws_acm_cert_arn = "${module.siteCert_Browser.arn}"
   bucket_name = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain = "browser"
 
