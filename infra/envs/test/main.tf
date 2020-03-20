@@ -44,27 +44,12 @@ provider "aws" {
 //  preferred_maintenance_window = "${var.browser_preferred_maintenance_window}"
 //}
 
-module "siteCert" {
+module "browser_site_cert" {
   source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
 
   # the cert domain name
-  cert_domain_name = "*.dev.single-cell.czi.technology"
-  # the route53 zone for validating the `cert_domain_name`
-  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
-
-  # variables for tags
-  env     = "${var.deployment_stage}"
-  project = "single-cell"
-  service = "browser"
-  owner   = "czi-single-cell"
-}
-
-module "siteCert_Browser" {
-  source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
-
-  # the cert domain name
-  cert_domain_name = "browser.dev.single-cell.czi.technology"
-  cert_subject_alternative_names = {"www.browser.dev.single-cell.czi.technology"= "Z3GU3D81Z7R7CN"}
+  cert_domain_name = "browser-testing.dev.single-cell.czi.technology"
+  cert_subject_alternative_names = {"www.browser-testing.dev.single-cell.czi.technology"= "Z3GU3D81Z7R7CN"}
 
   # the route53 zone for validating the `cert_domain_name`
   aws_route53_zone_id = "Z3GU3D81Z7R7CN"
@@ -76,13 +61,13 @@ module "siteCert_Browser" {
   owner   = "czi-single-cell"
 }
 
-module "site" {
+module "browser_frontend" {
   source = "github.com/chanzuckerberg/cztack//aws-single-page-static-site?ref=v0.29.0"
 
   aws_route53_zone_id            = "Z3GU3D81Z7R7CN"
-  aws_acm_cert_arn = "${module.siteCert_Browser.arn}"
+  aws_acm_cert_arn = "${module.browser_site_cert.arn}"
   bucket_name = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
-  subdomain = "browser"
+  subdomain = "browser-testing"
 
   # Variables used for tagging
   env     = "${var.deployment_stage}"
