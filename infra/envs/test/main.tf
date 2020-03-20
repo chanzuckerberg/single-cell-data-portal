@@ -10,36 +10,68 @@ terraform {
   backend "s3" {
     encrypt = true
     region  = "us-east-1"
-    profile = "czi-hca-dev"
+    profile = "single-cell-dev"
   }
 }
 
 provider "aws" {
   version = "~> 2.0"
   region  = "us-east-1"
-  profile = "czi-hca-dev"
+  profile = "single-cell-dev"
 }
 
-module "ledger" {
-  source = "../../modules/backend/ledger"
+//module "ledger" {
+//  source = "../../modules/backend/ledger"
+//
+//  deployment_stage = "${var.deployment_stage}"
+//
+//  // Database
+//  db_username                  = "${var.db_username}"
+//  db_password                  = "${var.db_password}"
+//  db_instance_count            = "${var.db_instance_count}"
+//  preferred_maintenance_window = "${var.preferred_maintenance_window}"
+//}
 
-  deployment_stage = "${var.deployment_stage}"
+//module "browser" {
+//  source = "../../modules/backend/browser"
+//
+//  deployment_stage = "${var.deployment_stage}"
+//
+//  // Database
+//  db_username                  = "${var.browser_db_username}"
+//  db_password                  = "${var.browser_db_password}"
+//  db_instance_count            = "${var.browser_db_instance_count}"
+//  preferred_maintenance_window = "${var.browser_preferred_maintenance_window}"
+//}
 
-  // Database
-  db_username                  = "${var.db_username}"
-  db_password                  = "${var.db_password}"
-  db_instance_count            = "${var.db_instance_count}"
-  preferred_maintenance_window = "${var.preferred_maintenance_window}"
+module "siteCert" {
+  source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
+
+  # the cert domain name
+  cert_domain_name = "browser.dev.single-cell.czi.technology"
+
+  # the route53 zone for validating the `cert_domain_name`
+  aws_route53_zone_id = "Z0921546EDJ5WWGRFFKB"
+
+  # variables for tags
+  env     = "${var.deployment_stage}"
+  project = "single-cell"
+  service = "browser"
+  owner   = "czi-single-cell"
 }
 
-module "browser" {
-  source = "../../modules/backend/browser"
+module "site" {
+  source = "github.com/chanzuckerberg/cztack//aws-single-page-static-site?ref=v0.29.0"
 
-  deployment_stage = "${var.deployment_stage}"
+  aws_route53_zone_id            = "Z0921546EDJ5WWGRFFKB"
+  aws_acm_cert_arn = "arn:aws:acm:us-east-1:699936264352:certificate/1cd4873a-16ed-4b0a-a9be-0d7f61c77040"
+  bucket_name = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
+  subdomain = "browser"
 
-  // Database
-  db_username                  = "${var.browser_db_username}"
-  db_password                  = "${var.browser_db_password}"
-  db_instance_count            = "${var.browser_db_instance_count}"
-  preferred_maintenance_window = "${var.browser_preferred_maintenance_window}"
+  # Variables used for tagging
+  env     = "${var.deployment_stage}"
+  project = "single-cell"
+  service = "browser"
+  owner   = "czi-single-cell"
 }
+
