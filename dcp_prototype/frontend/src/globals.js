@@ -1,2 +1,2 @@
 export const api_prefix =
-  "https://vzmt7s0mq9.execute-api.us-east-1.amazonaws.com/test"
+  "https://u5j1wa9u5i.execute-api.us-east-1.amazonaws.com/dev"

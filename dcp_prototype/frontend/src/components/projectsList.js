@@ -31,8 +31,8 @@ const ProjectsList = ({ projects }) => {
               }}
             >
               <Flex sx={{ flexDirection: "column" }}>
-                {project.tissues.map(tissue=> (
-                  <Box key={tissue}>{tissue}</Box>
+                {project.organs.map(organ=> (
+                  <Box key={organ}>{organ}</Box>
                 ))}
               </Flex>
             </Box>

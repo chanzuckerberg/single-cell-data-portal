@@ -25,11 +25,15 @@ const ProjectOverview = ({ project }) => {
           </Box>
           <Box>
             <Heading as="h6" sx={{ mb: [2] }}>
-              Contact
+              Publications
             </Heading>
-            <Text>{project.contact_name}</Text>
-            <Text>{project.contact_institution}</Text>
-            <Text>{project.contact_email}</Text>
+            <Text>{project.publication_title}</Text>
+          </Box>
+          <Box>
+            <Heading as="h6" sx={{ mb: [2] }}>
+              Contributors
+            </Heading>
+            <Text>{project.contributors[0].first_name}</Text>
           </Box>
         </Box>
         <Flex>
@@ -37,16 +41,13 @@ const ProjectOverview = ({ project }) => {
             <Heading as="h6" sx={{ mb: [2] }}>
               Project Details
             </Heading>
-            <Text>Project Label: {project.label}</Text>
             <Text>Species: {project.species.join(", ")}</Text>
-            <Text>Sample type: {project.sample_type}</Text>
-            <Text>Organ Part: {project.organ_part}</Text>
-            <Text>
-              Analysis Protocols:
-              {project.analysis_protocol.join(", ")}
-            </Text>
-            <Text>Cell count: {project.cell_count}</Text>
-            <Text>Donor count: {project.donor_count}</Text>
+            <Text>Organs: {project.organs.join(", ")}</Text>
+            <Text>Sample Categories: {project.biosample_categories.join(", ")}</Text>
+            <Text>Disease Status: {project.diseases.join(", ")}</Text>
+            <Text>Library Construction methods: {project.assays.join(", ")}</Text>
+            <Text>Paired end: {project.paired_end.join(", ")}</Text>
+            <Text>Cell count estimate: {project.cell_count}</Text>
           </Box>
         </Flex>
       </Flex>
