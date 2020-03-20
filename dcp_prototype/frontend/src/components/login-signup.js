@@ -8,7 +8,7 @@ const LoginSignup = () => {
   return (
     <>
       {!loading && !isAuthenticated && (
-        <Heading as="h4" sx={{ mb: 4 }}>
+        <Heading as="h4" sx={{ color: "primary", fontSize: 1 }}>
           <a href="#" onClick={loginWithRedirect}>Log in</a> or <a href="#" onClick={loginWithRedirect}>sign-up</a> to
           view and download data.
         </Heading>)}

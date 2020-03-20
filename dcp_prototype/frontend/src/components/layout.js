@@ -31,7 +31,7 @@ const Layout = ({ children }) => {
       <div
         style={{
           margin: `0 auto`,
-          maxWidth: 1440,
+          maxWidth: 1100,
           minHeight:
             // "100vh", /* for now. better: height minus footer, or go to sticky */
             `calc(100vh - 85px - 60px - 48px)`, // height minus footer, minus header, minus margin between header and "Explore Data"; only way I coudl get footer to level with bottom of screen

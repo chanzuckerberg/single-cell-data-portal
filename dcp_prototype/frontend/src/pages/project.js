@@ -4,10 +4,8 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
 import ProjectOverview from "../components/projectOverview"
-import ExploreData from "../components/exploreData"
 import { api_prefix } from "../globals"
-import { Box, Flex, Heading } from "theme-ui"
-import LoginSignup from "../components/login-signup"
+import { Flex, Heading } from "theme-ui"
 
 const SecondPage = props => {
   const [project, setProject] = useState(null)
@@ -51,30 +49,16 @@ const SecondPage = props => {
   return (
     <Layout>
       <SEO title="Projects"/>
-      <Heading as="h1" sx={{ mb: 4 }}>
+      <Heading as="h1" sx={{ mb: 5, mt: 6 }}>
         Explore Project
       </Heading>
-      <Flex>
+      <Flex sx={{justifyContent: 'center'}}>
         {!project ? (
           "Loading project..."
         ) : (
-          <ProjectOverview project={project}/>
+          <ProjectOverview project={project} files={files} isAuthenticated={isAuthenticated}/>
         )}
       </Flex>
-      {!project ? null : (
-        <Box>
-          <Heading as="h3" sx={{ mb: 4 }}>
-            Download files
-          </Heading>
-          {isAuthenticated ? (
-                <ExploreData project={project} files={files}/>
-            ) : (
-            <Box sx={{ flex: "1 1 auto" }}>
-              <LoginSignup/>
-            </Box>
-          )}
-        </Box>
-      )}
     </Layout>
   )
 }

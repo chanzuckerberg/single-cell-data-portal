@@ -1,7 +1,6 @@
 import { Link } from "gatsby"
 import React from "react"
-import Logo from "./logo1"
-import { Box, Flex } from "theme-ui"
+import { Box, Flex, Image } from "theme-ui"
 import Authenticate from "./authenticate"
 
 const Header = ({ siteTitle }) => {
@@ -19,13 +18,11 @@ const Header = ({ siteTitle }) => {
           justifyContent: "space-between",
           fontWeight: 700,
           margin: `0 auto`,
-          maxWidth: "100%",
+          maxWidth: "1100px",
           paddingTop: 0,
           paddingBottom: 0,
           paddingLeft: 5,
           paddingRight: 5,
-
-
         }}
       >
         <Box sx={{ width: 175 }}>
@@ -36,37 +33,12 @@ const Header = ({ siteTitle }) => {
               textDecoration: `none`,
             }}
           >
-            <Logo/>
+          <Image src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
+                 width="55px"
+                 height="55px"/>
           </Link>
         </Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Data</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Guides</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Metadata</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Pipelines</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Analysis Tools</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>Contribute</Box>
-        <Box
-					style={{
-						display: `none`,
-					}}>APIs</Box>
+        <Authenticate/>
       </Flex>
     </Box>
   )
