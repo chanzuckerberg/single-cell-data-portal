@@ -5,7 +5,7 @@ import createAuth0Client from "@auth0/auth0-spa-js"
 const config = {
   domain: process.env.AUTH0_DOMAIN,
   client_id: process.env.AUTH0_CLIENTID,
-  redirect_uri: "http://localhost:8000",
+  redirect_uri: process.env.AUTH0_CALLBACK,
 }
 
 export const Auth0Context = React.createContext()
