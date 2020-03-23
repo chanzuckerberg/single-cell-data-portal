@@ -1,12 +1,42 @@
 import React from "react"
 import { Flex, Box, Heading, Text } from "theme-ui"
+import ExploreData from "./exploreData"
 
-const ProjectOverview = ({ project }) => {
+const ProjectOverview = ({ project, files, isAuthenticated }) => {
+  const publications = !project.publication_title ? null : (
+      <Box sx={{mb: [4]}}>
+        <Heading as="h6" sx={{ mb: [2] }}>
+          Publications
+        </Heading>
+        <Text>{project.publication_title}</Text>
+      </Box>
+  )
+  const contributors = !project.contributors.length ? null : (
+      <Flex>
+        <Box>
+          <Heading as="h6" sx={{ mb: [2] }}>
+            Contributors
+          </Heading>
+          {project.contributors.map(c => <Text key={c.name}>{c.name}</Text>)}
+        </Box>
+        <Box sx={{ml: [2]}}>
+          <Heading as="h6" sx={{ mb: [2] }}>
+            Institutions
+          </Heading>
+          <Text>{project.contributors[0].institution}</Text>
+        </Box>
+      </Flex>
+  )
   return (
     <Box>
       <Heading as="h3" sx={{ mb: 4 }}>
         {project.title}
       </Heading>
+      {!project ? null : (
+        <Flex sx={{flexDirection: "column"}}>
+          <ExploreData project={project} files={files} isAuthenticated={isAuthenticated}/>
+        </Flex>
+      )}
       <Heading as="h3" sx={{ mb: 4 }}>
         Project Information
       </Heading>
@@ -23,18 +53,8 @@ const ProjectOverview = ({ project }) => {
             </Heading>
             <Text>{project.description}</Text>
           </Box>
-          <Box>
-            <Heading as="h6" sx={{ mb: [2] }}>
-              Publications
-            </Heading>
-            <Text>{project.publication_title}</Text>
-          </Box>
-          <Box>
-            <Heading as="h6" sx={{ mb: [2] }}>
-              Contributors
-            </Heading>
-            <Text>{project.contributors[0].first_name}</Text>
-          </Box>
+          {publications}
+          {contributors}
         </Box>
         <Flex>
           <Box>

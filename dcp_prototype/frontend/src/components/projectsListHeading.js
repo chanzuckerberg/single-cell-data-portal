@@ -58,7 +58,7 @@ const ProjectsListHeading = ({ projects }) => {
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: `12%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
           paddingRight: 7,
           overflow: "hidden", // Or flex might break
           listStyle: "none",
@@ -75,7 +75,7 @@ const ProjectsListHeading = ({ projects }) => {
           boxSizing: "border-box",
           flexGrow: 0,
           flexShrink: 0,
-          width: `40%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+          width: `36%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
           overflow: "hidden", // Or flex might break
           listStyle: "none",
           fontWeight: 700,

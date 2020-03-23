@@ -1,34 +1,31 @@
 import React from "react"
 import { useAuth0 } from "../contexts/auth0Context"
-import { Box, Button, Image } from "theme-ui"
+import { Box, Flex, Image } from "theme-ui"
+import StyledButton from "./styledButton"
 
 const Authenticate = () => {
   const { isAuthenticated, loading, user, logout, loginWithRedirect } = useAuth0()
 
   return (
-    <>
+    <Box>
       {!loading && user && (
-        <>
-          <Button onClick={logout}>
-            Logout
-          </Button>
-
+        <Flex sx={{ alignItems: "center" }}>
+          <StyledButton label="Logout" onclick={logout}/>
           {!user ? (<Box>...</Box>) : (
             <Image src={user.picture}
-                   width="48"
-                   height="48"
+                   width="45px"
+                   height="45px"
+                   padding="5px"
             />
           )}
-        </>
+        </Flex>
       )}
       {!loading && !isAuthenticated && (
         <>
-          <Button onClick={loginWithRedirect}>
-            Login/Sign-up
-          </Button>
+          <StyledButton label="Login/Sign-up" onclick={loginWithRedirect}/>
         </>
       )}
-    </>
+    </Box>
   )
 
 }

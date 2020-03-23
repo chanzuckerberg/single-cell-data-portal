@@ -32,7 +32,7 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.organs.map(organ=> (
-                  <Box key={organ}>{organ}</Box>
+                  <Box key={organ}>{organ.charAt(0).toUpperCase() + organ.substring(1)}</Box>
                 ))}
               </Flex>
             </Box>
@@ -78,7 +78,7 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: `12%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                width: `16%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
                 paddingRight: 7,
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
@@ -93,7 +93,7 @@ const ProjectsList = ({ projects }) => {
                 boxSizing: "border-box",
                 flexGrow: 0,
                 flexShrink: 0,
-                width: `40%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
+                width: `36%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
               }}
