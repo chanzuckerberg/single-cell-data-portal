@@ -37,6 +37,10 @@ s3.download_file("dcp-test-artifacts", "Artifact.Mar18.json", "artifact.json")
 
 with open("artifact.json", "r") as f:
     data = json.load(f)
+    # augment with mock data (temporary)
+    for project in data['projects']:
+        for key in mock[project['id']]:
+            project[key] = mock[project['id']][key]
 
 organs = {}
 species = {}
@@ -54,18 +58,20 @@ for project in data["projects"]:
         Project(
             id=project["id"],
             title=project["title"],
-            description=mock[project["id"]]["description"],
+            label=project["label"],
+            description=project["description"],
             biosample_categories=",".join(project["biosample_categories"]),
             development_stages=",".join(project["donor_development_stages_at_collection"]),
             diseases=",".join(project["donor_diseases"]),
             cell_isolation_methods=",".join(project["cell_isolation_methods"]),
             cell_types=",".join(project["selected_cell_types"]),
-            cell_count=mock[project["id"]]["cell_count"],
+            cell_count=project["cell_count"],
             paired_end=",".join([str(e) for e in project["paired_end"]]),
             nucleic_acid_sources=",".join(project["nucleic_acid_sources"]),
             input_nucleic_acid_molecules=",".join(project["input_nucleic_acid_molecules"]),
             publication_title=project["publication_title"],
             publication_doi=project["publication_doi"],
+            cxg_enabled=project["cxg_enabled"]
         )
     )
     session.commit()
