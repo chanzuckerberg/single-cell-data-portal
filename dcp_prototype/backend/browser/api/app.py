@@ -53,6 +53,7 @@ def get_project(project_id):
     response_body = {
         "id": project.id,
         "title": project.title,
+        "label": project.label,
         "assays": get_project_assays(project.id),
         "organs": get_project_organs(project.id),
         "species": get_project_species(project.id),
@@ -69,6 +70,7 @@ def get_project(project_id):
         "input_nucleic_acid_molecules": project.input_nucleic_acid_molecules.split(","),
         "publication_title": project.publication_title,
         "publication_doi": project.publication_doi,
+        "cxg_enabled": project.cxg_enabled,
     }
 
     return chalice.Response(
@@ -92,8 +94,7 @@ def get_file(file_id):
     file = session.query(File).get(file_id)
     project = session.query(Project).get(file.project_id)
 
-    # file_prefix = f"{project.title}/{file.filename}"
-    file_prefix = f"{project.title}/matrix.loom"
+    file_prefix = f"{project.label}/matrix.loom"
     download_url = generate_file_url(file_prefix)
 
     response_body = {"url": download_url}

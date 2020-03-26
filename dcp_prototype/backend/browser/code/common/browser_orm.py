@@ -3,6 +3,7 @@ import sys
 
 from sqlalchemy import (
     create_engine,
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -39,6 +40,7 @@ class Project(Base):
 
     id = Column(String(64), primary_key=True)
     title = Column(String(255))
+    label = Column(String(255))
     description = Column(String(3000))
     biosample_categories = Column(String(32))
     development_stages = Column(String(150))
@@ -51,6 +53,7 @@ class Project(Base):
     input_nucleic_acid_molecules = Column(String(100))
     publication_title = Column(String(200))
     publication_doi = Column(String(32))
+    cxg_enabled = Column(Boolean)
     created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
     updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
 
