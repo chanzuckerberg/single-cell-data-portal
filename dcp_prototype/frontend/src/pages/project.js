@@ -4,7 +4,7 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import searchStringAsObj from "../util/searchStringAsObj"
 import ProjectOverview from "../components/projectOverview"
-import { api_prefix } from "../globals"
+import { api_url } from "../globals"
 import { Flex, Heading } from "theme-ui"
 
 const SecondPage = props => {
@@ -16,7 +16,7 @@ const SecondPage = props => {
 
   useEffect(() => {
     if (id) {
-      fetch(`${api_prefix}/projects/${id}`)
+      fetch(`${api_url}/projects/${id}`)
         .then(response => response.json()) // parse JSON from request
         .then(resultData => {
           setProject(resultData)
@@ -30,7 +30,7 @@ const SecondPage = props => {
     if (id && !loading && isAuthenticated) {
       // TODO send authorization token in requests to backend
       getTokenSilently().then(accessToken =>
-        fetch(`${api_prefix}/projects/${id}/files`)
+        fetch(`${api_url}/projects/${id}/files`)
           .then(response => response.json()) // parse JSON from request
           .then(resultData => {
             setFiles(resultData)
