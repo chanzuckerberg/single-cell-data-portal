@@ -1,2 +1,2 @@
-export const api_prefix =
-  "https://u5j1wa9u5i.execute-api.us-east-1.amazonaws.com/dev"
+export const api_url = process.env.API_URL
+export const cxg_url = process.env.CXG_URL

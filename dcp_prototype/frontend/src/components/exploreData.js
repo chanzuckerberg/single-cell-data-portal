@@ -3,10 +3,9 @@ import { Flex, Box, Text } from "theme-ui"
 import StyledButton from "./styledButton"
 import LoginSignup from "./login-signup"
 
-import { api_prefix } from "../globals"
+import { api_url, cxg_url } from "../globals"
 
 const ExploreData = ({ project, files, isAuthenticated }) => {
-  const cxgUrl= "http://cellxgene-dev.us-west-2.elasticbeanstalk.com/"
   const matrixAvailable = (files && files.length && isAuthenticated) === true
   const cxgAvailable = project.cxg_enabled
 
@@ -15,7 +14,7 @@ const ExploreData = ({ project, files, isAuthenticated }) => {
     <Flex sx={{mb: 1}}>
       <StyledButton label="Download matrix"
                     disabled={!matrixAvailable}
-                    onclick={() => fetch(`${api_prefix}/files/${files[0].id}`)
+                    onclick={() => fetch(`${api_url}/files/${files[0].id}`)
                                     .then(response => response.json())
                                     .then(resultData => {
                                       window.open(resultData.url)
@@ -24,7 +23,7 @@ const ExploreData = ({ project, files, isAuthenticated }) => {
       </StyledButton>
       <StyledButton label="Visualize in cellxgene"
                     disabled={!cxgAvailable}
-                    onclick={() => window.open(cxgUrl + project.label + ".cxg")}>
+                    onclick={() => window.open(`${cxg_url}/${project.label}.cxg`)}>
           Visualize in cellxgene
       </StyledButton>
     </Flex>
