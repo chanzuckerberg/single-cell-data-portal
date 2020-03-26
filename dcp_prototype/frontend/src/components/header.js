@@ -25,7 +25,6 @@ const Header = ({ siteTitle }) => {
           paddingRight: 5,
         }}
       >
-        <Box sx={{ width: 175 }}>
           <Link
             to="/"
             style={{
@@ -34,10 +33,10 @@ const Header = ({ siteTitle }) => {
             }}
           >
           <Image src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
-                 width="55px"
-                 height="55px"/>
+                 width="40px"
+                 height="40px"
+                 marginTop="5px"/>
           </Link>
-        </Box>
         <Authenticate/>
       </Flex>
     </Box>
