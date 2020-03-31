@@ -34,7 +34,6 @@ const Auth0Provider = ({ children }) => {
       }
 
       const isAuthenticated = await auth0FromHook.isAuthenticated()
-      console.log("isAuthenticated", isAuthenticated)
       setIsAuthenticated(isAuthenticated)
 
       if (isAuthenticated) {
