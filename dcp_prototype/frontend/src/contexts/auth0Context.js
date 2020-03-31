@@ -20,14 +20,13 @@ const Auth0Provider = ({ children }) => {
     const initAuth0 = async () => {
       const auth0FromHook = await createAuth0Client(config)
       setAuth0(auth0FromHook)
-      console.log("auth0FromHook", auth0FromHook)
       if (
         window.location.search.includes("code=") &&
         window.location.search.includes("state=")
       ) {
-        const { appState } = await auth0FromHook.handleRedirectCallback()
+        await auth0FromHook.handleRedirectCallback()
         let requestPath = window.localStorage.getItem("requestPath")
-        console.log("redirect requestPath", requestPath)
+        // console.log("redirect requestPath", requestPath)
         if (requestPath) {
           window.localStorage.removeItem("requestPath")
           navigate(requestPath)

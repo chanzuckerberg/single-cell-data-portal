@@ -21,8 +21,6 @@ const SecondPage = props => {
         .then(resultData => {
           setProject(resultData)
         })
-    } else {
-      return null
     }
   }, [id]) /* don't rerender if this hasn't changed */
 
@@ -35,8 +33,6 @@ const SecondPage = props => {
           .then(resultData => {
             setFiles(resultData)
           }))
-    } else {
-      return null
     }
   }, [id, isAuthenticated]) /* don't rerender if this hasn't changed */
 

@@ -9,7 +9,7 @@ const LoginSignup = () => {
     <>
       {!loading && !isAuthenticated && (
         <Text sx={{ color: "primary", fontSize: 1 }}>
-          <a href="#" onClick={loginWithRedirect}>Log in</a> or <a href="#" onClick={loginWithRedirect}>sign-up</a> to
+          <a href="/" onClick={loginWithRedirect}>Log in</a> or <a href="/" onClick={loginWithRedirect}>sign-up</a> to
           view and download data.
         </Text>)}
     </>
