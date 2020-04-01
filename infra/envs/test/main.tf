@@ -55,7 +55,7 @@ module "browser_site_cert" {
   aws_route53_zone_id = "Z3GU3D81Z7R7CN"
 
   # variables for tags
-  env     = "${var.deployment_stage}"
+  env     = var.deployment_stage
   project = "single-cell"
   service = "browser"
   owner   = "czi-single-cell"
@@ -65,14 +65,15 @@ module "browser_frontend" {
   source = "../../modules/frontend/browser"
 
   aws_route53_zone_id = "Z3GU3D81Z7R7CN"
-  aws_acm_cert_arn    = "${module.browser_site_cert.arn}"
+  aws_acm_cert_arn    = module.browser_site_cert.arn
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain           = "browser-testing"
 
   # Variables used for tagging
-  env     = "${var.deployment_stage}"
+  env     = var.deployment_stage
   project = "single-cell"
   service = "browser"
   owner   = "czi-single-cell"
+  refer_secret = var.refer_secret
 }
 

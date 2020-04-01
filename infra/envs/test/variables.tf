@@ -31,3 +31,8 @@ variable "browser_db_instance_count" {
 variable "browser_preferred_maintenance_window" {
   type = string
 }
+
+// browser frontend
+variable "refer_secret"{
+  type =string
+}

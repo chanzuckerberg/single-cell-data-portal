@@ -23,35 +23,51 @@ data "aws_route53_zone" "zone" {
 
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {}
 
+# inspired by https://github.com/riboseinc/terraform-aws-s3-cloudfront-website/blob/master/s3.tf
 data "aws_iam_policy_document" "bucket_policy" {
-  statement {
-    sid       = "getObjects"
-    actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${local.bucket_name}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"]
-    }
-//    principals {
-//      type = "*"
-//      identifiers = [
-//      "*"]
-//    }
-  }
 
   statement {
+    sid = "AllowCFOriginAccess"
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${local.bucket_name}/*",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:UserAgent"
+
+      values = [
+        var.refer_secret,
+      ]
+    }
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+  }
+
+  statement{
     sid       = "listBucket"
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::${local.bucket_name}"]
     principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"]
+      type        = "*"
+      identifiers = ["*"]
     }
-//    principals {
-//      type = "*"
-//      identifiers = [
-//      "*"]
-//    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:UserAgent"
+
+      values = [
+        var.refer_secret,
+      ]
+    }
   }
 }
 
@@ -89,19 +105,42 @@ resource "aws_s3_bucket_public_access_block" "bucket" {
   bucket = aws_s3_bucket.bucket.id
 
   block_public_acls       = true
-  block_public_policy     = true
+  block_public_policy     = false
   ignore_public_acls      = true
-  restrict_public_buckets = true
+  restrict_public_buckets = false
 }
 
+# Inspired by https://github.com/riboseinc/terraform-aws-s3-cloudfront-website/blob/master/cloudfront.tf
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-//    domain_name = aws_s3_bucket.bucket.website_domain
-    domain_name = aws_s3_bucket.bucket.bucket_domain_name
+    domain_name = aws_s3_bucket.bucket.website_endpoint
     origin_id   = local.website_fqdn
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/
+    # DeveloperGuide/distribution-web-values-specify.html
+    custom_origin_config {
+      # "HTTP Only: CloudFront uses only HTTP to access the origin."
+      # "Important: If your origin is an Amazon S3 bucket configured
+      # as a website endpoint, you must choose this option. Amazon S3
+      # doesn't support HTTPS connections for website endpoints."
+      origin_protocol_policy = "http-only"
+
+      http_port  = "80"
+      https_port = "443"
+      origin_ssl_protocols = ["TLSv1.2"]
+    }
+
+    # s3_origin_config is not compatible with S3 website hosting, if this
+    # is used, /news/index.html will not resolve as /news/.
+    # https://www.reddit.com/r/aws/comments/6o8f89/can_you_force_cloudfront_only_access_while_using/
+    # s3_origin_config {
+    #   origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
+    # }
+    # Instead, we use a secret to authenticate CF requests to S3 policy.
+    # Not the best, but...
+    custom_header {
+      name  = "User-Agent"
+      value = var.refer_secret
     }
   }
 
@@ -132,7 +171,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     compress               = true
 
     lambda_function_association {
-        event_type= "viewer-request"
+        event_type= "origin-request"
         lambda_arn="arn:aws:lambda:us-east-1:699936264352:function:single-cell-site-index-forwarding-test:1"
         include_body = false
     }
