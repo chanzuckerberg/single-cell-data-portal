@@ -1,3 +1,5 @@
+**copied from [https://github.com/chanzuckerberg/cztack/tree/v0.30.0/aws-single-page-static-site](https://github.com/chanzuckerberg/cztack/tree/v0.30.0/aws-single-page-static-site)**
+
 # AWS S3 Single Page Static Site
 
 This module will create a public static site powered by [S3](https://aws.amazon.com/s3/) with [Cloudfront](https://aws.amazon.com/cloudfront/) in front.
