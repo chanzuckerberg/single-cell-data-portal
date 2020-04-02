@@ -38,9 +38,9 @@ s3.download_file("dcp-test-artifacts", "Artifact.Mar18.json", "artifact.json")
 with open("artifact.json", "r") as f:
     data = json.load(f)
     # augment with mock data (temporary)
-    for project in data['projects']:
-        for key in mock[project['id']]:
-            project[key] = mock[project['id']][key]
+    for project in data["projects"]:
+        for key in mock[project["id"]]:
+            project[key] = mock[project["id"]][key]
 
 organs = {}
 species = {}
@@ -71,7 +71,7 @@ for project in data["projects"]:
             input_nucleic_acid_molecules=",".join(project["input_nucleic_acid_molecules"]),
             publication_title=project["publication_title"],
             publication_doi=project["publication_doi"],
-            cxg_enabled=project["cxg_enabled"]
+            cxg_enabled=project["cxg_enabled"],
         )
     )
     session.commit()
