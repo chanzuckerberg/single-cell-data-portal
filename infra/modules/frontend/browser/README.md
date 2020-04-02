@@ -63,6 +63,7 @@ module "site" {
 | project | Project for tagging and naming. See [doc](../README.md#consistent-tagging) | `string` | n/a | yes |
 | service | Service for tagging and naming. See [doc](../README.md#consistent-tagging) | `string` | n/a | yes |
 | subdomain | The subdomain for this static site. | `string` | n/a | yes |
+| refer_secret | A secret string passed from cloudfront to s3 to prevent public access to the bucket| `string` | n/a | yes|
 
 ## Outputs
 
