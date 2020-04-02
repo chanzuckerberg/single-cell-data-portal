@@ -15,6 +15,11 @@ unit-test:
 		--source=dcp_prototype/backend, \
 		--omit=.coverage,venv,dcp_prototype/backend/browser/scripts,dcp_prototype/backend/browser/api \
 		-m unittest discover \
-		--start-directory tests/ \
+		--start-directory tests/unit \
 		--top-level-directory . \
 		--verbose
+
+.PHONY: functional-test
+functional-test:
+	$(MAKE) package -C dcp_prototype/backend/browser/api
+	python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose
