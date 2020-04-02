@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import { Flex, Box, Text } from "theme-ui"
 import StyledButton from "./styledButton"
 import LoginSignup from "./login-signup"
