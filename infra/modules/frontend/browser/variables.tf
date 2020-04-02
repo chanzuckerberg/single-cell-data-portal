@@ -68,7 +68,7 @@ variable "path_pattern" {
   description = "The pattern (for example, images/*.jpg) that specifies which requests you want this cache behavior to apply to."
   default     = "*"
 }
-variable "refer_secret"{
-  type =string
+variable "refer_secret" {
+  type        = string
   description = "Used by cloudfront to restrict direct access to the s3 bucket serving the static website. Should be a sufficiently long string."
 }

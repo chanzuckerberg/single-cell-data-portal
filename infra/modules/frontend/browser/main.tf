@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     }
   }
 
-  statement{
+  statement {
     sid       = "listBucket"
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::${local.bucket_name}"]
@@ -125,8 +125,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       # doesn't support HTTPS connections for website endpoints."
       origin_protocol_policy = "http-only"
 
-      http_port  = "80"
-      https_port = "443"
+      http_port            = "80"
+      https_port           = "443"
       origin_ssl_protocols = ["TLSv1.2"]
     }
 
@@ -169,12 +169,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     default_ttl            = 3600
     max_ttl                = 86400
     compress               = true
-
-    lambda_function_association {
-        event_type= "origin-request"
-        lambda_arn="arn:aws:lambda:us-east-1:699936264352:function:single-cell-site-index-forwarding-test:1"
-        include_body = false
-    }
   }
 
   ordered_cache_behavior {

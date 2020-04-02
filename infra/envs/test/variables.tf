@@ -33,6 +33,6 @@ variable "browser_preferred_maintenance_window" {
 }
 
 // browser frontend
-variable "refer_secret"{
-  type =string
+variable "refer_secret" {
+  type = string
 }

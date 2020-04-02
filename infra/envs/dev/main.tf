@@ -50,12 +50,13 @@ module "browser_site_cert" {
 }
 
 module "browser_frontend" {
-  source = "github.com/chanzuckerberg/cztack//aws-single-page-static-site?ref=v0.29.0"
+  source = "../../modules/frontend/browser"
 
   aws_route53_zone_id = "Z3GU3D81Z7R7CN"
   aws_acm_cert_arn    = "${module.browser_site_cert.arn}"
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain           = "browser"
+  refer_secret        = var.refer_secret
 
   # Variables used for tagging
   env     = "${var.deployment_stage}"

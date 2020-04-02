@@ -68,12 +68,12 @@ module "browser_frontend" {
   aws_acm_cert_arn    = module.browser_site_cert.arn
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain           = "browser-testing"
+  refer_secret        = var.refer_secret
 
   # Variables used for tagging
   env     = var.deployment_stage
   project = "single-cell"
   service = "browser"
   owner   = "czi-single-cell"
-  refer_secret = var.refer_secret
 }
 
