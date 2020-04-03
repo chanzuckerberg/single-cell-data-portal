@@ -36,3 +36,7 @@ variable "browser_preferred_maintenance_window" {
 variable "refer_secret" {
   type = string
 }
+variable "route53_zone_id" {
+  type = string
+}
+

@@ -52,7 +52,7 @@ module "browser_site_cert" {
   cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = "Z3GU3D81Z7R7CN" }
 
   # the route53 zone for validating the `cert_domain_name`
-  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
+  aws_route53_zone_id = var.route53_zone_id
 
   # variables for tags
   env     = var.deployment_stage
@@ -64,7 +64,7 @@ module "browser_site_cert" {
 module "browser_frontend" {
   source = "../../modules/frontend/browser"
 
-  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
+  aws_route53_zone_id = var.route53_zone_id
   aws_acm_cert_arn    = module.browser_site_cert.arn
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain           = "browser-testing"
