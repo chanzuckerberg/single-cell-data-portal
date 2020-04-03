@@ -49,7 +49,7 @@ module "browser_site_cert" {
 
   # the cert domain name
   cert_domain_name               = "browser-testing.dev.single-cell.czi.technology"
-  cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = "Z3GU3D81Z7R7CN" }
+  cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = var.route53_zone_id }
 
   # the route53 zone for validating the `cert_domain_name`
   aws_route53_zone_id = var.route53_zone_id
