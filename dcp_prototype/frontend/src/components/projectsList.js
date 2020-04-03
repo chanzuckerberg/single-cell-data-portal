@@ -98,7 +98,7 @@ const ProjectsList = ({ projects }) => {
                 listStyle: "none",
               }}
             >
-              <Link to={`/project?id=${project.id}`}>{project.title}</Link>
+              <Link to={`/project/?id=${project.id}`}>{project.title}</Link>
             </Box>
           </Flex>
         )
