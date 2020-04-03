@@ -49,28 +49,29 @@ module "browser_site_cert" {
 
   # the cert domain name
   cert_domain_name               = "browser-testing.dev.single-cell.czi.technology"
-  cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = "Z3GU3D81Z7R7CN" }
+  cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = var.route53_zone_id }
 
   # the route53 zone for validating the `cert_domain_name`
-  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
+  aws_route53_zone_id = var.route53_zone_id
 
   # variables for tags
-  env     = "${var.deployment_stage}"
+  env     = var.deployment_stage
   project = "single-cell"
   service = "browser"
   owner   = "czi-single-cell"
 }
 
 module "browser_frontend" {
-  source = "github.com/chanzuckerberg/cztack//aws-single-page-static-site?ref=v0.29.0"
+  source = "../../modules/frontend/browser"
 
-  aws_route53_zone_id = "Z3GU3D81Z7R7CN"
-  aws_acm_cert_arn    = "${module.browser_site_cert.arn}"
+  aws_route53_zone_id = var.route53_zone_id
+  aws_acm_cert_arn    = module.browser_site_cert.arn
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
   subdomain           = "browser-testing"
+  refer_secret        = var.refer_secret
 
   # Variables used for tagging
-  env     = "${var.deployment_stage}"
+  env     = var.deployment_stage
   project = "single-cell"
   service = "browser"
   owner   = "czi-single-cell"

@@ -11,3 +11,7 @@ browser_db_username = "xxxxxxxx"
 browser_db_password = "xxxxxxxxxxxxx"
 browser_db_instance_count = 1
 browser_preferred_maintenance_window = "sat:09:08-sat:09:38"
+
+// Browser Frontend
+refer_secret="a 64 character long random string"
+route53_zone_id= "zoneid"
