@@ -25,12 +25,12 @@ const Auth0Provider = ({ children }) => {
         window.location.search.includes("state=")
       ) {
         await auth0FromHook.handleRedirectCallback()
-        let requestPath = window.localStorage.getItem("requestPath")
-        // console.log("redirect requestPath", requestPath)
-        if (requestPath) {
-          window.localStorage.removeItem("requestPath")
-          navigate(requestPath)
-        }
+      }
+
+      let requestPath = window.localStorage.getItem("requestPath")
+      if (requestPath) {
+        window.localStorage.removeItem("requestPath")
+        navigate(requestPath)
       }
 
       const isAuthenticated = await auth0FromHook.isAuthenticated()
@@ -73,6 +73,13 @@ const Auth0Provider = ({ children }) => {
     }
   }
 
+  const logout = () => {
+    if (window.localStorage.getItem("requestPath") === null) {
+      window.localStorage.setItem("requestPath", window.location.pathname + window.location.search)
+    }
+    auth0Client.logout()
+  }
+
   return (
     <Auth0Context.Provider
       value={{
@@ -81,9 +88,9 @@ const Auth0Provider = ({ children }) => {
         loading,
         handleRedirectCallback,
         loginWithRedirect,
+        logout,
         getIdTokenClaims: (...p) => auth0Client.getIdTokenClaims(...p),
-        getTokenSilently: (...p) => auth0Client.getTokenSilently(...p),
-        logout: (...p) => auth0Client.logout(...p),
+        getTokenSilently: (...p) => auth0Client.getTokenSilently(...p)
       }}
     >
       {children}
