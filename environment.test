@@ -1,3 +1,0 @@
-export AWS_PROFILE=single-cell-dev
-export DEPLOYMENT_STAGE=test
-export APP_NAME=browser-api

@@ -36,10 +36,11 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-In the top level directory `dcp-prototype`:
+Set the `DEPLOYMENT_STAGE` environment variable to `test`.
 
-- Run `source environment.test` to set up environment variables for testing.
-- Run unit and functional tests using `make unit-test` and `make functional-test`.
+In the top level directory `dcp-prototype`:
+- run `make unit-test` to run unit tests
+- run `make functional-test` to run functional tests
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This
