@@ -12,6 +12,7 @@ Environment variables used for configuration:
 * `DEPLOYMENT_STAGE` - set this value to target a specific deployment stage for deploying code and infrastructure.
 
 ### Testing
+Set the `DEPLOYMENT_STAGE` environment variable to `test`.
 
 Commands and their uses:
 * `make unit-test` - runs all unit tests

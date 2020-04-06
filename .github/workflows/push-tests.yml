@@ -60,4 +60,5 @@ jobs:
         run: pip install -r requirements-dev.txt
       - name: Functional tests
         run: |
+          source environment.test
           make functional-test

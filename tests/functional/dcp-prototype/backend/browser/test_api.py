@@ -6,13 +6,13 @@ import requests
 
 API_URL = {
     "test": "https://c5eyvsi657.execute-api.us-east-1.amazonaws.com/test",
-    "dev": "https://u5j1wa9u5i.execute-api.us-east-1.amazonaws.com/dev"
+    "dev": "https://u5j1wa9u5i.execute-api.us-east-1.amazonaws.com/dev",
 }
 
 
 class TestApi(unittest.TestCase):
     def setUp(self):
-        self.api = API_URL[os.environ['DEPLOYMENT_STAGE']]
+        self.api = API_URL[os.environ["DEPLOYMENT_STAGE"]]
         self.test_project_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
         self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
         self.bad_project_id = "DNE"
