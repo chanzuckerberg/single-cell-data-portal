@@ -13,8 +13,11 @@ Environment variables used for configuration:
 
 ### Testing
 
+Run `source environment.test` to set up testing environment variables
+
 Commands and their uses:
 * `make unit-test` - runs all unit tests
+* `make functional-test` - runs all functional tests
 
 ### Code formatting and linting
 
