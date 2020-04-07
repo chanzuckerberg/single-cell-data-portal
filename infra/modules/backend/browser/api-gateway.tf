@@ -1,3 +1,9 @@
+resource "aws_api_gateway_base_path_mapping" "mapping" {
+  api_id      = var.api_gateway_id
+  stage_name  = var.deployment_stage
+  domain_name = var.cert_domain_name
+}
+
 resource "aws_api_gateway_domain_name" "api_domain" {
   domain_name               = var.cert_domain_name
   regional_certificate_arn  = var.aws_acm_cert_arn
