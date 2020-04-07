@@ -1,2 +1,1 @@
-dcplib==3.12.0
 PyMySQL==0.9.3
