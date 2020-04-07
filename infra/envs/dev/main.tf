@@ -49,6 +49,24 @@ module "browser_site_cert" {
   owner   = "czi-single-cell"
 }
 
+module "browser_api_cert" {
+  source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
+
+  # the cert domain name
+  cert_domain_name               = "browser-api.dev.single-cell.czi.technology"
+  cert_subject_alternative_names = { "www.browser-api.dev.single-cell.czi.technology" = var.route53_zone_id }
+
+  # the route53 zone for validating the `cert_domain_name`
+  aws_route53_zone_id = var.route53_zone_id
+
+  # variables for tags
+  env     = var.deployment_stage
+  project = "single-cell"
+  service = "browser-api"
+  owner   = "czi-single-cell"
+}
+
+
 module "browser_frontend" {
   source = "../../modules/frontend/browser"
 
@@ -69,6 +87,11 @@ module "browser_backend" {
   source = "../../modules/backend/browser"
 
   deployment_stage = "${var.deployment_stage}"
+
+  // API Gateway Domain Name
+  aws_acm_cert_arn = module.browser_api_cert.arn
+  cert_domain_name = "browser-api.dev.single-cell.czi.technology"
+  aws_route53_zone_id = var.route53_zone_id
 
   // Database
   db_username                  = var.browser_db_username
