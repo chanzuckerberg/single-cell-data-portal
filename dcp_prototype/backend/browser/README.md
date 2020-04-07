@@ -39,8 +39,9 @@ run `make destroy`.
 Set the `DEPLOYMENT_STAGE` environment variable to `test`.
 
 In the top level directory `dcp-prototype`:
-- run `make unit-test` to run unit tests
-- run `make functional-test` to run functional tests
+- `pip install -r requirements-dev.txt`
+- Run `make unit-test` to run unit tests
+- Run `make functional-test` to run functional tests
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This
