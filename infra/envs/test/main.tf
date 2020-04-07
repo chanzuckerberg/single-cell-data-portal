@@ -48,8 +48,8 @@ module "browser_site_cert" {
   source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
 
   # the cert domain name
-  cert_domain_name               = "browser-testing.dev.single-cell.czi.technology"
-  cert_subject_alternative_names = { "www.browser-testing.dev.single-cell.czi.technology" = var.route53_zone_id }
+  cert_domain_name               = "browser-${var.deployment_stage}.dev.single-cell.czi.technology"
+  cert_subject_alternative_names = { "www.browser-${var.deployment_stage}.dev.single-cell.czi.technology" = var.route53_zone_id }
 
   # the route53 zone for validating the `cert_domain_name`
   aws_route53_zone_id = var.route53_zone_id
@@ -61,13 +61,30 @@ module "browser_site_cert" {
   owner   = "czi-single-cell"
 }
 
+module "browser_api_cert" {
+  source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
+
+  # the cert domain name
+  cert_domain_name               = "browser-api-${var.deployment_stage}.dev.single-cell.czi.technology"
+  cert_subject_alternative_names = { "www.browser-api-${var.deployment_stage}.dev.single-cell.czi.technology" = var.route53_zone_id }
+
+  # the route53 zone for validating the `cert_domain_name`
+  aws_route53_zone_id = var.route53_zone_id
+
+  # variables for tags
+  env     = var.deployment_stage
+  project = "single-cell"
+  service = "browser api"
+  owner   = "czi-single-cell"
+}
+
 module "browser_frontend" {
   source = "../../modules/frontend/browser"
 
   aws_route53_zone_id = var.route53_zone_id
   aws_acm_cert_arn    = module.browser_site_cert.arn
   bucket_name         = "dcp-static-site-${var.deployment_stage}-${data.aws_caller_identity.current.account_id}"
-  subdomain           = "browser-testing"
+  subdomain           = "browser-${var.deployment_stage}"
   refer_secret        = var.refer_secret
 
   # Variables used for tagging
@@ -76,4 +93,23 @@ module "browser_frontend" {
   service = "browser"
   owner   = "czi-single-cell"
 }
+
+module "browser_backend" {
+  source = "../../modules/backend/browser"
+
+  deployment_stage = "${var.deployment_stage}"
+
+  // API Gateway Domain Name
+  aws_acm_cert_arn = module.browser_api_cert.arn
+  cert_domain_name = "browser-api-${var.deployment_stage}.dev.single-cell.czi.technology"
+  aws_route53_zone_id = var.route53_zone_id
+  api_gateway_id = var.api_gateway_id
+
+  // Database
+  db_username                  = var.browser_db_username
+  db_password                  = var.browser_db_password
+  db_instance_count            = var.browser_db_instance_count
+  preferred_maintenance_window = var.browser_preferred_maintenance_window
+}
+
 
