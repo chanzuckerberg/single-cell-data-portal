@@ -34,7 +34,9 @@ def get_project(project_id):
     project = db.query_project(project_id)
 
     return chalice.Response(
-        status_code=200, headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, body=project,
+        status_code=200 if project else 404,
+        headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+        body=project,
     )
 
 
@@ -44,7 +46,9 @@ def get_project_files(project_id):
     files = db.query_downloadable_project_files(project_id)
 
     return chalice.Response(
-        status_code=200, headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, body=files
+        status_code=200 if files else 404,
+        headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+        body=files,
     )
 
 
@@ -52,13 +56,15 @@ def get_project_files(project_id):
 def get_file(file_id):
     db = DbUtils()
     file = db.query_file(file_id)
-    project = db.query_project(file.project_id)
 
-    file_prefix = f"{project.label}/matrix.loom"
-    download_url = generate_file_url(file_prefix)
+    download_url = ""
+    if file:
+        project = db.query_project(file.project_id)
+        file_prefix = f"{project['label']}/matrix.loom"
+        download_url = generate_file_url(file_prefix)
 
     return chalice.Response(
-        status_code=200,
+        status_code=200 if file else 404,
         headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
         body={"url": download_url},
     )

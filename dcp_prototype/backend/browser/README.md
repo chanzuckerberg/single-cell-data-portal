@@ -36,7 +36,12 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-The test suite in `test/test.py` runs Chalice in local mode for unit testing. You can invoke it using `make test`.
+Set the `DEPLOYMENT_STAGE` environment variable to `test`.
+
+In the top level directory `dcp-prototype`:
+- `pip install -r requirements-dev.txt`
+- Run `make unit-test` to run unit tests
+- Run `make functional-test` to run functional tests
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This

@@ -13,18 +13,6 @@ destroy:
 clean:
 	$(MAKE) clean -C api
 
-.PHONY: test
-test: package $(tests)
-	coverage combine
-	rm -f .coverage.*
-
 .PHONY: package
 package:
 	$(MAKE) package -C api
-
-$(tests): %.py : lint
-	coverage run -p --source=browser $*.py -v
-
-.PHONY: unit-test
-unit-test: package
-	python -m unittest discover -p test_*api.py -t . -v
