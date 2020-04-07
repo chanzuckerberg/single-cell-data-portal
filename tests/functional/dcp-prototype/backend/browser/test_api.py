@@ -5,8 +5,8 @@ import unittest
 import requests
 
 API_URL = {
-    "test": "https://c5eyvsi657.execute-api.us-east-1.amazonaws.com/test",
-    "dev": "https://u5j1wa9u5i.execute-api.us-east-1.amazonaws.com/dev",
+    "test": "https://browser-api-test.dev.single-cell.czi.technology",
+    "dev": "https://browser-api.dev.single-cell.czi.technology",
 }
 
 
