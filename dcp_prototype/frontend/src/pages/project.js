@@ -34,7 +34,7 @@ const SecondPage = props => {
             setFiles(resultData)
           }))
     }
-  }, [id, isAuthenticated]) /* don't rerender if this hasn't changed */
+  }, [id, isAuthenticated, loading]) /* don't rerender if this hasn't changed */
 
   /*
     /projects/id
