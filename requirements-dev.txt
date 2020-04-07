@@ -2,7 +2,6 @@ black
 botocore>=1.14.17
 boto3>=1.11.17
 coverage>=2.0.15
-dcplib
 flake8-black
 jsonschema
 moto
