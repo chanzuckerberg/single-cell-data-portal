@@ -4,7 +4,7 @@ latest artifact schema. Will be deprecated in the next version
 of the artifact.
 """
 
-mock = {
+mock_data = {
     "48c1a1bc-31bd-4420-9d28-9e4e6289eb16": {
         "description": "Significant heterogeneities in gene expression among individual cells are typically "
         "interrogated using single whole cell approaches. However, tissues that have highly "
