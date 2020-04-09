@@ -22,14 +22,18 @@ from browser.code.config.db_config import BrowserDbConfig
 
 
 Base = declarative_base()
+deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+
+# The in-memory SQLite database used in
+# unit tests does not support now() SQL syntax
+DEFAULT_DATETIME = "2000-01-01 00:00:00" if deployment_stage == "test" else text("now()")
 
 
 class DBSessionMaker:
     def __init__(self):
-        engine = create_engine(BrowserDbConfig().database_uri)
-        Base.metadata.bind = engine
-        self.session_maker = sessionmaker()
-        self.session_maker.bind = engine
+        connection = "sqlite:///:memory:" if deployment_stage == "test" else BrowserDbConfig().database_uri
+        self.engine = create_engine(connection)
+        self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):
         return self.session_maker(**kwargs)
@@ -54,8 +58,8 @@ class Project(Base):
     publication_title = Column(String(200))
     publication_doi = Column(String(32))
     cxg_enabled = Column(Boolean)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class File(Base):
@@ -68,8 +72,8 @@ class File(Base):
     file_size = Column(BigInteger)
     file_type = Column(String(20))
     s3_uri = Column(String(200))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class LibraryConstructionMethod(Base):
@@ -77,8 +81,8 @@ class LibraryConstructionMethod(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(64))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class Organ(Base):
@@ -86,8 +90,8 @@ class Organ(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class Species(Base):
@@ -95,8 +99,8 @@ class Species(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(16))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class DataRepository(Base):
@@ -104,8 +108,8 @@ class DataRepository(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class Contributor(Base):
@@ -116,8 +120,8 @@ class Contributor(Base):
     middle_name = Column(String(16))
     last_name = Column(String(32))
     institution = Column(String(100))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
 
 class ExternalAccession(Base):
@@ -127,8 +131,8 @@ class ExternalAccession(Base):
     project_id = Column(ForeignKey("project.id"), nullable=False)
     data_repository_id = Column(ForeignKey("data_repository.id"), nullable=False)
     accession = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     project = relationship("Project")
     data_repository = relationship("DataRepository")
@@ -140,8 +144,8 @@ class LibraryConstructionMethodJoinProject(Base):
     id = Column(Integer, primary_key=True)
     library_construction_method_id = Column(ForeignKey("library_construction_method.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     library_construction_method = relationship("LibraryConstructionMethod")
     project = relationship("Project")
@@ -153,8 +157,8 @@ class OrganJoinProject(Base):
     id = Column(Integer, primary_key=True)
     organ_id = Column(ForeignKey("organ.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     organ = relationship("Organ")
     project = relationship("Project")
@@ -166,8 +170,8 @@ class SpeciesJoinProject(Base):
     id = Column(Integer, primary_key=True)
     species_id = Column(ForeignKey("species.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     species = relationship("Species")
     project = relationship("Project")
@@ -179,8 +183,8 @@ class ContributorJoinProject(Base):
     id = Column(Integer, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
     project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
-    updated_at = Column(DateTime(True), nullable=False, server_default=text("now()"))
+    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     contributor = relationship("Contributor")
     project = relationship("Project")

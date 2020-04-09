@@ -12,10 +12,8 @@ from browser.code.common import browser_orm as orm
 
 if __name__ == "__main__":
     engine = create_engine(BrowserDbConfig().database_uri)
-    orm.Base.metadata.bind = engine
-
     print("Dropping tables")
-    orm.Base.metadata.drop_all()
+    orm.Base.metadata.drop_all(engine)
     print("Recreating tables")
     orm.Base.metadata.create_all(engine)
     print([t[0] for t in engine.execute("SHOW TABLES;")])
