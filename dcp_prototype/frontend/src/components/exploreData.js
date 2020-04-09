@@ -4,7 +4,7 @@ import StyledButton from "./styledButton"
 import LoginSignup from "./login-signup"
 
 import { api_url, cxg_url } from "../globals"
-import {useAuth0} from "../contexts/auth0Context";
+import { useAuth0 } from "../contexts/auth0Context";
 
 const ExploreData = ({ project, files, isAuthenticated }) => {
   const matrixAvailable = (files && files.length && isAuthenticated) === true
