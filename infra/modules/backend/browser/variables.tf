@@ -19,7 +19,7 @@ variable "preferred_maintenance_window" {
 
 // API Gateway
 variable "aws_acm_cert_arn" {
-  type= string
+  type = string
 }
 variable "cert_domain_name" {
   type = string
