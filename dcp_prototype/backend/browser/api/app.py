@@ -55,7 +55,7 @@ def get_file(file_id):
 
     download_url = ""
     if file:
-        project = db.query_project(file.project_id)
+        project = db.query_project(file["project_id"])
         file_prefix = f"{project['label']}/matrix.loom"
         download_url = generate_file_url(file_prefix)
 
