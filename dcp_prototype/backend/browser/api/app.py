@@ -42,7 +42,6 @@ def get_project(project_id):
 
 @app.route("/projects/{project_id}/files")
 def get_project_files(project_id):
-    print("headers: ", chalice.current_request.headers)
     db = DbUtils()
     files = db.query_downloadable_project_files(project_id)
 
