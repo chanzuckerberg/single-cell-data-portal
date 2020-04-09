@@ -29,7 +29,7 @@ def get_projects():
 
 
 @app.route("/projects/{project_id}", cors=cors_config)
-def get_project(project_id):
+def get_project(project_id: str):
     db = DbUtils()
     project = db.query_project(project_id)
 
@@ -39,7 +39,7 @@ def get_project(project_id):
 
 
 @app.route("/projects/{project_id}/files", cors=cors_config)
-def get_project_files(project_id):
+def get_project_files(project_id: str):
     db = DbUtils()
     files = db.query_downloadable_project_files(project_id)
 
@@ -49,7 +49,7 @@ def get_project_files(project_id):
 
 
 @app.route("/files/{file_id}", cors=cors_config)
-def get_file(file_id):
+def get_file(file_id: str):
     db = DbUtils()
     file = db.query_file(file_id)
 

@@ -1,5 +1,6 @@
 import os
 import sys
+import typing
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -25,16 +26,16 @@ class DbUtils:
         self.session = DBSessionMaker().session()
         self.engine = self.session.get_bind()
 
-    def _get(self, table, entity_id):
+    def _get(self, table: Base, entity_id: str) -> typing.Union[Base, None]:
         """
         Query a table row by its primary key
         :param table: SQLAlchemy Table to query
         :param entity_id: Primary key of desired row
-        :return: SQLAlchemy row object, None if not found
+        :return: SQLAlchemy Table object, None if not found
         """
         return self.session.query(table).get(entity_id)
 
-    def _query(self, table_args, filter_args=None):
+    def _query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
         """
         Query the database using the current DB session
         :param table_args: List of SQLAlchemy Tables to query/join
@@ -48,7 +49,7 @@ class DbUtils:
         )
 
     @staticmethod
-    def _parse_multivalue(value):
+    def _parse_multivalue(value: str) -> typing.List[str]:
         """
         Parses a CSV string representing multiple values into a list
         :param value: Comma-separated value to parse
@@ -56,7 +57,7 @@ class DbUtils:
         """
         return value.split(",") if value else []
 
-    def _is_test_db(self):
+    def _is_test_db(self) -> bool:
         """
         Tests whether the current DB connection
         is to a test database or not
@@ -64,7 +65,7 @@ class DbUtils:
         """
         return self.engine.driver == "pysqlite"
 
-    def create(self):
+    def create(self) -> None:
         """
         Drop and recreate all tables.
         This operation is only supported for the test SQLite database.
@@ -79,7 +80,7 @@ class DbUtils:
         Base.metadata.drop_all(bind=self.engine)
         Base.metadata.create_all(bind=self.engine)
 
-    def query_projects(self):
+    def query_projects(self) -> typing.List[dict]:
         """
         Query the DB for all projects
         :return: List of project metadata dicts
@@ -98,7 +99,7 @@ class DbUtils:
 
         return projects
 
-    def query_project(self, project_id):
+    def query_project(self, project_id: str) -> typing.Union[dict, None]:
         """
         Query the DB for a project by its project ID
         :param project_id: Project ID
@@ -133,7 +134,7 @@ class DbUtils:
             else None
         )
 
-    def query_file(self, file_id):
+    def query_file(self, file_id: str) -> typing.Union[dict, None]:
         """
         Query the DB for a file by its file ID
         :param file_id: File ID
@@ -155,7 +156,7 @@ class DbUtils:
             else None
         )
 
-    def query_project_assays(self, project_id):
+    def query_project_assays(self, project_id: str) -> typing.List[str]:
         """
         Query the DB to return all assays that are represented in a given project.
         :param project_id: Project ID to return assays for
@@ -165,7 +166,7 @@ class DbUtils:
         for result in self._query(
             table_args=[LibraryConstructionMethodJoinProject, LibraryConstructionMethod],
             filter_args=[
-                (LibraryConstructionMethodJoinProject.library_construction_method_id == LibraryConstructionMethod.id),
+                LibraryConstructionMethodJoinProject.library_construction_method_id == LibraryConstructionMethod.id,
                 LibraryConstructionMethodJoinProject.project_id == project_id,
             ],
         ):
@@ -173,7 +174,7 @@ class DbUtils:
 
         return assays
 
-    def query_project_organs(self, project_id):
+    def query_project_organs(self, project_id: str) -> typing.List[str]:
         """
         Query the DB to return all organs that are represented in a given project.
         :param project_id: Project ID to return organs for
@@ -188,7 +189,7 @@ class DbUtils:
 
         return organs
 
-    def query_project_species(self, project_id):
+    def query_project_species(self, project_id: str) -> typing.List[str]:
         """
         Query the DB to return all species that are represented in a given project.
         :param project_id: Project ID to return species for
@@ -203,7 +204,7 @@ class DbUtils:
 
         return species
 
-    def query_project_contributors(self, project_id):
+    def query_project_contributors(self, project_id: str) -> typing.List[dict]:
         """
         Query the DB to return all contributors associated with a given project.
         :param project_id: Project ID to return contributors for
@@ -227,7 +228,7 @@ class DbUtils:
 
         return contributors
 
-    def query_downloadable_project_files(self, project_id):
+    def query_downloadable_project_files(self, project_id: str) -> typing.List[dict]:
         """
         Query the DB to return all downloadable files for a project.
         :param project_id: Project to return files for

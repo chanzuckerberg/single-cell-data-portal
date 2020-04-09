@@ -4,11 +4,12 @@ import boto3
 from botocore.exceptions import ClientError
 
 
-def generate_file_url(file_prefix, expiration=3600, s3=None):
+def generate_file_url(file_prefix: str, expiration: int = 3600, s3=None) -> str:
     """
     Generate a presigned URL for a file for user download.
     :param file_prefix: S3 prefix location of the file
     :param expiration: Presigned URL expiration in seconds
+    :param s3: Optional S3 client instance
     :return: Presigned URL to download the requested file
     """
     if not s3:
