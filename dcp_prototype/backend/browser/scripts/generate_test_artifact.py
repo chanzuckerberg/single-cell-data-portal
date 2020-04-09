@@ -1,8 +1,8 @@
 """
-Generates a stripped-down test JSON artifact for testing purposes.
+Generates a stripped-down test JSON artifact to be stored in `tests/unit/dcp-prototype/backend/browser/fixtures`
 - Reads an existing JSON artifact from S3
 - Selects a subset of files and their respectives projects
-- Writes a new `generated_test_artifact.json`
+- Writes a new `test_artifact.json` to the current directory
 """
 
 import json
@@ -22,5 +22,5 @@ with open("artifact.json", "r") as f:
     content["projects"] = projects
     content["files"] = files
 
-with open("genereated_test_artifact.json", "w") as f:
+with open("test_artifact.json", "w") as f:
     f.write(json.dumps(content, indent=2))
