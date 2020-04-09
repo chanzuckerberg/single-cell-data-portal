@@ -26,13 +26,17 @@ const SecondPage = props => {
 
   useEffect(() => {
     if (id && !loading && isAuthenticated) {
-      // TODO send authorization token in requests to backend
-      getTokenSilently().then(accessToken =>
-        fetch(`${api_url}/projects/${id}/files`)
+      getTokenSilently()
+          .then(accessToken =>
+              fetch(`${api_url}/projects/${id}/files`, {
+            headers: {
+                Authorization: 'Bearer ' + accessToken
+            }
+        }))
           .then(response => response.json()) // parse JSON from request
           .then(resultData => {
             setFiles(resultData)
-          }))
+          })
     }
   }, [id, isAuthenticated, loading]) /* don't rerender if this hasn't changed */
 
