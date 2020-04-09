@@ -26,7 +26,6 @@ const SecondPage = props => {
 
   useEffect(() => {
     if (id && !loading && isAuthenticated) {
-      // TODO send authorization token in requests to backend
       getTokenSilently()
           .then(accessToken =>
               fetch(`${api_url}/projects/${id}/files`, {
