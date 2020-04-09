@@ -12,13 +12,15 @@ Environment variables used for configuration:
 * `DEPLOYMENT_STAGE` - set this value to target a specific deployment stage for deploying code and infrastructure.
 
 ### Testing
-Set the `DEPLOYMENT_STAGE` environment variable to `test`
-
 Install dependencies `pip install -r requirements-dev.txt`
 
-Commands and their uses:
-* `make unit-test` - runs all unit tests
-* `make functional-test` - runs all functional tests
+Unit tests:
+* Set `DEPLOYMENT_STAGE=test`
+* Run `make unit-test`
+
+Functional tests:
+* Set `DEPLOYMENT_STAGE` to a valid deployed environment (`dev`)
+* Run `make functional-test`
 
 ### Code formatting and linting
 
