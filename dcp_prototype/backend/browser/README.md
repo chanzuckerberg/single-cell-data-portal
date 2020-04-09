@@ -36,11 +36,16 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-Set the `DEPLOYMENT_STAGE` environment variable to `test`.
+Tests are run in the top level directory `dcp-prototype`
 
-In the top level directory `dcp-prototype`:
-- `pip install -r requirements-dev.txt`
+Install dev requirements `pip install -r requirements-dev.txt`
+
+Unit tests:
+- Set the `DEPLOYMENT_STAGE` environment variable to `test`
 - Run `make unit-test` to run unit tests
+
+Functional tests:
+- Set the `DEPLOYMENT_STAGE` environment variable to a valid deployed environment (`dev`)
 - Run `make functional-test` to run functional tests
 
 ## Managing the Lambda IAM role and assume role policy
