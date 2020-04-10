@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
 output "account_id" {
-  value = "${data.aws_caller_identity.current.account_id}"
+  value = data.aws_caller_identity.current.account_id
 }
 
 terraform {
@@ -89,10 +89,10 @@ module "browser_backend" {
   deployment_stage = var.deployment_stage
 
   // API Gateway Domain Name
-  aws_acm_cert_arn = module.browser_api_cert.arn
-  cert_domain_name = "browser-api.${var.deployment_stage}}.single-cell.czi.technology"
+  aws_acm_cert_arn    = module.browser_api_cert.arn
+  cert_domain_name    = "browser-api.${var.deployment_stage}.single-cell.czi.technology"
   aws_route53_zone_id = var.route53_zone_id
-  api_gateway_id = var.api_gateway_id
+  api_gateway_id      = var.api_gateway_id
 
   // Database
   db_username                  = var.browser_db_username
