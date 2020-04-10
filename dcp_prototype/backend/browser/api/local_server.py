@@ -24,6 +24,7 @@ parser.add_argument("--log-level",
                     default=logging.DEBUG)
 args = parser.parse_args()
 logging.basicConfig(level=args.log_level, stream=sys.stderr)
+logging.getLogger('botocore').setLevel(logging.INFO)
 factory = CLIFactory(project_dir=args.project_dir, debug=args.debug)
 
 # The following code snippet is basically stolen from chalice/__init__py:run_local_server
