@@ -23,8 +23,8 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
           {project.contributors.map(c => <Text key={c.name}>{c.name}</Text>)}
         </Box>
         <Box sx={{
-          marginLeft: [6],
-          width: "50%"
+          ml: [2],
+          marginLeft: [6]
         }}>
           <Heading as="h6" sx={{ mb: [2] }}>
             Institutions
@@ -53,7 +53,7 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
         sx={{
           fontSize: [1],
           mb: [4],
-          maxWidth: 0
+          maxWidth: 1100
         }}
       >
         <Box sx={{
