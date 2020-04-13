@@ -49,7 +49,13 @@ const SecondPage = props => {
   return (
     <Layout>
       <SEO title="Projects"/>
-      <Heading as="h1" sx={{ mb: 5, mt: 6 }}>
+      <Heading as="h1" sx={{
+        mb: 5,
+        mt: 6,
+        maxWidth: 1100,
+        marginLeft: "auto",
+        marginRight: "auto"
+       }}>
         Explore Project
       </Heading>
       <Flex sx={{justifyContent: 'center'}}>

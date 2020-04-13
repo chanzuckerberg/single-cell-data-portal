@@ -12,8 +12,14 @@ const ExploreData = ({ project, files, isAuthenticated }) => {
     const { getTokenSilently } = useAuth0()
 
   return (
-  <Box sx={{mb: 2}}>
-    <Flex sx={{mb: 1}}>
+  <Box sx={{
+    mb: 2,
+    maxWidth: 1100
+  }}>
+    <Flex sx={{
+      mb: 1,
+      maxWidth: 1100
+    }}>
       <StyledButton label="Download matrix"
                     disabled={!matrixAvailable}
                     onclick={() => getTokenSilently().then(accessToken =>
