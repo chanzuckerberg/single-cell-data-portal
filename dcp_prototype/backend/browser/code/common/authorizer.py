@@ -25,19 +25,17 @@ def assert_authorized(headers: dict):
     if public_key:
         try:
             payload = jwt.decode(
-                token, public_key, algorithms=ALGORITHMS, audience=API_AUDIENCE,
-                issuer=f"https://{AUTH0_DOMAIN}/"
+                token, public_key, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer=f"https://{AUTH0_DOMAIN}/"
             )
         except jwt.ExpiredSignatureError:
             raise UnauthorizedError(msg="token is expired")
         except jwt.JWTClaimsError:
-            raise UnauthorizedError(
-                msg="incorrect claims, please check the audience and issuer")
+            raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
         except Exception as ex:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
         if os.getenv("DEPLOYMENT_STAGE", "test").lower() != "test":
-            payload['userinfo'] = get_userinfo()
+            payload["userinfo"] = get_userinfo()
 
         return payload
     raise UnauthorizedError(msg="Unable to find appropriate key")
@@ -77,8 +75,7 @@ def get_openid_config(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: the openid configuration
     """
-    res = requests.get(
-        "https://{op}/.well-known/openid-configuration".format(op=openid_provider))
+    res = requests.get("https://{op}/.well-known/openid-configuration".format(op=openid_provider))
     res.raise_for_status()
     return res.json()
 

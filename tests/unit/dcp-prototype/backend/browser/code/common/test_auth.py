@@ -8,7 +8,7 @@ from chalice import UnauthorizedError
 import os
 
 
-@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE","test") != "test", "DEPLOYMENT_STAGE not 'test'")
+@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE", "test") != "test", "DEPLOYMENT_STAGE not 'test'")
 class TestAuthentication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -31,22 +31,24 @@ class TestAuthentication(unittest.TestCase):
 
         with self.subTest("wrong hash"):
             with self.assertRaises(UnauthorizedError):
-                bad_char = '0' if token['access_token'][-1] != '0' else '1'
-                _token = token['access_token'][:-1] + bad_char
+                bad_char = "0" if token["access_token"][-1] != "0" else "1"
+                _token = token["access_token"][:-1] + bad_char
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
         with self.subTest("wrong header"):
             with self.assertRaises(UnauthorizedError):
-                bad_char = '0' if token['access_token'][0] != '0' else '1'
-                _token = bad_char + token['access_token'][0:]
+                bad_char = "0" if token["access_token"][0] != "0" else "1"
+                _token = bad_char + token["access_token"][0:]
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
         with self.subTest("short header"):
             with self.assertRaises(UnauthorizedError):
-                _token = token['access_token'][1:]
+                _token = token["access_token"][1:]
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
     def get_auth_token(self) -> dict:
-        return requests.post("https://czi-single-cell.auth0.com/oauth/token",
-                             json=self.auth0_secret,
-                             headers={"content-type": "application/json"}).json()
+        return requests.post(
+            "https://czi-single-cell.auth0.com/oauth/token",
+            json=self.auth0_secret,
+            headers={"content-type": "application/json"},
+        ).json()
