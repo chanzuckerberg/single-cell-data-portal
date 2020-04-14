@@ -52,7 +52,7 @@ const SecondPage = props => {
       <Heading as="h1" sx={{
         mb: 5,
         mt: 6,
-        maxWidth: 1100,
+        maxWidth: 0,
         marginLeft: "auto",
         marginRight: "auto"
        }}>

@@ -13,15 +13,18 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
   )
   const contributors = !project.contributors.length ? null : (
       <Flex>
-        <Box>
+        <Box
+          sx={{
+            width: "50%"
+          }}>
           <Heading as="h6" sx={{ mb: [2] }}>
             Contributors
           </Heading>
           {project.contributors.map(c => <Text key={c.name}>{c.name}</Text>)}
         </Box>
         <Box sx={{
-          ml: [2],
-          marginLeft: [6]
+          marginLeft: [6],
+          width: "50%"
         }}>
           <Heading as="h6" sx={{ mb: [2] }}>
             Institutions
@@ -32,7 +35,10 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
   )
   return (
     <Box>
-      <Heading as="h3" sx={{ mb: 4 }}>
+      <Heading as="h3" sx={{
+        mb: 4,
+        maxWidth: 0
+      }}>
         {project.title}
       </Heading>
       {!project ? null : (
@@ -47,7 +53,7 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
         sx={{
           fontSize: [1],
           mb: [4],
-          maxWidth: 1100
+          maxWidth: 0
         }}
       >
         <Box sx={{

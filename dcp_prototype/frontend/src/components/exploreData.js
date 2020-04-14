@@ -14,11 +14,11 @@ const ExploreData = ({ project, files, isAuthenticated }) => {
   return (
   <Box sx={{
     mb: 2,
-    maxWidth: 1100
+    maxWidth: 0
   }}>
     <Flex sx={{
       mb: 1,
-      maxWidth: 1100
+      maxWidth: 0
     }}>
       <StyledButton label="Download matrix"
                     disabled={!matrixAvailable}
