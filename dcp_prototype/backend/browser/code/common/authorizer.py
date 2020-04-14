@@ -31,7 +31,7 @@ def assert_authorized(headers: dict):
             raise UnauthorizedError(msg="token is expired")
         except jwt.JWTClaimsError:
             raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
-        except Exception as ex:
+        except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
         if os.getenv("DEPLOYMENT_STAGE", "test").lower() != "test":
