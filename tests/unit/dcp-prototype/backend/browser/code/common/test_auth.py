@@ -16,12 +16,23 @@ class TestAuthentication(unittest.TestCase):
 
     def test_postive(self):
         token = self.get_auth_token()
-        assert_authorized({"Authorization": f"Bearer {token['access_token']}"})
+        assert_authorized({"Authorization": f"bearer {token['access_token']}"})
 
     def test_not_bearer(self):
         token = self.get_auth_token()
         with self.assertRaises(UnauthorizedError):
             assert_authorized({"Authorization": f"earer {token['access_token']}"})
+
+    def test_invalid_token(self):
+        token = self.get_auth_token()
+        with self.assertRaises(UnauthorizedError):
+            assert_authorized({"Authorization": f"bearer {token['access_token'][:-1]}"})
+
+        with self.assertRaises(UnauthorizedError):
+            bad_char = '0' if token['access_token'][-1] != '0' else '1'
+            _token = token['access_token'][:-1] + bad_char
+
+            assert_authorized({"Authorization": f"bearer {_token}"})
 
     def get_auth_token(self) -> dict:
         return requests.post("https://czi-single-cell.auth0.com/oauth/token",
