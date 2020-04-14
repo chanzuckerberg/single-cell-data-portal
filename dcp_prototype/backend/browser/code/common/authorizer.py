@@ -3,7 +3,7 @@ from functools import lru_cache
 
 import requests
 from chalice import UnauthorizedError
-from jose import jwt
+from jose import jwt, JWTError
 
 USERINFO_ENDPOINT = "https://czi-single-cell.auth0.com/userinfo"
 
@@ -16,7 +16,10 @@ def assert_authorized(headers: dict):
     """Determines if the Access Token is valid
     """
     token = get_token_auth_header(headers)
-    unverified_header = jwt.get_unverified_header(token)
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+    except JWTError:
+        raise UnauthorizedError(msg="Unable to parse authentication token.")
     public_keys = get_public_keys(AUTH0_DOMAIN)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
