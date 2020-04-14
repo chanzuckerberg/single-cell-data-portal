@@ -6,6 +6,7 @@ const config = {
   domain: process.env.AUTH0_DOMAIN,
   client_id: process.env.AUTH0_CLIENTID,
   redirect_uri: process.env.AUTH0_CALLBACK,
+  audience: process.env.BROWSER_AUDIENCE
 }
 
 export const Auth0Context = React.createContext()
