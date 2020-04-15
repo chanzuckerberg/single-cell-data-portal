@@ -1,5 +1,6 @@
 export default {
   space: [12, 14, 16, 20, 24, 32, 48, 64, 96],
+  maxWidth: [1100, 1400],
   fonts: {
     body: "Montserrat",
     heading: "Roboto",

@@ -13,13 +13,19 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
   )
   const contributors = !project.contributors.length ? null : (
       <Flex>
-        <Box>
+        <Box
+          sx={{
+            width: "50%"
+          }}>
           <Heading as="h6" sx={{ mb: [2] }}>
             Contributors
           </Heading>
           {project.contributors.map(c => <Text key={c.name}>{c.name}</Text>)}
         </Box>
-        <Box sx={{ml: [2]}}>
+        <Box sx={{
+          ml: [2],
+          marginLeft: [6]
+        }}>
           <Heading as="h6" sx={{ mb: [2] }}>
             Institutions
           </Heading>
@@ -29,7 +35,10 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
   )
   return (
     <Box>
-      <Heading as="h3" sx={{ mb: 4 }}>
+      <Heading as="h3" sx={{
+        mb: 4,
+        maxWidth: 0
+      }}>
         {project.title}
       </Heading>
       {!project ? null : (
@@ -44,9 +53,14 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
         sx={{
           fontSize: [1],
           mb: [4],
+          maxWidth: 0
         }}
       >
-        <Box sx={{ maxWidth: "30em", mr: 5 }}>
+        <Box sx={{
+          // maxWidth: "30em",
+          maxWidth: "60%",
+          mr: 5
+        }}>
           <Box sx={{ mb: [4] }}>
             <Heading as="h6" sx={{ mb: [2] }}>
               Description
@@ -61,13 +75,13 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
             <Heading as="h6" sx={{ mb: [2] }}>
               Project Details
             </Heading>
-            <Text>Species: {project.species.join(", ")}</Text>
-            <Text>Organs: {project.organs.join(", ")}</Text>
-            <Text>Sample Categories: {project.biosample_categories.join(", ")}</Text>
-            <Text>Disease Status: {project.diseases.join(", ")}</Text>
-            <Text>Library Construction methods: {project.assays.join(", ")}</Text>
-            <Text>Paired end: {project.paired_end.join(", ")}</Text>
-            <Text>Cell count estimate: {project.cell_count}</Text>
+            <Text><strong>Species: </strong>{project.species.join(", ")}</Text>
+            <Text><strong>Organs: </strong>{project.organs.join(", ")}</Text>
+            <Text><strong>Sample Categories: </strong>{project.biosample_categories.join(", ")}</Text>
+            <Text><strong>Disease Status: </strong>{project.diseases.join(", ")}</Text>
+            <Text><strong>Library Construction methods: </strong>{project.assays.join(", ")}</Text>
+            <Text><strong>Paired end: </strong>{project.paired_end.join(", ")}</Text>
+            <Text><strong>Cell count estimate: </strong>{project.cell_count}</Text>
           </Box>
         </Flex>
       </Flex>

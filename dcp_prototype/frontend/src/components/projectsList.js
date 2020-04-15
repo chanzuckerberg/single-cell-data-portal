@@ -13,7 +13,6 @@ const ProjectsList = ({ projects }) => {
             sx={{
               fontSize: [1],
               paddingBottom: [5],
-              paddingTop: "10px",
               borderTop: "#e5e5e5 1px solid",
             }}
             key={project.id}
@@ -32,7 +31,12 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.organs.map(organ=> (
-                  <Box key={organ}>{organ.charAt(0).toUpperCase() + organ.substring(1)}</Box>
+                  <Box key={organ}
+                  sx={{
+                    paddingTop: "10px",
+                    lineHeight: "1.5",
+                  }}
+                  >{organ.charAt(0).toUpperCase() + organ.substring(1)}</Box>
                 ))}
               </Flex>
             </Box>
@@ -50,7 +54,12 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.assays.map(assay => (
-                  <Box key={assay}>{assay}</Box>
+                  <Box key={assay}
+                  sx={{
+                    paddingTop: "10px",
+                    lineHeight: "1.5",
+                  }}
+                  >{assay}</Box>
                 ))}
               </Flex>
             </Box>
@@ -68,7 +77,12 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.species.map(species => (
-                  <Box key={species}>{species}</Box>
+                  <Box key={species}
+                  sx={{
+                    paddingTop: "10px",
+                    lineHeight: "1.5",
+                  }}
+                  >{species}</Box>
                 ))}
               </Flex>
             </Box>
@@ -83,6 +97,8 @@ const ProjectsList = ({ projects }) => {
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
                 textAlign: "right", // since it holds numbers
+                paddingTop: "10px",
+                lineHeight: "1.5",
               }}
             >
               {project.cell_count || "Unspecified"}
@@ -96,6 +112,8 @@ const ProjectsList = ({ projects }) => {
                 width: `36%`, // Narrower so Project Name has more width; account for right margin of "6" in array = 48px
                 overflow: "hidden", // Or flex might break
                 listStyle: "none",
+                paddingTop: "10px",
+                lineHeight: "1.5",
               }}
             >
               <Link to={`/project/?id=${project.id}`}>{project.title}</Link>
