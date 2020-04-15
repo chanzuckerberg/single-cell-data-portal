@@ -18,5 +18,5 @@ resource "aws_route53_record" "api_domain" {
   name    = var.cert_domain_name
   type    = "CNAME"
   ttl     = "300"
-  records = ["${aws_api_gateway_domain_name.api_domain.regional_domain_name}"]
+  records = [aws_api_gateway_domain_name.api_domain.regional_domain_name]
 }
