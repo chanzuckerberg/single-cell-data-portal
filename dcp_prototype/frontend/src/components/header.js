@@ -18,7 +18,7 @@ const Header = ({ siteTitle }) => {
           justifyContent: "space-between",
           fontWeight: 700,
           margin: `0 auto`,
-          maxWidth: "1400px",
+          maxWidth: 1,
           paddingTop: 0,
           paddingBottom: 0,
           paddingLeft: 5,

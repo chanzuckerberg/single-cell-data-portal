@@ -53,7 +53,7 @@ const ProjectOverview = ({ project, files, isAuthenticated }) => {
         sx={{
           fontSize: [1],
           mb: [4],
-          maxWidth: 1100
+          maxWidth: 0
         }}
       >
         <Box sx={{
