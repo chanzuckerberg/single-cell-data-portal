@@ -100,3 +100,13 @@ module "browser_backend" {
   db_instance_count            = var.browser_db_instance_count
   preferred_maintenance_window = var.browser_preferred_maintenance_window
 }
+
+module "cicd" {
+  source = "../../modules/backend/cicd"
+
+  # Variables used for tagging
+  env     = var.deployment_stage
+  project = "single-cell"
+  service = "cicd"
+  owner   = "czi-single-cell"
+}
