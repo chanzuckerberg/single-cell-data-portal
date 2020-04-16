@@ -13,10 +13,11 @@ resource "aws_secretsmanager_secret" "auth0" {
 
 data "aws_iam_policy_document" "policy" {
   statement {
-    sid = "ReadAuth0TestSecret"
+    sid    = "ReadAuth0TestSecret"
     effect = "Allow"
     actions = [
-      "secretsmanager:GetSecretValue"
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret"
     ]
 
     resources = [
@@ -26,8 +27,8 @@ data "aws_iam_policy_document" "policy" {
 }
 
 resource "aws_iam_policy" "github_actions" {
-  name   = "github_actions"
-  path   = "/"
-  policy = data.aws_iam_policy_document.policy.json
+  name        = "github_actions"
+  path        = "/"
+  policy      = data.aws_iam_policy_document.policy.json
   description = "Provides github actions access to aws for running tests."
 }

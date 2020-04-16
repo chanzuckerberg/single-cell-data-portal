@@ -3,6 +3,10 @@ import os
 import unittest
 
 import requests
+from dcplib.aws_secret import AwsSecret
+
+if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
+    os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
 
 API_URL = {
     "test": "https://browser-api-test.dev.single-cell.czi.technology",
@@ -11,6 +15,13 @@ API_URL = {
 
 
 class TestApi(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.auth0_secret = json.loads(AwsSecret(f"dcp/backend/browser/test/auth0-secret").value)
+        cls.auth0_secret["audience"] = f"https://browser-api.{os.getenv('DEPLOYMENT_STAGE')}.single-cell.czi.technology"
+        access_token = cls.get_auth_token()["access_token"]
+        cls.auth_header = {"Authorization": f"bearer {access_token}"}
+
     def setUp(self):
         self.api = API_URL[os.environ["DEPLOYMENT_STAGE"]]
         self.test_project_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
@@ -61,7 +72,7 @@ class TestApi(unittest.TestCase):
 
     def test_get_project_files(self):
         with self.subTest("Project exists"):
-            res = requests.get(f"{self.api}/projects/{self.test_project_id}/files")
+            res = requests.get(f"{self.api}/projects/{self.test_project_id}/files", headers=self.auth_header)
 
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.ok)
@@ -75,16 +86,32 @@ class TestApi(unittest.TestCase):
             self.assertIs(type(test_files[0]["file_size"]), int)
 
         with self.subTest("Project not found"):
-            res = requests.get(f"{self.api}/projects/{self.bad_project_id}/files")
+            res = requests.get(f"{self.api}/projects/{self.bad_project_id}/files", headers=self.auth_header)
             self.assertEqual(res.status_code, requests.codes.not_found)
+
+        with self.subTest("Not Authorized"):
+            res = requests.get(f"{self.api}/projects/{self.test_project_id}/files")
+            self.assertEqual(res.status_code, requests.codes.unauthorized)
 
     def test_get_file(self):
         with self.subTest("File exists"):
-            res = requests.get(f"{self.api}/files/{self.test_file_id}")
+            res = requests.get(f"{self.api}/files/{self.test_file_id}", headers=self.auth_header)
 
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.ok)
 
         with self.subTest("File not found"):
-            res = requests.get(f"{self.api}/files/{self.bad_file_id}")
+            res = requests.get(f"{self.api}/files/{self.bad_file_id}", headers=self.auth_header)
             self.assertEqual(res.status_code, requests.codes.not_found)
+
+        with self.subTest("Not Authorized"):
+            res = requests.get(f"{self.api}/files/{self.test_file_id}", headers=self.auth_header)
+            self.assertEqual(res.status_code, requests.codes.unauthorized)
+
+    @classmethod
+    def get_auth_token(cls) -> dict:
+        return requests.post(
+            "https://czi-single-cell.auth0.com/oauth/token",
+            json=cls.auth0_secret,
+            headers={"content-type": "application/json"},
+        ).json()
