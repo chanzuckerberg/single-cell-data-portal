@@ -15,11 +15,10 @@ Environment variables used for configuration:
 Install dependencies `pip install -r requirements-dev.txt`
 
 Unit tests:
-* Set `DEPLOYMENT_STAGE=test`
 * Run `make unit-test`
 
 Functional tests:
-* Set `DEPLOYMENT_STAGE` to a valid deployed environment (`dev`)
+* Set `DEPLOYMENT_STAGE` to a valid deployed environment (`dev`, `staging`)
 * Run `make functional-test`
 
 ### Code formatting and linting
