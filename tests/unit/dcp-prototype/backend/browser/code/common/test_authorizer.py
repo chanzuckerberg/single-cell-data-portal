@@ -9,12 +9,13 @@ import os
 
 deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
 
+
 @unittest.skipIf(deployment_stage != "test", "DEPLOYMENT_STAGE not 'test'")
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.auth0_secret = json.loads(AwsSecret(f"dcp/backend/browser/test/auth0-secret").value)
-        cls.auth0_secret['audience'] = f"https://browser-api.{deployment_stage}.single-cell.czi.technology"
+        cls.auth0_secret["audience"] = f"https://browser-api.{deployment_stage}.single-cell.czi.technology"
 
     def test_postive(self):
         token = self.get_auth_token()
