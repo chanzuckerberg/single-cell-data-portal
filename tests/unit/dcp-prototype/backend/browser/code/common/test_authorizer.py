@@ -30,19 +30,19 @@ class TestAuthorizer(unittest.TestCase):
 
     def test_invalid_token(self):
         token = self.get_auth_token()
-        header, msg, hash = token['access_token'].split('.')
+        header, msg, hash = token["access_token"].split(".")
         with self.subTest("short hash"):
             with self.assertRaises(UnauthorizedError):
                 assert_authorized({"Authorization": f"bearer {token['access_token'][:-1]}"})
 
         with self.subTest("wrong hash"):
             with self.assertRaises(UnauthorizedError):
-                _token = '.'.join([header, msg, "0" * len(hash)])
+                _token = ".".join([header, msg, "0" * len(hash)])
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
         with self.subTest("wrong header"):
             with self.assertRaises(UnauthorizedError):
-                _token = '.'.join(["0" * len(header), msg, hash])
+                _token = ".".join(["0" * len(header), msg, hash])
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
         with self.subTest("short header"):
@@ -52,7 +52,7 @@ class TestAuthorizer(unittest.TestCase):
 
         with self.subTest("wrong message"):
             with self.assertRaises(UnauthorizedError):
-                _token = '.'.join([header, "0" * len(msg), hash])
+                _token = ".".join([header, "0" * len(msg), hash])
                 assert_authorized({"Authorization": f"bearer {_token}"})
 
     def get_auth_token(self) -> dict:
