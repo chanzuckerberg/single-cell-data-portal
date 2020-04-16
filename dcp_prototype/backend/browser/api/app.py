@@ -59,7 +59,7 @@ def get_project(project_id: str):
 
 @app.route("/projects/{project_id}/files", cors=cors_config)
 @requires_auth()
-def get_project_files(project_id: str, **kwags):
+def get_project_files(project_id: str):
     db = DbUtils()
     files = db.query_downloadable_project_files(project_id)
     return chalice.Response(
@@ -69,7 +69,7 @@ def get_project_files(project_id: str, **kwags):
 
 @app.route("/files/{file_id}", cors=cors_config)
 @requires_auth()
-def get_file(file_id: str, **kwags):
+def get_file(file_id: str):
     db = DbUtils()
     file = db.query_file(file_id)
 

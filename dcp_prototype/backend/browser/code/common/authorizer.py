@@ -12,8 +12,12 @@ API_AUDIENCE = "https://browser-api.dev.single-cell.czi.technology"
 ALGORITHMS = ["RS256"]
 
 
-def assert_authorized(headers: dict):
-    """Determines if the Access Token is valid
+def assert_authorized(headers: dict) -> dict:
+    """
+    Determines if the Access Token is valid and return the decoded token. Userinfo is
+    added to the token if it exists.
+    :param headers: The http headers from the request.
+    :return: The decoded access token and userinfo.
     """
     token = get_token_auth_header(headers)
     try:

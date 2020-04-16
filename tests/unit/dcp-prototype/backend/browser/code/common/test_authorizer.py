@@ -9,7 +9,7 @@ import os
 
 
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE", "test") != "test", "DEPLOYMENT_STAGE not 'test'")
-class TestAuthentication(unittest.TestCase):
+class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.auth0_secret = json.loads(AwsSecret("dcp/backend/browser/test/auth0-secret").value)
