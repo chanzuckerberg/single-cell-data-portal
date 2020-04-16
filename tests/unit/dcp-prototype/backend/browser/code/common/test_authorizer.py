@@ -6,8 +6,8 @@ from dcplib.aws_secret import AwsSecret
 from chalice import UnauthorizedError
 import os
 
-if not os.getenv("DEPLOYMENT_STAGE"):
-    os.environ["DEPLOYMENT_STAGE"] = "test"
+if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
+    os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
 
 from dcp_prototype.backend.browser.code.common.authorizer import assert_authorized
 
