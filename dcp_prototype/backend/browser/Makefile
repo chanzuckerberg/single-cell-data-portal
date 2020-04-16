@@ -16,3 +16,7 @@ clean:
 .PHONY: package
 package:
 	$(MAKE) package -C api
+
+.PHONY: local-server
+local-server:
+	$(MAKE)  local-server -C api

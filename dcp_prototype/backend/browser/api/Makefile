@@ -45,3 +45,6 @@ build-chalice-config:
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.service=env.APP_NAME config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).api_gateway_stage=env.DEPLOYMENT_STAGE config.json | sponge config.json
 
+.PHONY: local-server
+local-server: package
+	python local_server.py

@@ -9,3 +9,4 @@ moto
 pytest
 requests>=2.22.0
 sqlalchemy
+chalice==1.12.0
