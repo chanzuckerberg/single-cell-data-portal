@@ -27,8 +27,10 @@ logging.basicConfig(level=args.log_level, stream=sys.stderr)
 logging.getLogger("botocore").setLevel(logging.INFO)
 factory = CLIFactory(project_dir=args.project_dir, debug=args.debug)
 
+os.environ["DEPLOYMENT_STAGE"] = os.getenv("DEPLOYMENT_STAGE", "test")
+
 # The following code snippet is basically stolen from chalice/__init__py:run_local_server
-config = factory.create_config_obj(chalice_stage_name=os.getenv("DEPLOYMENT_STAGE"))
+config = factory.create_config_obj(chalice_stage_name=os.environ["DEPLOYMENT_STAGE"])
 app_obj = factory.load_chalice_app()
 server = factory.create_local_server(app_obj=app_obj, config=config, host=args.host, port=args.port)
 server.serve_forever()
