@@ -1,30 +1,70 @@
 # Browser Backend
 
-This application serves as the API for the browser frontend.
+This application serves as the API for the Data Browser website.
 
-# Chalice App Template Instructions
-
-To deploy the app, type `make deploy` in this directory.
+# Chalice App Overview
 
 Filename                  | Purpose                           | Information links
 --------------------------|-----------------------------------|------------------------------------------
 `./api/app.py`                  |The application entry point        | [Chalice Docs](https://chalice.readthedocs.io/en/latest/)
-`requirements-dev.txt`    |Developer environment dependencies | [Pip requirements files](https://pip.readthedocs.io/en/1.1/requirements.html)
 `./api/requirements.txt`        |Application dependencies           | [Chalice App Packaging](https://chalice.readthedocs.io/en/latest/topics/packaging.html)
-`Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
 `./api/.chalice/config.in.json`	|A template for the Chalice config file for the app    | [Chalice Configuration File](https://chalice.readthedocs.io/en/latest/topics/configfile.html)
-`iam/policy-template/browser-lamnbda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
-`test/test.py`            |Test suite template                | [Python unittest](https://docs.python.org/3/library/unittest.html)
+`requirements-dev.txt`    |Developer environment dependencies | [Pip requirements files](https://pip.readthedocs.io/en/1.1/requirements.html)
+`Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
+`iam/policy-template/browser-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
+
+## Development
+1.  [Configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
+    the `single-cell-dev` AWS profile and `czi-id` account credentials in `~/.aws`.
+
+    ```shell
+    # ~/.aws/credentials example
+
+    [czi-id]
+    aws_access_key_id = ACCESS_KEY_ID
+    aws_secret_access_key = SECRET_ACCESS_KEY
+    ```
+
+    ```shell
+    # ~/.aws/config example
+
+    [profile single-cell-dev]
+    role_arn = arn:aws:iam::ACCOUNT_ID:role/poweruser
+    source_profile = czi-id
+    region = us-east-1
+    ```
+
+    Please contact #help-infra if you require access to `single-cell-dev`.
+
+1.  Set the following environment variables:
+
+    ```shell
+    export DEPLOYMENT_STAGE=dev
+    export AWS_PROFILE=single-cell-dev
+    ```
+
+1.  Install dependencies
+
+     ```shell
+     pip install -r requirements-dev.txt
+     ```
+
+1.  Deploy the Chalice app to http://localhost:5000
+
+     ```shell
+     make local-server
+     ```
 
 ## How to deploy and manage the Chalice app
-1. set `DEPLOYMENT_STAGE` to the stage you would like to deploy or modify. For a new deployment stage simply set the 
-`DEPLOYMENTS_STAGE` variable to the name of the new stage and proceed with instructions.
-1. Install the dependencies: `pip install -r requirements-dev.txt`.
-1. Configure the AWS CLI (`pip install awscli`; `aws configure`).
-1. Edit `./api/.chalice/config.in.json` to set the name of your app and Lambda settings like memory, timeout, reserved
+1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `dev`, `staging`, `prod`
+1. Install dependencies `pip install -r requirements-dev.txt`
+1. Configure the AWS CLI
+    1. `pip install awscli`
+    1. `aws configure`
+1. [Optional] Edit `./api/.chalice/config.in.json` to set the name of your app and Lambda settings like memory, timeout, reserved
    concurrency, tags, and environment variables.
-1. Edit `./api/app.py` and `./api/requirements.txt` to modify the app.
-1. Deploy your app by running `make deploy`. The deployment results, including your Lambda's EndpointURL, will be 
+1. [Optional] Edit `./api/app.py` and `./api/requirements.txt` to modify the app.
+1. Deploy your app by running `make deploy`. The deployment results, including your API's Endpoint URL, will be
    printed to the terminal.
 1. If needed, assign
    a [Custom Domain Name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html),
@@ -36,17 +76,10 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-Tests are run in the top level directory `dcp-prototype`
+Tests are run in the top level directory `dcp-prototype`.
 
-Install dev requirements `pip install -r requirements-dev.txt`
-
-Unit tests:
-- Set the `DEPLOYMENT_STAGE` environment variable to `test`
-- Run `make unit-test` to run unit tests
-
-Functional tests:
-- Set the `DEPLOYMENT_STAGE` environment variable to a valid deployed environment (`dev`)
-- Run `make functional-test` to run functional tests
+See the [top level README](https://github.com/chanzuckerberg/dcp-prototype/blob/master/README.md#testing)
+for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This
