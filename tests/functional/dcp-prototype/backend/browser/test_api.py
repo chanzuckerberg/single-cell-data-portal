@@ -17,10 +17,9 @@ API_URL = {
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.auth0_secret = json.loads(
-            AwsSecret(f"dcp/backend/browser/test/auth0-secret").value)
+        cls.auth0_secret = json.loads(AwsSecret(f"dcp/backend/browser/test/auth0-secret").value)
         cls.auth0_secret["audience"] = f"https://browser-api.{os.getenv('DEPLOYMENT_STAGE')}.single-cell.czi.technology"
-        access_token = cls.get_auth_token()['access_token']
+        access_token = cls.get_auth_token()["access_token"]
         cls.auth_header = {"Authorization": f"bearer {access_token}"}
 
     def setUp(self):
@@ -106,7 +105,7 @@ class TestApi(unittest.TestCase):
             self.assertEqual(res.status_code, requests.codes.not_found)
 
         with self.subTest("Not Authorized"):
-            res = requests.get(f"{self.api}/files/{self.test_file_id}",headers=self.auth_header)
+            res = requests.get(f"{self.api}/files/{self.test_file_id}", headers=self.auth_header)
             self.assertEqual(res.status_code, requests.codes.unauthorized)
 
     @classmethod
