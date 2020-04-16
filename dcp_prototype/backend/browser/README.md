@@ -14,27 +14,8 @@ Filename                  | Purpose                           | Information link
 `iam/policy-template/browser-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 
 ## Development
-1.  [Configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
-    the `single-cell-dev` AWS profile and `czi-id` account credentials in `~/.aws`.
-
-    ```shell
-    # ~/.aws/credentials example
-
-    [czi-id]
-    aws_access_key_id = ACCESS_KEY_ID
-    aws_secret_access_key = SECRET_ACCESS_KEY
-    ```
-
-    ```shell
-    # ~/.aws/config example
-
-    [profile single-cell-dev]
-    role_arn = arn:aws:iam::ACCOUNT_ID:role/poweruser
-    source_profile = czi-id
-    region = us-east-1
-    ```
-
-    Please contact #help-infra if you require access to `single-cell-dev`.
+1.  Ensure your `awscli` is configured with the
+    [required credentials and profiles](https://github.com/chanzuckerberg/dcp-prototype#configuration).
 
 1.  Set the following environment variables:
 
