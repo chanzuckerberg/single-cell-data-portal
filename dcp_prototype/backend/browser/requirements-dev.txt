@@ -1,4 +1,3 @@
-chalice==1.12.0
 furl
 -r requirements.txt
 -r ../../../requirements-dev.txt
