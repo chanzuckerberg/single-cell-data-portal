@@ -18,6 +18,7 @@
     ```shell
     # Install gatsby globally
     npm install -g gatsby
+
     # Install project dependencies
     npm install
     ```
@@ -40,6 +41,14 @@
     Modify code in the `src` directory, save your changes and the browser will update in real time.
 
 ## Deployment
+
+1.  Ensure your `awscli` is configured with the
+    [required credentials and profiles](https://github.com/chanzuckerberg/dcp-prototype#configuration).
+    Set the appropriate `AWS_PROFILE`.
+
+    ```shell
+    export AWS_PROFILE=single-cell-dev
+    ```
 
 1.  **Specify deployment.**
 
