@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
 output "account_id" {
-  value = "${data.aws_caller_identity.current.account_id}"
+  value = data.aws_caller_identity.current.account_id
 }
 
 terraform {
@@ -19,18 +19,6 @@ provider "aws" {
   region  = "us-east-1"
   profile = "single-cell-dev"
 }
-
-//module "ledger" {
-//  source = "../../modules/backend/ledger"
-//
-//  deployment_stage = "${var.deployment_stage}"
-//
-//  // Database
-//  db_username                  = "${var.db_username}"
-//  db_password                  = "${var.db_password}"
-//  db_instance_count            = "${var.db_instance_count}"
-//  preferred_maintenance_window = "${var.preferred_maintenance_window}"
-//}
 
 module "browser_site_cert" {
   source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
@@ -85,7 +73,7 @@ module "browser_frontend" {
 module "browser_backend" {
   source = "../../modules/backend/browser"
 
-  deployment_stage = "${var.deployment_stage}"
+  deployment_stage = var.deployment_stage
 
   // API Gateway Domain Name
   aws_acm_cert_arn    = module.browser_api_cert.arn
