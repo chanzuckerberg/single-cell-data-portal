@@ -20,18 +20,6 @@ provider "aws" {
   profile = "single-cell-dev"
 }
 
-//module "ledger" {
-//  source = "../../modules/backend/ledger"
-//
-//  deployment_stage = "${var.deployment_stage}"
-//
-//  // Database
-//  db_username                  = "${var.db_username}"
-//  db_password                  = "${var.db_password}"
-//  db_instance_count            = "${var.db_instance_count}"
-//  preferred_maintenance_window = "${var.preferred_maintenance_window}"
-//}
-
 module "browser_site_cert" {
   source = "github.com/chanzuckerberg/cztack//aws-acm-cert?ref=v0.29.0"
 
