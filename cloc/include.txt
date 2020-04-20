@@ -1,0 +1,12 @@
+../.github
+../dcp_prototype/frontend
+../dcp_prototype/backend/browser
+../infra
+../.flake8
+../.gitignore
+../environment.test
+../LICENSE
+../Makefile
+../pyproject.toml
+../README.md
+../requirements-dev.txt
