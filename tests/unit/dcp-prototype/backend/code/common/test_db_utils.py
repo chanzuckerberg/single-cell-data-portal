@@ -2,9 +2,9 @@ import json
 import unittest
 from unittest import mock
 
-from dcp_prototype.backend.code.common.db_utils import DbUtils
-from dcp_prototype.backend.scripts.load_artifact import load_from_artifact
-from dcp_prototype.backend.scripts.mock import mock_data
+from browser.backend.code.common.db_utils import DbUtils
+from browser.backend.scripts.load_artifact import load_from_artifact
+from browser.backend.scripts.mock import mock_data
 
 
 class TestDbUtils(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestDbUtils(unittest.TestCase):
             self.assertTrue(mock_create_all.called)
 
         with self.subTest("Throws EnvironmentError if not test db"):
-            with mock.patch("dcp_prototype.backend.code.common.db_utils.DbUtils._is_test_db") as mock_is_test_db:
+            with mock.patch("browser.backend.code.common.db_utils.DbUtils._is_test_db") as mock_is_test_db:
                 mock_is_test_db.return_value = False
                 with self.assertRaises(EnvironmentError):
                     self.db.create()

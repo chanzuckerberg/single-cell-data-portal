@@ -7,13 +7,13 @@ fmt:
 
 .PHONY: lint
 lint:
-	flake8 dcp_prototype tests
+	flake8 browser tests
 
 .PHONY: unit-test
 unit-test:
 	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
-		--source=dcp_prototype/backend, \
-		--omit=.coverage,venv,dcp_prototype/backend/scripts/*,dcp_prototype/backend/chalice/* \
+		--source=browser/backend, \
+		--omit=.coverage,venv,browser/backend/scripts/*,browser/backend/chalice/* \
 		-m unittest discover \
 		--start-directory tests/unit \
 		--top-level-directory . \

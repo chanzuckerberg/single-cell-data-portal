@@ -1,6 +1,6 @@
 ../.github
-../dcp_prototype/frontend
-../dcp_prototype/backend/browser
+../browser/frontend
+../browser/backend
 ../infra
 ../.flake8
 ../.gitignore
