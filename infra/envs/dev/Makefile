@@ -20,7 +20,7 @@ apply: retrieve-vars
 	terraform apply --backup=-
 
 .PHONY: destroy
-destroy: state/rm
+destroy:
 	terraform destroy --backup=-
 
 .PHONY: retrieve-vars
