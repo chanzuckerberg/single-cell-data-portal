@@ -9,7 +9,7 @@ import os
 if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
     os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
 
-from dcp_prototype.backend.browser.code.common.authorizer import assert_authorized
+from browser.backend.code.common.authorizer import assert_authorized
 
 
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE") != "test", "DEPLOYMENT_STAGE not 'test'")

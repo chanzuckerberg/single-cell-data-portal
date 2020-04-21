@@ -21,6 +21,7 @@ const IndexPage = () => {
       .then(response => response.json()) // parse JSON from request
       .then(resultData => {
         setProjects(resultData)
+
       })
   }, [])
   return (

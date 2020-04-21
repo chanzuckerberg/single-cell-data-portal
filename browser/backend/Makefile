@@ -3,20 +3,20 @@ tests:=$(wildcard tests/test*.py)
 
 .PHONY: deploy
 deploy:
-	$(MAKE) deploy -C api
+	$(MAKE) deploy -C chalice
 
 .PHONY: destroy
 destroy:
-	$(MAKE) destroy -C api
+	$(MAKE) destroy -C chalice
 
 .PHONY: clean
 clean:
-	$(MAKE) clean -C api
+	$(MAKE) clean -C chalice
 
 .PHONY: package
 package:
-	$(MAKE) package -C api
+	$(MAKE) package -C chalice
 
 .PHONY: local-server
 local-server:
-	$(MAKE)  local-server -C api
+	$(MAKE)  local-server -C chalice
