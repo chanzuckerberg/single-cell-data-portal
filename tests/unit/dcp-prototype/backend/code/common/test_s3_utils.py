@@ -2,7 +2,7 @@ import unittest
 
 from moto import mock_s3
 
-from dcp_prototype.backend.browser.code.common.s3_utils import generate_file_url
+from dcp_prototype.backend.code.common.s3_utils import generate_file_url
 
 
 class TestS3Utils(unittest.TestCase):

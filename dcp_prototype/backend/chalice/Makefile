@@ -24,8 +24,8 @@ deploy: package
 
 .PHONY: package
 package: build-chalice-config
-	mkdir -p chalicelib/browser/code
-	cp -R ../code chalicelib/browser
+	mkdir -p chalicelib/code
+	cp -R ../code chalicelib
 	cp -a $(APP_NAME).yml chalicelib
 	rm -rf vendor dist/deployment
 	mkdir vendor

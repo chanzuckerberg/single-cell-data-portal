@@ -6,9 +6,9 @@ This application serves as the API for the Data Browser website.
 
 Filename                  | Purpose                           | Information links
 --------------------------|-----------------------------------|------------------------------------------
-`./api/app.py`                  |The application entry point        | [Chalice Docs](https://chalice.readthedocs.io/en/latest/)
-`./api/requirements.txt`        |Application dependencies           | [Chalice App Packaging](https://chalice.readthedocs.io/en/latest/topics/packaging.html)
-`./api/.chalice/config.in.json`	|A template for the Chalice config file for the app    | [Chalice Configuration File](https://chalice.readthedocs.io/en/latest/topics/configfile.html)
+`./chalice/app.py`                  |The application entry point        | [Chalice Docs](https://chalice.readthedocs.io/en/latest/)
+`./chalice/requirements.txt`        |Application dependencies           | [Chalice App Packaging](https://chalice.readthedocs.io/en/latest/topics/packaging.html)
+`./chalice/.chalice/config.in.json`	|A template for the Chalice config file for the app    | [Chalice Configuration File](https://chalice.readthedocs.io/en/latest/topics/configfile.html)
 `requirements-dev.txt`    |Developer environment dependencies | [Pip requirements files](https://pip.readthedocs.io/en/1.1/requirements.html)
 `Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
 `iam/policy-template/browser-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
@@ -42,9 +42,9 @@ Filename                  | Purpose                           | Information link
 1. Configure the AWS CLI
     1. `pip install awscli`
     1. `aws configure`
-1. [Optional] Edit `./api/.chalice/config.in.json` to set the name of your app and Lambda settings like memory, timeout, reserved
+1. [Optional] Edit `./chalice/.chalice/config.in.json` to set the name of your app and Lambda settings like memory, timeout, reserved
    concurrency, tags, and environment variables.
-1. [Optional] Edit `./api/app.py` and `./api/requirements.txt` to modify the app.
+1. [Optional] Edit `./chalice/app.py` and `./chalice/requirements.txt` to modify the app.
 1. Deploy your app by running `make deploy`. The deployment results, including your API's Endpoint URL, will be
    printed to the terminal.
 1. If needed, assign

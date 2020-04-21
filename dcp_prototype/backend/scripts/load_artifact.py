@@ -9,12 +9,12 @@ import sys
 
 import boto3
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.scripts.mock import mock_data
+from scripts.mock import mock_data
 
-from browser.code.common.browser_orm import (
+from code.common.browser_orm import (
     DBSessionMaker,
     Project,
     File,

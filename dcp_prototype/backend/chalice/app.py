@@ -8,9 +8,9 @@ from chalice import Chalice, CORSConfig
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from browser.code.common.db_utils import DbUtils
-from browser.code.common.s3_utils import generate_file_url
-from browser.code.common.authorizer import assert_authorized
+from code.common.db_utils import DbUtils
+from code.common.s3_utils import generate_file_url
+from code.common.authorizer import assert_authorized
 
 app = Chalice(app_name=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
 
