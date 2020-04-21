@@ -13,7 +13,7 @@ lint:
 unit-test:
 	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
 		--source=dcp_prototype/backend, \
-		--omit=.coverage,venv,dcp_prototype/backend/scripts,dcp_prototype/backend/chalice \
+		--omit=.coverage,venv,dcp_prototype/backend/scripts/*,dcp_prototype/backend/chalice/* \
 		-m unittest discover \
 		--start-directory tests/unit \
 		--top-level-directory . \
