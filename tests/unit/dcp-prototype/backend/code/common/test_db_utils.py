@@ -39,9 +39,7 @@ class TestDbUtils(unittest.TestCase):
             self.assertTrue(mock_create_all.called)
 
         with self.subTest("Throws EnvironmentError if not test db"):
-            with mock.patch(
-                "dcp_prototype.backend.code.common.db_utils.DbUtils._is_test_db"
-            ) as mock_is_test_db:
+            with mock.patch("dcp_prototype.backend.code.common.db_utils.DbUtils._is_test_db") as mock_is_test_db:
                 mock_is_test_db.return_value = False
                 with self.assertRaises(EnvironmentError):
                     self.db.create()
