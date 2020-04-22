@@ -10,7 +10,7 @@ from browser.backend.scripts.mock import mock_data
 class TestDbUtils(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path_to_fixtures = "tests/unit/dcp-prototype/backend/fixtures"
+        path_to_fixtures = "tests/unit/browser/backend/fixtures"
         test_artifact_file = f"{path_to_fixtures}/test_artifact.json"
         with open(test_artifact_file, "r") as f:
             cls.test_artifact = json.loads(f.read())
