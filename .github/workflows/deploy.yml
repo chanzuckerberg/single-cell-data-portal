@@ -1,0 +1,31 @@
+name: Deploy Backend
+
+on:
+  push:
+    branch:
+      - master
+    path:
+      - 'browser/backend'
+
+env:
+  DEPLOYMENT_STAGE: 'dev'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Lint code
+      run: |
+        pip install -r browser/backend/requirements-dev.txt
+        $(MAKE) clean -C browser/backend
