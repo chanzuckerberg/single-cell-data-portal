@@ -27,8 +27,8 @@ deploy: package
 	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
 	make upload-deployed
 
-.PHONY: ci
-ci: retrieve-deployed
+.PHONY: ci-deploy
+ci-deploy: retrieve-deployed
 	make deploy
 
 .PHONY: package
