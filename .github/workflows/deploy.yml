@@ -3,7 +3,7 @@ name: Deploy Backend
 on:
   push:
     branch:
-      - master
+      - tsmith/cd
     path:
       - 'browser/backend'
 
