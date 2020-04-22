@@ -28,4 +28,4 @@ jobs:
         pip install -r browser/backend/requirements-dev.txt
         sudo apt-get install moreutils
     - name: deploy backend
-      run: make deploy -C browser/backend
+      run: make ci-deploy -C browser/backend
