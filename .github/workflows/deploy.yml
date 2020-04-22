@@ -28,4 +28,4 @@ jobs:
     - name: Install dependencies
       run: pip install -r browser/backend/requirements-dev.txt
     - name: deploy backend
-      run: $(MAKE) clean -C browser/backend
+      run: make clean -C browser/backend
