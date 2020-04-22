@@ -28,6 +28,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r browser/backend/requirements-dev.txt
-        apt-get install moreutils
+        sudo apt-get install moreutils
     - name: deploy backend
       run: make package -C browser/backend
