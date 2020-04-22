@@ -25,8 +25,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
-    - name: install requirements
-      run: |
-        pip install -r browser/backend/requirements-dev.txt
+    - name: Install dependencies
+      run: pip install -r browser/backend/requirements-dev.txt
     - name: deploy backend
-        $(MAKE) clean -C browser/backend
+      run: $(MAKE) clean -C browser/backend
