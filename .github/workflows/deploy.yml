@@ -1,17 +1,15 @@
-name: Deploy Backend
+name: Deploy
 
 on:
   push:
     branch:
       - tsmith/cd-1
-    path:
-      - 'browser/backend'
 
 env:
   DEPLOYMENT_STAGE: 'dev'
 
 jobs:
-  deploy:
+  backend:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
