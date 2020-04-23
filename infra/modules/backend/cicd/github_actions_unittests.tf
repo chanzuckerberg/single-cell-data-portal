@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "policy" {
     ]
   }
   statement {
-    sid     = "ChaliceDeployeAPIGateway"
+    sid     = "ChaliceDeployedAPIGateway"
     effect  = "Allow"
     actions = ["apigateway:*"]
     resources = [

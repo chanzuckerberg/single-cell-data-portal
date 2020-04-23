@@ -6,8 +6,8 @@ export APP_NAME=browser-api
 export EXPORT_ENV_VARS_TO_LAMBDA=APP_NAME DEPLOYMENT_STAGE
 export PYTHONHASHSEED=0
 export S3_DEPLOYMENT_FILE=s3://org-dcp-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/deployed.json
-export DEPLOYED_PATH= .chalice/deployed
-export DEPLOYED = $(DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
+export LOCAL_DEPLOYED_PATH=.chalice/deployed
+export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
@@ -60,12 +60,12 @@ local-server: package
 
 .PHONY: retrieve-deployed
 retrieve-deployed:
-	if [[ ! -d "$(DEPLOYED_PATH)" ]]; then mkdir $(DEPLOYED_PATH); fi
-	aws s3 cp $(S3_DEPLOYMENT_FILE) $(DEPLOYED)
+	if [[ ! -d "$(LOCAL_DEPLOYED_PATH)" ]]; then mkdir $(LOCAL_DEPLOYED_PATH); fi
+	aws s3 cp $(S3_DEPLOYMENT_FILE) $(LOCAL_DEPLOYED_FILE)
 	
 .PHONY: upload-deployed
 upload-deployed:
-	aws s3 cp $(DEPLOYED) $(S3_DEPLOYMENT_FILE)
+	aws s3 cp $(LOCAL_DEPLOYED_FILE) $(S3_DEPLOYMENT_FILE)
 
 .PHONY: remove-deployed
 remove-deployed:
