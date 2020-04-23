@@ -12,5 +12,5 @@ route53_zone_id= "zoneid"
 api_gateway_id ="addsavtrrav"
 
 // CICD
-api_gateway_staging=""
-api_gateway_dev=""
+api_gateway_staging="The id of the the api-gateway created when first deploying the browser backend for staging"
+api_gateway_dev="The id of the the api-gateway created when first deploying the browser backend for dev"
