@@ -113,7 +113,8 @@ data "aws_iam_policy_document" "policy" {
     effect = "Allow"
     actions = [
       "s3:PutObject",
-      "s3:GetObject"
+      "s3:GetObject",
+      "s3:ListObjectsV2"
     ]
     resources = [
       "arn:aws:s3:::dcp-static-site-${var.deployment_stage}-${var.account_id}/*"
