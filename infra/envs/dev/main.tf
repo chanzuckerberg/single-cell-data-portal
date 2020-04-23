@@ -92,9 +92,14 @@ module "browser_backend" {
 module "cicd" {
   source = "../../modules/backend/cicd"
 
+  account_id          = data.aws_caller_identity.current.account_id
+  api_gateway_staging = var.api_gateway_staging
+  api_gateway_dev     = var.api_gateway_dev
+
   # Variables used for tagging
   env     = var.deployment_stage
   project = "single-cell"
   service = "cicd"
   owner   = "czi-single-cell"
+
 }

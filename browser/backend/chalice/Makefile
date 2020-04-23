@@ -60,7 +60,7 @@ local-server: package
 
 .PHONY: retrieve-deployed
 retrieve-deployed:
-	if ![[ -d "$(DEPLOYED_PATH)" ]]; then mkdir $(DEPLOYED_PATH); fi
+	if [[ ! -d "$(DEPLOYED_PATH)" ]]; then mkdir $(DEPLOYED_PATH); fi
 	aws s3 cp $(S3_DEPLOYMENT_FILE) $(DEPLOYED)
 	
 .PHONY: upload-deployed

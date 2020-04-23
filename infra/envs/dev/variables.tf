@@ -42,3 +42,12 @@ variable "route53_zone_id" {
 variable "api_gateway_id" {
   type = string
 }
+
+// CICD
+variable "api_gateway_staging" {
+  type = string
+}
+
+variable "api_gateway_dev" {
+  type = string
+}
