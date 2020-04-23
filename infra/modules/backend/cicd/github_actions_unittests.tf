@@ -108,6 +108,17 @@ data "aws_iam_policy_document" "policy" {
       "arn:aws:s3:::org-dcp-infra-${var.account_id}/chalice/*"
     ]
   }
+  statement {
+    sid    = "GatsbyS3"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject"
+    ]
+    resources = [
+      "arn:aws:s3:::dcp-static-site-${var.deployment_stage}-${var.account_id}/*"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "github_actions" {
