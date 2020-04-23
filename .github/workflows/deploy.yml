@@ -45,4 +45,4 @@ jobs:
     - name: Install Gatsby
       run: npm install -g gatsby
     - name: Deploy Frontend
-      run: make deploy -C /browser/backend
+      run: make deploy -C frontend/backend
