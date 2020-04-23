@@ -114,10 +114,11 @@ data "aws_iam_policy_document" "policy" {
     actions = [
       "s3:PutObject",
       "s3:GetObject",
-      "s3:ListObjectsV2"
+      "s3:ListBucket"
     ]
     resources = [
-      "arn:aws:s3:::dcp-static-site-${var.deployment_stage}-${var.account_id}/*"
+      "arn:aws:s3:::dcp-static-site-${var.deployment_stage}-${var.account_id}/*",
+      "arn:aws:s3:::dcp-static-site-${var.deployment_stage}-${var.account_id}"
     ]
   }
 }
