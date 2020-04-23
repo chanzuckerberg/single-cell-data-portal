@@ -5,7 +5,9 @@ export ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output t
 export APP_NAME=browser-api
 export EXPORT_ENV_VARS_TO_LAMBDA=APP_NAME DEPLOYMENT_STAGE
 export PYTHONHASHSEED=0
-
+export S3_DEPLOYMENT_FILE=s3://org-dcp-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/deployed.json
+export LOCAL_DEPLOYED_PATH=.chalice/deployed
+export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
@@ -17,10 +19,17 @@ clean:
 .PHONY: destroy
 destroy:
 	chalice delete --stage $(DEPLOYMENT_STAGE)
+	make remove-deployed
+
 
 .PHONY: deploy
 deploy: package
 	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
+	make upload-deployed
+
+.PHONY: ci-deploy
+ci-deploy: retrieve-deployed
+	make deploy
 
 .PHONY: package
 package: build-chalice-config
@@ -48,3 +57,16 @@ build-chalice-config:
 .PHONY: local-server
 local-server: package
 	python local_server.py
+
+.PHONY: retrieve-deployed
+retrieve-deployed:
+	if [[ ! -d "$(LOCAL_DEPLOYED_PATH)" ]]; then mkdir $(LOCAL_DEPLOYED_PATH); fi
+	aws s3 cp $(S3_DEPLOYMENT_FILE) $(LOCAL_DEPLOYED_FILE)
+	
+.PHONY: upload-deployed
+upload-deployed:
+	aws s3 cp $(LOCAL_DEPLOYED_FILE) $(S3_DEPLOYMENT_FILE)
+
+.PHONY: remove-deployed
+remove-deployed:
+	aws s3 rm $(S3_DEPLOYMENT_FILE)

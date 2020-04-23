@@ -10,3 +10,15 @@ variable "service" {
 variable "owner" {
   type = string
 }
+
+variable "account_id" {
+  type = string
+}
+
+variable "api_gateway_staging" {
+  type = string
+}
+
+variable "api_gateway_dev" {
+  type = string
+}
