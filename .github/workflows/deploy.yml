@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branch:
-      - tsmith/cd-frontend
+      - master
 
 env:
   DEPLOYMENT_STAGE: 'dev'
