@@ -19,7 +19,7 @@ app = Chalice(app_name="browser-frontend")
 
 @app.on_s3_event(
     name="update-site",
-    bucket="dcp-static-site-dev-699936264352",
+    bucket=os.getenv("S3_WEBSITE"),
     events=["s3:ObjectCreated:Post", "s3:ObjectCreated:Put"],
     prefix="index.html",
 )
