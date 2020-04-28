@@ -28,5 +28,5 @@ class TestCloudfront(TestCase):
             self.assertListEqual(invalidate_distributions([]), [])
         with self.subTest("Multiple Distributions"):
             distributions = ["distribution_1", "distribution_2"]
-            mock_invalidate_distribution.return_value = [{"Invalidation": {"Id": d,}} for d in distributions]
+            mock_invalidate_distribution.return_value = [{"Invalidation": {"Id": d}} for d in distributions]
             self.assertEqual(len(invalidate_distributions(distributions)), 2)
