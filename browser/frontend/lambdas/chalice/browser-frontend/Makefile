@@ -2,9 +2,7 @@ SHELL=/bin/bash -o pipefail
 
 # This is set for build reproducibility
 export ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
-ifndef APP_NAME
-export APP_NAME=browser-frontend
-endif
+APP_NAME?=browser-frontend
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
