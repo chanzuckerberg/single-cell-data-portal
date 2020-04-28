@@ -2,7 +2,7 @@ SHELL=/bin/bash -o pipefail
 
 # This is set for build reproducibility
 export ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
-APP_NAME?=browser-frontend
+export APP_NAME?=browser-frontend
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
@@ -16,8 +16,13 @@ clean:
 destroy:
 	chalice delete --stage $(DEPLOYMENT_STAGE
 
+.PHONY: package
+package: build-chalice-config
+	mkdir -p chalicelib/code
+	cp -R ../../code chalicelib
+
 .PHONY: deploy
-deploy: build-chalice-config
+deploy: package
 	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
 
 .PHONY: build-chalice-config

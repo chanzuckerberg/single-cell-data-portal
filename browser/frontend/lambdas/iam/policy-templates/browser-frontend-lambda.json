@@ -2,19 +2,13 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "CloudWatchLogs",
-      "Effect": "Allow",
-      "Action": [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:$ACCOUNT_ID:log-group:/aws/lambda/$APP_NAME-$DEPLOYMENT_STAGE*:*"
-    },
-    {
-        "Sid": "VisualEditor1",
         "Effect": "Allow",
-        "Action": "logs:CreateLogGroup",
-        "Resource": "*"
+        "Action": [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+        ],
+        "Resource": "arn:aws:logs:*:*:*"
     },
     {
         "Sid": "CloudFront",

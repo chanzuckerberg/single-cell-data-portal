@@ -4,13 +4,17 @@ an s3 bucket hosting a website. When a change is detected in the s3 bucket, the
 AWS Cloudfront distribution for that bucket is invalidated. This allows the changers
 made to a website to become immediately visible.
 """
-from typing import List
-
-import boto3
+import os
+import sys
 from chalice import Chalice
 
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
+from code.cloudfront import get_cloudfront_distribution, invalidate_distributions
+
+
 app = Chalice(app_name="browser-frontend")
-_cloudfront = None
 
 
 @app.on_s3_event(
@@ -21,22 +25,7 @@ _cloudfront = None
 )
 def handle_s3_event(event):
     print("EVENT-BUCKET:", event.bucket)
-    cf = get_cloudfront_distribution(event.bucket)
-    print("DISTRIBUTIONS:", cf)
-
-
-def get_cloudfront_distribution(bucket_name: str) -> List[str]:
-    cf_distributions = _cloudfront.list_distributions()["DistributionList"]["Items"]
-    cf = []
-    for d in cf_distributions:
-        for o in d["Origins"]["Items"]:
-            if bucket_name in o["DomainName"]:
-                cf.append(d["Id"])
-    return cf
-
-
-def get_cloudfront_client():
-    global _cloudfront
-    if not _cloudfront:
-        _cloudfront = boto3.client("cloudfront")
-    return _cloudfront
+    distributions = get_cloudfront_distribution(event.bucket)
+    print("DISTRIBUTIONS:", distributions)
+    responses = invalidate_distributions(distributions)
+    print("RESPONSES:", responses)

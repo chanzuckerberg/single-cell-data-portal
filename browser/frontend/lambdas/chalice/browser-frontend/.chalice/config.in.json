@@ -1,6 +1,7 @@
 {
   "version": "2.0",
   "app_name": "$APP_NAME",
+  "autogen_policy": false,
   "stages": {
     "$DEPLOYMENT_STAGE": {
       "lambda_memory_size": 256,
