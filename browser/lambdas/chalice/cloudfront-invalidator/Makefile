@@ -14,7 +14,7 @@ clean:
 
 .PHONY: destroy
 destroy:
-	chalice delete --stage $(DEPLOYMENT_STAGE
+	chalice delete --stage $(DEPLOYMENT_STAGE)
 
 .PHONY: package
 package: build-chalice-config
@@ -23,7 +23,7 @@ package: build-chalice-config
 
 .PHONY: deploy
 deploy: package
-	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
+	chalice deploy --stage $(DEPLOYMENT_STAGE)
 
 .PHONY: build-chalice-config
 build-chalice-config:

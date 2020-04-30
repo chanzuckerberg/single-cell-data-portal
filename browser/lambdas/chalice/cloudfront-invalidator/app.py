@@ -14,11 +14,11 @@ sys.path.insert(0, pkg_root)  # noqa
 from code.cloudfront import get_cloudfront_distribution, invalidate_distributions
 
 
-app = Chalice(app_name="browser-frontend")
+app = Chalice(app_name="cloudfront-invalidator")
 
 
 @app.on_s3_event(
-    name="update-site",
+    name="browser-frontend",
     bucket=os.getenv("S3_WEBSITE"),
     events=["s3:ObjectCreated:Post", "s3:ObjectCreated:Put"],
     prefix="index.html",

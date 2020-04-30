@@ -2,7 +2,7 @@ SHELL=/bin/bash -o pipefail
 tests:=$(wildcard tests/test*.py)
 
 ifndef APP_NAME
-$(error Please set APP_NAME parameter using `make target APP_NAME=foo)
+$(error Please set APP_NAME parameter using `make target APP_NAME=foo`)
 endif
 
 .PHONY: deploy

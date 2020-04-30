@@ -1,10 +1,10 @@
 from unittest import mock, TestCase
 
-from browser.frontend.lambdas.code.cloudfront import get_cloudfront_distribution, invalidate_distributions
+from browser.lambdas.code.cloudfront import get_cloudfront_distribution, invalidate_distributions
 
 
 class TestCloudfront(TestCase):
-    @mock.patch("browser.frontend.lambdas.code.cloudfront.cloudfront_client.list_distributions")
+    @mock.patch("browser.lambdas.code.cloudfront.cloudfront_client.list_distributions")
     def test_get_cloudfront_distribution(self, mock_list_distributions):
         mock_list_distributions.return_value = {
             "DistributionList": {
@@ -21,7 +21,7 @@ class TestCloudfront(TestCase):
         with self.subTest("No Match"):
             self.assertListEqual(get_cloudfront_distribution("no-match"), [])
 
-    @mock.patch("browser.frontend.lambdas.code.cloudfront.cloudfront_client" ".create_invalidation")
+    @mock.patch("browser.lambdas.code.cloudfront.cloudfront_client.create_invalidation")
     def test_invalid_distributions(self, mock_invalidate_distribution):
         with self.subTest("No distributions"):
             mock_invalidate_distribution.return_value = []
