@@ -15,5 +15,5 @@ This directory contain code for AWS Lambdas deployed using [chalice](https://cha
 
 Notes:
 * As much of the code should be imported from [./code](code) to allow to simplify unittesting.
-* Store custom IAM policies in [./iam/policy-templated](iam/policy-templated]) with the name 
+* Store custom IAM policies in [./iam-policy-templates](iam-policy-templates/policy-templated]) with the name 
   `${APP_NAME}-lambda.json`.

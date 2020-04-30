@@ -27,7 +27,7 @@ deploy: package
 
 .PHONY: build-chalice-config
 build-chalice-config:
-	envsubst < ../../iam/policy-templates/$(APP_NAME)-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
+	envsubst < ../../iam-policy-templates/$(APP_NAME)-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
 	cd .chalice; envsubst < config.in.json > config.json
 	cd .chalice; for var in $$EXPORT_ENV_VARS_TO_LAMBDA; do \
             jq .stages.$(DEPLOYMENT_STAGE).environment_variables.$$var=env.$$var config.json | sponge config.json; \
