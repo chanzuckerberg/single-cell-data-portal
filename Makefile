@@ -12,8 +12,8 @@ lint:
 .PHONY: unit-test
 unit-test:
 	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
-		--source=browser/backend, \
-		--omit=.coverage,venv,browser/backend/scripts/*,browser/backend/chalice/* \
+		--source=browser/backend,browser/lambdas \
+		--omit=.coverage,venv,browser/backend/scripts/*,browser/backend/chalice/*,browser/backend/lambda/chalice/* \
 		-m unittest discover \
 		--start-directory tests/unit \
 		--top-level-directory . \
