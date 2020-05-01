@@ -2,7 +2,7 @@
 
 A chalice application used to invalidate the cache of a cloudfront distribution for
 an s3 bucket hosting a website. When a change is detected in the s3 bucket, the
-AWS Cloudfront distribution for that bucket is invalidated. This allowschanges
+AWS Cloudfront distribution for that bucket is invalidated. This allows changes
 made to a website to become immediately visible.
 
 # Chalice App Overview
