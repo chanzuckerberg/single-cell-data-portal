@@ -36,6 +36,7 @@ Filename                  | Purpose                           | Information link
      make local-server
      ```
 
+# Deploy
 ## How to deploy and manage the Chalice app
 1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `dev`, `staging`, `prod`
 1. Install dependencies `pip install -r requirements-dev.txt`
