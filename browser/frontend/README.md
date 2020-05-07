@@ -28,10 +28,15 @@
     Follow [backend instructions](https://github.com/chanzuckerberg/dcp-prototype/tree/master/browser/backend#development)
     to deploy the backend API on `http://localhost:5000`.
 
+1.  **Specify Deployment**
+	```shell
+	export DEPLOYMENT_STAGE=local
+	```
+	
 1.  **Build and launch the frontend locally.**
 
     ```shell
-    gatsby develop
+    make develop
     ```
     
     Your site is now running at `http://localhost:8000` with hot re-loading!
@@ -39,6 +44,15 @@
 1.  **Open the source code and start editing!**
 
     Modify code in the `src` directory, save your changes and the browser will update in real time.
+
+## env.development Variables
+- AUTH0_DOMAIN = The Auth0 domain to use. Used by [auth0-spa-sj](https://github.com/auth0/auth0-spa-js)
+- AUTH0_CLIENTID= The client id of the application in Auth0. Used by [auth0-spa-sj](https://github.com/auth0/auth0-spa-js)
+- AUTH0_CALLBACK= The callback URL use by Auth0. Used by [auth0-spa-sj](https://github.com/auth0/auth0-spa-js)
+- AUDIENCE= The application Auth0 is requesting access. Used by [auth0-spa-sj](https://github.com/auth0/auth0-spa-js)
+
+- API_URL= The URL for the browser backend api.
+- CXG_URL= The URL for the cellxgene application.
 
 ## Deployment
 

@@ -8,7 +8,6 @@ $(error Please set the DEPLOYMENT_STAGE environment before deploying)
 endif
 
 deploy: init retrieve-vars
-
 	npm run build
 	aws s3 sync ./public s3://$(BROWSER_S3)/
 
@@ -28,3 +27,12 @@ retrieve-vars:
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
 
+
+.PHONY: development
+develop: init
+	aws s3 cp s3://$(BROWSER_S3)/local/env.development.local .env.development
+	gatsby develop
+
+.PHONY: development
+upload-var-develop:
+	aws s3 cp .env.development s3://$(BROWSER_S3)/local/env.development.local
