@@ -1,8 +1,13 @@
-# DCP Prototype
-![Push Tests](https://github.com/HumanCellAtlas/dcp-prototype/workflows/Push%20Tests/badge.svg)
+# Corpora Data Portal
+![Push Tests](https://github.com/chanzuckerberg/corpora-data-portal/workflows/Push%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/chanzuckerberg/dcp-prototype/branch/master/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/dcp-prototype)
 
-The Data Coordination Platform (DCP) stores, organizes, serves, and enables the exploration of cell atlases.
+The Corpora Data Portal (CDP) enables the publication, discovery and exploration of interoperable
+single-cell datasets. Data contributors can upload, review and publish datasets for private or
+public use. Via the portal, data consumers are able to discover, download and connect data to visualization tools
+such as [cellxgene](https://chanzuckerberg.github.io/cellxgene/posts/cellxgene_cziscience_com) to perform further
+analysis. The goal of the CDP is to catalyze distributed collaboration of single-cell research by providing a large,
+well-labeled repository of interoperable datasets.
 
 ## Developer guide
 

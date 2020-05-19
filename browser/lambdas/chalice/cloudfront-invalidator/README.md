@@ -17,7 +17,7 @@ Filename                  | Purpose                           | Information link
 
 ## Development
 1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/dcp-prototype#configuration).
+    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
 
 1.  Set the following environment variables:
 
@@ -57,7 +57,7 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-Tests are run in the top level directory [dcp_prototpye](../../../README.md).
+Tests are run in the top level directory [corpora-data-portal](../../../README.md).
 
 See the [top level README](../../../README.md#testing)
 for how to run tests.
