@@ -1,6 +1,6 @@
-# Browser Backend
+# Portal Backend
 
-This application serves as the API for the Data Browser website.
+This application serves as the API for the Data Portal website.
 
 # Chalice App Overview
 
