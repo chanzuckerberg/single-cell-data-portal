@@ -79,36 +79,36 @@ def load_from_artifact(session, path_to_file=None):
         session.commit()
 
         # populate organ + project join
-        for o in project["organs"]:
-            if o not in organs:
-                organs[o] = len(organs) + 1
-                session.add(Organ(name=o))
-            session.add(OrganJoinProject(organ_id=organs[o], project_id=project["id"]))
+        for organ in project["organs"]:
+            if organ not in organs:
+                organs[organ] = len(organs) + 1
+                session.add(Organ(name=organ))
+            session.add(OrganJoinProject(organ_id=organs[organ], project_id=project["id"]))
 
         # populate species + project join
-        for s in project["donor_species"]:
-            if s not in species:
-                species[s] = len(species) + 1
-                session.add(Species(name=s))
-            session.add(SpeciesJoinProject(species_id=species[s], project_id=project["id"]))
+        for sp in project["donor_species"]:
+            if sp not in species:
+                species[sp] = len(species) + 1
+                session.add(Species(name=sp))
+            session.add(SpeciesJoinProject(species_id=species[sp], project_id=project["id"]))
 
         # populate library_construction_method + project join
-        for l in project["library_construction_methods"]:
-            if l not in libraries:
-                libraries[l] = len(libraries) + 1
-                session.add(LibraryConstructionMethod(name=l))
+        for lib in project["library_construction_methods"]:
+            if lib not in libraries:
+                libraries[lib] = len(libraries) + 1
+                session.add(LibraryConstructionMethod(name=lib))
             session.add(
                 LibraryConstructionMethodJoinProject(
-                    library_construction_method_id=libraries[l], project_id=project["id"]
+                    library_construction_method_id=libraries[lib], project_id=project["id"]
                 )
             )
 
         # populate contributors + project join
-        for c in project["contributors"]:
-            if c["name"] not in contributors:
-                contributors[c["name"]] = {"key": len(contributors) + 1, "institution": c["institution"]}
+        for cont in project["contributors"]:
+            if cont["name"] not in contributors:
+                contributors[cont["name"]] = {"key": len(contributors) + 1, "institution": cont["institution"]}
 
-                names = c["name"].split(",")
+                names = cont["name"].split(",")
                 if len(names) == 3:
                     first = names[0]
                     middle = names[1]
@@ -118,13 +118,15 @@ def load_from_artifact(session, path_to_file=None):
                     middle = ""
                     last = names[1]
                 else:
-                    first, last = c["name"].split(" ")
+                    first, last = cont["name"].split(" ")
                     middle = ""
 
                 session.add(
-                    Contributor(first_name=first, middle_name=middle, last_name=last, institution=c["institution"])
+                    Contributor(first_name=first, middle_name=middle, last_name=last, institution=cont["institution"])
                 )
-            session.add(ContributorJoinProject(contributor_id=contributors[c["name"]]["key"], project_id=project["id"]))
+            session.add(
+                ContributorJoinProject(contributor_id=contributors[cont["name"]]["key"], project_id=project["id"])
+            )
 
         # populate external accessions
         for accession in project["array_express_accessions"]:
