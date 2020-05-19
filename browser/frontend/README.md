@@ -25,7 +25,7 @@
     
 1.  **Host the backend locally.**
 
-    Follow [backend instructions](https://github.com/chanzuckerberg/dcp-prototype/tree/master/browser/backend#development)
+    Follow [backend instructions](https://github.com/chanzuckerberg/corpora-data-portal/tree/master/browser/backend#development)
     to deploy the backend API on `http://localhost:5000`.
 
 1.  **Build and launch the frontend locally.**
@@ -43,7 +43,7 @@
 ## Deployment
 
 1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/dcp-prototype#configuration).
+    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
     Set the appropriate `AWS_PROFILE`.
 
     ```shell

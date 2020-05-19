@@ -1,5 +1,5 @@
 """
-Generates a stripped-down test JSON artifact to be stored in `tests/unit/dcp-prototype/backend/browser/fixtures`
+Generates a stripped-down test JSON artifact to be stored in `tests/unit/browser/backend/fixtures`
 - Reads an existing JSON artifact from S3
 - Selects a subset of files and their respectives projects
 - Writes a new `test_artifact.json` to the current directory
