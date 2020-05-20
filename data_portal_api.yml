@@ -335,6 +335,6 @@ components:
     409:
       description: File conflict.
   securitySchemes:
-    auth0:   # <--- Arbitrary name for the security scheme. Used to refer to it from elsewhere.
+    auth0:
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
