@@ -92,7 +92,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}/{filename}:
+  /v1/submissions/{submission_uuid}/file/{filename}:
     put:
       summary: Add file to submission
       tags:
@@ -134,7 +134,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/validate/{project_uuid}:
+  /v1/submissions/{submission_uuid}/validate:
     post:
       tags:
         - submissions
@@ -142,7 +142,7 @@ paths:
       description: >-
         Validates the project and outputs the result, specifying all errors.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/submission_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -152,7 +152,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/save/{project_uuid}:
+  /v1/submissions/{submission_uuid}/save:
     post:
       tags:
         - submissions
@@ -160,7 +160,7 @@ paths:
       description: >-
         If needed, extracts the project-level metadata from the datasets or uses the given project-level metadata imputed via the body parameter and saves it.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/submission_uuid'
       requestBody:
         content:
           application/json:
@@ -179,7 +179,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/publish/{project_uuid}:
+  /v1/submissions/{submission_uuid}/publish:
     post:
       tags:
         - submissions
@@ -187,7 +187,7 @@ paths:
       description: >-
         A schema that contains a field dictating the visibility of the deployments that will either make the project visible on the public sites or only viewable through obfuscated URLs.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/submission_uuid'
       requestBody:
         content:
           application/json:
