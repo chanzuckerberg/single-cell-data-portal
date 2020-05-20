@@ -1,6 +1,7 @@
 # DCP Prototype
 ![Push Tests](https://github.com/HumanCellAtlas/dcp-prototype/workflows/Push%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/chanzuckerberg/dcp-prototype/branch/master/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/dcp-prototype)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9416c313de4d0457a5cc/maintainability)](https://codeclimate.com/github/chanzuckerberg/corpora-data-portal/maintainability)
 
 The Data Coordination Platform (DCP) stores, organizes, serves, and enables the exploration of cell atlases.
 
