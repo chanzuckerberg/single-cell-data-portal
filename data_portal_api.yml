@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: Copora Data Portal API
+  title: Corpora Data Portal API
   description: >
-    This is the API for the Copora Data Portal
+    This is the API for the Corpora Data Portal
 servers:
   - description: production
-    url: https://copora.czi-single-cell.science
+    url: https://api.corpora.czi-single-cell.science
 paths:
   /v1/submissions:
     get:
@@ -16,15 +16,14 @@ paths:
       description: >-
         This lists all submissions and their UUIDs that currently exist in corpora. If a parameter is specified as a filter, then only projects that meet the status criteria will be outputted.
 
-        If user uuid is provided, submissions from that user are returned. If no user uuid is specified the id of the authenticated user is used.
+        If user_uuid is provided, submissions from that user are returned. If no user uuid is specified the id of the authenticated user is used.
       parameters:
         - name: status
           description: The status of the submissions to list.
           in: query
           schema:
             type: string
-            enum: [all, open, closed]
-            default: all
+            enum: [open, closed]
         - $ref: '#/components/parameters/user_uuid'
       responses:
         '200':
@@ -45,7 +44,7 @@ paths:
         opens a new submission and an empty project for editing. Executing this call will create a new entry in both the Submission and Project tables with empty fields and creates a new folder with the given project uuid in the data portal S3 bucket. If successful, a message will be returned with the project’s UUID.
       responses:
         '201':
-          $ref: '#/components/responses/201'
+          description: A new submissions has been created.
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -73,7 +72,7 @@ paths:
         '403':
           $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/404'
+          description: Submission not found
     delete:
       summary: Delete a submissions
       tags:
@@ -106,7 +105,7 @@ paths:
         - $ref: '#/components/parameters/filetype'
       responses:
         '201':
-          $ref: '#/components/responses/201'
+          description: File added to submission.
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -128,7 +127,7 @@ paths:
         - $ref: '#/components/parameters/filename'
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -141,12 +140,12 @@ paths:
         - submissions
       summary: Validate the Project
       description: >-
-        Validates the project according to the guidelines below in the Validation section and outputs the result, specifying all errors. The result of the validation is also stored in the backend database.
+        Validates the project and outputs the result, specifying all errors.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -159,7 +158,7 @@ paths:
         - submissions
       summary: Save the Project
       description: >-
-        If needed, extracts the project-level metadata from the datasets or uses the given project-level metadata imputed via the body parameter and saves it to the database.
+        If needed, extracts the project-level metadata from the datasets or uses the given project-level metadata imputed via the body parameter and saves it.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       requestBody:
@@ -171,7 +170,7 @@ paths:
               type: object
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -198,7 +197,7 @@ paths:
               type: object
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -211,7 +210,7 @@ paths:
     get:
       tags:
         - projects
-      summary: List Pojects
+      summary: List Projects
       description: >-
         This lists all projects and their UUIDs that currently exist in the data portal. If a parameter is specified as a filter, then only projects that meet the status criteria will be outputted.
       parameters:
@@ -233,21 +232,21 @@ paths:
             type: integer
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '400':
           $ref: '#/components/responses/400'
   /v1/projects/{project_uuid}:
     get:
       tags:
         - projects
-      summary: Get Poject
+      summary: Get Project
       description: >-
         This will return all datasets and associated attributes, including processing pipeline statuses of the project.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -257,14 +256,14 @@ paths:
     delete:
       tags:
         - projects
-      summary: Delete Poject
+      summary: Delete Project
       description: >-
         This call deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such project exists, then a warning will be outputted.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/201'
+          $ref: '#/components/responses/200'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -272,7 +271,6 @@ paths:
         '404':
           $ref: '#/components/responses/404'
 components:
-  schemas: {}
   parameters:
     submission_uuid:
       name: submission_uuid
@@ -310,19 +308,19 @@ components:
         type: string
   responses:
     200:
-      description: OK
+      description: OK.
     201:
-      description: Created
+      description: Created.
     400:
-      description: Invalid parameter
+      description: Invalid parameter.
     401:
-      description: Failed to authenticate
+      description: Failed to authenticate.
     403:
-      description: Unauthorized
+      description: Unauthorized.
     404:
-      description: Resource not found
+      description: Resource not found.
     409:
-      description: File conflict
+      description: File conflict.
   securitySchemes:
     implicit:
       type: oauth2
