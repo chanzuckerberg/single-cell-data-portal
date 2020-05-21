@@ -314,7 +314,7 @@ components:
         type: string
         enum: [legal, data]
     user_uuid:
-      name: userid
+      name: user_uuid
       description: an ID that represents the user.
       in: query
       schema:
