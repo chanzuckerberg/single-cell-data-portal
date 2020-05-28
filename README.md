@@ -69,7 +69,6 @@ Commands and their uses:
 
 ### Deploy
 1. Set `DEPLOYMENT_STAGE`, and `AWS_PROFILE` in environment
-1. Deploy Infra `make deploy -C infra`
 1. [Deploy Backend](browser/backend/README.md#Deploy)
 1. [Deploy Cloudfront-invalidator](browser/lambdas/README.md#Deploy)
 1. [Deploy Frontend](browser/frontend/README.md#Deployment)
