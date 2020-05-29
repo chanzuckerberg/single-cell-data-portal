@@ -12,7 +12,7 @@ app = Chalice(app_name="cloudfront-invalidator")
 
 
 @app.on_s3_event(
-    name="browser-frontend",
+    name="data-portal-frontend",
     bucket=os.getenv("S3_WEBSITE"),
     events=["s3:ObjectCreated:Post", "s3:ObjectCreated:Put"],
     prefix="index.html",
