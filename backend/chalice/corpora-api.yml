@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  description: |
+    Corpora Data Portal Backend API
+  version: "1.0.0"
+  title: Corpora Data Portal Backend API
+
+servers:
+  - url: https://{apiHost}
+    variables:
+      apiHost:
+        default: ${API_HOST}
+
+paths:
+  /v0/submissions:
+    get:
+      summary: List of submissions in Corpora with optional filters.
+      description: Lists all submissions and their UUIDs that currently exist in Corpora. If a parameter is specified
+        as a filter, then only projects that meet the status criteria will be outputted.
+      parameters:
+        - in: query
+          name: status
+          description: Option to filter by only open submissions or only closed submissions.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: user_uuid
+          description: Option to filter submissions by a specific user (identified by a RFC4122-compliant ID) who
+            created them.
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Invalid Parameter
+
+  /v1/projects/{project_uuid}:
+    get:
+      tags:
+        - project
+      summary: |
+        Retrieve detailed information about a project. This includes a list of
+        downloadable files.
+      parameters:
+        - name: project_uuid
+          in: path
+          description: The uuid of the project
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: File Not Found
+  /v1/files/{file_uuid}:
+    post:
+      tags:
+        - project
+        - download
+      summary: Request to download a file
+      parameters:
+        - name: file_uuid
+          in: path
+          description: The uuid of the file
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Return a download URL.
+        '400':
+          description: Bad Request
+        '404':
+          description: File Not Found

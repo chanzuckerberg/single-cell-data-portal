@@ -17,7 +17,7 @@ variable "browser_preferred_maintenance_window" {
   type = string
 }
 
-// browser frontend
+// corpora frontend
 variable "refer_secret" {
   type = string
 }
