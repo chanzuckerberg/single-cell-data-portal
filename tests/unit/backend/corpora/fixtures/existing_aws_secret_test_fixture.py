@@ -14,7 +14,7 @@ class ExistingAwsSecretTestFixture:
     If you leave the secret_name blank, a unique name will be generated for you.
     """
 
-    SECRET_ID_TEMPLATE = 'corpora/test/test_secret/{}'
+    SECRET_ID_TEMPLATE = "corpora/test/test_secret/{}"
     EXISTING_SECRET_DEFAULT_VALUE = '{"top":"secret"}'
 
     def __init__(self, secret_name=None, secret_value=None):
@@ -24,8 +24,7 @@ class ExistingAwsSecretTestFixture:
         self._secret = None
 
     def __enter__(self):
-        self._secret = self.secrets_mgr.create_secret(Name=self.name,
-                                                      SecretString=self._value)
+        self._secret = self.secrets_mgr.create_secret(Name=self.name, SecretString=self._value)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -37,7 +36,7 @@ class ExistingAwsSecretTestFixture:
 
     @property
     def arn(self):
-        return self._secret['ARN']
+        return self._secret["ARN"]
 
     def delete(self):
         self.secrets_mgr.delete_secret(SecretId=self.arn, ForceDeleteWithoutRecovery=True)

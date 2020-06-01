@@ -160,11 +160,11 @@ class DbUtils:
         """
         assays = []
         for result in self._query(
-                table_args=[LibraryConstructionMethodJoinProject, LibraryConstructionMethod],
-                filter_args=[
-                    LibraryConstructionMethodJoinProject.library_construction_method_id == LibraryConstructionMethod.id,
-                    LibraryConstructionMethodJoinProject.project_id == project_id,
-                ],
+            table_args=[LibraryConstructionMethodJoinProject, LibraryConstructionMethod],
+            filter_args=[
+                LibraryConstructionMethodJoinProject.library_construction_method_id == LibraryConstructionMethod.id,
+                LibraryConstructionMethodJoinProject.project_id == project_id,
+            ],
         ):
             assays.append(result.LibraryConstructionMethod.name)
 
@@ -178,8 +178,8 @@ class DbUtils:
         """
         organs = []
         for result in self._query(
-                table_args=[OrganJoinProject, Organ],
-                filter_args=[OrganJoinProject.organ_id == Organ.id, OrganJoinProject.project_id == project_id],
+            table_args=[OrganJoinProject, Organ],
+            filter_args=[OrganJoinProject.organ_id == Organ.id, OrganJoinProject.project_id == project_id],
         ):
             organs.append(result.Organ.name)
 
@@ -193,8 +193,8 @@ class DbUtils:
         """
         species = []
         for result in self._query(
-                table_args=[SpeciesJoinProject, Species],
-                filter_args=[SpeciesJoinProject.species_id == Species.id, SpeciesJoinProject.project_id == project_id],
+            table_args=[SpeciesJoinProject, Species],
+            filter_args=[SpeciesJoinProject.species_id == Species.id, SpeciesJoinProject.project_id == project_id],
         ):
             species.append(result.Species.name)
 
@@ -232,7 +232,7 @@ class DbUtils:
         """
         files = []
         for file in self._query(
-                table_args=[File], filter_args=[File.project_id == project_id, File.file_format == "LOOM"]
+            table_args=[File], filter_args=[File.project_id == project_id, File.file_format == "LOOM"]
         ):
             files.append(
                 {

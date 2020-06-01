@@ -1,7 +1,9 @@
 from unittest import mock, TestCase
 
 from backend.corpora.lambdas.cloudfront_invalidator.cloudfront import (
-    get_cloudfront_distribution, invalidate_distributions)
+    get_cloudfront_distribution,
+    invalidate_distributions,
+)
 
 
 class TestCloudfront(TestCase):

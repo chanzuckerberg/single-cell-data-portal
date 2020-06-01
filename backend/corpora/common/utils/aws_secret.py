@@ -23,7 +23,7 @@ class AwsSecret:
     def __init__(self, name):
         self._debug("AwsSecret.__init__({})".format(name))
         self.name = name
-        self.secrets_mgr = boto3.client(service_name='secretsmanager')
+        self.secrets_mgr = boto3.client(service_name="secretsmanager")
         self.secret_metadata = None
         self._load()
 
@@ -34,7 +34,7 @@ class AwsSecret:
         if self.is_deleted:
             raise RuntimeError("Secret {} is deleted".format(self.name))
         response = self.secrets_mgr.get_secret_value(SecretId=self.arn)
-        return response['SecretString']
+        return response["SecretString"]
 
     @property
     def exists_in_aws(self):
@@ -42,11 +42,11 @@ class AwsSecret:
 
     @property
     def is_deleted(self):
-        return self.exists_in_aws and 'DeletedDate' in self.secret_metadata
+        return self.exists_in_aws and "DeletedDate" in self.secret_metadata
 
     @property
     def arn(self):
-        return self.secret_metadata['ARN']
+        return self.secret_metadata["ARN"]
 
     def update(self, value):
         if not self.exists_in_aws:
@@ -75,7 +75,7 @@ class AwsSecret:
                 self._debug("AwsSecret.load({}) it exists".format(self.name))
                 self.secret_metadata = response
         except ClientError as e:
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 #  Normal operation, secret does not exist yet.
                 self._debug("AwsSecret.load({}) ResourceNotFoundException".format(self.name))
             else:

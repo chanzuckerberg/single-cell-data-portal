@@ -9,13 +9,13 @@ from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import
 
 
 class TestAwsSecret(unittest.TestCase):
-    UNKNOWN_SECRET = 'corpora/test/secret_that_does_not_exist'  # Don't ever create this
+    UNKNOWN_SECRET = "corpora/test/secret_that_does_not_exist"  # Don't ever create this
 
     @classmethod
     def setUpClass(cls):
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
         cls.secrets_mgr = boto3.client("secretsmanager")
-        cls.patcher = patch('backend.corpora.common.utils.aws_secret.boto3.client')
+        cls.patcher = patch("backend.corpora.common.utils.aws_secret.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr
 
@@ -37,14 +37,14 @@ class TestAwsSecret(unittest.TestCase):
     def test_value_of_unknown_secret_raises_exception(self):
         with ExistingAwsSecretTestFixture():
             secret = AwsSecret(name=self.UNKNOWN_SECRET)
-            with self.assertRaisesRegex(RuntimeError, 'No such'):
+            with self.assertRaisesRegex(RuntimeError, "No such"):
                 secret.value  # noqa
 
     def test_value_of_existing_deleted_secret_raises_exception(self):
         with ExistingAwsSecretTestFixture() as existing_secret:
             secret = AwsSecret(name=existing_secret.name)
             secret.delete()
-            with self.assertRaisesRegex(RuntimeError, 'deleted'):
+            with self.assertRaisesRegex(RuntimeError, "deleted"):
                 x = secret.value  # noqa
 
     def test_value_of_existing_secret_returns_value(self):
@@ -64,8 +64,9 @@ class TestAwsSecret(unittest.TestCase):
             secret = AwsSecret(name=existing_secret.name)
             secret.update(value='{"foo":"bar"}')
             sleep(AwsSecret.AWS_SECRETS_MGR_SETTLE_TIME_SEC)
-            self.assertEqual(self.secrets_mgr.get_secret_value(SecretId=existing_secret.arn)['SecretString'],
-                             '{"foo":"bar"}')
+            self.assertEqual(
+                self.secrets_mgr.get_secret_value(SecretId=existing_secret.arn)["SecretString"], '{"foo":"bar"}'
+            )
 
     # Delete Test Cases
 
@@ -74,4 +75,4 @@ class TestAwsSecret(unittest.TestCase):
             secret = AwsSecret(name=existing_secret.name)
             secret.delete()
             secret = self.secrets_mgr.describe_secret(SecretId=existing_secret.arn)
-            self.assertIn('DeletedDate', secret)
+            self.assertIn("DeletedDate", secret)

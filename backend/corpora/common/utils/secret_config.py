@@ -26,18 +26,18 @@ class SecretConfig:
     """
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_config'):
+        if not hasattr(cls, "_config"):
             cls.reset()
         return super(SecretConfig, cls).__new__(cls)
 
-    def __init__(self, component_name, deployment=None, source=None, secret_name='secrets'):
+    def __init__(self, component_name, deployment=None, source=None, secret_name="secrets"):
         """
         If source is specified, it must be the path to a JSON file
         """
 
         super(SecretConfig, self).__init__()
         self._component_name = component_name
-        self._deployment = deployment or os.environ['DEPLOYMENT_STAGE']
+        self._deployment = deployment or os.environ["DEPLOYMENT_STAGE"]
         self._secret_name = secret_name
         self._source = self._determine_source(source)
 
@@ -47,13 +47,9 @@ class SecretConfig:
 
     def __getattr__(self, name):
         if self.config_is_loaded():
-            return self.value_from_config(name) \
-                   or self.value_from_env(name) \
-                   or self.raise_error(name)
+            return self.value_from_config(name) or self.value_from_env(name) or self.raise_error(name)
         else:
-            return self.value_from_env(name) \
-                   or (self.load() and self.value_from_config(name)) \
-                   or self.raise_error(name)
+            return self.value_from_env(name) or (self.load() and self.value_from_config(name)) or self.raise_error(name)
 
     @classmethod
     def reset(cls):
@@ -70,7 +66,7 @@ class SecretConfig:
         self.__class__.use_env = False
 
     def load(self):
-        if self._source == 'aws':
+        if self._source == "aws":
             self.load_from_aws()
         else:
             self.load_from_file(self._source)
@@ -81,12 +77,13 @@ class SecretConfig:
 
     def load_from_aws(self):
         secret_path = "corpora/{component_name}/{deployment}/{secret_name}".format(
-            component_name=self._component_name, deployment=self._deployment, secret_name=self._secret_name)
+            component_name=self._component_name, deployment=self._deployment, secret_name=self._secret_name
+        )
         secret = AwsSecret(secret_path)
         self.from_json(secret.value)
 
     def load_from_file(self, config_file_path):
-        with open(config_file_path, 'r') as config_fp:
+        with open(config_file_path, "r") as config_fp:
             self.from_json(config_fp.read())
 
     def from_json(self, config_json):
@@ -95,10 +92,10 @@ class SecretConfig:
     def _determine_source(self, source):
         if source:
             pass
-        elif 'CONFIG_SOURCE' in os.environ:
-            source = os.environ['CONFIG_SOURCE']
+        elif "CONFIG_SOURCE" in os.environ:
+            source = os.environ["CONFIG_SOURCE"]
         else:
-            source = 'aws'
+            source = "aws"
         return source
 
     def value_from_config(self, name):

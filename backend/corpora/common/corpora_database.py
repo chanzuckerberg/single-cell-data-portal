@@ -10,8 +10,7 @@ from .corpora_config import CorporaDbConfig
 from .corpora_orm import Base
 
 
-class CorporaDatabase():
-
+class CorporaDatabase:
     def __init__(self):
         config = CorporaDbConfig()
         self.engine = create_engine(config.database_uri)
