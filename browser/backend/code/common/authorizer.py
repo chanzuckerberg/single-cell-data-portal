@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 USERINFO_ENDPOINT = "https://czi-single-cell.auth0.com/userinfo"
 
 AUTH0_DOMAIN = "czi-single-cell.auth0.com"
-API_AUDIENCE = f"https://api.corpora.{os.environ['DEPLOYMENT_STAGE']}.single-cell.czi.technology"
+API_AUDIENCE = f"https://api.{os.environ['DEPLOYMENT_STAGE']}.corpora.cziscience.com"
 ALGORITHMS = ["RS256"]
 
 
