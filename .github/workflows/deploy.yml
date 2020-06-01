@@ -27,8 +27,10 @@ jobs:
       run: |
         pip install -r requirements.txt
         sudo apt-get install moreutils
-    - name: deploy corpora
-      run: make ci-deploy -C backend/corpora/chalice
+    - name: Deploy API Server
+      run: make ci-deploy -C backend/chalice/api_server
+    - name: Deploy Cloudfront Invalidator
+      run: make ci-deploy -C backend/chalice/cloudfront_invalidator
 
   frontend:
     runs-on: ubuntu-latest

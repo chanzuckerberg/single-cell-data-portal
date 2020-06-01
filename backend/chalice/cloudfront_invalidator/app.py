@@ -8,7 +8,7 @@ sys.path.insert(0, pkg_root)  # noqa
 from code.cloudfront import get_cloudfront_distribution, invalidate_distributions
 
 
-app = Chalice(app_name="cloudfront-invalidator")
+app = Chalice(app_name="cloudfront_invalidator")
 
 
 @app.on_s3_event(
