@@ -19,7 +19,8 @@ destroy:
 .PHONY: package
 package: build-chalice-config
 	mkdir -p chalicelib/code
-	cp -R ../../code chalicelib
+	cp -R ../../corpora/common chalicelib
+	cp -R ../../corpora/lambdas/cloudfront_invalidator chalicelib
 
 .PHONY: deploy
 deploy: package
