@@ -34,7 +34,7 @@ ci-deploy: retrieve-deployed
 .PHONY: package
 package: build-chalice-config
 	mkdir -p chalicelib/code
-	cp -R ../../corpora/common chalicelib
+	cp -R ../../corpora/common chalicelib/corpora
 	cp -a $(APP_NAME).yml chalicelib
 	rm -rf vendor dist/deployment
 	mkdir vendor
