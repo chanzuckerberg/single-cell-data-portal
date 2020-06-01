@@ -95,9 +95,7 @@ class TestSecretConfig(unittest.TestCase):
     #        yes        |       yes      |       yes      | return env value
 
     def test_when_item_is_not_in_config_not_in_env_we_raise(self):
-        with EnvironmentSetup(
-            {"CONFIG_SOURCE": None,}
-        ):
+        with EnvironmentSetup({"CONFIG_SOURCE": None}):
             with self.assertRaises(RuntimeError):
                 config = BogoComponentConfig(deployment=self.deployment_env)
                 print(config.secret_that_we_never_put_into_config)
@@ -120,9 +118,7 @@ class TestSecretConfig(unittest.TestCase):
         with ExistingAwsSecretTestFixture(
             secret_name=self.secret_name, secret_value='{"secret1":"secret1_from_cloud"}'
         ):
-            with EnvironmentSetup(
-                {"CONFIG_SOURCE": None,}
-            ):
+            with EnvironmentSetup({"CONFIG_SOURCE": None}):
                 config = BogoComponentConfig(deployment=self.deployment_env)
                 self.assertEqual("secret1_from_cloud", config.secret1)
 
