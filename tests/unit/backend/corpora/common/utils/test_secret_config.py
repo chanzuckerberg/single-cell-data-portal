@@ -14,6 +14,7 @@ from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import
 from backend.corpora.common.utils.secret_config import SecretConfig
 from backend.corpora.common.utils.aws_secret import AwsSecret
 
+
 class BogoComponentConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
         super(BogoComponentConfig, self).__init__('bogo_component', **kwargs)

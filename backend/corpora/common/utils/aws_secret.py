@@ -5,7 +5,6 @@ from botocore.errorfactory import ClientError
 
 
 class AwsSecret:
-
     AWS_SECRETS_MGR_SETTLE_TIME_SEC = 2
 
     """

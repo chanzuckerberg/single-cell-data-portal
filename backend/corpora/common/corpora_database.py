@@ -9,6 +9,7 @@ sys.path.insert(0, pkg_root)  # noqa
 from .corpora_config import CorporaDbConfig
 from .corpora_orm import Base
 
+
 class CorporaDatabase():
 
     def __init__(self):
