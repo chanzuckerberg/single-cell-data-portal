@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Corpora Data Portal Backend API
+    Corpora API
   version: "1.0.0"
-  title: Corpora Data Portal Backend API
+  title: Corpora API
 
 servers:
   - url: https://{apiHost}

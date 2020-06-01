@@ -20,6 +20,7 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from .corpora_config import CorporaDbConfig
 
+
 Base = declarative_base()
 deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 

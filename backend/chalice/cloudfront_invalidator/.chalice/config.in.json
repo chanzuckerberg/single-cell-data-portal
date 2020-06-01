@@ -7,12 +7,12 @@
       "lambda_memory_size": 128,
       "lambda_timeout": 5,
       "environment_variables": {
-        "S3_WEBSITE": "dcp-static-site-$DEPLOYMENT_STAGE-$ACCOUNT_ID"
+        "S3_WEBSITE": "corpora-static-site-$DEPLOYMENT_STAGE-$ACCOUNT_ID"
       },
       "tags": {
         "env": "$DEPLOYMENT_STAGE",
-        "project": "single-cell data browser",
-        "service": "browser frontend",
+        "project": "single-cell data portal",
+        "service": "data-portal frontend",
         "owner": "czi-single-cell"
       }
     }
