@@ -1,4 +1,4 @@
-from backend.corpora.common.utils.secret_config import SecretConfig
+from .utils.secret_config import SecretConfig
 
 
 class CorporaDbConfig(SecretConfig):
