@@ -17,7 +17,7 @@ class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.auth0_secret = json.loads(AwsSecret("dcp/backend/browser/test/auth0-secret").value)
-        cls.auth0_secret["audience"] = f"https://browser-api.{os.getenv('DEPLOYMENT_STAGE')}.single-cell.czi.technology"
+        cls.auth0_secret["audience"] = f"https://api.{os.environ['DEPLOYMENT_STAGE']}.corpora.cziscience.com"
 
     def test_postive(self):
         token = self.get_auth_token()

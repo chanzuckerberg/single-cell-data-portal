@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
-BROWSER_S3=dcp-static-site-$(DEPLOYMENT_STAGE)-$(ACCOUNT_ID)
+BROWSER_S3=corpora-static-site-$(DEPLOYMENT_STAGE)-$(ACCOUNT_ID)
 S3_ENVIRONMENT_FILE=s3://$(BROWSER_S3)/env.production
 
 ifndef DEPLOYMENT_STAGE

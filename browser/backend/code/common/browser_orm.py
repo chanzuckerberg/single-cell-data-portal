@@ -18,7 +18,7 @@ from sqlalchemy.ext.declarative import declarative_base
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from code.config.db_config import BrowserDbConfig
+from code.config.db_config import DataPortalDbConfig
 
 
 Base = declarative_base()
@@ -31,7 +31,7 @@ DEFAULT_DATETIME = "2000-01-01 00:00:00" if deployment_stage == "test" else text
 
 class DBSessionMaker:
     def __init__(self):
-        connection = "sqlite:///:memory:" if deployment_stage == "test" else BrowserDbConfig().database_uri
+        connection = "sqlite:///:memory:" if deployment_stage == "test" else DataPortalDbConfig().database_uri
         self.engine = create_engine(connection)
         self.session_maker = sessionmaker(bind=self.engine)
 
