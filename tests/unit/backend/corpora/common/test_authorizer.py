@@ -16,7 +16,7 @@ class TestAuthorizer(unittest.TestCase):
     def setUpClass(cls):
         # TODO: Switching out the below Auth secret to no longer reflect DCP.
         cls.auth0_secret = {}
-        cls.auth0_secret["audience"] = f"https://corpora-api.{os.getenv('DEPLOYMENT_STAGE')}.single-cell.czi.technology"
+        cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
         # cls.auth0_secret = json.loads(AwsSecret("dcp/backend/browser/test/auth0-secret").value)
 
     def test_postive(self):
