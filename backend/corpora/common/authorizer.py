@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 USERINFO_ENDPOINT = "https://czi-single-cell.auth0.com/userinfo"
 
 AUTH0_DOMAIN = "czi-single-cell.auth0.com"
-API_AUDIENCE = f"https://browser-api.{os.environ['DEPLOYMENT_STAGE']}.single-cell.czi.technology"
+API_AUDIENCE = f"https://corpora-api.{os.environ['DEPLOYMENT_STAGE']}.cziscience.com"
 ALGORITHMS = ["RS256"]
 
 
@@ -79,7 +79,7 @@ def get_openid_config(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: the openid configuration
     """
-    
+
     res = requests.get("https://{op}/.well-known/openid-configuration".format(op=openid_provider))
     res.raise_for_status()
     return res.json()

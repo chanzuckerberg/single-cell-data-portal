@@ -22,13 +22,13 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: us-west-2
     - name: Install dependencies
       run: |
-        pip install -r browser/backend/requirements-dev.txt
+        pip install -r requirements.txt
         sudo apt-get install moreutils
     - name: deploy corpora
-      run: make ci-deploy -C corpora/corpora/chalice
+      run: make ci-deploy -C backend/corpora/chalice
 
   frontend:
     runs-on: ubuntu-latest
@@ -39,10 +39,10 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: us-west-2
     - name: Setup Node.js
       uses: actions/setup-node@v1
     - name: Install Gatsby
       run: npm install -g gatsby
     - name: Deploy Frontend
-      run: make deploy -C corpora/frontend
+      run: make deploy -C frontend

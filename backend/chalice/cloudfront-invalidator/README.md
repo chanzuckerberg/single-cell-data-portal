@@ -13,7 +13,7 @@ Filename                  | Purpose                           | Information link
 [./requirements.txt](requirements.txt)        |Application dependencies           | [Chalice App Packaging](https://chalice.readthedocs.io/en/latest/topics/packaging.html)
 [./.chalice/config.in.json](.chalice/config.in.json)	|A template for the Chalice config file for the app    | [Chalice Configuration File](https://chalice.readthedocs.io/en/latest/topics/configfile.html)
 [Makefile](Makefile)                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
-[iam-policy-templates/cloudfront-invalidator-lambda.json](../../iam-policy-templates/cloudfront-invalidator-lambda.json)|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
+[iam-policy-templates/cloudfront-invalidator-lambda.json](../../config/iam-policy-templates/cloudfront-invalidator-lambda.json)|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 
 ## Development
 1.  Ensure your `awscli` is configured with the
@@ -57,9 +57,9 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-Tests are run in the top level directory [corpora-data-portal](../../../../../README.md).
+Tests are run in the top level directory [corpora-data-portal](../../../README.md).
 
-See the [top level README](../../../../README.md#testing)
+See the [top level README](../../README.md#testing)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy

@@ -80,7 +80,7 @@ class SecretConfig:
         return self.config is not None
 
     def load_from_aws(self):
-        secret_path = "dcp/{component_name}/{deployment}/{secret_name}".format(
+        secret_path = "corpora/{component_name}/{deployment}/{secret_name}".format(
             component_name=self._component_name, deployment=self._deployment, secret_name=self._secret_name)
         secret = AwsSecret(secret_path)
         self.from_json(secret.value)

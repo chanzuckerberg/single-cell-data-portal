@@ -18,16 +18,15 @@ def get_cloudfront_distribution(bucket_name: str) -> List[str]:
 
 def invalidate_distributions(distributions: List[str]) -> List[dict]:
     """
-    Using the AWS Cloudfront API to invalidate the cache of the deployed website. AWS
-    requires all CallerReferences to be unique per invalidation request, otherwise an
-    error is returned. This is to prevent idential requests see:
-    https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_InvalidationBatch.html
-    We use a time stamp to produce unique CallReferences and round the time stamp to the
-    closest minute. This allows us to control how frequently an invalidation request can
-    be made.
+    Using the AWS Cloudfront API to invalidate the cache of the deployed website. AWS requires all CallerReferences
+    to be unique per invalidation request, otherwise an error is returned. This is to prevent identical requests see:
+    https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_InvalidationBatch.html. We use a time stamp to
+    produce unique CallReferences and round the time stamp to the closest minute. This allows us to control how
+    frequently an invalidation request can be made.
     :param distributions: The cloudfront distribution ID to invalidate
     :return: The responses from the invalidation requests.
     """
+
     responses = []
     for distr in distributions:
         timestamp = datetime.utcnow().replace(second=0, microsecond=0).strftime("%Y%m%d%H%M%S")
