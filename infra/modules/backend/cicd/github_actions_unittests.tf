@@ -1,6 +1,6 @@
 
 resource "aws_secretsmanager_secret" "auth0" {
-  name = "dcp/backend/browser/test/auth0-secret"
+  name = "backend/corpora/test/auth0-secret"
   tags = {
     project   = var.project
     env       = var.env
@@ -29,17 +29,17 @@ data "aws_iam_policy_document" "policy" {
     effect  = "Allow"
     actions = ["apigateway:*"]
     resources = [
-      "arn:aws:apigateway:us-east-1::/restapis/${var.api_gateway_dev}",
-      "arn:aws:apigateway:us-east-1::/restapis/${var.api_gateway_staging}",
-      "arn:aws:apigateway:us-east-1::/restapis/${var.api_gateway_dev}/*",
-      "arn:aws:apigateway:us-east-1::/restapis/${var.api_gateway_staging}/*"
+      "arn:aws:apigateway:us-west-2::/restapis/${var.api_gateway_dev}",
+      "arn:aws:apigateway:us-west-2::/restapis/${var.api_gateway_staging}",
+      "arn:aws:apigateway:us-west-2::/restapis/${var.api_gateway_dev}/*",
+      "arn:aws:apigateway:us-west-2::/restapis/${var.api_gateway_staging}/*"
     ]
   }
   statement {
     sid       = "ChaliceAPIGateway"
     effect    = "Allow"
     actions   = ["apigateway:POST"]
-    resources = ["arn:aws:apigateway:us-east-1::/restapis"]
+    resources = ["arn:aws:apigateway:us-west-2::/restapis"]
 
   }
   statement {
@@ -71,8 +71,8 @@ data "aws_iam_policy_document" "policy" {
       "lambda:GetPolicy"
     ]
     resources = [
-      "arn:aws:lambda:us-east-1:${var.account_id}:function:browser-api-dev",
-      "arn:aws:lambda:us-east-1:${var.account_id}:function:browser-api-staging"
+      "arn:aws:lambda:us-west-2:${var.account_id}:function:corpora-api-dev",
+      "arn:aws:lambda:us-west-2:${var.account_id}:function:corpora-api-staging"
     ]
   }
   statement {
@@ -93,8 +93,8 @@ data "aws_iam_policy_document" "policy" {
       "iam:GetRolePolicy",
     ]
     resources = [
-      "arn:aws:iam::${var.account_id}:role/browser-api-dev-api_handler",
-      "arn:aws:iam::${var.account_id}:role/browser-api-staging-api_handler",
+      "arn:aws:iam::${var.account_id}:role/corpora-api-dev-api_handler",
+      "arn:aws:iam::${var.account_id}:role/corpora-api-staging-api_handler",
     ]
   }
   statement {
