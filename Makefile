@@ -7,7 +7,7 @@ fmt:
 
 .PHONY: lint
 lint:
-	flake8 browser tests
+	flake8 backend tests
 
 .PHONY: unit-test
 unit-test:

@@ -5,7 +5,6 @@ import requests
 from chalice import UnauthorizedError
 
 from backend.corpora.common.authorizer import assert_authorized
-from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
     os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
