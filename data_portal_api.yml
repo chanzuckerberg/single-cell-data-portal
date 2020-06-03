@@ -8,7 +8,7 @@ servers:
   - description: production
     url: https://api.corpora.czi-single-cell.science
 paths:
-  /v1/submissions:
+  /v1/submission:
     get:
       summary: List submissions
       tags:
@@ -17,7 +17,7 @@ paths:
         This lists all submissions and their UUIDs that currently exist in corpora. If a parameter is specified as a
         filter, then only projects that meet the status criteria will be outputted.
 
-        If user_uuid is provided, submissions from that user are returned. If no user uuid is specified the id of the
+        If user_id is provided, submissions from that user are returned. If no user uuid is specified the id of the
         authenticated user is used.
       parameters:
         - name: status
@@ -26,10 +26,27 @@ paths:
           schema:
             type: string
             enum: [open, closed]
-        - $ref: '#/components/parameters/user_uuid'
+        - $ref: '#/components/parameters/user_id'
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: string
+                  processing_state:
+                    type: string
+                  validation_state:
+                    type: string
+                  user_id:
+                    type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -43,12 +60,38 @@ paths:
       tags:
         - submissions
       description: >-
-        opens a new submission and an empty project for editing. Executing this call will create a new entry in both
-        the Submission and Project tables with empty fields and creates a new folder with the given project uuid in the
-        data portal S3 bucket. If successful, a message will be returned with the project’s UUID.
+        Opens a new submission with a unique UUID if a submission is not already open for a project. If a project UUID
+        is not provided, then a project UUID will be generated. Otherwise, the project details based on the given
+        project UUID will be used to pre-populate the newly created submission entity. On success, a message will be
+        returned with the project’s UUID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                needs_attestation:
+                  type: boolean
+                  required: true
+                  description: >-
+                    determines whether this project requires attestation in which case this project cannot be submitted
+                    without a Terms and Conditions file also uploaded.
+                project_uuid:
+                  type: string
+                  description: >-
+                    If the submissions is created in order to update an existing publicly published project, then a
+                    Project UUID must be provided in order to backfill the fresh submission entity with the existing
+                    project details for modification.
       responses:
         '201':
           description: A new submissions has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                  properties:
+                    project_uuid:
+                      type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -57,7 +100,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}:
+  /v1/submission/{submission_uuid}:
     get:
       summary: Get project submission by uuid
       tags:
@@ -98,7 +141,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}/file/{filename}:
+  /v1/submission/{submission_uuid}/file/{filename}:
     put:
       summary: Add file to submission
       tags:
@@ -143,7 +186,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}/validate:
+  /v1/submission/{submission_uuid}/validate:
     post:
       tags:
         - submissions
@@ -161,7 +204,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}/save:
+  /v1/submission/{submission_uuid}/save:
     post:
       tags:
         - submissions
@@ -189,7 +232,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submissions/{submission_uuid}/publish:
+  /v1/submission/{submission_uuid}/publish:
     post:
       tags:
         - submissions
@@ -231,7 +274,7 @@ paths:
           schema:
             type: string
             enum: [foo,bar]
-        - $ref: '#/components/parameters/user_uuid'
+        - $ref: '#/components/parameters/user_id'
         - name: fromDate
           in: query
           schema:
@@ -313,8 +356,8 @@ components:
       schema:
         type: string
         enum: [legal, data]
-    user_uuid:
-      name: user_uuid
+    user_id:
+      name: user_id
       description: an ID that represents the user.
       in: query
       schema:
