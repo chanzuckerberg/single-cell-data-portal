@@ -197,18 +197,30 @@ paths:
           $ref: '#/components/responses/404'
         '409':
           $ref: '#/components/responses/409'
+  /v1/submission/{project_uuid}/dataset:
     delete:
-      summary: Delete project file
+      summary: Delete a project dataset
       tags:
         - submissions
       description: >-
-        Deletes the submission associated with the given project UUID. This does not delete the project if the project
-        associated with the submission has been previously publicly published.
+        Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
+        outputted.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset_uuid:
+                  description: >-
+                    Request body parameter. The UUID of the dataset that is being removed.
+                  type: string
+                  required: true
       responses:
-        '200':
-          $ref: '#/components/responses/200'
+        '202':
+          description: Accepted
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -221,12 +233,24 @@ paths:
         - submissions
       summary: Validate the Project
       description: >-
-        Validates the project and outputs the result, specifying all errors.
+        Validates the project according to the guidelines below in the Validation section and outputs the result,
+        specifying all errors. The result of the validation is also stored in the backend database.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: '#/components/schemas/project_uuid'
+                  result:
+                    type: string
+                  message:
+                    type: string
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -239,8 +263,9 @@ paths:
         - submissions
       summary: Save the Project
       description: >-
-        If needed, extracts the project-level metadata from the datasets or uses the given project-level metadata
-        imputed via the body parameter and saves it.
+        if needed, extracts the project-level metadata from the datasets or uses the given project-level metadata
+        imputed via the body parameter and saves it to the database. The new project metadata state will be returned in
+        the response on success.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       requestBody:
@@ -250,9 +275,29 @@ paths:
               description: >-
                 A schema that has fields for all available project-level metadata.
               type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                raw_data_link:
+                  type: string
+                protocol_link:
+                  type: string
+                other_information_link:
+                  type: string
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: '#/components/schemas/project_uuid'
+                  project:
+                    type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -276,11 +321,23 @@ paths:
           application/json:
             schema:
               description: >-
-                a schema that has fields for all available project-level metadata.
+                a schema that contains a field dictating the visibility of the deployments that will either make the
+                project visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
+                to public, the successful execution of this operation will move the Submission to a CLOSED state.
               type: object
+              required: true
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: '#/components/schemas/project_uuid'
+                  visibility:
+                    type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
