@@ -72,7 +72,6 @@ paths:
               properties:
                 needs_attestation:
                   type: boolean
-                  required: true
                   description: >-
                     determines whether this project requires attestation in which case this project cannot be submitted
                     without a Terms and Conditions file also uploaded.
@@ -82,6 +81,8 @@ paths:
                     If the submissions is created in order to update an existing publicly published project, then a
                     Project UUID must be provided in order to backfill the fresh submission entity with the existing
                     project details for modification.
+              required:
+                - needs_attestation
       responses:
         '201':
           description: A new submissions has been created.
@@ -89,9 +90,9 @@ paths:
             application/json:
               schema:
                 type: object
-                  properties:
-                    project_uuid:
-                      type: string
+                properties:
+                  project_uuid:
+                    type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -164,7 +165,6 @@ paths:
                   description: >-
                     Request body parameter. The name of the file that is being uploaded. A duplicate filename, will
                     result in the overwrite of the existing file.
-                  required: true
                   type: string
                 filetype:
                   type: string
@@ -173,6 +173,8 @@ paths:
                     Request body parameter. the filetype will be one of {legal or data} which provides information on
                     how to handle the file. If legal, then an update is made to the Submission entity signifying that
                     the T&C form has been submitted.
+              required:
+                - filename
       responses:
         '201':
           description: File added to submission.
@@ -180,13 +182,13 @@ paths:
             application/json:
               schema:
                 type: object
-                  properties:
-                    status:
-                      type: string
-                    s3_uri:
-                      type: string
-                    dataset_uuid:
-                      type: string
+                properties:
+                  status:
+                    type: string
+                  s3_uri:
+                    type: string
+                  dataset_uuid:
+                    type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -217,7 +219,8 @@ paths:
                   description: >-
                     Request body parameter. The UUID of the dataset that is being removed.
                   type: string
-                  required: true
+              required:
+                - dataset_uuid
       responses:
         '202':
           description: Accepted
@@ -325,7 +328,6 @@ paths:
                 project visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
                 to public, the successful execution of this operation will move the Submission to a CLOSED state.
               type: object
-              required: true
       responses:
         '200':
           description: OK
@@ -355,11 +357,6 @@ paths:
         This lists all projects and their UUIDs that currently exist in the data portal. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
       parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [foo,bar]
         - $ref: '#/components/parameters/user_id'
         - name: fromDate
           in: query
@@ -373,7 +370,20 @@ paths:
             type: integer
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: string
+                  project_uuid:
+                    $ref: '#/components/schemas/project_uuid'
+                  from_date:
+                    type: integer
+                  to_date:
+                    type: integer
         '400':
           $ref: '#/components/responses/400'
   /v1/projects/{project_uuid}:
@@ -399,7 +409,7 @@ paths:
         - projects
       summary: Delete Project
       description: >-
-        This call deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If
+        Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If
         no such project exists, then a warning will be outputted.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
@@ -412,16 +422,36 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+  /v1/dataset/{dataset_uuid}:
+    post:
+      tags:
+        - dataset
+      summary: Request to download a dataset
+      description: >-
+        Request to download a file which on success will generate a pre-signed URL to download the dataset.
+      parameters:
+        - $ref: '#/components/parameters/dataset_uuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/200'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
 components:
   schemas:
     user_id:
-      schema:
-        type: string
+      type: string
     project_uuid:
       description: >-
         The unique identifier for addressing a project
-      schema:
-        type: string
+      type: string
+    dataset_uuid:
+      description: >-
+        The unique identifier for addressing a dataset
+      type: string
   parameters:
     project_uuid:
       name: project_uuid
@@ -429,6 +459,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/project_uuid'
+    dataset_uuid:
+      name: data_uuid
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/dataset_uuid'
     filename:
       name: filename
       description: The name of a file to add, remove, or download.
