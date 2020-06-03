@@ -141,22 +141,52 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{project_uuid}/file/{filename}:
+  /v1/submission/{project_uuid}/file:
     put:
       summary: Add file to submission
       tags:
         - submissions
       description: >-
-        this call adds a file to the project. If a file already exists, it will not replace it and instead return that
-        a file already exists. A quick validation will be performed to ensure that if the file is a data file, then the
-        extension is one of the accepted types (i.e. .loom, .h5ad, or Seurat).
+        Adds a dataset file or a legal file to the project’s S3 bucket. If a legal file is uploaded (verified by a
+        standard name), then the requirement for attestation for the project will be satisfied and accordingly noted in
+        the submission entity. A quick validation will be performed to ensure that if the file is a data file, then the
+        extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
+        name, it will replace it and increment the revision value of the dataset.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
-        - $ref: '#/components/parameters/filename'
-        - $ref: '#/components/parameters/filetype'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  description: >-
+                    Request body parameter. The name of the file that is being uploaded. A duplicate filename, will
+                    result in the overwrite of the existing file.
+                  required: true
+                  type: string
+                filetype:
+                  type: string
+                  enum: [legal, data]
+                  description: >-
+                    Request body parameter. the filetype will be one of {legal or data} which provides information on
+                    how to handle the file. If legal, then an update is made to the Submission entity signifying that
+                    the T&C form has been submitted.
       responses:
         '201':
           description: File added to submission.
+          content:
+            application/json:
+              schema:
+                type: object
+                  properties:
+                    status:
+                      type: string
+                    s3_uri:
+                      type: string
+                    dataset_uuid:
+                      type: string
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -168,15 +198,14 @@ paths:
         '409':
           $ref: '#/components/responses/409'
     delete:
-      summary: Delete project file'
+      summary: Delete project file
       tags:
         - submissions
       description: >-
-        This call removes a file from the project if the file and project exists. If either don't exists, then a
-        warning will be error will be returned.
+        Deletes the submission associated with the given project UUID. This does not delete the project if the project
+        associated with the submission has been previously publicly published.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
-        - $ref: '#/components/parameters/filename'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -332,12 +361,12 @@ components:
       schema:
         type: string
     project_uuid:
+      description: >-
+        The unique identifier for addressing a project
       schema:
         type: string
   parameters:
     project_uuid:
-      description: >-
-        The project UUID of the submission that is being validated.
       name: project_uuid
       in: path
       required: true
@@ -350,13 +379,6 @@ components:
       required: true
       schema:
         type: string
-    filetype:
-      name: filetype
-      in: query
-      required: true
-      schema:
-        type: string
-        enum: [legal, data]
     user_id:
       name: user_id
       description: an ID that represents the user.
