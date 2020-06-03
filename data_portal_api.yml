@@ -100,7 +100,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{submission_uuid}:
+  /v1/submission/{project_uuid}:
     get:
       summary: Get project submission by uuid
       tags:
@@ -109,7 +109,7 @@ paths:
         This call will return all available metadata information about a project’s submission, including datasets that
         are attached to the project.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -129,7 +129,7 @@ paths:
         this call deletes the submission related to the submission UUID. This does not delete a project if it has been
         previously publicly published.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -141,7 +141,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{submission_uuid}/file/{filename}:
+  /v1/submission/{project_uuid}/file/{filename}:
     put:
       summary: Add file to submission
       tags:
@@ -151,7 +151,7 @@ paths:
         a file already exists. A quick validation will be performed to ensure that if the file is a data file, then the
         extension is one of the accepted types (i.e. .loom, .h5ad, or Seurat).
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
         - $ref: '#/components/parameters/filename'
         - $ref: '#/components/parameters/filetype'
       responses:
@@ -175,7 +175,7 @@ paths:
         This call removes a file from the project if the file and project exists. If either don't exists, then a
         warning will be error will be returned.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
         - $ref: '#/components/parameters/filename'
       responses:
         '200':
@@ -186,7 +186,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{submission_uuid}/validate:
+  /v1/submission/{project_uuid}/validate:
     post:
       tags:
         - submissions
@@ -194,7 +194,7 @@ paths:
       description: >-
         Validates the project and outputs the result, specifying all errors.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -204,7 +204,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{submission_uuid}/save:
+  /v1/submission/{project_uuid}/save:
     post:
       tags:
         - submissions
@@ -213,7 +213,7 @@ paths:
         If needed, extracts the project-level metadata from the datasets or uses the given project-level metadata
         imputed via the body parameter and saves it.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
       requestBody:
         content:
           application/json:
@@ -232,7 +232,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-  /v1/submission/{submission_uuid}/publish:
+  /v1/submission/{project_uuid}/publish:
     post:
       tags:
         - submissions
@@ -241,7 +241,7 @@ paths:
         A schema that contains a field dictating the visibility of the deployments that will either make the project
         visible on the public sites or only viewable through obfuscated URLs.
       parameters:
-        - $ref: '#/components/parameters/submission_uuid'
+        - $ref: '#/components/parameters/project_uuid'
       requestBody:
         content:
           application/json:
@@ -328,12 +328,6 @@ paths:
           $ref: '#/components/responses/404'
 components:
   parameters:
-    submission_uuid:
-      name: submission_uuid
-      in: path
-      required: true
-      schema:
-        type: string
     project_uuid:
       description: >-
         The project UUID of the submission that is being validated.
