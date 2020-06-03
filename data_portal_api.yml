@@ -106,8 +106,8 @@ paths:
       tags:
         - submissions
       description: >-
-        This call will return all available metadata information about a project’s submission, including datasets that
-        are attached to the project.
+        Returns all available metadata information about a project submission, including URIs of datasets that are
+        attached to the project.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
@@ -126,8 +126,8 @@ paths:
       tags:
         - submissions
       description: >-
-        this call deletes the submission related to the submission UUID. This does not delete a project if it has been
-        previously publicly published.
+        Deletes the submission associated with the given project UUID. This does not delete the project if the project
+        associated with the submission has been previously publicly published.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
@@ -327,6 +327,13 @@ paths:
         '404':
           $ref: '#/components/responses/404'
 components:
+  schemas:
+    user_id:
+      schema:
+        type: string
+    project_uuid:
+      schema:
+        type: string
   parameters:
     project_uuid:
       description: >-
@@ -335,7 +342,7 @@ components:
       in: path
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/project_uuid'
     filename:
       name: filename
       description: The name of a file to add, remove, or download.
@@ -355,7 +362,7 @@ components:
       description: an ID that represents the user.
       in: query
       schema:
-        type: string
+        $ref: '#/components/schemas/user_id'
   responses:
     200:
       description: OK.
