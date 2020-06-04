@@ -323,7 +323,10 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/submission/{project_uuid}/publish:
+
     post:
       tags:
         - submissions
@@ -362,7 +365,10 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/projects:
+
     get:
       tags:
         - projects
@@ -400,7 +406,10 @@ paths:
                     type: integer
         '400':
           $ref: '#/components/responses/400'
+
+
   /v1/projects/{project_uuid}:
+
     get:
       tags:
         - projects
@@ -418,6 +427,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
     delete:
       tags:
         - projects
@@ -436,7 +446,10 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/dataset/{dataset_uuid}:
+
     post:
       tags:
         - dataset
@@ -454,7 +467,10 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
 components:
+
   schemas:
     user_uuid:
       description: A unique identified of a logged in User of Corpora.
@@ -465,6 +481,7 @@ components:
     dataset_uuid:
       description: A unique identifier of a Dataset.
       type: string
+
   parameters:
     project_uuid:
       name: project_uuid
@@ -491,6 +508,7 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/user_uuid'
+
   responses:
     200:
       description: OK.
@@ -506,6 +524,7 @@ components:
       description: Resource not found.
     409:
       description: File conflict.
+
   securitySchemes:
     auth0:
       type: openIdConnect
