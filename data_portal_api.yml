@@ -9,24 +9,16 @@ servers:
     url: https://api.corpora.czi-single-cell.science
 paths:
   /v1/submission:
+
     get:
       summary: List submissions
       tags:
         - submissions
       description: >-
-        This lists all submissions and their UUIDs that currently exist in corpora. If a parameter is specified as a
-        filter, then only projects that meet the status criteria will be outputted.
-
-        If user_id is provided, submissions from that user are returned. If no user uuid is specified the id of the
-        authenticated user is used.
+        Lists all submissions by their UUIDs that currently exist in Corpora. If a parameter is specified as a filter,
+        then only submissions that meet the given criteria will be outputted.
       parameters:
-        - name: status
-          description: The status of the submissions to list.
-          in: query
-          schema:
-            type: string
-            enum: [open, closed]
-        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/user_uuid'
       responses:
         '200':
           description: OK
@@ -37,15 +29,15 @@ paths:
                 properties:
                   request_id:
                     type: string
-                  title:
-                    type: string
-                  status:
+                  project_uuid:
+                    $ref: '#/components/schemas/project_uuid'
+                  name:
                     type: string
                   processing_state:
                     type: string
                   validation_state:
                     type: string
-                  user_id:
+                  user_uuid:
                     type: string
         '400':
           $ref: '#/components/responses/400'
@@ -55,6 +47,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
     post:
       summary: Create a new submission
       tags:
@@ -73,13 +66,13 @@ paths:
                 needs_attestation:
                   type: boolean
                   description: >-
-                    determines whether this project requires attestation in which case this project cannot be submitted
+                    Determines whether this project requires attestation in which case this project cannot be submitted
                     without a Terms and Conditions file also uploaded.
                 project_uuid:
                   type: string
                   description: >-
-                    If the submissions is created in order to update an existing publicly published project, then a
-                    Project UUID must be provided in order to backfill the fresh submission entity with the existing
+                    If the submission is created in order to update an existing publicly published project, then a
+                    Project UUID must be provided in order to backfill the new submission entity with the existing
                     project details for modification.
               required:
                 - needs_attestation
@@ -101,9 +94,12 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/submission/{project_uuid}:
+
     get:
-      summary: Get project submission by uuid
+      summary: Get a project's submission details by UUID
       tags:
         - submissions
       description: >-
@@ -122,8 +118,9 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
     delete:
-      summary: Delete a submissions
+      summary: Delete a submission
       tags:
         - submissions
       description: >-
@@ -142,9 +139,12 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/submission/{project_uuid}/file:
+
     put:
-      summary: Add file to submission
+      summary: Add a file to a submission
       tags:
         - submissions
       description: >-
@@ -163,21 +163,25 @@ paths:
               properties:
                 filename:
                   description: >-
-                    Request body parameter. The name of the file that is being uploaded. A duplicate filename, will
-                    result in the overwrite of the existing file.
+                    The name of the file that is being uploaded. A duplicate filename, will result in the overwrite of
+                    the existing file.
                   type: string
                 filetype:
                   type: string
                   enum: [legal, data]
                   description: >-
-                    Request body parameter. the filetype will be one of {legal or data} which provides information on
-                    how to handle the file. If legal, then an update is made to the Submission entity signifying that
-                    the T&C form has been submitted.
+                    The filetype will be one of {legal or data} which provides information on how to handle the file. If
+                    legal, then an update is made to the Submission entity signifying that the T&C form has been
+                    submitted.
+                body:
+                  type: string
+                  format: binary
+                  description: The contents of the file to be added to the submission.
               required:
                 - filename
       responses:
         '201':
-          description: File added to submission.
+          description: File was successfully added to submission.
           content:
             application/json:
               schema:
@@ -199,9 +203,12 @@ paths:
           $ref: '#/components/responses/404'
         '409':
           $ref: '#/components/responses/409'
+
+
   /v1/submission/{project_uuid}/dataset:
+
     delete:
-      summary: Delete a project dataset
+      summary: Delete a project's dataset
       tags:
         - submissions
       description: >-
@@ -209,6 +216,7 @@ paths:
         outputted.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
+          required: true
       requestBody:
         content:
           application/json:
@@ -216,8 +224,7 @@ paths:
               type: object
               properties:
                 dataset_uuid:
-                  description: >-
-                    Request body parameter. The UUID of the dataset that is being removed.
+                  description: The UUID of the dataset that is being deleted from the project.
                   type: string
               required:
                 - dataset_uuid
@@ -230,14 +237,18 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/submission/{project_uuid}/validate:
+
     post:
       tags:
         - submissions
       summary: Validate the Project
       description: >-
-        Validates the project according to the guidelines below in the Validation section and outputs the result,
-        specifying all errors. The result of the validation is also stored in the backend database.
+        Validates the project to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
+        there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
+        the validation is also stored in the backend database.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       responses:
@@ -260,23 +271,26 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
+
   /v1/submission/{project_uuid}/save:
+
     post:
       tags:
         - submissions
-      summary: Save the Project
+      summary: Save the project
       description: >-
-        if needed, extracts the project-level metadata from the datasets or uses the given project-level metadata
-        imputed via the body parameter and saves it to the database. The new project metadata state will be returned in
-        the response on success.
+        If needed (i.e. project level metadata was not inputted via a form and instead embedded in the matrix file),
+        extracts the project-level metadata from the datasets or uses the given project-level metadata imputed via the
+        body parameter and saves it to the database. The new project metadata state will be returned in the response on
+        success.
       parameters:
         - $ref: '#/components/parameters/project_uuid'
       requestBody:
         content:
           application/json:
             schema:
-              description: >-
-                A schema that has fields for all available project-level metadata.
+              description: A schema that has fields for all available project-level metadata.
               type: object
               properties:
                 name:
@@ -357,7 +371,7 @@ paths:
         This lists all projects and their UUIDs that currently exist in the data portal. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
       parameters:
-        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/user_uuid'
         - name: fromDate
           in: query
           schema:
@@ -442,15 +456,14 @@ paths:
           $ref: '#/components/responses/404'
 components:
   schemas:
-    user_id:
+    user_uuid:
+      description: A unique identified of a logged in User of Corpora.
       type: string
     project_uuid:
-      description: >-
-        The unique identifier for addressing a project
+      description: A unique identifier of a Project.
       type: string
     dataset_uuid:
-      description: >-
-        The unique identifier for addressing a dataset
+      description: A unique identifier of a Dataset.
       type: string
   parameters:
     project_uuid:
@@ -472,12 +485,12 @@ components:
       required: true
       schema:
         type: string
-    user_id:
-      name: user_id
+    user_uuid:
+      name: user_uuid
       description: an ID that represents the user.
       in: query
       schema:
-        $ref: '#/components/schemas/user_id'
+        $ref: '#/components/schemas/user_uuid'
   responses:
     200:
       description: OK.
