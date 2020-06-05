@@ -89,7 +89,7 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    type: string
+                    $ref: '#/components/schemas/project_uuid'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -133,8 +133,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
-        '200':
-          $ref: '#/components/responses/200'
+        '202':
+          $ref: '#/components/responses/202'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -290,7 +290,9 @@ paths:
                 description:
                   type: string
                 raw_data_link:
-                  type: string
+                  type: array
+                  items:
+                    type: string
                 protocol_link:
                   type: string
                 other_information_link:
@@ -370,12 +372,12 @@ paths:
         a filter, then only projects that meet the status criteria will be outputted.
       parameters:
         - $ref: '#/components/parameters/query_user_uuid'
-        - name: fromDate
+        - name: from_date
           in: query
           schema:
             type: integer
           description: The date after which projects should have been created.
-        - name: toDate
+        - name: to_date
           in: query
           description: The date before which projects should have been created.
           schema:
