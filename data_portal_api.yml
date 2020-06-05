@@ -214,18 +214,8 @@ paths:
         Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
         outputted.
       parameters:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dataset_uuid:
-                  description: The UUID of the dataset that is being deleted from the project.
-                  type: string
-              required:
-                - dataset_uuid
         - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: '#/components/parameters/path_dataset_uuid'
       responses:
         '202':
           description: Accepted
