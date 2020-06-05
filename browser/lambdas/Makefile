@@ -9,6 +9,10 @@ endif
 deploy:
 	$(MAKE) deploy -C chalice/$(APP_NAME)
 
+.PHONY: redeploy
+redeploy:
+	$(MAKE) redeploy -C chalice/$(APP_NAME)
+
 .PHONY: destroy
 destroy:
 	$(MAKE) destroy -C chalice/$(APP_NAME)

@@ -11,8 +11,8 @@
       },
       "tags": {
         "env": "$DEPLOYMENT_STAGE",
-        "project": "single-cell data portal",
-        "service": "data-portal frontend",
+        "project": "single-cell corpora",
+        "service": "corpora frontend",
         "owner": "czi-single-cell"
       }
     }

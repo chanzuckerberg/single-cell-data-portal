@@ -2,7 +2,7 @@ SHELL=/bin/bash -o pipefail
 
 # This is set for build reproducibility
 export ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
-export APP_NAME=data-portal-api
+export APP_NAME=corpora-api
 export EXPORT_ENV_VARS_TO_LAMBDA=APP_NAME DEPLOYMENT_STAGE
 export PYTHONHASHSEED=0
 export S3_DEPLOYMENT_FILE=s3://org-corpora-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/deployed.json
