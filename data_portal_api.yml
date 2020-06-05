@@ -6,7 +6,11 @@ info:
     This is the API for the Corpora Data Portal
 servers:
   - description: production
-    url: https://api.corpora.czi-single-cell.science
+    url: https://api.corpora.cziscience.com
+  - description: dev
+    url: https://api.dev.corpora.cziscience.com
+  - description: staging
+    url: https://api.staging.corpora.cziscience.com
 paths:
   /v1/submission:
 
