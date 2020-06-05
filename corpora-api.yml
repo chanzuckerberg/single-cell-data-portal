@@ -326,8 +326,9 @@ paths:
         - submissions
       summary: Publish the Project
       description: >-
-        A schema that contains a field dictating the visibility of the deployments that will either make the project
-        visible on the public sites or only viewable through obfuscated URLs.
+        Publish a project to Corpora as either public or private. The visibility of the project will either make it
+        visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
+        to public, the successful execution of this operation will move the Submission to a CLOSED state.
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
@@ -335,10 +336,14 @@ paths:
           application/json:
             schema:
               description: >-
-                a schema that contains a field dictating the visibility of the deployments that will either make the
-                project visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
-                to public, the successful execution of this operation will move the Submission to a CLOSED state.
+                a schema that contains a field dictating the visibility of the deployments .
               type: object
+              properties:
+                visibility:
+                  description: Determines the visibility of the project, that will either make the
+                    project visible on the public sites or only viewable through obfuscated URLs.
+                  type: string
+                  enum:[public,private]
       responses:
         '200':
           description: OK
