@@ -15,7 +15,7 @@ def generate_file_url(file_prefix: str, expiration: int = 3600, s3=None) -> str:
     if not s3:
         s3 = boto3.client("s3")
 
-    bucket_name = f"corpora-data-portal-{os.environ['DEPLOYMENT_STAGE']}"
+    bucket_name = f"corpora-data-{os.environ['DEPLOYMENT_STAGE']}"
 
     try:
         response = s3.generate_presigned_url(
