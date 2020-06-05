@@ -18,7 +18,7 @@ paths:
         Lists all submissions by their UUIDs that currently exist in Corpora. If a parameter is specified as a filter,
         then only submissions that meet the given criteria will be outputted.
       parameters:
-        - $ref: '#/components/parameters/user_uuid'
+        - $ref: '#/components/parameters/query_user_uuid'
       responses:
         '200':
           description: OK
@@ -106,7 +106,7 @@ paths:
         Returns all available metadata information about a project submission, including URIs of datasets that are
         attached to the project.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -127,7 +127,7 @@ paths:
         Deletes the submission associated with the given project UUID. This does not delete the project if the project
         associated with the submission has been previously publicly published.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -154,7 +154,7 @@ paths:
         extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
         name, it will replace it and increment the revision value of the dataset.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
         content:
           application/json:
@@ -205,8 +205,7 @@ paths:
           $ref: '#/components/responses/409'
 
 
-  /v1/submission/{project_uuid}/dataset:
-
+  /v1/submission/{project_uuid}/dataset/{dataset_uuid}:
     delete:
       summary: Delete a project's dataset
       tags:
@@ -215,8 +214,6 @@ paths:
         Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
         outputted.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
-          required: true
       requestBody:
         content:
           application/json:
@@ -228,6 +225,7 @@ paths:
                   type: string
               required:
                 - dataset_uuid
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '202':
           description: Accepted
@@ -250,7 +248,7 @@ paths:
         there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
         the validation is also stored in the backend database.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
           description: OK
@@ -285,7 +283,7 @@ paths:
         body parameter and saves it to the database. The new project metadata state will be returned in the response on
         success.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
         content:
           application/json:
@@ -335,7 +333,7 @@ paths:
         A schema that contains a field dictating the visibility of the deployments that will either make the project
         visible on the public sites or only viewable through obfuscated URLs.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
         content:
           application/json:
@@ -377,7 +375,7 @@ paths:
         This lists all projects and their UUIDs that currently exist in the data portal. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
       parameters:
-        - $ref: '#/components/parameters/user_uuid'
+        - $ref: '#/components/parameters/query_user_uuid'
         - name: fromDate
           in: query
           schema:
@@ -417,7 +415,7 @@ paths:
       description: >-
         This will return all datasets and associated attributes, including processing pipeline statuses of the project.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -436,7 +434,7 @@ paths:
         Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If
         no such project exists, then a warning will be outputted.
       parameters:
-        - $ref: '#/components/parameters/project_uuid'
+        - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -457,7 +455,7 @@ paths:
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
       parameters:
-        - $ref: '#/components/parameters/dataset_uuid'
+        - $ref: '#/components/parameters/path_dataset_uuid'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -483,26 +481,26 @@ components:
       type: string
 
   parameters:
-    project_uuid:
+    path_project_uuid:
       name: project_uuid
       in: path
       required: true
       schema:
         $ref: '#/components/schemas/project_uuid'
-    dataset_uuid:
-      name: data_uuid
+    path_dataset_uuid:
+      name: dataset_uuid
       in: path
       required: true
       schema:
         $ref: '#/components/schemas/dataset_uuid'
-    filename:
+    path_filename:
       name: filename
       description: The name of a file to add, remove, or download.
       in: path
       required: true
       schema:
         type: string
-    user_uuid:
+    query_user_uuid:
       name: user_uuid
       description: an ID that represents the user.
       in: query
