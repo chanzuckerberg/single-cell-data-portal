@@ -17,7 +17,7 @@
         "secretsmanager:GetSecretValue"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:us-west-2:$ACCOUNT_ID:secret:corpora/backend/data-portal/$DEPLOYMENT_STAGE/*"
+        "arn:aws:secretsmanager:us-west-2:$ACCOUNT_ID:secret:corpora/backend/$DEPLOYMENT_STAGE/*"
       ]
     },
     {
@@ -26,8 +26,8 @@
         "s3:GetObject"
       ],
       "Resource": [
-        "arn:aws:s3:::corpora-data-portal-bucket-$DEPLOYMENT_STAGE",
-        "arn:aws:s3:::corpora-data-portal-bucket-$DEPLOYMENT_STAGE/*"
+        "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE",
+        "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE/*"
       ]
     }
   ]
