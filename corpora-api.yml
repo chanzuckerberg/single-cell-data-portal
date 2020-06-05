@@ -343,7 +343,7 @@ paths:
                   description: Determines the visibility of the project, that will either make the
                     project visible on the public sites or only viewable through obfuscated URLs.
                   type: string
-                  enum:[public,private]
+                  enum: [public,private]
       responses:
         '200':
           description: OK
@@ -511,6 +511,8 @@ components:
   responses:
     200:
       description: OK.
+    202:
+      description: Accepted
     201:
       description: Created.
     400:
