@@ -29,6 +29,24 @@
         "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE",
         "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetUser",
+        "iam:CreateUser",
+        "iam:DeleteUser",
+        "iam:PutUserPolicy",
+        "iam:DeleteUserPolicy",
+        "iam:ListUserPolicies",
+        "iam:CreateAccessKey",
+        "iam:DeleteAccessKey",
+        "iam:ListAccessKeys",
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::$ACCOUNT_ID:role/corpora-api-$DEPLOYMENT_STAGE-api_handler"
+      ]
     }
   ]
 }
