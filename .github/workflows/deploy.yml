@@ -30,7 +30,7 @@ jobs:
     - name: Deploy API Server
       run: make ci-deploy -C backend/chalice/api_server
     - name: Deploy Cloudfront Invalidator
-      run: make ci-deploy -C backend/chalice/cloudfront_invalidator
+      run: make redeploy -C backend/chalice/cloudfront_invalidator
 
   frontend:
     runs-on: ubuntu-latest
