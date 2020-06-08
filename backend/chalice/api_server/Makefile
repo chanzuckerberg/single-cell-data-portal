@@ -5,7 +5,7 @@ export ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output t
 export APP_NAME=corpora-api
 export EXPORT_ENV_VARS_TO_LAMBDA=APP_NAME DEPLOYMENT_STAGE
 export PYTHONHASHSEED=0
-export S3_DEPLOYMENT_FILE=s3://org-corpora-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/deployed.json
+export S3_DEPLOYMENT_FILE=s3://org-corpora-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/$(APP_NAME)_deployed.json
 export LOCAL_DEPLOYED_PATH=.chalice/deployed
 export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
 ifndef DEPLOYMENT_STAGE
