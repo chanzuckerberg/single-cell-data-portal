@@ -27,6 +27,8 @@ jobs:
       run: |
         pip install -r requirements.txt
         sudo apt-get install moreutils
+    - name: Destroy previous API Server
+      run: make destroy -C backend/chalice/api_server
     - name: Deploy API Server
       run: make ci-deploy -C backend/chalice/api_server
     - name: Deploy Cloudfront Invalidator
