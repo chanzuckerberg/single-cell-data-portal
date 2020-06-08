@@ -46,6 +46,7 @@ Filename                  | Purpose                           | Information link
 1. [Optional] Edit `./chalice/.chalice/config.in.json` to set the name of your app and Lambda settings like memory, timeout, reserved
    concurrency, tags, and environment variables.
 1. [Optional] Edit `./chalice/app.py` and `./chalice/requirements.txt` to modify the app.
+1. [Optional] **If deploying changes to an existing deployment** run `make download-vars`. 
 1. Deploy your app by running `make deploy`. The deployment results, including your API's Endpoint URL, will be
    printed to the terminal.
 1. If needed, assign
