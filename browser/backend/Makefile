@@ -7,7 +7,7 @@ new-deploy:
 
 .PHONY: deploy
 deploy:
-	$(MAKE) download-vars -C chalice
+	$(MAKE) retrieve-deployed -C chalice
 	$(MAKE) deploy -C chalice
 
 .PHONY: destroy
