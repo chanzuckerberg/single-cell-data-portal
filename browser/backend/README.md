@@ -47,7 +47,7 @@ Filename                  | Purpose                           | Information link
    concurrency, tags, and environment variables.
 1. [Optional] Edit `./chalice/app.py` and `./chalice/requirements.txt` to modify the app.
 1. Deploy your app:
-   - For creating a new deployment run `make new-deployment`.
+   - For creating a new deployment run `make new-deploy`.
    - For updating an existing deployment run `make deploy`.
 1. The deployment results, including your API's Endpoint URL, will be printed to the terminal.
 1. If needed, assign
