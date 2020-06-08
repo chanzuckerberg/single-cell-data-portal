@@ -29,8 +29,9 @@ jobs:
         sudo apt-get install moreutils
     - name: Deploy API Server
       run: make ci-deploy -C backend/chalice/api_server
-    - name: Deploy Cloudfront Invalidator
-      run: make redeploy -C backend/chalice/cloudfront_invalidator
+    # TODO: Uncomment the below lines once 
+    #- name: Deploy Cloudfront Invalidator
+      #run: make redeploy -C backend/chalice/cloudfront_invalidator
 
   frontend:
     runs-on: ubuntu-latest
