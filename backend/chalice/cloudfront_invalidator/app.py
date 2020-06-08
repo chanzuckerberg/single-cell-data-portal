@@ -5,7 +5,7 @@ from chalice import Chalice
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from code.cloudfront import get_cloudfront_distribution, invalidate_distributions
+from cloudfront_invalidator.cloudfront import get_cloudfront_distribution, invalidate_distributions
 
 
 app = Chalice(app_name="cloudfront_invalidator")
