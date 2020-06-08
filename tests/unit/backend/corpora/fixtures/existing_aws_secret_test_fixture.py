@@ -14,7 +14,7 @@ class ExistingAwsSecretTestFixture:
     If you leave the secret_name blank, a unique name will be generated for you.
     """
 
-    SECRET_ID_TEMPLATE = "corpora/cicd/dev/auth0-secret/{}"
+    SECRET_ID_TEMPLATE = "corpora/test/{}"
     EXISTING_SECRET_DEFAULT_VALUE = '{"top":"secret"}'
 
     def __init__(self, secret_name=None, secret_value=None):
