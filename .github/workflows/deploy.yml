@@ -22,13 +22,16 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: us-west-2
     - name: Install dependencies
       run: |
-        pip install -r browser/backend/requirements-dev.txt
+        pip install -r requirements.txt
         sudo apt-get install moreutils
-    - name: deploy backend
-      run: make ci-deploy -C browser/backend/chalice
+    - name: Deploy API Server
+      run: make ci-deploy -C backend/chalice/api_server
+    # TODO: Uncomment the below lines once
+    #- name: Deploy Cloudfront Invalidator
+      #run: make redeploy -C backend/chalice/cloudfront_invalidator
 
   frontend:
     runs-on: ubuntu-latest
@@ -45,4 +48,4 @@ jobs:
     - name: Install Gatsby
       run: npm install -g gatsby
     - name: Deploy Frontend
-      run: make deploy -C browser/frontend
+      run: make deploy -C frontend

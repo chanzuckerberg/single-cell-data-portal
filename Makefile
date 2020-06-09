@@ -7,17 +7,12 @@ fmt:
 
 .PHONY: lint
 lint:
-	flake8 browser tests
+	flake8 backend tests
 
 .PHONY: unit-test
 unit-test:
-	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
-		--source=browser/backend,browser/lambdas \
-		--omit=.coverage,venv,browser/backend/scripts/*,browser/backend/chalice/*,browser/backend/lambda/chalice/* \
-		-m unittest discover \
-		--start-directory tests/unit \
-		--top-level-directory . \
-		--verbose
+	PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose
 
 .PHONY: functional-test
 functional-test:

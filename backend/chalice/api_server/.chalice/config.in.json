@@ -1,0 +1,16 @@
+{
+  "stages": {
+    "$DEPLOYMENT_STAGE": {
+      "lambda_memory_size": 256,
+      "lambda_timeout": 30,
+      "environment_variables": {
+      },
+      "tags": {
+        "created-from": "corpora browser"
+      }
+    }
+  },
+  "version": "2.0",
+  "app_name": "$APP_NAME",
+  "autogen_policy": false
+}

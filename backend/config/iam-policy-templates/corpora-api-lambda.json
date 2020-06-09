@@ -1,0 +1,52 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/$APP_NAME-$DEPLOYMENT_STAGE:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:us-west-2:$ACCOUNT_ID:secret:corpora/backend/$DEPLOYMENT_STAGE/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE",
+        "arn:aws:s3:::corpora-data-$DEPLOYMENT_STAGE/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetUser",
+        "iam:CreateUser",
+        "iam:DeleteUser",
+        "iam:PutUserPolicy",
+        "iam:DeleteUserPolicy",
+        "iam:ListUserPolicies",
+        "iam:CreateAccessKey",
+        "iam:DeleteAccessKey",
+        "iam:ListAccessKeys",
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::$ACCOUNT_ID:role/corpora-api-$DEPLOYMENT_STAGE-api_handler"
+      ]
+    }
+  ]
+}
