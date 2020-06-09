@@ -9,7 +9,8 @@ from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import
 
 
 class TestAwsSecret(unittest.TestCase):
-    UNKNOWN_SECRET = "corpora/test/secret_that_does_not_exist"  # Don't ever create this
+    UNKNOWN_SECRET = ExistingAwsSecretTestFixture.SECRET_ID_TEMPLATE.format(
+        "secret_that_does_not_exist")  # Don't ever create this
 
     @classmethod
     def setUpClass(cls):
