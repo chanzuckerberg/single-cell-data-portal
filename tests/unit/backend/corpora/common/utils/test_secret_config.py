@@ -37,8 +37,7 @@ class TestSecretConfig(unittest.TestCase):
 
     def setUp(self):
         self.deployment_env = "bogo_env_{}".format(uuid.uuid4())
-        self.secret_name = ExistingAwsSecretTestFixture.SECRET_ID_TEMPLATE.format(
-            f"bogo_component/{self.deployment_env}")
+        self.secret_name = f"corpora/bogo_component/{self.deployment_env}/secrets"
         BogoComponentConfig.reset()
 
     def tearDown(self):
@@ -58,8 +57,7 @@ class TestSecretConfig(unittest.TestCase):
                 self.assertEqual("secret1_from_cloud", config.secret1)
 
     def test_custom_secret_name(self):
-        custom_secret_name = ExistingAwsSecretTestFixture.SECRET_ID_TEMPLATE.format(
-            f"bogo_component/{self.deployment_env}/custom-secret-name")
+        custom_secret_name = f"corpora/bogo_component/{self.deployment_env}/custom-secret-name"
         with ExistingAwsSecretTestFixture(secret_name=custom_secret_name, secret_value='{"secret1":"custom"}'):
             class BogoComponentCustomConfig(SecretConfig):
                 def __init__(self, *args, **kwargs):
@@ -70,18 +68,17 @@ class TestSecretConfig(unittest.TestCase):
             config = BogoComponentCustomConfig(deployment=self.deployment_env, source="aws")
             self.assertEqual("custom", config.secret1)
 
-    @patch("backend.corpora.common.utils.aws_secret.AwsSecret")
-    def test_singletonness(self, mock_AwsSecret):
-        value_mock = PropertyMock(return_value='{"secret2": "foo"}')
-        type(mock_AwsSecret()).value = value_mock
+    def test_singletonness(self):
+        with patch("backend.corpora.common.utils.aws_secret.AwsSecret.value", new_callable=PropertyMock) as mock_aws_secret_value:
+            mock_aws_secret_value.return_value = '{"secret2": "foo"}'
 
-        config1 = BogoComponentConfig(deployment=self.deployment_env, source="aws")
-        self.assertEqual("foo", config1.secret2)
+            config1 = BogoComponentConfig(deployment=self.deployment_env, source="aws")
+            self.assertEqual("foo", config1.secret2)
 
-        config2 = BogoComponentConfig(deployment=self.deployment_env, source="aws")
-        self.assertEqual("foo", config2.secret2)
+            config2 = BogoComponentConfig(deployment=self.deployment_env, source="aws")
+            self.assertEqual("foo", config2.secret2)
 
-        value_mock.assert_called_once()
+            mock_aws_secret_value.assert_called_once()
 
     # TRUTH TABLE
     # ITEM IS IN CONFIG | ITEM IS IN ENV | use_env IS SET | RESULT
