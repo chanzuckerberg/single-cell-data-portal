@@ -10,7 +10,7 @@ if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
     os.environ["DEPLOYMENT_STAGE"] = "dev"  # noqa
 
 API_URL = {
-    "dev": "https://corpora-api.dev.cziscience.com",
+    "dev": "https://api.dev.corpora.cziscience.com",
 }
 
 
