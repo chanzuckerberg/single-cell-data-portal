@@ -14,7 +14,7 @@ class SecretConfig:
               super().__init__('my_component', **kwargs)
 
     Setup your secrets in AWS Secrets Manager (e.g. use Terraform), as a JSON hash, at path:
-        dcp/my_component/<deployment>/secrets
+        corpora/my_component/<deployment>/secrets
 
     To access secrets, (assuming that 'my_secret' is a key of your JSON hash):
         MyComponentConfig().my_secret
