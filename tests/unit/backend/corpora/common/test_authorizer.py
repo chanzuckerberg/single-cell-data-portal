@@ -24,9 +24,9 @@ class TestAuthorizer(unittest.TestCase):
 
     def test_not_bearer(self):
         sample_non_bearer_auth_token = {
-            'Authorization': 'Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
+            "Authorization": "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
         }
         with self.assertRaises(UnauthorizedError):
             assert_authorized(sample_non_bearer_auth_token)
