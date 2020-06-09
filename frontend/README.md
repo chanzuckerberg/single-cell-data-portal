@@ -5,7 +5,7 @@
   </a>
 </p>
 <h1 align="center">
-  Data Browser Frontend
+  Data Portal Frontend
 </h1>
 <p align="center">
   Powered by Gatsby
@@ -22,7 +22,7 @@
     # Install project dependencies
     npm install
     ```
-    
+
 1.  **Host the backend locally.**
 
     Follow [backend instructions](https://github.com/chanzuckerberg/corpora-data-portal/tree/master/browser/backend#development)
@@ -33,7 +33,7 @@
     ```shell
     gatsby develop
     ```
-    
+
     Your site is now running at `http://localhost:8000` with hot re-loading!
 
 1.  **Open the source code and start editing!**
@@ -58,7 +58,7 @@
     export DEPLOYMENT_STAGE=dev
     ```
 
-2.  **Deploy.**
+1.  **Deploy.**
 
     ```shell
     make deploy

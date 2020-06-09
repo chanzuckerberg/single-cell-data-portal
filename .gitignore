@@ -80,6 +80,7 @@ target/
 # IDEs
 .idea
 tags
+.vscode
 
 # macOS
 .DS_Store
