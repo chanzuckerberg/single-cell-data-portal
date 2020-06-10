@@ -43,7 +43,7 @@ class DBSessionMaker:
 
 class ProjectStatus(enum.Enum):
     """
-    Describes a Project's status.
+    Describes a DbProject's status.
     At most, one LIVE and one EDITING entry of a Project may exist at a time.
 
     LIVE - a published and publicly viewable Project.
@@ -59,7 +59,7 @@ class ProjectStatus(enum.Enum):
 #  Or reported state represents slowest Dataset in the Project?
 class ProcessingState(enum.Enum):
     """
-    Enumerates Project states in the data processing pipeline from upload to deployment.
+    Enumerates DbProject states in the data processing pipeline from upload to deployment.
 
     NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
     IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
@@ -74,7 +74,7 @@ class ProcessingState(enum.Enum):
 
 class ValidationState(enum.Enum):
     """
-    Enumerates Project validation states.
+    Enumerates DbProject validation states.
 
     NOT_VALIDATED - Validation not performed yet.
     VALID - Project is valid.
@@ -87,7 +87,7 @@ class ValidationState(enum.Enum):
 
 class ProjectLinkType(enum.Enum):
     """
-    Enumerates Project external web link types.
+    Enumerates DbProject external web link types.
 
     PROTOCOL - A link to a sequencing protocol.
     RAW_DATA - A link to a raw data repository.
@@ -109,7 +109,7 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class User(Base):
+class DbUser(Base):
     """
     A registered Corpora user.
     Maintains user details such as contact information and access control settings.
@@ -123,10 +123,10 @@ class User(Base):
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
 
-class Project(Base):
+class DbProject(Base):
     """
     A Corpora project represents an in progress or live submission of a lab experiment.
-    Projects are associated with one or more single-cell datasets and links to external repositories.
+    DbProjects are associated with one or more single-cell datasets and links to external repositories.
     """
     __tablename__ = "project"
 
@@ -143,14 +143,14 @@ class Project(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    user = relationship("User")
+    user = relationship("DbUser")
 
 
-class ProjectDataset(Base):
+class DbProjectDataset(Base):
     """
-    Associates a Project with a Dataset.
-    A Project may link to several Datasets.
-    A Dataset must belong to one Project.
+    Associates a DbProject with a DbDataset.
+    A DbProject may link to several DbDatasets.
+    A DbDataset must belong to one DbProject.
     """
     __tablename__ = "project_dataset"
 
@@ -161,13 +161,13 @@ class ProjectDataset(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    project = relationship("Project")
-    dataset = relationship("Dataset")
+    project = relationship("DbProject")
+    dataset = relationship("DbDataset")
 
 
-class ProjectLink(Base):
+class DbProjectLink(Base):
     """
-    Represents an external web link for Projects such as protocols and supplementary data repositories.
+    Represents an external web link for DbProjects such as protocols and supplementary data repositories.
     """
     __tablename__ = "project_link"
 
@@ -179,14 +179,14 @@ class ProjectLink(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    project = relationship("Project")
+    project = relationship("DbProject")
 
 
-class Dataset(Base):
+class DbDataset(Base):
     """
     Models a single experiment uploaded and processed by Corpora.
     Describes experiment metadata such as specimen and assay data.
-    Related data files are represented by DataArtifacts.
+    Related data files are represented by DbDataArtifacts.
     """
     __tablename__ = "dataset"
 
@@ -211,10 +211,10 @@ class Dataset(Base):
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
 
-class DatasetArtifact(Base):
+class DbDatasetArtifact(Base):
     """
-    Represents a User uploaded or Corpora generated file linked to a Dataset.
-    All matrices and cellxgene objects are examples of a DatasetArtifact.
+    Represents a DbUser uploaded or Corpora generated file linked to a DbDataset.
+    All matrices and cellxgene objects are examples of a DbDatasetArtifact.
     """
     __tablename__ = "dataset_artifact"
 
@@ -227,10 +227,10 @@ class DatasetArtifact(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("Dataset")
+    dataset = relationship("DbDataset")
 
 
-class DeploymentDirectory(Base):
+class DbDeploymentDirectory(Base):
     """
     Represents the deployment of a dataset to a Corpora application.
     This entity only supports cellxgene deployments.
@@ -244,14 +244,14 @@ class DeploymentDirectory(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("Dataset")
+    dataset = relationship("DbDataset")
 
 
-class DatasetContributor(Base):
+class DbDatasetContributor(Base):
     """
-    Associates a Dataset with a Contributor.
-    Datasets may have many Contributors.
-    Contributors may have many Datasets.
+    Associates a DbDataset with a DbContributor.
+    DbDatasets may have many DbContributors.
+    DbContributors may have many DbDatasets.
     """
     __tablename__ = "dataset_contributor"
 
@@ -262,7 +262,7 @@ class DatasetContributor(Base):
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
 
-class Contributor(Base):
+class DbContributor(Base):
     """
     A data contributor. Typically a researcher associated with an institution.
     """
