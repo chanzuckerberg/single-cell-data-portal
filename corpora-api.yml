@@ -31,8 +31,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  request_id:
-                    type: string
                   project_uuid:
                     $ref: '#/components/schemas/project_uuid'
                   name:
@@ -152,6 +150,7 @@ paths:
       tags:
         - submissions
       description: >-
+        TODO: https://github.com/chanzuckerberg/corpora-data-portal/issues/361
         Adds a dataset file or a legal file to the project’s S3 bucket. If a legal file is uploaded (verified by a
         standard name), then the requirement for attestation for the project will be satisfied and accordingly noted in
         the submission entity. A quick validation will be performed to ensure that if the file is a data file, then the
@@ -273,7 +272,7 @@ paths:
       summary: Save the project
       description: >-
         If needed (i.e. project level metadata was not inputted via a form and instead embedded in the matrix file),
-        extracts the project-level metadata from the datasets or uses the given project-level metadata imputed via the
+        extracts the project-level metadata from the datasets or uses the given project-level metadata add via the
         body parameter and saves it to the database. The new project metadata state will be returned in the response on
         success.
       parameters:
@@ -364,14 +363,14 @@ paths:
           $ref: '#/components/responses/404'
 
 
-  /v1/projects:
+  /v1/project:
 
     get:
       tags:
         - projects
       summary: List Projects
       description: >-
-        This lists all projects and their UUIDs that currently exist in the data portal. If a parameter is specified as
+        This lists all projects and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
       parameters:
         - $ref: '#/components/parameters/query_user_uuid'
@@ -405,14 +404,14 @@ paths:
           $ref: '#/components/responses/400'
 
 
-  /v1/projects/{project_uuid}:
+  /v1/project/{project_uuid}:
 
     get:
       tags:
         - projects
       summary: Get Project
       description: >-
-        This will return all datasets and associated attributes, including processing pipeline statuses of the project.
+        This will return all datasets and associated attributes.
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -430,12 +429,22 @@ paths:
         - projects
       summary: Delete Project
       description: >-
-        Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If
-        no such project exists, then a warning will be outputted.
+        Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such
+        project exists, then a warning will be outputted.
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_uuid:
+                    type: string
+                  dataset_presigned_url:
+                    type: string
           $ref: '#/components/responses/200'
         '401':
           $ref: '#/components/responses/401'
@@ -470,7 +479,7 @@ components:
 
   schemas:
     user_uuid:
-      description: A unique identified of a logged in User of Corpora.
+      description: A unique identifier of a logged in User of Corpora.
       type: string
     project_uuid:
       description: A unique identifier of a Project.
@@ -509,10 +518,10 @@ components:
   responses:
     200:
       description: OK.
-    202:
-      description: Accepted
     201:
       description: Created.
+    202:
+      description: Accepted
     400:
       description: Invalid parameter.
     401:
