@@ -23,6 +23,10 @@
     npm install
     ```
 
+1. **Set Up Environment Variables**
+
+	Create the the environment file and populate the variables.
+	
 1.  **Host the backend locally.**
 
     Follow [backend instructions](https://github.com/chanzuckerberg/corpora-data-portal/tree/master/browser/backend#development)
@@ -39,6 +43,19 @@
 1.  **Open the source code and start editing!**
 
     Modify code in the `src` directory, save your changes and the browser will update in real time.
+
+## Environment Variables
+The environment variables used to deploy the website. The variables should be stored in a file name *env.development* 
+for development and *env.production* for production deployments. Do not store sensitive data in the environment 
+variables.
+
+| Name | Description |
+|------|-------------|
+| AUTH0\_DOMAIN | The hosted Auth0 domian used for Authentication |
+| AUTH0\_CLIENTID | The client id of the Auth0 application for this site |
+| AUDIENCE | The domain of the corpora api |
+| API\_URL | The URL to the corpora api |
+| CXG\_URL | The URL to CellxGene  |
 
 ## Deployment
 
@@ -58,12 +75,15 @@
     export DEPLOYMENT_STAGE=dev
     ```
 
-1.  **Deploy.**
+1.  **Deploy.** 
+
+    Files are deployed to a publicly accessible bucket. Do not include sensitive data in the deployed files.
 
     ```shell
     make deploy
     ```
 
+	
 ## 🧐 What's inside?
 
 A quick look at the top-level files and directories you'll see in a Gatsby project.
