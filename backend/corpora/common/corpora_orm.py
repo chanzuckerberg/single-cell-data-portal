@@ -223,6 +223,7 @@ class DbDatasetArtifact(Base):
     filename = Column(String)
     filetype = Column(String)
     type = Column(Enum(DatasetArtifactType))
+    user_submitted = Column(Boolean)
     s3_uri = Column(String)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
