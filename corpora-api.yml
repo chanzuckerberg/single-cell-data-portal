@@ -293,9 +293,13 @@ paths:
                   items:
                     type: string
                 protocol_link:
-                  type: string
+                  type: array
+                  items:
+                    type: string
                 other_information_link:
-                  type: string
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: OK
@@ -333,14 +337,14 @@ paths:
           application/json:
             schema:
               description: >-
-                a schema that contains a field dictating the visibility of the deployments .
+                a schema that contains a field dictating the visibility of the deployments.
               type: object
               properties:
                 visibility:
-                  description: Determines the visibility of the project, that will either make the
-                    project visible on the public sites or only viewable through obfuscated URLs.
-                  type: string
-                  enum: [public,private]
+                  description: >-
+                    Determines the visibility of the project, that will either make the project visible on the public
+                    sites or only viewable through obfuscated URLs.
+                  $ref: '#/components/schemas/visibility'
       responses:
         '200':
           description: OK
@@ -352,7 +356,7 @@ paths:
                   project_uuid:
                     $ref: '#/components/schemas/project_uuid'
                   visibility:
-                    type: string
+                    $ref: '#/components/schemas/visibility'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -487,7 +491,9 @@ components:
     dataset_uuid:
       description: A unique identifier of a Dataset.
       type: string
-
+    visibility:
+      type: string
+      enum: [public,private]
   parameters:
     path_project_uuid:
       name: project_uuid
