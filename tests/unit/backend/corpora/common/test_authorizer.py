@@ -14,7 +14,7 @@ if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
 secret_name = "corpora/cicd/dev/auth0-secret"
 # using the same secret for all none production stages.
 
-
+@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE", 'test') == "test", "DEPLOYMENT_STAGE is 'test'")
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
