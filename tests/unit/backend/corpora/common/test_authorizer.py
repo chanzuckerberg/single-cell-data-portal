@@ -8,18 +8,15 @@ from chalice import UnauthorizedError
 from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws_secret import AwsSecret
 
-if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
-    os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
 
-secret_name = "corpora/cicd/dev/auth0-secret"
-# using the same secret for all none production stages.
-
-
-@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE", "test") == "test", "DEPLOYMENT_STAGE is 'test'")
+@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
 class TestAuthorizer(unittest.TestCase):
+    secret_name = "corpora/cicd/dev/auth0-secret"
+    # using the same secret for all none production stages.
+
     @classmethod
     def setUpClass(cls):
-        cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
+        cls.auth0_secret = json.loads(AwsSecret(cls.secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
     def test_postive(self):
