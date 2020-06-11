@@ -12,7 +12,7 @@ from backend.corpora.common.utils.aws_secret import AwsSecret
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
 class TestAuthorizer(unittest.TestCase):
     secret_name = "corpora/cicd/dev/auth0-secret"
-    # using the same secret for all none production stages.
+    # using the same secret for all non production stages.
 
     @classmethod
     def setUpClass(cls):
