@@ -438,18 +438,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  dataset_uuid:
-                    type: string
-                  dataset_presigned_url:
-                    type: string
-          $ref: '#/components/responses/200'
+        '202':
+          $ref: '#/components/responses/202'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -470,7 +460,16 @@ paths:
         - $ref: '#/components/parameters/path_dataset_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_uuid:
+                    type: string
+                  dataset_presigned_url:
+                    type: string
         '401':
           $ref: '#/components/responses/401'
         '403':
