@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     String,
     text,
@@ -25,15 +26,13 @@ from common.corpora_config import CorporaDbConfig
 Base = declarative_base()
 deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
-# TODO: check syntax (SQL -> Postgres)
-# The in-memory SQLite database used in unit tests does not support now() SQL syntax
-# DEFAULT_DATETIME = "2000-01-01 00:00:00" if deployment_stage == "test" else text("now()")
 DEFAULT_DATETIME = text("now()")
 
 
 class DBSessionMaker:
     def __init__(self):
-        connection = "sqlite:///:memory:" if deployment_stage == "test" else CorporaDbConfig().database_uri
+        conn_uri = CorporaDbConfig().database_uri
+        connection = f"{conn_uri[:conn_uri.index('@')]}@localhost:5432"  # TODO: clean up
         self.engine = create_engine(connection)
         self.session_maker = sessionmaker(bind=self.engine)
 
@@ -44,19 +43,15 @@ class DBSessionMaker:
 class ProjectStatus(enum.Enum):
     """
     Describes a DbProject's status.
-    At most, one LIVE and one EDITING entry of a Project may exist at a time.
+    At most, one LIVE and one EDIT entry of a Project may exist at a time.
 
     LIVE - a published and publicly viewable Project.
-    EDITING - an open Submission, i.e an unpublished and non-public Project.
+    Edit - an open Submission, i.e an unpublished and non-public Project.
     """
     LIVE = "Live"
-    EDITING = "Editing"
+    EDIT = "Edit"
 
 
-# TODO: Rethink.
-#  Should this be per dataset?
-#  Should it be expanded to represent individual datasets?
-#  Or reported state represents slowest Dataset in the Project?
 class ProcessingState(enum.Enum):
     """
     Enumerates DbProject states in the data processing pipeline from upload to deployment.
@@ -98,6 +93,21 @@ class ProjectLinkType(enum.Enum):
     OTHER = "Other"
 
 
+class DatasetArtifactFileType(enum.Enum):
+    """
+    Enumerates DatasetArtifact file types.
+
+    H5AD - An AnnData object describing an expression matrix. Uses the .h5ad extension.
+    RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
+    LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
+    CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
+    """
+    H5AD = "H5ad"
+    RDS = "Rds"
+    LOOM = "Loom"
+    CXG = "Cxg"
+
+
 class DatasetArtifactType(enum.Enum):
     """
     Enumerates DatasetArtifact types.
@@ -131,8 +141,8 @@ class DbProject(Base):
     __tablename__ = "project"
 
     id = Column(String, primary_key=True)
-    status = Column(Enum(ProjectStatus), primary_key=True)
-    submitter = Column(ForeignKey("user.id"), nullable=False)
+    status = Column(String, primary_key=True)  # Enum(ProjectStatus). Enum type unsupported for composite FKs.
+    owner = Column(ForeignKey("user.id"), nullable=False)
     name = Column(String)
     description = Column(String)
     s3_bucket = Column(String)
@@ -155,14 +165,15 @@ class DbProjectDataset(Base):
     __tablename__ = "project_dataset"
 
     id = Column(String, primary_key=True)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    project_status = Column(ForeignKey("project.status"), nullable=False)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    project = relationship("DbProject")
-    dataset = relationship("DbDataset")
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status],
+                                           [DbProject.id, DbProject.status]), {})
 
 
 class DbProjectLink(Base):
@@ -172,14 +183,16 @@ class DbProjectLink(Base):
     __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    project_status = Column(ForeignKey("project.status"), nullable=False)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    project = relationship("DbProject")
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status],
+                                           [DbProject.id, DbProject.status]), {})
 
 
 class DbDataset(Base):
@@ -221,7 +234,7 @@ class DbDatasetArtifact(Base):
     id = Column(String, primary_key=True)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
-    filetype = Column(String)
+    filetype = Column(Enum(DatasetArtifactFileType))
     type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
@@ -248,6 +261,20 @@ class DbDeploymentDirectory(Base):
     dataset = relationship("DbDataset")
 
 
+class DbContributor(Base):
+    """
+    A data contributor. Typically a researcher associated with an institution.
+    """
+    __tablename__ = "contributor"
+
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    institution = Column(String)
+    email = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+
 class DbDatasetContributor(Base):
     """
     Associates a DbDataset with a DbContributor.
@@ -259,19 +286,5 @@ class DbDatasetContributor(Base):
     id = Column(String, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-
-
-class DbContributor(Base):
-    """
-    A data contributor. Typically a researcher associated with an institution.
-    """
-    __tablename__ = "contributor"
-
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    institution = Column(String)
-    email = Column(String)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
