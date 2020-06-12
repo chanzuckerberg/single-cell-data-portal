@@ -33,7 +33,7 @@ ci-deploy: retrieve-deployed
 
 .PHONY: package
 package: build-chalice-config
-	mkdir -p chalicelib/code
+	mkdir -p chalicelib/corpora
 	cp -R ../../corpora/common chalicelib/corpora
 	cp -a $(APP_NAME).yml chalicelib
 	rm -rf vendor dist/deployment
@@ -56,7 +56,7 @@ build-chalice-config:
 
 .PHONY: local-server
 local-server: package
-	python local_server.py
+	python run_local_server.py
 
 .PHONY: retrieve-deployed
 retrieve-deployed:
