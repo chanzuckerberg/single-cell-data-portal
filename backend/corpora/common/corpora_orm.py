@@ -56,7 +56,7 @@ class ProcessingState(enum.Enum):
 
     NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
     IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
-    IN_ARTIFACT_CREATION - Following validation, create all Original+Remix matrix formats + cellxgene objects.
+    IN_ARTIFACT_CREATION - Following validation, create all Original + Remix matrix formats and cellxgene objects.
     IN_DEPLOYMENT - The final stage in the pipeline: deploying artifacts to Data Portal and cellxgene applications.
     """
     NA = "N/A"
