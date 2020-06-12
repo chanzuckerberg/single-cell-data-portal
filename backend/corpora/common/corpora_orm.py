@@ -31,9 +31,7 @@ DEFAULT_DATETIME = text("now()")
 
 class DBSessionMaker:
     def __init__(self):
-        conn_uri = CorporaDbConfig().database_uri
-        connection = f"{conn_uri[:conn_uri.index('@')]}@localhost:5432"  # TODO: clean up
-        self.engine = create_engine(connection)
+        self.engine = create_engine(CorporaDbConfig().database_uri)
         self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):

@@ -1,3 +1,18 @@
+"""
+6/12/20 calvinnhieu
+
+Dirty script to load sample matrix (H5AD, Remix) into DB.
+This dataset will be used in the short-term to:
+1. Verify the DB Schema
+2. Provide testing data to unblock API development
+
+The sample dataset can be found in the
+`cellxgene-data-wrangling-prod` bucket
+in the `single-cell-prod` account.
+
+This script will be deprecated when file upload is implemented in Corpora.
+"""
+
 import json
 import os
 import scanpy as sc
@@ -28,7 +43,6 @@ from corpora.common.corpora_orm import (
 
 session = DBSessionMaker().session()
 
-# TODO: read from S3
 filename = "Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_Calu_3-28-remixed.h5ad"
 adata = sc.read(filename)
 
