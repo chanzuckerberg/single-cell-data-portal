@@ -44,7 +44,7 @@ class ProjectStatus(enum.Enum):
     At most, one LIVE and one EDIT entry of a Project may exist at a time.
 
     LIVE - a published and publicly viewable Project.
-    Edit - an open Submission, i.e an unpublished and non-public Project.
+    EDIT - an open Submission, i.e an unpublished and non-public Project.
     """
 
     LIVE = "Live"
