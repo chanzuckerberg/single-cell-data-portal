@@ -105,10 +105,10 @@ class DatasetArtifactFileType(enum.Enum):
     CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
     """
 
-    H5AD = "H5ad"
-    RDS = "Rds"
-    LOOM = "Loom"
-    CXG = "Cxg"
+    H5AD = "h5ad"
+    RDS = "rds"
+    LOOM = "loom"
+    CXG = "cxg"
 
 
 class DatasetArtifactType(enum.Enum):
