@@ -15,7 +15,7 @@ Filename                  | Purpose                           | Information link
 
 ## Development
 1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
+    [required credentials and profiles](../docs/awscli.md).
 
 1.  Set the following environment variables:
 
@@ -27,7 +27,7 @@ Filename                  | Purpose                           | Information link
 1.  Install dependencies
 
      ```shell
-     pip install -r requirements-dev.txt
+     pip install -r requirements.txt
      ```
 
 1.  Deploy the Chalice app to http://localhost:5000
@@ -61,7 +61,7 @@ run `make destroy`.
 ## Testing
 Tests are run in the top level directory `corpora-data-portal`.
 
-See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#testing)
+See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#commands)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy

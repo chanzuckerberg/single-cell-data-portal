@@ -60,7 +60,7 @@ variables.
 ## Deployment
 
 1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
+    [required credentials and profiles](../docs/awscli.md).
     Set the appropriate `AWS_PROFILE`.
 
     ```shell
