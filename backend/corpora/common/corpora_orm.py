@@ -1,189 +1,301 @@
+import enum
 import os
 import sys
 
 from sqlalchemy import (
-    create_engine,
     Boolean,
     Column,
+    create_engine,
     DateTime,
+    Enum,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     String,
     text,
-    BigInteger,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # noqa
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from .corpora_config import CorporaDbConfig
+from common.corpora_config import CorporaDbConfig
 
 
 Base = declarative_base()
 deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
-# The in-memory SQLite database used in unit tests does not support now() SQL syntax
-DEFAULT_DATETIME = "2000-01-01 00:00:00" if deployment_stage == "test" else text("now()")
+DEFAULT_DATETIME = text("now()")
 
 
 class DBSessionMaker:
     def __init__(self):
-        connection = "sqlite:///:memory:" if deployment_stage == "test" else CorporaDbConfig().database_uri
-        self.engine = create_engine(connection)
+        self.engine = create_engine(CorporaDbConfig().database_uri)
         self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):
         return self.session_maker(**kwargs)
 
 
-class Project(Base):
+class ProjectStatus(enum.Enum):
+    """
+    Describes a DbProject's status.
+    At most, one LIVE and one EDIT entry of a Project may exist at a time.
+
+    LIVE - a published and publicly viewable Project.
+    EDIT - an open Submission, i.e an unpublished and non-public Project.
+    """
+
+    LIVE = "Live"
+    EDIT = "Edit"
+
+
+class ProcessingState(enum.Enum):
+    """
+    Enumerates DbProject states in the data processing pipeline from upload to deployment.
+
+    NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
+    IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
+    IN_ARTIFACT_CREATION - Following validation, create all Original + Remix matrix formats and cellxgene objects.
+    IN_DEPLOYMENT - The final stage in the pipeline: deploying artifacts to Data Portal and cellxgene applications.
+    """
+
+    NA = "N/A"
+    IN_VALIDATION = "In validation"
+    IN_ARTIFACT_CREATION = "In artifact creation"
+    IN_DEPLOYMENT = "In deployment"
+
+
+class ValidationState(enum.Enum):
+    """
+    Enumerates DbProject validation states.
+
+    NOT_VALIDATED - Validation not performed yet.
+    VALID - Project is valid.
+    INVALID - Project is invalid.
+    """
+
+    NOT_VALIDATED = "Not validated"
+    VALID = "Valid"
+    INVALID = "Invalid"
+
+
+class ProjectLinkType(enum.Enum):
+    """
+    Enumerates DbProject external web link types.
+
+    PROTOCOL - A link to a sequencing protocol.
+    RAW_DATA - A link to a raw data repository.
+    OTHER - Other.
+    """
+
+    PROTOCOL = "Protocol"
+    RAW_DATA = "Raw data"
+    OTHER = "Other"
+
+
+class DatasetArtifactFileType(enum.Enum):
+    """
+    Enumerates DatasetArtifact file types.
+
+    H5AD - An AnnData object describing an expression matrix. Uses the .h5ad extension.
+    RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
+    LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
+    CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
+    """
+
+    H5AD = "h5ad"
+    RDS = "rds"
+    LOOM = "loom"
+    CXG = "cxg"
+
+
+class DatasetArtifactType(enum.Enum):
+    """
+    Enumerates DatasetArtifact types.
+
+    ORIGINAL - A data artifact that adheres to the minimal metadata schema requirements.
+    REMIX - A data artifact that adheres to the Corpora metadata schema requirements.
+    """
+
+    ORIGINAL = "Original"
+    REMIX = "Remix"
+
+
+class DbUser(Base):
+    """
+    A registered Corpora user.
+    Maintains user details such as contact information and access control settings.
+    """
+
+    __tablename__ = "user"
+
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    email = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+
+class DbProject(Base):
+    """
+    A Corpora project represents an in progress or live submission of a lab experiment.
+    DbProjects are associated with one or more single-cell datasets and links to external repositories.
+    """
+
     __tablename__ = "project"
 
-    id = Column(String(64), primary_key=True)
-    title = Column(String(255))
-    label = Column(String(255))
-    description = Column(String(3000))
-    biosample_categories = Column(String(32))
-    development_stages = Column(String(150))
-    diseases = Column(String(1000))
-    cell_isolation_methods = Column(String(100))
-    cell_types = Column(String(150))
-    cell_count = Column(Integer)
-    paired_end = Column(String(16))
-    nucleic_acid_sources = Column(String(64))
-    input_nucleic_acid_molecules = Column(String(100))
-    publication_title = Column(String(200))
-    publication_doi = Column(String(32))
-    cxg_enabled = Column(Boolean)
+    id = Column(String, primary_key=True)
+    status = Column(String, primary_key=True)  # Enum(ProjectStatus). Enum type unsupported for composite FKs.
+    owner = Column(ForeignKey("user.id"), nullable=False)
+    name = Column(String)
+    description = Column(String)
+    s3_bucket = Column(String)
+    tc_uri = Column(String)
+    needs_attestation = Column(Boolean)
+    processing_state = Column(Enum(ProcessingState))
+    validation_state = Column(Enum(ValidationState))
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
+    user = relationship("DbUser")
 
-class File(Base):
-    __tablename__ = "file"
 
-    id = Column(String(64), primary_key=True)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    filename = Column(String(80))
-    file_format = Column(String(8))
-    file_size = Column(BigInteger)
-    file_type = Column(String(20))
-    s3_uri = Column(String(200))
+class DbProjectDataset(Base):
+    """
+    Associates a DbProject with a DbDataset.
+    A DbProject may link to several DbDatasets.
+    A DbDataset must belong to one DbProject.
+    """
+
+    __tablename__ = "project_dataset"
+
+    id = Column(String, primary_key=True)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
-class LibraryConstructionMethod(Base):
-    __tablename__ = "library_construction_method"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(64))
+class DbProjectLink(Base):
+    """
+    Represents an external web link for DbProjects such as protocols and supplementary data repositories.
+    """
+
+    __tablename__ = "project_link"
+
+    id = Column(String, primary_key=True)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
+    link_url = Column(String)
+    link_type = Column(Enum(ProjectLinkType))
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-
-class Organ(Base):
-    __tablename__ = "organ"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
 
-class Species(Base):
-    __tablename__ = "species"
+class DbDataset(Base):
+    """
+    Models a single experiment uploaded and processed by Corpora.
+    Describes experiment metadata such as specimen and assay data.
+    Related data files are represented by DbDataArtifacts.
+    """
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(16))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    __tablename__ = "dataset"
+
+    id = Column(String, primary_key=True)
+    revision = Column(Integer)
+    name = Column(String)
+    organism = Column(String)
+    organism_ontology = Column(String)
+    tissue = Column(String)
+    tissue_ontology = Column(String)
+    assay = Column(String)
+    assay_ontology = Column(String)
+    disease = Column(String)
+    disease_ontology = Column(String)
+    sex = Column(String)
+    ethnicity = Column(String)
+    ethnicity_ontology = Column(String)
+    source_data_location = Column(String)
+    preprint_doi = Column(String)
+    publication_doi = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
 
-class DataRepository(Base):
-    __tablename__ = "data_repository"
+class DbDatasetArtifact(Base):
+    """
+    Represents a DbUser uploaded or Corpora generated file linked to a DbDataset.
+    All matrices and cellxgene objects are examples of a DbDatasetArtifact.
+    """
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    __tablename__ = "dataset_artifact"
+
+    id = Column(String, primary_key=True)
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    filename = Column(String)
+    filetype = Column(Enum(DatasetArtifactFileType))
+    type = Column(Enum(DatasetArtifactType))
+    user_submitted = Column(Boolean)
+    s3_uri = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+    dataset = relationship("DbDataset")
 
 
-class Contributor(Base):
+class DbDeploymentDirectory(Base):
+    """
+    Represents the deployment of a dataset to a Corpora application.
+    This entity only supports cellxgene deployments.
+    """
+
+    __tablename__ = "deployment_directory"
+
+    id = Column(String, primary_key=True)
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    environment = Column(String)
+    url = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+    dataset = relationship("DbDataset")
+
+
+class DbContributor(Base):
+    """
+    A data contributor. Typically a researcher associated with an institution.
+    """
+
     __tablename__ = "contributor"
 
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String(16))
-    middle_name = Column(String(16))
-    last_name = Column(String(32))
-    institution = Column(String(100))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    institution = Column(String)
+    email = Column(String)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
 
-class ExternalAccession(Base):
-    __tablename__ = "external_accession"
+class DbDatasetContributor(Base):
+    """
+    Associates a DbDataset with a DbContributor.
+    DbDatasets may have many DbContributors.
+    DbContributors may have many DbDatasets.
+    """
 
-    id = Column(Integer, primary_key=True)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    data_repository_id = Column(ForeignKey("data_repository.id"), nullable=False)
-    accession = Column(String(32))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
+    __tablename__ = "dataset_contributor"
 
-    project = relationship("Project")
-    data_repository = relationship("DataRepository")
-
-
-class LibraryConstructionMethodJoinProject(Base):
-    __tablename__ = "library_construction_method_join_project"
-
-    id = Column(Integer, primary_key=True)
-    library_construction_method_id = Column(ForeignKey("library_construction_method.id"), nullable=False)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-
-    library_construction_method = relationship("LibraryConstructionMethod")
-    project = relationship("Project")
-
-
-class OrganJoinProject(Base):
-    __tablename__ = "organ_join_project"
-
-    id = Column(Integer, primary_key=True)
-    organ_id = Column(ForeignKey("organ.id"), nullable=False)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-
-    organ = relationship("Organ")
-    project = relationship("Project")
-
-
-class SpeciesJoinProject(Base):
-    __tablename__ = "species_join_project"
-
-    id = Column(Integer, primary_key=True)
-    species_id = Column(ForeignKey("species.id"), nullable=False)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-
-    species = relationship("Species")
-    project = relationship("Project")
-
-
-class ContributorJoinProject(Base):
-    __tablename__ = "contributor_join_project"
-
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
-    project_id = Column(ForeignKey("project.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-
-    contributor = relationship("Contributor")
-    project = relationship("Project")
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
