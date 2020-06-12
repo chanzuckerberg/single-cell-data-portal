@@ -46,6 +46,7 @@ class ProjectStatus(enum.Enum):
     LIVE - a published and publicly viewable Project.
     Edit - an open Submission, i.e an unpublished and non-public Project.
     """
+
     LIVE = "Live"
     EDIT = "Edit"
 
@@ -59,6 +60,7 @@ class ProcessingState(enum.Enum):
     IN_ARTIFACT_CREATION - Following validation, create all Original + Remix matrix formats and cellxgene objects.
     IN_DEPLOYMENT - The final stage in the pipeline: deploying artifacts to Data Portal and cellxgene applications.
     """
+
     NA = "N/A"
     IN_VALIDATION = "In validation"
     IN_ARTIFACT_CREATION = "In artifact creation"
@@ -73,6 +75,7 @@ class ValidationState(enum.Enum):
     VALID - Project is valid.
     INVALID - Project is invalid.
     """
+
     NOT_VALIDATED = "Not validated"
     VALID = "Valid"
     INVALID = "Invalid"
@@ -86,6 +89,7 @@ class ProjectLinkType(enum.Enum):
     RAW_DATA - A link to a raw data repository.
     OTHER - Other.
     """
+
     PROTOCOL = "Protocol"
     RAW_DATA = "Raw data"
     OTHER = "Other"
@@ -100,6 +104,7 @@ class DatasetArtifactFileType(enum.Enum):
     LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
     CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
     """
+
     H5AD = "H5ad"
     RDS = "Rds"
     LOOM = "Loom"
@@ -113,6 +118,7 @@ class DatasetArtifactType(enum.Enum):
     ORIGINAL - A data artifact that adheres to the minimal metadata schema requirements.
     REMIX - A data artifact that adheres to the Corpora metadata schema requirements.
     """
+
     ORIGINAL = "Original"
     REMIX = "Remix"
 
@@ -122,6 +128,7 @@ class DbUser(Base):
     A registered Corpora user.
     Maintains user details such as contact information and access control settings.
     """
+
     __tablename__ = "user"
 
     id = Column(String, primary_key=True)
@@ -136,6 +143,7 @@ class DbProject(Base):
     A Corpora project represents an in progress or live submission of a lab experiment.
     DbProjects are associated with one or more single-cell datasets and links to external repositories.
     """
+
     __tablename__ = "project"
 
     id = Column(String, primary_key=True)
@@ -160,6 +168,7 @@ class DbProjectDataset(Base):
     A DbProject may link to several DbDatasets.
     A DbDataset must belong to one DbProject.
     """
+
     __tablename__ = "project_dataset"
 
     id = Column(String, primary_key=True)
@@ -170,14 +179,14 @@ class DbProjectDataset(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status],
-                                           [DbProject.id, DbProject.status]), {})
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
 
 class DbProjectLink(Base):
     """
     Represents an external web link for DbProjects such as protocols and supplementary data repositories.
     """
+
     __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
@@ -189,8 +198,7 @@ class DbProjectLink(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status],
-                                           [DbProject.id, DbProject.status]), {})
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
 
 class DbDataset(Base):
@@ -199,6 +207,7 @@ class DbDataset(Base):
     Describes experiment metadata such as specimen and assay data.
     Related data files are represented by DbDataArtifacts.
     """
+
     __tablename__ = "dataset"
 
     id = Column(String, primary_key=True)
@@ -227,6 +236,7 @@ class DbDatasetArtifact(Base):
     Represents a DbUser uploaded or Corpora generated file linked to a DbDataset.
     All matrices and cellxgene objects are examples of a DbDatasetArtifact.
     """
+
     __tablename__ = "dataset_artifact"
 
     id = Column(String, primary_key=True)
@@ -247,6 +257,7 @@ class DbDeploymentDirectory(Base):
     Represents the deployment of a dataset to a Corpora application.
     This entity only supports cellxgene deployments.
     """
+
     __tablename__ = "deployment_directory"
 
     id = Column(String, primary_key=True)
@@ -263,6 +274,7 @@ class DbContributor(Base):
     """
     A data contributor. Typically a researcher associated with an institution.
     """
+
     __tablename__ = "contributor"
 
     id = Column(String, primary_key=True)
@@ -279,6 +291,7 @@ class DbDatasetContributor(Base):
     DbDatasets may have many DbContributors.
     DbContributors may have many DbDatasets.
     """
+
     __tablename__ = "dataset_contributor"
 
     id = Column(String, primary_key=True)
