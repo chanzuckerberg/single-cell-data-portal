@@ -1,3 +1,4 @@
+anndata
 black
 botocore>=1.14.17
 boto3>=1.11.17
@@ -10,4 +11,6 @@ PyMySQL==0.9.3
 pytest
 python-jose[cryptography]>=3.1.0
 requests>=2.22.0
+s3fs
+scanpy
 sqlalchemy
