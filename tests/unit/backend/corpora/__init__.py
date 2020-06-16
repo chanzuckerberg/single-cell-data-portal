@@ -1,7 +1,7 @@
 import unittest
 
 import boto3
-from moto import mock_iam, mock_s3
+from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
 
