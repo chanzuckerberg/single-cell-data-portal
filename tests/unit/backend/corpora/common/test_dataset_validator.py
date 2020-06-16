@@ -131,21 +131,27 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             self.assertIn("Each observation is not unique", logger.output[0])
 
     def _create_fully_populated_anndata_object(self, obs_count=3, var_count=4):
+        """
+        Create an anndata with `obs_count` observations (usually cells) and `var_count` variables (usually genes).
+        Populate every required piece of metadata by Corpora into the anndata as well in the `obs` and `uns` views
+        filled with bogus values.
+        """
+
         # Format metadata for obs field of anndata object
         obs_data = {}
         for metadata_field in (
-            CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
-            + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
+                CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
+                + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
         ):
             obs_data[metadata_field] = random.sample(range(10, 30), obs_count)
 
         # Format unstructured metadata for uns field of anndata object
         uns_data = {}
         for metadata_field in (
-            CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
-            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
-            + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
-            + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
+                CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
+                + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
+                + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
+                + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
         ):
             uns_data[metadata_field] = {}
 

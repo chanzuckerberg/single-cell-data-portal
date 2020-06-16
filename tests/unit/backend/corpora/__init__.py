@@ -17,8 +17,6 @@ class CorporaTestCaseUsingMockAWS(unittest.TestCase):
         # Setup mock AWS services
         self.s3_mock = mock_s3()
         self.s3_mock.start()
-        self.iam_mock = mock_iam()
-        self.iam_mock.start()
 
         # Corpora Bucket
         self.s3_resource = boto3.resource("s3")
@@ -28,7 +26,6 @@ class CorporaTestCaseUsingMockAWS(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         self.s3_mock.stop()
-        self.iam_mock.stop()
 
     def create_s3_object(
         self, object_key, bucket_name=None, content_type="application/octet-stream", content="file_content"
