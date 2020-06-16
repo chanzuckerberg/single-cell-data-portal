@@ -1,0 +1,23 @@
+{
+  "resources": [
+    {
+      "name": "api_handler_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::699936264352:role/data-portal-api-dev-api_handler",
+      "role_name": "corpora-api-dev-api_handler"
+    },
+    {
+      "name": "api_handler",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-west-2:699936264352:function:corpora-api-dev"
+    },
+    {
+      "name": "rest_api",
+      "resource_type": "rest_api",
+      "rest_api_id": "670bpw5cqf",
+      "rest_api_url": "https://670bpw5cqf.execute-api.us-west-2.amazonaws.com/dev/"
+    }
+  ],
+  "schema_version": "2.0",
+  "backend": "api"
+}

@@ -1,0 +1,23 @@
+{
+  "resources": [
+    {
+      "name": "corpora-frontend_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::699936264352:role/cloudfront-invalidator-dev-corpora-frontend",
+      "role_name": "cloudfront-invalidator-dev-corpora-frontend"
+    },
+    {
+      "name": "corpora-frontend",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-west-2:699936264352:function:cloudfront-invalidator-dev-corpora-frontend"
+    },
+    {
+      "name": "corpora-frontend-s3event",
+      "resource_type": "s3_event",
+      "bucket": "corpora-static-site-dev-699936264352",
+      "lambda_arn": "arn:aws:lambda:us-west-2:699936264352:function:cloudfront-invalidator-dev-corpora-frontend"
+    }
+  ],
+  "schema_version": "2.0",
+  "backend": "api"
+}
