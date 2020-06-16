@@ -3,7 +3,7 @@
     {
       "name": "api_handler_role",
       "resource_type": "iam_role",
-      "role_arn": "arn:aws:iam::699936264352:role/data-portal-api-dev-api_handler",
+      "role_arn": "arn:aws:iam::699936264352:role/corpora-api-dev-api_handler",
       "role_name": "corpora-api-dev-api_handler"
     },
     {
