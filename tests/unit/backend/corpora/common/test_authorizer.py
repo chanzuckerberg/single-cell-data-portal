@@ -14,8 +14,7 @@ class TestAuthorizer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # using the same secret for all non production stages.
-        secret_name = "corpora/cicd/dev/auth0-secret"
+        secret_name = "corpora/cicd/dev/auth0-secret" # using the same secret for all non production stages.
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
