@@ -168,7 +168,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
     @patch("logging.warning")
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__validate_different_types_of_raw_data_passes(
-            self, mock_read_anndata, mock_log_warning
+        self, mock_read_anndata, mock_log_warning
     ):
         dataset_filename = "data.h5ad"
         s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
@@ -285,18 +285,18 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Format metadata for obs field of anndata object
         obs_data = {}
         for metadata_field in (
-                CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
-                + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
+            CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
         ):
             obs_data[metadata_field] = random.sample(range(10, 30), obs_count)
 
         # Format unstructured metadata for uns field of anndata object
         uns_data = {}
         for metadata_field in (
-                CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
-                + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
-                + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
-                + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
+            CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
+            + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
         ):
             uns_data[metadata_field] = {}
 
