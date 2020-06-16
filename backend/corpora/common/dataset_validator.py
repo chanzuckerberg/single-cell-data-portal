@@ -1,3 +1,4 @@
+import logging
 import time
 
 import anndata
@@ -24,7 +25,7 @@ class DatasetValidator:
 
         file_object = self.s3_file_system.open(self.s3_path, 'rb')
         file_object_size = file_object.info().get('Size')
-        print(f"Validating file {self.s3_uri} with size {sizeof_formatted(file_object_size)}")
+        logging.info(f"Validating file {self.s3_uri} with size {sizeof_formatted(file_object_size)}")
 
         if self.s3_path.endswith(CorporaConstants.H5AD_FILE_TYPE):
             self.validate_h5ad_dataset(file_object)
@@ -33,7 +34,7 @@ class DatasetValidator:
             self.validate_loom_dataset(file_object)
 
         else:
-            print(f"ERROR: Unknown type of dataset with path {self.s3_path}!")
+            logging.warning(f"Unknown type of dataset with path {self.s3_path}!")
 
         file_object.close()
 
@@ -44,16 +45,16 @@ class DatasetValidator:
         """
 
         start_time = time.time()
-        print("Reading anndata object...")
+        logging.info("Reading anndata object...")
         anndata_object = anndata.read_h5ad(file_object)
-        print(f"Finished reading anndata object in {time.time() - start_time:.3f} seconds.")
+        logging.info(f"Finished reading anndata object in {time.time() - start_time:.3f} seconds.")
 
         start_time = time.time()
-        print("Beginning validation of file...")
+        logging.info("Beginning validation of file...")
         self.verify_obs(anndata_object)
         self.verify_vars(anndata_object)
         self.verify_uns(anndata_object)
-        print(f"Finished completing validation on the file in {time.time() - start_time:.3f} seconds.")
+        logging.info(f"Finished completing validation on the file in {time.time() - start_time:.3f} seconds.")
 
     def verify_obs(self, data_object: anndata.AnnData):
         """
@@ -65,13 +66,13 @@ class DatasetValidator:
         # Check to ensure that all IDs are unique
         observation_ids = data_object.obs.index.tolist()
         if len(observation_ids) != len(set(observation_ids)):
-            print("ERROR: Each observation is not unique!")
+            logging.warning("Each observation is not unique!")
 
         obs_keys = map(str.upper, data_object.obs_keys())
         for metadata_field in CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS + \
                               CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS:
             if metadata_field.upper() not in obs_keys:
-                self.print_error_message(metadata_field, "obs", type(data_object).__name__)
+                self.log_error_message(metadata_field, "obs", type(data_object).__name__)
 
     def verify_vars(self, data_object: anndata.AnnData):
         """
@@ -81,7 +82,7 @@ class DatasetValidator:
         variable_ids = data_object.var.index.tolist()
 
         if len(variable_ids) != len(set(variable_ids)):
-            print("ERROR: Each variable is not unique!")
+            logging.warning("Each variable is not unique!")
 
     def verify_uns(self, data_object: anndata.AnnData):
         """
@@ -96,16 +97,17 @@ class DatasetValidator:
                               CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS + \
                               CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS:
             if metadata_field.upper() not in unstructured_metadata_keys:
-                self.print_error_message(metadata_field, "uns", type(data_object).__name__)
+                self.log_error_message(metadata_field, "uns", type(data_object).__name__)
 
-    def print_error_message(self, metadata_field_name, expected_location, dataset_type):
+    def log_error_message(self, metadata_field_name, expected_location, dataset_type):
         """
         Pretty-printer of missing metadata fields errors.
         """
 
         is_ontology = " ontology " if "ONTOLOGY" in metadata_field_name else " "
-        print(f"ERROR: Missing{is_ontology}metadata field {metadata_field_name} from {expected_location} in "
-              f"{dataset_type} file!")
+        logging.warning(
+            f"ERROR: Missing{is_ontology}metadata field {metadata_field_name} from {expected_location} in "
+            f"{dataset_type} file!")
 
     def validate_loom_dataset(self, file_object):
         # TODO: Implement this as part of ticket #375.
