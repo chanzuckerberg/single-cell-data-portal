@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 
@@ -5,19 +6,17 @@ import requests
 from chalice import UnauthorizedError
 
 from backend.corpora.common.authorizer import assert_authorized
-
-if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
-    os.environ["DEPLOYMENT_STAGE"] = "test"  # noqa
+from backend.corpora.common.utils.aws_secret import AwsSecret
 
 
-@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE") != "test", "DEPLOYMENT_STAGE not 'test'")
+@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.auth0_secret = {}
+        secret_name = "corpora/cicd/dev/auth0-secret"  # using the same secret for all non production stages.
+        cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
-    @unittest.skip("Skipping this test because OAuth is not yet setup for Corpora")
     def test_postive(self):
         token = self.get_auth_token()
         assert_authorized({"Authorization": f"bearer {token['access_token']}"})
@@ -31,7 +30,6 @@ class TestAuthorizer(unittest.TestCase):
         with self.assertRaises(UnauthorizedError):
             assert_authorized(sample_non_bearer_auth_token)
 
-    @unittest.skip("Skipping this test because OAuth is not yet setup for Corpora")
     def test_invalid_token(self):
         token = self.get_auth_token()
         header, msg, hash = token["access_token"].split(".")
