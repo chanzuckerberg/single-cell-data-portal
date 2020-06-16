@@ -7,9 +7,7 @@ from backend.corpora.common.corpora_config import CorporaConfig
 
 
 class CorporaTestCaseUsingMockAWS(unittest.TestCase):
-    CORPORA_TEST_CONFIG = {
-        "bucket_name": "bogus_bucket"
-    }
+    CORPORA_TEST_CONFIG = {"bucket_name": "bogus_bucket"}
 
     def setUp(self):
         # Setup configuration
@@ -32,8 +30,9 @@ class CorporaTestCaseUsingMockAWS(unittest.TestCase):
         self.s3_mock.stop()
         self.iam_mock.stop()
 
-    def create_s3_object(self, object_key, bucket_name=None, content_type="application/octet-stream",
-                         content="file_content"):
+    def create_s3_object(
+        self, object_key, bucket_name=None, content_type="application/octet-stream", content="file_content"
+    ):
         bucket_name = bucket_name or self.bucket.name
         s3object = self.s3_resource.Bucket(bucket_name).Object(object_key)
         s3object.put(Body=content, ContentType=content_type)

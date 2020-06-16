@@ -11,7 +11,6 @@ from .. import CorporaTestCaseUsingMockAWS
 
 
 class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
-
     def setUp(self):
         super().setUp()
 
@@ -28,8 +27,8 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             validator.validate_dataset_file()
             self.assertIn("Unknown type of dataset", logger.output[0])
 
-    @patch('logging.warning')
-    @patch('anndata.read_h5ad')
+    @patch("logging.warning")
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__contains_all_metadata(self, mock_read_anndata, mock_log_warning):
         test_anndata = self._create_fully_populated_anndata_object()
 
@@ -45,7 +44,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         assert not mock_log_warning.called
 
-    @patch('anndata.read_h5ad')
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_obs_metadata_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
 
@@ -66,7 +65,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             validator.validate_dataset_file()
             self.assertIn(f"Missing metadata field {missing_metadata} from obs", logger.output[0])
 
-    @patch('anndata.read_h5ad')
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_uns_metadata_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
 
@@ -87,7 +86,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             validator.validate_dataset_file()
             self.assertIn(f"Missing metadata field {missing_metadata} from uns", logger.output[0])
 
-    @patch('anndata.read_h5ad')
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__non_unique_var_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
 
@@ -107,9 +106,9 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn(f"Each variable is not unique", logger.output[0])
+            self.assertIn("Each variable is not unique", logger.output[0])
 
-    @patch('anndata.read_h5ad')
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__non_unique_obs_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
 
@@ -129,28 +128,31 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn(f"Each observation is not unique", logger.output[0])
+            self.assertIn("Each observation is not unique", logger.output[0])
 
     def _create_fully_populated_anndata_object(self, obs_count=3, var_count=4):
         # Format metadata for obs field of anndata object
         obs_data = {}
-        for metadata_field in CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS:
+        for metadata_field in (
+            CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
+        ):
             obs_data[metadata_field] = random.sample(range(10, 30), obs_count)
 
         # Format unstructured metadata for uns field of anndata object
         uns_data = {}
-        for metadata_field in CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS + \
-                              CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS:
+        for metadata_field in (
+            CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
+            + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
+        ):
             uns_data[metadata_field] = {}
 
         # Generate random data
         data = numpy.random.rand(obs_count, var_count)
 
         return anndata.AnnData(X=data, obs=DataFrame(data=obs_data), uns=uns_data)
-
 
     def _create_dataset_object_in_s3_bucket(self, filename):
         dataset_s3_object = self.create_s3_object(filename)

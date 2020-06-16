@@ -23,8 +23,8 @@ class DatasetValidator:
         Reads in file object and triages for specific file type validation.
         """
 
-        file_object = self.s3_file_system.open(self.s3_path, 'rb')
-        file_object_size = file_object.info().get('Size')
+        file_object = self.s3_file_system.open(self.s3_path, "rb")
+        file_object_size = file_object.info().get("Size")
         logging.info(f"Validating file {self.s3_uri} with size {sizeof_formatted(file_object_size)}")
 
         if self.s3_path.endswith(CorporaConstants.H5AD_FILE_TYPE):
@@ -69,8 +69,10 @@ class DatasetValidator:
             logging.warning("Each observation is not unique!")
 
         obs_keys = map(str.upper, data_object.obs_keys())
-        for metadata_field in CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS:
+        for metadata_field in (
+            CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
+        ):
             if metadata_field.upper() not in obs_keys:
                 self.log_error_message(metadata_field, "obs", type(data_object).__name__)
 
@@ -93,9 +95,11 @@ class DatasetValidator:
 
         unstructured_metadata_keys = data_object.uns_keys()
 
-        for metadata_field in CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS + \
-                              CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS:
+        for metadata_field in (
+            CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
+        ):
             if metadata_field.upper() not in unstructured_metadata_keys:
                 self.log_error_message(metadata_field, "uns", type(data_object).__name__)
 
@@ -107,7 +111,8 @@ class DatasetValidator:
         is_ontology = " ontology " if "ONTOLOGY" in metadata_field_name else " "
         logging.warning(
             f"ERROR: Missing{is_ontology}metadata field {metadata_field_name} from {expected_location} in "
-            f"{dataset_type} file!")
+            f"{dataset_type} file!"
+        )
 
     def validate_loom_dataset(self, file_object):
         # TODO: Implement this as part of ticket #375.
