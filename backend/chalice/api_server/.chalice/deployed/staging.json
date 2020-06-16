@@ -1,5 +1,23 @@
 {
-  "resources": [],
+  "resources": [
+    {
+      "name": "api_handler_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::699936264352:role/corpora-api-staging-api_handler",
+      "role_name": "corpora-api-staging-api_handler"
+    },
+    {
+      "name": "api_handler",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-west-2:699936264352:function:corpora-api-staging"
+    },
+    {
+      "name": "rest_api",
+      "resource_type": "rest_api",
+      "rest_api_id": "w8hiclkmfa",
+      "rest_api_url": "https://w8hiclkmfa.execute-api.us-west-2.amazonaws.com/staging/"
+    }
+  ],
   "schema_version": "2.0",
   "backend": "api"
 }
