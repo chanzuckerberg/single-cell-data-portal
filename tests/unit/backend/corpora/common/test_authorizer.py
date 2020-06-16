@@ -11,11 +11,11 @@ from backend.corpora.common.utils.aws_secret import AwsSecret
 
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
 class TestAuthorizer(unittest.TestCase):
-    # using the same secret for all non production stages.
 
     @classmethod
     def setUpClass(cls):
         secret_name = "corpora/cicd/dev/auth0-secret"
+        # using the same secret for all non production stages.
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
