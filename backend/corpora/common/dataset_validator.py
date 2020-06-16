@@ -3,6 +3,9 @@ import time
 
 import anndata
 import s3fs
+from numpy import ndarray
+from pandas import DataFrame
+from scipy.sparse.csr import csr_matrix
 
 from .utils.corpora_constants import CorporaConstants
 from .utils.math_utils import sizeof_formatted
@@ -40,21 +43,84 @@ class DatasetValidator:
 
     def validate_h5ad_dataset(self, file_object):
         """
-        Reads the file contents into an AnnData object. Each attribute of the AnnData object will then be checked to
-        ensure it contains the appropriate metadata.
+        Reads the H5AD file contents into an AnnData object. Each attribute of the AnnData object will then be
+        checked to ensure it contains the appropriate metadata.
         """
 
         start_time = time.time()
-        logging.info("Reading anndata object...")
+        logging.info("Reading H5AD file into anndata object...")
         anndata_object = anndata.read_h5ad(file_object)
         logging.info(f"Finished reading anndata object in {time.time() - start_time:.3f} seconds.")
 
+        self.validate_anndata_object(anndata_object)
+
+    def validate_loom_dataset(self, file_object):
+        """
+        Reads the Loom file contents into an AnnData object. Each attribute of the AnnData object will then be
+        checked to ensure it contains the appropriate metadata.
+        """
+
         start_time = time.time()
-        logging.info("Beginning validation of file...")
+        logging.info("Reading Loom file into anndata object...")
+        anndata_object = anndata.read_loom(file_object)
+        logging.info(f"Finished reading anndata object in {time.time() - start_time:.3f} seconds.")
+
+        self.validate_anndata_object(anndata_object)
+
+    def validate_anndata_object(self, anndata_object: anndata.AnnData):
+        start_time = time.time()
+        logging.info("Beginning validation of anndata object...")
+        self.verify_layers(anndata_object)
         self.verify_obs(anndata_object)
         self.verify_vars(anndata_object)
         self.verify_uns(anndata_object)
-        logging.info(f"Finished completing validation on the file in {time.time() - start_time:.3f} seconds.")
+        logging.info(f"Finished completing validation in {time.time() - start_time:.3f} seconds.")
+
+    def verify_layers(self, data_object: anndata.AnnData):
+        """
+        Verifies that the dataset contains at least the raw data and if other layers are provided, that they each
+        contain an appropriate description.
+        """
+
+        # Check to make sure X data exists
+        data = None
+        if isinstance(data_object.X, DataFrame):
+            data = data_object.X.data
+        elif isinstance(data_object.X, ndarray):
+            data = data_object.X
+        elif isinstance(data_object.X, csr_matrix):
+            data = data_object.X.toarray()
+        else:
+            logging.warning(
+                f"Could not check raw data layer to ensure that it exists. The type is " f"{type(data_object.X)}!"
+            )
+
+        if not data.any():
+            logging.warning("No raw data can be found in the dataset!")
+
+        # Check to ensure that there are descriptions for each layer
+        if (CorporaConstants.LAYERS_DESCRIPTIONS not in map(str.upper, data_object.uns_keys())) or (
+            not data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS)
+        ):
+            logging.warning("Required layers descriptions are missing from uns field to describe data layers!")
+        else:
+            for layer_name, layer_data in data_object.layers.items():
+                if layer_name not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys():
+                    logging.warning(f"Missing layer description for layer {layer_name}!")
+
+            # Check to make sure that X has a layer description and if the anndata populate the `raw` field,
+            # that a raw data layer description also exists.
+            if (
+                CorporaConstants.X_DATA_LAYER_NAME
+                not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+            ):
+                logging.warning(f"Missing layer description for layer {CorporaConstants.X_DATA_LAYER_NAME}!")
+            if data_object.raw:
+                if (
+                    CorporaConstants.RAW_DATA_LAYER_NAME
+                    not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+                ):
+                    logging.warning(f"Missing layer description for layer {CorporaConstants.RAW_DATA_LAYER_NAME}!")
 
     def verify_obs(self, data_object: anndata.AnnData):
         """
@@ -113,7 +179,3 @@ class DatasetValidator:
             f"ERROR: Missing{is_ontology}metadata field {metadata_field_name} from {expected_location} in "
             f"{dataset_type} file!"
         )
-
-    def validate_loom_dataset(self, file_object):
-        # TODO: Implement this as part of ticket #375.
-        pass
