@@ -99,8 +99,8 @@ class DatasetValidator:
             logging.warning("No raw data can be found in the dataset!")
 
         # Check to ensure that there are descriptions for each layer
-        if (CorporaConstants.LAYERS_DESCRIPTIONS not in map(str.upper, data_object.uns_keys())) or (
-                not data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS)
+        if (CorporaConstants.LAYERS_DESCRIPTIONS not in data_object.uns_keys()) or (
+            not data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS)
         ):
             logging.warning("Required layers descriptions are missing from uns field to describe data layers!")
         else:
@@ -111,14 +111,14 @@ class DatasetValidator:
             # Check to make sure that X has a layer description and if the anndata populate the `raw` field,
             # that a raw data layer description also exists.
             if (
-                    CorporaConstants.X_DATA_LAYER_NAME
-                    not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+                CorporaConstants.X_DATA_LAYER_NAME
+                not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
             ):
                 logging.warning(f"Missing layer description for layer {CorporaConstants.X_DATA_LAYER_NAME}!")
             if data_object.raw:
                 if (
-                        CorporaConstants.RAW_DATA_LAYER_NAME
-                        not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+                    CorporaConstants.RAW_DATA_LAYER_NAME
+                    not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
                 ):
                     logging.warning(f"Missing layer description for layer {CorporaConstants.RAW_DATA_LAYER_NAME}!")
 
@@ -136,8 +136,8 @@ class DatasetValidator:
             logging.warning("Each observation is not unique!")
 
         for metadata_field in (
-                CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
-                + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
+            CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
         ):
             if metadata_field not in observation_keys:
                 self.log_error_message(metadata_field, "obs", type(data_object).__name__)
@@ -160,8 +160,8 @@ class DatasetValidator:
         unstructured_metadata_keys = data_object.uns_keys()
 
         for metadata_field in (
-                CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
-                + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
+            CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
+            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
         ):
             if metadata_field not in unstructured_metadata_keys:
                 self.log_error_message(metadata_field, "uns", type(data_object).__name__)

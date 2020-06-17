@@ -6,8 +6,15 @@ class CorporaConstants(object):
 
     # Constants related to the metadata requirements of submitting a dataset to Corpora. Note that these metadata
     # fields are CASE-SENSITIVE.
-    REQUIRED_OBSERVATION_METADATA_FIELDS = ["tissue", "assay", "disease", "cell_type", "sex", "ethnicity",
-                                            "developmental_stage"]
+    REQUIRED_OBSERVATION_METADATA_FIELDS = [
+        "tissue",
+        "assay",
+        "disease",
+        "cell_type",
+        "sex",
+        "ethnicity",
+        "developmental_stage",
+    ]
     REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS = [
         "tissue_ontology",
         "assay_ontology",
