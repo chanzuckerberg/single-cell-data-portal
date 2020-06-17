@@ -24,9 +24,7 @@ def update_var_names(var):
             return symbol
         return symbol.upper()
 
-    new_symbols = dict(
-        [k.strip().split("\t") for k in open(NEW_SYMBOL_PATH).readlines()]
-    )
+    new_symbols = dict([k.strip().split("\t") for k in open(NEW_SYMBOL_PATH).readlines()])
     return pd.Index([new_symbols.get(fix_case(v), v) for v in var.index])
 
 
@@ -46,11 +44,7 @@ def basic_curation(adata):
     del adata.obs["louvain_res0.5"]
 
     # This is also some logic the submitter requested
-    adata.obs["Infected"] = (
-        adata.obs["scv2_10+"]
-        .astype("category")
-        .replace({1: "Infected", 0: "Bystander"})
-    )
+    adata.obs["Infected"] = adata.obs["scv2_10+"].astype("category").replace({1: "Infected", 0: "Bystander"})
     del adata.obs["scv2_10+"]
     adata.obs["Infected"][adata.obs["Condition"] == "Mock"] = "Mock"
 
@@ -58,11 +52,7 @@ def basic_curation(adata):
     del adata.obs["ctype"]
 
     adata.uns["contributors"] = [
-        {
-            "name": "Neal G. Ravindra",
-            "institution": "Yale University",
-            "email": "neal.ravindra@yale.edu",
-        }
+        {"name": "Neal G. Ravindra", "institution": "Yale University", "email": "neal.ravindra@yale.edu"}
     ]
     adata.uns["preprint_doi"] = "https://doi.org/10.1101/2020.05.06.081695"
 
@@ -75,21 +65,10 @@ def remix(adata):
     adata.obs["assay_ontology"] = "EFO:0009922"
 
     adata.obs["disease"] = adata.obs["Condition"].replace(
-        {
-            "1dpi": "SARS-CoV-2",
-            "2dpi": "SARS-CoV-2",
-            "3dpi": "SARS-CoV-2",
-            "Mock": "normal",
-        },
-        inplace=False,
+        {"1dpi": "SARS-CoV-2", "2dpi": "SARS-CoV-2", "3dpi": "SARS-CoV-2", "Mock": "normal"}, inplace=False,
     )
     adata.obs["disease_ontology"] = adata.obs["Condition"].replace(
-        {
-            "1dpi": "MONDO:0100096",
-            "2dpi": "MONDO:0100096",
-            "3dpi": "MONDO:0100096",
-            "Mock": "PATO:0000461",
-        },
+        {"1dpi": "MONDO:0100096", "2dpi": "MONDO:0100096", "3dpi": "MONDO:0100096", "Mock": "PATO:0000461"},
         inplace=False,
     )
     adata.obs["tissue"] = "epithelium of bronchus (cell culture)"
@@ -98,21 +77,17 @@ def remix(adata):
     adata.uns["organism"] = "Homo sapiens"
     adata.uns["organism_ontology"] = "NCBITaxon:9606"
     adata.uns["title"] = (
-        "Single-cell longitudinal analysis of SARS-CoV-2 infection in human "
-        "bronchial epithelial cells"
+        "Single-cell longitudinal analysis of SARS-CoV-2 infection in human " "bronchial epithelial cells"
     )
 
     adata.uns["project_name"] = (
-        "Single-cell longitudinal analysis of SARS-CoV-2 infection in "
-        "human bronchial epithelial cells"
+        "Single-cell longitudinal analysis of SARS-CoV-2 infection in " "human bronchial epithelial cells"
     )
     adata.uns["project_description"] = (
         "Single-cell RNA sequencing of experimentally infected human bronchial epithelial "
         "cells (HBECs) in air-liquid interface cultures over a time-course"
     )
-    adata.uns["project_other_links"] = [
-        "https://github.com/vandijklab/HBEC_SARS-CoV-2_scRNA-seq"
-    ]
+    adata.uns["project_other_links"] = ["https://github.com/vandijklab/HBEC_SARS-CoV-2_scRNA-seq"]
     # Set the cell ontology values
     # BC/Club is "a cell population intermediate between basal cells and club cells". There is no
     # CL term for them.
