@@ -1,8 +1,8 @@
 class CorporaConstants(object):
     # Constants related to processing layers
     LAYERS_DESCRIPTIONS = "layer_descriptions"
-    X_DATA_LAYER_NAME = "x"
-    RAW_DATA_LAYER_NAME = "raw.x"
+    X_DATA_LAYER_NAME = "X"
+    RAW_DATA_LAYER_NAME = "raw.X"
 
     # Constants related to the metadata requirements of submitting a dataset to Corpora. Note that these metadata
     # fields are CASE-SENSITIVE.

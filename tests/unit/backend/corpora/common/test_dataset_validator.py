@@ -275,7 +275,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn("Missing layer description for layer x", logger.output[0])
+            self.assertIn("Missing layer description for layer X", logger.output[0])
 
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_raw_data_layer_description(self, mock_read_anndata):
