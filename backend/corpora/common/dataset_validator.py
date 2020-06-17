@@ -98,27 +98,28 @@ class DatasetValidator:
         if not data.any():
             logging.warning("No raw data can be found in the dataset!")
 
-        # Check to ensure that there are descriptions for each layer
-        if (CorporaConstants.LAYERS_DESCRIPTIONS not in data_object.uns_keys()) or (
-            not data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS)
+        # Ensure that the layer_descriptions metadata key exists in the `uns` field of the anndata object.
+        if (CorporaConstants.LAYER_DESCRIPTIONS not in data_object.uns_keys()) or (
+            not data_object.uns.get(CorporaConstants.LAYER_DESCRIPTIONS)
         ):
             logging.warning("Required layers descriptions are missing from uns field to describe data layers!")
         else:
+            # Check to ensure that there are descriptions for each layer
             for layer_name, layer_data in data_object.layers.items():
-                if layer_name not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys():
+                if layer_name not in data_object.uns.get(CorporaConstants.LAYER_DESCRIPTIONS).keys():
                     logging.warning(f"Missing layer description for layer {layer_name}!")
 
             # Check to make sure that X has a layer description and if the anndata populate the `raw` field,
             # that a raw data layer description also exists.
             if (
                 CorporaConstants.X_DATA_LAYER_NAME
-                not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+                not in data_object.uns.get(CorporaConstants.LAYER_DESCRIPTIONS).keys()
             ):
                 logging.warning(f"Missing layer description for layer {CorporaConstants.X_DATA_LAYER_NAME}!")
             if data_object.raw:
                 if (
                     CorporaConstants.RAW_DATA_LAYER_NAME
-                    not in data_object.uns.get(CorporaConstants.LAYERS_DESCRIPTIONS).keys()
+                    not in data_object.uns.get(CorporaConstants.LAYER_DESCRIPTIONS).keys()
                 ):
                     logging.warning(f"Missing layer description for layer {CorporaConstants.RAW_DATA_LAYER_NAME}!")
 

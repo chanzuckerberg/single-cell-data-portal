@@ -219,7 +219,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_layer_description(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
-        del test_anndata.uns[CorporaConstants.LAYERS_DESCRIPTIONS]
+        del test_anndata.uns[CorporaConstants.LAYER_DESCRIPTIONS]
 
         mock_read_anndata.return_value = test_anndata
 
@@ -241,7 +241,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         fake_layer_two = numpy.random.permutation(fake_layer_one)
         test_anndata.layers["my_layer_one"] = fake_layer_one
         test_anndata.layers["my_layer_two"] = fake_layer_two
-        test_anndata.uns[CorporaConstants.LAYERS_DESCRIPTIONS].update({"my_layer_one": "my one lovely layer"})
+        test_anndata.uns[CorporaConstants.LAYER_DESCRIPTIONS].update({"my_layer_one": "my one lovely layer"})
 
         mock_read_anndata.return_value = test_anndata
 
@@ -261,8 +261,8 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         test_anndata = self._create_fully_populated_anndata_object()
         fake_layer_one = numpy.random.permutation(test_anndata.X)
         test_anndata.layers["my_layer_one"] = fake_layer_one
-        test_anndata.uns[CorporaConstants.LAYERS_DESCRIPTIONS].update({"my_layer_one": "my one lovely layer"})
-        del test_anndata.uns[CorporaConstants.LAYERS_DESCRIPTIONS][CorporaConstants.X_DATA_LAYER_NAME]
+        test_anndata.uns[CorporaConstants.LAYER_DESCRIPTIONS].update({"my_layer_one": "my one lovely layer"})
+        del test_anndata.uns[CorporaConstants.LAYER_DESCRIPTIONS][CorporaConstants.X_DATA_LAYER_NAME]
 
         mock_read_anndata.return_value = test_anndata
 
@@ -323,7 +323,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             uns_data[metadata_field] = {}
 
         # Add layers descriptions
-        uns_data[CorporaConstants.LAYERS_DESCRIPTIONS][CorporaConstants.X_DATA_LAYER_NAME] = "random layer"
+        uns_data[CorporaConstants.LAYER_DESCRIPTIONS][CorporaConstants.X_DATA_LAYER_NAME] = "random layer"
 
         # Generate random data
         data = numpy.random.rand(obs_count, var_count)

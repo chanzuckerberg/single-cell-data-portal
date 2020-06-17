@@ -1,6 +1,6 @@
 class CorporaConstants(object):
     # Constants related to processing layers
-    LAYERS_DESCRIPTIONS = "layer_descriptions"
+    LAYER_DESCRIPTIONS = "layer_descriptions"
     X_DATA_LAYER_NAME = "X"
     RAW_DATA_LAYER_NAME = "raw.X"
 
@@ -23,7 +23,7 @@ class CorporaConstants(object):
         "ethnicity_ontology",
         "developmental_stage_ontology",
     ]
-    REQUIRED_DATASET_METADATA_FIELDS = ["organism", "organism_ontology", LAYERS_DESCRIPTIONS]
+    REQUIRED_DATASET_METADATA_FIELDS = ["organism", "organism_ontology", LAYER_DESCRIPTIONS]
     REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS = ["title", "contributors", "preprint_doi", "publication_doi"]
     REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS = ["color_map", "tags", "default_field", "default_embedding"]
     OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS = [
