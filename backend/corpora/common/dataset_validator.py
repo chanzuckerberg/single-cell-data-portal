@@ -64,8 +64,7 @@ class DatasetValidator:
         """
 
         # Check to ensure that all IDs are unique
-        observation_ids = data_object.obs.index.tolist()
-        if len(observation_ids) != len(set(observation_ids)):
+        if data_object.obs.index.duplicated().any():
             logging.warning("Each observation is not unique!")
 
         obs_keys = map(str.upper, data_object.obs_keys())
@@ -81,9 +80,7 @@ class DatasetValidator:
         Validates the variable attribute of the AnnData object to ensure that all variable IDs are unique.
         """
 
-        variable_ids = data_object.var.index.tolist()
-
-        if len(variable_ids) != len(set(variable_ids)):
+        if data_object.var.index.duplicated().any():
             logging.warning("Each variable is not unique!")
 
     def verify_uns(self, data_object: anndata.AnnData):
@@ -98,7 +95,6 @@ class DatasetValidator:
         for metadata_field in (
             CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
             + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
-            + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
         ):
             if metadata_field.upper() not in unstructured_metadata_keys:
                 self.log_error_message(metadata_field, "uns", type(data_object).__name__)

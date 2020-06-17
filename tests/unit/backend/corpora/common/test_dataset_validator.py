@@ -70,7 +70,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         test_anndata = self._create_fully_populated_anndata_object()
 
         # Delete one piece of metadata which will be the missing one
-        missing_metadata = "COLOR_MAP"
+        missing_metadata = "ORGANISM"
         del test_anndata.uns[missing_metadata]
 
         mock_read_anndata.return_value = test_anndata
