@@ -420,7 +420,11 @@ paths:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/project'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -493,6 +497,131 @@ components:
     visibility:
       type: string
       enum: [public,private]
+    project:
+      type: object
+        properties:
+          description:
+            type: string
+          name:
+            type: string
+          id:
+            $ref: '#/components/schemas/project_uuid'
+          s3_bucket_key:
+            type: string
+          submitter:
+            type: object
+            properties:
+              id:
+                $ref: '#/components/schemas/user_uuid'
+              email:
+                type: string
+          links:
+            type: object
+            properties:
+              protocol:
+                type: array
+                items:
+                  type: string
+              other:
+                type: array
+                items:
+                  type: string
+              raw_data:
+                type: array
+                items:
+                  type: string
+              attestation:
+                type: array
+                items:
+                  type: string
+          datasets:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  $ref: '#/components/schemas/dataset_uuid'
+                assay:
+                  type: string
+                assay_ontology:
+                  type: strings
+                tissue:
+                  type: string
+                tissue_ontology:
+                  type: string
+                disease_state:
+                  type: string
+                disease_state_ontology:
+                  type: string
+                sex:
+                  type: string
+                ethnicity:
+                  type: string
+                ethnicity_ontology:
+                  type: string
+                organism:
+                  type: string
+                organism_ontology:
+                  type: string
+                title:
+                  type: string
+                source_data_location:
+                  type: string
+                revision:
+                  type: string
+                dataset_deployments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      environment:
+                        type: string
+                      link:
+                        type: string
+                dataset_assets:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      fromat:
+                        type: string
+                      file_name:
+                        type: string
+                      type:
+                        type: string
+                        enum: [remix, original]
+                      s3_uri:
+                        type: string
+                contributors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      institution:
+                        type: string
+                dois:
+                  type: array
+                  items: string
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      title:
+                        type: string
+                      data:
+                        type: string
+                      journel:
+                        type: string
   parameters:
     path_project_uuid:
       name: project_uuid
