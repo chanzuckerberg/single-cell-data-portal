@@ -31,7 +31,7 @@ DEFAULT_DATETIME = text("now()")
 
 class DBSessionMaker:
     def __init__(self):
-        self.engine = create_engine(CorporaDbConfig().database_uri)
+        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={'connect_timeout': 5})
         self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):

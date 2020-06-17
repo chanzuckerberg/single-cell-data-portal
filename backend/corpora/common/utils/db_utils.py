@@ -3,6 +3,7 @@ import typing
 from ..corpora_orm import (
     Base,
     DBSessionMaker,
+    DbProject
 )
 
 
@@ -41,3 +42,16 @@ class DbUtils:
         :return: List of strings
         """
         return value.split(",") if value else []
+
+    def query_projects(self):
+        return [
+            {
+                "id": project.id,
+                "status": project.status,
+                "name": project.name,
+                "description": project.description,
+                "processing_state": project.processing_state.name,
+                "validation_state": project.validation_state.name,
+            }
+            for project in self._query([DbProject])
+        ]
