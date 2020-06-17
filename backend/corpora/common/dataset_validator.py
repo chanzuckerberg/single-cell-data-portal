@@ -98,7 +98,7 @@ class DatasetValidator:
             + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
         ):
             if metadata_field not in unstructured_metadata_keys:
-                self.log_error_message(metadata_field, "uns", type(data_objecgt).__name__)
+                self.log_error_message(metadata_field, "uns", type(data_object).__name__)
 
     def log_error_message(self, metadata_field_name, expected_location, dataset_type):
         """
