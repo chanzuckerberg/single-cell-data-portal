@@ -46,6 +46,7 @@ package: build-chalice-config
 	mkdir vendor
 	find vendor -name '*.pyc' -delete
 	shopt -s nullglob; for wheel in vendor.in/*/*.whl; do pip install --target vendor --upgrade $$wheel; done
+	cp -r vendor.in/psycopg2 vendor/psycopg2
 
 .PHONY: build-chalice-config
 build-chalice-config:
