@@ -1,10 +1,6 @@
 import typing
 
-from ..corpora_orm import (
-    Base,
-    DBSessionMaker,
-    DbProject
-)
+from ..corpora_orm import Base, DBSessionMaker, DbProject
 
 
 class DbUtils:
