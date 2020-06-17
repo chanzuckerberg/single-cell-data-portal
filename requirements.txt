@@ -1,3 +1,4 @@
+anndata
 black
 botocore>=1.14.17
 boto3>=1.11.17
@@ -6,9 +7,14 @@ coverage>=2.0.15
 flake8-black
 jsonschema
 moto
+numpy
+pandas
 # Don't upgrade to psycopg2>=2.8: https://github.com/psycopg/psycopg2/issues/674
 psycopg2==2.7.7
+PyMySQL==0.9.3
 pytest
 python-jose[cryptography]>=3.1.0
 requests>=2.22.0
+s3fs
+scanpy
 sqlalchemy
