@@ -45,11 +45,33 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         assert not mock_log_warning.called
 
     @patch("anndata.read_h5ad")
+    def test__validate_h5ad_dataset__test_case_sensitivity_outputs_error(self, mock_read_anndata):
+        test_anndata = self._create_fully_populated_anndata_object()
+
+        # Capitalize one piece of metadata which will output an error
+        missing_metadata = "tissue"
+        del test_anndata.obs[missing_metadata]
+        test_anndata.obs["TISSUE"] = None
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "missing_one_metadata_h5ad.h5ad"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+
+        # Validate result
+        with self.assertLogs(level="WARN") as logger:
+            validator.validate_dataset_file()
+            self.assertIn(f"Missing metadata field {missing_metadata} from obs", logger.output[0])
+
+    @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_obs_metadata_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
 
         # Delete one piece of metadata which will be the missing one
-        missing_metadata = "TISSUE"
+        missing_metadata = "tissue"
         del test_anndata.obs[missing_metadata]
 
         mock_read_anndata.return_value = test_anndata
@@ -70,7 +92,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         test_anndata = self._create_fully_populated_anndata_object()
 
         # Delete one piece of metadata which will be the missing one
-        missing_metadata = "ORGANISM"
+        missing_metadata = "organism"
         del test_anndata.uns[missing_metadata]
 
         mock_read_anndata.return_value = test_anndata
