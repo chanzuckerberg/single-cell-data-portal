@@ -1,7 +1,4 @@
-"""Create the 'original' and 'remix' datasets for the scv2 submission.
-
-Note that per previous convention, original is called 'curated'.
-"""
+"""Create the 'original' and 'remix' datasets for the scv2 submission"""
 
 import re
 
@@ -22,8 +19,6 @@ def update_var_names(var):
     def fix_case(symbol):
         """All human genes are supposed to be upper case except for the orfs, but sometimes
         they aren't in submitted data. So upper case before trying to match.
-
-        This is only true for *human* gene symbols!
         """
         if re.match(r"^C\d+orf\d+$", symbol):
             return symbol
@@ -75,7 +70,7 @@ def basic_curation(adata):
 def remix(adata):
     """Create the full Corpora remix"""
 
-    ## First fill in missing metadata fields
+    # First fill in missing metadata fields
     adata.obs["assay"] = "10x 3' v3 sequencing"
     adata.obs["assay_ontology"] = "EFO:0009922"
 
@@ -167,12 +162,21 @@ def remix(adata):
     sc.pp.sqrt(remix_adata)
 
     # Set the raw values from the original anndata object so we don't lose them.
-    remix_adata.raw = adata.raw.to_adata()
+    remix_adata.raw = anndata.AnnData(
+        X=merged_raw_counts,
+        obs=adata.obs,
+        var=merged_raw_counts.columns.to_frame(name="hgnc_gene_symbol"),
+        uns=adata.uns,
+        obsm=adata.obsm,
+    )
 
     # Finally describe the layers and we're done
-    adata.uns["layer_descriptions"] = {"raw.X": "raw", "X": "normalize_total; sqrt"}
+    remix_adata.uns["layer_descriptions"] = {
+        "raw.X": "raw",
+        "X": "normalize_total; sqrt",
+    }
 
-    return adata
+    return remix_adata
 
 
 def print_summary(adata):
@@ -195,9 +199,9 @@ ad.write(
     "Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-curated.h5ad",
     compression="gzip",
 )
-remix(ad)
-print_summary(ad)
-ad.write(
+rad = remix(ad)
+print_summary(rad)
+rad.write(
     "Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-remixed.h5ad",
     compression="gzip",
 )
