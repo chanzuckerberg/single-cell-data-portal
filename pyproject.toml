@@ -17,6 +17,8 @@ exclude = '''
     | buck-out
     | build
     | dist
+    | vendor
+    | vendor.in
   )/
 )
 '''
