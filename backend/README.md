@@ -62,7 +62,7 @@ run `make destroy`.
 ## Testing
 Tests are run in the top level directory `corpora-data-portal`.
 
-See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/master/README.md#testing)
+See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#testing)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy
