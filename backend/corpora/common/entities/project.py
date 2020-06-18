@@ -9,12 +9,12 @@ class Project(Entity):
         # TODO: list and set fields
         self.id = kwargs['id']
         self.status = kwargs['status']
+        self.link = kwargs['link']
 
     @classmethod
-    def get(cls, key: typing.Tuple[str]) -> "Project":
-        # db_project = cls.db._get(DbProject, key)
+    def get(cls, key: typing.Tuple[str, str]) -> "Project":
         # TODO: query multiple tables: DbProjectLink, DbDataset, etc...
-        data = cls.db._query(
+        results = cls.db._query(
             table_args=[DbProject, DbProjectLink],
             filter_args=[
                 DbProject.id == key[0],
@@ -24,8 +24,9 @@ class Project(Entity):
             ]
         )
         # TODO: inst Project object
-        project = Project(id=data.result.DbProject.id,
-                          status=data.result.DbProject.status,
+        project = Project(id=results[0].DbProject.id,
+                          status=results[0].DbProject.status,
+                          link=results[0].DbProjectLink.link_url
                           )
         return project
 

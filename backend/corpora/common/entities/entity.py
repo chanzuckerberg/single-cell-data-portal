@@ -18,7 +18,7 @@ class Entity(ABC):
 
     @classmethod
     @abstractmethod
-    def get(cls, key: typing.Union[str, typing.Tuple[str]]):
+    def get(cls, key: typing.Union[str, typing.Tuple[str, str]]):
         """
         Retrieves an entity from the database given its primary key
         :param key: Simple or composite primary key
