@@ -493,7 +493,7 @@ components:
       type: string
     visibility:
       type: string
-      enum: [public, rivate]
+      enum: [PUBLIC, PRIVATE]
     project:
       type: object
       properties:
@@ -514,13 +514,13 @@ components:
               type: string
         status:
           type: string
-          enum: [Live, Edit]
+          enum: [LIVE, EDIT]
         processing_state:
           type: string
-          enum: [N/A, In validation, In artifact creation, In deployment]
+          enum: [NA, IN_VALIDATON, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
         validation_state:
           type: string
-          enum: [Not validated, Valid, Invalid]
+          enum: [NOT_VALIDATION, VALID, INVALID]
         links:
           type: array
           items:
@@ -530,7 +530,7 @@ components:
                 type: string
               type:
                 type: string
-                enum: [Protocol, Raw data, Other]
+                enum: [PROTOCOL, RAW_DATA, OTHER]
         attestation:
           type: object
           properties:
@@ -616,12 +616,12 @@ components:
           type: string
         format:
           type: string
-          enum: [h5ad, rds, loom, cxg]
+          enum: [H5AD, RDS, LOOM, CXG]
         file_name:
           type: string
         type:
           type: string
-          enum: [remix, original]
+          enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
     doi:
