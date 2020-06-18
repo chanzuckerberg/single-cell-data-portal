@@ -95,11 +95,11 @@ class DatasetValidator:
             has_data = (data_object.X.count_nonzero() == data_object.X.nnz) or data_object.X.nnz == 0
         else:
             logging.warning(
-                f"Could not check raw data layer to ensure that it exists. The type is " f"{type(data_object.X)}!"
+                f"Could not check X data layer to ensure that it exists. The type is " f"{type(data_object.X)}!"
             )
 
         if not has_data:
-            logging.warning("No raw data can be found in the dataset or all observations are zeros!")
+            logging.warning("No data in the X layer can be found in the dataset or all observations are zeros!")
 
         # Ensure that the layer_descriptions metadata key exists in the `uns` field of the anndata object.
         if (CorporaConstants.LAYER_DESCRIPTIONS not in data_object.uns_keys()) or (

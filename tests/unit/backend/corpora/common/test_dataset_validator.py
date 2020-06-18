@@ -188,7 +188,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             self.assertIn("Each observation is not unique", logger.output[0])
 
     @patch("anndata.read_h5ad")
-    def test__validate_h5ad_dataset__empty_raw_data_outputs_error(self, mock_read_anndata):
+    def test__validate_h5ad_dataset__empty_x_data_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object(0, 0)
 
         mock_read_anndata.return_value = test_anndata
@@ -202,10 +202,10 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn("No raw data can be found", logger.output[0])
+            self.assertIn("No data in the X layer can be found", logger.output[0])
 
     @patch("anndata.read_h5ad")
-    def test__validate_h5ad_dataset__all_zeros_raw_data_outputs_error(self, mock_read_anndata):
+    def test__validate_h5ad_dataset__all_zeros_x_data_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
         for i in range(test_anndata.X.shape[0]):
             for j in range(test_anndata.X.shape[1]):
@@ -226,7 +226,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
 
     @patch("logging.warning")
     @patch("anndata.read_h5ad")
-    def test__validate_h5ad_dataset__validate_different_types_of_raw_data_passes(
+    def test__validate_h5ad_dataset__validate_different_types_of_x_data_passes(
         self, mock_read_anndata, mock_log_warning
     ):
         dataset_filename = "data.h5ad"
@@ -252,6 +252,24 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         mock_read_anndata.return_value = test_anndata
         validator.validate_dataset_file()
         assert not mock_log_warning.called
+
+    @patch("anndata.read_h5ad")
+    def test__validate_h5ad_dataset__unsupported_x_data_type_outputs_error(self, mock_read_anndata):
+        test_anndata = self._create_fully_populated_anndata_object()
+        test_anndata.X = test_anndata.X.tostring()
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "empty.h5ad"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+
+        # Validate result
+        with self.assertLogs(level="WARN") as logger:
+            validator.validate_dataset_file()
+            self.assertIn("Could not check X data layer", logger.output[0])
 
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__missing_layer_description(self, mock_read_anndata):
