@@ -8,7 +8,7 @@ class DbUtils:
         self.session = DBSessionMaker().session()
         self.engine = self.session.get_bind()
 
-    def _get(self, table: Base, entity_id: str) -> typing.Union[Base, None]:
+    def get(self, table: Base, entity_id: typing.Union[str, typing.Tuple[str]]) -> typing.Union[Base, None]:
         """
         Query a table row by its primary key
         :param table: SQLAlchemy Table to query
@@ -17,7 +17,7 @@ class DbUtils:
         """
         return self.session.query(table).get(entity_id)
 
-    def _query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
+    def query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
         """
         Query the database using the current DB session
         :param table_args: List of SQLAlchemy Tables to query/join
