@@ -67,8 +67,13 @@ Commands and their uses:
 * `make lint` - run code linter
 * `make fmt` - run code auto-formatters
 
+### Local Deployment
+1. Set `DEPLOYMENT_STAGE`,
+1. [Deploy local backend](backend/chalice/api_server/README.md#Development)
+1. [Deploy local frontend](frontend/README.md#Development)
+
 ### Deploy
 1. Set `DEPLOYMENT_STAGE`, and `AWS_PROFILE` in environment
-1. [Deploy Backend](backend/README.md#Deploy)
-1. [Deploy Cloudfront-invalidator](backend/corpora/lambdas/README.md#Deploy)
+1. [Deploy Backend](backend/chalice/api_server/README.md#Deploy)
+1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
