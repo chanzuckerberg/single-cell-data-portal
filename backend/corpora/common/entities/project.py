@@ -12,9 +12,9 @@ class Project(Entity):
 
     @classmethod
     def get(cls, key: typing.Tuple[str]) -> "Project":
-        # db_project = cls.db.get(DbProject, key)
+        # db_project = cls.db._get(DbProject, key)
         # TODO: query multiple tables: DbProjectLink, DbDataset, etc...
-        data = cls.db.query(
+        data = cls.db._query(
             table_args=[DbProject, DbProjectLink],
             filter_args=[
                 DbProject.id == key[0],
