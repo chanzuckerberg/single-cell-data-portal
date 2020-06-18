@@ -62,6 +62,23 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         assert not mock_log_warning.called
 
+    @patch("logging.warning")
+    @patch("anndata.read_loom")
+    def test__validate_loom_dataset__specific_x_layer(self, mock_read_anndata, mock_log_warning):
+        test_anndata = self._create_fully_populated_anndata_object()
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "fully_populated_loom.loom"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+        validator.validate_dataset_file(loom_x_layer_name="main_x")
+
+        # Validate result
+        assert not mock_log_warning.called
+
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__test_case_sensitivity_outputs_error(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
@@ -186,6 +203,26 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
             self.assertIn("No raw data can be found", logger.output[0])
+
+    @patch("anndata.read_h5ad")
+    def test__validate_h5ad_dataset__all_zeros_raw_data_outputs_error(self, mock_read_anndata):
+        test_anndata = self._create_fully_populated_anndata_object()
+        for i in range(test_anndata.X.shape[0]):
+            for j in range(test_anndata.X.shape[1]):
+                test_anndata.X[i][j] = 0
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "empty.h5ad"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+
+        # Validate result
+        with self.assertLogs(level="WARN") as logger:
+            validator.validate_dataset_file()
+            self.assertIn("all observations are zeros", logger.output[0])
 
     @patch("logging.warning")
     @patch("anndata.read_h5ad")

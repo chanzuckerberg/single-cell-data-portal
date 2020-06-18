@@ -5,7 +5,7 @@ import anndata
 import s3fs
 from numpy import ndarray
 from pandas import DataFrame
-from scipy.sparse.csr import csr_matrix
+from scipy.sparse import spmatrix
 
 from .utils.corpora_constants import CorporaConstants
 from .utils.math_utils import sizeof_formatted
@@ -21,7 +21,7 @@ class DatasetValidator:
         self.s3_path = s3_uri.replace("s3://", "")
         self.s3_file_system = s3fs.S3FileSystem()
 
-    def validate_dataset_file(self):
+    def validate_dataset_file(self, loom_x_layer_name=None):
         """
         Reads in file object and triages for specific file type validation.
         """
@@ -34,7 +34,7 @@ class DatasetValidator:
             self.validate_h5ad_dataset(file_object)
 
         elif self.s3_path.endswith(CorporaConstants.LOOM_FILE_TYPE):
-            self.validate_loom_dataset(file_object)
+            self.validate_loom_dataset(file_object, loom_x_layer_name)
 
         else:
             logging.warning(f"Unknown type of dataset with path {self.s3_path}!")
@@ -54,7 +54,7 @@ class DatasetValidator:
 
         self.validate_anndata_object(anndata_object)
 
-    def validate_loom_dataset(self, file_object):
+    def validate_loom_dataset(self, file_object, loom_x_layer_name=None):
         """
         Reads the Loom file contents into an AnnData object. Each attribute of the AnnData object will then be
         checked to ensure it contains the appropriate metadata.
@@ -62,7 +62,10 @@ class DatasetValidator:
 
         start_time = time.time()
         logging.info("Reading Loom file into anndata object...")
-        anndata_object = anndata.read_loom(file_object)
+        if loom_x_layer_name:
+            anndata_object = anndata.read_loom(file_object, X_name=loom_x_layer_name)
+        else:
+            anndata_object = anndata.read_loom(file_object)
         logging.info(f"Finished reading anndata object in {time.time() - start_time:.3f} seconds.")
 
         self.validate_anndata_object(anndata_object)
@@ -83,20 +86,20 @@ class DatasetValidator:
         """
 
         # Check to make sure X data exists
-        data = None
+        has_data = True
         if isinstance(data_object.X, DataFrame):
-            data = data_object.X.data
+            has_data = data_object.X.data.any()
         elif isinstance(data_object.X, ndarray):
-            data = data_object.X
-        elif isinstance(data_object.X, csr_matrix):
-            data = data_object.X.toarray()
+            has_data = data_object.X.any()
+        elif isinstance(data_object.X, spmatrix):
+            has_data = (data_object.X.count_nonzero() == data_object.X.nnz) or data_object.X.nnz == 0
         else:
             logging.warning(
                 f"Could not check raw data layer to ensure that it exists. The type is " f"{type(data_object.X)}!"
             )
 
-        if not data.any():
-            logging.warning("No raw data can be found in the dataset!")
+        if not has_data:
+            logging.warning("No raw data can be found in the dataset or all observations are zeros!")
 
         # Ensure that the layer_descriptions metadata key exists in the `uns` field of the anndata object.
         if (CorporaConstants.LAYER_DESCRIPTIONS not in data_object.uns_keys()) or (
@@ -105,7 +108,7 @@ class DatasetValidator:
             logging.warning("Required layers descriptions are missing from uns field to describe data layers!")
         else:
             # Check to ensure that there are descriptions for each layer
-            for layer_name, layer_data in data_object.layers.items():
+            for layer_name in data_object.layers.keys():
                 if layer_name not in data_object.uns.get(CorporaConstants.LAYER_DESCRIPTIONS).keys():
                     logging.warning(f"Missing layer description for layer {layer_name}!")
 
