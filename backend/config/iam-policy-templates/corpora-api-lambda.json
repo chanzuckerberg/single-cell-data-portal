@@ -47,6 +47,20 @@
       "Resource": [
         "arn:aws:iam::$ACCOUNT_ID:role/corpora-api-$DEPLOYMENT_STAGE-api_handler"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstances",
+        "ec2:AttachNetworkInterface",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeVpcs"
+      ],
+      "Resource": "*"
     }
   ]
 }

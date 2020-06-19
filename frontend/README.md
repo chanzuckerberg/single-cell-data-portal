@@ -11,7 +11,7 @@
   Powered by Gatsby
 </p>
 
-## 🚀 Development
+## Development
 
 1.  **Install dependencies.**
 
@@ -29,8 +29,8 @@
 	
 1.  **Host the backend locally.**
 
-    Follow [backend instructions](https://github.com/chanzuckerberg/corpora-data-portal/tree/main/browser/backend#development)
-    to deploy the backend API on `http://localhost:5000`.
+    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on 
+    `http://localhost:5000`.
 
 1.  **Build and launch the frontend locally.**
 
