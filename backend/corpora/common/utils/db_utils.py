@@ -1,6 +1,14 @@
 import typing
 
-from ..corpora_orm import Base, DBSessionMaker, DbProject
+from ..corpora_orm import (
+    Base,
+    DBSessionMaker,
+    DbProject,
+    DbProjectLink,
+    DbProjectDataset,
+    DbDatasetContributor,
+    DbContributor
+)
 
 
 class DbUtils:
@@ -39,15 +47,50 @@ class DbUtils:
         """
         return value.split(",") if value else []
 
-    def query_projects(self):
-        return [
-            {
-                "id": project.id,
-                "status": project.status,
-                "name": project.name,
-                "description": project.description,
-                "processing_state": project.processing_state.name,
-                "validation_state": project.validation_state.name,
+    def get_project(self, key: typing.Tuple[str, str]) -> typing.List[Base]:
+        result = self._query(
+            table_args=[DbProject, DbProjectLink, DbProjectDataset, DbDatasetContributor, DbContributor],
+            filter_args=[
+                DbProject.id == key[0],
+                DbProject.status == key[1],
+                DbProject.id == DbProjectLink.project_id,
+                DbProject.status == DbProjectLink.project_status,
+                DbProject.id == DbProjectDataset.project_id,
+                DbProject.status == DbProjectDataset.project_status,
+                DbProjectDataset.dataset_id == DbDatasetContributor.dataset_id,
+                DbContributor.id == DbDatasetContributor.contributor_id
+            ]
+        )
+        return result
+
+    @staticmethod
+    def parse_project(query_results: typing.List[Base]):
+        # de-dupe and parse project relationships
+        dataset_ids = set()
+        links = {}
+        contributors = {}
+        for result in query_results:
+            dataset_ids.add(result.DbProjectDataset.dataset_id)
+
+            links[result.DbProjectLink.id] = {
+                'id': result.DbProjectLink.id,
+                'type': result.DbProjectLink.link_type,
+                'url': result.DbProjectLink.link_url
             }
-            for project in self._query([DbProject])
-        ]
+
+            contributors[result.DbContributor.id] = {
+                'id': result.DbContributor.id,
+                'name': result.DbContributor.name,
+                'institution': result.DbContributor.institution,
+                'email': result.DbContributor.email
+            }
+
+        # build project params
+        project = {}
+        for k, v in query_results[0].DbProject.__dict__.items():
+            project[k] = v
+        project['dataset_ids'] = list(dataset_ids)
+        project['links'] = list(links.values())
+        project['contributors'] = list(contributors.values())
+
+        return project
