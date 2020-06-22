@@ -366,7 +366,6 @@ paths:
         '404':
           $ref: '#/components/responses/404'
 
-
   /v1/project:
 
     get:
@@ -480,6 +479,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+
 components:
   schemas:
     user_uuid:
@@ -538,6 +538,9 @@ components:
               type: boolean
             url:
               type: string
+        tc_link:
+          description: A link to the projects terms and conditions.
+          type: string
         datasets:
           type: array
           items:
