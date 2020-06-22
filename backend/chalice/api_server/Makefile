@@ -8,6 +8,12 @@ export PYTHONHASHSEED=0
 export S3_DEPLOYMENT_FILE=s3://org-corpora-infra-$(ACCOUNT_ID)/chalice/envs/$(DEPLOYMENT_STAGE)/$(APP_NAME)_deployed.json
 export LOCAL_DEPLOYED_PATH=.chalice/deployed
 export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
+export VPC_ID=$(shell aws ec2 describe-vpcs | jq -rc '.Vpcs[] | select((.Tags != null) and (.Tags[].Value == "sc-dev")) | .VpcId')
+export PRIVATE_SUBNET_IDS=$(shell aws ec2 describe-subnets | jq -rc '.Subnets[] | select((.Tags != null) and (.VpcId == "$(VPC_ID)") and (.Tags[].Value | contains("sc-$(DEPLOYMENT_STAGE)-private"))) | .SubnetId')
+export PRIVATE_SUBNET_ID_1=$(shell cut -d' ' -f1 <<<"$(PRIVATE_SUBNET_IDS)")
+export PRIVATE_SUBNET_ID_2=$(shell cut -d' ' -f2 <<<"$(PRIVATE_SUBNET_IDS)")
+export PRIVATE_SUBNET_ID_3=$(shell cut -d' ' -f3 <<<"$(PRIVATE_SUBNET_IDS)")
+export SECURITY_GROUP_ID=$(shell aws ec2 describe-security-groups | jq -rc '.SecurityGroups[] | select(.GroupName == "corpora-api-lambda-$(DEPLOYMENT_STAGE)") | .GroupId')
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
@@ -33,13 +39,14 @@ ci-deploy: retrieve-deployed
 
 .PHONY: package
 package: build-chalice-config
-	mkdir -p chalicelib/code
+	mkdir -p chalicelib/corpora
 	cp -R ../../corpora/common chalicelib/corpora
 	cp -a $(APP_NAME).yml chalicelib
 	rm -rf vendor dist/deployment
 	mkdir vendor
 	find vendor -name '*.pyc' -delete
 	shopt -s nullglob; for wheel in vendor.in/*/*.whl; do pip install --target vendor --upgrade $$wheel; done
+	cp -r vendor.in/psycopg2 vendor/psycopg2
 
 .PHONY: build-chalice-config
 build-chalice-config:
@@ -53,10 +60,14 @@ build-chalice-config:
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.env=env.DEPLOYMENT_STAGE config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.service=env.APP_NAME config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).api_gateway_stage=env.DEPLOYMENT_STAGE config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_1] config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_2] config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_3] config.json | sponge config.json
+	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).security_group_ids+=[env.SECURITY_GROUP_ID] config.json | sponge config.json
 
 .PHONY: local-server
 local-server: package
-	python local_server.py
+	python run_local_server.py
 
 .PHONY: retrieve-deployed
 retrieve-deployed:
