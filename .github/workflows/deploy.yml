@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branch:
-      - master
+      - main
 
 env:
   DEPLOYMENT_STAGE: 'dev'
