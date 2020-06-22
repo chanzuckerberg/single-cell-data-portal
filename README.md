@@ -1,6 +1,6 @@
 # Corpora Data Portal
 ![Push Tests](https://github.com/chanzuckerberg/corpora-data-portal/workflows/Push%20Tests/badge.svg)
-[![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/master/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
+[![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/main/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9416c313de4d0457a5cc/maintainability)](https://codeclimate.com/github/chanzuckerberg/corpora-data-portal/maintainability)
 
 The Corpora Data Portal (CDP) enables the publication, discovery and exploration of interoperable
