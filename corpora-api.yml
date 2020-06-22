@@ -481,6 +481,7 @@ paths:
           $ref: '#/components/responses/404'
 
 components:
+
   schemas:
     user_uuid:
       description: A unique identifier of a logged in User of Corpora.
@@ -505,7 +506,7 @@ components:
           $ref: '#/components/schemas/project_uuid'
         s3_bucket_key:
           type: string
-        submitter:
+        owner:
           type: object
           properties:
             id:
@@ -638,6 +639,7 @@ components:
           type: string
         journal:
           type: string
+
   parameters:
     path_project_uuid:
       name: project_uuid
