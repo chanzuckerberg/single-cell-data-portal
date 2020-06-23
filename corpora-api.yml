@@ -609,14 +609,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/contributor'
-        preprint_dois:
-          type: array
-          items:
-            $ref: '#/components/schemas/doi'
-        publication_dois:
-          type: array
-          items:
-            $ref: '#/components/schemas/doi'
+        preprint_doi:
+          $ref: '#/components/schemas/doi'
+        publication_doi:
+          $ref: '#/components/schemas/doi'
     dataset_asset:
       type: object
       properties:
