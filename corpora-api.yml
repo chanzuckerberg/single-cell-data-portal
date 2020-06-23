@@ -539,8 +539,8 @@ components:
               type: boolean
             url:
               type: string
-        tc_link:
-          description: A link to the projects terms and conditions.
+        tc_uri:
+          description: A uri to the projects terms and conditions.
           type: string
         datasets:
           type: array
