@@ -480,6 +480,7 @@ paths:
         '404':
           $ref: '#/components/responses/404'
 
+
 components:
 
   schemas:
@@ -537,11 +538,9 @@ components:
           properties:
             needed:
               type: boolean
-            url:
+            tc_uri:
+              description: A uri to the projects terms and conditions.
               type: string
-        tc_uri:
-          description: A uri to the projects terms and conditions.
-          type: string
         datasets:
           type: array
           items:
@@ -589,7 +588,7 @@ components:
         source_data_location:
           type: string
         revision:
-          type: string
+          type: integer
         dataset_deployments:
           type: array
           items:
