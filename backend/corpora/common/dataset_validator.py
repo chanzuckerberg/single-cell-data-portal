@@ -4,7 +4,8 @@ import time
 import anndata
 import s3fs
 from numpy import ndarray
-from pandas import DataFrame
+from owlready2 import get_ontology
+from pandas import DataFrame, Series
 from scipy.sparse import spmatrix
 
 from .utils.corpora_constants import CorporaConstants
@@ -20,6 +21,25 @@ class DatasetValidator:
         self.s3_uri = s3_uri
         self.s3_path = s3_uri.replace("s3://", "")
         self.s3_file_system = s3fs.S3FileSystem()
+
+        # Read in ontologies
+        for ontology in CorporaConstants.CORPORA_ONTOLOGIES:
+            logging.info(f"Reading in {ontology.ontology_name.upper()} ontology.")
+            start_time = time.time()
+
+            ontology_file_object = self.s3_file_system.open(ontology.s3_uri, "rb")
+            ontology_object = get_ontology("")
+            ontology_object.load(fileobj=ontology_file_object)
+            setattr(
+                self,
+                ontology.ontology_name,
+                [ontology_class.name for ontology_class in list(ontology_object.classes())],
+            )
+            ontology_file_object.close()
+
+            logging.info(
+                f"Completed reading {ontology.ontology_name} ontology in {time.time() - start_time:.3f} seconds."
+            )
 
     def validate_dataset_file(self, loom_x_layer_name=None):
         """
@@ -143,8 +163,10 @@ class DatasetValidator:
             CorporaConstants.REQUIRED_OBSERVATION_METADATA_FIELDS
             + CorporaConstants.REQUIRED_OBSERVATION_ONTOLOGY_METADATA_FIELDS
         ):
-            if metadata_field not in observation_keys:
-                self.log_error_message(metadata_field, "obs", type(data_object).__name__)
+            if metadata_field.field_name not in observation_keys:
+                self.log_error_message(metadata_field.field_name, "obs", type(data_object).__name__)
+            else:
+                self.verify_metadata_type(metadata_field, data_object.obs.get(metadata_field.field_name))
 
     def verify_vars(self, data_object: anndata.AnnData):
         """
@@ -167,8 +189,49 @@ class DatasetValidator:
             CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
             + CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
         ):
-            if metadata_field not in unstructured_metadata_keys:
-                self.log_error_message(metadata_field, "uns", type(data_object).__name__)
+            if metadata_field.field_name not in unstructured_metadata_keys:
+                self.log_error_message(metadata_field.field_name, "uns", type(data_object).__name__)
+
+    def verify_metadata_type(self, metadata_property, metadata_values_in_dataset: Series):
+        """
+        Validates the type of each value in a property of an AnnData object.
+
+        Each property value passed in the pandas Series object `metadata_values_in_dataset` is expected to be of the
+        type `metadata_property` where `metadata_property` can either be a type or can be a namedtuple that represents
+        an ontology. When the type is an ontology, the validation instead ensures that each value of the AnnData
+        property belongs to the expected ontology. In some cases, there is an acceptable alternate value not part of
+        the ontology for which the validation also checks.
+        """
+
+        if isinstance(metadata_property.required_type, type):
+            for data_value in metadata_values_in_dataset.values:
+                if not isinstance(data_value, metadata_property.required_type):
+                    logging.warning(
+                        f"Value {data_value} is not of expected type {metadata_property.required_type} for metadata "
+                        f"field {metadata_property.field_name}."
+                    )
+
+        elif isinstance(metadata_property.required_type, CorporaConstants.Ontology):
+            valid_ontology_names = getattr(self, metadata_property.required_type.ontology_name)
+            unrecognized_data_values = set()
+            for data_value in metadata_values_in_dataset.values:
+                if not (
+                    data_value in valid_ontology_names
+                    or (metadata_property.valid_alternative and data_value == metadata_property.valid_alternative)
+                ):
+                    unrecognized_data_values.add(data_value)
+
+            if unrecognized_data_values:
+                logging.warning(
+                    f"Values {unrecognized_data_values} were not recognized as a valid value in the "
+                    f"{metadata_property.required_type.ontology_name} ontology."
+                )
+
+        else:
+            logging.warning(
+                f"Unable to parse metadata property: {metadata_property.field_name} with type "
+                f"{type(metadata_property.required_type)}"
+            )
 
     def log_error_message(self, metadata_field_name, expected_location, dataset_type):
         """

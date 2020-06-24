@@ -2,17 +2,30 @@ import collections
 
 
 class CorporaConstants(object):
-
-    TypedMetadata = collections.namedtuple("TypedMetadata", "field_name required_type valid_alternative")
+    # Namedtuples used to encapsulate information about a piece of metadata for verification purposes
+    TypedMetadata = collections.namedtuple(
+        "TypedMetadata", "field_name required_type valid_alternative", defaults=[None]
+    )
+    Ontology = collections.namedtuple("Ontology", "ontology_name s3_uri")
 
     # Constants related to type checking ontology fields
-    EFO_ONTOLOGY = "efo"
-    CELL_ONTOLOGY = "cl"
-    HANCESTRO_ONTOLOGY = "hancestro"
-    HSAPDV_ONTOLOGY = "hsapdv"
-    MONDO_ONTOLOGY = "mondo"
-    NCBI_TAXON_ONTOLOGY = "ncbi_taxon"
-    UBERON_ONTOLOGY = "uberon"
+    EFO_ONTOLOGY = Ontology(ontology_name="efo", s3_uri="corpora-data-portal-ontologies/efo.owl")
+    CELL_ONTOLOGY = Ontology(ontology_name="cl", s3_uri="corpora-data-portal-ontologies/cl.owl")
+    HANCESTRO_ONTOLOGY = Ontology(ontology_name="hancestro", s3_uri="corpora-data-portal-ontologies/hancestro.owl")
+    HSAPDV_ONTOLOGY = Ontology(ontology_name="hsapdv", s3_uri="corpora-data-portal-ontologies/hsapdv.owl")
+    MONDO_ONTOLOGY = Ontology(ontology_name="mondo", s3_uri="corpora-data-portal-ontologies/mondo.owl")
+    NCBI_TAXON_ONTOLOGY = Ontology(ontology_name="ncbi_taxon", s3_uri="corpora-data-portal-ontologies/ncbitaxon.owl")
+    UBERON_ONTOLOGY = Ontology(ontology_name="uberon", s3_uri="corpora-data-portal-ontologies/uberon.owl")
+
+    CORPORA_ONTOLOGIES = [
+        EFO_ONTOLOGY,
+        CELL_ONTOLOGY,
+        HANCESTRO_ONTOLOGY,
+        HSAPDV_ONTOLOGY,
+        MONDO_ONTOLOGY,
+        NCBI_TAXON_ONTOLOGY,
+        UBERON_ONTOLOGY,
+    ]
 
     # Constants related to type checking enum fields
     SEX_VALID_ENUM_VALUES = ["male", "female", "na"]
@@ -21,7 +34,6 @@ class CorporaConstants(object):
     LAYER_DESCRIPTIONS = "layer_descriptions"
     X_DATA_LAYER_NAME = "X"
     RAW_DATA_LAYER_NAME = "raw.X"
-
 
     # Constants related to the metadata requirements of submitting a dataset to Corpora. Note that these metadata
     # fields are CASE-SENSITIVE.
@@ -51,7 +63,7 @@ class CorporaConstants(object):
     ]
     REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS = [
         TypedMetadata(field_name="title", required_type=str),
-        TypedMetadata(field_name="contributors", required_type=dict),
+        TypedMetadata(field_name="contributors", required_type=list),
         TypedMetadata(field_name="preprint_doi", required_type=str),
         TypedMetadata(field_name="publication_doi", required_type=str),
     ]
@@ -69,7 +81,6 @@ class CorporaConstants(object):
         TypedMetadata(field_name="project_raw_data_links", required_type=list),
         TypedMetadata(field_name="project_other_links", required_type=list),
     ]
-
 
     # Constants related to the dataset format of which a submission to Corpora must be.
     LOOM_FILE_TYPE = ".loom"
