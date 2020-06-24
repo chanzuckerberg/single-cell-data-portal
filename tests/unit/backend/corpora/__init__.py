@@ -31,6 +31,10 @@ class CorporaTestCaseUsingMockAWS(unittest.TestCase):
         self, object_key, bucket_name=None, content_type="application/octet-stream", content="file_content"
     ):
         bucket_name = bucket_name or self.bucket.name
+
+        if not self.s3_resource.Bucket(bucket_name) in self.s3_resource.buckets.all():
+            self.s3_resource.Bucket(bucket_name).create()
+
         s3object = self.s3_resource.Bucket(bucket_name).Object(object_key)
         s3object.put(Body=content, ContentType=content_type)
         return s3object

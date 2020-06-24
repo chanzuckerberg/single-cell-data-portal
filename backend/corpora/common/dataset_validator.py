@@ -4,7 +4,6 @@ import time
 import anndata
 import s3fs
 from numpy import ndarray
-from owlready2 import get_ontology
 from pandas import DataFrame, Series
 from scipy.sparse import spmatrix
 
@@ -27,18 +26,14 @@ class DatasetValidator:
             logging.info(f"Reading in {ontology.ontology_name.upper()} ontology.")
             start_time = time.time()
 
-            ontology_file_object = self.s3_file_system.open(ontology.s3_uri, "rb")
-            ontology_object = get_ontology("")
-            ontology_object.load(fileobj=ontology_file_object)
-            setattr(
-                self,
-                ontology.ontology_name,
-                [ontology_class.name for ontology_class in list(ontology_object.classes())],
-            )
+            ontology_file_object = self.s3_file_system.open(ontology.s3_uri, "r")
+            ontology_terms_list = ontology_file_object.read().split("\n")
+            setattr(self, ontology.ontology_name, ontology_terms_list)
             ontology_file_object.close()
 
             logging.info(
-                f"Completed reading {ontology.ontology_name} ontology in {time.time() - start_time:.3f} seconds."
+                f"Completed reading {len(getattr(self, ontology.ontology_name))} values for {ontology.ontology_name} "
+                f"ontology in {time.time() - start_time:.3f} seconds."
             )
 
     def validate_dataset_file(self, loom_x_layer_name=None):
@@ -191,8 +186,10 @@ class DatasetValidator:
         ):
             if metadata_field.field_name not in unstructured_metadata_keys:
                 self.log_error_message(metadata_field.field_name, "uns", type(data_object).__name__)
+            else:
+                self.verify_metadata_type(metadata_field, data_object.uns.get(metadata_field.field_name))
 
-    def verify_metadata_type(self, metadata_property, metadata_values_in_dataset: Series):
+    def verify_metadata_type(self, metadata_property, metadata_values_in_dataset):
         """
         Validates the type of each value in a property of an AnnData object.
 
@@ -203,21 +200,32 @@ class DatasetValidator:
         the ontology for which the validation also checks.
         """
 
+        # Canonicalize the metadata values type into a list
+        if isinstance(metadata_values_in_dataset, Series):
+            metadata_values = metadata_values_in_dataset.values
+        else:
+            metadata_values = [metadata_values_in_dataset]
+
+        # Handle the case where the required type is simply a type check.
         if isinstance(metadata_property.required_type, type):
-            for data_value in metadata_values_in_dataset.values:
+            for data_value in metadata_values:
                 if not isinstance(data_value, metadata_property.required_type):
                     logging.warning(
                         f"Value {data_value} is not of expected type {metadata_property.required_type} for metadata "
                         f"field {metadata_property.field_name}."
                     )
 
+        # Handle the case where the required type is an Ontology.
         elif isinstance(metadata_property.required_type, CorporaConstants.Ontology):
             valid_ontology_names = getattr(self, metadata_property.required_type.ontology_name)
             unrecognized_data_values = set()
-            for data_value in metadata_values_in_dataset.values:
+            for data_value in metadata_values:
                 if not (
                     data_value in valid_ontology_names
-                    or (metadata_property.valid_alternative and data_value == metadata_property.valid_alternative)
+                    or (
+                        metadata_property.valid_alternative is not None
+                        and data_value == metadata_property.valid_alternative
+                    )
                 ):
                     unrecognized_data_values.add(data_value)
 
@@ -225,6 +233,19 @@ class DatasetValidator:
                 logging.warning(
                     f"Values {unrecognized_data_values} were not recognized as a valid value in the "
                     f"{metadata_property.required_type.ontology_name} ontology."
+                )
+
+        # Handle the case where the required type is an enum which is represented by a list of accepted values.
+        elif isinstance(metadata_property.required_type, list):
+            unrecognized_data_values = set()
+            for data_value in metadata_values:
+                if not data_value in metadata_property.required_type:
+                    unrecognized_data_values.add(data_value)
+
+            if unrecognized_data_values:
+                logging.warning(
+                    f"Values {unrecognized_data_values} are not part of the accepted enum values "
+                    f"{metadata_property.required_type} for metadata field {metadata_property.field_name}."
                 )
 
         else:

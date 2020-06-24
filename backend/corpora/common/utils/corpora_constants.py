@@ -9,13 +9,13 @@ class CorporaConstants(object):
     Ontology = collections.namedtuple("Ontology", "ontology_name s3_uri")
 
     # Constants related to type checking ontology fields
-    EFO_ONTOLOGY = Ontology(ontology_name="efo", s3_uri="corpora-data-portal-ontologies/efo.owl")
-    CELL_ONTOLOGY = Ontology(ontology_name="cl", s3_uri="corpora-data-portal-ontologies/cl.owl")
-    HANCESTRO_ONTOLOGY = Ontology(ontology_name="hancestro", s3_uri="corpora-data-portal-ontologies/hancestro.owl")
-    HSAPDV_ONTOLOGY = Ontology(ontology_name="hsapdv", s3_uri="corpora-data-portal-ontologies/hsapdv.owl")
-    MONDO_ONTOLOGY = Ontology(ontology_name="mondo", s3_uri="corpora-data-portal-ontologies/mondo.owl")
-    NCBI_TAXON_ONTOLOGY = Ontology(ontology_name="ncbi_taxon", s3_uri="corpora-data-portal-ontologies/ncbitaxon.owl")
-    UBERON_ONTOLOGY = Ontology(ontology_name="uberon", s3_uri="corpora-data-portal-ontologies/uberon.owl")
+    EFO_ONTOLOGY = Ontology(ontology_name="efo", s3_uri="corpora-data-portal-ontologies/efo.txt")
+    CELL_ONTOLOGY = Ontology(ontology_name="cl", s3_uri="corpora-data-portal-ontologies/cl.txt")
+    HANCESTRO_ONTOLOGY = Ontology(ontology_name="hancestro", s3_uri="corpora-data-portal-ontologies/hancestro.txt")
+    HSAPDV_ONTOLOGY = Ontology(ontology_name="hsapdv", s3_uri="corpora-data-portal-ontologies/hsapdv.txt")
+    MONDO_ONTOLOGY = Ontology(ontology_name="mondo", s3_uri="corpora-data-portal-ontologies/mondo.txt")
+    NCBI_TAXON_ONTOLOGY = Ontology(ontology_name="ncbi_taxon", s3_uri="corpora-data-portal-ontologies/ncbitaxon.txt")
+    UBERON_ONTOLOGY = Ontology(ontology_name="uberon", s3_uri="corpora-data-portal-ontologies/uberon.txt")
 
     CORPORA_ONTOLOGIES = [
         EFO_ONTOLOGY,
@@ -28,7 +28,7 @@ class CorporaConstants(object):
     ]
 
     # Constants related to type checking enum fields
-    SEX_VALID_ENUM_VALUES = ["male", "female", "na"]
+    SEX_VALID_ENUM_VALUES = ["male", "female", "na", "unknown"]
 
     # Constants related to processing layers
     LAYER_DESCRIPTIONS = "layer_descriptions"
@@ -50,7 +50,7 @@ class CorporaConstants(object):
         TypedMetadata(field_name="tissue_ontology", required_type=UBERON_ONTOLOGY),
         TypedMetadata(field_name="assay_ontology", required_type=EFO_ONTOLOGY),
         TypedMetadata(field_name="disease_ontology", required_type=MONDO_ONTOLOGY, valid_alternative="PATO:0000461"),
-        TypedMetadata(field_name="cell_type_ontology", required_type=CELL_ONTOLOGY),
+        TypedMetadata(field_name="cell_type_ontology", required_type=CELL_ONTOLOGY, valid_alternative=""),
         TypedMetadata(field_name="ethnicity_ontology", required_type=HANCESTRO_ONTOLOGY, valid_alternative="na"),
         TypedMetadata(
             field_name="developmental_stage_ontology", required_type=HSAPDV_ONTOLOGY, valid_alternative="EFO:0000399"
