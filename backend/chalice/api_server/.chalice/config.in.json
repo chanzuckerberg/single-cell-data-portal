@@ -3,6 +3,8 @@
     "$DEPLOYMENT_STAGE": {
       "lambda_memory_size": 256,
       "lambda_timeout": 30,
+      "security_group_ids": [],
+      "subnet_ids": [],
       "environment_variables": {
       },
       "tags": {

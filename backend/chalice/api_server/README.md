@@ -11,7 +11,7 @@ Filename                  | Purpose                           | Information link
 `./chalice/.chalice/config.in.json`	|A template for the Chalice config file for the app    | [Chalice Configuration File](https://chalice.readthedocs.io/en/latest/topics/configfile.html)
 `requirements-dev.txt`    |Developer environment dependencies | [Pip requirements files](https://pip.readthedocs.io/en/1.1/requirements.html)
 `Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
-`iam/policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
+`../../config/iam-policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 
 ## Development
 1.  Ensure your `awscli` is configured with the
@@ -36,8 +36,7 @@ Filename                  | Purpose                           | Information link
      make local-server
      ```
 
-# Deploy
-## How to deploy and manage the Chalice app
+## Deploy
 1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `dev`, `staging`, `prod`
 1. Install dependencies `pip install -r requirements-dev.txt`
 1. Configure the AWS CLI
@@ -62,12 +61,12 @@ run `make destroy`.
 ## Testing
 Tests are run in the top level directory `corpora-data-portal`.
 
-See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/master/README.md#testing)
+See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#testing)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy
 Your Lambda function is assigned an IAM role that controls the permissions given to the Lambda's AWS credentials. This
-IAM role is set from the file `iam/policy-template/{$APP_NAME}-lambda.json`. Edit this policy and repeat the deployment
+IAM role is set from the file [corpora-api-lambda.json](../../config/iam-policy-templates/corpora-api-lambda.json). Edit this policy and repeat the deployment
 if your Lambda needs access to other AWS APIs. You can also edit the Makefile to parameterize this file or generate 
 it from a template as needed. (The setting `autogen_policy` must be set to `false` in `.chalice/config.json` for 
 Chalice to use this file.)

@@ -1,6 +1,6 @@
 # Corpora Data Portal
 ![Push Tests](https://github.com/chanzuckerberg/corpora-data-portal/workflows/Push%20Tests/badge.svg)
-[![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/master/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
+[![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/main/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9416c313de4d0457a5cc/maintainability)](https://codeclimate.com/github/chanzuckerberg/corpora-data-portal/maintainability)
 
 The Corpora Data Portal (CDP) enables the publication, discovery and exploration of interoperable
@@ -67,8 +67,13 @@ Commands and their uses:
 * `make lint` - run code linter
 * `make fmt` - run code auto-formatters
 
+### Local Deployment
+1. Set `DEPLOYMENT_STAGE`,
+1. [Deploy local backend](backend/chalice/api_server/README.md#Development)
+1. [Deploy local frontend](frontend/README.md#Development)
+
 ### Deploy
 1. Set `DEPLOYMENT_STAGE`, and `AWS_PROFILE` in environment
-1. [Deploy Backend](backend/README.md#Deploy)
-1. [Deploy Cloudfront-invalidator](backend/corpora/lambdas/README.md#Deploy)
+1. [Deploy Backend](backend/chalice/api_server/README.md#Deploy)
+1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
