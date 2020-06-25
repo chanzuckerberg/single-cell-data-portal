@@ -420,7 +420,11 @@ paths:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
         '200':
-          $ref: '#/components/responses/200'
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -492,7 +496,150 @@ components:
       type: string
     visibility:
       type: string
-      enum: [public,private]
+      enum: [PUBLIC, PRIVATE]
+    project:
+      type: object
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        id:
+          $ref: '#/components/schemas/project_uuid'
+        s3_bucket_key:
+          type: string
+        owner:
+          type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/user_uuid'
+            email:
+              type: string
+        status:
+          type: string
+          enum: [LIVE, EDIT]
+        processing_state:
+          type: string
+          enum: [NA, IN_VALIDATON, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
+        validation_state:
+          type: string
+          enum: [NOT_VALIDATED, VALID, INVALID]
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              type:
+                type: string
+                enum: [PROTOCOL, RAW_DATA, OTHER]
+        attestation:
+          type: object
+          properties:
+            needed:
+              type: boolean
+            tc_uri:
+              description: A uri to the projects terms and conditions.
+              type: string
+        datasets:
+          type: array
+          items:
+            $ref: '#/components/schemas/dataset'
+    contributor:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        institution:
+          type: string
+    dataset:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/dataset_uuid'
+        assay:
+          type: string
+        assay_ontology:
+          type: string
+        tissue:
+          type: string
+        tissue_ontology:
+          type: string
+        disease_state:
+          type: string
+        disease_state_ontology:
+          type: string
+        sex:
+          type: string
+        ethnicity:
+          type: string
+        ethnicity_ontology:
+          type: string
+        organism:
+          type: string
+        organism_ontology:
+          type: string
+        title:
+          type: string
+        source_data_location:
+          type: string
+        revision:
+          type: integer
+        dataset_deployments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              environment:
+                type: string
+              link:
+                type: string
+        dataset_assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/dataset_asset'
+        contributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/contributor'
+        preprint_doi:
+          $ref: '#/components/schemas/doi'
+        publication_doi:
+          $ref: '#/components/schemas/doi'
+    dataset_asset:
+      type: object
+      properties:
+        id:
+          type: string
+        format:
+          type: string
+          enum: [H5AD, RDS, LOOM, CXG]
+        file_name:
+          type: string
+        type:
+          type: string
+          enum: [REMIX, ORIGINAL]
+        s3_uri:
+          type: string
+    doi:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        data:
+          type: string
+        journal:
+          type: string
+
   parameters:
     path_project_uuid:
       name: project_uuid
