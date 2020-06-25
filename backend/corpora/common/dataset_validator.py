@@ -239,7 +239,7 @@ class DatasetValidator:
         elif isinstance(metadata_property.required_type, list):
             unrecognized_data_values = set()
             for data_value in metadata_values:
-                if not data_value in metadata_property.required_type:
+                if data_value not in metadata_property.required_type:
                     unrecognized_data_values.add(data_value)
 
             if unrecognized_data_values:

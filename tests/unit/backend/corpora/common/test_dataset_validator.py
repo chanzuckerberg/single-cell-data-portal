@@ -372,7 +372,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn(f"is not of expected type", logger.output[0])
+            self.assertIn("is not of expected type", logger.output[0])
 
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__unaccepted_ontology_value(self, mock_read_anndata):
@@ -414,7 +414,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn(f"not part of the accepted enum values", logger.output[0])
+            self.assertIn("not part of the accepted enum values", logger.output[0])
 
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__unaccepted_uns_metadata_type(self, mock_read_anndata):
@@ -433,7 +433,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         # Validate result
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
-            self.assertIn(f"is not of expected type", logger.output[0])
+            self.assertIn("is not of expected type", logger.output[0])
 
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__unaccepted_uns_ontology(self, mock_read_anndata):
