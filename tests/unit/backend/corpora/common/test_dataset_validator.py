@@ -358,6 +358,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__incorrect_metadata_value_type(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
+        # Expected type of tissue is string so inputting integers should cause an error to be outputted.
         test_anndata.obs["tissue"] = [random.randint(1, 10) for _ in range(len(test_anndata.obs.get("tissue")))]
 
         mock_read_anndata.return_value = test_anndata
@@ -376,6 +377,8 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__unaccepted_ontology_value(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
+        # Expected type of tissue ontology is to be part of UBERON ontology which is generated in this test suite to be
+        # 8 random characters long. Therefore inputting "unknown" which is 7 letters, should cause an error.
         test_anndata.obs["tissue_ontology"] = ["unknown" for _ in range(len(test_anndata.obs.get("tissue_ontology")))]
 
         mock_read_anndata.return_value = test_anndata
@@ -397,6 +400,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
     @patch("anndata.read_h5ad")
     def test__validate_h5ad_dataset__unaccepted_enum_value(self, mock_read_anndata):
         test_anndata = self._create_fully_populated_anndata_object()
+        # Expected enums for "sex" do not include asdfglkjh, so setting the attribute to that should throw an error.
         test_anndata.obs["sex"] = ["asdfglkjh" for _ in range(len(test_anndata.obs.get("sex")))]
 
         mock_read_anndata.return_value = test_anndata
@@ -411,6 +415,48 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
         with self.assertLogs(level="WARN") as logger:
             validator.validate_dataset_file()
             self.assertIn(f"not part of the accepted enum values", logger.output[0])
+
+    @patch("anndata.read_h5ad")
+    def test__validate_h5ad_dataset__unaccepted_uns_metadata_type(self, mock_read_anndata):
+        test_anndata = self._create_fully_populated_anndata_object()
+        # Expected type of the "title" is string so inputting an integer should cause an error.
+        test_anndata.uns["title"] = 12345
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "metadata_values.h5ad"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+
+        # Validate result
+        with self.assertLogs(level="WARN") as logger:
+            validator.validate_dataset_file()
+            self.assertIn(f"is not of expected type", logger.output[0])
+
+    @patch("anndata.read_h5ad")
+    def test__validate_h5ad_dataset__unaccepted_uns_ontology(self, mock_read_anndata):
+        test_anndata = self._create_fully_populated_anndata_object()
+        # Expected type of organism ontology is to be part of NCBI Taxon ontology which is generated in this test suite
+        # to be 8 random characters long. Therefore inputting "unknown" which is 7 letters, should cause an error.
+        test_anndata.uns["organism_ontology"] = "unknown"
+
+        mock_read_anndata.return_value = test_anndata
+
+        dataset_filename = "metadata_values.h5ad"
+        s3_uri = self._create_dataset_object_in_s3_bucket(dataset_filename)
+
+        # Run validator
+        validator = DatasetValidator(s3_uri)
+
+        # Validate result
+        with self.assertLogs(level="WARN") as logger:
+            validator.validate_dataset_file()
+            self.assertIn(
+                f"not recognized as a valid value in the {CorporaConstants.NCBI_TAXON_ONTOLOGY.ontology_name} ontology",
+                logger.output[0],
+            )
 
     def _create_fully_populated_anndata_object(self, obs_count=3, var_count=4):
         """
