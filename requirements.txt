@@ -14,7 +14,6 @@ psycopg2==2.7.7
 PyMySQL==0.9.3
 pytest
 python-jose[cryptography]>=3.1.0
-random-word
 requests>=2.22.0
 s3fs
 scanpy
