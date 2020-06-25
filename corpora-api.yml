@@ -523,7 +523,7 @@ components:
           enum: [NA, IN_VALIDATON, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
         validation_state:
           type: string
-          enum: [NOT_VALIDATION, VALID, INVALID]
+          enum: [NOT_VALIDATED, VALID, INVALID]
         links:
           type: array
           items:
