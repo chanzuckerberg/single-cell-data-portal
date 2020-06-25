@@ -1,9 +1,14 @@
-import { Link } from "gatsby"
-import React from "react"
-import { Flex, Box } from "theme-ui"
-import ProjectsListHeading from "./projectsListHeading"
+import React, { FC } from "react";
+import { Link } from "gatsby";
+import { Flex, Box } from "theme-ui";
+import ProjectsListHeading from "./projectsListHeading";
+import { Project } from "../common/entities";
 
-const ProjectsList = ({ projects }) => {
+interface Props {
+  projects: Project[];
+}
+
+const ProjectsList: FC<Props> = ({ projects }) => {
   return (
     <>
       <ProjectsListHeading />
@@ -30,13 +35,16 @@ const ProjectsList = ({ projects }) => {
               }}
             >
               <Flex sx={{ flexDirection: "column" }}>
-                {project.organs.map(organ=> (
-                  <Box key={organ}
-                  sx={{
-                    paddingTop: "10px",
-                    lineHeight: "1.5",
-                  }}
-                  >{organ.charAt(0).toUpperCase() + organ.substring(1)}</Box>
+                {project.organs.map(organ => (
+                  <Box
+                    key={organ}
+                    sx={{
+                      paddingTop: "10px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {organ.charAt(0).toUpperCase() + organ.substring(1)}
+                  </Box>
                 ))}
               </Flex>
             </Box>
@@ -54,12 +62,15 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.assays.map(assay => (
-                  <Box key={assay}
-                  sx={{
-                    paddingTop: "10px",
-                    lineHeight: "1.5",
-                  }}
-                  >{assay}</Box>
+                  <Box
+                    key={assay}
+                    sx={{
+                      paddingTop: "10px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {assay}
+                  </Box>
                 ))}
               </Flex>
             </Box>
@@ -77,12 +88,15 @@ const ProjectsList = ({ projects }) => {
             >
               <Flex sx={{ flexDirection: "column" }}>
                 {project.species.map(species => (
-                  <Box key={species}
-                  sx={{
-                    paddingTop: "10px",
-                    lineHeight: "1.5",
-                  }}
-                  >{species}</Box>
+                  <Box
+                    key={species}
+                    sx={{
+                      paddingTop: "10px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {species}
+                  </Box>
                 ))}
               </Flex>
             </Box>
@@ -119,10 +133,10 @@ const ProjectsList = ({ projects }) => {
               <Link to={`/project/?id=${project.id}`}>{project.title}</Link>
             </Box>
           </Flex>
-        )
+        );
       })}
     </>
-  )
-}
+  );
+};
 
-export default ProjectsList
+export default ProjectsList;

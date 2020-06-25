@@ -1,8 +1,13 @@
-import React from "react"
-import { Heading, Text, Flex, Box } from "theme-ui"
+import React, { FC } from "react";
+import { Text, Flex, Box } from "theme-ui";
+import { File } from "../common/entities";
 
-const FilesList = ({ files }) => {
-  console.log(files)
+interface Props {
+  files: [File];
+}
+
+const FilesList: FC<Props> = ({ files }) => {
+  console.log(files);
   return (
     <Box>
       {files.map(file => {
@@ -17,18 +22,10 @@ const FilesList = ({ files }) => {
             <Text sx={{ fontSize: 1 }}>{file.tissue_ontology}</Text>
             <Text sx={{ fontSize: 1 }}>{file.file_format}</Text>
           </Flex>
-        )
+        );
       })}
     </Box>
-  )
-}
+  );
+};
 
-export default FilesList
-
-// id: "HCA-AnalysisFile-001a3fdd-c9e6-4871-9e48-a840d52ecdf9"
-// filename: "b29eeb85-53ff-4786-9101-3e241e6dc250_rsem.bam"
-// file_format: "bam"
-// file_size: 0
-// species: "homo sapiens"
-// library_construction_method_ontology: ""
-// tissue_ontology: ""
+export default FilesList;

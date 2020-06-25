@@ -1,7 +1,7 @@
-import React from "react"
-import { Flex, Box } from "theme-ui"
+import React, { FC } from "react";
+import { Flex, Box } from "theme-ui";
 
-const ProjectsListHeading = ({ projects }) => {
+const ProjectsListHeading: FC = () => {
   return (
     <Flex sx={{ mb: [4] }}>
       <Box
@@ -84,7 +84,7 @@ const ProjectsListHeading = ({ projects }) => {
         Project name
       </Box>
     </Flex>
-  )
-}
+  );
+};
 
-export default ProjectsListHeading
+export default ProjectsListHeading;

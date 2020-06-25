@@ -5,29 +5,18 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React from "react"
-import { useStaticQuery, graphql } from "gatsby"
-import { ThemeProvider } from "theme-ui"
-import theme from "./theme"
+import React, { FC } from "react";
+import { ThemeProvider } from "theme-ui";
+import theme from "./theme";
 
-import Header from "./header"
-import Footer from "./footer"
-import "./layout.css"
+import Header from "./header";
+import Footer from "./footer";
+import "./layout.css";
 
-const Layout = ({ children }) => {
-  const data = useStaticQuery(graphql`
-    query SiteTitleQuery {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-    }
-  `)
-
+const Layout: FC = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
-      <Header siteTitle={data.site.siteMetadata.title} />
+      <Header />
       <div
         style={{
           margin: `0 auto`,
@@ -42,7 +31,7 @@ const Layout = ({ children }) => {
       </div>
       <Footer />
     </ThemeProvider>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

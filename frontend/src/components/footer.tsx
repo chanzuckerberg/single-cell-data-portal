@@ -1,8 +1,8 @@
-import { Link } from "gatsby"
-import React from "react"
-import { Flex, Box, Image } from "theme-ui"
+import React, { FC } from "react";
+import { Link } from "gatsby";
+import { Flex, Box, Image } from "theme-ui";
 
-const Header = ({ siteTitle }) => {
+const Footer: FC = () => {
   return (
     <Box
       sx={{
@@ -29,14 +29,16 @@ const Header = ({ siteTitle }) => {
               textDecoration: `none`,
             }}
           >
-            <Image src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
-                   width="55px"
-                   height="55px"/>
+            <Image
+              src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
+              width="55px"
+              height="55px"
+            />
           </Link>
         </Box>
       </Flex>
     </Box>
-  )
-}
+  );
+};
 
-export default Header
+export default Footer;
