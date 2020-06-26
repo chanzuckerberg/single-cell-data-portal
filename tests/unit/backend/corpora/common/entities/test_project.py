@@ -22,14 +22,16 @@ class TestProject(unittest.TestCase):
 
         self.assertEqual(project.name, "test_project")
 
-    def test__get__dne(self):
-        key = ("bad", self.status)
+    def test__get__does_not_exist(self):
+        non_existent_key = ("non_existent_id", self.status)
 
-        self.assertEqual(Project.get(key), None)
+        self.assertEqual(Project.get(non_existent_key), None)
 
     def test__get__invalid_status(self):
-        key = (self.uuid, "bad")
+        invalid_status_key = (self.uuid, "invalid_status")
 
         with self.assertRaises(CorporaException) as context:
-            Project.get(key)
-        self.assertEqual("Invalid status bad. Status must be one of ['LIVE', 'EDIT'].", str(context.exception))
+            Project.get(invalid_status_key)
+
+        self.assertEqual("Invalid status invalid_status. Status must be one of ['LIVE', 'EDIT'].",
+                         str(context.exception))

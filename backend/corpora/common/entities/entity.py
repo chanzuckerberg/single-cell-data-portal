@@ -6,8 +6,8 @@ from ..utils.db_utils import DbUtils
 
 class Entity:
     """
-    An abstract base class providing an interface to parse
-    application-level objects to and from their database counterparts.
+    An abstract base class providing an interface to parse application-level objects to and from their
+    database counterparts.
 
     Every application-level object must inherit Entity.
     Examples: Project, Dataset

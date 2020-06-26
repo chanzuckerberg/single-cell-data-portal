@@ -34,8 +34,7 @@ class Project(Entity):
         """
         Given a key, queries the database for a project and its relevant entities.
 
-        According to the Entity.get interface, the return value of this function is
-        fed as the input to Project._parse.
+        According to the Entity.get interface, the return value of this function is fed as the input to Project._parse.
 
         :param key: Composite primary key tuple of the form (project.id, project.status)
         :return: list of SQLAlchemy query results
@@ -64,12 +63,11 @@ class Project(Entity):
     @classmethod
     def _parse(cls, query_results: typing.List[Base]) -> typing.Dict:
         """
-        Parses query result rows produced by Project._query into a dict of KVPs
-        required for entity instantiation.
+        Parses query result rows produced by Project._query into a dict of KVPs required for entity instantiation.
         The output of this function is the input to Project._load.
 
-        SQLAlchemy query results are stored in a list in which each item
-        contains Table objects (Db* objects from corpora_orm.py) returned by the query.
+        SQLAlchemy query results are stored in a list in which each item contains Table objects
+        (Db* objects from corpora_orm.py) returned by the query.
 
         Example query results access:
         row = query_results[0]
@@ -103,8 +101,8 @@ class Project(Entity):
 
         # build dict of Project parameters
         project = {}
-        for k, v in query_results[0].DbProject.__dict__.items():
-            project[k] = v
+        for key, value in query_results[0].DbProject.__dict__.items():
+            project[key] = value
         project["dataset_ids"] = list(dataset_ids)
         project["links"] = list(links.values())
         project["contributors"] = list(contributors.values())
