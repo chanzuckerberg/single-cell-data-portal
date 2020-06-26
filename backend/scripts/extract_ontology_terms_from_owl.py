@@ -85,14 +85,14 @@ if __name__ == "__main__":
         # Verify that an AWS bucket has also been specified to which the ontologies file should be uploaded.
         if not arguments.aws_bucket:
             raise Exception(
-                f"ERROR: Required to specify AWS bucket name if the ontologies file should be uploaded to "
-                f"AWS via --aws_bucket."
+                "ERROR: Required to specify AWS bucket name if the ontologies file should be uploaded to AWS via "
+                "--aws_bucket."
             )
 
     if not arguments.upload_to_aws and arguments.aws_bucket:
         raise Exception(
-            f"ERROR: Cannot specify an AWS bucket alone. Need to also add the --upload_to_aws flag to verify that you'd"
-            f" like to upload to AWS."
+            "ERROR: Cannot specify an AWS bucket alone. Need to also add the --upload_to_aws flag to verify that you'd "
+            "like to upload to AWS."
         )
 
     if arguments.aws_bucket:
