@@ -10,13 +10,13 @@ from backend.corpora.common.entities.project import Project
 
 class TestProject(unittest.TestCase):
     def setUp(self):
-        self.id = "f753497f-f8a5-48b5-b344-de9ad5a4354d"
+        self.uuid = "f753497f-f8a5-48b5-b344-de9ad5a4354d"
         self.status = "LIVE"
 
-    @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
+    # @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
     def test_get(self):
         # TODO: write tests
-        project = Project.get((self.id, self.status))
+        project = Project.get((self.uuid, self.status))
         print(project.validation_state)
         print(project.dataset_ids)
         print(project.contributors[0]['name'])
