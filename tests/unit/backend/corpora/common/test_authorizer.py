@@ -15,8 +15,7 @@ These test may start failing if the monthly allowence of Auth0 machine to machin
 
 
 @unittest.skipIf(
-    os.environ["DEPLOYMENT_STAGE"] != "test",
-    f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
+    os.environ["DEPLOYMENT_STAGE"] != "test", f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
 class TestAuthorizer(unittest.TestCase):
     @classmethod
