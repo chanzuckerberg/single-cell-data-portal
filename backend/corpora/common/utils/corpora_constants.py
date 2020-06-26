@@ -69,7 +69,7 @@ class CorporaConstants(object):
     ]
 
     REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS = [
-        TypedMetadata(field_name="color_map", required_type=list),
+        TypedMetadata(field_name="color_map", required_type=dict),
         TypedMetadata(field_name="tags", required_type=list),
         TypedMetadata(field_name="default_field", required_type=str),
         TypedMetadata(field_name="default_embedding", required_type=str),

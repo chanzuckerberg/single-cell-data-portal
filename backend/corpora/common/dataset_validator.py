@@ -211,8 +211,8 @@ class DatasetValidator:
             for data_value in metadata_values:
                 if not isinstance(data_value, metadata_property.required_type):
                     logging.warning(
-                        f"Value {data_value} is not of expected type {metadata_property.required_type} for metadata "
-                        f"field {metadata_property.field_name}."
+                        f"Value {data_value} of type {type(data_value)} is not of expected type "
+                        f"{metadata_property.required_type} for metadata field {metadata_property.field_name}."
                     )
 
         # Handle the case where the required type is an Ontology.
