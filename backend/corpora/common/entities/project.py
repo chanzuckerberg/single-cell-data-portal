@@ -42,9 +42,6 @@ class Project(Entity):
         """
         statuses = [status.name for status in ProjectStatus]
 
-        if len(key) != 2:
-            raise CorporaException(f"Invalid key length of {len(key)}. Expected 2.")
-
         if key[1] not in statuses:
             raise CorporaException(f"Invalid status {key[1]}. Status must be one of {statuses}.")
 
@@ -62,9 +59,6 @@ class Project(Entity):
             ],
         )
 
-        if not len(result):
-            raise CorporaException(f"No project with the primary key ({key[0]}, {key[1]}) found.")
-
         return result
 
     @classmethod
@@ -75,7 +69,7 @@ class Project(Entity):
         The output of this function is the input to Project._load.
 
         SQLAlchemy query results are stored in a list in which each item
-        contains Table objects resulting from the query.
+        contains Table objects (Db* objects from corpora_orm.py) returned by the query.
 
         Example query results access:
         row = query_results[0]
@@ -84,7 +78,10 @@ class Project(Entity):
         :param query_results: list of query result rows
         :return: dict of KVPs
         """
-        # de-dupe related project entities
+        if not query_results:
+            return {}
+
+        # de-dupe peripheral entities from query results
         dataset_ids = set()
         links = {}
         contributors = {}
@@ -136,7 +133,7 @@ class Project(Entity):
             dataset_ids=params["dataset_ids"],
             links=params["links"],
             contributors=params["contributors"],
-        )
+        ) if params else None
 
     @classmethod
     def list(cls):

@@ -7,32 +7,29 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from backend.corpora.common.entities.project import Project
 from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.corpora_orm import ProjectStatus
 
 
 class TestProject(unittest.TestCase):
     def setUp(self):
-        self.uuid = "f753497f-f8a5-48b5-b344-de9ad5a4354d"
-        self.status = "LIVE"
+        self.uuid = "test_project_id"
+        self.status = ProjectStatus.LIVE.name
 
-    @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
-    def test_get__ok(self):
+    def test__get__ok(self):
         key = (self.uuid, self.status)
 
         project = Project.get(key)
 
-        self.assertEqual(project.name, "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines")
-        self.assertEqual(project.contributors[0]["name"], "Wyler Emanuel")
+        self.assertEqual(project.name, "test_project")
 
-    @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
-    def test_get__dne(self):
+    def test__get__dne(self):
         key = ("bad", self.status)
 
-        with self.assertRaises(CorporaException):
-            Project.get(key)
+        self.assertEqual(Project.get(key), None)
 
-    @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
-    def test_get__invalid_status(self):
+    def test__get__invalid_status(self):
         key = (self.uuid, "bad")
 
-        with self.assertRaises(CorporaException):
+        with self.assertRaises(CorporaException) as context:
             Project.get(key)
+        self.assertEqual("Invalid status bad. Status must be one of ['LIVE', 'EDIT'].", str(context.exception))
