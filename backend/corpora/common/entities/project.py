@@ -6,9 +6,11 @@ from ..corpora_orm import (
     DbProjectLink,
     DbProjectDataset,
     DbDatasetContributor,
-    DbContributor
+    DbContributor,
+    ProjectStatus
 )
 from .entity import Entity
+from ..utils.exceptions import CorporaException
 
 
 class Project(Entity):
@@ -38,6 +40,14 @@ class Project(Entity):
         :param key: Composite primary key tuple of the form (project.id, project.status)
         :return: list of SQLAlchemy query results
         """
+        statuses = [status.name for status in ProjectStatus]
+
+        if len(key) != 2:
+            raise CorporaException(f"Invalid key length of {len(key)}. Expected 2.")
+
+        if key[1] not in statuses:
+            raise CorporaException(f"Invalid status {key[1]}. Status must be one of {statuses}.")
+
         result = cls.db.query(
             table_args=[DbProject, DbProjectLink, DbProjectDataset, DbDatasetContributor, DbContributor],
             filter_args=[
@@ -51,6 +61,10 @@ class Project(Entity):
                 DbContributor.id == DbDatasetContributor.contributor_id
             ]
         )
+
+        if not len(result):
+            raise CorporaException(f"No project with the primary key ({key[0]}, {key[1]}) found.")
+
         return result
 
     @classmethod
