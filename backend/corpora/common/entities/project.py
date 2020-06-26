@@ -14,27 +14,44 @@ from ..utils.exceptions import CorporaException
 
 
 class Project(Entity):
-    def __init__(self, **kwargs):
-        self.id = kwargs["id"]
-        self.status = kwargs["status"]
-        self.name = kwargs.get("name", "")
-        self.description = kwargs.get("description", "")
-        self.submitter = kwargs.get("submitter", "")
-        self.s3_bucket = kwargs.get("s3_bucket", "")
-        self.tc_uri = kwargs.get("tc_uri", "")
-        self.needs_attestation = kwargs.get("needs_attestation", "")
-        self.processing_state = kwargs.get("processing_state", "")
-        self.validation_state = kwargs.get("validation_state", "")
-        self.dataset_ids = kwargs.get("dataset_ids", [])
-        self.links = kwargs.get("links", [])
-        self.contributors = kwargs.get("contributors", [])
+    def __init__(self,
+                 id: str,
+                 status: str,
+                 name: str = "",
+                 description: str = "",
+                 owner: str = "",
+                 s3_bucket: str = "",
+                 tc_uri: str = "",
+                 needs_attestation: bool = False,
+                 processing_state: str = "",
+                 validation_state: str = "",
+                 dataset_ids: list = None,
+                 links: list = None,
+                 contributors: list = None,
+                 created_at: str = "",
+                 updated_at: str = ""):
+        self.id = id
+        self.status = status
+        self.name = name
+        self.description = description
+        self.owner = owner
+        self.s3_bucket = s3_bucket
+        self.tc_uri = tc_uri
+        self.needs_attestation = needs_attestation
+        self.processing_state = processing_state
+        self.validation_state = validation_state
+        self.dataset_ids = dataset_ids
+        self.links = links
+        self.contributors = contributors
+        self.created_at = created_at
+        self.updated_at = updated_at
 
     @classmethod
     def _query(cls, key: typing.Tuple[str, str]) -> typing.List[Base]:
         """
         Given a key, queries the database for a project and its relevant entities.
 
-        According to the Entity.get interface, the return value of this function is fed as the input to Project._parse.
+        According to the Entity.get interface, the return value of this function is fed as the input to Project._load.
 
         :param key: Composite primary key tuple of the form (project.id, project.status)
         :return: list of SQLAlchemy query results
@@ -61,10 +78,10 @@ class Project(Entity):
         return result
 
     @classmethod
-    def _parse(cls, query_results: typing.List[Base]) -> typing.Dict:
+    def _load(cls, query_results: typing.List[Base]) -> typing.Union["Project", None]:
         """
-        Parses query result rows produced by Project._query into a dict of KVPs required for entity instantiation.
-        The output of this function is the input to Project._load.
+        Parses query result rows produced by Project._query into an instantiated Project object.
+        The output of this function is the return value of Entity.get.
 
         SQLAlchemy query results are stored in a list in which each item contains Table objects
         (Db* objects from corpora_orm.py) returned by the query.
@@ -74,10 +91,10 @@ class Project(Entity):
         project_id = row.DbProject.id
 
         :param query_results: list of query result rows
-        :return: dict of KVPs
+        :return: Project
         """
         if not query_results:
-            return {}
+            return None
 
         # de-dupe peripheral entities from query results
         dataset_ids = set()
@@ -100,38 +117,14 @@ class Project(Entity):
             }
 
         # build dict of Project parameters
-        project = {}
-        for key, value in query_results[0].DbProject.__dict__.items():
-            project[key] = value
-        project["dataset_ids"] = list(dataset_ids)
-        project["links"] = list(links.values())
-        project["contributors"] = list(contributors.values())
+        project_params = query_results[0].DbProject.__dict__.copy()
+        project_params.pop("_sa_instance_state")
+        project_params["dataset_ids"] = list(dataset_ids)
+        project_params["links"] = list(links.values())
+        project_params["contributors"] = list(contributors.values())
 
-        return project
-
-    @classmethod
-    def _load(cls, params: typing.Dict):
-        """
-        Instantiates and returns a Project instance.
-
-        :param params: dict of KVPs used to instantiate a Project
-        :return: Project
-        """
-        return Project(
-            id=params["id"],
-            status=params["status"],
-            name=params["name"],
-            description=params["description"],
-            submitter=params["owner"],
-            s3_bucket=params["s3_bucket"],
-            tc_uri=params["tc_uri"],
-            needs_attestation=params["needs_attestation"],
-            processing_state=params["processing_state"],
-            validation_state=params["validation_state"],
-            dataset_ids=params["dataset_ids"],
-            links=params["links"],
-            contributors=params["contributors"],
-        ) if params else None
+        # instantiate Project
+        return Project(**project_params)
 
     @classmethod
     def list(cls):

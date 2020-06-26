@@ -22,7 +22,7 @@ class Entity:
         :param key: Simple or composite primary key
         :return: Entity
         """
-        return cls._load(cls._parse(cls._query(key)))
+        return cls._load(cls._query(key))
 
     @classmethod
     def _query(cls, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.List[Base]:
@@ -34,19 +34,10 @@ class Entity:
         raise NotImplementedError()
 
     @classmethod
-    def _parse(cls, db_result: typing.List[Base]) -> typing.Dict:
+    def _load(cls, db_result: typing.List[Base]) -> "Entity":
         """
-        Parses a database query result into a flattened dict
+        Parses a database query result into an Entity instance
         :param db_result: list of query result rows
-        :return: dict of Entity params
-        """
-        raise NotImplementedError()
-
-    @classmethod
-    def _load(cls, params: typing.Dict) -> "Entity":
-        """
-        Loads a dict of values into an Entity instance
-        :param params: dict of required Entity fields for instantiation
         :return: Entity
         """
         raise NotImplementedError()
@@ -62,6 +53,6 @@ class Entity:
     def save(self):
         """
         Writes the current object state to the database
-        :return: saved Entity
+        :return: saved Entity object
         """
         raise NotImplementedError()
