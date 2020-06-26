@@ -10,12 +10,14 @@ from backend.corpora.common.utils.aws_secret import AwsSecret
 
 
 """
-Because of how auth0 is setup we only run these test on the dev environment. This prevent us from exhausting the number
-of machine to machine access tokens we can produce in a month for auth0.
+These test may start failing if the monthly allowence of Auth0 machine to machine access tokens is exhasted.
 """
 
 
-@unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] != "dev", "DEPLOYMENT_STAGE is not 'dev'")
+@unittest.skipIf(
+    os.environ["DEPLOYMENT_STAGE"] != "test",
+    f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
+)
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -38,9 +38,9 @@ def assert_authorized(headers: dict) -> dict:
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
-        if os.environ["DEPLOYMENT_STAGE"] not in ["test", "dev"]:
+        if os.environ["DEPLOYMENT_STAGE"] != "test":
             """
-            In the test and dev environments we are using an Auth0 machine to machine access token which does not
+            In the test environments we are using an Auth0 machine to machine access token which does not
             connect to a user, therefore there is no userinfo to get.
             """
             payload["userinfo"] = get_userinfo(token)
