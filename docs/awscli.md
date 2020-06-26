@@ -1,4 +1,4 @@
-# Corpora: AWS CLI Configuration
+# AWS CLI Configuration
 
 Follow these steps to install and configure the `awscli`:
 1. `pip install awscli`
