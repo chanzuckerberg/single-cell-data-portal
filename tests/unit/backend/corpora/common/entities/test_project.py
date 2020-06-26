@@ -33,5 +33,6 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(CorporaException) as context:
             Project.get(invalid_status_key)
 
-        self.assertEqual("Invalid status invalid_status. Status must be one of ['LIVE', 'EDIT'].",
-                         str(context.exception))
+        self.assertEqual(
+            "Invalid status invalid_status. Status must be one of ['LIVE', 'EDIT'].", str(context.exception)
+        )

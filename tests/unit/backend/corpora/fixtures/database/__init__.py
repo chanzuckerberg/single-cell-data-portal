@@ -20,7 +20,7 @@ from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
     DbContributor,
     DbDatasetContributor,
-    DbUser
+    DbUser,
 )
 
 
@@ -40,11 +40,7 @@ class TestDatabase:
         self._create_test_contributors()
 
     def _create_test_users(self):
-        user = DbUser(
-            id="test_user_id",
-            name="test_user",
-            email="test_email"
-        )
+        user = DbUser(id="test_user_id", name="test_user", email="test_email")
         self.db.session.add(user)
         self.db.session.commit()
 
@@ -70,7 +66,7 @@ class TestDatabase:
             project_id="test_project_id",
             project_status=ProjectStatus.LIVE.name,
             link_url="test_url",
-            link_type=ProjectLinkType.RAW_DATA.name
+            link_type=ProjectLinkType.RAW_DATA.name,
         )
         self.db.session.add(project_link)
         self.db.session.commit()
@@ -93,7 +89,7 @@ class TestDatabase:
             ethnicity_ontology="test_ethnicity_ontology",
             source_data_location="test_source_data_location",
             preprint_doi="test_preprint_doi",
-            publication_doi="test_publication_doi"
+            publication_doi="test_publication_doi",
         )
         self.db.session.add(dataset)
         self.db.session.commit()
@@ -102,7 +98,7 @@ class TestDatabase:
             id="test_project_dataset_id",
             project_id="test_project_id",
             project_status=ProjectStatus.LIVE.name,
-            dataset_id="test_dataset_id"
+            dataset_id="test_dataset_id",
         )
         self.db.session.add(project_dataset)
         self.db.session.commit()
@@ -122,18 +118,13 @@ class TestDatabase:
 
     def _create_test_contributors(self):
         contributor = DbContributor(
-            id="test_contributor_id",
-            name="test_contributor_name",
-            institution="test_institution",
-            email="test_email"
+            id="test_contributor_id", name="test_contributor_name", institution="test_institution", email="test_email"
         )
         self.db.session.add(contributor)
         self.db.session.commit()
 
         dataset_contributor = DbDatasetContributor(
-            id="test_dataset_contributor_id",
-            contributor_id="test_contributor_id",
-            dataset_id="test_dataset_id"
+            id="test_dataset_contributor_id", contributor_id="test_contributor_id", dataset_id="test_dataset_id"
         )
         self.db.session.add(dataset_contributor)
         self.db.session.commit()

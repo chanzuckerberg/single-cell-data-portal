@@ -14,22 +14,24 @@ from ..utils.exceptions import CorporaException
 
 
 class Project(Entity):
-    def __init__(self,
-                 id: str,
-                 status: str,
-                 name: str = "",
-                 description: str = "",
-                 owner: str = "",
-                 s3_bucket: str = "",
-                 tc_uri: str = "",
-                 needs_attestation: bool = False,
-                 processing_state: str = "",
-                 validation_state: str = "",
-                 dataset_ids: list = None,
-                 links: list = None,
-                 contributors: list = None,
-                 created_at: str = "",
-                 updated_at: str = ""):
+    def __init__(
+        self,
+        id: str,
+        status: str,
+        name: str = "",
+        description: str = "",
+        owner: str = "",
+        s3_bucket: str = "",
+        tc_uri: str = "",
+        needs_attestation: bool = False,
+        processing_state: str = "",
+        validation_state: str = "",
+        dataset_ids: list = None,
+        links: list = None,
+        contributors: list = None,
+        created_at: str = "",
+        updated_at: str = "",
+    ):
         self.id = id
         self.status = status
         self.name = name
