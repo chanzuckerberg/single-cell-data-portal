@@ -10,7 +10,7 @@ from backend.corpora.common.utils.aws_secret import AwsSecret
 
 
 """
-These test may start failing if the monthly allowence of Auth0 machine to machine access tokens is exhasted.
+These test may start failing if the monthly allowance of Auth0 machine to machine access tokens is exhasted.
 """
 
 
