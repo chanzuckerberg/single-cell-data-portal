@@ -127,10 +127,3 @@ class Project(Entity):
 
         # instantiate Project
         return Project(**project_params)
-
-    @classmethod
-    def list(cls):
-        pass
-
-    def save(self):
-        pass
