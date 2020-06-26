@@ -29,4 +29,4 @@ Follow these steps to install and configure the `awscli`:
     region = us-east-1
     ```
 
-    Please contact #help-infra on Slack if you require access to `single-cell-dev` or `single-cell-prod`.
+    Please contact [#help-infra](https://chanzuckerbergteam.slack.com/archives/C94RQ5SBV) on Slack if you require access to `single-cell-dev` or `single-cell-prod`.
