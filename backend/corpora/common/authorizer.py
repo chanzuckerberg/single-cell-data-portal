@@ -38,8 +38,12 @@ def assert_authorized(headers: dict) -> dict:
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
-        if os.getenv("DEPLOYMENT_STAGE", "test").lower() not in ["test", "dev"]:
-            payload["userinfo"] = get_userinfo()
+        if os.environ["DEPLOYMENT_STAGE"] != "test":
+            """
+            In the environments we are using an Auth0 machine to machine access token which does not
+            connect to a user, therefore there is no userinfo to get.
+            """
+            payload["userinfo"] = get_userinfo(token)
 
         return payload
     raise UnauthorizedError(msg="Unable to find appropriate key")

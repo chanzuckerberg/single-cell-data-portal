@@ -9,7 +9,14 @@ from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws_secret import AwsSecret
 
 
-@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
+"""
+These test may start failing if the monthly allowance of Auth0 machine to machine access tokens is exhasted.
+"""
+
+
+@unittest.skipIf(
+    os.environ["DEPLOYMENT_STAGE"] != "test", f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
+)
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
