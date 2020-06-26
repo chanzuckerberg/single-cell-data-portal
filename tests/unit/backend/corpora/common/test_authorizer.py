@@ -9,7 +9,7 @@ from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws_secret import AwsSecret
 
 
-@unittest.skipIf(os.getenv("DEPLOYMENT_STAGE"), "DEPLOYMENT_STAGE not set")
+@unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "test", "DEPLOYMENT_STAGE cannot be 'test'")
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

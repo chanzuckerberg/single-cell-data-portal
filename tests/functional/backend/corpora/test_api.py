@@ -6,8 +6,6 @@ import requests
 
 from backend.corpora.common.utils.aws_secret import AwsSecret
 
-if not os.getenv("DEPLOYMENT_STAGE"):  # noqa
-    os.environ["DEPLOYMENT_STAGE"] = "dev"  # noqa
 
 API_URL = {
     "dev": "https://api.dev.corpora.cziscience.com",

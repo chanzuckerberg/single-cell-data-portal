@@ -38,7 +38,7 @@ def assert_authorized(headers: dict) -> dict:
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
-        if os.getenv("DEPLOYMENT_STAGE", "test").lower() not in ["test", "dev"]:
+        if os.environ["DEPLOYMENT_STAGE"] not in ["test", "dev"]:
             payload["userinfo"] = get_userinfo()
 
         return payload
