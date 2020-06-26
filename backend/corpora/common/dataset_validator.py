@@ -5,6 +5,7 @@ import anndata
 import s3fs
 from numpy import ndarray
 from pandas import DataFrame, Series
+import typing
 from scipy.sparse import spmatrix
 
 from .utils.corpora_constants import CorporaConstants
@@ -189,7 +190,11 @@ class DatasetValidator:
             else:
                 self.verify_metadata_type(metadata_field, data_object.uns.get(metadata_field.field_name))
 
-    def verify_metadata_type(self, metadata_property, metadata_values_in_dataset):
+    def verify_metadata_type(
+        self,
+        metadata_property: CorporaConstants.TypedMetadata,
+        metadata_values_in_dataset: typing.Union[Series, str, list, dict],
+    ):
         """
         Validates the type of each value in a property of an AnnData object.
 
