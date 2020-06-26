@@ -29,8 +29,8 @@
 	
 1.  **Host the backend locally.**
 
-    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)
-    to deploy the backend API on `http://localhost:5000`.
+    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on 
+    `http://localhost:5000`.
 
 1.  **Build and launch the frontend locally.**
 
@@ -60,7 +60,7 @@ variables.
 ## Deployment
 
 1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
+    [required credentials and profiles](../docs/awscli.md).
     Set the appropriate `AWS_PROFILE`.
 
     ```shell

@@ -14,8 +14,7 @@ Filename                  | Purpose                           | Information link
 `../../config/iam-policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 
 ## Development
-1.  Ensure your `awscli` is configured with the
-    [required credentials and profiles](https://github.com/chanzuckerberg/corpora-data-portal#configuration).
+1.  Ensure project [pre-requisites](../README.md#Pre-requisites) are met.
 
 1.  Set the following environment variables:
 
@@ -27,8 +26,16 @@ Filename                  | Purpose                           | Information link
 1.  Install dependencies
 
      ```shell
-     pip install -r requirements-dev.txt
+     pip install -r requirements.txt
      ```
+
+1.  Enable local connection to the private `dev` RDS instance:
+
+     ```shell
+     ssh -L 5433:corpora-dev-corpora-api.cluster-c81u9imopfwl.us-west-2.rds.amazonaws.com:5432 bastion.dev.single-cell.czi.technology
+     ```
+
+    Note: This command creates an ssh tunnel from `localhost:5433` to the RDS connection endpoint via a `bastion` server.
 
 1.  Deploy the Chalice app to http://localhost:5000
 
@@ -61,7 +68,7 @@ run `make destroy`.
 ## Testing
 Tests are run in the top level directory `corpora-data-portal`.
 
-See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/master/README.md#testing)
+See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#commands)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy
