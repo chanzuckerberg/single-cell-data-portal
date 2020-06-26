@@ -40,7 +40,7 @@ def assert_authorized(headers: dict) -> dict:
 
         if os.environ["DEPLOYMENT_STAGE"] != "test":
             """
-            In the test environments we are using an Auth0 machine to machine access token which does not
+            In the environments we are using an Auth0 machine to machine access token which does not
             connect to a user, therefore there is no userinfo to get.
             """
             payload["userinfo"] = get_userinfo(token)
