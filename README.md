@@ -40,5 +40,5 @@ well-labeled repository of interoperable datasets.
 ### Deployment
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. [Deploy Backend](backend/chalice/api_server/README.md#Deploy)
-1. [Deploy Cloudfront-invalidator](backend/chalice/api_server/README.md#Deploy)
+1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
