@@ -10,70 +10,35 @@ such as [cellxgene](https://chanzuckerberg.github.io/cellxgene/posts/cellxgene_c
 analysis. The goal of the CDP is to catalyze distributed collaboration of single-cell research by providing a large,
 well-labeled repository of interoperable datasets.
 
-## Developer guide
+## Developers
 
-### Configuration
+### Pre-requisites
+1. Python >= 3.6
+1. [Install and configure awscli](docs/awscli.md)
+1. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
+1. [Set development flags](docs/dev_flags.md)
 
-Environment variables used for configuration:
-* `DEPLOYMENT_STAGE` - set this value to target a specific deployment stage for deploying code and infrastructure.
-    * `dev`, `staging`
-* `AWS_PROFILE` - the AWS profile used to access and manage infrastructure
-    * `single-cell-dev`, `single-cell-prod`
+### Environment variables
+| Name | Description | Values |
+|------|-------------|--------|
+|`DEPLOYMENT_STAGE`|Specifies an app deployment stage for tasks such as deployments and functional tests.|`dev`, `staging`, `prod`|
+|`AWS_PROFILE`|Specifies the profile used to interact with AWS resources via awscli.|`single-cell-dev`, `single-cell-prod`|
+|`CORPORA_LOCAL_DEV`|If this variable is set to any value, the Corpora app will operate in local development mode.|Any|
 
-Configuring `awscli` credentials and profiles in `~/.aws`:
-1. `pip install awscli`
-1. Run `aws configure` or manually configure `czi-id` credentials:
+### Commands
+| Command | Description | Notes |
+|---------|-------------|-------|
+|`make fmt`|Auto-format codebase using [black](https://pypi.org/project/black/).|This should be run before merging in any changes.|
+|`make lint`|Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/).|This should be run before merging in any changes.|
+|`make unit-test`|Run all unit tests.||
+|`make functional-tests`|Run all functional tests.|These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`.|
 
-    ```shell
-    # ~/.aws/credentials example
+### Development
+1. [Backend](backend/chalice/api_server/README.md#Development)
+1. [Frontend](frontend/README.md#Development)
 
-    [czi-id]
-    aws_access_key_id = ACCESS_KEY_ID
-    aws_secret_access_key = SECRET_ACCESS_KEY
-    ```
-
-1.  [Configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
-    the `single-cell-dev` and/or `single-cell-prod` AWS profiles.
-
-    ```shell
-    # ~/.aws/config example
-
-    [profile single-cell-dev]
-    role_arn = arn:aws:iam::ACCOUNT_ID:role/poweruser
-    source_profile = czi-id
-    region = us-east-1
-
-    [profile single-cell-prod]
-    role_arn = arn:aws:iam::ACCOUNT_ID:role/poweruser
-    source_profile = czi-id
-    region = us-east-1
-    ```
-
-    Please contact #help-infra if you require access to `single-cell-dev` or `single-cell-prod`.
-
-### Testing
-Install dependencies `pip install -r requirements-dev.txt`
-
-Unit tests:
-* Run `make unit-test`
-
-Functional tests:
-* Set `DEPLOYMENT_STAGE` to a valid deployed environment (`dev`, `staging`)
-* Run `make functional-test`
-
-### Code formatting and linting
-
-Commands and their uses:
-* `make lint` - run code linter
-* `make fmt` - run code auto-formatters
-
-### Local Deployment
-1. Set `DEPLOYMENT_STAGE`,
-1. [Deploy local backend](backend/chalice/api_server/README.md#Development)
-1. [Deploy local frontend](frontend/README.md#Development)
-
-### Deploy
-1. Set `DEPLOYMENT_STAGE`, and `AWS_PROFILE` in environment
+### Deployment
+1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. [Deploy Backend](backend/chalice/api_server/README.md#Deploy)
 1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
