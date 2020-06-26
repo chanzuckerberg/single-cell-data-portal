@@ -12,6 +12,7 @@ class Entity:
     Every application-level object must inherit Entity.
     Examples: Project, Dataset
     """
+
     db = DbUtils()
 
     @classmethod
@@ -64,4 +65,3 @@ class Entity:
         :return: saved Entity
         """
         raise NotImplementedError()
-

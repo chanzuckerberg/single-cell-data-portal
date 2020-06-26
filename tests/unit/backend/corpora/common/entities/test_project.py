@@ -21,7 +21,7 @@ class TestProject(unittest.TestCase):
         project = Project.get(key)
 
         self.assertEqual(project.name, "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines")
-        self.assertEqual(project.contributors[0]['name'], "Wyler Emanuel")
+        self.assertEqual(project.contributors[0]["name"], "Wyler Emanuel")
 
     @unittest.skipIf(True, "Only runnable on local dev env via bastion tunnel. Comment this line to run.")
     def test_get__dne(self):
