@@ -29,6 +29,15 @@ class Project(Entity):
 
     @classmethod
     def _query(cls, key: typing.Tuple[str, str]) -> typing.List[Base]:
+        """
+        Given a key, queries the database for a project and its relevant entities.
+
+        According to the Entity.get interface, the return value of this function is
+        fed as the input to Project._parse.
+
+        :param key: Composite primary key tuple of the form (project.id, project.status)
+        :return: list of SQLAlchemy query results
+        """
         result = cls.db.query(
             table_args=[DbProject, DbProjectLink, DbProjectDataset, DbDatasetContributor, DbContributor],
             filter_args=[
@@ -45,8 +54,23 @@ class Project(Entity):
         return result
 
     @classmethod
-    def _parse(cls, query_results):
-        # de-dupe and parse project relationships
+    def _parse(cls, query_results: typing.List[Base]) -> typing.Dict:
+        """
+        Parses query result rows produced by Project._query into a dict of KVPs
+        required for entity instantiation.
+        The output of this function is the input to Project._load.
+
+        SQLAlchemy query results are stored in a list in which each item
+        contains Table objects resulting from the query.
+
+        Example query results access:
+        row = query_results[0]
+        project_id = row.DbProject.id
+
+        :param query_results: list of query result rows
+        :return: dict of KVPs
+        """
+        # de-dupe related project entities
         dataset_ids = set()
         links = {}
         contributors = {}
@@ -66,7 +90,7 @@ class Project(Entity):
                 'email': result.DbContributor.email
             }
 
-        # build project params
+        # build dict of Project parameters
         project = {}
         for k, v in query_results[0].DbProject.__dict__.items():
             project[k] = v
@@ -78,6 +102,12 @@ class Project(Entity):
 
     @classmethod
     def _load(cls, params: typing.Dict):
+        """
+        Instantiates and returns a Project instance.
+
+        :param params: dict of KVPs used to instantiate a Project
+        :return: Project
+        """
         return Project(id=params['id'],
                        status=params['status'],
                        name=params['name'],
