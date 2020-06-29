@@ -1,3 +1,4 @@
+import copy
 import typing
 
 from ..corpora_orm import (
@@ -119,7 +120,8 @@ class Project(Entity):
             }
 
         # build dict of Project parameters
-        project_params = query_results[0].DbProject.__dict__.copy()
+        project_params = copy.deepcopy(query_results[0].DbProject.__dict__)
+        # remove superfluous SQLAlchemy state field
         project_params.pop("_sa_instance_state")
         project_params["dataset_ids"] = list(dataset_ids)
         project_params["links"] = list(links.values())
