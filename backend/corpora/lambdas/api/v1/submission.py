@@ -1,12 +1,5 @@
-from corpora.common.utils.db_utils import DbUtils
-import requests
-
-
 def get_submissions_list(query_user_uuid: str):
-    db = DbUtils()
-    projects = db.query_projects()
-
-    return projects, requests.codes.ok
+    raise NotImplementedError
 
 
 def create_new_submission(request_body: dict):

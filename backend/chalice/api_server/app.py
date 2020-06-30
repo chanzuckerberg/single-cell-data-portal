@@ -1,21 +1,18 @@
+import logging
 import os
+import re
 import sys
+from collections import defaultdict
 from functools import wraps
 
-import connexion
-from collections import defaultdict
 import chalice
-import re
+import connexion
 from chalice import Chalice, CORSConfig
-import logging
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from corpora.common.utils.db_utils import DbUtils
-from corpora.common.utils.s3_utils import generate_file_url
 from corpora.common.authorizer import assert_authorized
-
 
 cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
@@ -38,7 +35,7 @@ def requires_auth():
 
 
 def create_flask_app():
-    app = connexion.App(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
+    app = connexion.FlaskApp(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
     swagger_spec_path = os.path.join(pkg_root, "config", f"{os.environ['APP_NAME']}.yml")
     app.add_api(swagger_spec_path, validate_responses=False)
     return app.app
@@ -85,40 +82,6 @@ def get_chalice_app(flask_app):
     @app.route("/")
     def serve_swagger_ui():
         return chalice.Response(status_code=200, headers={"Content-Type": "text/html"}, body=swagger_ui_html)
-
-    @app.route("/projects/{project_id}", cors=cors_config)
-    def get_project(project_id: str):
-        db = DbUtils()
-        project = db.query_project(project_id)
-
-        return chalice.Response(
-            status_code=200 if project else 404, headers={"Content-Type": "application/json"}, body=project,
-        )
-
-    @app.route("/projects/{project_id}/files", cors=cors_config)
-    @requires_auth()
-    def get_project_files(project_id: str):
-        db = DbUtils()
-        files = db.query_downloadable_project_files(project_id)
-        return chalice.Response(
-            status_code=200 if files else 404, headers={"Content-Type": "application/json"}, body=files,
-        )
-
-    @app.route("/files/{file_id}", cors=cors_config)
-    @requires_auth()
-    def get_file(file_id: str):
-        db = DbUtils()
-        file = db.query_file(file_id)
-
-        download_url = ""
-        if file:
-            project = db.query_project(file["project_id"])
-            file_prefix = f"{project['label']}/matrix.loom"
-            download_url = generate_file_url(file_prefix)
-
-        return chalice.Response(
-            status_code=200 if file else 404, headers={"Content-Type": "application/json"}, body={"url": download_url},
-        )
 
     return app
 
