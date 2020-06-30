@@ -37,7 +37,7 @@ def requires_auth():
 def create_flask_app():
     app = connexion.FlaskApp(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
     swagger_spec_path = os.path.join(pkg_root, "config", f"{os.environ['APP_NAME']}.yml")
-    app.add_api(swagger_spec_path, validate_responses=False)
+    app.add_api(swagger_spec_path, validate_responses=True)
     return app.app
 
 
@@ -61,6 +61,7 @@ def get_chalice_app(flask_app):
             environ_base=app.current_request.stage_vars,
         ):
             flask_res = flask_app.full_dispatch_request()
+
         res_headers = dict(flask_res.headers)
         # API Gateway/Cloudfront adds a duplicate Content-Length with a different value (not sure why)
         res_headers.pop("Content-Length", None)
