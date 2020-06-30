@@ -25,6 +25,8 @@ def _double_encode(url):
 
 def _iri(curie):
     """Get the iri from a curie. This is a bit hopeful that they all map to purl.obolibrary.org"""
+    if _ontology_name(curie) == "EFO":
+        return f"http://www.ebi.ac.uk/efo/EFO_{_ontology_value(curie)}"
     return f"http://purl.obolibrary.org/obo/{_ontology_name(curie)}_{_ontology_value(curie)}"
 
 

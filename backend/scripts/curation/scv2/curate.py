@@ -43,28 +43,30 @@ def remix(adata):
     """Create the full Corpora remix"""
 
     # First fill in missing metadata fields
-    adata.obs["assay"] = "10x 3' v3 sequencing"
     adata.obs["assay_ontology"] = "EFO:0009922"
+    adata.obs["assay"] = utils.ontology.get_ontology_label("EFO:0009922")
 
-    adata.obs["disease"] = adata.obs["Condition"].replace(
-        {"1dpi": "SARS-CoV-2", "2dpi": "SARS-CoV-2", "3dpi": "SARS-CoV-2", "Mock": "normal"}, inplace=False,
-    )
-    adata.obs["disease_ontology"] = adata.obs["Condition"].replace(
-        {"1dpi": "MONDO:0100096", "2dpi": "MONDO:0100096", "3dpi": "MONDO:0100096", "Mock": "PATO:0000461"},
-        inplace=False,
-    )
-    adata.obs["tissue"] = "epithelium of bronchus (cell culture)"
+    disease_ontology_map = {
+        "1dpi": "MONDO:0100096",
+        "2dpi": "MONDO:0100096",
+        "3dpi": "MONDO:0100096",
+        "Mock": "PATO:0000461",
+    }
+    disease_map = {k: utils.ontology.get_ontology_label(v) for k, v in disease_ontology_map.items()}
+
+    adata.obs["disease_ontology"] = adata.obs["Condition"].replace(disease_ontology_map, inplace=False)
+    adata.obs["disease"] = adata.obs["Condition"].replace(disease_map, inplace=False)
+
     adata.obs["tissue_ontology"] = "UBERON:0002031 (cell culture)"
+    adata.obs["tissue"] = f"{utils.ontology.get_ontology_label('UBERON:0002031')} (cell culture)"
 
-    adata.uns["organism"] = "Homo sapiens"
     adata.uns["organism_ontology"] = "NCBITaxon:9606"
-    adata.uns["title"] = (
-        "Single-cell longitudinal analysis of SARS-CoV-2 infection in human " "bronchial epithelial cells"
-    )
+    adata.uns["organism"] = utils.ontology.get_ontology_label("NCBITaxon:9606")
+    adata.uns["title"] = "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells"
 
-    adata.uns["project_name"] = (
-        "Single-cell longitudinal analysis of SARS-CoV-2 infection in " "human bronchial epithelial cells"
-    )
+    adata.uns[
+        "project_name"
+    ] = "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells"
     adata.uns["project_description"] = (
         "Single-cell RNA sequencing of experimentally infected human bronchial epithelial "
         "cells (HBECs) in air-liquid interface cultures over a time-course"
