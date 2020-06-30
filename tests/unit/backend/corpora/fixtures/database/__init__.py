@@ -110,6 +110,12 @@ class TestDatabase:
         self.db.session.add(deployment_directory)
         self.db.session.commit()
 
+        deployment_directory = DbDeploymentDirectory(
+            id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"
+        )
+        self.db.session.add(deployment_directory)
+        self.db.session.commit()
+
     def _create_test_dataset_artifacts(self):
         dataset_artifact = DbDatasetArtifact(
             id="test_dataset_artifact_id",

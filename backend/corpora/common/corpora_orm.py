@@ -307,3 +307,6 @@ class DbDatasetContributor(Base):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+    contributor = relationship("DbContributor")
+    dataset = relationship("DbDataset", back_populates="contributors")
