@@ -42,7 +42,6 @@ package: build-chalice-config
 	mkdir -p chalicelib/corpora
 	cp -R ../../corpora/common chalicelib/corpora
 	cp -R ../../corpora/lambdas chalicelib/corpora
-	cp -R ../../corpora/utils chalicelib/corpora
 	mkdir -p chalicelib/config
 	cp -a ../../config/$(APP_NAME).yml chalicelib/config/$(APP_NAME).yml
 	rm -rf vendor dist/deployment
