@@ -13,7 +13,7 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import Auth0Client from "@auth0/auth0-spa-js/dist/typings/Auth0Client";
 import { User } from "../common/entities";
 
-// (thuang): These variables are set by `.env.development`, `.env.production`, etc..
+// (thuang): These variables are set by `env.development`, `env.production`, etc..
 const config = {
   domain: process.env.AUTH0_DOMAIN as string,
   // eslint-disable-next-line @typescript-eslint/camelcase

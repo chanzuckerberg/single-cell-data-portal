@@ -46,7 +46,7 @@
 
 ## Environment Variables
 
-The environment variables used to deploy the website. The variables should be stored in a file name _.env.development_
+The environment variables used to deploy the website. The variables should be stored in a file name _env.development_
 for development and _env.production_ for production deployments. Do not store sensitive data in the environment
 variables.
 
