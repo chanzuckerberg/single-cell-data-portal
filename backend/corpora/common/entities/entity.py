@@ -62,3 +62,30 @@ class Entity:
         :return:
         """
         return self.db_object.__getattribute__(name)
+
+    @classmethod
+    def _create_sub_objects(
+        cls, rows: typing.List[dict], db_table: Base, keys: typing.List[str] = None, **kwargs
+    ) -> typing.List[Base]:
+        """
+        Create a list of Table Rows to be added to an Entity Object during an object creation. If id is provided, then
+        the row is retrieved and updated.
+
+        :param rows: A list of dictionaries containing columns.
+        :param db_table: The Table to add or modify rows
+        :param keys: additional primary keys
+        :param kwargs: Additional columns attributes to add.
+        :return:
+        """
+        db_objs = []
+        for columns in rows:
+            _columns = dict(**columns, **kwargs)
+            _id = _columns.get("id")
+            if _id:
+                primary_key = (_id, *keys) if keys else _id
+                row = cls.db.get(db_table, primary_key)
+            else:
+                _columns["id"] = cls.db.generate_id(db_table)
+                row = db_table(**_columns)
+            db_objs.append(row)
+        return db_objs
