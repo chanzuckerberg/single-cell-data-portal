@@ -230,6 +230,10 @@ class DbDataset(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
+    deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
+    contributors = relationship("DbDatasetContributor")
+
 
 class DbDatasetArtifact(Base):
     """
@@ -249,7 +253,7 @@ class DbDatasetArtifact(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("DbDataset")
+    dataset = relationship("DbDataset", back_populates="artifacts")
 
 
 class DbDeploymentDirectory(Base):
@@ -267,7 +271,7 @@ class DbDeploymentDirectory(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("DbDataset")
+    dataset = relationship("DbDataset", back_populates="deployment_directories")
 
 
 class DbContributor(Base):
@@ -299,3 +303,6 @@ class DbDatasetContributor(Base):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+    contributor = relationship("DbContributor")
+    dataset = relationship("DbDataset", back_populates="contributors")

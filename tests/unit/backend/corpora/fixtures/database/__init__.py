@@ -21,6 +21,7 @@ from backend.corpora.common.corpora_orm import (
     DbContributor,
     DbDatasetContributor,
     DbUser,
+    DbDeploymentDirectory,
 )
 
 
@@ -72,8 +73,9 @@ class TestDatabase:
         self.db.session.commit()
 
     def _create_test_datasets(self):
+        test_dataset_id = "test_dataset_id"
         dataset = DbDataset(
-            id="test_dataset_id",
+            id=test_dataset_id,
             revision=0,
             name="test_dataset_name",
             organism="test_organism",
@@ -98,9 +100,15 @@ class TestDatabase:
             id="test_project_dataset_id",
             project_id="test_project_id",
             project_status=ProjectStatus.LIVE.name,
-            dataset_id="test_dataset_id",
+            dataset_id=test_dataset_id,
         )
         self.db.session.add(project_dataset)
+        self.db.session.commit()
+
+        deployment_directory = DbDeploymentDirectory(
+            id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"
+        )
+        self.db.session.add(deployment_directory)
         self.db.session.commit()
 
     def _create_test_dataset_artifacts(self):
