@@ -50,13 +50,13 @@ The environment variables used to deploy the website. The variables should be st
 for development and _env.production_ for production deployments. Do not store sensitive data in the environment
 variables.
 
-| Name           | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| AUTH0_DOMAIN   | The hosted Auth0 domian used for Authentication      |
-| AUTH0_CLIENTID | The client id of the Auth0 application for this site |
-| AUDIENCE       | The domain of the corpora api                        |
-| API_URL        | The URL to the corpora api                           |
-| CXG_URL        | The URL to CellxGene                                 |
+| Name            | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| AUTH0_DOMAIN    | The hosted Auth0 domain used for Authentication      |
+| AUTH0_CLIENT_ID | The client id of the Auth0 application for this site |
+| AUDIENCE        | The domain of the corpora api                        |
+| API_URL         | The URL to the corpora api                           |
+| CXG_URL         | The URL to CellxGene                                 |
 
 ## Deployment
 
