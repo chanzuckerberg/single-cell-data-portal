@@ -36,3 +36,7 @@ export interface File {
   species: string;
   tissue_ontology: string;
 }
+
+export interface User {
+  picture: string;
+}

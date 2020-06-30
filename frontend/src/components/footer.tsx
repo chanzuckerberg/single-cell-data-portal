@@ -2,6 +2,24 @@ import React, { FC } from "react";
 import { Link } from "gatsby";
 import { Flex, Box, Image } from "theme-ui";
 
+const HomepageLink = () => {
+  return (
+    <Link
+      to="/"
+      style={{
+        color: `black`,
+        textDecoration: `none`,
+      }}
+    >
+      <Image
+        src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
+        width="55px"
+        height="55px"
+      />
+    </Link>
+  );
+};
+
 const Footer: FC = () => {
   return (
     <Box
@@ -22,19 +40,7 @@ const Footer: FC = () => {
         }}
       >
         <Box sx={{ width: 112 }}>
-          <Link
-            to="/"
-            style={{
-              color: `black`,
-              textDecoration: `none`,
-            }}
-          >
-            <Image
-              src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
-              width="55px"
-              height="55px"
-            />
-          </Link>
+          <HomepageLink />
         </Box>
       </Flex>
     </Box>

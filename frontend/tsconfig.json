@@ -10,8 +10,11 @@
     ],
     "module": "commonjs",
     "noEmit": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
     "target": "esnext"

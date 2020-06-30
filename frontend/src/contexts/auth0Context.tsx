@@ -11,6 +11,7 @@ import React, {
 import createAuth0Client from "@auth0/auth0-spa-js";
 
 import Auth0Client from "@auth0/auth0-spa-js/dist/typings/Auth0Client";
+import { User } from "../common/entities";
 
 // (thuang): These variables are set by `.env.development`, `.env.production`, etc..
 const config = {
@@ -21,10 +22,6 @@ const config = {
   redirect_uri: process.env.AUTH0_CALLBACK,
   audience: process.env.BROWSER_AUDIENCE,
 };
-
-interface User {
-  picture: string;
-}
 
 interface Auth0Context {
   isAuthenticated: boolean;

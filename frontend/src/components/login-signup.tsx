@@ -9,21 +9,19 @@ const LoginSignup: FC = () => {
 
   const { isAuthenticated, loading, loginWithRedirect } = auth;
 
+  if (loading || isAuthenticated) return null;
+
   return (
-    <>
-      {!loading && !isAuthenticated && (
-        <Text sx={{ color: "primary", fontSize: 1 }}>
-          <a href="/" onClick={loginWithRedirect}>
-            Log in
-          </a>{" "}
-          or{" "}
-          <a href="/" onClick={loginWithRedirect}>
-            sign-up
-          </a>{" "}
-          to view and download data.
-        </Text>
-      )}
-    </>
+    <Text sx={{ color: "primary", fontSize: 1 }}>
+      <a href="/" onClick={loginWithRedirect}>
+        Log in
+      </a>{" "}
+      or{" "}
+      <a href="/" onClick={loginWithRedirect}>
+        sign-up
+      </a>{" "}
+      to view and download data.
+    </Text>
   );
 };
 

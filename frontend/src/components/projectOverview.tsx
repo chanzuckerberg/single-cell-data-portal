@@ -9,15 +9,33 @@ interface Props {
   isAuthenticated: boolean;
 }
 
-const ProjectOverview: FC<Props> = ({ project, files, isAuthenticated }) => {
-  const publications = !project.publication_title ? null : (
+const StyledHeading: FC = props => {
+  return <Heading {...props} as="h6" sx={{ mb: [2] }} />;
+};
+
+interface ProjectDetailProps {
+  heading: string;
+  text: string;
+}
+
+const ProjectDetail: FC<ProjectDetailProps> = ({ heading, text }) => {
+  return (
     <Box sx={{ mb: [4] }}>
-      <Heading as="h6" sx={{ mb: [2] }}>
-        Publications
-      </Heading>
-      <Text>{project.publication_title}</Text>
+      <StyledHeading>{heading}</StyledHeading>
+      <Text>{text}</Text>
     </Box>
   );
+};
+
+const ProjectOverview: FC<Props> = ({ project, files, isAuthenticated }) => {
+  const description = (
+    <ProjectDetail heading="Description" text={project.description} />
+  );
+
+  const publications = !project.publication_title ? null : (
+    <ProjectDetail heading="Publications" text={project.publication_title} />
+  );
+
   const contributors = !project.contributors.length ? null : (
     <Flex>
       <Box
@@ -25,9 +43,7 @@ const ProjectOverview: FC<Props> = ({ project, files, isAuthenticated }) => {
           width: "50%",
         }}
       >
-        <Heading as="h6" sx={{ mb: [2] }}>
-          Contributors
-        </Heading>
+        <StyledHeading>Contributors</StyledHeading>
         {project.contributors.map(c => (
           <Text key={c.name}>{c.name}</Text>
         ))}
@@ -38,13 +54,12 @@ const ProjectOverview: FC<Props> = ({ project, files, isAuthenticated }) => {
           marginLeft: [6],
         }}
       >
-        <Heading as="h6" sx={{ mb: [2] }}>
-          Institutions
-        </Heading>
+        <StyledHeading>Institutions</StyledHeading>
         <Text>{project.contributors[0].institution}</Text>
       </Box>
     </Flex>
   );
+
   return (
     <Box>
       <Heading
@@ -77,25 +92,17 @@ const ProjectOverview: FC<Props> = ({ project, files, isAuthenticated }) => {
       >
         <Box
           sx={{
-            // maxWidth: "30em",
             maxWidth: "60%",
             mr: 5,
           }}
         >
-          <Box sx={{ mb: [4] }}>
-            <Heading as="h6" sx={{ mb: [2] }}>
-              Description
-            </Heading>
-            <Text>{project.description}</Text>
-          </Box>
+          {description}
           {publications}
           {contributors}
         </Box>
         <Flex>
           <Box>
-            <Heading as="h6" sx={{ mb: [2] }}>
-              Project Details
-            </Heading>
+            <StyledHeading>Project Details</StyledHeading>
             <Text>
               <strong>Species: </strong>
               {project.species.join(", ")}

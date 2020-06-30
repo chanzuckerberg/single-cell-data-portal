@@ -1,7 +1,24 @@
-import React from "react";
+import React, { FC } from "react";
 import { useAuth0 } from "../contexts/auth0Context";
 import { Box, Flex, Image } from "theme-ui";
 import StyledButton from "./styledButton";
+import { User } from "../common/entities";
+
+interface LoggedInProps {
+  user: User | null;
+  logout: () => void;
+}
+
+const LoggedIn: FC<LoggedInProps> = ({ user, logout }) => {
+  if (!user) return null;
+
+  return (
+    <Flex sx={{ alignItems: "center" }}>
+      <StyledButton label="Logout" handleClick={logout} />
+      <Image src={user.picture} width="45px" height="45px" padding="5px" />)
+    </Flex>
+  );
+};
 
 const Authenticate = () => {
   const auth = useAuth0();
@@ -10,27 +27,13 @@ const Authenticate = () => {
 
   const { isAuthenticated, loading, user, logout, loginWithRedirect } = auth;
 
+  if (loading) return null;
+
   return (
     <Box>
-      {!loading && user && (
-        <Flex sx={{ alignItems: "center" }}>
-          <StyledButton label="Logout" handleClick={logout} />
-          {!user ? (
-            <Box>...</Box>
-          ) : (
-            <Image
-              src={user.picture}
-              width="45px"
-              height="45px"
-              padding="5px"
-            />
-          )}
-        </Flex>
-      )}
-      {!loading && !isAuthenticated && (
-        <>
-          <StyledButton label="Login/Sign-up" handleClick={loginWithRedirect} />
-        </>
+      {<LoggedIn user={user} logout={logout} />}
+      {!isAuthenticated && (
+        <StyledButton label="Login/Sign-up" handleClick={loginWithRedirect} />
       )}
     </Box>
   );
