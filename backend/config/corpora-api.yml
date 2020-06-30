@@ -21,6 +21,7 @@ paths:
       description: >-
         Lists all submissions by their UUIDs that currently exist in Corpora. If a parameter is specified as a filter,
         then only submissions that meet the given criteria will be outputted.
+      operationId: corpora.lambdas.api.v1.submission.get_submissions_list
       parameters:
         - $ref: '#/components/parameters/query_user_uuid'
       responses:
@@ -59,6 +60,7 @@ paths:
         is not provided, then a project UUID will be generated. Otherwise, the project details based on the given
         project UUID will be used to pre-populate the newly created submission entity. On success, a message will be
         returned with the project’s UUID.
+      operationId: corpora.lambdas.api.v1.submission.create_new_submission
       requestBody:
         content:
           application/json:
@@ -107,6 +109,7 @@ paths:
       description: >-
         Returns all available metadata information about a project submission, including URIs of datasets that are
         attached to the project.
+      operationId: corpora.lambdas.api.v1.submission.get_submission_details
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -128,6 +131,7 @@ paths:
       description: >-
         Deletes the submission associated with the given project UUID. This does not delete the project if the project
         associated with the submission has been previously publicly published.
+      operationId: corpora.lambdas.api.v1.submission.delete_submission
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -156,6 +160,7 @@ paths:
         the submission entity. A quick validation will be performed to ensure that if the file is a data file, then the
         extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
         name, it will replace it and increment the revision value of the dataset.
+      operationId: corpora.lambdas.api.v1.submission.add_file_to_submission
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
@@ -216,6 +221,7 @@ paths:
       description: >-
         Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
         outputted.
+      operationId: corpora.lambdas.api.v1.submission.delete_dataset_from_submission
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
         - $ref: '#/components/parameters/path_dataset_uuid'
@@ -240,6 +246,7 @@ paths:
         Validates the project to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
         there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
         the validation is also stored in the backend database.
+      operationId: corpora.lambdas.api.v1.submission.validate_submission
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -277,6 +284,7 @@ paths:
         success.
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
+      operationId: corpora.lambdas.api.v1.submission.save_submission
       requestBody:
         content:
           application/json:
@@ -330,6 +338,7 @@ paths:
         Publish a project to Corpora as either public or private. The visibility of the project will either make it
         visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
         to public, the successful execution of this operation will move the Submission to a CLOSED state.
+      operationId: corpora.lambdas.api.v1.submission.publish_submission
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       requestBody:
@@ -337,7 +346,7 @@ paths:
           application/json:
             schema:
               description: >-
-                a schema that contains a field dictating the visibility of the deployments.
+                A schema that contains a field dictating the visibility of the deployments.
               type: object
               properties:
                 visibility:
@@ -376,6 +385,7 @@ paths:
       description: >-
         This lists all projects and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
+      operationId: corpora.lambdas.api.v1.project.get_projects_list
       parameters:
         - $ref: '#/components/parameters/query_user_uuid'
         - name: from_date
@@ -416,6 +426,7 @@ paths:
       summary: Get Project
       description: >-
         This will return all datasets and associated attributes.
+      operationId: corpora.lambdas.api.v1.project.get_project_details
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -439,6 +450,7 @@ paths:
       description: >-
         Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such
         project exists, then a warning will be outputted.
+      operationId: corpora.lambdas.api.v1.project.delete_project
       parameters:
         - $ref: '#/components/parameters/path_project_uuid'
       responses:
@@ -460,6 +472,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
+      operationId: corpora.lambdas.api.v1.project.get_project_dataset
       parameters:
         - $ref: '#/components/parameters/path_dataset_uuid'
       responses:
