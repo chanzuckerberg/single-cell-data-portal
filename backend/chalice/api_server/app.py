@@ -49,10 +49,11 @@ def get_chalice_app(flask_app):
 
     def dispatch(*args, **kwargs):
         uri_params = app.current_request.uri_params or {}
-        path = app.current_request.context["resourcePath"].format(**uri_params)
+        resource_path = app.current_request.context["resourcePath"].format(**uri_params)
         req_body = app.current_request.raw_body if app.current_request._body is not None else None
+
         with flask_app.test_request_context(
-            path=path,
+            path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
             query_string=app.current_request.query_params,
             method=app.current_request.method,
@@ -62,12 +63,9 @@ def get_chalice_app(flask_app):
         ):
             flask_res = flask_app.full_dispatch_request()
 
-        res_headers = dict(flask_res.headers)
-        # API Gateway/Cloudfront adds a duplicate Content-Length with a different value (not sure why)
-        res_headers.pop("Content-Length", None)
         return chalice.Response(
             status_code=flask_res._status_code,
-            headers=res_headers,
+            headers=dict(flask_res.headers),
             body="".join([c.decode() if isinstance(c, bytes) else c for c in flask_res.response]),
         )
 
