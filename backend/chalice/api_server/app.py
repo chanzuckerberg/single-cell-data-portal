@@ -19,6 +19,7 @@ from corpora.common.authorizer import assert_authorized
 
 cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
+
 def requires_auth():
     """
     A decorator for assert_authorized
@@ -39,7 +40,6 @@ def requires_auth():
 def create_flask_app():
     app = connexion.App(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
     swagger_spec_path = os.path.join(pkg_root, "config", f"{os.environ['APP_NAME']}.yml")
-    logging.warning(f"Swagger spec path: {swagger_spec_path}")
     app.add_api(swagger_spec_path, validate_responses=False)
     return app.app
 
@@ -124,4 +124,3 @@ def get_chalice_app(flask_app):
 
 
 app = get_chalice_app(create_flask_app())
-

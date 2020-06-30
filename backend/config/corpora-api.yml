@@ -2,20 +2,19 @@ openapi: 3.0.0
 info:
   version: "1.0.0"
   title: Corpora Data Portal API
-  description: >
-    This is the API for the Corpora Data Portal
+  description: CZI Corpora Data Portal API
 servers:
-  - description: production
+  - description: Production environment
     url: https://api.corpora.cziscience.com
-  - description: dev
+  - description: Development environment
     url: https://api.dev.corpora.cziscience.com
-  - description: staging
+  - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
   /v1/submission:
 
     get:
-      summary: List submissions
+      summary: List open submissions in Corpora
       tags:
         - submissions
       description: >-
@@ -52,7 +51,7 @@ paths:
           $ref: '#/components/responses/404'
 
     post:
-      summary: Create a new submission
+      summary: Create a new project submission
       tags:
         - submissions
       description: >-
@@ -215,7 +214,7 @@ paths:
 
   /v1/submission/{project_uuid}/dataset/{dataset_uuid}:
     delete:
-      summary: Delete a project's dataset
+      summary: Delete a project's dataset file
       tags:
         - submissions
       description: >-
@@ -241,7 +240,7 @@ paths:
     post:
       tags:
         - submissions
-      summary: Validate the Project
+      summary: Validate a project
       description: >-
         Validates the project to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
         there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
@@ -276,7 +275,7 @@ paths:
     post:
       tags:
         - submissions
-      summary: Save the project
+      summary: Save a project
       description: >-
         If needed (i.e. project level metadata was not inputted via a form and instead embedded in the matrix file),
         extracts the project-level metadata from the datasets or uses the given project-level metadata add via the
@@ -333,7 +332,7 @@ paths:
     post:
       tags:
         - submissions
-      summary: Publish the Project
+      summary: Publish a project
       description: >-
         Publish a project to Corpora as either public or private. The visibility of the project will either make it
         visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
@@ -381,7 +380,7 @@ paths:
     get:
       tags:
         - projects
-      summary: List Projects
+      summary: List published projects in Corpora
       description: >-
         This lists all projects and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only projects that meet the status criteria will be outputted.
@@ -423,7 +422,7 @@ paths:
     get:
       tags:
         - projects
-      summary: Get Project
+      summary: Get a project's full details
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.project.get_project_details
@@ -446,7 +445,7 @@ paths:
     delete:
       tags:
         - projects
-      summary: Delete Project
+      summary: Delete a project
       description: >-
         Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such
         project exists, then a warning will be outputted.
