@@ -232,7 +232,7 @@ class DbDataset(Base):
 
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
-    contributors = relationship("DbDatasetContributor")
+    contributors = relationship("DbContributor", secondary=lambda: DbDatasetContributor().__table__)
 
 
 class DbDatasetArtifact(Base):
@@ -303,6 +303,3 @@ class DbDatasetContributor(Base):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-
-    contributor = relationship("DbContributor")
-    dataset = relationship("DbDataset", back_populates="contributors")
