@@ -13,7 +13,9 @@ unit-test:
 	-docker run -d -p 5432:5432 --name test_db -e POSTGRES_PASSWORD=test_pw postgres
 	-PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose
-	-make clean_test_db
+	test_result=$$?
+	$(MAKE) clean_test_db
+	exit $$test_result
 
 
 clean_test_db:
