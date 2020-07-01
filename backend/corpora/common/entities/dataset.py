@@ -25,7 +25,7 @@ class Dataset(Entity):
     @classmethod
     def _load(cls, db_result: typing.List["Dataset"]) -> "Dataset":
         """
-        Parses a database query result into an Entity instance
+        Parses a database query result into a Dataset Entity instance.
         :param db_result: list of query result rows
         :return: Entity
         """
