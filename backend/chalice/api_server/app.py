@@ -48,6 +48,8 @@ def get_chalice_app(flask_app):
     app.log.setLevel(logging.DEBUG)
 
     def dispatch(*args, **kwargs):
+        app.log.info(f"Request: {app.current_request.to_dict()}")
+
         uri_params = app.current_request.uri_params or {}
         resource_path = app.current_request.context["resourcePath"].format(**uri_params)
         req_body = app.current_request.raw_body if app.current_request._body is not None else None
@@ -63,11 +65,17 @@ def get_chalice_app(flask_app):
         ):
             flask_res = flask_app.full_dispatch_request()
 
-        return chalice.Response(
+        response_headers = dict(flask_res.headers)
+        response_headers.update({"X-AWS-REQUEST-ID" : app.lambda_context.aws_request_id})
+
+        chalice_response = chalice.Response(
             status_code=flask_res._status_code,
-            headers=dict(flask_res.headers),
+            headers=response_headers,
             body="".join([c.decode() if isinstance(c, bytes) else c for c in flask_res.response]),
         )
+        app.log.info(f"Response: {chalice_response.to_dict()}")
+
+        return chalice_response
 
     routes = defaultdict(list)
     for rule in flask_app.url_map.iter_rules():
