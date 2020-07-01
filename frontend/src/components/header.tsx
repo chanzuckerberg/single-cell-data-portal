@@ -1,5 +1,5 @@
-import React, { FC } from "react";
 import { Link } from "gatsby";
+import React, { FC } from "react";
 import { Box, Flex, Image } from "theme-ui";
 import Authenticate from "./authenticate";
 

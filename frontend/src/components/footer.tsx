@@ -1,6 +1,6 @@
-import React, { FC } from "react";
 import { Link } from "gatsby";
-import { Flex, Box, Image } from "theme-ui";
+import React, { FC } from "react";
+import { Box, Flex, Image } from "theme-ui";
 
 const HomepageLink = () => {
   return (

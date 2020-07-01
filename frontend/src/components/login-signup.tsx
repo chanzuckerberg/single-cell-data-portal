@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { useAuth0 } from "../contexts/auth0Context";
 import { Text } from "theme-ui";
+import { useAuth0 } from "../contexts/auth0Context";
 
 const LoginSignup: FC = () => {
   const auth = useAuth0();

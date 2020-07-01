@@ -1,7 +1,7 @@
 import React, { FC } from "react";
-import { Flex, Box, Heading, Text } from "theme-ui";
+import { Box, Flex, Heading, Text } from "theme-ui";
+import { File, Project } from "../common/entities";
 import ExploreData from "./exploreData";
-import { Project, File } from "../common/entities";
 
 interface Props {
   project: Project;

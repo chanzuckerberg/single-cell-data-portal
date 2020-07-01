@@ -1,9 +1,9 @@
-import React, { FC } from "react";
-import { Link } from "gatsby";
-import { Flex, Box } from "theme-ui";
-import ProjectsListHeading from "./projectsListHeading";
-import { Project } from "../common/entities";
 import { SystemStyleObject } from "@styled-system/css";
+import { Link } from "gatsby";
+import React, { FC } from "react";
+import { Box, Flex } from "theme-ui";
+import { Project } from "../common/entities";
+import ProjectsListHeading from "./projectsListHeading";
 
 interface Props {
   projects: Project[];

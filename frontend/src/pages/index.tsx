@@ -1,11 +1,10 @@
-import React, { FC, useState, useEffect } from "react";
-
-import Layout from "../components/layout";
-import SEO from "../components/seo";
-import ProjectsList from "../components/projectsList";
+import React, { FC, useEffect, useState } from "react";
 import { Heading } from "theme-ui";
-import { API_URL } from "../globals";
 import { Project } from "../common/entities";
+import Layout from "../components/layout";
+import ProjectsList from "../components/projectsList";
+import SEO from "../components/seo";
+import { API_URL } from "../globals";
 
 /*
   Mock API

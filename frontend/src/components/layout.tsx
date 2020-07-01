@@ -7,11 +7,10 @@
 
 import React, { FC } from "react";
 import { ThemeProvider } from "theme-ui";
-import theme from "./theme";
-
-import Header from "./header";
 import Footer from "./footer";
+import Header from "./header";
 import "./layout.css";
+import theme from "./theme";
 
 const Layout: FC = ({ children }) => {
   return (

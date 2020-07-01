@@ -1,6 +1,6 @@
-import React, { FC } from "react";
-import { Flex, Box } from "theme-ui";
 import { SystemStyleObject } from "@styled-system/css";
+import React, { FC } from "react";
+import { Box, Flex } from "theme-ui";
 
 const boxBaseStyle: SystemStyleObject = {
   fontSize: [2],

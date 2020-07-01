@@ -1,8 +1,8 @@
 import React, { FC } from "react";
-import { useAuth0 } from "../contexts/auth0Context";
 import { Box, Flex, Image } from "theme-ui";
-import StyledButton from "./styledButton";
 import { User } from "../common/entities";
+import { useAuth0 } from "../contexts/auth0Context";
+import StyledButton from "./styledButton";
 
 interface LoggedInProps {
   user: User | null;

@@ -1,12 +1,10 @@
 import React, { FC } from "react";
-import { Flex, Box, Text } from "theme-ui";
-import StyledButton from "./styledButton";
-import LoginSignup from "./login-signup";
-
-import { API_URL, CXG_URL } from "../globals";
-
+import { Box, Flex, Text } from "theme-ui";
+import { File, Project } from "../common/entities";
 import { useAuth0 } from "../contexts/auth0Context";
-import { Project, File } from "../common/entities";
+import { API_URL, CXG_URL } from "../globals";
+import LoginSignup from "./login-signup";
+import StyledButton from "./styledButton";
 
 interface Props {
   project: Project;

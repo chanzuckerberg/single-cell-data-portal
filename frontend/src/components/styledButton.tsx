@@ -1,6 +1,6 @@
+import { SystemStyleObject } from "@styled-system/css";
 import React, { FC } from "react";
 import { Button, Text } from "theme-ui";
-import { SystemStyleObject } from "@styled-system/css";
 
 interface Props {
   label: string;

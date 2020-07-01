@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Text, Flex, Box } from "theme-ui";
+import { Box, Flex, Text } from "theme-ui";
 import { File } from "../common/entities";
 
 interface Props {
