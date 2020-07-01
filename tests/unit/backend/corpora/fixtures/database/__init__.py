@@ -103,7 +103,6 @@ class TestDatabase:
             dataset_id=test_dataset_id,
         )
         self.db.session.add(project_dataset)
-        self.db.session.commit()
 
         deployment_directory = DbDeploymentDirectory(
             id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"

@@ -14,11 +14,21 @@ class Dataset(Entity):
 
     @classmethod
     def _query(cls, key: str) -> typing.List["Dataset"]:
+        """
+        Queries the database for required entity data
+        :param key: dataset.id is the primary key.
+        :return: list of query result rows
+        """
         result = cls.db.query(table_args=[DbDataset], filter_args=[key == DbDataset.id])
         return result
 
     @classmethod
     def _load(cls, db_result: typing.List["Dataset"]) -> "Dataset":
+        """
+        Parses a database query result into an Entity instance
+        :param db_result: list of query result rows
+        :return: Entity
+        """
         try:
             return cls(db_result[0])
         except IndexError:
