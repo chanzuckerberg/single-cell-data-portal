@@ -158,7 +158,9 @@ class DbProject(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    user = relationship("DbUser")
+    user = relationship("DbUser", uselist=False)
+    links = relationship("DbProjectLink")
+    datasets = relationship("DbDataset", secondary=lambda: DbProjectDataset().__table__, back_populates="project")
 
 
 class DbProjectDataset(Base):
@@ -229,6 +231,7 @@ class DbDataset(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    project = relationship("DbProject", secondary=lambda: DbProjectDataset().__table__, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
     contributors = relationship(

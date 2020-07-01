@@ -9,8 +9,8 @@ class Dataset(Entity):
         DbDataset,
     ]
 
-    def __init__(self, db_obj: DbDataset):
-        self.db_obj = db_obj
+    def __init__(self, db_object: DbDataset):
+        super().__init__(db_object)
 
     @classmethod
     def _query(cls, key: str) -> typing.List["Dataset"]:

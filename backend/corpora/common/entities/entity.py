@@ -15,6 +15,9 @@ class Entity:
 
     db = DbUtils()
 
+    def __init__(self, db_object: Base):
+        self.db_object = db_object
+
     @classmethod
     def get(cls, key: typing.Union[str, typing.Tuple[str, str]]):
         """
@@ -34,13 +37,11 @@ class Entity:
         raise NotImplementedError()
 
     @classmethod
-    def _load(cls, db_result: typing.List[Base]) -> "Entity":
-        """
-        Parses a database query result into an Entity instance
-        :param db_result: list of query result rows
-        :return: Entity
-        """
-        raise NotImplementedError()
+    def _load(cls, db_result: typing.List["Entity"]) -> "Entity":
+        try:
+            return cls(db_result[0])
+        except IndexError:
+            return None
 
     @classmethod
     def list(cls):
@@ -56,3 +57,6 @@ class Entity:
         :return: saved Entity object
         """
         raise NotImplementedError()
+
+    def __getattr__(self, name):
+        return self.db_object.__getattribute__(name)
