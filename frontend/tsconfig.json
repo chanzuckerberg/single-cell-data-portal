@@ -17,11 +17,17 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "target": "esnext"
+    "target": "esnext",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ],
+    }
   },
   "exclude": [
     "node_modules",
     "public",
     ".cache"
-  ]
+  ],
 }
