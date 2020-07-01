@@ -66,7 +66,7 @@ def get_chalice_app(flask_app):
             flask_res = flask_app.full_dispatch_request()
 
         response_headers = dict(flask_res.headers)
-        response_headers.update({"X-AWS-REQUEST-ID" : app.lambda_context.aws_request_id})
+        response_headers.update({"X-AWS-REQUEST-ID": app.lambda_context.aws_request_id})
 
         chalice_response = chalice.Response(
             status_code=flask_res._status_code,
