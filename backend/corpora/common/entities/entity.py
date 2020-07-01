@@ -10,8 +10,8 @@ class Entity:
     database counterparts.
 
     This class uses a has-a relationship with SQLAlchemy Table object and simplify the CRUD operations performed on the
-    database through these objects. Columns and relationship of the database object can be access as attributes of the of
-    Entity.
+    database through these objects. Columns and relationship of the database object can be access as attributes of the
+    of Entity.
 
     Every application-level object must inherit Entity.
     Examples: Project, Dataset
@@ -45,8 +45,8 @@ class Entity:
         """
         Parses query result rows produced by Entity._query into an instantiated Entity object.
         The output of this function is the return value of Entity.get.
-        SQLAlchemy query results are stored in a list in which each item contains Table objects returned by the query. If no
-        results are found, None is returned.
+        SQLAlchemy query results are stored in a list in which each item contains Table objects returned by the query.
+        If no results are found, None is returned.
 
         Example query results access:
         row = query_results[0]
