@@ -15,7 +15,7 @@ class Dataset(Entity):
     @classmethod
     def _query(cls, key: str) -> typing.List["Dataset"]:
         """
-        Queries the database for required entity data
+        Given a key representing a dataset UUID, queries the database to return the associated dataset data.
         :param key: dataset.id is the primary key.
         :return: list of query result rows
         """
