@@ -1,3 +1,5 @@
+from backend.corpora.common.entities.project import Project
+
 def get_submissions_list(query_user_uuid: str):
     raise NotImplementedError
 
@@ -23,6 +25,9 @@ def delete_dataset_from_submission(path_project_uuid: str, path_dataset_uuid: st
 
 
 def validate_submission(path_project_uuid: str):
+    # Get the project entity
+    project = Project._load(Project._query(path_project_uuid))
+
     raise NotImplementedError
 
 
