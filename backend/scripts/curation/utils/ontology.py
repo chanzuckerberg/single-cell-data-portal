@@ -37,7 +37,7 @@ class OntologyLookupError(Exception):
 def get_ontology_label(curie):
     """For a given curie like 'CL:1000413', get the label like 'endothelial cell of artery'"""
 
-    # If the curie is empty, just return an empty string. This happens wher there is no
+    # If the curie is empty, just return an empty string. This happens when there is no
     # valid ontology value.
     if not curie:
         return ""
