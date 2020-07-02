@@ -8,4 +8,3 @@ class TestAPP(BaseAPITest, unittest.TestCase):
         """ If this fails then the server does not work """
         response = self.app.get("/")
         response.raise_for_status()
-
