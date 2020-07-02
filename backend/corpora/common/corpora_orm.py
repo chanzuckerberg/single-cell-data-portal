@@ -22,7 +22,6 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from common.corpora_config import CorporaDbConfig
 
-
 Base = declarative_base()
 deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
@@ -230,6 +229,12 @@ class DbDataset(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
+    deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
+    contributors = relationship(
+        "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets"
+    )
+
 
 class DbDatasetArtifact(Base):
     """
@@ -249,7 +254,7 @@ class DbDatasetArtifact(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("DbDataset")
+    dataset = relationship("DbDataset", back_populates="artifacts")
 
 
 class DbDeploymentDirectory(Base):
@@ -267,7 +272,7 @@ class DbDeploymentDirectory(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
-    dataset = relationship("DbDataset")
+    dataset = relationship("DbDataset", back_populates="deployment_directories")
 
 
 class DbContributor(Base):
@@ -283,6 +288,9 @@ class DbContributor(Base):
     email = Column(String)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+    datasets = relationship(
+        "DbDataset", secondary=lambda: DbDatasetContributor().__table__, back_populates="contributors"
+    )
 
 
 class DbDatasetContributor(Base):
