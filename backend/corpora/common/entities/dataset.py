@@ -1,14 +1,10 @@
 import typing
 
 from .entity import Entity
-from ..corpora_orm import DbDataset
+from ..corpora_orm import DbDataset, DbDatasetArtifact
 
 
 class Dataset(Entity):
-    tables = [
-        DbDataset,
-    ]
-
     def __init__(self, db_obj: DbDataset):
         self.db_obj = db_obj
 
@@ -19,7 +15,11 @@ class Dataset(Entity):
         :param key: dataset.id is the primary key.
         :return: list of query result rows
         """
-        result = cls.db.query(table_args=[DbDataset], filter_args=[key == DbDataset.id])
+
+        result = cls.db.query(
+            table_args=[DbDataset, DbDatasetArtifact],
+            filter_args=[key == DbDataset.id, DbDataset.id == DbDatasetArtifact.dataset_id],
+        )
         return result
 
     @classmethod
@@ -29,6 +29,7 @@ class Dataset(Entity):
         :param db_result: list of query result rows
         :return: Entity
         """
+
         try:
             return cls(db_result[0])
         except IndexError:

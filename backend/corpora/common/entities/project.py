@@ -1,6 +1,8 @@
 import copy
 import typing
 
+from .dataset import Dataset
+from .entity import Entity
 from ..corpora_orm import (
     Base,
     DbProject,
@@ -10,7 +12,7 @@ from ..corpora_orm import (
     DbContributor,
     ProjectStatus,
 )
-from .entity import Entity
+from ..dataset_validator import DatasetValidator
 from ..utils.exceptions import CorporaException
 
 
@@ -129,3 +131,25 @@ class Project(Entity):
 
         # instantiate Project
         return Project(**project_params)
+
+    def validate(self):
+        """
+        Validates a project by performing dataset validation on each dataset that belongs to this project entity.
+        :return:
+        """
+
+        datasets = []
+
+        # Get dataset URLs of the project
+        for dataset_uuid in self.dataset_ids:
+            datasets.append(Dataset._load(Dataset._query(dataset_uuid)))
+
+        # Aggregate the validation results of each of the datasets
+        for dataset in datasets:
+            for dataset_artifact in dataset.artifacts:
+                s3_uri = dataset_artifact.s3_uri
+                dataset_validator = DatasetValidator(s3_uri)
+                dataset_validator.validate_dataset_file()
+
+        # TODO: This should actually return the error messages.
+        return True
