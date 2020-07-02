@@ -1,7 +1,7 @@
 import unittest
-from backend.corpora.common.entities.project import Project
-from backend.corpora.common.utils.exceptions import CorporaException
+
 from backend.corpora.common.corpora_orm import ProjectStatus, DbDataset, DbUser
+from backend.corpora.common.entities.project import Project
 
 
 class TestProject(unittest.TestCase):
