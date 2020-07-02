@@ -1,6 +1,6 @@
 import os
 
-from unit.backend.chalice import ChaliceTestHarness, run
+from tests.unit.backend.chalice import ChaliceTestHarness, run
 
 os.environ["APP_NAME"] = "corpora-api"
 corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
