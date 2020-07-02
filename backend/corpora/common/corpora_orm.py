@@ -136,6 +136,9 @@ class DbUser(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Relationships
+    projects = relationship("DbProject", back_populates="user")
+
 
 class DbProject(Base):
     """
@@ -158,8 +161,9 @@ class DbProject(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
-    user = relationship("DbUser", uselist=False)
-    links = relationship("DbProjectLink")
+    # Relationships
+    user = relationship("DbUser", uselist=False, back_populates="projects")
+    links = relationship("DbProjectLink", back_populates="projects")
     datasets = relationship("DbDataset", secondary=lambda: DbProjectDataset().__table__, back_populates="project")
 
 
@@ -198,6 +202,9 @@ class DbProjectLink(Base):
     created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Relationships
+    projects = relationship("DbProject", back_populates="links")
+
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
@@ -231,6 +238,7 @@ class DbDataset(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Relationships
     project = relationship("DbProject", secondary=lambda: DbProjectDataset().__table__, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
@@ -257,6 +265,7 @@ class DbDatasetArtifact(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Relationships
     dataset = relationship("DbDataset", back_populates="artifacts")
 
 
@@ -275,6 +284,7 @@ class DbDeploymentDirectory(Base):
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
+    # Relationships
     dataset = relationship("DbDataset", back_populates="deployment_directories")
 
 
@@ -291,6 +301,8 @@ class DbContributor(Base):
     email = Column(String)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+    # Relationships
     datasets = relationship(
         "DbDataset", secondary=lambda: DbDatasetContributor().__table__, back_populates="contributors"
     )
