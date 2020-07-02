@@ -35,10 +35,4 @@ class TestProject(unittest.TestCase):
 
     def test__get__invalid_status(self):
         invalid_status_key = (self.uuid, "invalid_status")
-
-        with self.assertRaises(CorporaException) as context:
-            Project.get(invalid_status_key)
-
-        self.assertEqual(
-            "Invalid status invalid_status. Status must be one of ['LIVE', 'EDIT'].", str(context.exception)
-        )
+        self.assertEqual(Project.get(invalid_status_key), None)

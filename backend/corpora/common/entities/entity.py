@@ -1,4 +1,7 @@
+import logging
 import typing
+
+logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
 from ..utils.db_utils import DbUtils
@@ -17,48 +20,24 @@ class Entity:
     Examples: Project, Dataset
     """
 
+    table: Base = None  # The DbTable represented by this entity.
     db = DbUtils()
 
     def __init__(self, db_object: Base):
         self.db_object = db_object
 
     @classmethod
-    def get(cls, key: typing.Union[str, typing.Tuple[str, str]]):
+    def get(cls, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
         """
-        Retrieves an entity from the database given its primary key
+        Retrieves an entity from the database given its primary key if found.
         :param key: Simple or composite primary key
-        :return: Entity
+        :return: Entity or None
         """
-        return cls._load(cls._query(key))
-
-    @classmethod
-    def _query(cls, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.List[Base]:
-        """
-        Queries the database for required entity data
-        :param key: Simple or composite primary key
-        :return: list of query result rows
-        """
-        raise NotImplementedError()
-
-    @classmethod
-    def _load(cls, db_result: typing.List["Entity"]) -> typing.Union["Entity", None]:
-        """
-
-        Parses query result rows produced by Entity._query into an instantiated Entity object.
-        The output of this function is the return value of Entity.get.
-        SQLAlchemy query results are stored in a list in which each item contains Table objects returned by the query.
-        If no results are found, None is returned.
-
-        Example query results access:
-        row = query_results[0]
-        project_id = row.DbProject.id
-        :param query_results: list of query result rows
-        :return: Entity
-        """
-
-        try:
-            return cls(db_result[0])
-        except IndexError:
+        result = cls.db.get(cls.table, key)
+        if result:
+            return cls(result)
+        else:
+            logger.info(f"Unable to find a row with primary key {key}, in {cls.__name__} table.")
             return None
 
     @classmethod
