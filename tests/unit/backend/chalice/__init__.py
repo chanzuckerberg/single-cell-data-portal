@@ -8,6 +8,11 @@ import subprocess
 
 
 def run(args):
+    """
+    Runs a terminal command in a subprocess and returns the output.
+    :param args:
+    :return:
+    """
     print(f"RUN: {' '.join(args)}")
     response = subprocess.run(args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if response.stdout:
@@ -19,6 +24,9 @@ def run(args):
 
 
 class ChaliceTestHarness:
+    """
+    This class initializes a chalice application that can be used to make API requests against the application.
+    """
     def __init__(self, project_dir):
         config = CLIFactory(project_dir=project_dir).create_config_obj(chalice_stage_name="dev")
         self._chalice_app = config.chalice_app
