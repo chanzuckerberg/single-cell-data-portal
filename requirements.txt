@@ -3,7 +3,6 @@ black
 botocore>=1.14.17
 boto3>=1.11.17
 chalice==1.12.0
-connexion
 coverage>=2.0.15
 flake8-black
 jsonschema
@@ -15,8 +14,7 @@ pandas
 psycopg2==2.7.7
 PyMySQL==0.9.3
 pytest
-python-jose[cryptography]>=3.1.0
 requests>=2.22.0
 s3fs
 scanpy
-sqlalchemy
+-r ./backend/chalice/api_server/requirements.txt
