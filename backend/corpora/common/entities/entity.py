@@ -43,6 +43,7 @@ class Entity:
     @classmethod
     def _load(cls, db_result: typing.List["Entity"]) -> typing.Union["Entity", None]:
         """
+
         Parses query result rows produced by Entity._query into an instantiated Entity object.
         The output of this function is the return value of Entity.get.
         SQLAlchemy query results are stored in a list in which each item contains Table objects returned by the query.
