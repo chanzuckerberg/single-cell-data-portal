@@ -55,6 +55,7 @@ class Entity:
         :param query_results: list of query result rows
         :return: Entity
         """
+
         try:
             return cls(db_result[0])
         except IndexError:
