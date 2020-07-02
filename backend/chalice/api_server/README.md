@@ -14,7 +14,7 @@ Filename                  | Purpose                           | Information link
 `../../config/iam-policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 
 ## Development
-1.  Ensure project [pre-requisites](../README.md#Pre-requisites) are met.
+1.  Ensure project [pre-requisites](../../../README.md#Pre-requisites) are met.
 
 1.  Set the following environment variables:
 
