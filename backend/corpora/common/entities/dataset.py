@@ -57,7 +57,7 @@ class Dataset(Entity):
         uuid = cls.db.generate_id(DbDataset)
 
         """
-        Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one 
+        Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
         to many for artifacts and deployment_directories
         """
         [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
