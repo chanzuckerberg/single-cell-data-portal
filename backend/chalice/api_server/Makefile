@@ -14,6 +14,7 @@ export PRIVATE_SUBNET_ID_1=$(shell cut -d' ' -f1 <<<"$(PRIVATE_SUBNET_IDS)")
 export PRIVATE_SUBNET_ID_2=$(shell cut -d' ' -f2 <<<"$(PRIVATE_SUBNET_IDS)")
 export PRIVATE_SUBNET_ID_3=$(shell cut -d' ' -f3 <<<"$(PRIVATE_SUBNET_IDS)")
 export SECURITY_GROUP_ID=$(shell aws ec2 describe-security-groups | jq -rc '.SecurityGroups[] | select(.GroupName == "corpora-api-lambda-$(DEPLOYMENT_STAGE)") | .GroupId')
+export DEPLOYMENT_STAGE ?= test
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
