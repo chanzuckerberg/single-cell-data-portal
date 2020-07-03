@@ -1,6 +1,8 @@
+import logging
 import unittest
 
 from backend.corpora.common.corpora_orm import ProjectStatus, DbDataset, DbUser
+from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
 
 
@@ -35,4 +37,8 @@ class TestProject(unittest.TestCase):
 
     def test__get__invalid_status(self):
         invalid_status_key = (self.uuid, "invalid_status")
-        self.assertEqual(Project.get(invalid_status_key), None)
+        with self.assertLogs(entity_logger, logging.INFO) as logs:
+            self.assertEqual(Project.get(invalid_status_key), None)
+        self.assertIn("Unable to find a row with primary key", logs.output[0])
+
+
