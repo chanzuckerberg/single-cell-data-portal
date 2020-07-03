@@ -1,7 +1,9 @@
+import logging
 import unittest
+
+from backend.corpora.common.corpora_orm import ProjectStatus, DbDataset, DbUser
+from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.common.corpora_orm import ProjectStatus
 
 
 class TestProject(unittest.TestCase):
@@ -14,7 +16,19 @@ class TestProject(unittest.TestCase):
 
         project = Project.get(key)
 
+        # Verify Columns
         self.assertEqual(project.name, "test_project")
+        self.assertEqual(project.owner, "test_user_id")
+
+        # Verify User relationship
+        self.assertIsInstance(project.user, DbUser)
+        self.assertEqual(project.user.id, "test_user_id")
+
+        # Verify Dataset relationship
+        dataset = project.datasets[0]
+        self.assertIsInstance(dataset, DbDataset)
+        self.assertEqual(dataset.id, "test_dataset_id")
+        self.assertEqual(dataset.assay, "test_assay")
 
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.status)
@@ -23,10 +37,6 @@ class TestProject(unittest.TestCase):
 
     def test__get__invalid_status(self):
         invalid_status_key = (self.uuid, "invalid_status")
-
-        with self.assertRaises(CorporaException) as context:
-            Project.get(invalid_status_key)
-
-        self.assertEqual(
-            "Invalid status invalid_status. Status must be one of ['LIVE', 'EDIT'].", str(context.exception)
-        )
+        with self.assertLogs(entity_logger, logging.INFO) as logs:
+            self.assertEqual(Project.get(invalid_status_key), None)
+        self.assertIn("Unable to find a row with primary key", logs.output[0])
