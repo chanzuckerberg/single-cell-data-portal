@@ -32,15 +32,6 @@ class DbUtils:
             else self.session.query(*table_args).all()
         )
 
-    def write(self, db_object: Base):
-        """
-        Writes data to the database
-        :param db_object: The Table object to be created or modified.
-        :return:
-        """
-        self.session.add(db_object)
-        self.session.commit()
-
     retry_limit = 3  # The number of times to attempt generating a uuid
 
     def generate_id(self, table: Base, *args):

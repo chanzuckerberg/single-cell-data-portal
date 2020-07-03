@@ -163,7 +163,7 @@ class DbProject(Base):
 
     # Relationships
     user = relationship("DbUser", uselist=False, back_populates="projects")
-    links = relationship("DbProjectLink", back_populates="projects")
+    links = relationship("DbProjectLink", back_populates="project")
     datasets = relationship("DbDataset", secondary=lambda: DbProjectDataset().__table__, back_populates="project")
 
 
@@ -203,7 +203,7 @@ class DbProjectLink(Base):
     updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
-    projects = relationship("DbProject", back_populates="links")
+    project = relationship("DbProject", back_populates="links")
 
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
