@@ -55,6 +55,14 @@ class Dataset(Entity):
         :return:
         """
         uuid = cls.db.generate_id(DbDataset)
+
+        """
+        Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one 
+        to many for artifacts and deployment_directories
+        """
+        [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
+        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
+
         new_db_object = DbDataset(
             id=uuid,
             revision=revision,
@@ -78,6 +86,8 @@ class Dataset(Entity):
                 deployment_directories, DbDeploymentDirectory, dataset_id=uuid
             ),
         )
+
+        #  Linking many contributors to many datasets
         contributors = cls._create_sub_objects(contributors, DbContributor)
         contributor_dataset_ids = [dict(contributor_id=contributor.id, dataset_id=uuid) for contributor in contributors]
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)

@@ -39,6 +39,12 @@ class Project(Entity):
         """
         uuid = cls.db.generate_id(DbProject, status)
 
+        """
+        Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one 
+        to many for links
+        """
+        [link.pop("id", None) for link in links]  # sanitize of ids
+
         new_db_object = DbProject(
             id=uuid,
             status=status,
@@ -56,11 +62,3 @@ class Project(Entity):
         cls.db.session.add(new_db_object)
         cls.db.session.commit()
         return cls(new_db_object)
-
-    def update(self, **kwargs):
-        """
-        Load the db_object, then update
-        :param kwargs:
-        :return:
-        """
-        pass
