@@ -43,8 +43,8 @@ class Project(Entity):
         Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
         to many for links
         """
-        if links:
-            [link.pop("id", None) for link in links]  # sanitize of ids
+        links = links if links else []
+        [link.pop("id", None) for link in links]  # sanitize of ids
 
         new_db_object = DbProject(
             id=uuid,
