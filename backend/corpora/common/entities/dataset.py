@@ -60,8 +60,10 @@ class Dataset(Entity):
         Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
         to many for artifacts and deployment_directories
         """
-        [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
-        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
+        if artifacts:
+            [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
+        if deployment_directories:
+            [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
 
         new_db_object = DbDataset(
             id=uuid,
