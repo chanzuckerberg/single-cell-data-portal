@@ -53,23 +53,7 @@ class TestDataset(unittest.TestCase):
 
         contributor_params = dict(name="bob", institution="school", email="some@email.com")
 
-        dataset_params = dict(
-            name="create_dataset_id",
-            organism="organism",
-            organism_ontology="123",
-            tissue="tissue",
-            tissue_ontology="123",
-            assay="assay",
-            assay_ontology="123",
-            disease="diseas",
-            disease_ontology="123",
-            sex="F",
-            ethnicity="ethnicity",
-            ethnicity_ontology="123",
-            source_data_location="location",
-            preprint_doi="preprint",
-            publication_doi="publication",
-        )
+        dataset_params = self._get_dataset_params()
 
         for i in range(3):
             with self.subTest(i):
@@ -123,3 +107,31 @@ class TestDataset(unittest.TestCase):
 
             self.assertEqual(contributor_ids, get_ids(dataset.contributors))
             self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
+
+    def test__list__ok(self):
+        generate = 5
+
+        for i in range(generate):
+            Dataset.create(**self._get_dataset_params())
+
+        datasets = Dataset.list()
+        self.assertGreaterEqual(len(datasets), generate)
+
+    def _get_dataset_params(self):
+        return dict(
+            name="create_dataset_id",
+            organism="organism",
+            organism_ontology="123",
+            tissue="tissue",
+            tissue_ontology="123",
+            assay="assay",
+            assay_ontology="123",
+            disease="diseas",
+            disease_ontology="123",
+            sex="F",
+            ethnicity="ethnicity",
+            ethnicity_ontology="123",
+            source_data_location="location",
+            preprint_doi="preprint",
+            publication_doi="publication",
+        )
