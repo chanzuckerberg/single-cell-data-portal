@@ -11,8 +11,6 @@ class BaseAPITest:
     Provide access to the a Chalice app hosting the Corpora API. All test for the Corpora API should inherit this class.
     """
 
-    packaged = False  # flag to only package once.
-
     @classmethod
     def setUpClass(cls):
         if not cls.packaged:

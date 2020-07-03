@@ -4,29 +4,12 @@ import requests
 from chalice.cli import CLIFactory
 from chalice.local import LocalGateway, LocalGatewayException
 
-import subprocess
-
-
-def run(args):
-    """
-    Runs a terminal command in a subprocess and returns the output.
-    :param args:
-    :return:
-    """
-    print(f"RUN: {' '.join(args)}")
-    response = subprocess.run(args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if response.stdout:
-        print(f'RUN STDOUT:\n{response.stdout.decode("utf-8")}')
-    if response.stderr:
-        print(f'RUN STDERR:\n{response.stderr.decode("utf-8")}')
-    print("\n")
-    return response.stdout.decode("utf-8")
-
 
 class ChaliceTestHarness:
     """
     This class initializes a chalice application that can be used to make API requests against the application.
     """
+
     def __init__(self, project_dir):
         config = CLIFactory(project_dir=project_dir).create_config_obj(chalice_stage_name="dev")
         self._chalice_app = config.chalice_app
