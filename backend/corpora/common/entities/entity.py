@@ -46,7 +46,7 @@ class Entity:
         Retrieves a list of entities from the database
         :return: list of Entity
         """
-        raise cls.db.query(cls.table)
+        return cls.db.query([cls.table])
 
     def save(self):
         """

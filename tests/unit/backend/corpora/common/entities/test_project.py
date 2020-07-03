@@ -61,17 +61,7 @@ class TestProject(unittest.TestCase):
         """
 
         link_params = {"link_url": "fake_url", "link_type": ProjectLinkType.PROTOCOL.name}
-        project_params = dict(
-            status=ProjectStatus.EDIT.name,
-            name="Created Project",
-            description="test",
-            owner="test_user_id",
-            s3_bucket="s3://fakebucket",
-            tc_uri="https://fakeurl",
-            needs_attestation=False,
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
-        )
+        project_params = self._get_project_params()
 
         for i in range(3):
             with self.subTest(i):
@@ -103,3 +93,25 @@ class TestProject(unittest.TestCase):
 
             self.assertEqual(link_ids, get_ids(project.links))
             self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
+
+    def test__list__ok(self):
+        generate = 5
+
+        for i in range(generate):
+            Project.create(**self._get_project_params())
+
+        datasets = Project.list()
+        self.assertGreaterEqual(len(datasets), generate)
+
+    def _get_project_params(self):
+        return dict(
+            status=ProjectStatus.EDIT.name,
+            name="Created Project",
+            description="test",
+            owner="test_user_id",
+            s3_bucket="s3://fakebucket",
+            tc_uri="https://fakeurl",
+            needs_attestation=False,
+            processing_state=ProcessingState.IN_VALIDATION.name,
+            validation_state=ValidationState.NOT_VALIDATED.name,
+        )
