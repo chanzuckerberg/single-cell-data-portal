@@ -100,4 +100,6 @@ class TestProject(unittest.TestCase):
             project = Project.get(project_key)
             self.assertIsNotNone(project)
             self.assertEqual(project_key, (project.id, project.status))
+
             self.assertEqual(link_ids, get_ids(project.links))
+            self.assertNotEqual(["test_project_link_id"], get_ids(project.links))

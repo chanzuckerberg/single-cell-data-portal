@@ -114,6 +114,12 @@ class TestDataset(unittest.TestCase):
             dataset = Dataset.get(dataset_id)
             self.assertIsNotNone(dataset)
             self.assertEqual(dataset_id, dataset.id)
+
             self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
+            self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.artifacts))
+
             self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
+            self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.deployment_directories))
+
             self.assertEqual(contributor_ids, get_ids(dataset.contributors))
+            self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
