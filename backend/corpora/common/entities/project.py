@@ -40,7 +40,7 @@ class Project(Entity):
         uuid = cls.db.generate_id(DbProject, status)
 
         """
-        Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one 
+        Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
         to many for links
         """
         [link.pop("id", None) for link in links]  # sanitize of ids
