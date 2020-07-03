@@ -62,6 +62,7 @@ class Dataset(Entity):
         """
         artifacts = artifacts if artifacts else []
         deployment_directories = deployment_directories if deployment_directories else []
+        contributors = contributors if contributors else []
 
         [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
         [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
