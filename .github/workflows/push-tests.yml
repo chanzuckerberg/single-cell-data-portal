@@ -41,7 +41,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+        brew install moreutils
+        make package -C backend/chalice/api_server
     - name: Run unit tests
       run: |
         make unit-test
