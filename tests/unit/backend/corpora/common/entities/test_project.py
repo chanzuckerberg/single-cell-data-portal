@@ -40,5 +40,3 @@ class TestProject(unittest.TestCase):
         with self.assertLogs(entity_logger, logging.INFO) as logs:
             self.assertEqual(Project.get(invalid_status_key), None)
         self.assertIn("Unable to find a row with primary key", logs.output[0])
-
-
