@@ -1,6 +1,6 @@
 import os
 
-from tests.unit.backend.chalice import ChaliceTestHarness, run
+from tests.unit.backend.chalice import ChaliceTestHarness
 
 os.environ["APP_NAME"] = "corpora-api"
 
