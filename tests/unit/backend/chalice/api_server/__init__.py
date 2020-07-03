@@ -12,7 +12,5 @@ class BaseAPITest:
 
     @classmethod
     def setUpClass(cls):
-        if not cls.packaged:
-            corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
-            cls.packaged = True
+        corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
         cls.app = ChaliceTestHarness(corpora_api_dir)
