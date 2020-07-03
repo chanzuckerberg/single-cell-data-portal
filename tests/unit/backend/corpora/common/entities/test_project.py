@@ -8,7 +8,7 @@ from backend.corpora.common.corpora_orm import (
     ValidationState,
     ProjectStatus,
     DbDataset,
-    DbUser
+    DbUser,
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
