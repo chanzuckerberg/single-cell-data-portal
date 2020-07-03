@@ -41,12 +41,12 @@ class Entity:
             return None
 
     @classmethod
-    def list(cls):
+    def list(cls) -> "Entity":
         """
         Retrieves a list of entities from the database
         :return: list of Entity
         """
-        return cls.db.query([cls.table])
+        return [cls(obj) for obj in cls.db.query([cls.table])]
 
     def save(self):
         """

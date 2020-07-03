@@ -116,6 +116,7 @@ class TestDataset(unittest.TestCase):
 
         datasets = Dataset.list()
         self.assertGreaterEqual(len(datasets), generate)
+        self.assertTrue(all([isinstance(i, Dataset) for i in datasets]))
 
     def _get_dataset_params(self):
         return dict(

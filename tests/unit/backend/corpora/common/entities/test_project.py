@@ -100,8 +100,9 @@ class TestProject(unittest.TestCase):
         for i in range(generate):
             Project.create(**self._get_project_params())
 
-        datasets = Project.list()
-        self.assertGreaterEqual(len(datasets), generate)
+        projects = Project.list()
+        self.assertGreaterEqual(len(projects), generate)
+        self.assertTrue(all([isinstance(i, Project) for i in projects]))
 
     def _get_project_params(self):
         return dict(
