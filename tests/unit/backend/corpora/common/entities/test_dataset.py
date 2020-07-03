@@ -5,7 +5,8 @@ from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
     DbDeploymentDirectory,
     DatasetArtifactType,
-    DatasetArtifactFileType)
+    DatasetArtifactFileType,
+)
 from backend.corpora.common.entities.dataset import Dataset
 from tests.unit.backend.corpora.common.entities import get_ids
 
