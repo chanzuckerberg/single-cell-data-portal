@@ -23,7 +23,7 @@ export default {
     primary: "red",
     secondary: "#1c7cc705",
     muted: "#f6f6f6",
-    gray: "#bbb"
+    gray: "#bbb",
   },
   styles: {
     root: {
@@ -110,7 +110,7 @@ export default {
       maxWidth: "100%",
     },
     button: {
-      backgorundColor: "blue"
-    }
+      backgroundColor: "blue",
+    },
   },
-}
+};
