@@ -17,8 +17,8 @@ def basic_curation(adata):
     adata.uns["organism"] = utils.ontology.get_ontology_label("NCBITaxon:9606")
     adata.uns["title"] = "Construction of a human cell landscape at single-cell level"
     adata.uns["contributors"] = [
-        {"name": "Huiyu Sun", "institution": "Zhejiang University School of Medicine", "email": "sunhuiyu@zju.edu.cn",},
-        {"name": "Guoji Guo", "institution": "Zhejiang University School of Medicine", "email": "ggj@zju.edu.cn",},
+        {"name": "Huiyu Sun", "institution": "Zhejiang University School of Medicine", "email": "sunhuiyu@zju.edu.cn"},
+        {"name": "Guoji Guo", "institution": "Zhejiang University School of Medicine", "email": "ggj@zju.edu.cn"},
     ]
 
     adata.uns["publication_doi"] = "https://doi.org/10.1038/s41586-020-2157-4"

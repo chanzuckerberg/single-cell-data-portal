@@ -15,7 +15,7 @@ def basic_curation(adata):
             "institution": "Broad Institute of MIT and Harvard",
             "email": "jose.ordovas-montanes@childrens.harvard.edu",
         },
-        {"name": "Sarah Nyquist", "institution": " Massachusetts Institute of Technology", "email": "nyquist@mit.edu",},
+        {"name": "Sarah Nyquist", "institution": " Massachusetts Institute of Technology", "email": "nyquist@mit.edu"},
     ]
 
     adata.uns["publication_doi"] = "https://doi.org/10.1016/j.cell.2020.04.035"
