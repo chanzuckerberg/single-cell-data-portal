@@ -63,3 +63,8 @@ class Project(Entity):
         cls.db.session.add(new_db_object)
         cls.db.session.commit()
         return cls(new_db_object)
+
+    @classmethod
+    def list_id_in_time_range(cls, from_date=None, to_date=None):
+        table = cls.table
+        cls.db.session.query(cls.table).with_entities(table.id).filter()
