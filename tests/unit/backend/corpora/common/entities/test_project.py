@@ -1,5 +1,7 @@
+from datetime import datetime
 import logging
 import unittest
+import time
 
 from backend.corpora.common.corpora_orm import (
     ProjectLinkType,
@@ -112,6 +114,34 @@ class TestProject(unittest.TestCase):
 
             self.assertEqual(link_ids, get_ids(project.links))
             self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
+
+    def test__list_in_time_range__ok(self):
+        generate = 5
+        sleep = 1
+        from_ids = []
+        to_ids = []
+
+        from_date = datetime.now().timestamp()
+        for i in range(generate):
+            time.sleep(sleep)
+            from_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test from_date"):
+            projects = Project.list_in_time_range(from_date=from_date)
+            self.assertCountEqual(from_ids, get_ids(projects))
+
+        to_date = datetime.now().timestamp()
+        for i in range(generate):
+            time.sleep(sleep)
+            to_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test to_date and from_date"):
+            projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            self.assertCountEqual(from_ids, get_ids(projects))
+
+        with self.subTest("Test to_date"):
+            projects = Project.list_in_time_range(to_date=to_date)
+            self.assertGreater(len(projects), generate)
 
     def test__list__ok(self):
         generate = 5
