@@ -3,8 +3,8 @@ from flask import make_response, jsonify
 from ....common.entities import Project
 
 
-def get_projects_list(query_user_uuid: str = '', from_date: str='', to_date: str=''):
-    projects = [p.to_dict() for p in Project.list()]
+def get_projects_list(query_user_uuid: str = '', from_date: int = None, to_date: int = None):
+    projects = [p.to_dict() for p in Project.list_in_time_range(from_date, to_date)]
     return make_response(jsonify(projects), 200)
 
 

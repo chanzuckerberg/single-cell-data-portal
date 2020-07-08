@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 
 import pytz
@@ -16,17 +17,17 @@ class Project(Entity):
 
     @classmethod
     def create(
-        cls,
-        status: str,
-        name: str = "",
-        description: str = "",
-        owner: str = "",
-        s3_bucket: str = "",
-        tc_uri: str = "",
-        needs_attestation: bool = False,
-        processing_state: str = "",
-        validation_state: str = "",
-        links: list = None,
+            cls,
+            status: str,
+            name: str = "",
+            description: str = "",
+            owner: str = "",
+            s3_bucket: str = "",
+            tc_uri: str = "",
+            needs_attestation: bool = False,
+            processing_state: str = "",
+            validation_state: str = "",
+            links: list = None,
     ) -> "Project":
         """
         Need to check if one exists before creating
@@ -71,10 +72,17 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def list_in_time_range(cls, to_date: float = None, from_date: float = None):
+    def list_in_time_range(cls, to_date: float = None, from_date: float = None) -> typing.List[Entity]:
+        """
+
+        :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
+        :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
+        :return:
+        """
         filters = []
         if to_date:
             filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
         if from_date:
             filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
-        return cls.db.session.query(DbProject).with_entities(*cls.list_entities).filter(and_(*filters)).all()
+        return [cls(obj) for obj in
+                cls.db.session.query(DbProject).with_entities(*cls.list_entities).filter(and_(*filters)).all()]
