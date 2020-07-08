@@ -1,6 +1,6 @@
 from flask import make_response, jsonify
 
-from ....common.entities import Project
+from ....common.entities import Project, Dataset
 
 
 def get_projects_list(query_user_uuid: str = "", from_date: int = None, to_date: int = None):
@@ -20,5 +20,10 @@ def delete_project(path_project_uuid: str):
     raise NotImplementedError
 
 
-def get_project_dataset(path_dataset_uuid: str):
+def get_project_dataset():
+    response = dict(datasets=Dataset.list(),)
+    return make_response(jsonify(response), 200)
+
+
+def download_project_dataset(path_dataset_uuid: str):
     raise NotImplementedError

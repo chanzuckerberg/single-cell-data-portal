@@ -469,6 +469,30 @@ paths:
         '404':
           $ref: '#/components/responses/404'
 
+  /v1/dataset:
+
+    get:
+      tags:
+        - dataset
+      summary: List datasets
+      description: >-
+        list of datasets
+      operationId: corpora.lambdas.api.v1.project.get_project_dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
 
   /v1/dataset/{dataset_uuid}:
 
@@ -478,7 +502,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: corpora.lambdas.api.v1.project.get_project_dataset
+      operationId: corpora.lambdas.api.v1.project.download_project_dataset
       parameters:
         - $ref: '#/components/parameters/path_dataset_uuid'
       responses:
