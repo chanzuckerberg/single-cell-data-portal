@@ -4,7 +4,7 @@ from ....common.entities import Project
 
 
 def get_projects_list(query_user_uuid: str = "", from_date: int = None, to_date: int = None):
-    response = dict(projects=Project.list_in_time_range(from_date, to_date),)
+    response = dict(projects=Project.list_in_time_range(from_date=from_date, to_date=to_date),)
     if from_date:
         response["from_date"] = from_date
     if to_date:
