@@ -22,8 +22,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from common.corpora_config import CorporaDbConfig
-from common.utils.json import CustomJSONEncoder
+from .corpora_config import CorporaDbConfig
 
 
 class TransformingBase(object):
@@ -53,14 +52,6 @@ class TransformingBase(object):
                 else:
                     result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
         return result
-
-    def to_json(self) -> str:
-        """
-        Transform into json string
-        :return: Object transformed into json
-        """
-        dictionary = self.to_dict()
-        return json.dumps(dictionary, cls=CustomJSONEncoder)
 
 
 Base = declarative_base(cls=TransformingBase)

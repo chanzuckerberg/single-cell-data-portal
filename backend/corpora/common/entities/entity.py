@@ -41,16 +41,12 @@ class Entity:
             return None
 
     @classmethod
-    def list(cls, to_dict=False) -> typing.List[typing.Union["Entity", dict]]:
+    def list(cls) -> "Entity":
         """
         Retrieves a list of entities from the database
-        :param to_dict: Set to True if you want the list to contain DB objects converted to dictionaries.
         :return: list of Entity
         """
-        if to_dict:
-            return [obj.to_dict() for obj in cls.db.query([cls.table])]
-        else:
-            return [cls(obj) for obj in cls.db.query([cls.table])]
+        return [cls(obj) for obj in cls.db.query([cls.table])]
 
     def save(self):
         """

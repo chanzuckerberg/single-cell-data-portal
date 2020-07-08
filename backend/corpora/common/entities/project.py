@@ -71,7 +71,7 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def list_in_time_range(cls, to_date: float = None, from_date: float = None) -> typing.List[typing.Dict]:
+    def list_in_time_range(cls, to_date: float = None, from_date: float = None) -> typing.List[Entity]:
         """
 
         :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
@@ -85,6 +85,6 @@ class Project(Entity):
         if from_date:
             filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
 
-        results = [result.to_dict() for result in cls.db.session.query(DbProject).filter(and_(*filters)).all()]
+        results = [cls(result) for result in cls.db.session.query(DbProject).filter(and_(*filters)).all()]
 
         return results

@@ -2,6 +2,9 @@ import datetime
 from enum import Enum
 from json import JSONEncoder
 
+from ..entities.entity import Entity
+from ..corpora_orm import Base
+
 
 class CustomJSONEncoder(JSONEncoder):
     "Add support for serializing DateTime and Enums types into JSON"
@@ -11,7 +14,9 @@ class CustomJSONEncoder(JSONEncoder):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             return obj.timestamp()
-        if isinstance(obj, Enum):
+        elif isinstance(obj, Enum):
             return str(obj.value)
+        elif isinstance(obj, (Base, Entity)):
+            return obj.to_dict()
         else:
             return super().default(self, obj)
