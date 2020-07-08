@@ -1,9 +1,5 @@
 import logging
 import typing
-from datetime import datetime
-
-import pytz
-from sqlalchemy import and_
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +65,7 @@ class Entity:
 
     @classmethod
     def _create_sub_objects(
-            cls, rows: typing.List[dict], db_table: Base, keys: typing.List[str] = None, **kwargs
+        cls, rows: typing.List[dict], db_table: Base, keys: typing.List[str] = None, **kwargs
     ) -> typing.List[Base]:
         """
         Create a list of Table Rows to be added to an Entity Object during an object creation. If id is provided, then
@@ -93,22 +89,3 @@ class Entity:
                 row = db_table(**_columns)
             db_objs.append(row)
         return db_objs
-
-    @classmethod
-    def list_in_time_range(cls, to_date: float = None, from_date: float = None) -> typing.List[typing.Dict]:
-        """
-
-        :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
-        :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
-        :return: The results in a list of dictionaries
-        """
-
-        filters = []
-        if to_date:
-            filters.append(cls.table.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
-        if from_date:
-            filters.append(cls.table.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
-
-        results = [result.to_dict() for result in cls.db.session.query(cls.table).filter(and_(*filters)).all()]
-
-        return results
