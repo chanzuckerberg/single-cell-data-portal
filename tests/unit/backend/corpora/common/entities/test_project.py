@@ -117,31 +117,42 @@ class TestProject(unittest.TestCase):
 
     def test__list_in_time_range__ok(self):
         generate = 5
-        sleep = 1
+        sleep = 0.5
         from_ids = []
         to_ids = []
 
         from_date = datetime.now().timestamp()
+        time.sleep(sleep)
         for i in range(generate):
-            time.sleep(sleep)
             from_ids.append(Project.create(**ProjectParams.get()).id)
 
         with self.subTest("Test from_date"):
+            # Projects from_date are returned.
             projects = Project.list_in_time_range(from_date=from_date)
             self.assertCountEqual(from_ids, get_ids(projects))
 
         to_date = datetime.now().timestamp()
+        time.sleep(sleep)
         for i in range(generate):
-            time.sleep(sleep)
             to_ids.append(Project.create(**ProjectParams.get()).id)
 
         with self.subTest("Test to_date and from_date"):
+            # Projects between to_date and from_date are returned.
             projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
             self.assertCountEqual(from_ids, get_ids(projects))
 
         with self.subTest("Test to_date"):
+            # All created projects are returned.
             projects = Project.list_in_time_range(to_date=to_date)
             self.assertGreater(len(projects), generate)
+
+        with self.subTest("Test no date"):
+            projects = Project.list_in_time_range()
+            test_ids = set([*to_ids, *from_ids])
+            project_ids = set(get_ids(projects))
+            self.assertTrue(test_ids.issubset(project_ids))
+
+
 
     def test__list__ok(self):
         generate = 5
