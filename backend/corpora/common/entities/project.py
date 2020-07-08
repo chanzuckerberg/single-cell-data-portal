@@ -1,9 +1,15 @@
+from datetime import datetime
+
+import pytz
+from sqlalchemy import and_
+
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink
 
 
 class Project(Entity):
     table = DbProject
+    list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
 
     def __init__(self, db_object: DbProject):
         super().__init__(db_object)
@@ -65,6 +71,10 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def list_id_in_time_range(cls, from_date=None, to_date=None):
-        table = cls.table
-        cls.db.session.query(cls.table).with_entities(table.id).filter()
+    def list_in_time_range(cls, to_date: float = None, from_date: float = None):
+        filters = []
+        if to_date:
+            filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
+        if from_date:
+            filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
+        return cls.db.session.query(DbProject).with_entities(*cls.list_entities).filter(and_(*filters)).all()

@@ -1,5 +1,7 @@
+from datetime import datetime
 import logging
 import unittest
+import time
 
 from backend.corpora.common.corpora_orm import (
     ProjectLinkType,
@@ -13,6 +15,25 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
 from tests.unit.backend.corpora.common.entities import get_ids
+
+
+class ProjectParams:
+    i = 0
+
+    @classmethod
+    def get(cls):
+        cls.i += 1
+        return dict(
+            status=ProjectStatus.EDIT.name,
+            name=f"Created Project {cls.i}",
+            description="test",
+            owner="test_user_id",
+            s3_bucket="s3://fakebucket",
+            tc_uri="https://fakeurl",
+            needs_attestation=False,
+            processing_state=ProcessingState.IN_VALIDATION.name,
+            validation_state=ValidationState.NOT_VALIDATED.name,
+        )
 
 
 class TestProject(unittest.TestCase):
@@ -61,7 +82,7 @@ class TestProject(unittest.TestCase):
         """
 
         link_params = {"link_url": "fake_url", "link_type": ProjectLinkType.PROTOCOL.name}
-        project_params = self._get_project_params()
+        project_params = ProjectParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -84,7 +105,7 @@ class TestProject(unittest.TestCase):
             project_key = (project.id, project.status)
             link_ids = get_ids(project.links)
 
-            # Expire all local object and retireve them from the DB to make sure the transactions went through.
+            # Expire all local object and retrieve them from the DB to make sure the transactions went through.
             Project.db.session.expire_all()
 
             project = Project.get(project_key)
@@ -94,25 +115,51 @@ class TestProject(unittest.TestCase):
             self.assertEqual(link_ids, get_ids(project.links))
             self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
 
+    def test__list_in_time_range__ok(self):
+        generate = 5
+        sleep = 0.5
+        from_ids = []
+        to_ids = []
+
+        from_date = datetime.now().timestamp()
+        time.sleep(sleep)
+        for i in range(generate):
+            from_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test from_date"):
+            # Projects from_date are returned.
+            projects = Project.list_in_time_range(from_date=from_date)
+            self.assertCountEqual(from_ids, get_ids(projects))
+
+        to_date = datetime.now().timestamp()
+        time.sleep(sleep)
+        for i in range(generate):
+            to_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test to_date and from_date"):
+            # Projects between to_date and from_date are returned.
+            projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            self.assertCountEqual(from_ids, get_ids(projects))
+
+        with self.subTest("Test to_date"):
+            # All created projects are returned.
+            projects = Project.list_in_time_range(to_date=to_date)
+            self.assertGreater(len(projects), generate)
+
+        with self.subTest("Test no date"):
+            projects = Project.list_in_time_range()
+            test_ids = set([*to_ids, *from_ids])
+            project_ids = set(get_ids(projects))
+            self.assertTrue(test_ids.issubset(project_ids))
+
+
+
     def test__list__ok(self):
         generate = 5
 
         for i in range(generate):
-            Project.create(**self._get_project_params())
+            Project.create(**ProjectParams.get())
 
         projects = Project.list()
         self.assertGreaterEqual(len(projects), generate)
         self.assertTrue(all([isinstance(i, Project) for i in projects]))
-
-    def _get_project_params(self):
-        return dict(
-            status=ProjectStatus.EDIT.name,
-            name="Created Project",
-            description="test",
-            owner="test_user_id",
-            s3_bucket="s3://fakebucket",
-            tc_uri="https://fakeurl",
-            needs_attestation=False,
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
-        )
