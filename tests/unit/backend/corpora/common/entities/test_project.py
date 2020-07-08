@@ -1,7 +1,7 @@
-from datetime import datetime
 import logging
-import unittest
 import time
+import unittest
+from datetime import datetime
 
 from backend.corpora.common.corpora_orm import (
     ProjectLinkType,
@@ -152,7 +152,10 @@ class TestProject(unittest.TestCase):
             project_ids = set(get_ids(projects))
             self.assertTrue(test_ids.issubset(project_ids))
 
-
+        with self.subTest("Verify columns"):
+            self.assertIsInstance(projects[0].id, str)
+            self.assertIsInstance(projects[0].created_at, datetime)
+            self.assertIsInstance(projects[0].name, str)
 
     def test__list__ok(self):
         generate = 5
