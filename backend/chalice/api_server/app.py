@@ -10,7 +10,6 @@ import connexion
 from chalice import Chalice, CORSConfig
 
 
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 

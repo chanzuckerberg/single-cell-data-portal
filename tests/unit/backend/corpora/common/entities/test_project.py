@@ -129,7 +129,7 @@ class TestProject(unittest.TestCase):
         with self.subTest("Test from_date"):
             # Projects from_date are returned.
             projects = Project.list_in_time_range(from_date=from_date)
-            self.assertCountEqual(from_ids, get_ids(projects))
+            self.assertCountEqual(from_ids, [p['id'] for p in projects])
 
         to_date = datetime.now().timestamp()
         time.sleep(sleep)
@@ -139,7 +139,7 @@ class TestProject(unittest.TestCase):
         with self.subTest("Test to_date and from_date"):
             # Projects between to_date and from_date are returned.
             projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
-            self.assertCountEqual(from_ids, get_ids(projects))
+            self.assertCountEqual(from_ids, [p['id'] for p in projects])
 
         with self.subTest("Test to_date"):
             # All created projects are returned.
@@ -149,13 +149,13 @@ class TestProject(unittest.TestCase):
         with self.subTest("Test no date"):
             projects = Project.list_in_time_range()
             test_ids = set([*to_ids, *from_ids])
-            project_ids = set(get_ids(projects))
+            project_ids = set([p['id'] for p in projects])
             self.assertTrue(test_ids.issubset(project_ids))
 
         with self.subTest("Verify columns"):
-            self.assertIsInstance(projects[0].id, str)
-            self.assertIsInstance(projects[0].created_at, datetime)
-            self.assertIsInstance(projects[0].name, str)
+            self.assertIsInstance(projects[0]['id'], str)
+            self.assertIsInstance(projects[0]['created_at'], datetime)
+            self.assertIsInstance(projects[0]['name'], str)
 
     def test__list__ok(self):
         generate = 5
