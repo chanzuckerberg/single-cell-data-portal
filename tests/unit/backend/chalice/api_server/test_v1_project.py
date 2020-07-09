@@ -6,7 +6,7 @@ import json
 
 
 class TestProject(BaseAPITest, unittest.TestCase):
-    def test__GET__project__OK(self):
+    def test__GET_project__OK(self):
         with self.subTest("No Parameters"):
             test_url = furl(path="/v1/project")
             response = self.app.get(test_url.url, headers=dict(host="localhost"))
@@ -28,3 +28,12 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response.raise_for_status()
             body = json.loads(response.body)
             self.assertEqual(body["projects"], [])
+
+
+    def test__GET_project_uuid__OK(self):
+        with self.subTest("Exists"):
+            test_url = furl(path="/v1/project/test_project_id")
+            response = self.app.get(test_url.url, headers=dict(host="localhost"))
+            response.raise_for_status()
+            body = json.loads(response.body)
+            self.assertEqual(body["id"], "test_project_id")

@@ -15,7 +15,7 @@ class CustomJSONEncoder(JSONEncoder):
         elif isinstance(obj, datetime.datetime):
             return obj.timestamp()
         elif isinstance(obj, Enum):
-            return str(obj.value)
+            return str(obj.name)
         elif isinstance(obj, (Base, Entity)):
             return obj.to_dict()
         else:

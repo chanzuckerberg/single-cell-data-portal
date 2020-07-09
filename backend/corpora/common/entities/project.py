@@ -5,7 +5,7 @@ import pytz
 from sqlalchemy import and_, Column
 
 from .entity import Entity
-from ..corpora_orm import DbProject, DbProjectLink
+from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
 
 
 class Project(Entity):
@@ -72,6 +72,15 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
+    def get_project(cls, project_uuid):
+        """
+        Given the project_uuid, retrieve a live project.
+        :param project_uuid:
+        :return:
+        """
+        return cls.get((project_uuid, ProjectStatus.LIVE.name))
+
+    @classmethod
     def list_in_time_range(
         cls, to_date: float = None, from_date: float = None, list_entities: typing.List[Column] = None
     ) -> typing.List[typing.Dict]:
@@ -89,7 +98,7 @@ class Project(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = []
+        filters = [DbProject.status == ProjectStatus.LIVE.name]
         list_entities = list_entities if list_entities else cls.list_entities
         if to_date:
             filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
