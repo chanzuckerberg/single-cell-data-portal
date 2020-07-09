@@ -68,7 +68,7 @@ class Entity:
         cls, rows: typing.List[dict], db_table: Base, keys: typing.List[str] = None, **kwargs
     ) -> typing.List[Base]:
         """
-        Create a list of Table Rows to be added to an Entity Object during an object creation. If id is provided, then
+        Create or modify N `rows` in `db_table` associated with Entity Object during object creation. If id is provided, then
         the row is retrieved and updated.
 
         :param rows: A list of dictionaries containing columns.
