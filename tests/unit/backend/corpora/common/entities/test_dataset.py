@@ -11,6 +11,32 @@ from backend.corpora.common.entities.dataset import Dataset
 from tests.unit.backend.corpora.common.entities import get_ids
 
 
+class DatasetParams:
+    i = 0
+
+    @classmethod
+    def get(cls):
+        cls.i += 1
+        return dict(
+            name=f"create_dataset_id_{cls.i}",
+            organism="organism",
+            organism_ontology="123",
+            tissue="tissue",
+            tissue_ontology="123",
+            assay="assay",
+            assay_ontology="123",
+            disease="diseas",
+            disease_ontology="123",
+            sex="F",
+            ethnicity="ethnicity",
+            ethnicity_ontology="123",
+            source_data_location="location",
+            preprint_doi="preprint",
+            publication_doi="publication",
+        )
+
+
+
 class TestDataset(unittest.TestCase):
     def setUp(self):
         self.uuid = "test_dataset_id"
@@ -53,7 +79,7 @@ class TestDataset(unittest.TestCase):
 
         contributor_params = dict(name="bob", institution="school", email="some@email.com")
 
-        dataset_params = self._get_dataset_params()
+        dataset_params = DatasetParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -112,27 +138,8 @@ class TestDataset(unittest.TestCase):
         generate = 5
 
         for i in range(generate):
-            Dataset.create(**self._get_dataset_params())
+            Dataset.create(**DatasetParams.get)
 
         datasets = Dataset.list()
         self.assertGreaterEqual(len(datasets), generate)
         self.assertTrue(all([isinstance(i, Dataset) for i in datasets]))
-
-    def _get_dataset_params(self):
-        return dict(
-            name="create_dataset_id",
-            organism="organism",
-            organism_ontology="123",
-            tissue="tissue",
-            tissue_ontology="123",
-            assay="assay",
-            assay_ontology="123",
-            disease="diseas",
-            disease_ontology="123",
-            sex="F",
-            ethnicity="ethnicity",
-            ethnicity_ontology="123",
-            source_data_location="location",
-            preprint_doi="preprint",
-            publication_doi="publication",
-        )
