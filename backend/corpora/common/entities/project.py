@@ -80,7 +80,7 @@ class Project(Entity):
         :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
         :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
         :param list_entities: The columns to retrieve from the table.
-        :return: The results in a list of flattened dictionaries
+        :return: The results is a list of flattened dictionaries containing the `list_entities`
         """
 
         def to_dict(db_object):
