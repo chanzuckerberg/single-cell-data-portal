@@ -75,7 +75,6 @@ class Entity:
         :param db_table: The Table to add or modify rows
         :param keys: additional primary keys
         :param kwargs: Additional columns attributes to add.
-        :return:
         """
         db_objs = []
         for columns in rows:
