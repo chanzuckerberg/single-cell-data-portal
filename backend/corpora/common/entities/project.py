@@ -1,5 +1,6 @@
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink
+from ..utils.uuid import generate_id
 
 
 class Project(Entity):
@@ -27,7 +28,7 @@ class Project(Entity):
         entries.
 
         """
-        uuid = cls.db.generate_id(DbProject, status)
+        uuid = generate_id()
 
         # Setting Defaults
         links = links if links else []
