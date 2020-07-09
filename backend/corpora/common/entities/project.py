@@ -2,7 +2,7 @@ import typing
 from datetime import datetime
 
 import pytz
-from sqlalchemy import and_
+from sqlalchemy import and_, Column
 
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink
@@ -10,6 +10,7 @@ from ..corpora_orm import DbProject, DbProjectLink
 
 class Project(Entity):
     table = DbProject
+    list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
 
     def __init__(self, db_object: DbProject):
         super().__init__(db_object)
@@ -71,20 +72,33 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def list_in_time_range(cls, to_date: float = None, from_date: float = None) -> typing.List[Entity]:
+    def list_in_time_range(
+        cls, to_date: float = None, from_date: float = None, list_entities: typing.List[Column] = None
+    ) -> typing.List[typing.Dict]:
         """
 
         :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
         :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
-        :return: The results in a list of dictionaries
+        :param list_entities: The columns to retrieve from the table.
+        :return: The results in a list of flattened dictionaries
         """
 
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
         filters = []
+        list_entities = list_entities if list_entities else cls.list_entities
         if to_date:
             filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
         if from_date:
             filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
 
-        results = [cls(result) for result in cls.db.session.query(DbProject).filter(and_(*filters)).all()]
+        results = [
+            to_dict(result)
+            for result in cls.db.session.query(DbProject).with_entities(*list_entities).filter(and_(*filters)).all()
+        ]
 
         return results
