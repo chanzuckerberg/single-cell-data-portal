@@ -53,3 +53,14 @@ class DbUtils:
                 return _id
         else:
             raise CorporaException("UUID generation attempt limit exceeded.")
+
+    def commit(self):
+        """
+        Commit changes to the database and roll back if error.
+        :return:
+        """
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise

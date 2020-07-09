@@ -23,27 +23,16 @@ class Project(Entity):
         links: list = None,
     ) -> "Project":
         """
-        Need to check if one exists before creating
-        :param id:
-        :param status:
-        :param name:
-        :param description:
-        :param owner:
-        :param s3_bucket:
-        :param tc_uri:
-        :param needs_attestation:
-        :param processing_state:
-        :param validation_state:
-        :param links:
-        :return:
+        Create a new Project and related objects and store in the database. UUIDs are generated for all new table entries.
+
         """
         uuid = cls.db.generate_id(DbProject, status)
 
-        """
-        Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
-        to many for links
-        """
+        # Setting Defaults
         links = links if links else []
+
+        #  Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
+        #  to many for links
         [link.pop("id", None) for link in links]  # sanitize of ids
 
         new_db_object = DbProject(
@@ -57,7 +46,7 @@ class Project(Entity):
             needs_attestation=needs_attestation,
             processing_state=processing_state,
             validation_state=validation_state,
-            links=cls._create_sub_objects(links, DbProjectLink, project_id=uuid, project_status=status),
+            links=cls._create_sub_objects(links, DbProjectLink, add_columns=dict(project_id=uuid, project_status=status)),
         )
 
         cls.db.session.add(new_db_object)

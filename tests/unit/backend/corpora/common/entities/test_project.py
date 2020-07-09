@@ -12,7 +12,26 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from tests.unit.backend.corpora.common.entities import get_ids
+from tests.unit.backend.corpora.common.entities.utils import get_ids
+
+
+class ProjectParams:
+    count = 0
+
+    @classmethod
+    def get(cls):
+        cls.count += 1
+        return dict(
+            status=ProjectStatus.EDIT.name,
+            name=f"Created Project {cls.count}",
+            description="test",
+            owner="test_user_id",
+            s3_bucket="s3://fakebucket",
+            tc_uri="https://fakeurl",
+            needs_attestation=False,
+            processing_state=ProcessingState.IN_VALIDATION.name,
+            validation_state=ValidationState.NOT_VALIDATED.name,
+        )
 
 
 class TestProject(unittest.TestCase):
@@ -61,17 +80,7 @@ class TestProject(unittest.TestCase):
         """
 
         link_params = {"link_url": "fake_url", "link_type": ProjectLinkType.PROTOCOL.name}
-        project_params = dict(
-            status=ProjectStatus.EDIT.name,
-            name="Created Project",
-            description="test",
-            owner="test_user_id",
-            s3_bucket="s3://fakebucket",
-            tc_uri="https://fakeurl",
-            needs_attestation=False,
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
-        )
+        project_params = ProjectParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -88,18 +97,23 @@ class TestProject(unittest.TestCase):
                 self.assertEqual(project_key, (project.id, project.status))
                 self.assertEqual(link_ids, get_ids(project.links))
 
-        with self.subTest("With existing rows"):
-            project = Project.create(**project_params, links=[{"id": "test_project_link_id"}])
+    def test__create_ids__ok(self):
+        """
+        Creating a project with ids in the links. A new link id is generated even if link id is provided.
+        """
+        project_params = ProjectParams.get()
 
-            project_key = (project.id, project.status)
-            link_ids = get_ids(project.links)
+        project = Project.create(**project_params, links=[{"id": "test_project_link_id"}])
 
-            # Expire all local object and retireve them from the DB to make sure the transactions went through.
-            Project.db.session.expire_all()
+        project_key = (project.id, project.status)
+        link_ids = get_ids(project.links)
 
-            project = Project.get(project_key)
-            self.assertIsNotNone(project)
-            self.assertEqual(project_key, (project.id, project.status))
+        # Expire all local object and retireve them from the DB to make sure the transactions went through.
+        Project.db.session.expire_all()
 
-            self.assertEqual(link_ids, get_ids(project.links))
-            self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
+        project = Project.get(project_key)
+        self.assertIsNotNone(project)
+        self.assertEqual(project_key, (project.id, project.status))
+
+        self.assertEqual(link_ids, get_ids(project.links))
+        self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
