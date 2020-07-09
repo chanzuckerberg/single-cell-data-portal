@@ -47,10 +47,13 @@ def get_chalice_app(flask_app):
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
 
+    def clean_entry_for_logging(entry):
+        log = entry.to_dict()
+        log.pop("body")
+        return log
+
     def dispatch(*args, **kwargs):
-        log_request = app.current_request.to_dict()
-        log_request.pop("body")
-        app.log.info(f"Request: {log_request}")
+        app.log.info(f"Request: {clean_entry_for_logging(app.current_request)}")
 
         uri_params = app.current_request.uri_params or {}
         resource_path = app.current_request.context["resourcePath"].format(**uri_params)
@@ -76,9 +79,7 @@ def get_chalice_app(flask_app):
             body="".join([c.decode() if isinstance(c, bytes) else c for c in flask_res.response]),
         )
 
-        log_response = chalice_response.to_dict()
-        log_response.pop("body")
-        app.log.info(f"Response: {log_response}")
+        app.log.info(f"Response: {clean_entry_for_logging(chalice_response)}")
 
         return chalice_response
 
