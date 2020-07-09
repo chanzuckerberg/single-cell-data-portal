@@ -9,6 +9,7 @@ on:
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  DEPLOYMENT_STAGE: test
 
 jobs:
   lint:
