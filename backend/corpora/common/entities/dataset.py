@@ -1,5 +1,6 @@
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
+from ..utils.uuid import generate_id
 
 
 class Dataset(Entity):
@@ -32,11 +33,12 @@ class Dataset(Entity):
         deployment_directories: list = None,
     ) -> "Dataset":
         """
-        Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table entries.
+        Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
+        entries.
 
 
         """
-        uuid = cls.db.generate_id(DbDataset)
+        uuid = generate_id()
 
         # Setting Defaults
         artifacts = artifacts if artifacts else []

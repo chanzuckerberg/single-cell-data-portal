@@ -23,7 +23,8 @@ class Project(Entity):
         links: list = None,
     ) -> "Project":
         """
-        Create a new Project and related objects and store in the database. UUIDs are generated for all new table entries.
+        Create a new Project and related objects and store in the database. UUIDs are generated for all new table
+        entries.
 
         """
         uuid = cls.db.generate_id(DbProject, status)
@@ -46,7 +47,9 @@ class Project(Entity):
             needs_attestation=needs_attestation,
             processing_state=processing_state,
             validation_state=validation_state,
-            links=cls._create_sub_objects(links, DbProjectLink, add_columns=dict(project_id=uuid, project_status=status)),
+            links=cls._create_sub_objects(
+                links, DbProjectLink, add_columns=dict(project_id=uuid, project_status=status)
+            ),
         )
 
         cls.db.session.add(new_db_object)
