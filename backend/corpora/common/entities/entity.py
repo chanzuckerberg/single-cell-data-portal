@@ -71,7 +71,7 @@ class Entity:
         Create or modify N `rows` in `db_table` associated with Entity Object during object creation. If id is provided, then
         the row is retrieved and updated.
 
-        :param rows: A list of dictionaries containing columns.
+        :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
         :param keys: additional primary keys
         :param kwargs: Additional columns attributes to add.
