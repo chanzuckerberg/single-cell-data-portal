@@ -39,7 +39,6 @@ class TestDataset(unittest.TestCase):
     def test__create__ok(self):
         """
         Create a dataset with a variable number of artifacts, contributors, and deployment_directories
-
         """
         artifact_params = dict(
             filename="filename_1",
