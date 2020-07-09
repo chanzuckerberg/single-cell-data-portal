@@ -6,6 +6,7 @@ import anndata
 import numpy as np
 import pandas as pd
 import scanpy as sc
+from scipy.sparse import csr_matrix
 
 import utils.hgnc
 import utils.ontology
@@ -108,7 +109,7 @@ def remix(adata, title: str):
     # Note that we're pulling from raw here. That's where the raw counts that we can sum are
     upgraded_var_index = utils.hgnc.get_upgraded_var_index(adata.var)
     merged_raw_counts = pd.DataFrame.sparse.from_spmatrix(
-        adata.X, index=adata.obs.index, columns=upgraded_var_index,
+        adata.raw.X, index=adata.obs.index, columns=upgraded_var_index,
     ).sum(axis=1, level=0, skipna=False)
 
     # Create the new anndata object with the summed values
@@ -119,10 +120,21 @@ def remix(adata, title: str):
         uns=adata.uns,
         obsm=adata.obsm,
     )
+    remix_adata.raw = remix_adata.copy()
+
+    # Perform the same tranformations on the new values as they did in the paper
+    # Divide counts of each cell by sizeFactors from logNormCounts used by author
+    r, c = remix_adata.X.nonzero()
+    rX_sp = csr_matrix(((1.0 / remix_adata.obs.sizeFactors)[r], (r, c)),
+                       shape=(remix_adata.X.shape))
+    remix_adata.X = remix_adata.X.multiply(rX_sp)
+
+    sc.pp.log1p(remix_adata, base=2)
 
     # Finally describe the layers and we're done
     remix_adata.uns["layer_descriptions"] = {
-        "X": "raw"
+        "raw.X": "raw",
+        "X": "logNormCounts",
     }
 
     return remix_adata
