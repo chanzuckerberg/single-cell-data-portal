@@ -107,7 +107,7 @@ class TestDataset(unittest.TestCase):
             deployment_directory_ids = get_ids(dataset.deployment_directories)
             contributor_ids = get_ids(dataset.contributors)
 
-            # Expire all local object and retireve them from the DB to make sure the transactions went through.
+            # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
             Dataset.db.session.expire_all()
 
             dataset = Dataset.get(dataset_id)
