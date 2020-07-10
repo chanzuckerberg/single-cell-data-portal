@@ -1,5 +1,6 @@
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
+from ..utils.uuid import generate_id
 
 
 class Dataset(Entity):
@@ -32,38 +33,20 @@ class Dataset(Entity):
         deployment_directories: list = None,
     ) -> "Dataset":
         """
-        Creates a new dataset and related objects
-        :param revision:
-        :param name:
-        :param organism:
-        :param organism_ontology:
-        :param tissue:
-        :param tissue_ontology:
-        :param assay:
-        :param assay_ontology:
-        :param disease:
-        :param disease_ontology:
-        :param sex:
-        :param ethnicity:
-        :param ethnicity_ontology:
-        :param source_data_location:
-        :param preprint_doi:
-        :param publication_doi:
-        :param artifacts:
-        :param contributors:
-        :param deployment_directories:
-        :return:
-        """
-        uuid = cls.db.generate_id(DbDataset)
+        Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
+        entries.
+
 
         """
-        Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
-        to many for artifacts and deployment_directories
-        """
+        uuid = generate_id()
+
+        # Setting Defaults
         artifacts = artifacts if artifacts else []
         deployment_directories = deployment_directories if deployment_directories else []
         contributors = contributors if contributors else []
 
+        #  Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
+        #  to many for artifacts and deployment_directories
         [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
         [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
 
@@ -85,9 +68,9 @@ class Dataset(Entity):
             source_data_location=source_data_location,
             preprint_doi=preprint_doi,
             publication_doi=publication_doi,
-            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, dataset_id=uuid),
+            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=uuid)),
             deployment_directories=cls._create_sub_objects(
-                deployment_directories, DbDeploymentDirectory, dataset_id=uuid
+                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=uuid)
             ),
         )
 
@@ -98,9 +81,9 @@ class Dataset(Entity):
 
         cls.db.session.add(new_db_object)
         cls.db.session.add_all(contributors)
-        cls.db.session.commit()
+        cls.db.commit()
 
         cls.db.session.add_all(dataset_contributor)
-        cls.db.session.commit()
+        cls.db.commit()
 
         return cls(new_db_object)

@@ -23,13 +23,13 @@
     npm install
     ```
 
-1. **Set Up Environment Variables**
+1.  **Set Up Environment Variables**
 
-	Create the the environment file and populate the variables.
-	
+    Create the the environment file and populate the variables.
+
 1.  **Host the backend locally.**
 
-    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on 
+    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on
     `http://localhost:5000`.
 
 1.  **Build and launch the frontend locally.**
@@ -45,17 +45,18 @@
     Modify code in the `src` directory, save your changes and the browser will update in real time.
 
 ## Environment Variables
-The environment variables used to deploy the website. The variables should be stored in a file name *env.development* 
-for development and *env.production* for production deployments. Do not store sensitive data in the environment 
+
+The environment variables used to deploy the website. The variables should be stored in a file name _env.development_
+for development and _env.production_ for production deployments. Do not store sensitive data in the environment
 variables.
 
-| Name | Description |
-|------|-------------|
-| AUTH0\_DOMAIN | The hosted Auth0 domian used for Authentication |
-| AUTH0\_CLIENTID | The client id of the Auth0 application for this site |
-| AUDIENCE | The domain of the corpora api |
-| API\_URL | The URL to the corpora api |
-| CXG\_URL | The URL to CellxGene  |
+| Name            | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| AUTH0_DOMAIN    | The hosted Auth0 domain used for Authentication      |
+| AUTH0_CLIENT_ID | The client id of the Auth0 application for this site |
+| AUDIENCE        | The domain of the corpora api                        |
+| API_URL         | The URL to the corpora api                           |
+| CXG_URL         | The URL to CellxGene                                 |
 
 ## Deployment
 
@@ -75,7 +76,7 @@ variables.
     export DEPLOYMENT_STAGE=dev
     ```
 
-1.  **Deploy.** 
+1.  **Deploy.**
 
     Files are deployed to a publicly accessible bucket. Do not include sensitive data in the deployed files.
 
@@ -83,7 +84,6 @@ variables.
     make deploy
     ```
 
-	
 ## 🧐 What's inside?
 
 A quick look at the top-level files and directories you'll see in a Gatsby project.

@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
 from ..utils.db_utils import DbUtils
+from ..utils.uuid import generate_id
 
 
 class Entity:
@@ -65,27 +66,42 @@ class Entity:
 
     @classmethod
     def _create_sub_objects(
-        cls, rows: typing.List[dict], db_table: Base, keys: typing.List[str] = None, **kwargs
+        cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None, primary_keys: typing.List[str] = None
     ) -> typing.List[Base]:
         """
-        Create a list of Table Rows to be added to an Entity Object during an object creation. If id is provided, then
-        the row is retrieved and updated.
+        Create or modify N `rows` in `db_table` associated with Entity Object during object creation. If id is provided,
+        then the row with that id is retrieved and updated, else a new UUID is generated and a new row is created.
 
-        :param rows: A list of dictionaries containing columns.
+        :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
-        :param keys: additional primary keys
-        :param kwargs: Additional columns attributes to add.
-        :return:
+        :param primary_keys: Additional columns required to build the primary key. This is used when the primary consist
+        of
+        multiple columns.
+        :param add_columns: Additional columns attributes or modifications to add to the row.
+
+        This is can be used when there are shared column value that need to be the added across all of the new rows.
+        For example: DbProjectLink generated for a specific project should all have the same DbProjectLink.project_id
+        and DbProjectLink.project_status. The function call would be:
+        >>>> cls._create_sub_objects(
+        >>>>    [{'link_url':'abc', 'link_type': ProjectLinkType.OTHER}],
+        >>>>    DbProjectLink,
+        >>>>    add_columns={'project_id':'abcd','project_status':ProjectStatus.EDIT}
+        >>>>    )
+
+        Another use would be to overwrite column specified in the rows.
+
+       :return: a list of database objects to create or modify.
         """
+        add_columns = add_columns if add_columns else {}
         db_objs = []
         for columns in rows:
-            _columns = dict(**columns, **kwargs)
+            _columns = dict(**columns, **add_columns)  # add_columns changes takes precedence over columns
             _id = _columns.get("id")
             if _id:
-                primary_key = (_id, *keys) if keys else _id
+                primary_key = (_id, *primary_keys) if primary_keys else _id
                 row = cls.db.get(db_table, primary_key)
             else:
-                _columns["id"] = cls.db.generate_id(db_table)
+                _columns["id"] = generate_id()
                 row = db_table(**_columns)
             db_objs.append(row)
         return db_objs

@@ -1,7 +1,7 @@
 import typing
-import uuid
 
-from backend.corpora.common.utils.exceptions import CorporaException
+from sqlalchemy.exc import SQLAlchemyError
+
 from ..corpora_orm import Base, DBSessionMaker
 
 
@@ -32,24 +32,13 @@ class DbUtils:
             else self.session.query(*table_args).all()
         )
 
-    retry_limit = 3  # The number of times to attempt generating a uuid
-
-    def generate_id(self, table: Base, *args):
+    def commit(self):
         """
-        Generates a UUID to enter into the specified table.
-
-        :param table: The table to generate the uuid  for
-        :param arg: Additional primary keys if needed
+        Commit changes to the database and roll back if error.
         :return:
         """
-        # Generate the ID
-        retry_attempts = 0
-        while retry_attempts < self.retry_limit:
-            _id = str(uuid.uuid4())
-            key = _id if not args else (_id, *args)
-            if self.get(table, key):
-                retry_attempts += 1
-            else:
-                return _id
-        else:
-            raise CorporaException("UUID generation attempt limit exceeded.")
+        try:
+            self.session.commit()
+        except SQLAlchemyError:
+            self.session.rollback()
+            raise
