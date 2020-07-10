@@ -26,7 +26,6 @@ class Project(Entity):
         """
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table
         entries.
-
         """
         uuid = generate_id()
 
@@ -35,7 +34,7 @@ class Project(Entity):
 
         #  Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
         #  to many for links
-        [link.pop("id", None) for link in links]  # sanitize of ids
+        [link.pop("id", None) for link in links]
 
         new_db_object = DbProject(
             id=uuid,
@@ -54,5 +53,5 @@ class Project(Entity):
         )
 
         cls.db.session.add(new_db_object)
-        cls.db.session.commit()
+        cls.db.commit()
         return cls(new_db_object)

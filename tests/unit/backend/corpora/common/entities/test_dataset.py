@@ -105,7 +105,7 @@ class TestDataset(unittest.TestCase):
 
     def test__create_ids__ok(self):
         """
-        Creating a dataet with ids in connect attributes. A new id is generated even if id is provided.
+        Creating a dataset with ids in connect attributes. A new id is generated even if id is provided.
         """
         dataset_params = DatasetParams.get()
         dataset = Dataset.create(
