@@ -8,17 +8,17 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from tests.unit.backend.corpora.common.entities import get_ids
+from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class DatasetParams:
-    i = 0
+    count = 0
 
     @classmethod
     def get(cls):
-        cls.i += 1
+        cls.count += 1
         return dict(
-            name=f"create_dataset_id_{cls.i}",
+            name=f"create_dataset_{cls.count}",
             organism="organism",
             organism_ontology="123",
             tissue="tissue",
@@ -34,7 +34,6 @@ class DatasetParams:
             preprint_doi="preprint",
             publication_doi="publication",
         )
-
 
 
 class TestDataset(unittest.TestCase):
@@ -65,7 +64,6 @@ class TestDataset(unittest.TestCase):
     def test__create__ok(self):
         """
         Create a dataset with a variable number of artifacts, contributors, and deployment_directories
-
         """
         artifact_params = dict(
             filename="filename_1",
@@ -95,7 +93,7 @@ class TestDataset(unittest.TestCase):
                 deployment_directory_ids = get_ids(dataset.deployment_directories)
                 contributor_ids = get_ids(dataset.contributors)
 
-                # Expire all local object and retireve them from the DB to make sure the transactions went through.
+                # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
 
                 dataset = Dataset.get(dataset_id)
@@ -105,34 +103,38 @@ class TestDataset(unittest.TestCase):
                 self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
                 self.assertEqual(contributor_ids, get_ids(dataset.contributors))
 
-        with self.subTest("With existing rows"):
-            dataset = Dataset.create(
-                **dataset_params,
-                artifacts=[{"id": "test_dataset_artifact_id"}],
-                contributors=[{"id": "test_contributor_id"}],
-                deployment_directories=[{"id": "test_deployment_directory_id"}],
-            )
+    def test__create_ids__ok(self):
+        """
+        Creating a dataet with ids in connect attributes. A new id is generated even if id is provided.
+        """
+        dataset_params = DatasetParams.get()
+        dataset = Dataset.create(
+            **dataset_params,
+            artifacts=[{"id": "test_dataset_artifact_id"}],
+            contributors=[{"id": "test_contributor_id"}],
+            deployment_directories=[{"id": "test_deployment_directory_id"}],
+        )
 
-            dataset_id = dataset.id
-            artifact_ids = get_ids(dataset.artifacts)
-            deployment_directory_ids = get_ids(dataset.deployment_directories)
-            contributor_ids = get_ids(dataset.contributors)
+        dataset_id = dataset.id
+        artifact_ids = get_ids(dataset.artifacts)
+        deployment_directory_ids = get_ids(dataset.deployment_directories)
+        contributor_ids = get_ids(dataset.contributors)
 
-            # Expire all local object and retireve them from the DB to make sure the transactions went through.
-            Dataset.db.session.expire_all()
+        # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
+        Dataset.db.session.expire_all()
 
-            dataset = Dataset.get(dataset_id)
-            self.assertIsNotNone(dataset)
-            self.assertEqual(dataset_id, dataset.id)
+        dataset = Dataset.get(dataset_id)
+        self.assertIsNotNone(dataset)
+        self.assertEqual(dataset_id, dataset.id)
 
-            self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
-            self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.artifacts))
+        self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
+        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.artifacts))
 
-            self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
-            self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.deployment_directories))
+        self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
+        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.deployment_directories))
 
-            self.assertEqual(contributor_ids, get_ids(dataset.contributors))
-            self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
+        self.assertEqual(contributor_ids, get_ids(dataset.contributors))
+        self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
 
     def test__list__ok(self):
         generate = 5

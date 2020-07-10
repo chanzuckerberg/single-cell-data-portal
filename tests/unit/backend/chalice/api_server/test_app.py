@@ -3,7 +3,7 @@ import unittest
 from tests.unit.backend.chalice.api_server import BaseAPITest
 
 
-class TestAPP(BaseAPITest, unittest.TestCase):
+class TestAPI(BaseAPITest, unittest.TestCase):
     def test_smoke(self):
         """ If this fails then the server does not work """
         response = self.app.get("/")
