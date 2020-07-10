@@ -2,7 +2,7 @@ import typing
 from datetime import datetime
 
 import pytz
-from sqlalchemy import and_, Column
+from sqlalchemy import and_
 
 from .entity import Entity
 from ..utils.uuid import generate_id
@@ -11,7 +11,6 @@ from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
 
 class Project(Entity):
     table = DbProject
-    list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
 
     def __init__(self, db_object: DbProject):
         super().__init__(db_object)
@@ -75,7 +74,7 @@ class Project(Entity):
 
     @classmethod
     def list_in_time_range(
-        cls, to_date: float = None, from_date: float = None, list_entities: typing.List[Column] = None
+        cls, to_date: float = None, from_date: float = None
     ) -> typing.List[typing.Dict]:
         """
 
@@ -85,14 +84,15 @@ class Project(Entity):
         :return: The results is a list of flattened dictionaries containing the `list_entities`
         """
 
+        filters = [DbProject.status == ProjectStatus.LIVE.name]
+        list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
+
         def to_dict(db_object):
             _result = {}
             for _field in db_object._fields:
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = [DbProject.status == ProjectStatus.LIVE.name]
-        list_entities = list_entities if list_entities else cls.list_entities
         if to_date:
             filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
         if from_date:
