@@ -29,7 +29,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
             body = json.loads(response.body)
             self.assertEqual(body["projects"], [])
 
-
     def test__GET_project_uuid__OK(self):
         with self.subTest("Exists"):
             test_url = furl(path="/v1/project/test_project_id")
