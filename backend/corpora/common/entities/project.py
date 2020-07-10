@@ -5,8 +5,8 @@ import pytz
 from sqlalchemy import and_
 
 from .entity import Entity
-from ..utils.uuid import generate_id
 from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
+from ..utils.uuid import generate_id
 
 
 class Project(Entity):
@@ -73,18 +73,23 @@ class Project(Entity):
         return cls.get((project_uuid, ProjectStatus.LIVE.name))
 
     @classmethod
+    def list_projects_in_time_range(cls, *args, **kwargs):
+        return cls.list_in_time_range(*args, **kwargs, filters=[DbProject.status == ProjectStatus.LIVE.name])
+
+    @classmethod
     def list_in_time_range(
-        cls, to_date: float = None, from_date: float = None
+        cls, to_date: float = None, from_date: float = None, filters: list = None
     ) -> typing.List[typing.Dict]:
         """
 
         :param to_date: Filter dates earlier than this. Unix timestamp since the epoch in UTC timezone.
         :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
         :param list_entities: The columns to retrieve from the table.
+        :param filters: additional filters to apply to the query.
         :return: The results is a list of flattened dictionaries containing the `list_entities`
         """
 
-        filters = [DbProject.status == ProjectStatus.LIVE.name]
+        filters = filters if filters else []
         list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
 
         def to_dict(db_object):
