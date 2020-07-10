@@ -1,4 +1,4 @@
-#import requests
+# import requests
 
 from ....common.corpora_orm import ProjectStatus
 from ....common.entities.project import Project
@@ -30,9 +30,9 @@ def delete_dataset_from_submission(path_project_uuid: str, path_dataset_uuid: st
 
 def validate_submission(path_project_uuid: str):
     # Get the project entity
-    #project = Project._load(Project._query(path_project_uuid, ProjectStatus.EDIT))
-    #project.validate()
-    #return None, requests.codes.accepted
+    # project = Project._load(Project._query(path_project_uuid, ProjectStatus.EDIT))
+    # project.validate()
+    # return None, requests.codes.accepted
     raise NotImplementedError
 
 
