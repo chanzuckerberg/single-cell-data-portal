@@ -60,7 +60,6 @@ class Entity:
         """
         If the attribute is not in Entity, return the attribute in db_object.
         :param name:
-        :return:
         """
         return self.db_object.__getattribute__(name)
 
