@@ -69,14 +69,13 @@ class Entity:
         cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None, primary_keys: typing.List[str] = None
     ) -> typing.List[Base]:
         """
-        Create or modify N `rows` in `db_table` associated with Entity Object during object creation. If id is provided,
+        Create or modify `rows` in `db_table` associated with Entity Object during object creation. If id is provided,
         then the row with that id is retrieved and updated, else a new UUID is generated and a new row is created.
 
         :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
         :param primary_keys: Additional columns required to build the primary key. This is used when the primary consist
-        of
-        multiple columns.
+        of multiple columns.
         :param add_columns: Additional columns attributes or modifications to add to the row.
 
         This can be used when there are shared column values that need to be added across all the new rows.
