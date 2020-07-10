@@ -140,7 +140,7 @@ class TestDataset(unittest.TestCase):
         generate = 5
 
         for i in range(generate):
-            Dataset.create(**DatasetParams.get)
+            Dataset.create(**DatasetParams.get())
 
         datasets = Dataset.list()
         self.assertGreaterEqual(len(datasets), generate)
