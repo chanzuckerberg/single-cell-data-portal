@@ -15,7 +15,7 @@ class DatasetParams:
     @classmethod
     def get(cls):
         return dict(
-            name=f"create_dataset",
+            name="create_dataset",
             organism="organism",
             organism_ontology="123",
             tissue="tissue",

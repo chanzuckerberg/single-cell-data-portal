@@ -20,7 +20,7 @@ class ProjectParams:
     def get(cls):
         return dict(
             status=ProjectStatus.EDIT.name,
-            name=f"Created Project",
+            name="Created Project",
             description="test",
             owner="test_user_id",
             s3_bucket="s3://fakebucket",
