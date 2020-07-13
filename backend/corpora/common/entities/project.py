@@ -74,7 +74,7 @@ class Project(Entity):
 
     @classmethod
     def list_projects_in_time_range(cls, *args, **kwargs):
-        return cls.list_in_time_range(*args, **kwargs, filters=[DbProject.status == ProjectStatus.LIVE.name])
+        return cls.list_in_time_range(*args, filters=[DbProject.status == ProjectStatus.LIVE.name], **kwargs)
 
     @classmethod
     def list_in_time_range(
