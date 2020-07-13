@@ -1,3 +1,5 @@
+import uuid
+
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
 
@@ -32,43 +34,23 @@ class Dataset(Entity):
         deployment_directories: list = None,
     ) -> "Dataset":
         """
-        Creates a new dataset and related objects
-        :param revision:
-        :param name:
-        :param organism:
-        :param organism_ontology:
-        :param tissue:
-        :param tissue_ontology:
-        :param assay:
-        :param assay_ontology:
-        :param disease:
-        :param disease_ontology:
-        :param sex:
-        :param ethnicity:
-        :param ethnicity_ontology:
-        :param source_data_location:
-        :param preprint_doi:
-        :param publication_doi:
-        :param artifacts:
-        :param contributors:
-        :param deployment_directories:
-        :return:
+        Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
+        entries.
         """
-        uuid = cls.db.generate_id(DbDataset)
+        primary_key = str(uuid.uuid4())
 
-        """
-        Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
-        to many for artifacts and deployment_directories
-        """
+        # Setting Defaults
         artifacts = artifacts if artifacts else []
         deployment_directories = deployment_directories if deployment_directories else []
         contributors = contributors if contributors else []
 
-        [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
-        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
+        #  Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
+        #  to many for artifacts and deployment_directories
+        [artifact.pop("id", None) for artifact in artifacts]
+        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]
 
         new_db_object = DbDataset(
-            id=uuid,
+            id=primary_key,
             revision=revision,
             name=name,
             organism=organism,
@@ -85,22 +67,23 @@ class Dataset(Entity):
             source_data_location=source_data_location,
             preprint_doi=preprint_doi,
             publication_doi=publication_doi,
-            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, dataset_id=uuid),
+            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key)),
             deployment_directories=cls._create_sub_objects(
-                deployment_directories, DbDeploymentDirectory, dataset_id=uuid
+                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=primary_key)
             ),
         )
 
         #  Linking many contributors to many datasets
         contributors = cls._create_sub_objects(contributors, DbContributor)
-        contributor_dataset_ids = [dict(contributor_id=contributor.id, dataset_id=uuid) for contributor in contributors]
+        contributor_dataset_ids = [
+            dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
+        ]
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
 
         cls.db.session.add(new_db_object)
         cls.db.session.add_all(contributors)
-        cls.db.session.commit()
-
+        cls.db.session.flush()
         cls.db.session.add_all(dataset_contributor)
-        cls.db.session.commit()
+        cls.db.commit()
 
         return cls(new_db_object)

@@ -5,7 +5,9 @@ module.exports = {
     author: `@gatsbyjs`,
   },
   plugins: [
-    `gatsby-plugin-react-helmet`,
+    "gatsby-plugin-typescript",
+    "gatsby-plugin-react-helmet",
+    "gatsby-plugin-root-import",
     {
       resolve: `gatsby-source-filesystem`,
       options: {
@@ -20,7 +22,9 @@ module.exports = {
       resolve: `gatsby-plugin-manifest`,
       options: {
         name: `gatsby-starter-default`,
+        // eslint-disable-next-line @typescript-eslint/camelcase
         short_name: `starter`,
+        // eslint-disable-next-line @typescript-eslint/camelcase
         start_url: `/`,
         display: `minimal-ui`,
         // icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
@@ -30,4 +34,4 @@ module.exports = {
     // To learn more, visit: https://gatsby.dev/offline
     // `gatsby-plugin-offline`,
   ],
-}
+};
