@@ -136,7 +136,7 @@ class TestDataset(unittest.TestCase):
     def test__list__ok(self):
         generate = 5
 
-        for i in range(generate):
+        for _ in range(generate):
             Dataset.create(**DatasetParams.get())
 
         datasets = Dataset.list()
