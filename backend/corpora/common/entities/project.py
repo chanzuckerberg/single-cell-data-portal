@@ -1,4 +1,5 @@
 import typing
+import uuid
 from datetime import datetime
 
 import pytz
@@ -6,7 +7,6 @@ from sqlalchemy import and_
 
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
-from ..utils.uuid import generate_id
 
 
 class Project(Entity):
@@ -34,7 +34,7 @@ class Project(Entity):
         entries.
 
         """
-        uuid = generate_id()
+        primary_key = str(uuid.uuid4())
 
         # Setting Defaults
         links = links if links else []
@@ -44,7 +44,7 @@ class Project(Entity):
         [link.pop("id", None) for link in links]  # sanitize of ids
 
         new_db_object = DbProject(
-            id=uuid,
+            id=primary_key,
             status=status,
             name=name,
             description=description,
@@ -55,7 +55,7 @@ class Project(Entity):
             processing_state=processing_state,
             validation_state=validation_state,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=uuid, project_status=status)
+                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status)
             ),
         )
 
@@ -82,7 +82,8 @@ class Project(Entity):
     ) -> typing.List[typing.Dict]:
         """
 
-        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix timestamp since the epoch in UTC timezone.
+        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
         :param from_date: Filter dates later than this. Unix timestamp since the epoch in UTC timezone.
         :param list_entities: The columns to retrieve from the table.
         :param filters: additional filters to apply to the query.

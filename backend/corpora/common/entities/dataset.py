@@ -1,6 +1,7 @@
+import uuid
+
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
-from ..utils.uuid import generate_id
 
 
 class Dataset(Entity):
@@ -36,9 +37,8 @@ class Dataset(Entity):
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
         entries.
 
-
         """
-        uuid = generate_id()
+        primary_key = str(uuid.uuid4())
 
         # Setting Defaults
         artifacts = artifacts if artifacts else []
@@ -51,7 +51,7 @@ class Dataset(Entity):
         [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
 
         new_db_object = DbDataset(
-            id=uuid,
+            id=primary_key,
             revision=revision,
             name=name,
             organism=organism,
@@ -68,15 +68,17 @@ class Dataset(Entity):
             source_data_location=source_data_location,
             preprint_doi=preprint_doi,
             publication_doi=publication_doi,
-            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=uuid)),
+            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key)),
             deployment_directories=cls._create_sub_objects(
-                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=uuid)
+                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=primary_key)
             ),
         )
 
         #  Linking many contributors to many datasets
         contributors = cls._create_sub_objects(contributors, DbContributor)
-        contributor_dataset_ids = [dict(contributor_id=contributor.id, dataset_id=uuid) for contributor in contributors]
+        contributor_dataset_ids = [
+            dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
+        ]
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
 
         cls.db.session.add(new_db_object)
