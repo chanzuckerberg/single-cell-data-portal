@@ -1,6 +1,7 @@
+import uuid
+
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink
-from ..utils.uuid import generate_id
 
 
 class Project(Entity):
@@ -27,7 +28,7 @@ class Project(Entity):
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table
         entries.
         """
-        uuid = generate_id()
+        primary_key = str(uuid.uuid4())
 
         # Setting Defaults
         links = links if links else []
@@ -37,7 +38,7 @@ class Project(Entity):
         [link.pop("id", None) for link in links]
 
         new_db_object = DbProject(
-            id=uuid,
+            id=primary_key,
             status=status,
             name=name,
             description=description,
@@ -48,7 +49,7 @@ class Project(Entity):
             processing_state=processing_state,
             validation_state=validation_state,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=uuid, project_status=status)
+                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status)
             ),
         )
 
