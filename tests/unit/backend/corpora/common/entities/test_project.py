@@ -167,7 +167,7 @@ class TestProject(unittest.TestCase):
     def test__list__ok(self):
         generate = 5
 
-        for i in range(generate):
+        for _ in range(generate):
             Project.create(**ProjectParams.get())
 
         projects = Project.list()
