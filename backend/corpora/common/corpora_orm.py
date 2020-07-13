@@ -29,18 +29,23 @@ class TransformingBase(object):
     Add functionality to transform a Base object, and recursively transform its linked entities.
     """
 
-    RELATIONSHIPS_TO_DICT = True  # Set to True if entities with a relationship to this should be converted to a dict.
+    relationship_to_dict = True  # Set to True if entities with a relationship to this should be converted to a dict.
 
     def __iter__(self):
         return self.to_dict().iteritems()
 
-    def to_dict(self, relation=None, backref=None):
-        if relation is None:
-            relation = self.RELATIONSHIPS_TO_DICT
+    def to_dict(self, relation_to_dict: bool = None, backref: 'Base' = None) -> dict:
+        """
+
+        :param relation_to_dict: If true, any connected relationships will be converted to dictionaries.
+        :param backref: used to avoid recursively looping between two tables.
+        :return: a dictionary representation of the database object.
+        """
+        relation_to_dict = self.relationship_to_dict if relation_to_dict is None else relation_to_dict
         result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
-        if relation:
+        if relation_to_dict:
             for attr, relation in self.__mapper__.relationships.items():
-                # Avoid recursive loop between to tables.
+                # Avoid recursive loop between two tables.
                 if backref == relation.target:
                     continue
                 value = getattr(self, attr)
