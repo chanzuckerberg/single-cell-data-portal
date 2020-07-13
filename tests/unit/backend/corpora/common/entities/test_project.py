@@ -128,7 +128,7 @@ class TestProject(unittest.TestCase):
 
         from_date = datetime.now().timestamp()
         time.sleep(sleep)
-        for i in range(generate):
+        for _ in range(generate):
             from_ids.append(Project.create(**ProjectParams.get()).id)
 
         with self.subTest("Test from_date"):
