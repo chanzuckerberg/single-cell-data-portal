@@ -34,7 +34,7 @@ class TransformingBase(object):
     def __iter__(self):
         return self.to_dict().iteritems()
 
-    def to_dict(self, relation_to_dict: bool = None, backref: 'Base' = None) -> dict:
+    def to_dict(self, relation_to_dict: bool = None, backref: "Base" = None) -> dict:
         """
 
         :param relation_to_dict: If true, any connected relationships will be converted to dictionaries.
