@@ -1,11 +1,11 @@
 import logging
 import typing
+import uuid
 
 logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
 from ..utils.db_utils import DbUtils
-from ..utils.uuid import generate_id
 
 
 class Entity:
@@ -100,7 +100,7 @@ class Entity:
                 primary_key = (_id, *primary_keys) if primary_keys else _id
                 row = cls.db.get(db_table, primary_key)
             else:
-                _columns["id"] = generate_id()
+                _columns["id"] = str(uuid.uuid4())
                 row = db_table(**_columns)
             db_objs.append(row)
         return db_objs

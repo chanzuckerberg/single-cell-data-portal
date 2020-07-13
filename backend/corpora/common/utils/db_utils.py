@@ -43,5 +43,6 @@ class DbUtils:
             self.session.commit()
         except SQLAlchemyError:
             self.session.rollback()
-            logger.exception()
-            raise CorporaException("Failed to commit.")
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)
