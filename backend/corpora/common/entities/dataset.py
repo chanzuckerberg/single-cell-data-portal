@@ -32,7 +32,7 @@ class Dataset(Entity):
         artifacts: list = None,
         contributors: list = None,
         deployment_directories: list = None,
-        **kwargs
+        **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -68,11 +68,13 @@ class Dataset(Entity):
             source_data_location=source_data_location,
             preprint_doi=preprint_doi,
             publication_doi=publication_doi,
-            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key, **kwargs)),
+            artifacts=cls._create_sub_objects(
+                artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key, **kwargs)
+            ),
             deployment_directories=cls._create_sub_objects(
                 deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=primary_key, **kwargs),
             ),
-            **kwargs
+            **kwargs,
         )
 
         #  Linking many contributors to many datasets

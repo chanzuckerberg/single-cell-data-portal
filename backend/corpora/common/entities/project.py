@@ -23,7 +23,7 @@ class Project(Entity):
         processing_state: str = "",
         validation_state: str = "",
         links: list = None,
-        **kwargs
+        **kwargs,
     ) -> "Project":
         """
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table

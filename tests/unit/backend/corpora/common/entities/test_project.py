@@ -81,7 +81,7 @@ class TestProject(unittest.TestCase):
 
         for i in range(3):
             with self.subTest(i):
-                project = Project.create( links=[link_params] * i, **project_params)
+                project = Project.create(links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
                 link_ids = get_ids(project.links)
