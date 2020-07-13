@@ -13,17 +13,20 @@ db/connect:
 	psql --dbname $(DATABASE_URI)
 
 db/download:
-	# Usage: make db/download FROM=dev    - downloads DB to corpora_dev-<date>.sqlc
+    # Download the database to corpora_dev-<date>.sqlc
+	# Usage: make db/download FROM=dev
 	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${FROM}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
 	$(eval OUTFILE = $(shell date +corpora_${FROM}-%Y%m%d%H%M.sqlc))
 	pg_dump -Fc --dbname=$(DATABASE_URI) --file=$(OUTFILE)
 
 db/import:
-	# Usage: make db/import FROM=dev    - imports corpora_dev.sqlc into corpora_local
+    # Imports corpora_dev.sqlc into the corpora_local database
+	# Usage: make db/import FROM=dev
 	pg_restore --clean --no-owner --dbname corpora_local corpora_$(FROM).sqlc
 
 db/import/schema:
-	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema  - imports corpora_dev.sqlc into corpora_local
+    # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_local database
+	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema
 	pg_restore --schema-only --clean --no-owner --dbname corpora_local corpora_$(DEPLOYMENT_STAGE).sqlc
 	# Also import alembic schema version
 	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_local corpora_$(DEPLOYMENT_STAGE).sqlc
