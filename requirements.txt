@@ -17,5 +17,4 @@ pytest
 requests>=2.22.0
 s3fs
 scanpy
-furl
 -r ./backend/chalice/api_server/requirements.txt
