@@ -9,12 +9,10 @@ import chalice
 import connexion
 from chalice import Chalice, CORSConfig
 
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from corpora.common.authorizer import assert_authorized
-from corpora.common.utils.json import CustomJSONEncoder
 
 cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
@@ -64,7 +62,7 @@ def get_chalice_app(flask_app):
         with flask_app.test_request_context(
             path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
-            query_string=dict(app.current_request.query_params) if app.current_request.query_params else None,
+            query_string=app.current_request.query_params,
             method=app.current_request.method,
             headers=list(app.current_request.headers.items()),
             data=req_body,
@@ -98,7 +96,6 @@ def get_chalice_app(flask_app):
     def serve_swagger_ui():
         return chalice.Response(status_code=200, headers={"Content-Type": "text/html"}, body=swagger_ui_html)
 
-    flask_app.json_encoder = CustomJSONEncoder
     return app
 
 

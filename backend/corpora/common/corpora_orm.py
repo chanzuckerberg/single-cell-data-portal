@@ -14,51 +14,17 @@ from sqlalchemy import (
     String,
     text,
 )
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from .corpora_config import CorporaDbConfig
+from common.corpora_config import CorporaDbConfig
 
+Base = declarative_base()
+deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
-class TransformingBase(object):
-    """
-    Add functionality to transform a Base object, and recursively transform its linked entities.
-    """
-
-    relationship_to_dict = True  # Set to True if entities with a relationship to this should be converted to a dict.
-
-    def __iter__(self):
-        return self.to_dict().iteritems()
-
-    def to_dict(self, relation_to_dict: bool = None, backref: "Base" = None) -> dict:
-        """
-
-        :param relation_to_dict: If true, any connected relationships will be converted to dictionaries.
-        :param backref: used to avoid recursively looping between two tables.
-        :return: a dictionary representation of the database object.
-        """
-        relation_to_dict = self.relationship_to_dict if relation_to_dict is None else relation_to_dict
-        result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
-        if relation_to_dict:
-            for attr, relation in self.__mapper__.relationships.items():
-                # Avoid recursive loop between two tables.
-                if backref == relation.target:
-                    continue
-                value = getattr(self, attr)
-                if value is None:
-                    result[relation.key] = None
-                elif isinstance(value.__class__, DeclarativeMeta):
-                    result[relation.key] = value.to_dict(backref=self.__table__)
-                else:
-                    result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
-        return result
-
-
-Base = declarative_base(cls=TransformingBase)
 DEFAULT_DATETIME = text("now()")
 
 
