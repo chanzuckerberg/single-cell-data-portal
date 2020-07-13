@@ -12,13 +12,10 @@ from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class DatasetParams:
-    count = 0
-
     @classmethod
     def get(cls):
-        cls.count += 1
         return dict(
-            name=f"create_dataset_{cls.count}",
+            name=f"create_dataset",
             organism="organism",
             organism_ontology="123",
             tissue="tissue",

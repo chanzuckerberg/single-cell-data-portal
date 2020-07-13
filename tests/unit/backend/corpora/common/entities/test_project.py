@@ -16,14 +16,11 @@ from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class ProjectParams:
-    count = 0
-
     @classmethod
     def get(cls):
-        cls.count += 1
         return dict(
             status=ProjectStatus.EDIT.name,
-            name=f"Created Project {cls.count}",
+            name=f"Created Project",
             description="test",
             owner="test_user_id",
             s3_bucket="s3://fakebucket",
@@ -84,7 +81,7 @@ class TestProject(unittest.TestCase):
 
         for i in range(3):
             with self.subTest(i):
-                project = Project.create(**project_params, links=[link_params] * i)
+                project = Project.create( links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
                 link_ids = get_ids(project.links)
@@ -103,7 +100,7 @@ class TestProject(unittest.TestCase):
         """
         project_params = ProjectParams.get()
 
-        project = Project.create(**project_params, links=[{"id": "test_project_link_id"}])
+        project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
 
         project_key = (project.id, project.status)
         link_ids = get_ids(project.links)
