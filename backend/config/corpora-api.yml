@@ -391,10 +391,10 @@ paths:
           in: query
           schema:
             type: integer
-          description: The date after which projects should have been created.
+          description: The date after which projects should have been created. In seconds since epoch.
         - name: to_date
           in: query
-          description: The date before which projects should have been created.
+          description: The date before which projects should have been created. In seconds since epoch.
           schema:
             type: integer
       responses:
@@ -405,10 +405,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  request_id:
-                    type: string
-                  project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
+                  projects:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        project_uuid:
+                          $ref: '#/components/schemas/project_uuid'
+                        creation_date:
+                          type: integer
+                        name:
+                          type: string
                   from_date:
                     type: integer
                   to_date:
@@ -461,7 +468,7 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-
+          
 
   /v1/dataset/{dataset_uuid}:
 

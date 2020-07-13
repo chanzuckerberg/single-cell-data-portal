@@ -1,5 +1,7 @@
 import logging
+import time
 import unittest
+from datetime import datetime
 
 from backend.corpora.common.corpora_orm import (
     ProjectLinkType,
@@ -114,3 +116,60 @@ class TestProject(unittest.TestCase):
 
         self.assertEqual(link_ids, get_ids(project.links))
         self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
+
+    def test__list_in_time_range__ok(self):
+        generate = 5
+        sleep = 0.5
+        from_ids = []
+        to_ids = []
+
+        from_date = datetime.now().timestamp()
+        time.sleep(sleep)
+        for _ in range(generate):
+            from_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test from_date"):
+            # Projects from_date are returned.
+            projects = Project.list_in_time_range(from_date=from_date)
+            for project in projects:
+                self.assertGreaterEqual(project["created_at"].timestamp(), from_date)
+
+        to_date = datetime.now().timestamp()
+        time.sleep(sleep)
+        for i in range(generate):
+            to_ids.append(Project.create(**ProjectParams.get()).id)
+
+        with self.subTest("Test to_date and from_date"):
+            # Projects between to_date and from_date are returned.
+            projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            for project in projects:
+                self.assertGreaterEqual(project["created_at"].timestamp(), from_date)
+                self.assertLessEqual(project["created_at"].timestamp(), to_date)
+
+        with self.subTest("Test to_date"):
+            # All created projects are returned.
+            projects = Project.list_in_time_range(to_date=to_date)
+            self.assertGreater(len(projects), generate)
+            for project in projects:
+                self.assertLessEqual(project["created_at"].timestamp(), to_date)
+
+        with self.subTest("Test no date"):
+            projects = Project.list_in_time_range()
+            test_ids = set([*to_ids, *from_ids])
+            project_ids = set([p["id"] for p in projects])
+            self.assertTrue(test_ids.issubset(project_ids))
+
+        with self.subTest("Verify columns"):
+            self.assertIsInstance(projects[0]["id"], str)
+            self.assertIsInstance(projects[0]["created_at"], datetime)
+            self.assertIsInstance(projects[0]["name"], str)
+
+    def test__list__ok(self):
+        generate = 5
+
+        for i in range(generate):
+            Project.create(**ProjectParams.get())
+
+        projects = Project.list()
+        self.assertGreaterEqual(len(projects), generate)
+        self.assertTrue(all([isinstance(i, Project) for i in projects]))

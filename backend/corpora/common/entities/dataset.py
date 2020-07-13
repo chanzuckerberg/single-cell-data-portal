@@ -36,6 +36,7 @@ class Dataset(Entity):
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
         entries.
+
         """
         primary_key = str(uuid.uuid4())
 
