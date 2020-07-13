@@ -41,7 +41,7 @@ class Project(Entity):
 
         #  Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
         #  to many for links
-        [link.pop("id", None) for link in links]  # sanitize of ids
+        [link.pop("id", None) for link in links]
 
         new_db_object = DbProject(
             id=primary_key,
@@ -60,7 +60,7 @@ class Project(Entity):
         )
 
         cls.db.session.add(new_db_object)
-        cls.db.session.commit()
+        cls.db.commit()
         return cls(new_db_object)
 
     @classmethod

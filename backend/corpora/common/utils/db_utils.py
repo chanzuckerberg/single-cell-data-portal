@@ -1,8 +1,11 @@
 import typing
+import logging
 
 from sqlalchemy.exc import SQLAlchemyError
-
+from .exceptions import CorporaException
 from ..corpora_orm import Base, DBSessionMaker
+
+logger = logging.getLogger(__name__)
 
 
 class DbUtils:
@@ -35,10 +38,11 @@ class DbUtils:
     def commit(self):
         """
         Commit changes to the database and roll back if error.
-        :return:
         """
         try:
             self.session.commit()
         except SQLAlchemyError:
             self.session.rollback()
-            raise
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)

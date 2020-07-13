@@ -47,8 +47,8 @@ class Dataset(Entity):
 
         #  Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
         #  to many for artifacts and deployment_directories
-        [artifact.pop("id", None) for artifact in artifacts]  # sanitize of ids
-        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]  # sanitize of ids
+        [artifact.pop("id", None) for artifact in artifacts]
+        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]
 
         new_db_object = DbDataset(
             id=primary_key,
@@ -83,8 +83,7 @@ class Dataset(Entity):
 
         cls.db.session.add(new_db_object)
         cls.db.session.add_all(contributors)
-        cls.db.commit()
-
+        cls.db.session.flush()
         cls.db.session.add_all(dataset_contributor)
         cls.db.commit()
 

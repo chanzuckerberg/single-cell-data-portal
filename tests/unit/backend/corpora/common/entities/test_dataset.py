@@ -12,13 +12,10 @@ from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class DatasetParams:
-    count = 0
-
     @classmethod
     def get(cls):
-        cls.count += 1
         return dict(
-            name=f"create_dataset_{cls.count}",
+            name=f"create_dataset",
             organism="organism",
             organism_ontology="123",
             tissue="tissue",
@@ -105,7 +102,7 @@ class TestDataset(unittest.TestCase):
 
     def test__create_ids__ok(self):
         """
-        Creating a dataet with ids in connect attributes. A new id is generated even if id is provided.
+        Creating a dataset with ids in connect attributes. A new id is generated even if id is provided.
         """
         dataset_params = DatasetParams.get()
         dataset = Dataset.create(
