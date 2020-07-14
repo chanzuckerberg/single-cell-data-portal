@@ -9,7 +9,7 @@ from alembic import op
 from sqlalchemy import Column, String, ForeignKey, TIMESTAMP, func, INTEGER
 
 # revision identifiers, used by Alembic.
-revision = '899656d37baa'
+revision = "899656d37baa"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,12 +28,11 @@ def upgrade():
     op.add_column("project_link", Column("link_name", String()))
 
     # Add a foreign key to the Dataset table to reflect the one and only project that the dataset is in.
-    op.add_column('dataset', Column('project_id', String(), ForeignKey('project.id')))
-    op.add_column('dataset', Column('project_status', String(), ForeignKey('project.status')))
+    op.add_column("dataset", Column("project_id", String(), ForeignKey("project.id")))
+    op.add_column("dataset", Column("project_status", String(), ForeignKey("project.status")))
 
     # Drop the ProjectDataset table
     op.drop_table("project_dataset")
-
 
 
 def downgrade():
@@ -46,13 +45,13 @@ def downgrade():
 
     # Create ProjectDataset join table
     op.create_table(
-        'project_dataset',
-        Column('id', INTEGER, primary_key=True),
-        Column('project_id', String(), nullable=False),
-        Column('project_status', String(), nullable=False),
-        Column('dataset_id', String(), nullable=False),
-        Column('created_at', TIMESTAMP, server_default=func.now()),
-        Column('updated_at', TIMESTAMP, server_default=func.now())
+        "project_dataset",
+        Column("id", INTEGER, primary_key=True),
+        Column("project_id", String(), nullable=False),
+        Column("project_status", String(), nullable=False),
+        Column("dataset_id", String(), nullable=False),
+        Column("created_at", TIMESTAMP, server_default=func.now()),
+        Column("updated_at", TIMESTAMP, server_default=func.now()),
     )
     op.create_foreign_key("fk_project_id", "project", "project_dataset", ["id"], ["project_id"])
     op.create_foreign_key("fk_project_status", "project", "project_dataset", ["status"], ["project_status"])
@@ -61,4 +60,3 @@ def downgrade():
     # Remove foreign key in Dataset table that references the project ID
     op.drop_column("dataset", "project_id")
     op.drop_column("dataset", "project_status")
-
