@@ -23,6 +23,7 @@ class Project(Entity):
         processing_state: str = "",
         validation_state: str = "",
         links: list = None,
+        **kwargs,
     ) -> "Project":
         """
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table
@@ -49,7 +50,7 @@ class Project(Entity):
             processing_state=processing_state,
             validation_state=validation_state,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status)
+                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status, **kwargs)
             ),
         )
 

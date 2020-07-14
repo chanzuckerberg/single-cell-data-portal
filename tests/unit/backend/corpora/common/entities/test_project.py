@@ -20,7 +20,7 @@ class ProjectParams:
     def get(cls):
         return dict(
             status=ProjectStatus.EDIT.name,
-            name=f"Created Project",
+            name="Created Project",
             description="test",
             owner="test_user_id",
             s3_bucket="s3://fakebucket",
@@ -81,7 +81,7 @@ class TestProject(unittest.TestCase):
 
         for i in range(3):
             with self.subTest(i):
-                project = Project.create( links=[link_params] * i, **project_params)
+                project = Project.create(links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
                 link_ids = get_ids(project.links)
