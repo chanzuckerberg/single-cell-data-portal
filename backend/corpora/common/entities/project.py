@@ -33,7 +33,6 @@ class Project(Entity):
         """
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table
         entries.
-
         """
         primary_key = str(uuid.uuid4())
 
@@ -70,7 +69,6 @@ class Project(Entity):
         """
         Given the project_uuid, retrieve a live project.
         :param project_uuid:
-        :return:
         """
         return cls.get((project_uuid, ProjectStatus.LIVE.name))
 
