@@ -51,7 +51,7 @@ def get_chalice_app(flask_app):
 
     def clean_entry_for_logging(entry):
         log = entry.to_dict()
-        log.pop("body")
+        log.pop("body", None)
         return log
 
     def dispatch(*args, **kwargs):

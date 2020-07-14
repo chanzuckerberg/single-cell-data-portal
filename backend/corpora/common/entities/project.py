@@ -58,6 +58,7 @@ class Project(Entity):
             links=cls._create_sub_objects(
                 links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status, **kwargs)
             ),
+            **kwargs
         )
 
         cls.db.session.add(new_db_object)
@@ -92,7 +93,7 @@ class Project(Entity):
         """
 
         filters = filters if filters else []
-        list_entities = [DbProject.created_at, DbProject.name, DbProject.id]
+        list_entities = [DbProject.created_at, DbProject.id]
 
         def to_dict(db_object):
             _result = {}

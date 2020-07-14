@@ -58,8 +58,22 @@ class TransformingBase(object):
         return result
 
 
-Base = declarative_base(cls=TransformingBase)
 DEFAULT_DATETIME = text("now()")
+
+if os.environ["DEPLOYMENT_STAGE"] == "test":
+    import datetime
+
+
+    class TimeStamp(TransformingBase):
+        created_at = Column(DateTime, nullable=False, default=datetime.datetime.now())
+        updated_at = Column(DateTime, nullable=False, default=datetime.datetime.now())
+else:
+    class TimeStamp(TransformingBase):
+        created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+        updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+
+
+Base = declarative_base(cls=TimeStamp)
 
 
 class DBSessionMaker:
@@ -167,8 +181,6 @@ class DbUser(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     email = Column(String)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     projects = relationship("DbProject", back_populates="user")
@@ -192,8 +204,6 @@ class DbProject(Base):
     needs_attestation = Column(Boolean)
     processing_state = Column(Enum(ProcessingState))
     validation_state = Column(Enum(ValidationState))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     user = relationship("DbUser", uselist=False, back_populates="projects")
@@ -214,8 +224,6 @@ class DbProjectDataset(Base):
     project_id = Column(String, nullable=False)
     project_status = Column(String, nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
@@ -233,8 +241,6 @@ class DbProjectLink(Base):
     project_status = Column(String, nullable=False)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
-    created_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime(True), nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     project = relationship("DbProject", back_populates="links")
@@ -269,8 +275,6 @@ class DbDataset(Base):
     source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     project = relationship("DbProject", secondary=lambda: DbProjectDataset().__table__, back_populates="datasets")
@@ -296,8 +300,6 @@ class DbDatasetArtifact(Base):
     type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="artifacts")
@@ -315,8 +317,6 @@ class DbDeploymentDirectory(Base):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     environment = Column(String)
     url = Column(String)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="deployment_directories")
@@ -333,8 +333,6 @@ class DbContributor(Base):
     name = Column(String)
     institution = Column(String)
     email = Column(String)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
     datasets = relationship(
@@ -354,5 +352,3 @@ class DbDatasetContributor(Base):
     id = Column(String, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)

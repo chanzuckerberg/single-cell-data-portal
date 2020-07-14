@@ -414,8 +414,6 @@ paths:
                           $ref: '#/components/schemas/project_uuid'
                         creation_date:
                           type: integer
-                        name:
-                          type: string
                   from_date:
                     type: integer
                   to_date:
