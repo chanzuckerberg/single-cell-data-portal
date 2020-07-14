@@ -8,7 +8,6 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class DatasetParams:
@@ -86,9 +85,9 @@ class TestDataset(unittest.TestCase):
                 )
 
                 dataset_id = dataset.id
-                artifact_ids = get_ids(dataset.artifacts)
-                deployment_directory_ids = get_ids(dataset.deployment_directories)
-                contributor_ids = get_ids(dataset.contributors)
+                artifact_ids = [i.id for i in dataset.artifacts]
+                deployment_directory_ids = [i.id for i in dataset.deployment_directories]
+                contributor_ids = [i.id for i in dataset.contributors]
 
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
@@ -96,9 +95,9 @@ class TestDataset(unittest.TestCase):
                 dataset = Dataset.get(dataset_id)
                 self.assertIsNotNone(dataset)
                 self.assertEqual(dataset_id, dataset.id)
-                self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
-                self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
-                self.assertEqual(contributor_ids, get_ids(dataset.contributors))
+                self.assertEqual(artifact_ids, [i.id for i in dataset.artifacts])
+                self.assertEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
+                self.assertEqual(contributor_ids, [i.id for i in dataset.contributors])
 
     def test__create_ids__ok(self):
         """
@@ -113,9 +112,9 @@ class TestDataset(unittest.TestCase):
         )
 
         dataset_id = dataset.id
-        artifact_ids = get_ids(dataset.artifacts)
-        deployment_directory_ids = get_ids(dataset.deployment_directories)
-        contributor_ids = get_ids(dataset.contributors)
+        artifact_ids = [i.id for i in dataset.artifacts]
+        deployment_directory_ids = [i.id for i in dataset.deployment_directories]
+        contributor_ids = [i.id for i in dataset.contributors]
 
         # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
         Dataset.db.session.expire_all()
@@ -124,14 +123,14 @@ class TestDataset(unittest.TestCase):
         self.assertIsNotNone(dataset)
         self.assertEqual(dataset_id, dataset.id)
 
-        self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
-        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.artifacts))
+        self.assertEqual(artifact_ids, [i.id for i in dataset.artifacts])
+        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.artifacts])
 
-        self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
-        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.deployment_directories))
+        self.assertEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
+        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.deployment_directories])
 
-        self.assertEqual(contributor_ids, get_ids(dataset.contributors))
-        self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
+        self.assertEqual(contributor_ids, [i.id for i in dataset.contributors])
+        self.assertEqual(["test_contributor_id"], [i.id for i in dataset.contributors])
 
     def test__list__ok(self):
         generate = 5

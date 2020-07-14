@@ -14,7 +14,6 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class ProjectParams:
@@ -86,7 +85,7 @@ class TestProject(unittest.TestCase):
                 project = Project.create(links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
-                link_ids = get_ids(project.links)
+                link_ids = [i.id for i in project.links]
 
                 # Expire all local object and retireve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
@@ -94,7 +93,7 @@ class TestProject(unittest.TestCase):
                 project = Project.get(project_key)
                 self.assertIsNotNone(project)
                 self.assertEqual(project_key, (project.id, project.status))
-                self.assertEqual(link_ids, get_ids(project.links))
+                self.assertEqual(link_ids, [i.id for i in project.links])
 
     def test__create_ids__ok(self):
         """
@@ -105,7 +104,7 @@ class TestProject(unittest.TestCase):
         project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
 
         project_key = (project.id, project.status)
-        link_ids = get_ids(project.links)
+        link_ids = [i.id for i in project.links]
 
         # Expire all local object and retireve them from the DB to make sure the transactions went through.
         Project.db.session.expire_all()
@@ -114,8 +113,8 @@ class TestProject(unittest.TestCase):
         self.assertIsNotNone(project)
         self.assertEqual(project_key, (project.id, project.status))
 
-        self.assertEqual(link_ids, get_ids(project.links))
-        self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
+        self.assertEqual(link_ids, [i.id for i in project.links])
+        self.assertNotEqual(["test_project_link_id"], [i.id for i in project.links])
 
     def test__list_in_time_range__ok(self):
         generate = 5
