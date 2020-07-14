@@ -1,3 +1,4 @@
+alembic
 anndata
 black
 botocore>=1.14.17
