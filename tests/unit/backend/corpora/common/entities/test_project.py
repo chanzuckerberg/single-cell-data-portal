@@ -12,23 +12,6 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from tests.unit.backend.corpora.common.entities.utils import get_ids
-
-
-class ProjectParams:
-    @classmethod
-    def get(cls):
-        return dict(
-            status=ProjectStatus.EDIT.name,
-            name="Created Project",
-            description="test",
-            owner="test_user_id",
-            s3_bucket="s3://fakebucket",
-            tc_uri="https://fakeurl",
-            needs_attestation=False,
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
-        )
 
 
 class ProjectParams:
