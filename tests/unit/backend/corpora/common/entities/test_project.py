@@ -115,12 +115,7 @@ class TestProject(unittest.TestCase):
         self.assertNotEqual(["test_project_link_id"], [i.id for i in project.links])
 
     def test__list__ok(self):
-        generate = 5
-
-        for _ in range(generate):
-            Project.create(**ProjectParams.get())
-
+        generate = 2
+        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
         projects = Project.list()
-        self.assertGreaterEqual(len(projects), generate)
-        self.assertTrue(all([isinstance(i, Project) for i in projects]))
-
+        self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))

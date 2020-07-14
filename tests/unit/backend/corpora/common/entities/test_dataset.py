@@ -133,11 +133,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(["test_contributor_id"], [i.id for i in dataset.contributors])
 
     def test__list__ok(self):
-        generate = 5
-
-        for _ in range(generate):
-            Dataset.create(**DatasetParams.get())
-
-        datasets = Dataset.list()
-        self.assertGreaterEqual(len(datasets), generate)
-        self.assertTrue(all([isinstance(i, Dataset) for i in datasets]))
+        generate = 2
+        generated_ids = [Dataset.create(**DatasetParams.get()).id for _ in range(generate)]
+        dataset = Dataset.list()
+        self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
