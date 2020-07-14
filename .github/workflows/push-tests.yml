@@ -10,7 +10,6 @@ on:
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   DEPLOYMENT_STAGE: test
-  
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -50,6 +49,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-duration-seconds: 900  
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
