@@ -40,7 +40,7 @@ class TestProject(unittest.TestCase):
 
         # Verify Link relationship
         self.assertIsInstance(project.links[0], DbProjectLink)
-        self.assertEqual(project.links[0].id, "test_project_link_id")
+        self.assertCountEqual(project.links[0].id, "test_project_link_id")
 
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.status)
@@ -75,7 +75,7 @@ class TestProject(unittest.TestCase):
                 project = Project.get(project_key)
                 self.assertIsNotNone(project)
                 self.assertEqual(project_key, (project.id, project.status))
-                self.assertEqual(link_ids, [i.id for i in project.links])
+                self.assertCountEqual(link_ids, [i.id for i in project.links])
 
     def test__create_ids__ok(self):
         """
@@ -131,11 +131,7 @@ class TestProject(unittest.TestCase):
                 set([p["id"] for p in projects]).issubset([created_before.id, created_inbetween.id, created_after.id]))
 
     def test__list__ok(self):
-        generate = 5
-
-        for _ in range(generate):
-            Project.create(**ProjectParams.get())
-
+        generate = 2
+        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
         projects = Project.list()
-        self.assertGreaterEqual(len(projects), generate)
-        self.assertTrue(all([isinstance(i, Project) for i in projects]))
+        self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))

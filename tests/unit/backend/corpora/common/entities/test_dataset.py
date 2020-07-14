@@ -8,6 +8,29 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset import Dataset
+from tests.unit.backend.corpora.common.entities.utils import get_ids
+
+
+class DatasetParams:
+    @classmethod
+    def get(cls):
+        return dict(
+            name="create_dataset",
+            organism="organism",
+            organism_ontology="123",
+            tissue="tissue",
+            tissue_ontology="123",
+            assay="assay",
+            assay_ontology="123",
+            disease="diseas",
+            disease_ontology="123",
+            sex="F",
+            ethnicity="ethnicity",
+            ethnicity_ontology="123",
+            source_data_location="location",
+            preprint_doi="preprint",
+            publication_doi="publication",
+        )
 
 
 class DatasetParams:
@@ -95,9 +118,9 @@ class TestDataset(unittest.TestCase):
                 dataset = Dataset.get(dataset_id)
                 self.assertIsNotNone(dataset)
                 self.assertEqual(dataset_id, dataset.id)
-                self.assertEqual(artifact_ids, [i.id for i in dataset.artifacts])
-                self.assertEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
-                self.assertEqual(contributor_ids, [i.id for i in dataset.contributors])
+                self.assertCountEqual(artifact_ids, [i.id for i in dataset.artifacts])
+                self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
+                self.assertCountEqual(contributor_ids, [i.id for i in dataset.contributors])
 
     def test__create_ids__ok(self):
         """
@@ -123,21 +146,17 @@ class TestDataset(unittest.TestCase):
         self.assertIsNotNone(dataset)
         self.assertEqual(dataset_id, dataset.id)
 
-        self.assertEqual(artifact_ids, [i.id for i in dataset.artifacts])
+        self.assertCountEqual(artifact_ids, [i.id for i in dataset.artifacts])
         self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.artifacts])
 
-        self.assertEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
+        self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
         self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.deployment_directories])
 
-        self.assertEqual(contributor_ids, [i.id for i in dataset.contributors])
-        self.assertEqual(["test_contributor_id"], [i.id for i in dataset.contributors])
+        self.assertCountEqual(contributor_ids, [i.id for i in dataset.contributors])
+        self.assertCountEqual(["test_contributor_id"], [i.id for i in dataset.contributors])
 
     def test__list__ok(self):
-        generate = 5
-
-        for _ in range(generate):
-            Dataset.create(**DatasetParams.get())
-
-        datasets = Dataset.list()
-        self.assertGreaterEqual(len(datasets), generate)
-        self.assertTrue(all([isinstance(i, Dataset) for i in datasets]))
+        generate = 2
+        generated_ids = [Dataset.create(**DatasetParams.get()).id for _ in range(generate)]
+        dataset = Dataset.list()
+        self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
