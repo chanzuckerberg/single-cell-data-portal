@@ -15,8 +15,9 @@ API_URL = {
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.auth0_secret = json.loads(AwsSecret("corpora/test/auth0-secret").value)
-        cls.auth0_secret["audience"] = API_URL.get(os.getenv("DEPLOYMENT_STAGE"))
+        cls.deployment_stage = os.getenv("DEPLOYMENT_STAGE")
+        cls.auth0_secret = json.loads(AwsSecret(f"corpora/{cls.deployment_stage}/auth0-secret").value)
+        cls.auth0_secret["audience"] = API_URL.get(cls.deployment_stage)
         access_token = cls.get_auth_token()["access_token"]
         cls.auth_header = {"Authorization": f"bearer {access_token}"}
 
