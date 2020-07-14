@@ -31,6 +31,8 @@ class Entity:
     def get(cls, session, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
         """
         Retrieves an entity from the database given its primary key if found.
+
+        :param session: an open session to the database
         :param key: Simple or composite primary key
         :return: Entity or None
         """
@@ -76,6 +78,7 @@ class Entity:
         Create or modify `rows` in `db_table` associated with Entity Object during object creation. If id is provided,
         then the row with that id is retrieved and updated, else a new UUID is generated and a new row is created.
 
+        :param session: an open session to the database
         :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
         :param primary_keys: Additional columns required to build the primary key. This is used when the primary consist

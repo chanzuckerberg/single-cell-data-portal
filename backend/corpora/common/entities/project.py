@@ -29,6 +29,8 @@ class Project(Entity):
         """
         Create a new Project and related objects and store in the database. UUIDs are generated for all new table
         entries.
+
+        :param session: an open session to the database
         """
         primary_key = str(uuid.uuid4())
 
