@@ -19,11 +19,6 @@ def session_scope():
     try:
         yield session
         logger.info("Commit database changes.")
-        session.commit()
-    except SQLAlchemyError:
-        session.rollback()
-        logger.exception(COMMIT_ERROR_MSG)
-        raise CorporaException(COMMIT_ERROR_MSG)
     finally:
         logger.info("Closing database session.")
         session.close()
