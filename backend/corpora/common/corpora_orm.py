@@ -1,6 +1,7 @@
 import enum
 import os
 import sys
+from datetime import datetime
 
 from sqlalchemy import (
     Boolean,
@@ -12,7 +13,6 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
-    text,
 )
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.ext.declarative import declarative_base
@@ -58,19 +58,9 @@ class TransformingBase(object):
         return result
 
 
-DEFAULT_DATETIME = text("now()")
-
-if os.environ["DEPLOYMENT_STAGE"] == "test":
-    import datetime
-
-
-    class TimeStamp(TransformingBase):
-        created_at = Column(DateTime, nullable=False, default=datetime.datetime.now())
-        updated_at = Column(DateTime, nullable=False, default=datetime.datetime.now())
-else:
-    class TimeStamp(TransformingBase):
-        created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-        updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
+class TimeStamp(TransformingBase):
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
 
 Base = declarative_base(cls=TimeStamp)
