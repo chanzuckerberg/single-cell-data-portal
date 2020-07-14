@@ -5,7 +5,7 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "
 sys.path.insert(0, pkg_root)  # noqa
 
 from backend.scripts.create_db import create_db
-from backend.corpora.common.utils.db_utils import DbUtils
+from backend.corpora.common.utils.db_utils import session_scope
 from backend.corpora.common.corpora_orm import (
     ProjectStatus,
     ProcessingState,
@@ -28,9 +28,9 @@ from backend.corpora.common.corpora_orm import (
 class TestDatabase:
     def __init__(self):
         create_db()
-        self.db = DbUtils()
-        self._populate_test_data()
-        del self.db
+        with session_scope() as session:
+            self.session = session
+            self._populate_test_data()
 
     def _populate_test_data(self):
         self._create_test_users()
@@ -42,8 +42,8 @@ class TestDatabase:
 
     def _create_test_users(self):
         user = DbUser(id="test_user_id", name="test_user", email="test_email")
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.session.add(user)
+        self.session.commit()
 
     def _create_test_projects(self):
         project = DbProject(
@@ -58,8 +58,8 @@ class TestDatabase:
             processing_state=ProcessingState.NA.name,
             validation_state=ValidationState.NOT_VALIDATED.name,
         )
-        self.db.session.add(project)
-        self.db.session.commit()
+        self.session.add(project)
+        self.session.commit()
 
     def _create_test_project_links(self):
         project_link = DbProjectLink(
@@ -69,8 +69,8 @@ class TestDatabase:
             link_url="test_url",
             link_type=ProjectLinkType.RAW_DATA.name,
         )
-        self.db.session.add(project_link)
-        self.db.session.commit()
+        self.session.add(project_link)
+        self.session.commit()
 
     def _create_test_datasets(self):
         test_dataset_id = "test_dataset_id"
@@ -93,8 +93,8 @@ class TestDatabase:
             preprint_doi="test_preprint_doi",
             publication_doi="test_publication_doi",
         )
-        self.db.session.add(dataset)
-        self.db.session.commit()
+        self.session.add(dataset)
+        self.session.commit()
 
         project_dataset = DbProjectDataset(
             id="test_project_dataset_id",
@@ -102,13 +102,13 @@ class TestDatabase:
             project_status=ProjectStatus.LIVE.name,
             dataset_id=test_dataset_id,
         )
-        self.db.session.add(project_dataset)
+        self.session.add(project_dataset)
 
         deployment_directory = DbDeploymentDirectory(
             id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"
         )
-        self.db.session.add(deployment_directory)
-        self.db.session.commit()
+        self.session.add(deployment_directory)
+        self.session.commit()
 
     def _create_test_dataset_artifacts(self):
         dataset_artifact = DbDatasetArtifact(
@@ -120,18 +120,18 @@ class TestDatabase:
             user_submitted=True,
             s3_uri="test_s3_uri",
         )
-        self.db.session.add(dataset_artifact)
-        self.db.session.commit()
+        self.session.add(dataset_artifact)
+        self.session.commit()
 
     def _create_test_contributors(self):
         contributor = DbContributor(
             id="test_contributor_id", name="test_contributor_name", institution="test_institution", email="test_email"
         )
-        self.db.session.add(contributor)
-        self.db.session.commit()
+        self.session.add(contributor)
+        self.session.commit()
 
         dataset_contributor = DbDatasetContributor(
             id="test_dataset_contributor_id", contributor_id="test_contributor_id", dataset_id="test_dataset_id"
         )
-        self.db.session.add(dataset_contributor)
-        self.db.session.commit()
+        self.session.add(dataset_contributor)
+        self.session.commit()

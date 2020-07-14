@@ -7,12 +7,13 @@ from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, D
 class Dataset(Entity):
     table = DbDataset
 
-    def __init__(self, db_object: DbDataset):
-        super().__init__(db_object)
+    def __init__(self, session, db_object: DbDataset):
+        super().__init__(session, db_object)
 
     @classmethod
     def create(
         cls,
+        session,
         revision: int = 0,
         name: str = "",
         organism: str = "",
@@ -69,25 +70,28 @@ class Dataset(Entity):
             preprint_doi=preprint_doi,
             publication_doi=publication_doi,
             artifacts=cls._create_sub_objects(
-                artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key, **kwargs)
+                session, artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key, **kwargs)
             ),
             deployment_directories=cls._create_sub_objects(
-                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=primary_key, **kwargs),
+                session,
+                deployment_directories,
+                DbDeploymentDirectory,
+                add_columns=dict(dataset_id=primary_key, **kwargs),
             ),
             **kwargs,
         )
 
         #  Linking many contributors to many datasets
-        contributors = cls._create_sub_objects(contributors, DbContributor)
+        contributors = cls._create_sub_objects(session, contributors, DbContributor)
         contributor_dataset_ids = [
             dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
         ]
-        dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
+        dataset_contributor = cls._create_sub_objects(session, contributor_dataset_ids, DbDatasetContributor)
 
-        cls.db.session.add(new_db_object)
-        cls.db.session.add_all(contributors)
-        cls.db.session.flush()
-        cls.db.session.add_all(dataset_contributor)
-        cls.db.commit()
+        session.add(new_db_object)
+        session.add_all(contributors)
+        session.flush()
+        session.add_all(dataset_contributor)
+        session.commit()
 
-        return cls(new_db_object)
+        return cls(session, new_db_object)

@@ -7,12 +7,13 @@ from ..corpora_orm import DbProject, DbProjectLink
 class Project(Entity):
     table = DbProject
 
-    def __init__(self, db_object: DbProject):
-        super().__init__(db_object)
+    def __init__(self, session, db_object: DbProject):
+        super().__init__(session, db_object)
 
     @classmethod
     def create(
         cls,
+        session,
         status: str,
         name: str = "",
         description: str = "",
@@ -50,10 +51,10 @@ class Project(Entity):
             processing_state=processing_state,
             validation_state=validation_state,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status, **kwargs)
+                session, links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status, **kwargs)
             ),
         )
 
-        cls.db.session.add(new_db_object)
-        cls.db.commit()
-        return cls(new_db_object)
+        session.add(new_db_object)
+        session.commit()
+        return cls(session, new_db_object)

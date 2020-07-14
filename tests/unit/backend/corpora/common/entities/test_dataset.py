@@ -6,6 +6,7 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
+    DBSessionMaker,
 )
 from backend.corpora.common.entities.dataset import Dataset
 from tests.unit.backend.corpora.common.entities.utils import get_ids
@@ -36,9 +37,13 @@ class DatasetParams:
 class TestDataset(unittest.TestCase):
     def setUp(self):
         self.uuid = "test_dataset_id"
+        self.session = DBSessionMaker().session()
+
+    def tearDown(self):
+        self.session.close()
 
     def test__get__ok(self):
-        dataset = Dataset.get(self.uuid)
+        dataset = Dataset.get(self.session, self.uuid)
         self.assertEqual(dataset.id, self.uuid)
         self.assertEqual(dataset.assay, "test_assay")
 
@@ -56,7 +61,7 @@ class TestDataset(unittest.TestCase):
 
     def test__get__does_not_exist(self):
         non_existent_key = "non_existent_id"
-        self.assertEqual(Dataset.get(non_existent_key), None)
+        self.assertEqual(Dataset.get(self.session, non_existent_key), None)
 
     def test__create__ok(self):
         """
@@ -79,6 +84,7 @@ class TestDataset(unittest.TestCase):
         for i in range(3):
             with self.subTest(i):
                 dataset = Dataset.create(
+                    self.session,
                     **dataset_params,
                     artifacts=[artifact_params] * i,
                     contributors=[contributor_params] * i,
@@ -91,9 +97,9 @@ class TestDataset(unittest.TestCase):
                 contributor_ids = get_ids(dataset.contributors)
 
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-                Dataset.db.session.expire_all()
+                self.session.expire_all()
 
-                dataset = Dataset.get(dataset_id)
+                dataset = Dataset.get(self.session, dataset_id)
                 self.assertIsNotNone(dataset)
                 self.assertEqual(dataset_id, dataset.id)
                 self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
@@ -106,6 +112,7 @@ class TestDataset(unittest.TestCase):
         """
         dataset_params = DatasetParams.get()
         dataset = Dataset.create(
+            self.session,
             **dataset_params,
             artifacts=[{"id": "test_dataset_artifact_id"}],
             contributors=[{"id": "test_contributor_id"}],
@@ -118,9 +125,9 @@ class TestDataset(unittest.TestCase):
         contributor_ids = get_ids(dataset.contributors)
 
         # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-        Dataset.db.session.expire_all()
+        self.session.expire_all()
 
-        dataset = Dataset.get(dataset_id)
+        dataset = Dataset.get(self.session, dataset_id)
         self.assertIsNotNone(dataset)
         self.assertEqual(dataset_id, dataset.id)
 

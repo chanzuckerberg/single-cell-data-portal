@@ -9,6 +9,7 @@ from backend.corpora.common.corpora_orm import (
     ProjectStatus,
     DbDataset,
     DbUser,
+    DBSessionMaker,
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
@@ -35,11 +36,15 @@ class TestProject(unittest.TestCase):
     def setUp(self):
         self.uuid = "test_project_id"
         self.status = ProjectStatus.LIVE.name
+        self.session = DBSessionMaker().session()
+
+    def tearDown(self):
+        self.session.close()
 
     def test__get__ok(self):
         key = (self.uuid, self.status)
 
-        project = Project.get(key)
+        project = Project.get(self.session, key)
 
         # Verify Columns
         self.assertEqual(project.name, "test_project")
@@ -62,14 +67,14 @@ class TestProject(unittest.TestCase):
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.status)
 
-        self.assertEqual(Project.get(non_existent_key), None)
+        self.assertEqual(Project.get(self.session, non_existent_key), None)
 
     def test__get__invalid_status(self):
         invalid_status_key = (self.uuid, "invalid_status")
         with self.assertLogs(entity_logger, logging.INFO) as logs:
-            self.assertEqual(Project.get(invalid_status_key), None)
+            self.assertEqual(Project.get(self.session, invalid_status_key), None)
         self.assertIn("Unable to find a row with primary key", logs.output[0])
-        self.assertEqual(Project.get(invalid_status_key), None)
+        self.assertEqual(Project.get(self.session, invalid_status_key), None)
 
     def test__create__ok(self):
         """
@@ -81,15 +86,15 @@ class TestProject(unittest.TestCase):
 
         for i in range(3):
             with self.subTest(i):
-                project = Project.create(links=[link_params] * i, **project_params)
+                project = Project.create(self.session, links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
                 link_ids = get_ids(project.links)
 
                 # Expire all local object and retireve them from the DB to make sure the transactions went through.
-                Project.db.session.expire_all()
+                self.session.expire_all()
 
-                project = Project.get(project_key)
+                project = Project.get(self.session, project_key)
                 self.assertIsNotNone(project)
                 self.assertEqual(project_key, (project.id, project.status))
                 self.assertEqual(link_ids, get_ids(project.links))
@@ -100,15 +105,16 @@ class TestProject(unittest.TestCase):
         """
         project_params = ProjectParams.get()
 
-        project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
+        project = Project.create(self.session, links=[{"id": "test_project_link_id"}], **project_params)
 
         project_key = (project.id, project.status)
         link_ids = get_ids(project.links)
 
         # Expire all local object and retireve them from the DB to make sure the transactions went through.
-        Project.db.session.expire_all()
+        self.session.expire_all()
 
-        project = Project.get(project_key)
+        project = Project.get(self.session, project_key)
+
         self.assertIsNotNone(project)
         self.assertEqual(project_key, (project.id, project.status))
 
