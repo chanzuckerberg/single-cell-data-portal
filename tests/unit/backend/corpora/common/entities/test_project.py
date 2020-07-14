@@ -40,7 +40,7 @@ class TestProject(unittest.TestCase):
 
         # Verify Link relationship
         self.assertIsInstance(project.links[0], DbProjectLink)
-        self.assertCountEqual(project.links[0].id, "test_project_link_id")
+        self.assertEqual(project.links[0].id, "test_project_link_id")
 
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.status)
@@ -72,10 +72,10 @@ class TestProject(unittest.TestCase):
                 # Expire all local object and retireve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
-                project = Project.get(project_key)
-                self.assertIsNotNone(project)
-                self.assertEqual(project_key, (project.id, project.status))
-                self.assertCountEqual(link_ids, [i.id for i in project.links])
+                project_from_db = Project.get(project_key)
+                self.assertIsNotNone(project_from_db)
+                self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
+                self.assertCountEqual(link_ids, [i.id for i in project_from_db.links])
 
     def test__create_ids__ok(self):
         """
@@ -91,12 +91,12 @@ class TestProject(unittest.TestCase):
         # Expire all local object and retireve them from the DB to make sure the transactions went through.
         Project.db.session.expire_all()
 
-        project = Project.get(project_key)
-        self.assertIsNotNone(project)
-        self.assertEqual(project_key, (project.id, project.status))
+        project_from_db = Project.get(project_key)
+        self.assertIsNotNone(project_from_db)
+        self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
 
-        self.assertEqual(link_ids, [i.id for i in project.links])
-        self.assertNotEqual(["test_project_link_id"], [i.id for i in project.links])
+        self.assertEqual(link_ids, [i.id for i in project_from_db.links])
+        self.assertNotEqual(["test_project_link_id"], [i.id for i in project_from_db.links])
 
     def test__list_in_time_range__ok(self):
         now = 0

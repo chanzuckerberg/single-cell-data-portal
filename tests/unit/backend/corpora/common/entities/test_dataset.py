@@ -8,29 +8,6 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from tests.unit.backend.corpora.common.entities.utils import get_ids
-
-
-class DatasetParams:
-    @classmethod
-    def get(cls):
-        return dict(
-            name="create_dataset",
-            organism="organism",
-            organism_ontology="123",
-            tissue="tissue",
-            tissue_ontology="123",
-            assay="assay",
-            assay_ontology="123",
-            disease="diseas",
-            disease_ontology="123",
-            sex="F",
-            ethnicity="ethnicity",
-            ethnicity_ontology="123",
-            source_data_location="location",
-            preprint_doi="preprint",
-            publication_doi="publication",
-        )
 
 
 class DatasetParams:
@@ -115,12 +92,12 @@ class TestDataset(unittest.TestCase):
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
 
-                dataset = Dataset.get(dataset_id)
-                self.assertIsNotNone(dataset)
-                self.assertEqual(dataset_id, dataset.id)
-                self.assertCountEqual(artifact_ids, [i.id for i in dataset.artifacts])
-                self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
-                self.assertCountEqual(contributor_ids, [i.id for i in dataset.contributors])
+                dataset_from_db = Dataset.get(dataset_id)
+                self.assertIsNotNone(dataset_from_db)
+                self.assertEqual(dataset_id, dataset_from_db.id)
+                self.assertCountEqual(artifact_ids, [i.id for i in dataset_from_db.artifacts])
+                self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset_from_db.deployment_directories])
+                self.assertCountEqual(contributor_ids, [i.id for i in dataset_from_db.contributors])
 
     def test__create_ids__ok(self):
         """
@@ -142,18 +119,17 @@ class TestDataset(unittest.TestCase):
         # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
         Dataset.db.session.expire_all()
 
-        dataset = Dataset.get(dataset_id)
-        self.assertIsNotNone(dataset)
-        self.assertEqual(dataset_id, dataset.id)
+        dataset_from_db = Dataset.get(dataset_id)
+        self.assertIsNotNone(dataset_from_db)
+        self.assertEqual(dataset_id, dataset_from_db.id)
 
-        self.assertCountEqual(artifact_ids, [i.id for i in dataset.artifacts])
-        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.artifacts])
+        self.assertCountEqual(artifact_ids, [i.id for i in dataset_from_db.artifacts])
+        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset_from_db.artifacts])
 
-        self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset.deployment_directories])
-        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset.deployment_directories])
+        self.assertCountEqual(deployment_directory_ids, [i.id for i in dataset_from_db.deployment_directories])
+        self.assertNotEqual(["test_dataset_artifact_id"], [i.id for i in dataset_from_db.deployment_directories])
 
-        self.assertCountEqual(contributor_ids, [i.id for i in dataset.contributors])
-        self.assertCountEqual(["test_contributor_id"], [i.id for i in dataset.contributors])
+        self.assertCountEqual(contributor_ids, [i.id for i in dataset_from_db.contributors])
 
     def test__list__ok(self):
         generate = 2
