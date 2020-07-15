@@ -83,36 +83,29 @@ class TestProject(unittest.TestCase):
                 project = Project.create(links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
-                link_ids = [i.id for i in project.links]
+                expected_links = project.links
 
-                # Expire all local object and retireve them from the DB to make sure the transactions went through.
+                # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
                 project_from_db = Project.get(project_key)
-                self.assertIsNotNone(project_from_db)
                 self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
-                self.assertCountEqual(link_ids, [i.id for i in project_from_db.links])
+                self.assertCountEqual(expected_links, project_from_db.links)
 
     def test__create_ids__ok(self):
         """
         Creating a project with ids in the links. A new link id is generated even if link id is provided.
         """
         project_params = ProjectParams.get()
-
         project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
-
         project_key = (project.id, project.status)
-        link_ids = [i.id for i in project.links]
 
-        # Expire all local object and retireve them from the DB to make sure the transactions went through.
+        # Expire all local object and retrieve them from the DB to make sure the transactions went through.
         Project.db.session.expire_all()
 
         project_from_db = Project.get(project_key)
-        self.assertIsNotNone(project_from_db)
         self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
-
-        self.assertEqual(link_ids, [i.id for i in project_from_db.links])
-        self.assertNotEqual(["test_project_link_id"], [i.id for i in project_from_db.links])
+        self.assertNotIn("test_project_link_id", project_from_db.links)
 
     def test__list__ok(self):
         generate = 2
