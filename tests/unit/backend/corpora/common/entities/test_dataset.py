@@ -92,33 +92,11 @@ class TestDataset(unittest.TestCase):
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
 
-                dataset_from_db = Dataset.get(expected_dataset_id)
-                self.assertEqual(expected_dataset_id, dataset_from_db.id)
-                self.assertCountEqual(expected_artifacts, dataset_from_db.artifacts)
-                self.assertCountEqual(expected_deployment_directories, dataset_from_db.deployment_directories)
-                self.assertCountEqual(expected_contributors, dataset_from_db.contributors)
-
-    def test__create_ids__ok(self):
-        """
-        Creating a dataset with ids in connect attributes. A new id is generated even if id is provided.
-        """
-        dataset_params = BogusDatasetParams.get()
-        dataset = Dataset.create(
-            **dataset_params,
-            artifacts=[{"id": "test_dataset_artifact_id"}],
-            contributors=[{"id": "test_contributor_id"}],
-            deployment_directories=[{"id": "test_deployment_directory_id"}],
-        )
-
-        dataset_id = dataset.id
-        # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-        Dataset.db.session.expire_all()
-
-        dataset_from_db = Dataset.get(dataset_id)
-        self.assertEqual(dataset_id, dataset_from_db.id)
-        self.assertNotIn("test_dataset_artifact_id", dataset_from_db.artifacts)
-        self.assertNotIn("test_dataset_artifact_id", dataset_from_db.deployment_directories)
-        self.assertNotIn("test_contributor_id", dataset_from_db.deployment_directories)
+                actual_dataset = Dataset.get(expected_dataset_id)
+                self.assertEqual(expected_dataset_id, actual_dataset.id)
+                self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
+                self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
+                self.assertCountEqual(expected_contributors, actual_dataset.contributors)
 
     def test__list__ok(self):
         generate = 2

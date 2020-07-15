@@ -38,10 +38,6 @@ class Project(Entity):
         # Setting Defaults
         links = links if links else []
 
-        #  Prevent accidentally linking an existing row to a different Project. This maintains the relationship of one
-        #  to many for links
-        [link.pop("id", None) for link in links]
-
         new_db_object = DbProject(
             id=primary_key,
             status=status,

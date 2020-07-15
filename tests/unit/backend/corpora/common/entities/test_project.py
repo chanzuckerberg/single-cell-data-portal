@@ -72,25 +72,9 @@ class TestProject(unittest.TestCase):
                 # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
-                project_from_db = Project.get(project_key)
-                self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
-                self.assertCountEqual(expected_links, project_from_db.links)
-
-    def test__create_ids__ok(self):
-        """
-        Creating a project with ids in the links. A new link id is generated even if link id is provided.
-        """
-        project_params = BogusProjectParams.get()
-
-        project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
-        project_key = (project.id, project.status)
-
-        # Expire all local object and retrieve them from the DB to make sure the transactions went through.
-        Project.db.session.expire_all()
-
-        project_from_db = Project.get(project_key)
-        self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
-        self.assertNotIn("test_project_link_id", project_from_db.links)
+                actual_project = Project.get(project_key)
+                self.assertEqual(project_key, (actual_project.id, actual_project.status))
+                self.assertCountEqual(expected_links, actual_project.links)
 
     def test__list_in_time_range__ok(self):
         created_before = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(10))

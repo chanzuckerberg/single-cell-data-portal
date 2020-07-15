@@ -68,8 +68,8 @@ class Entity:
         cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None, primary_keys: typing.List[str] = None
     ) -> typing.List[Base]:
         """
-        Create or modify `rows` in `db_table` associated with Entity Object during object creation. If id is provided,
-        then the row with that id is retrieved and updated, else a new UUID is generated and a new row is created.
+        Create `rows` in `db_table` associated with Entity Object during object creation. A new UUID is generated and a
+        new row is created for each item in `rows`.
 
         :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
@@ -88,20 +88,17 @@ class Entity:
 
         Another use would be to overwrite column specified in the rows.
 
-       :return: a list of database objects to create or modify.
+       :return: a list of database objects to create.
         """
         add_columns = add_columns if add_columns else {}
         db_objs = []
         for columns in rows:
+            #  if there are matching keys in columns and add_columns,
+            #  the key value in add_columns will be used.
             _columns = dict(**columns)
-            _columns.update(**add_columns)  # if there are matching keys in columns and add_columns,
-            # the key value in add_columns will be used.
-            _id = _columns.get("id")
-            if _id:
-                primary_key = (_id, *primary_keys) if primary_keys else _id
-                row = cls.db.get(db_table, primary_key)
-            else:
-                _columns["id"] = str(uuid.uuid4())
-                row = db_table(**_columns)
+            _columns.update(**add_columns)
+
+            _columns["id"] = str(uuid.uuid4())
+            row = db_table(**_columns)
             db_objs.append(row)
         return db_objs

@@ -45,11 +45,6 @@ class Dataset(Entity):
         deployment_directories = deployment_directories if deployment_directories else []
         contributors = contributors if contributors else []
 
-        #  Prevent accidentally linking an existing row to a different Dataset. This maintains the relationship of one
-        #  to many for artifacts and deployment_directories
-        [artifact.pop("id", None) for artifact in artifacts]
-        [deployment_directory.pop("id", None) for deployment_directory in deployment_directories]
-
         new_db_object = DbDataset(
             id=primary_key,
             revision=revision,
