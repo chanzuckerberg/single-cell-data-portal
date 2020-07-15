@@ -3,8 +3,9 @@
 Corpora's infrastructure is managed by the [single-cell-infra repo](https://github.com/chanzuckerberg/single-cell-infra)
 which was provided by the Shared Infrastructure team in order to enable streamlined creation of secure cloud
 environments. This document depicts the application of the template environment in Corpora to illustrate its inner
-complexities. Ideally, general documentation on the `cloud-env` environment from Shared Infrastructure should supplement
-and/or replace this doc.
+complexities. In the future, general documentation on the
+[cloud-env environment](https://github.com/chanzuckerberg/single-cell-infra/tree/main/terraform/envs/dev/cloud-env)
+should be created by Shared Infrastructure to supplement and/or replace this doc.
 
 ## Illustration
 
@@ -35,7 +36,7 @@ granted access to the public internet (via a route to the Internet Gateway resou
 enables traffic within the VPC (via a route to the VPC CIDR block 10.15.0.0/16). All subnet groups' route tables define 
 a route to the VPC CIDR block.
 
-__Note: route tables are not represented in the diagram.__
+_Note: route tables are not represented in the diagram._
 
 ### Security groups
 
