@@ -19,4 +19,4 @@ class CustomJSONEncoder(JSONEncoder):
         elif isinstance(obj, (Base, Entity)):
             return obj.to_dict()
         else:
-            return super().default(self, obj)
+            return super().default(obj)

@@ -52,3 +52,10 @@ class TestCustomJSONEncoder(unittest.TestCase):
         test_entity = Entity(DBTest(**params))
         expected_entity = json.dumps(params, sort_keys=True)
         self._test_json(test_entity, expected_entity)
+
+    def test_Unsupported_Type(self):
+        class Unsupported:
+            foo = "bar"
+        test_unsupported_type = Unsupported()
+        with self.assertRaises(TypeError):
+            json.dumps(test_unsupported_type, cls=CustomJSONEncoder)
