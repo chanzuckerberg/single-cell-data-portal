@@ -109,7 +109,9 @@ class TestProject(unittest.TestCase):
             # Projects from_date are returned.
             projects = Project.list_in_time_range(from_date=from_date)
             self.assertTrue(all([p["created_at"].timestamp() > from_date for p in projects]))
-            self.assertCountEqual([created_inbetween.id, created_after.id, "test_project_id"], [p["id"] for p in projects])
+            self.assertCountEqual(
+                [created_inbetween.id, created_after.id, "test_project_id"], [p["id"] for p in projects]
+            )
 
         with self.subTest("Test to_date"):
             # Projects from_date are returned.
@@ -127,7 +129,8 @@ class TestProject(unittest.TestCase):
         with self.subTest("No parameters"):
             projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
             self.assertTrue(
-                set([p["id"] for p in projects]).issubset([created_before.id, created_inbetween.id, created_after.id]))
+                set([p["id"] for p in projects]).issubset([created_before.id, created_inbetween.id, created_after.id])
+            )
 
     def test__list__ok(self):
         generate = 2

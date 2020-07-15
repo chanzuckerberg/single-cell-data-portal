@@ -56,7 +56,7 @@ class Project(Entity):
             links=cls._create_sub_objects(
                 links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status, **kwargs)
             ),
-            **kwargs
+            **kwargs,
         )
 
         cls.db.session.add(new_db_object)
@@ -84,7 +84,8 @@ class Project(Entity):
 
         :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
-        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix timestamp since the epoch in UTC timezone.
+        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
         :param filters: additional filters to apply to the query.
         :return: The results is a list of flattened dictionaries containing the `list_entities`
         """
