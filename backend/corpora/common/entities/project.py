@@ -52,6 +52,7 @@ class Project(Entity):
             links=cls._create_sub_objects(
                 links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status)
             ),
+            **kwargs,
         )
 
         cls.db.session.add(new_db_object)
