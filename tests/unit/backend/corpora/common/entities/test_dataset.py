@@ -99,36 +99,3 @@ class TestDataset(unittest.TestCase):
                 self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
                 self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
                 self.assertEqual(contributor_ids, get_ids(dataset.contributors))
-
-    def test__create_ids__ok(self):
-        """
-        Creating a dataset with ids in connect attributes. A new id is generated even if id is provided.
-        """
-        dataset_params = DatasetParams.get()
-        dataset = Dataset.create(
-            **dataset_params,
-            artifacts=[{"id": "test_dataset_artifact_id"}],
-            contributors=[{"id": "test_contributor_id"}],
-            deployment_directories=[{"id": "test_deployment_directory_id"}],
-        )
-
-        dataset_id = dataset.id
-        artifact_ids = get_ids(dataset.artifacts)
-        deployment_directory_ids = get_ids(dataset.deployment_directories)
-        contributor_ids = get_ids(dataset.contributors)
-
-        # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-        Dataset.db.session.expire_all()
-
-        dataset = Dataset.get(dataset_id)
-        self.assertIsNotNone(dataset)
-        self.assertEqual(dataset_id, dataset.id)
-
-        self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
-        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.artifacts))
-
-        self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
-        self.assertNotEqual(["test_dataset_artifact_id"], get_ids(dataset.deployment_directories))
-
-        self.assertEqual(contributor_ids, get_ids(dataset.contributors))
-        self.assertEqual(["test_contributor_id"], get_ids(dataset.contributors))
