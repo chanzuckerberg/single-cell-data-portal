@@ -29,41 +29,36 @@ class TransformingBase(object):
     Add functionality to transform a Base object, and recursively transform its linked entities.
     """
 
-    relationship_to_dict = True  # Set to True if entities with a relationship to this should be converted to a dict.
-
     def __iter__(self):
         return self.to_dict().iteritems()
 
-    def to_dict(self, relation_to_dict: bool = None, backref: "Base" = None) -> dict:
+    def to_dict(self, backref: "Base" = None) -> dict:
         """
+        Converts the columns and relationships of a SQLAlchemy Base object into a python dictionary.
 
-        :param relation_to_dict: If true, any connected relationships will be converted to dictionaries.
         :param backref: used to avoid recursively looping between two tables.
         :return: a dictionary representation of the database object.
         """
-        relation_to_dict = self.relationship_to_dict if relation_to_dict is None else relation_to_dict
+
+        # Converting columns to dictionary key values.
         result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
-        if relation_to_dict:
-            for attr, relation in self.__mapper__.relationships.items():
-                # Avoid recursive loop between two tables.
-                if backref == relation.target:
-                    continue
-                value = getattr(self, attr)
-                if value is None:
-                    result[relation.key] = None
-                elif isinstance(value.__class__, DeclarativeMeta):
-                    result[relation.key] = value.to_dict(backref=self.__table__)
-                else:
-                    result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
+
+        # Converting relationships to key values
+        for attr, relation in self.__mapper__.relationships.items():
+            # Avoid recursive loop between two tables.
+            if backref == relation.target:
+                continue
+            value = getattr(self, attr)
+            if value is None:
+                result[relation.key] = None
+            elif isinstance(value.__class__, DeclarativeMeta):
+                result[relation.key] = value.to_dict(backref=self.__table__)
+            else:
+                result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
         return result
 
 
-class TimeStamp(TransformingBase):
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
-
-
-Base = declarative_base(cls=TimeStamp)
+Base = declarative_base(cls=TransformingBase)
 
 
 class DBSessionMaker:
@@ -171,6 +166,8 @@ class DbUser(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     email = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     projects = relationship("DbProject", back_populates="user")
@@ -194,6 +191,8 @@ class DbProject(Base):
     needs_attestation = Column(Boolean)
     processing_state = Column(Enum(ProcessingState))
     validation_state = Column(Enum(ValidationState))
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     user = relationship("DbUser", uselist=False, back_populates="projects")
@@ -214,6 +213,8 @@ class DbProjectDataset(Base):
     project_id = Column(String, nullable=False)
     project_status = Column(String, nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
@@ -231,6 +232,8 @@ class DbProjectLink(Base):
     project_status = Column(String, nullable=False)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     project = relationship("DbProject", back_populates="links")
@@ -265,6 +268,8 @@ class DbDataset(Base):
     source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     project = relationship("DbProject", secondary=lambda: DbProjectDataset().__table__, back_populates="datasets")
@@ -290,6 +295,8 @@ class DbDatasetArtifact(Base):
     type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="artifacts")
@@ -307,6 +314,8 @@ class DbDeploymentDirectory(Base):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     environment = Column(String)
     url = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="deployment_directories")
@@ -323,6 +332,8 @@ class DbContributor(Base):
     name = Column(String)
     institution = Column(String)
     email = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     datasets = relationship(
@@ -342,3 +353,5 @@ class DbDatasetContributor(Base):
     id = Column(String, primary_key=True)
     contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
