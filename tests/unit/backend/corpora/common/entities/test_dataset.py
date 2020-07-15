@@ -118,7 +118,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(dataset_id, dataset_from_db.id)
         self.assertNotIn("test_dataset_artifact_id", dataset_from_db.artifacts)
         self.assertNotIn("test_dataset_artifact_id", dataset_from_db.deployment_directories)
-        self.assertNotIn("test_contributor_id",dataset_from_db.deployment_directories)
+        self.assertNotIn("test_contributor_id", dataset_from_db.deployment_directories)
 
     def test__list__ok(self):
         generate = 2
