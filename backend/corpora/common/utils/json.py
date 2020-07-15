@@ -7,7 +7,7 @@ from ..corpora_orm import Base
 
 
 class CustomJSONEncoder(JSONEncoder):
-    "Add support for serializing DateTime and Enums types into JSON"
+    "Add support for serializing DateTime, Enums, and SQLAlchemy Base types into JSON"
 
     def default(self, obj):
         if isinstance(obj, datetime.timedelta):

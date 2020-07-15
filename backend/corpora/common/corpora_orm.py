@@ -25,6 +25,7 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from .corpora_config import CorporaDbConfig
 
+
 class TransformingBase(object):
     """
     Add functionality to transform a Base object, and recursively transform its linked entities.
