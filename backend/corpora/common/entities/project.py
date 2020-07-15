@@ -2,7 +2,6 @@ import typing
 import uuid
 from datetime import datetime
 
-import pytz
 from sqlalchemy import and_
 
 from .entity import Entity
@@ -78,7 +77,7 @@ class Project(Entity):
 
     @classmethod
     def list_in_time_range(
-        cls, to_date: float = None, from_date: float = None, filters: list = None
+        cls, to_date: int = None, from_date: int = None, filters: list = None
     ) -> typing.List[typing.Dict]:
         """
         Queries the database for projects that have been created within the specified time range.
@@ -100,9 +99,9 @@ class Project(Entity):
             return _result
 
         if to_date:
-            filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date, tz=pytz.UTC))
+            filters.append(DbProject.created_at <= datetime.fromtimestamp(to_date))
         if from_date:
-            filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date, tz=pytz.UTC))
+            filters.append(DbProject.created_at >= datetime.fromtimestamp(from_date))
 
         results = [
             to_dict(result)

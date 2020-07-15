@@ -11,7 +11,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from tests.unit.backend.utils import ProjectParams
+from tests.unit.backend.utils import BogusProjectParams
 
 
 class TestProject(unittest.TestCase):
@@ -60,7 +60,7 @@ class TestProject(unittest.TestCase):
         """
 
         link_params = {"link_url": "fake_url", "link_type": ProjectLinkType.PROTOCOL.name}
-        project_params = ProjectParams.get()
+        project_params = BogusProjectParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -81,7 +81,7 @@ class TestProject(unittest.TestCase):
         """
         Creating a project with ids in the links. A new link id is generated even if link id is provided.
         """
-        project_params = ProjectParams.get()
+        project_params = BogusProjectParams.get()
 
         project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
 
@@ -99,12 +99,11 @@ class TestProject(unittest.TestCase):
         self.assertNotEqual(["test_project_link_id"], [i.id for i in project_from_db.links])
 
     def test__list_in_time_range__ok(self):
-        now = 0
-        created_before = Project.create(**ProjectParams.get(), created_at=datetime.fromtimestamp(10))
+        created_before = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(10))
         from_date = 20
-        created_inbetween = Project.create(**ProjectParams.get(), created_at=datetime.fromtimestamp(30))
+        created_inbetween = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(30))
         to_date = 40
-        created_after = Project.create(**ProjectParams.get(), created_at=datetime.fromtimestamp(50))
+        created_after = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(50))
 
         with self.subTest("Test from_date"):
             # Projects from_date are returned.
@@ -132,6 +131,6 @@ class TestProject(unittest.TestCase):
 
     def test__list__ok(self):
         generate = 2
-        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
+        generated_ids = [Project.create(**BogusProjectParams.get()).id for _ in range(generate)]
         projects = Project.list()
         self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))

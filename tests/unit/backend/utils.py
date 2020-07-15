@@ -5,10 +5,10 @@ from backend.corpora.common.corpora_orm import (
 )
 
 
-class ProjectParams:
+class BogusProjectParams:
     @classmethod
-    def get(cls):
-        return dict(
+    def get(cls, **kwargs):
+        bogus_data = dict(
             status=ProjectStatus.EDIT.name,
             name="Created Project",
             description="test",
@@ -19,3 +19,5 @@ class ProjectParams:
             processing_state=ProcessingState.IN_VALIDATION.name,
             validation_state=ValidationState.NOT_VALIDATED.name,
         )
+        bogus_data.update(**kwargs)
+        return bogus_data
