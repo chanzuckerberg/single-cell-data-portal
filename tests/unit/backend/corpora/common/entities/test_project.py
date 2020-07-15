@@ -88,6 +88,6 @@ class TestProject(unittest.TestCase):
                 # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
-                project_from_db = Project.get(project_key)
-                self.assertEqual(project_key, (project_from_db.id, project_from_db.status))
-                self.assertCountEqual(expected_links, project_from_db.links)
+                actual_project = Project.get(project_key)
+                self.assertEqual(project_key, (actual_project.id, actual_project.status))
+                self.assertCountEqual(expected_links, actual_project.links)

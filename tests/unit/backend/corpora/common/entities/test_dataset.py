@@ -92,8 +92,8 @@ class TestDataset(unittest.TestCase):
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
 
-                dataset_from_db = Dataset.get(expected_dataset_id)
-                self.assertEqual(expected_dataset_id, dataset_from_db.id)
-                self.assertCountEqual(expected_artifacts, dataset_from_db.artifacts)
-                self.assertCountEqual(expected_deployment_directories, dataset_from_db.deployment_directories)
-                self.assertCountEqual(expected_contributors, dataset_from_db.contributors)
+                actual_dataset = Dataset.get(expected_dataset_id)
+                self.assertEqual(expected_dataset_id, actual_dataset.id)
+                self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
+                self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
+                self.assertCountEqual(expected_contributors, actual_dataset.contributors)
