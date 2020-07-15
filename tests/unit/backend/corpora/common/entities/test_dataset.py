@@ -97,3 +97,9 @@ class TestDataset(unittest.TestCase):
                 self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
                 self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
                 self.assertCountEqual(expected_contributors, actual_dataset.contributors)
+
+    def test__list__ok(self):
+        generate = 2
+        generated_ids = [Dataset.create(**DatasetParams.get()).id for _ in range(generate)]
+        dataset = Dataset.list()
+        self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))

@@ -91,3 +91,9 @@ class TestProject(unittest.TestCase):
                 actual_project = Project.get(project_key)
                 self.assertEqual(project_key, (actual_project.id, actual_project.status))
                 self.assertCountEqual(expected_links, actual_project.links)
+
+    def test__list__ok(self):
+        generate = 2
+        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
+        projects = Project.list()
+        self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))
