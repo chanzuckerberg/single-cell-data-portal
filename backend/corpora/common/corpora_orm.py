@@ -41,10 +41,10 @@ class TransformingBase(object):
         :return: a dictionary representation of the database object.
         """
 
-        # Converting columns to dictionary key values.
+        # Populate result with columns.
         result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
 
-        # Converting relationships to key values
+        # Populate result with relationships.
         for attr, relation in self.__mapper__.relationships.items():
             # Avoid recursive loop between two tables.
             if backref == relation.target:
