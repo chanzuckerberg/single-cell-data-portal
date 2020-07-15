@@ -18,11 +18,12 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
+from backend.corpora.common.utils.exceptions import CorporaException
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from .corpora_config import CorporaDbConfig
-
 
 class TransformingBase(object):
     """
@@ -53,8 +54,10 @@ class TransformingBase(object):
                 result[relation.key] = None
             elif isinstance(value.__class__, DeclarativeMeta):
                 result[relation.key] = value.to_dict(backref=self.__table__)
-            else:
+            elif isinstance(value, list):
                 result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
+            else:
+                raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
         return result
 
 
