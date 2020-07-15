@@ -121,12 +121,11 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "validation_state": "NOT_VALIDATED",
         }
 
-        with self.subTest("Exists"):
-            test_url = furl(path="/v1/project/test_project_id")
-            response = self.app.get(test_url.url, headers=dict(host="localhost"))
-            response.raise_for_status()
-            result_body = json.loads(response.body)
-            result_body = self.remove_timestamps(result_body)
-            result_json_body = json.dumps(result_body, sort_keys=True)
-            expected_json_body = json.dumps(expected_response_body)
-            self.assertEqual(result_json_body, expected_json_body)
+        test_url = furl(path="/v1/project/test_project_id")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        response.raise_for_status()
+        result_body = json.loads(response.body)
+        result_body = self.remove_timestamps(result_body)
+        result_json_body = json.dumps(result_body, sort_keys=True)
+        expected_json_body = json.dumps(expected_response_body)
+        self.assertEqual(result_json_body, expected_json_body)
