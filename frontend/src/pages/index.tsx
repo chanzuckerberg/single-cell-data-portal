@@ -25,7 +25,7 @@ interface ProjectResponse {
 }
 
 async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
-  const response = await (await fetch(`${API_URL}/project`)).json();
+  const response = await (await fetch(`${API_URL}/v1/project`)).json();
   const projectIds: string[] = response.projects.map(
     (project: ProjectResponse) => project.project_uuid
   );
@@ -44,7 +44,7 @@ async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
 }
 
 async function fetchProject(id: string): Promise<Project> {
-  return (await fetch(`${API_URL}/project/${id}`)).json();
+  return (await fetch(`${API_URL}/v1/project/${id}`)).json();
 }
 
 export default Index;
