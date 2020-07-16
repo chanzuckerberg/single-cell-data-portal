@@ -41,19 +41,19 @@ class TestCustomJSONEncoder(unittest.TestCase):
         expected_enum = f'"{test_enum_value.name}"'
         self._test_json(test_enum_value, expected_enum)
 
-    def test_Base(self):
+    def test_base(self):
         params = dict(id="foo", name="bar")
         test_base = DBTest(**params)
         expected_base = json.dumps(params, sort_keys=True)
         self._test_json(test_base, expected_base)
 
-    def test_Entity(self):
+    def test_entity(self):
         params = dict(id="foo", name="bar")
         test_entity = Entity(DBTest(**params))
         expected_entity = json.dumps(params, sort_keys=True)
         self._test_json(test_entity, expected_entity)
 
-    def test_Unsupported_Type(self):
+    def test_unsupported_type(self):
         class Unsupported:
             foo = "bar"
 
