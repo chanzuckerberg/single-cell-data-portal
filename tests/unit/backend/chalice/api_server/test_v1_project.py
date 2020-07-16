@@ -14,21 +14,20 @@ class TestProject(BaseAPITest, unittest.TestCase):
     def test__list_project__ok(self):
         path = "/v1/project"
         headers = dict(host="localhost")
+        from_date = int(datetime.fromtimestamp(10).timestamp())
+        creation_time = 20
+        to_date = int(datetime.fromtimestamp(30).timestamp())
+        test_project = Project.create(
+            **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
+        )
+        expected_id = test_project.id
+
         with self.subTest("No Parameters"):
             test_url = furl(path=path)
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
-            self.assertIn("test_project_id", [p["id"] for p in actual_body["projects"]])
-
-        from_date = int(datetime.fromtimestamp(10).timestamp())
-        creation_time = 20
-        to_date = int(datetime.fromtimestamp(30).timestamp())
-
-        test_project = Project.create(
-            **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
-        )
-        expected_id = test_project.id
+            self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
 
         with self.subTest("from_date"):
             test_url = furl(path=path, query_params={"from_date": from_date})
@@ -133,7 +132,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "id": "test_project_id",
             "links": [{"type": "RAW_DATA", "url": "test_url"}],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",
@@ -143,8 +142,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/project/test_project_id")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
-        actual_body = json.loads(response.body)
-        actual_body = self.remove_timestamps(actual_body)
+        actual_body = self.remove_timestamps(json.loads(response.body))
         actual_json_body = json.dumps(actual_body, sort_keys=True)
         expected_json_body = json.dumps(expected_body)
         self.assertEqual(actual_json_body, expected_json_body)
