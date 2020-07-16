@@ -8,7 +8,6 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class DatasetParams:
@@ -85,17 +84,22 @@ class TestDataset(unittest.TestCase):
                     deployment_directories=[deployment_directory_params] * i,
                 )
 
-                dataset_id = dataset.id
-                artifact_ids = get_ids(dataset.artifacts)
-                deployment_directory_ids = get_ids(dataset.deployment_directories)
-                contributor_ids = get_ids(dataset.contributors)
+                expected_dataset_id = dataset.id
+                expected_artifacts = dataset.artifacts
+                expected_deployment_directories = dataset.deployment_directories
+                expected_contributors = dataset.contributors
 
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
                 Dataset.db.session.expire_all()
 
-                dataset = Dataset.get(dataset_id)
-                self.assertIsNotNone(dataset)
-                self.assertEqual(dataset_id, dataset.id)
-                self.assertEqual(artifact_ids, get_ids(dataset.artifacts))
-                self.assertEqual(deployment_directory_ids, get_ids(dataset.deployment_directories))
-                self.assertEqual(contributor_ids, get_ids(dataset.contributors))
+                actual_dataset = Dataset.get(expected_dataset_id)
+                self.assertEqual(expected_dataset_id, actual_dataset.id)
+                self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
+                self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
+                self.assertCountEqual(expected_contributors, actual_dataset.contributors)
+
+    def test__list__ok(self):
+        generate = 2
+        generated_ids = [Dataset.create(**DatasetParams.get()).id for _ in range(generate)]
+        dataset = Dataset.list()
+        self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))

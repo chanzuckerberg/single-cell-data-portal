@@ -12,7 +12,6 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-from tests.unit.backend.corpora.common.entities.utils import get_ids
 
 
 class ProjectParams:
@@ -84,12 +83,17 @@ class TestProject(unittest.TestCase):
                 project = Project.create(links=[link_params] * i, **project_params)
 
                 project_key = (project.id, project.status)
-                link_ids = get_ids(project.links)
+                expected_links = project.links
 
-                # Expire all local object and retireve them from the DB to make sure the transactions went through.
+                # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
-                project = Project.get(project_key)
-                self.assertIsNotNone(project)
-                self.assertEqual(project_key, (project.id, project.status))
-                self.assertEqual(link_ids, get_ids(project.links))
+                actual_project = Project.get(project_key)
+                self.assertEqual(project_key, (actual_project.id, actual_project.status))
+                self.assertCountEqual(expected_links, actual_project.links)
+
+    def test__list__ok(self):
+        generate = 2
+        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
+        projects = Project.list()
+        self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))
