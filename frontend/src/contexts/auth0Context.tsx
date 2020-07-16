@@ -12,12 +12,12 @@ import { User } from "../common/entities";
 
 // (thuang): These variables are set by `env.development`, `env.production`, etc..
 const config = {
-  domain: process.env.AUTH0_DOMAIN as string,
+  audience: process.env.BROWSER_AUDIENCE,
   // eslint-disable-next-line @typescript-eslint/camelcase
   client_id: process.env.AUTH0_CLIENT_ID as string,
+  domain: process.env.AUTH0_DOMAIN as string,
   // eslint-disable-next-line @typescript-eslint/camelcase
   redirect_uri: process.env.AUTH0_CALLBACK,
-  audience: process.env.BROWSER_AUDIENCE,
 };
 
 interface Auth0Context {
@@ -130,14 +130,14 @@ const Auth0Provider: FC = ({ children }) => {
   return (
     <Auth0Context.Provider
       value={{
-        isAuthenticated,
-        user,
-        loading,
-        handleRedirectCallback,
-        loginWithRedirect,
-        logout,
         getIdTokenClaims: auth0Client?.getIdTokenClaims,
         getTokenSilently: auth0Client?.getTokenSilently,
+        handleRedirectCallback,
+        isAuthenticated,
+        loading,
+        loginWithRedirect,
+        logout,
+        user,
       }}
     >
       {children}

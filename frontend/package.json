@@ -7,12 +7,14 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.6.4",
     "@types/react-helmet": "^6.0.0",
+    "babel-plugin-styled-components": "^1.10.7",
     "gatsby": "^2.20.22",
     "gatsby-image": "^2.3.2",
     "gatsby-plugin-manifest": "^2.3.3",
     "gatsby-plugin-offline": "^3.1.2",
     "gatsby-plugin-react-helmet": "^3.2.2",
     "gatsby-plugin-sharp": "^2.5.4",
+    "gatsby-plugin-styled-components": "^3.3.8",
     "gatsby-plugin-theme-ui": "^0.3.0",
     "gatsby-plugin-typescript": "^2.4.8",
     "gatsby-source-filesystem": "^2.2.2",
@@ -21,10 +23,12 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-helmet": "^5.2.1",
+    "styled-components": "^5.1.1",
     "theme-ui": "^0.3.1"
   },
   "devDependencies": {
     "@types/react-dom": "^16.9.8",
+    "@types/styled-components": "^5.1.0",
     "@types/theme-ui": "^0.3.4",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
