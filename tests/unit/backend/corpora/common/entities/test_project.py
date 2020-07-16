@@ -1,33 +1,17 @@
 import logging
 import unittest
+from datetime import datetime
 
 from backend.corpora.common.corpora_orm import (
     ProjectLinkType,
     DbProjectLink,
-    ProcessingState,
-    ValidationState,
     ProjectStatus,
     DbDataset,
     DbUser,
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
-
-
-class ProjectParams:
-    @classmethod
-    def get(cls):
-        return dict(
-            status=ProjectStatus.EDIT.name,
-            name="Created Project",
-            description="test",
-            owner="test_user_id",
-            s3_bucket="s3://fakebucket",
-            tc_uri="https://fakeurl",
-            needs_attestation=False,
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
-        )
+from tests.unit.backend.utils import BogusProjectParams
 
 
 class TestProject(unittest.TestCase):
@@ -76,7 +60,7 @@ class TestProject(unittest.TestCase):
         """
 
         link_params = {"link_url": "fake_url", "link_type": ProjectLinkType.PROTOCOL.name}
-        project_params = ProjectParams.get()
+        project_params = BogusProjectParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -92,8 +76,69 @@ class TestProject(unittest.TestCase):
                 self.assertEqual(project_key, (actual_project.id, actual_project.status))
                 self.assertCountEqual(expected_links, actual_project.links)
 
+    def test__list_in_time_range__ok(self):
+        created_before = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(10))
+        from_date = 20
+        created_inbetween = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(30))
+        to_date = 40
+        created_after = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(50))
+
+        with self.subTest("from_date"):
+            # Projects from_date are returned.
+            actual_projects = Project.list_in_time_range(from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
+            expected_ids = [created_inbetween.id, created_after.id, "test_project_id"]
+            actual_ids = [p["id"] for p in actual_projects]
+            # Check if the test ids we created are present.
+            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # so we can't do an exact match.
+            self.assertTrue(set(expected_ids).issubset(actual_ids))
+
+        with self.subTest("to_date"):
+            # Projects to_date are returned.
+            actual_projects = Project.list_in_time_range(to_date=to_date)
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            expected_ids = [created_before.id, created_inbetween.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            self.assertCountEqual(expected_ids, actual_ids)
+
+        with self.subTest("from_date->to_date"):
+            # Projects between to_date and from_date are returned.
+            actual_projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            expected_ids = [created_inbetween.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            self.assertCountEqual(expected_ids, actual_ids)
+
+        with self.subTest("No parameters"):
+            """All projects are returned."""
+            actual_projects = Project.list_in_time_range()
+            expected_ids = [created_before.id, created_inbetween.id, created_after.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            # Check if the test ids we created are present.
+            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # so we can't do an exact match.
+            self.assertTrue(set(expected_ids).issubset(actual_ids))
+
+    def test__list_projects_in_time_range___ok(self):
+        """Live projects are returned"""
+        from_date = 10
+        created_at = datetime.fromtimestamp(20)
+        to_date = 30
+        expected_project = Project.create(
+            **BogusProjectParams.get(created_at=created_at, status=ProjectStatus.LIVE.name)
+        )
+
+        # Generate a project with Edit status. This should not show up in the results.
+        Project.create(**BogusProjectParams.get(created_at=created_at, status=ProjectStatus.EDIT.name))
+
+        actual_projects = Project.list_projects_in_time_range(to_date=to_date, from_date=from_date)
+        expected_projects = [{"created_at": created_at, "id": expected_project.id}]
+        self.assertCountEqual(expected_projects, actual_projects)
+
     def test__list__ok(self):
         generate = 2
-        generated_ids = [Project.create(**ProjectParams.get()).id for _ in range(generate)]
+        generated_ids = [Project.create(**BogusProjectParams.get()).id for _ in range(generate)]
         projects = Project.list()
         self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))

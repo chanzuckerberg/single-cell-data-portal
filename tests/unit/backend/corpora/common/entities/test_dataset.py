@@ -10,7 +10,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.dataset import Dataset
 
 
-class DatasetParams:
+class BogusDatasetParams:
     @classmethod
     def get(cls):
         return dict(
@@ -73,7 +73,7 @@ class TestDataset(unittest.TestCase):
 
         contributor_params = dict(name="bob", institution="school", email="some@email.com")
 
-        dataset_params = DatasetParams.get()
+        dataset_params = BogusDatasetParams.get()
 
         for i in range(3):
             with self.subTest(i):
@@ -100,6 +100,6 @@ class TestDataset(unittest.TestCase):
 
     def test__list__ok(self):
         generate = 2
-        generated_ids = [Dataset.create(**DatasetParams.get()).id for _ in range(generate)]
+        generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]
         dataset = Dataset.list()
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
