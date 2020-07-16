@@ -61,10 +61,14 @@ def get_chalice_app(flask_app):
         resource_path = app.current_request.context["resourcePath"].format(**uri_params)
         req_body = app.current_request.raw_body if app.current_request._body is not None else None
 
+        # Must convert the chalice.MultiDict into a list of tuples. Chalice returns chalice.Multidict which is
+        # incompatible with the werkzeug.MultiDict expected by Flask.
+        query_string = list(app.current_request.query_params.items()) if app.current_request.query_params else None
+
         with flask_app.test_request_context(
             path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
-            query_string=list(app.current_request.query_params.items()) if app.current_request.query_params else None,
+            query_string=query_string,
             method=app.current_request.method,
             headers=list(app.current_request.headers.items()),
             data=req_body,
