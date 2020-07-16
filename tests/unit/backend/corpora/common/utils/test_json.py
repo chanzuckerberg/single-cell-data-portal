@@ -17,7 +17,7 @@ class DBTest(Base):
 
 
 class TestCustomJSONEncoder(unittest.TestCase):
-    def _test_json(self, test_value, expected_value):
+    def _verify_json_encoding(self, test_value, expected_value):
         actual_value = json.dumps(test_value, cls=CustomJSONEncoder, sort_keys=True)
         self.assertEqual(expected_value, actual_value)
 
