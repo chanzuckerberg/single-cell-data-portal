@@ -20,7 +20,11 @@ class TestProject(BaseAPITest, unittest.TestCase):
         test_project = Project.create(
             **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
         )
+        status_edit_project = Project.create(
+            **BogusProjectParams.get(status=ProjectStatus.EDIT.name, created_at=datetime.fromtimestamp(creation_time)),
+        )
         expected_id = test_project.id
+        not_expected_id = status_edit_project.id
 
         with self.subTest("No Parameters"):
             test_url = furl(path=path)
@@ -28,6 +32,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response.raise_for_status()
             actual_body = json.loads(response.body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertNotIn(not_expected_id, [p["id"] for p in actual_body["projects"]])
 
         with self.subTest("from_date"):
             test_url = furl(path=path, query_params={"from_date": from_date})
