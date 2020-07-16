@@ -64,7 +64,7 @@ def get_chalice_app(flask_app):
         with flask_app.test_request_context(
             path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
-            query_string=dict(app.current_request.query_params) if app.current_request.query_params else None,
+            query_string=list(app.current_request.query_params.items()) if app.current_request.query_params else None,
             method=app.current_request.method,
             headers=list(app.current_request.headers.items()),
             data=req_body,

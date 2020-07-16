@@ -12,39 +12,58 @@ from tests.unit.backend.utils import BogusProjectParams
 
 class TestProject(BaseAPITest, unittest.TestCase):
     def test__list_project__ok(self):
+        path = "/v1/project"
+        headers = dict(host="localhost")
         with self.subTest("No Parameters"):
-            test_url = furl(path="/v1/project")
-            response = self.app.get(test_url.url, headers=dict(host="localhost"))
+            test_url = furl(path=path)
+            response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
-            result_body = json.loads(response.body)
-            self.assertIn("test_project_id", [p["id"] for p in result_body["projects"]])
+            actual_body = json.loads(response.body)
+            self.assertIn("test_project_id", [p["id"] for p in actual_body["projects"]])
 
-        creation_time = 0
+        from_date = int(datetime.fromtimestamp(10).timestamp())
+        creation_time = 20
+        to_date = int(datetime.fromtimestamp(30).timestamp())
 
         test_project = Project.create(
-            **BogusProjectParams.get(status=ProjectStatus.LIVE.name), created_at=datetime.fromtimestamp(creation_time)
+            **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
         )
-        test_id = test_project.id
-        future_time = int(datetime.fromtimestamp(10).timestamp())
-        with self.subTest("With to_date"):
-            test_url = furl(path="/v1/project", query_params={"to_date": future_time})
-            response = self.app.get(test_url.url, headers=dict(host="localhost"))
-            response.raise_for_status()
-            result_body = json.loads(response.body)
-            self.assertEqual(result_body["projects"][0]["id"], test_id)
-            self.assertEqual(result_body["projects"][0]["created_at"], creation_time)
-            self.assertEqual(result_body["to_date"], future_time)
+        expected_id = test_project.id
 
-        with self.subTest("With from_date"):
-            test_url = furl(path="/v1/project", query_params={"from_date": future_time})
-            response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        with self.subTest("from_date"):
+            test_url = furl(path=path, query_params={"from_date": from_date})
+            response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
-            result_body = json.loads(response.body)
-            self.assertIn("test_project_id", [p["id"] for p in result_body["projects"]])
-            self.assertEqual(result_body["from_date"], future_time)
+            actual_body = json.loads(response.body)
+            self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertEqual(actual_body["from_date"], from_date)
+
+        with self.subTest("to_date"):
+            test_url = furl(path=path, query_params={"to_date": to_date})
+            response = self.app.get(test_url.url, headers=headers)
+            response.raise_for_status()
+            actual_body = json.loads(response.body)
+            self.assertEqual(actual_body["projects"][0]["id"], expected_id)
+            self.assertEqual(actual_body["projects"][0]["created_at"], creation_time)
+            self.assertEqual(actual_body["to_date"], to_date)
+
+        with self.subTest("from_date->to_date"):
+            test_url = furl(path=path, query_params={"from_date": from_date, "to_date": to_date})
+            response = self.app.get(test_url.url, headers=headers)
+            response.raise_for_status()
+            actual_body = json.loads(response.body)
+            self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertEqual(actual_body["from_date"], from_date)
+            self.assertEqual(actual_body["to_date"], to_date)
 
     @staticmethod
-    def remove_timestamps(json_response_body: dict) -> dict:
+    def remove_timestamps(body: dict) -> dict:
+        """
+        A helper function to remove timestamps from the response body.
+        :param body: The decoded json response body
+        :return: The decode json response body with timestamps removed.
+        """
+
         def _remove_timestamps(jrb):
             jrb.pop("created_at", None)
             jrb.pop("updated_at", None)
@@ -56,11 +75,11 @@ class TestProject(BaseAPITest, unittest.TestCase):
                         _remove_timestamps(list_value)
             return jrb
 
-        return _remove_timestamps(json_response_body)
+        return _remove_timestamps(body)
 
     def test__get_project_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
-        expected_response_body = {
+        expected_body = {
             "attestation": {"needed": False, "tc_uri": "test_tc_uri"},
             "datasets": [
                 {
@@ -124,8 +143,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/project/test_project_id")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
-        result_body = json.loads(response.body)
-        result_body = self.remove_timestamps(result_body)
-        result_json_body = json.dumps(result_body, sort_keys=True)
-        expected_json_body = json.dumps(expected_response_body)
-        self.assertEqual(result_json_body, expected_json_body)
+        actual_body = json.loads(response.body)
+        actual_body = self.remove_timestamps(actual_body)
+        actual_json_body = json.dumps(actual_body, sort_keys=True)
+        expected_json_body = json.dumps(expected_body)
+        self.assertEqual(actual_json_body, expected_json_body)

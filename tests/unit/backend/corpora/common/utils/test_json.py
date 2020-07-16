@@ -56,6 +56,7 @@ class TestCustomJSONEncoder(unittest.TestCase):
     def test_Unsupported_Type(self):
         class Unsupported:
             foo = "bar"
+
         test_unsupported_type = Unsupported()
         with self.assertRaises(TypeError):
             json.dumps(test_unsupported_type, cls=CustomJSONEncoder)

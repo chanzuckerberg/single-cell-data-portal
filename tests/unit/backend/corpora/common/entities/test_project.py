@@ -85,30 +85,41 @@ class TestProject(unittest.TestCase):
 
         with self.subTest("Test from_date"):
             # Projects from_date are returned.
-            projects = Project.list_in_time_range(from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in projects]))
-            self.assertCountEqual(
-                [created_inbetween.id, created_after.id, "test_project_id"], [p["id"] for p in projects]
-            )
+            actual_projects = Project.list_in_time_range(from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
+            expected_ids = [created_inbetween.id, created_after.id, "test_project_id"]
+            actual_ids = [p["id"] for p in actual_projects]
+            # Check if the test ids we created are present.
+            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # so we can't do an exact match.
+            self.assertTrue(set(expected_ids).issubset(actual_ids))
 
         with self.subTest("Test to_date"):
-            # Projects from_date are returned.
-            projects = Project.list_in_time_range(to_date=to_date)
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in projects]))
-            self.assertCountEqual([created_before.id, created_inbetween.id], [p["id"] for p in projects])
+            # Projects to_date are returned.
+            actual_projects = Project.list_in_time_range(to_date=to_date)
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            expected_ids = [created_before.id, created_inbetween.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            self.assertCountEqual(expected_ids, actual_ids)
 
         with self.subTest("Test to_date and from_date"):
-            # Projects from_date are returned.
-            projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in projects]))
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in projects]))
-            self.assertCountEqual([created_inbetween.id], [p["id"] for p in projects])
+            # Projects between to_date and from_date are returned.
+            actual_projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            expected_ids = [created_inbetween.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            self.assertCountEqual(expected_ids, actual_ids)
 
         with self.subTest("No parameters"):
-            projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
-            self.assertTrue(
-                set([p["id"] for p in projects]).issubset([created_before.id, created_inbetween.id, created_after.id])
-            )
+            """All projects are returned."""
+            actual_projects = Project.list_in_time_range()
+            expected_ids = [created_before.id, created_inbetween.id, created_after.id]
+            actual_ids = [p["id"] for p in actual_projects]
+            # Check if the test ids we created are present.
+            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # so we can't do an exact match.
+            self.assertTrue(set(expected_ids).issubset(actual_ids))
 
     def test__list__ok(self):
         generate = 2
