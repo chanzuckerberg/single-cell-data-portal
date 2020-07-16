@@ -17,21 +17,17 @@ class DBTest(Base):
 
 
 class TestCustomJSONEncoder(unittest.TestCase):
-    def _verify_json_encoding(self, test_value, expected_value):
-        actual_value = json.dumps(test_value, cls=CustomJSONEncoder, sort_keys=True)
-        self.assertEqual(expected_value, actual_value)
-
     def test_datetime(self):
         test_datetime_value = datetime.datetime.fromtimestamp(0)
         expected_datetime = str(test_datetime_value.timestamp())
-        self._test_json(test_datetime_value, expected_datetime)
+        self._verify_json_encoding(test_datetime_value, expected_datetime)
 
     def test_timedelta(self):
         time_1 = datetime.datetime.fromtimestamp(0)
         time_2 = datetime.datetime.fromtimestamp(10)
         test_timedelta_value = time_1 - time_2
         expected_timedelta = f'"{test_timedelta_value}"'
-        self._test_json(test_timedelta_value, expected_timedelta)
+        self._verify_json_encoding(test_timedelta_value, expected_timedelta)
 
     def test_enum(self):
         class EnumClass(Enum):
@@ -39,19 +35,19 @@ class TestCustomJSONEncoder(unittest.TestCase):
 
         test_enum_value = EnumClass.TEST
         expected_enum = f'"{test_enum_value.name}"'
-        self._test_json(test_enum_value, expected_enum)
+        self._verify_json_encoding(test_enum_value, expected_enum)
 
     def test_base(self):
         params = dict(id="foo", name="bar")
         test_base = DBTest(**params)
         expected_base = json.dumps(params, sort_keys=True)
-        self._test_json(test_base, expected_base)
+        self._verify_json_encoding(test_base, expected_base)
 
     def test_entity(self):
         params = dict(id="foo", name="bar")
         test_entity = Entity(DBTest(**params))
         expected_entity = json.dumps(params, sort_keys=True)
-        self._test_json(test_entity, expected_entity)
+        self._verify_json_encoding(test_entity, expected_entity)
 
     def test_unsupported_type(self):
         class Unsupported:
@@ -60,3 +56,7 @@ class TestCustomJSONEncoder(unittest.TestCase):
         test_unsupported_type = Unsupported()
         with self.assertRaises(TypeError):
             json.dumps(test_unsupported_type, cls=CustomJSONEncoder)
+
+    def _verify_json_encoding(self, test_value, expected_value):
+        actual_value = json.dumps(test_value, cls=CustomJSONEncoder, sort_keys=True)
+        self.assertEqual(expected_value, actual_value)

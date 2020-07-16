@@ -61,27 +61,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
             self.assertEqual(from_date, actual_body["from_date"])
             self.assertEqual(to_date, actual_body["to_date"])
 
-    @staticmethod
-    def remove_timestamps(body: dict) -> dict:
-        """
-        A helper function to remove timestamps from the response body.
-        :param body: The decoded json response body
-        :return: The decode json response body with timestamps removed.
-        """
-
-        def _remove_timestamps(jrb):
-            jrb.pop("created_at", None)
-            jrb.pop("updated_at", None)
-            for value in jrb.values():
-                if isinstance(value, dict):
-                    _remove_timestamps(value)
-                elif isinstance(value, list):
-                    for list_value in value:
-                        _remove_timestamps(list_value)
-            return jrb
-
-        return _remove_timestamps(body)
-
     def test__get_project_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
         expected_body = {
@@ -152,3 +131,24 @@ class TestProject(BaseAPITest, unittest.TestCase):
         actual_json_body = json.dumps(actual_body, sort_keys=True)
         expected_json_body = json.dumps(expected_body)
         self.assertEqual(actual_json_body, expected_json_body)
+
+    @staticmethod
+    def remove_timestamps(body: dict) -> dict:
+        """
+        A helper function to remove timestamps from the response body.
+        :param body: The decoded json response body
+        :return: The decode json response body with timestamps removed.
+        """
+
+        def _remove_timestamps(jrb):
+            jrb.pop("created_at", None)
+            jrb.pop("updated_at", None)
+            for value in jrb.values():
+                if isinstance(value, dict):
+                    _remove_timestamps(value)
+                elif isinstance(value, list):
+                    for list_value in value:
+                        _remove_timestamps(list_value)
+            return jrb
+
+        return _remove_timestamps(body)
