@@ -1,45 +1,51 @@
 import React, { FC, useEffect, useState } from "react";
-import { Heading } from "theme-ui";
 import { Project } from "../common/entities";
-import Layout from "../components/layout";
-import ProjectsList from "../components/projectsList";
+import { PROJECTS } from "../common/fixtures/projects";
+import Layout from "../components/Layout";
+import ProjectsList from "../components/ProjectList";
 import SEO from "../components/seo";
-import { API_URL } from "../globals";
 
-/*
-  Mock API
-  Get projects: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/projects
-  Get project info: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/project/{id}
-  Get project file: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/project/{id}/{file_name}
-*/
-
-const IndexPage: FC = () => {
-  // Client-side Runtime Data Fetching
+const Index: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/projects`)
-      .then(response => response.json()) // parse JSON from request
-      .then(resultData => {
-        setProjects(resultData);
-      });
+    fetchProjects(setProjects);
   }, []);
 
   return (
     <Layout>
       <SEO title="Explore Data" />
-      <Heading
-        as="h1"
-        sx={{
-          mb: 6,
-          mt: 6,
-        }}
-      >
-        Explore Data
-      </Heading>
       {projects ? <ProjectsList projects={projects} /> : "Loading projects..."}
     </Layout>
   );
 };
 
-export default IndexPage;
+async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
+  const projectIds: number[] = await new Promise(resolve => {
+    setTimeout(() => {
+      resolve(Array.from(Array(6)).map((_, index) => index));
+    }, 0.5 * 1000);
+  });
+
+  const results = await Promise.allSettled(projectIds.map(fetchProject));
+
+  const allProjects = results.reduce((memo, result) => {
+    if (result.status === "fulfilled") {
+      memo.push(result.value);
+    }
+
+    return memo;
+  }, [] as Project[]);
+
+  setProjects(allProjects);
+}
+
+async function fetchProject(id: number): Promise<Project> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(PROJECTS[id]);
+    }, 0.3 * 1000);
+  });
+}
+
+export default Index;

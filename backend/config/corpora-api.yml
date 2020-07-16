@@ -12,7 +12,6 @@ servers:
     url: https://api.staging.corpora.cziscience.com
 paths:
   /v1/submission:
-
     get:
       summary: List open submissions in Corpora
       tags:
@@ -22,9 +21,9 @@ paths:
         then only submissions that meet the given criteria will be outputted.
       operationId: corpora.lambdas.api.v1.submission.get_submissions_list
       parameters:
-        - $ref: '#/components/parameters/query_user_uuid'
+        - $ref: "#/components/parameters/query_user_uuid"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -32,7 +31,7 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
+                    $ref: "#/components/schemas/project_uuid"
                   name:
                     type: string
                   processing_state:
@@ -41,14 +40,14 @@ paths:
                     type: string
                   user_uuid:
                     type: string
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
     post:
       summary: Create a new project submission
@@ -80,7 +79,7 @@ paths:
               required:
                 - needs_attestation
       responses:
-        '201':
+        "201":
           description: A new submissions has been created.
           content:
             application/json:
@@ -88,19 +87,17 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+                    $ref: "#/components/schemas/project_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/submission/{project_uuid}:
-
     get:
       summary: Get a project's submission details by UUID
       tags:
@@ -110,18 +107,18 @@ paths:
         attached to the project.
       operationId: corpora.lambdas.api.v1.submission.get_submission_details
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       responses:
-        '200':
-          $ref: '#/components/responses/200'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
+        "200":
+          $ref: "#/components/responses/200"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
     delete:
       summary: Delete a submission
@@ -132,22 +129,20 @@ paths:
         associated with the submission has been previously publicly published.
       operationId: corpora.lambdas.api.v1.submission.delete_submission
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       responses:
-        '202':
-          $ref: '#/components/responses/202'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+        "202":
+          $ref: "#/components/responses/202"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/submission/{project_uuid}/file:
-
     put:
       summary: Add a file to a submission
       tags:
@@ -161,7 +156,7 @@ paths:
         name, it will replace it and increment the revision value of the dataset.
       operationId: corpora.lambdas.api.v1.submission.add_file_to_submission
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       requestBody:
         content:
           application/json:
@@ -187,7 +182,7 @@ paths:
               required:
                 - filename
       responses:
-        '201':
+        "201":
           description: File was successfully added to submission.
           content:
             application/json:
@@ -200,17 +195,16 @@ paths:
                     type: string
                   dataset_uuid:
                     type: string
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '409':
-          $ref: '#/components/responses/409'
-
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
 
   /v1/submission/{project_uuid}/dataset/{dataset_uuid}:
     delete:
@@ -222,21 +216,19 @@ paths:
         outputted.
       operationId: corpora.lambdas.api.v1.submission.delete_dataset_from_submission
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
-        - $ref: '#/components/parameters/path_dataset_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
-        '202':
+        "202":
           description: Accepted
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/submission/{project_uuid}/validate:
-
     post:
       tags:
         - submissions
@@ -247,9 +239,9 @@ paths:
         the validation is also stored in the backend database.
       operationId: corpora.lambdas.api.v1.submission.validate_submission
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -257,21 +249,19 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
+                    $ref: "#/components/schemas/project_uuid"
                   result:
                     type: string
                   message:
                     type: string
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/submission/{project_uuid}/save:
-
     post:
       tags:
         - submissions
@@ -282,7 +272,7 @@ paths:
         body parameter and saves it to the database. The new project metadata state will be returned in the response on
         success.
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       operationId: corpora.lambdas.api.v1.submission.save_submission
       requestBody:
         content:
@@ -308,7 +298,7 @@ paths:
                   items:
                     type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -316,19 +306,17 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+                    $ref: "#/components/schemas/project_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/submission/{project_uuid}/publish:
-
     post:
       tags:
         - submissions
@@ -339,7 +327,7 @@ paths:
         to public, the successful execution of this operation will move the Submission to a CLOSED state.
       operationId: corpora.lambdas.api.v1.submission.publish_submission
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       requestBody:
         content:
           application/json:
@@ -352,9 +340,9 @@ paths:
                   description: >-
                     Determines the visibility of the project, that will either make the project visible on the public
                     sites or only viewable through obfuscated URLs.
-                  $ref: '#/components/schemas/visibility'
+                  $ref: "#/components/schemas/visibility"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -362,21 +350,19 @@ paths:
                 type: object
                 properties:
                   project_uuid:
-                    $ref: '#/components/schemas/project_uuid'
+                    $ref: "#/components/schemas/project_uuid"
                   visibility:
-                    $ref: '#/components/schemas/visibility'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+                    $ref: "#/components/schemas/visibility"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/project:
-
     get:
       tags:
         - projects
@@ -386,7 +372,7 @@ paths:
         a filter, then only projects that meet the status criteria will be outputted.
       operationId: corpora.lambdas.api.v1.project.get_projects_list
       parameters:
-        - $ref: '#/components/parameters/query_user_uuid'
+        - $ref: "#/components/parameters/query_user_uuid"
         - name: from_date
           in: query
           schema:
@@ -398,7 +384,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -411,19 +397,17 @@ paths:
                       type: object
                       properties:
                         project_uuid:
-                          $ref: '#/components/schemas/project_uuid'
+                          $ref: "#/components/schemas/project_uuid"
                         creation_date:
                           type: integer
                   from_date:
                     type: integer
                   to_date:
                     type: integer
-        '400':
-          $ref: '#/components/responses/400'
-
+        "400":
+          $ref: "#/components/responses/400"
 
   /v1/project/{project_uuid}:
-
     get:
       tags:
         - projects
@@ -432,20 +416,20 @@ paths:
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.project.get_project_details
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/project'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
+                $ref: "#/components/schemas/project"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
     delete:
       tags:
@@ -456,20 +440,18 @@ paths:
         project exists, then a warning will be outputted.
       operationId: corpora.lambdas.api.v1.project.delete_project
       parameters:
-        - $ref: '#/components/parameters/path_project_uuid'
+        - $ref: "#/components/parameters/path_project_uuid"
       responses:
-        '202':
-          $ref: '#/components/responses/202'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-          
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/dataset/{dataset_uuid}:
-
     post:
       tags:
         - dataset
@@ -478,9 +460,9 @@ paths:
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
       operationId: corpora.lambdas.api.v1.project.get_project_dataset
       parameters:
-        - $ref: '#/components/parameters/path_dataset_uuid'
+        - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -491,16 +473,14 @@ paths:
                     type: string
                   dataset_presigned_url:
                     type: string
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
 components:
-
   schemas:
     user_uuid:
       description: A unique identifier of a logged in User of Corpora.
@@ -522,14 +502,14 @@ components:
         name:
           type: string
         id:
-          $ref: '#/components/schemas/project_uuid'
+          $ref: "#/components/schemas/project_uuid"
         s3_bucket_key:
           type: string
         owner:
           type: object
           properties:
             id:
-              $ref: '#/components/schemas/user_uuid'
+              $ref: "#/components/schemas/user_uuid"
             email:
               type: string
         status:
@@ -537,7 +517,7 @@ components:
           enum: [LIVE, EDIT]
         processing_state:
           type: string
-          enum: [NA, IN_VALIDATON, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
+          enum: [NA, IN_VALIDATION, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
         validation_state:
           type: string
           enum: [NOT_VALIDATED, VALID, INVALID]
@@ -562,7 +542,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: '#/components/schemas/dataset'
+            $ref: "#/components/schemas/dataset"
     contributor:
       type: object
       properties:
@@ -578,7 +558,7 @@ components:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/dataset_uuid'
+          $ref: "#/components/schemas/dataset_uuid"
         assay:
           type: string
         assay_ontology:
@@ -621,15 +601,15 @@ components:
         dataset_assets:
           type: array
           items:
-            $ref: '#/components/schemas/dataset_asset'
+            $ref: "#/components/schemas/dataset_asset"
         contributors:
           type: array
           items:
-            $ref: '#/components/schemas/contributor'
+            $ref: "#/components/schemas/contributor"
         preprint_doi:
-          $ref: '#/components/schemas/doi'
+          $ref: "#/components/schemas/doi"
         publication_doi:
-          $ref: '#/components/schemas/doi'
+          $ref: "#/components/schemas/doi"
     dataset_asset:
       type: object
       properties:
@@ -663,13 +643,13 @@ components:
       in: path
       required: true
       schema:
-        $ref: '#/components/schemas/project_uuid'
+        $ref: "#/components/schemas/project_uuid"
     path_dataset_uuid:
       name: dataset_uuid
       in: path
       required: true
       schema:
-        $ref: '#/components/schemas/dataset_uuid'
+        $ref: "#/components/schemas/dataset_uuid"
     path_filename:
       name: filename
       description: The name of a file to add, remove, or download.
@@ -682,7 +662,7 @@ components:
       description: an ID that represents the user.
       in: query
       schema:
-        $ref: '#/components/schemas/user_uuid'
+        $ref: "#/components/schemas/user_uuid"
 
   responses:
     200:
