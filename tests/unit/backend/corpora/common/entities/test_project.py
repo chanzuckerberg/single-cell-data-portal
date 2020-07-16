@@ -121,6 +121,22 @@ class TestProject(unittest.TestCase):
             # so we can't do an exact match.
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
+    def test__list_projects_in_time_range___ok(self):
+        """Live projects are returned"""
+        from_date = 10
+        created_at = datetime.fromtimestamp(20)
+        to_date = 30
+        expected_project = Project.create(
+            **BogusProjectParams.get(created_at=created_at, status=ProjectStatus.LIVE.name)
+        )
+
+        # Generate a project with Edit status. This should not show up in the results.
+        Project.create(**BogusProjectParams.get(created_at=created_at, status=ProjectStatus.EDIT.name))
+
+        actual_projects = Project.list_projects_in_time_range(to_date=to_date, from_date=from_date)
+        expected_projects = [{"created_at": created_at, "id": expected_project.id}]
+        self.assertCountEqual(expected_projects, actual_projects)
+
     def test__list__ok(self):
         generate = 2
         generated_ids = [Project.create(**BogusProjectParams.get()).id for _ in range(generate)]
