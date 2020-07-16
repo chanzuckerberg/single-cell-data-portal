@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
+import { API_URL } from "src/globals";
 import { Project } from "../common/entities";
-import { PROJECTS } from "../common/fixtures/projects";
 import Layout from "../components/Layout";
 import ProjectsList from "../components/ProjectList";
 import SEO from "../components/seo";
@@ -20,12 +20,15 @@ const Index: FC = () => {
   );
 };
 
+interface ProjectResponse {
+  project_uuid: string;
+}
+
 async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
-  const projectIds: number[] = await new Promise(resolve => {
-    setTimeout(() => {
-      resolve(Array.from(Array(6)).map((_, index) => index));
-    }, 0.5 * 1000);
-  });
+  const response = await (await fetch(`${API_URL}/project`)).json();
+  const projectIds: string[] = response.projects.map(
+    (project: ProjectResponse) => project.project_uuid
+  );
 
   const results = await Promise.allSettled(projectIds.map(fetchProject));
 
@@ -40,12 +43,8 @@ async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
   setProjects(allProjects);
 }
 
-async function fetchProject(id: number): Promise<Project> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(PROJECTS[id]);
-    }, 0.3 * 1000);
-  });
+async function fetchProject(id: string): Promise<Project> {
+  return (await fetch(`${API_URL}/project/${id}`)).json();
 }
 
 export default Index;
