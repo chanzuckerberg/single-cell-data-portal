@@ -93,8 +93,7 @@ class Entity:
         add_columns = add_columns if add_columns else {}
         db_objs = []
         for columns in rows:
-            #  if there are matching keys in columns and add_columns,
-            #  the key value in add_columns will be used.
+            #  if there are matching keys in columns and add_columns, the key value in add_columns will be used.
             _columns = dict(**columns)
             _columns.update(**add_columns)
 
