@@ -83,7 +83,7 @@ class TestProject(unittest.TestCase):
         to_date = 40
         created_after = Project.create(**BogusProjectParams.get(), created_at=datetime.fromtimestamp(50))
 
-        with self.subTest("Test from_date"):
+        with self.subTest("from_date"):
             # Projects from_date are returned.
             actual_projects = Project.list_in_time_range(from_date=from_date)
             self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
@@ -94,7 +94,7 @@ class TestProject(unittest.TestCase):
             # so we can't do an exact match.
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
-        with self.subTest("Test to_date"):
+        with self.subTest("to_date"):
             # Projects to_date are returned.
             actual_projects = Project.list_in_time_range(to_date=to_date)
             self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
@@ -102,7 +102,7 @@ class TestProject(unittest.TestCase):
             actual_ids = [p["id"] for p in actual_projects]
             self.assertCountEqual(expected_ids, actual_ids)
 
-        with self.subTest("Test to_date and from_date"):
+        with self.subTest("from_date->to_date"):
             # Projects between to_date and from_date are returned.
             actual_projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
             self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))

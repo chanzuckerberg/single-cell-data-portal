@@ -14,17 +14,20 @@ class TestProject(BaseAPITest, unittest.TestCase):
     def test__list_project__ok(self):
         path = "/v1/project"
         headers = dict(host="localhost")
+
         from_date = int(datetime.fromtimestamp(10).timestamp())
         creation_time = 20
         to_date = int(datetime.fromtimestamp(30).timestamp())
+
         test_project = Project.create(
             **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
         )
-        status_edit_project = Project.create(
+        not_expected_project = Project.create(
             **BogusProjectParams.get(status=ProjectStatus.EDIT.name, created_at=datetime.fromtimestamp(creation_time)),
         )
+
         expected_id = test_project.id
-        not_expected_id = status_edit_project.id
+        not_expected_id = not_expected_project.id
 
         with self.subTest("No Parameters"):
             test_url = furl(path=path)
@@ -33,6 +36,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
             actual_body = json.loads(response.body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
             self.assertNotIn(not_expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertEqual(None, actual_body.get("to_date"))
+            self.assertEqual(None, actual_body.get("from_date"))
 
         with self.subTest("from_date"):
             test_url = furl(path=path, query_params={"from_date": from_date})
@@ -40,6 +45,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response.raise_for_status()
             actual_body = json.loads(response.body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertNotIn(not_expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(actual_body["from_date"], from_date)
 
         with self.subTest("to_date"):
@@ -47,18 +54,21 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
-            self.assertEqual(actual_body["projects"][0]["id"], expected_id)
-            self.assertEqual(actual_body["projects"][0]["created_at"], creation_time)
-            self.assertEqual(actual_body["to_date"], to_date)
+            self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertNotIn(not_expected_id, [p["id"] for p in actual_body["projects"]])
+            self.assertEqual(to_date, actual_body["to_date"])
+            self.assertEqual(None, actual_body.get("from_date"))
 
         with self.subTest("from_date->to_date"):
             test_url = furl(path=path, query_params={"from_date": from_date, "to_date": to_date})
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
-            self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
-            self.assertEqual(actual_body["from_date"], from_date)
-            self.assertEqual(actual_body["to_date"], to_date)
+            self.assertEqual(expected_id, actual_body["projects"])
+            self.assertEqual(expected_id, actual_body["projects"][0]["id"])
+            self.assertEqual(creation_time, actual_body["projects"][0]["created_at"])
+            self.assertEqual(from_date, actual_body["from_date"])
+            self.assertEqual(to_date, actual_body["to_date"])
 
     @staticmethod
     def remove_timestamps(body: dict) -> dict:
