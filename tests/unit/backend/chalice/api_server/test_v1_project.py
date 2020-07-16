@@ -15,9 +15,9 @@ class TestProject(BaseAPITest, unittest.TestCase):
         path = "/v1/project"
         headers = dict(host="localhost")
 
-        from_date = int(datetime.fromtimestamp(10).timestamp())
-        creation_time = 20
-        to_date = int(datetime.fromtimestamp(30).timestamp())
+        from_date = int(datetime.fromtimestamp(60).timestamp())
+        creation_time = 70
+        to_date = int(datetime.fromtimestamp(80).timestamp())
 
         test_project = Project.create(
             **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
