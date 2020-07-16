@@ -93,24 +93,3 @@ class TestProject(unittest.TestCase):
                 self.assertIsNotNone(project)
                 self.assertEqual(project_key, (project.id, project.status))
                 self.assertEqual(link_ids, get_ids(project.links))
-
-    def test__create_ids__ok(self):
-        """
-        Creating a project with ids in the links. A new link id is generated even if link id is provided.
-        """
-        project_params = ProjectParams.get()
-
-        project = Project.create(links=[{"id": "test_project_link_id"}], **project_params)
-
-        project_key = (project.id, project.status)
-        link_ids = get_ids(project.links)
-
-        # Expire all local object and retireve them from the DB to make sure the transactions went through.
-        Project.db.session.expire_all()
-
-        project = Project.get(project_key)
-        self.assertIsNotNone(project)
-        self.assertEqual(project_key, (project.id, project.status))
-
-        self.assertEqual(link_ids, get_ids(project.links))
-        self.assertNotEqual(["test_project_link_id"], get_ids(project.links))
