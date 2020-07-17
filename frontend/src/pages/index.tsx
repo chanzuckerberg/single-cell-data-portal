@@ -1,45 +1,50 @@
 import React, { FC, useEffect, useState } from "react";
-import { Heading } from "theme-ui";
+import { API_URL } from "src/globals";
 import { Project } from "../common/entities";
-import Layout from "../components/layout";
-import ProjectsList from "../components/projectsList";
+import Layout from "../components/Layout";
+import ProjectsList from "../components/ProjectList";
 import SEO from "../components/seo";
-import { API_URL } from "../globals";
 
-/*
-  Mock API
-  Get projects: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/projects
-  Get project info: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/project/{id}
-  Get project file: https://ye54tu6ueg.execute-api.us-east-1.amazonaws.com/dev/project/{id}/{file_name}
-*/
-
-const IndexPage: FC = () => {
-  // Client-side Runtime Data Fetching
+const Index: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/projects`)
-      .then(response => response.json()) // parse JSON from request
-      .then(resultData => {
-        setProjects(resultData);
-      });
+    fetchProjects(setProjects);
   }, []);
 
   return (
     <Layout>
       <SEO title="Explore Data" />
-      <Heading
-        as="h1"
-        sx={{
-          mb: 6,
-          mt: 6,
-        }}
-      >
-        Explore Data
-      </Heading>
       {projects ? <ProjectsList projects={projects} /> : "Loading projects..."}
     </Layout>
   );
 };
 
-export default IndexPage;
+interface ProjectResponse {
+  id: string;
+}
+
+async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
+  const response = await (await fetch(`${API_URL}/v1/project`)).json();
+  const projectIds: string[] = response.projects.map(
+    (project: ProjectResponse) => project.id
+  );
+
+  const results = await Promise.allSettled(projectIds.map(fetchProject));
+
+  const allProjects = results.reduce((memo, result) => {
+    if (result.status === "fulfilled") {
+      memo.push(result.value);
+    }
+
+    return memo;
+  }, [] as Project[]);
+
+  setProjects(allProjects);
+}
+
+async function fetchProject(id: string): Promise<Project> {
+  return (await fetch(`${API_URL}/v1/project/${id}`)).json();
+}
+
+export default Index;
