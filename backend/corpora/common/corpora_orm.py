@@ -253,16 +253,21 @@ class DbDataset(Base):
     source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", back_populates="datasets")
+    project = relationship("DbProject", uselist=False, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
     contributors = relationship(
         "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets"
     )
+
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
 
 class DbDatasetArtifact(Base):
