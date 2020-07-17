@@ -12,7 +12,7 @@ interface Props {
 const Dataset: FC<Props> = ({ dataset, links }) => {
   return (
     <Wrapper>
-      <Name>{dataset.title}</Name>
+      <Name>{dataset.name}</Name>
       <ViewDatasetAssets datasetAssets={dataset.dataset_assets} />
       <MoreInformation links={links} />
     </Wrapper>

@@ -21,13 +21,13 @@ const Index: FC = () => {
 };
 
 interface ProjectResponse {
-  project_uuid: string;
+  id: string;
 }
 
 async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
   const response = await (await fetch(`${API_URL}/v1/project`)).json();
   const projectIds: string[] = response.projects.map(
-    (project: ProjectResponse) => project.project_uuid
+    (project: ProjectResponse) => project.id
   );
 
   const results = await Promise.allSettled(projectIds.map(fetchProject));
