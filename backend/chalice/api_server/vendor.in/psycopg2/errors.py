@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+"""Error classes for PostgreSQL error codes
+"""
 
-# bug_gc.py - test for refcounting/GC bug
+# psycopg/errors.py - SQLSTATE and DB-API exceptions
 #
-# Copyright (C) 2010-2011 Federico Di Gregorio  <fog@debian.org>
+# Copyright (C) 2018-2019 Daniele Varrazzo  <daniele.varrazzo@gmail.com>
 #
 # psycopg2 is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published
@@ -22,27 +23,15 @@
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
 # License for more details.
 
-import psycopg2
-import psycopg2.extensions
-import unittest
-import gc
+#
+# NOTE: the exceptions are injected into this module by the C extention.
+#
 
-from .testutils import ConnectingTestCase, skip_if_no_uuid
 
-class StolenReferenceTestCase(ConnectingTestCase):
-    @skip_if_no_uuid
-    def test_stolen_reference_bug(self):
-        def fish(val, cur):
-            gc.collect()
-            return 42
-        UUID = psycopg2.extensions.new_type((2950,), "UUID", fish)
-        psycopg2.extensions.register_type(UUID, self.conn)
-        curs = self.conn.cursor()
-        curs.execute("select 'b5219e01-19ab-4994-b71e-149225dc51e4'::uuid")
-        curs.fetchone()
+def lookup(code):
+    """Lookup an error code and return its exception class.
 
-def test_suite():
-    return unittest.TestLoader().loadTestsFromName(__name__)
-
-if __name__ == "__main__":
-    unittest.main()
+    Raise `!KeyError` if the code is not found.
+    """
+    from psycopg2._psycopg import sqlstate_errors   # avoid circular import
+    return sqlstate_errors[code]
