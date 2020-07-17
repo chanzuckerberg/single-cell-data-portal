@@ -4,7 +4,7 @@ This module implements thread-safe (and not) connection pools.
 """
 # psycopg/pool.py - pooling code for psycopg
 #
-# Copyright (C) 2003-2010 Federico Di Gregorio  <fog@debian.org>
+# Copyright (C) 2003-2019 Federico Di Gregorio  <fog@debian.org>
 #
 # psycopg2 is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published
@@ -25,7 +25,7 @@ This module implements thread-safe (and not) connection pools.
 # License for more details.
 
 import psycopg2
-import psycopg2.extensions as _ext
+from psycopg2 import extensions as _ext
 
 
 class PoolError(psycopg2.Error):
@@ -40,18 +40,18 @@ class AbstractConnectionPool(object):
 
         New 'minconn' connections are created immediately calling 'connfunc'
         with given parameters. The connection pool will support a maximum of
-        about 'maxconn' connections.        
+        about 'maxconn' connections.
         """
         self.minconn = int(minconn)
         self.maxconn = int(maxconn)
         self.closed = False
-        
+
         self._args = args
         self._kwargs = kwargs
 
         self._pool = []
         self._used = {}
-        self._rused = {} # id(conn) -> key map
+        self._rused = {}    # id(conn) -> key map
         self._keys = 0
 
         for i in range(self.minconn):
@@ -71,12 +71,14 @@ class AbstractConnectionPool(object):
         """Return a new unique key."""
         self._keys += 1
         return self._keys
-            
+
     def _getconn(self, key=None):
         """Get a free connection and assign it to 'key' if not None."""
-        if self.closed: raise PoolError("connection pool is closed")
-        if key is None: key = self._getkey()
-	
+        if self.closed:
+            raise PoolError("connection pool is closed")
+        if key is None:
+            key = self._getkey()
+
         if key in self._used:
             return self._used[key]
 
@@ -88,20 +90,22 @@ class AbstractConnectionPool(object):
             if len(self._used) == self.maxconn:
                 raise PoolError("connection pool exhausted")
             return self._connect(key)
-		 
+
     def _putconn(self, conn, key=None, close=False):
         """Put away a connection."""
-        if self.closed: raise PoolError("connection pool is closed")
-        if key is None: key = self._rused.get(id(conn))
+        if self.closed:
+            raise PoolError("connection pool is closed")
 
-        if not key:
-            raise PoolError("trying to put unkeyed connection")
+        if key is None:
+            key = self._rused.get(id(conn))
+            if key is None:
+                raise PoolError("trying to put unkeyed connection")
 
         if len(self._pool) < self.minconn and not close:
             # Return the connection into a consistent state before putting
             # it back into the pool
             if not conn.closed:
-                status = conn.get_transaction_status()
+                status = conn.info.transaction_status
                 if status == _ext.TRANSACTION_STATUS_UNKNOWN:
                     # server connection lost
                     conn.close()
@@ -129,21 +133,22 @@ class AbstractConnectionPool(object):
         an already closed connection. If you call .closeall() make sure
         your code can deal with it.
         """
-        if self.closed: raise PoolError("connection pool is closed")
+        if self.closed:
+            raise PoolError("connection pool is closed")
         for conn in self._pool + list(self._used.values()):
             try:
                 conn.close()
-            except:
+            except Exception:
                 pass
         self.closed = True
-        
+
 
 class SimpleConnectionPool(AbstractConnectionPool):
     """A connection pool that can't be shared across different threads."""
 
     getconn = AbstractConnectionPool._getconn
     putconn = AbstractConnectionPool._putconn
-    closeall   = AbstractConnectionPool._closeall
+    closeall = AbstractConnectionPool._closeall
 
 
 class ThreadedConnectionPool(AbstractConnectionPool):
@@ -168,60 +173,6 @@ class ThreadedConnectionPool(AbstractConnectionPool):
         """Put away an unused connection."""
         self._lock.acquire()
         try:
-            self._putconn(conn, key, close)
-        finally:
-            self._lock.release()
-
-    def closeall(self):
-        """Close all connections (even the one currently in use.)"""
-        self._lock.acquire()
-        try:
-            self._closeall()
-        finally:
-            self._lock.release()
-
-
-class PersistentConnectionPool(AbstractConnectionPool):
-    """A pool that assigns persistent connections to different threads. 
-
-    Note that this connection pool generates by itself the required keys
-    using the current thread id.  This means that until a thread puts away
-    a connection it will always get the same connection object by successive
-    `!getconn()` calls. This also means that a thread can't use more than one
-    single connection from the pool.
-    """
-
-    def __init__(self, minconn, maxconn, *args, **kwargs):
-        """Initialize the threading lock."""
-        import warnings
-        warnings.warn("deprecated: use ZPsycopgDA.pool implementation",
-            DeprecationWarning)
-
-        import threading
-        AbstractConnectionPool.__init__(
-            self, minconn, maxconn, *args, **kwargs)
-        self._lock = threading.Lock()
-
-        # we we'll need the thread module, to determine thread ids, so we
-        # import it here and copy it in an instance variable
-        import _thread
-        self.__thread = thread
-
-    def getconn(self):
-        """Generate thread id and return a connection."""
-        key = self.__thread.get_ident()
-        self._lock.acquire()
-        try:
-            return self._getconn(key)
-        finally:
-            self._lock.release()
-
-    def putconn(self, conn=None, close=False):
-        """Put away an unused connection."""
-        key = self.__thread.get_ident()
-        self._lock.acquire()
-        try:
-            if not conn: conn = self._used[key]
             self._putconn(conn, key, close)
         finally:
             self._lock.release()
