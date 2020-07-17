@@ -243,9 +243,11 @@ the submitted dataset is used to create a new project.
 :--|:--
 project\_name|String
 project\_description|Longer description of the project.
-project\_protocol\_links|List of URLs to protocol descriptions, to protocols.io for example
-project\_raw\_data\_links|List of URLs to repositories where raw data are available
-project\_other\_links|List of URLs to other sites the submitter deems relevant, author data sites for example.
+project\_protocol\_links|List of links to protocol descriptions, to protocols.io for example
+project\_raw\_data\_links|List of links to repositories where raw data are available
+project\_other\_links|List of links to other sites the submitter deems relevant, author data sites for example.
+
+Each elements in the `links` fields above are dicts `{"link_name": "...", "link_url": "..."}` where `link_name` is meant to be the anchor text.
 
 #### System Fields
 
