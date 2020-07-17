@@ -13,12 +13,12 @@ null-terminated and UTF-8-encoded by anndata.
 
 For succinctness, there is a `link` type used below that is a `dict` {"link_name": `str`, "link_url": `str`}.
 
-## `X`
+## [`X`](#X)
 
 Corpora does not impose any additional constraints on the `X` data matrix. So it may be sparse or dense and any
 numeric `numpy.dtype`.
 
-## `uns`
+## [`uns`](#uns)
 
 Recall that `uns` is a mapping with `str`s as keys. Corpora requires the following keys and values in `uns`:
 
@@ -45,3 +45,30 @@ default\_embedding|`str`|Must match a key to an embedding in `obsm`.
 default\_field|`str`|Must match a column name in `obs`
 tags|`list` of `str`s| 
 <obs\_column>\_colors|`list` of color specifications (see anndata/cellxgene documentation)|<obs\_column> must be a column name in `obs`. There may be multiple keys like this.
+
+
+## [`obsm`](#obsm)
+
+`obsm` is a mapping from `str`s to matrices of shape (n, m) where `n` is the number of rows in `X` and `m >= 1`.
+Corpora requires one value in `obms` to be a two-dimensional embedding, meaning it is of shape (n, 2) and is a
+numeric type.
+
+## [`obs`](#obs)
+
+Corpora requires a number of columns be present in the `obs` dataframe:
+
+**Key**|**Value Type**|**Notes**
+-----|-----|-----
+tissue|`str`| 
+assay|`str`| 
+disease|`str`| 
+cell\_type|`str`| 
+sex|`str`| 
+ethnicity|`str`| 
+development\_stage|`str`| 
+tissue\_ontology|`str`|Not necessarily human-readable
+assay\_ontology|`str`|Not necessarily human-readable
+disease\_ontology|`str`|Not necessarily human-readable
+cell\_type\_ontology|`str`|Not necessarily human-readable
+ethnicity\_ontology|`str`|Not necessarily human-readable
+development\_stage\_ontology|`str`|Not necessarily human-readable
