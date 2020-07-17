@@ -31,11 +31,15 @@ organism|`str`|
 organism\_ontology|`str`| 
 project\_name|`str`|Name of the project that contains this dataset
 project\_description|`str`| 
-project\_protocol\_links|`list` of `link`s|May be empty
-project\_raw\_data\_links|`list` of `link`s|May be empty
-project\_other\_links|`list` of `link`s|May be empty
+project\_protocol\_links|`list` of `link`s|May be empty list
+project\_raw\_data\_links|`list` of `link`s|May be empty list
+project\_other\_links|`list` of `link`s|May be empty list
 
-Corpora defines the following optional keys and values in `uns`:
+The `project\_protocol\_links`, `project\_raw\_data\_links`, and `project\_other\_links` keys are always present in `uns` as
+they are used in the creation of "projects during Corpora ingestion. But if the values for these keys are empty lists, then
+wrt creating a user interface, that is equivalent to the fields being missing.
+
+Corpora defines the following optional keys and values in `uns`. If they key is present, then the value must not be empty.
 
 **Key**|**Value Type**|**Notes**
 -----|-----|-----
