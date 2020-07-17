@@ -43,7 +43,7 @@ export interface Dataset {
   // ethnicity_ontology: string;
   // organism: string;
   // organism_ontology: string;
-  title: string;
+  name: string;
   // source_data_location: string;
   // revision: number;
   // dataset_deployments: { id: string; environment: string; link: string }[];
