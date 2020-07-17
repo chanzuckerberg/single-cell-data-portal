@@ -26,7 +26,7 @@ export const PROJECTS: Project[] = [
           },
         ],
         id: "Krasnow Lab Human Lung Cell Atlas, 10X",
-        title: "Krasnow Lab Human Lung Cell Atlas, 10X",
+        name: "Krasnow Lab Human Lung Cell Atlas, 10X",
       },
       {
         dataset_assets: [
@@ -46,7 +46,7 @@ export const PROJECTS: Project[] = [
           },
         ],
         id: "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
-        title: "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
+        name: "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
       },
     ],
     links: [
@@ -80,7 +80,7 @@ export const PROJECTS: Project[] = [
           },
         ],
         id: "Human Cell Landscape",
-        title: "Human Cell Landscape",
+        name: "Human Cell Landscape",
       },
     ],
     links: [
@@ -115,7 +115,7 @@ export const PROJECTS: Project[] = [
           },
         ],
         id: "Human fetal liver single cell transcriptome data",
-        title: "Human fetal liver single cell transcriptome data",
+        name: "Human fetal liver single cell transcriptome data",
       },
       {
         dataset_assets: [
@@ -136,7 +136,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "A cell atlas of human thymic development defines T cell repertoire formation",
-        title:
+        name:
           "A cell atlas of human thymic development defines T cell repertoire formation",
       },
     ],
@@ -176,7 +176,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - parenchyma",
-        title:
+        name:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - parenchyma",
       },
       {
@@ -198,7 +198,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - nasal",
-        title:
+        name:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - nasal",
       },
       {
@@ -220,7 +220,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - bronchi",
-        title:
+        name:
           "A cellular census of human lungs identifies novel cell states in health and in asthma - bronchi",
       },
       {
@@ -246,7 +246,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "Ischaemic sensitivity of human tissue by single cell RNA seq - lung",
-        title:
+        name:
           "Ischaemic sensitivity of human tissue by single cell RNA seq - lung",
       },
     ],
@@ -286,7 +286,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "Ischaemic sensitivity of human tissue by single cell RNA seq - spleen",
-        title:
+        name:
           "Ischaemic sensitivity of human tissue by single cell RNA seq - spleen",
       },
     ],
@@ -327,7 +327,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "Allergic inflammatory memory in human respiratory epithelial progenitor cells - nasal scrapings",
-        title:
+        name:
           "Allergic inflammatory memory in human respiratory epithelial progenitor cells - nasal scrapings",
       },
       {
@@ -353,7 +353,7 @@ export const PROJECTS: Project[] = [
         ],
         id:
           "Allergic inflammatory memory in human respiratory epithelial progenitor cells - epithelial cells",
-        title:
+        name:
           "Allergic inflammatory memory in human respiratory epithelial progenitor cells - epithelial cells",
       },
     ],
