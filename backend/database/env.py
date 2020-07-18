@@ -75,9 +75,9 @@ def run_migrations_online():
 
     alembic_config["sqlalchemy.url"] = CorporaDbConfig().database_uri
 
-    engine = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
+    connectable = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
 
-    with engine.connect() as connection:g
+    with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
