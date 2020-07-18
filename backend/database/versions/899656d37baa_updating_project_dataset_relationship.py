@@ -1,7 +1,7 @@
 """updating_project_dataset_relationship
 
 Revision ID: 899656d37baa
-Revises:
+Revises: a17d25ca2013
 Create Date: 2020-07-13 21:11:12.683976
 
 """
@@ -10,7 +10,7 @@ from sqlalchemy import Column, String, ForeignKey, TIMESTAMP, func, INTEGER
 
 # revision identifiers, used by Alembic.
 revision = "899656d37baa"
-down_revision = None
+down_revision = "a17d25ca2013"
 branch_labels = None
 depends_on = None
 
@@ -28,8 +28,11 @@ def upgrade():
     op.add_column("project_link", Column("link_name", String()))
 
     # Add a foreign key to the Dataset table to reflect the one and only project that the dataset is in.
-    op.add_column("dataset", Column("project_id", String(), ForeignKey("project.id")))
-    op.add_column("dataset", Column("project_status", String(), ForeignKey("project.status")))
+    op.add_column("dataset", Column("project_id", String(), nullable=False))
+    op.add_column("dataset", Column("project_status", String(), nullable=False))
+    op.create_foreign_key(
+        "fk_project", "dataset", "project", ["project_id", "project_status"], ["id", "status"],
+    )
 
     # Drop the ProjectDataset table
     op.drop_table("project_dataset")
@@ -44,6 +47,22 @@ def downgrade():
     op.drop_column("project_link", "link_name")
 
     # Create ProjectDataset join table
+    op.create_table(
+        "project_dataset",
+        Column("id", String, nullable=False, primary_key=True),
+        Column("project_id", String, nullable=False),
+        Column("project_status", String, nullable=False),
+        Column("dataset_id", String, nullable=False),
+        Column("created_at", TIMESTAMP, nullable=False, server_default=func.now()),
+        Column("updated_at", TIMESTAMP, nullable=False, server_default=func.now()),
+    )
+
+    op.create_foreign_key(
+        "fk_project", "project_dataset", "project", ["project_id", "project_status"], ["id", "status"],
+    )
+    op.create_foreign_key(
+        "fk_dataset_id", "project_dataset", "dataset", ["dataset_id"], ["id"],
+    )
     op.create_table(
         "project_dataset",
         Column("id", INTEGER, primary_key=True),

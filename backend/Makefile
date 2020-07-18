@@ -20,19 +20,19 @@ db/download:
 	pg_dump -Fc --dbname=$(DATABASE_URI) --file=$(OUTFILE)
 
 db/import:
-    # Imports corpora_dev.sqlc into the corpora_local database
+    # Imports corpora_dev.sqlc into the corpora_test database
 	# Usage: make db/import FROM=dev
-	pg_restore --clean --no-owner --dbname corpora_local corpora_$(FROM).sqlc
+	pg_restore --clean --no-owner --dbname corpora_test corpora_$(FROM).sqlc
 
 db/import/schema:
-    # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_local database
+    # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
 	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema
-	pg_restore --schema-only --clean --no-owner --dbname corpora_local corpora_$(DEPLOYMENT_STAGE).sqlc
+	pg_restore --schema-only --clean --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
 	# Also import alembic schema version
-	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_local corpora_$(DEPLOYMENT_STAGE).sqlc
+	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
 
 db/dump_schema:
-	pg_dump --schema-only --dbname=corpora_local
+	pg_dump --schema-only --dbname=corpora_test
 
 db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/before
