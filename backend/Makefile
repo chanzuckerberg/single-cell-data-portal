@@ -9,13 +9,13 @@ db/new_migration:
 	alembic -c=./config/database.ini revision --message $(MESSAGE)
 
 db/connect:
-	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
+	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | fromjson.database_uri'))
 	psql --dbname $(DATABASE_URI)
 
 db/download:
     # Download the database to corpora_dev-<date>.sqlc
 	# Usage: make db/download FROM=dev
-	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${FROM}/database --region us-east-1 | jq -r '.SecretString | fromjson.database_uri'))
+	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${FROM}/database --region us-west-2 | jq -r '.SecretString | fromjson.database_uri'))
 	$(eval OUTFILE = $(shell date +corpora_${FROM}-%Y%m%d%H%M.sqlc))
 	pg_dump -Fc --dbname=$(DATABASE_URI) --file=$(OUTFILE)
 

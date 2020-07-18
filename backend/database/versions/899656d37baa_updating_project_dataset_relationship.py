@@ -28,8 +28,8 @@ def upgrade():
     op.add_column("project_link", Column("link_name", String()))
 
     # Add a foreign key to the Dataset table to reflect the one and only project that the dataset is in.
-    op.add_column("dataset", Column("project_id", String(), nullable=False))
-    op.add_column("dataset", Column("project_status", String(), nullable=False))
+    op.add_column("dataset", Column("project_id", String(), nullable=True))
+    op.add_column("dataset", Column("project_status", String(), nullable=True))
     op.create_foreign_key(
         "fk_project", "dataset", "project", ["project_id", "project_status"], ["id", "status"],
     )

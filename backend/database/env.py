@@ -3,7 +3,7 @@ import sys
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, create_engine
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -75,9 +75,14 @@ def run_migrations_online():
 
     alembic_config["sqlalchemy.url"] = CorporaDbConfig().database_uri
 
-    connectable = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
+    #engine = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
+    print(f"Name is {CorporaDbConfig().database_uri}")
+    engine = create_engine(CorporaDbConfig().database_uri)
 
-    with connectable.connect() as connection:
+    print(f"Connectable is: {engine}")
+
+    with engine.connect() as connection:
+        print(f"Connected engine is: {connection}")
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
