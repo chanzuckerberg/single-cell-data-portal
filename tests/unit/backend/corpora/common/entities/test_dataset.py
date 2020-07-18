@@ -6,7 +6,7 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    ProjectStatus
+    ProjectStatus,
 )
 from backend.corpora.common.entities.dataset import Dataset
 
