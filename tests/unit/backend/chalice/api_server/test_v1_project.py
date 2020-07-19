@@ -11,8 +11,6 @@ from tests.unit.backend.utils import BogusProjectParams
 
 
 class TestProject(BaseAPITest, unittest.TestCase):
-    maxDiff = None
-
     def test__list_project__ok(self):
         path = "/v1/project"
         headers = dict(host="localhost")
