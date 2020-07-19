@@ -30,7 +30,7 @@ class BogusDatasetParams:
             source_data_location="location",
             preprint_doi="preprint",
             publication_doi="publication",
-            project_id="bogus_project_id",
+            project_id="test_project_id",
             project_status=ProjectStatus.LIVE.name,
         )
 
