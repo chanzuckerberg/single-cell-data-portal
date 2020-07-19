@@ -526,6 +526,8 @@ components:
           items:
             type: object
             properties:
+              name:
+                type: string
               url:
                 type: string
               type:
@@ -580,6 +582,10 @@ components:
         organism:
           type: string
         organism_ontology:
+          type: string
+        development_stage:
+          type: string
+        development_stage_ontology:
           type: string
         title:
           type: string
