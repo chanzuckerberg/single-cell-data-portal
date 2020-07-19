@@ -6,6 +6,7 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
+    ProjectStatus,
 )
 from backend.corpora.common.entities.dataset import Dataset
 
@@ -29,6 +30,8 @@ class BogusDatasetParams:
             source_data_location="location",
             preprint_doi="preprint",
             publication_doi="publication",
+            project_id="test_project_id",
+            project_status=ProjectStatus.LIVE.name,
         )
 
 

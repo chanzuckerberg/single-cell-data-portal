@@ -32,7 +32,6 @@ from corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DbUser,
     DbProject,
-    DbProjectDataset,
     DbProjectLink,
     DbDataset,
     DbDatasetArtifact,
@@ -120,22 +119,11 @@ dataset = DbDataset(
     source_data_location=source_data_location,
     preprint_doi=preprint_doi,
     publication_doi=publication_doi,
+    project_id=project_id,
+    project_status=status,
 )
 print(dataset)
 session.add(dataset)
-session.commit()
-
-# project dataset
-pd_id = str(uuid.uuid4())
-pd_project_id = project_id
-pd_project_status = ProjectStatus.LIVE.name
-pd_dataset_id = dataset_id
-
-project_dataset = DbProjectDataset(
-    id=pd_id, project_id=pd_project_id, project_status=pd_project_status, dataset_id=pd_dataset_id
-)
-print(project_dataset)
-session.add(project_dataset)
 session.commit()
 
 # project links

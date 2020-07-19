@@ -1,10 +1,13 @@
 import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from ..corpora.common.corpora_config import CorporaDbConfig
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+from corpora.common.corpora_config import CorporaDbConfig
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config

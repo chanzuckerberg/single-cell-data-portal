@@ -199,27 +199,7 @@ class DbProject(Base):
     # Relationships
     user = relationship("DbUser", uselist=False, back_populates="projects")
     links = relationship("DbProjectLink", back_populates="project")
-    datasets = relationship("DbDataset", secondary=lambda: DbProjectDataset().__table__, back_populates="project")
-
-
-class DbProjectDataset(Base):
-    """
-    Associates a DbProject with a DbDataset.
-    A DbProject may link to several DbDatasets.
-    A DbDataset must belong to one DbProject.
-    """
-
-    __tablename__ = "project_dataset"
-
-    id = Column(String, primary_key=True)
-    project_id = Column(String, nullable=False)
-    project_status = Column(String, nullable=False)
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
-
-    # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
+    datasets = relationship("DbDataset", back_populates="project")
 
 
 class DbProjectLink(Base):
@@ -232,6 +212,7 @@ class DbProjectLink(Base):
     id = Column(String, primary_key=True)
     project_id = Column(String, nullable=False)
     project_status = Column(String, nullable=False)
+    link_name = Column(String)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -267,19 +248,26 @@ class DbDataset(Base):
     sex = Column(String)
     ethnicity = Column(String)
     ethnicity_ontology = Column(String)
+    development_stage = Column(String)
+    development_stage_ontology = Column(String)
     source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)
+    project_id = Column(String, nullable=False)
+    project_status = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", secondary=lambda: DbProjectDataset().__table__, back_populates="datasets")
+    project = relationship("DbProject", uselist=False, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
     contributors = relationship(
         "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets"
     )
+
+    # Composite FK
+    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
 
 
 class DbDatasetArtifact(Base):

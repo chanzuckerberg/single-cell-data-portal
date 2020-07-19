@@ -96,6 +96,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
                             "url": "test_url",
                         }
                     ],
+                    "development_stage": "test_development_stage",
+                    "development_stage_ontology": "test_development_stage_ontology",
                     "disease": "test_disease",
                     "disease_ontology": "test_disease_ontology",
                     "ethnicity": "test_ethnicity",
@@ -105,6 +107,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "organism": "test_organism",
                     "organism_ontology": "test_organism_ontology",
                     "preprint_doi": {"title": "test_preprint_doi"},
+                    "project_id": "test_project_id",
+                    "project_status": "LIVE",
                     "publication_doi": {"title": "test_publication_doi"},
                     "revision": 0,
                     "sex": "test_sex",
