@@ -2,9 +2,11 @@
 
 Authors: mkinsella@chanzuckerberg.com
 
-Document Status: _In review_
+Document Status: _Approved_
 
-Date Last Modified: 2020-07-17
+Version: 1.0.0
+
+Date Last Modified: 2020-07-21
 
 
 ## Background
@@ -251,7 +253,7 @@ Each elements in the `links` fields above are dicts `{"link_name": "...", "link_
 
 #### System Fields
 
-Finally, Corpora inserts a **corpora_dataset_version** field for internal bookkeeping. This must not be present in the original submitted matrix, and Corpora
+Finally, Corpora inserts a **corpora_dataset_revision** field for internal bookkeeping. This must not be present in the original submitted matrix, and Corpora
 will insert it during curation. Corpora also reserves any metadata fields that start with "corpora_" for future system use, so submitted datasets must not
 have any such fields.
 

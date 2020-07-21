@@ -1,5 +1,13 @@
 # Corpora Schema AnnData Implementation
 
+Authors: mkinsella@chanzuckerberg.com
+
+Document Status: _Approved_
+
+Version: 0.1.0
+
+Date Last Modified: 2020-07-21
+
 Corpora datasets are stored in the HDF5-backed AnnData format as written by version 0.7 of the anndata library. One
 goal of using this format is to have all metadata stored in the same file as the data, so cellxgene will have access to
 all Corpora metadata within a single file.
@@ -24,6 +32,7 @@ Recall that `uns` is a mapping with `str`s as keys. Corpora requires the followi
 
 **Key**|**Value Type**|**Notes**
 -----|-----|-----
+version|`dict` with keys "corpora_schema_version" and "corpora_encoding_version" indicating the version of the schema and schema encoding used to create the h5ad.
 title|`str`|Title of the dataset
 contributors|`list` of `dict`s. each `dict` must a "name": `str` item and may optionally have "email": `str` and "institution": `str`|This is the person who gave us the dataset, not necessarily the author or actual data generator.
 layer\_descriptions|dict with string keys and values|One key must be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays.
