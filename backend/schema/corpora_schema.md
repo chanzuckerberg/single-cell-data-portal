@@ -306,7 +306,7 @@ The column attributes must also contain values for "tissue", "assay", "disease",
 Embeddings are not handled in a special way, they are just more column attributes. So, embeddings should be stored as an ndarray under a key in column
 attributes that ends with "_embeddings".
 
-actuallyDataset-level metadata is stored in the loom file's `/attrs` hdf5 group, and are accessible as a mapping via the `attrs` attributie in the python
+Dataset-level metadata is stored in the loom file's `/attrs` hdf5 group, and are accessible as a mapping via the `attrs` attributie in the python
 interface.
 
 Like anndata, loom supports layers, but Corpora will focus on the "main matrix" as the "final" matrix for visualization.
