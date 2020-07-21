@@ -115,42 +115,48 @@ To support data integration, each cell must have the following metadata:
 
 **Field name**|**Constraints**
 :--|:--
-tissue|string
+tissue|string (see note below regarding cell culture and organoids)
 assay|string
 disease|string
 cell\_type|string
-sex|"male", "female", "unknown", or "na"
-ethnicity|string, "na" if non-human
-development\_stage|string
+sex|"male", "female", "unknown", or "other"
+ethnicity|string, "na" if non-human, "unknown" if not available
+development\_stage|string, "unknown" if not available
 
+The `tissue` field must be appended with "(cell culture)" or "(organoid)" if appropriate.
 In addition to these free text fields (except sex), each cell must also have ontology values:
 
 **Field name**|**Constraints**
 :--|:--
-tissue\_ontology|UBERON term
-assay\_ontology|EFO term
-disease\_ontology|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
-cell\_type\_ontology|CL term
-ethnicity\_ontology|HANCESTRO term, "na" if non-human
-development\_stage\_ontology|HsapDv term if human, child of EFO:0000399 otherwise
+tissue\_ontology\_term\_id|UBERON term
+assay\_ontology\_term\_id|EFO term
+disease\_ontology\_term\_id|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
+cell\_type\_ontology\_term\_id|CL term
+ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
+development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
 
+The `tissue_ontology_term_id` field must be appended with "(cell culture)" or "(organoid)" if appropriate.
 
-The ontology fields are all "best effort" fields. We expect that there will be times that no ontology term exists, especially for cell_type. In those cases,
-the ontology field may be left empty. Also, we don't require submitters to include these fields in their submissions. If the submitter does not include
-ontology fields, then as part of the curation process, Corpora will insert appropriate ontology values based on the text from the submitters. If the
-submitter does include ontology values, then Corpora just uses those. Finally, tissue and tissue_ontology can be appended with "(cell culture)" or
-"(organoid)" if appropriate.
+The `ontology_term_id` fields may be empty strings when no appropriate ontology value is available, for example if the
+`cell_type` field describes a cell type for which not ontology term exists or if the `ethnicity` is unknown. If the
+field is not empty, then it must be an [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning it is a CURIE
+where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
+
+If ontology terms are missing in the submitted dataset, then as part of preparing the remix dataset, Corpora will insert
+appropriate ontology terms based on text from the submitters.
 
 If the features of the dataset are human genes, then the feature ids must be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved
-gene symbols. If the original dataset does not use HGNC symbols, Corpora will perform a (possibly lossy) conversion from the submitted features to HGNC
-symbols. Similarly if the features are mouse genes, then the feature ids must be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
+gene symbols. If the original dataset does not use HGNC symbols, Corpora will perform a conversion from the submitted features to HGNC symbols. In
+cases where multiple gene symbols are merged into a single symbol, Corpora will sum the counts in the raw data layer.
+
+Similarly if the features are mouse genes, then the feature ids must be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
 
 Finally, the whole dataset must be annotated with fields that indicate the organism and describe the meanings of the [matrix layers](#Matrix-Layers):
 
 **Field name**|**Constraints**
 :--|:--
 organism|String
-organism\_ontology|NCBITaxon term
+organism\_ontology\_term\_id|NCBITaxon term
 layer\_descriptions|Mapping from {layer\_name: layer\_description, ...} Each description is free text, though one layer must be described as "raw".
 
 As with the ontology fields above, the ontology is added as part of Corpora curation.
@@ -237,19 +243,19 @@ The color code at the nth position in the array corresponds to category n in the
 </table>
 
 
-Additionally, submitters can include project-level metadata inside their dataset. This information is used to populate project metadata in Corpora when
-the submitted dataset is used to create a new project.
+Additionally, submitters may include project-level metadata inside their dataset. This information is used to populate project metadata in Corpora when
+the submitted dataset is used to create a new project. 
 
 
 **Field name**|**Description**
 :--|:--
 project\_name|String
 project\_description|Longer description of the project.
-project\_protocol\_links|List of links to protocol descriptions, to protocols.io for example
-project\_raw\_data\_links|List of links to repositories where raw data are available
-project\_other\_links|List of links to other sites the submitter deems relevant, author data sites for example.
+project\_links|List of links associaed with the project.
 
-Each elements in the `links` fields above are dicts `{"link_name": "...", "link_url": "..."}` where `link_name` is meant to be the anchor text.
+Much of the project metadata is links. Each link is a dictionary with keys "link_url", "link_name", and "link_type".
+"link_name" gives the text that should be displayed for the link. "link_type" is one of `PROTOCOL`, `RAW_DATA`,
+`SUMMARY`, or `OTHER`. Exactly one link should be of type `SUMMARY`.
 
 #### System Fields
 
