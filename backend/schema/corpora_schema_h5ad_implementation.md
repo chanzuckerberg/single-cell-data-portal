@@ -25,6 +25,9 @@ null-terminated and UTF-8-encoded by anndata.
 Corpora does not impose any additional constraints on the `X` data matrix. So it may be sparse or dense and any
 numeric `numpy.dtype`.
 
+Corpora does require that raw counts be present in the h5ad. If the `X` data matrix is not raw counts, then the h5ad
+must have a `raw` attribute where the raw counts are stored in `raw.X`
+
 ## `uns`
 
 Recall that `uns` is a mapping with `str`s as keys. Corpora requires the following keys and values in `uns`:
