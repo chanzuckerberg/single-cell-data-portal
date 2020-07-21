@@ -119,7 +119,7 @@ tissue|string (see note below regarding cell culture and organoids)
 assay|string
 disease|string
 cell\_type|string
-sex|"male", "female", "mixed", "unknown"
+sex|"male", "female", "mixed", "unknown", or "other"
 ethnicity|string, "na" if non-human, "unknown" if not available
 development\_stage|string, "unknown" if not available
 
