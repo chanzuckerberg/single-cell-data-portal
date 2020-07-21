@@ -84,3 +84,7 @@ disease\_ontology\_term\_id|`str` or categorical with `str` categories|Not neces
 cell\_type\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 ethnicity\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 development\_stage\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
+
+## `var`
+
+The Corpora schema requires unique feature identifiers, so the index of `var` must not contain any duplicate values.
