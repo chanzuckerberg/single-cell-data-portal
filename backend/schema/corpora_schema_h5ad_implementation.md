@@ -88,3 +88,4 @@ development\_stage\_ontology\_term\_id|`str` or categorical with `str` categorie
 ## `var`
 
 The Corpora schema requires unique feature identifiers, so the index of `var` must not contain any duplicate values.
+Moreover, `var.index` must contain the human-readable display names for features, for example HGNC symbols.
