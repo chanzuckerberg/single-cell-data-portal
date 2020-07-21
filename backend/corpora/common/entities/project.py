@@ -69,3 +69,16 @@ class Project(Entity):
         return cls.list_attributes_in_time_range(*args, filters=[DbProject.status == ProjectStatus.LIVE.name], **kwargs)
 
     @classmethod
+    def list_submissions(cls, *args, **kwargs):
+        return cls.list_attributes_in_time_range(
+            *args,
+            filters=[DbProject.status == ProjectStatus.EDIT.name],
+            list_attributes=[
+                DbProject.id,
+                DbProject.name,
+                DbProject.processing_state,
+                DbProject.validation_state,
+                DbProject.owner,
+            ],
+            **kwargs,
+        )

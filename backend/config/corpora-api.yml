@@ -28,20 +28,23 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    project_uuid:
-                      $ref: "#/components/schemas/project_uuid"
-                    name:
-                      type: string
-                    processing_state:
-                      type: string
-                    validation_state:
-                      type: string
-                    user_uuid:
-                      type: string
+                type: object
+                properties:
+                  submissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/project_uuid"
+                        name:
+                          type: string
+                        processing_state:
+                          type: string
+                        validation_state:
+                          type: string
+                        owner_id:
+                          type: string
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -398,7 +401,7 @@ paths:
                     items:
                       type: object
                       properties:
-                        project_uuid:
+                        id:
                           $ref: "#/components/schemas/project_uuid"
                         creation_date:
                           type: integer
