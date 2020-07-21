@@ -10,19 +10,24 @@ from tests.unit.backend.utils import BogusProjectParams
 
 
 class TestSubmission(BaseAPITest, unittest.TestCase):
-    def test__list_project__ok(self):
+    def test__list_submission__ok(self):
         path = "/v1/submission"
         headers = dict(host="localhost")
-        test_project = Project.create(**BogusProjectParams.get(status=ProjectStatus.EDIT.name),)
-        expected_id = test_project.id
+        expected_name = 'test submission'
+        test_project = Project.create(**BogusProjectParams.get(name=expected_name, status=ProjectStatus.EDIT.name))
 
+        expected_submission = {'id': test_project.id,
+                               'name': expected_name,
+                               'processing_state': 'IN_VALIDATION',
+                               'validation_state': 'NOT_VALIDATED',
+                               'owner_id': "test_user_id"
+                               }
         test_url = furl(path=path)
         response = self.app.get(test_url.url, headers=headers)
         response.raise_for_status()
         actual_body = json.loads(response.body)
-        self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
-        self.assertEqual(None, actual_body.get("to_date"))
-        self.assertEqual(None, actual_body.get("from_date"))
+        actual_submission = actual_body["submissions"][0]
+        self.assertEqual(expected_submission, actual_submission)
 
     def test__get_project_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
@@ -84,7 +89,7 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "id": "test_project_id",
             "links": [{"type": "RAW_DATA", "url": "test_url"}],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user", },  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "EDIT",
