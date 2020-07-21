@@ -109,6 +109,16 @@ discussion above regarding curation policies as well the [caution against](#Soft
 software dependencies on these fields.
 
 
+#### Schema Version
+
+Remixed Corpora datasets must store the version of the schema they follow (that is, the version of this document) as
+well as the version of the particular encoding used:
+
+**Field name**|**Constraints**
+:--|:--
+corpora_schema_version|Follows [SemVer](https://semver.org/) conventions
+corpora_encoding_version|Follows [SemVer](https://semver.org/) conventions
+
 #### Integration Metadata
 
 To support data integration, each cell must have the following metadata:
