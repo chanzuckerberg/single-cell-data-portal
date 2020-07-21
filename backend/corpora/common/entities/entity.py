@@ -1,6 +1,9 @@
 import logging
 import typing
 import uuid
+from datetime import datetime
+
+from sqlalchemy import and_
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +25,7 @@ class Entity:
     """
 
     table: Base = None  # The DbTable represented by this entity.
+    list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
     db = DbUtils()
 
     def __init__(self, db_object: Base):
@@ -48,6 +52,45 @@ class Entity:
         :return: list of Entity
         """
         return [cls(obj) for obj in cls.db.query([cls.table])]
+
+    @classmethod
+    def list_attributes_in_time_range(
+        cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+    ) -> typing.List[typing.Dict]:
+        """
+        Queries the database for Entities that have been created within the specified time range. Return only the entities
+        in list_entities.
+
+        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
+        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
+        :param filters: additional filters to apply to the query.
+        :param list_attributes: A list of entity attributes to return.
+        :return: The results is a list of flattened dictionaries containing the `list_entities`
+        """
+
+        filters = filters if filters else []
+        list_attributes = list_attributes if list_attributes else cls.list_entities
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        if to_date:
+            filters.append(cls.table.created_at <= datetime.fromtimestamp(to_date))
+        if from_date:
+            filters.append(table.created_at >= datetime.fromtimestamp(from_date))
+
+        results = [
+            to_dict(result)
+            for result in cls.db.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
+        ]
+
+        return results
 
     def save(self):
         """
