@@ -34,7 +34,7 @@ Recall that `uns` is a mapping with `str`s as keys. Corpora requires the followi
 -----|-----|-----
 version|`dict` with keys "corpora_schema_version" and "corpora_encoding_version" indicating the version of the schema and schema encoding used to create the h5ad.
 title|`str`|Title of the dataset
-contributors|`list` of `dict`s. each `dict` must a "name": `str` item and may optionally have "email": `str` and "institution": `str`|This is the person who gave us the dataset, not necessarily the author or actual data generator.
+contributors|`list` of `dict`s. each `dict` must have a "name": `str` item and may optionally have "email": `str` and "institution": `str`|This is the person who gave us the dataset, not necessarily the author or actual data generator.
 layer\_descriptions|dict with string keys and values|One key must be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays.
 organism|`str`| 
 organism\_ontology|`str`| 
@@ -44,7 +44,7 @@ project\_protocol\_links|`list` of `link`s|May be empty list
 project\_raw\_data\_links|`list` of `link`s|May be empty list
 project\_other\_links|`list` of `link`s|May be empty list
 
-The `project\_protocol\_links`, `project\_raw\_data\_links`, and `project\_other\_links` keys are always present in `uns` as
+The `project_protocol_links`, `project_raw_data_links`, and `project_other_links` keys are always present in `uns` as
 they are used in the creation of "projects during Corpora ingestion. But if the values for these keys are empty lists, then
 wrt creating a user interface, that is equivalent to the fields being missing.
 
@@ -62,7 +62,7 @@ tags|`list` of `str`s|
 
 ## `obsm`
 
-`obsm` is a mapping from `str`s to matrices of shape (n, m) where `n` is the number of rows in `X` and `m >= 1`.
+`obsm` is a mapping from `str`s to matrices of shape `(n_obs, n_vars)` where `n_obs` is the number of rows in `X` and `m >= 1`.
 Corpora requires one value in `obms` to be a two-dimensional embedding, meaning it is of shape (n, 2) and is a
 numeric type.
 
