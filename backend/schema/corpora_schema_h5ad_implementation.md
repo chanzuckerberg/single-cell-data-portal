@@ -14,6 +14,8 @@ all Corpora metadata within a single file.
 
 The Corpora schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are below.
 
+An h5ad that follows the Corpora schema will have a `version` attribute in `uns` which is a `dict`, and that dict will
+have a key "corpora_schema_version".
 
 ### Note on types
 The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored
