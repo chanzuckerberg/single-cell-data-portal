@@ -59,7 +59,8 @@ tags|`list` of `str`s|
 ## `obsm`
 
 `obsm` is a mapping from `str`s to matrices of shape `(n_obs, m)` where `n_obs` is the number of rows in `X` and `m >= 1`.
-Corpora requires one value in `obsm` to be an at least two-dimensional embedding, meaning `m >= 2`.
+Corpora requires one value in `obsm` to be an at least two-dimensional embedding, meaning `m >= 2`, and the key for that
+value must begin with `X_`.
 
 ## `obs`
 
