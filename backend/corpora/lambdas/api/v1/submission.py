@@ -3,7 +3,7 @@ from flask import make_response, jsonify
 from ....common.entities import Project
 
 
-def get_submissions_list(query_user_uuid: str):
+def get_submissions_list(query_user_uuid: str = ''):
     results = Project.list_submissions()
     for result in results:
         result["owner_id"] = result.pop("owner")
