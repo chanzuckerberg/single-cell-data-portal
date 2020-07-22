@@ -219,7 +219,7 @@ class DbProjectLink(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", back_populates="links")
+    project = relationship("DbProject", uselist=False, back_populates="links")
 
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
@@ -289,7 +289,7 @@ class DbDatasetArtifact(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    dataset = relationship("DbDataset", back_populates="artifacts")
+    dataset = relationship("DbDataset", uselist=False, back_populates="artifacts")
 
 
 class DbDeploymentDirectory(Base):
@@ -308,7 +308,7 @@ class DbDeploymentDirectory(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    dataset = relationship("DbDataset", back_populates="deployment_directories")
+    dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
 
 
 class DbContributor(Base):
