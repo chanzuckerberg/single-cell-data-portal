@@ -66,7 +66,7 @@ class Entity:
         :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
         :param filters: additional filters to apply to the query.
-        :param list_attributes: A list of entity attributes to return.
+        :param list_attributes: A list of entity attributes to return. If None, the class default is used.
         :return: The results is a list of flattened dictionaries containing the `list_entities`
         """
 

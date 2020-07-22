@@ -401,7 +401,7 @@ paths:
                     items:
                       type: object
                       properties:
-                        id:
+                        project_uuid:
                           $ref: "#/components/schemas/project_uuid"
                         creation_date:
                           type: integer
