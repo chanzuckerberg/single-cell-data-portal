@@ -67,11 +67,11 @@ class Entity:
         timestamp since the epoch in UTC timezone.
         :param filters: additional filters to apply to the query.
         :param list_attributes: A list of entity attributes to return. If None, the class default is used.
-        :return: The results is a list of flattened dictionaries containing the `list_entities`
+        :return: The results is a list of flattened dictionaries containing the `list_attributes`
         """
 
         filters = filters if filters else []
-        list_attributes = list_attributes if list_attributes else cls.list_entities
+        list_attributes = list_attributes if list_attributes else cls.list_attributes
         table = cls.table
 
         def to_dict(db_object):
