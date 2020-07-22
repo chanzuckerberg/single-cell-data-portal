@@ -58,8 +58,8 @@ class Entity:
         cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
     ) -> typing.List[typing.Dict]:
         """
-        Queries the database for Entities that have been created within the specified time range. Return only the entities
-        in list_entities.
+        Queries the database for Entities that have been created within the specified time range. Return only the
+        entity attributes in `list_attributes`.
 
         :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.

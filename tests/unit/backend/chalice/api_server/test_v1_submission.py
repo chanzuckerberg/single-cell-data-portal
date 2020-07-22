@@ -13,15 +13,16 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
     def test__list_submission__ok(self):
         path = "/v1/submission"
         headers = dict(host="localhost")
-        expected_name = 'test submission'
+        expected_name = "test submission"
         test_project = Project.create(**BogusProjectParams.get(name=expected_name, status=ProjectStatus.EDIT.name))
 
-        expected_submission = {'id': test_project.id,
-                               'name': expected_name,
-                               'processing_state': 'IN_VALIDATION',
-                               'validation_state': 'NOT_VALIDATED',
-                               'owner_id': "test_user_id"
-                               }
+        expected_submission = {
+            "id": test_project.id,
+            "name": expected_name,
+            "processing_state": "IN_VALIDATION",
+            "validation_state": "NOT_VALIDATED",
+            "owner_id": "test_user_id",
+        }
         test_url = furl(path=path)
         response = self.app.get(test_url.url, headers=headers)
         response.raise_for_status()
@@ -89,7 +90,7 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "id": "test_project_id",
             "links": [{"type": "RAW_DATA", "url": "test_url"}],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user", },  # noqa
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "EDIT",
