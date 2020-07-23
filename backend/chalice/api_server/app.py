@@ -8,11 +8,12 @@ from functools import wraps
 import chalice
 import connexion
 from chalice import Chalice, CORSConfig
-
+from flask import jsonify
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from corpora.common.utils.exceptions import AuthorizationError
 from corpora.common.authorizer import assert_authorized
 from corpora.common.utils.json import CustomJSONEncoder
 
@@ -103,6 +104,13 @@ def get_chalice_app(flask_app):
         return chalice.Response(status_code=200, headers={"Content-Type": "text/html"}, body=swagger_ui_html)
 
     flask_app.json_encoder = CustomJSONEncoder
+
+    @flask_app.errorhandler(AuthorizationError)
+    def handle_authorization_error(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
     return app
 
 
