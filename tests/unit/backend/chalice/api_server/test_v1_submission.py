@@ -37,14 +37,22 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "id": test_project.id,
             "name": expected_name,
             "status": "EDIT",
+            "attestation": {"needed": False, "tc_uri": ""},
+            "datasets": [],
+            "description": "",
+            "links": [],
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
+            "processing_state": "IN_VALIDATION",
+            "s3_bucket_key": "",
+            "validation_state": "NOT_VALIDATED",
         }
 
-        test_url = furl(path=f"/v1/project/{test_project.id}")
+        test_url = furl(path=f"/v1/submission/{test_project.id}")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         actual_body = self.remove_timestamps(json.loads(response.body))
         actual_json_body = json.dumps(actual_body, sort_keys=True)
-        expected_json_body = json.dumps(expected_body)
+        expected_json_body = json.dumps(expected_body, sort_keys=True)
         self.assertEqual(actual_json_body, expected_json_body)
 
     def test__get_submission_uuid__403_not_found(self):

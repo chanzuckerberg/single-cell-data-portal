@@ -14,21 +14,9 @@ def get_projects_list(user_uuid: str = "", from_date: int = None, to_date: int =
 
 
 def get_project_details(project_uuid: str):
-    result = Project.get_project(project_uuid)
-    if result:
-        result = result.to_dict()
-
-        # Reshape the data to match.
-        result["s3_bucket_key"] = result.pop("s3_bucket")
-        result["owner"] = result.pop("user")
-        result["links"] = [dict(url=link["link_url"], type=link["link_type"]) for link in result["links"]]
-        result["attestation"] = dict(needed=result.pop("needs_attestation"), tc_uri=result.pop("tc_uri"))
-        for dataset in result["datasets"]:
-            dataset["dataset_deployments"] = dataset.pop("deployment_directories")
-            dataset["dataset_assets"] = dataset.pop("artifacts")
-            dataset["preprint_doi"] = dict(title=dataset.pop("preprint_doi"))
-            dataset["publication_doi"] = dict(title=dataset.pop("publication_doi"))
-
+    project = Project.get_project(project_uuid)
+    if project:
+        result = project.reshape_for_api()
         return make_response(jsonify(result), 200)
     else:
         raise AuthorizationError()

@@ -69,6 +69,14 @@ class Project(Entity):
         return cls.list_attributes_in_time_range(*args, filters=[DbProject.status == ProjectStatus.LIVE.name], **kwargs)
 
     @classmethod
+    def get_submission(cls, project_uuid):
+        """
+        Given the project_uuid, retrieve a live project.
+        :param project_uuid:
+        """
+        return cls.get((project_uuid, ProjectStatus.EDIT.name))
+
+    @classmethod
     def list_submissions(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             *args,
@@ -82,3 +90,21 @@ class Project(Entity):
             ],
             **kwargs,
         )
+
+    def reshape_for_api(self) -> dict:
+        """
+        Reshape the project to match the expected api output.
+        :return: A dictionary that can be converted into JSON matching the expected api response.
+        """
+        result = self.to_dict()
+        # Reshape the data to match.
+        result["s3_bucket_key"] = result.pop("s3_bucket", None)
+        result["owner"] = result.pop("user")
+        result["links"] = [dict(url=link["link_url"], type=link["link_type"]) for link in result["links"]]
+        result["attestation"] = dict(needed=result.pop("needs_attestation", None), tc_uri=result.pop("tc_uri", None))
+        for dataset in result["datasets"]:
+            dataset["dataset_deployments"] = dataset.pop("deployment_directories")
+            dataset["dataset_assets"] = dataset.pop("artifacts")
+            dataset["preprint_doi"] = dict(title=dataset.pop("preprint_doi"))
+            dataset["publication_doi"] = dict(title=dataset.pop("publication_doi"))
+        return result

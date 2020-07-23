@@ -118,7 +118,8 @@ paths:
           description: Return the submission metadata.
           content:
             application/json:
-              $ref: "#/components/schemas/project"
+              schema:
+                $ref: "#/components/schemas/project"
         "400":
           $ref: "#/components/responses/400"
         "401":
