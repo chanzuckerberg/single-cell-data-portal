@@ -49,6 +49,9 @@ project\_links|`list` of `links`|
 The `link` type is a `dict` {"link_name": `str`, "link_url": `str`, "link_type": `str`}, where the value for "link_type"
 must be one of `SUMMARY`, `PROTOCOL`, `RAW_DATA`, or `OTHER`.
 
+**Note** that two keys are of type `list` of `dicts`, "contributors" and "project_links". AnnData does not permit storing this
+data type, so those two fields are stored as JSON strings that can be converted to the desired types via, `json.loads`.
+
 Corpora defines the following optional keys and values in `uns`. If they key is present, then the value must not be empty.
 
 **Key**|**Value Type**|**Notes**
