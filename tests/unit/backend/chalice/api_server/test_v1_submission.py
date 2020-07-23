@@ -57,6 +57,6 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
 
     def test__get_submission_uuid__403_not_found(self):
         """Verify the test project exists and the expected fields exist."""
-        test_url = furl(path=f"/v1/submission/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/v1/submission/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
