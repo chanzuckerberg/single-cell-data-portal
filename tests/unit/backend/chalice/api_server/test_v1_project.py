@@ -136,6 +136,12 @@ class TestProject(BaseAPITest, unittest.TestCase):
         expected_json_body = json.dumps(expected_body)
         self.assertEqual(actual_json_body, expected_json_body)
 
+    def test__get_project_uuid__403_not_found(self):
+        """Verify the test project exists and the expected fields exist."""
+        test_url = furl(path=f"/v1/project/AAAA-BBBB-CCCC-DDDD")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(403, response.status_code)
+
     @staticmethod
     def remove_timestamps(body: dict) -> dict:
         """

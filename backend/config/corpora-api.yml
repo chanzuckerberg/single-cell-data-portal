@@ -115,7 +115,10 @@ paths:
         - $ref: "#/components/parameters/path_project_uuid"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: Return the submission metadata.
+          content:
+            application/json:
+              $ref: "#/components/schemas/project"
         "400":
           $ref: "#/components/responses/400"
         "401":

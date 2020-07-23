@@ -5,7 +5,7 @@ class CorporaException(Exception):
 
 class AuthorizationError(Exception):
     status_code = 403
-    msg = "The user is not authorized to access."
+    msg = "The user is not authorized to access this resource"
 
     def __init__(self, message: str = None, status_code: int = None, payload: dict = None):
         Exception.__init__(self)
