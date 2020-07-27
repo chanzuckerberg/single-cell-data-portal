@@ -11,6 +11,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
+from backend.corpora.common.utils.db_utils import DbUtils
 from tests.unit.backend.utils import BogusProjectParams
 
 
@@ -142,3 +143,27 @@ class TestProject(unittest.TestCase):
         generated_ids = [Project.create(**BogusProjectParams.get()).id for _ in range(generate)]
         projects = Project.list()
         self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))
+
+    def test__delete__ok(self):
+        test_project = Project.create(**BogusProjectParams.get(links=[{}]))
+        db = DbUtils()
+        test_project_id = test_project.id
+        test_link_id = test_project.links[0].id
+
+        # Check if the link exists.
+        expected_id = test_link_id
+        actual_id = db.query([DbProjectLink], [DbProjectLink.id == test_link_id])[0].id
+        self.assertEqual(expected_id, actual_id)
+
+        # Delete the project
+        db.session.delete(test_project.db_object)
+
+        # The Project is deleted
+        expected_results = None
+        actual_results = Project.get_project(test_project_id)
+        self.assertEqual(expected_results, actual_results)
+
+        # The link should also be deleted.
+        expected_results = []
+        actual_results = db.query([DbProjectLink], [DbProjectLink.id == test_link_id])
+        self.assertEqual(expected_results, actual_results)

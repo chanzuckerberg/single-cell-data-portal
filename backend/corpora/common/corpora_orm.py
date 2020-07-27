@@ -198,7 +198,7 @@ class DbProject(Base):
 
     # Relationships
     user = relationship("DbUser", uselist=False, back_populates="projects")
-    links = relationship("DbProjectLink", back_populates="project")
+    links = relationship("DbProjectLink", back_populates="project", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="project")
 
 
@@ -263,8 +263,7 @@ class DbDataset(Base):
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset")
     deployment_directories = relationship("DbDeploymentDirectory", back_populates="dataset")
     contributors = relationship(
-        "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets"
-    )
+        "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets")
 
     # Composite FK
     __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
