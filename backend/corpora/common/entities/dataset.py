@@ -72,6 +72,7 @@ class Dataset(Entity):
 
         #  Linking many contributors to many datasets
         contributors = cls._create_sub_objects(contributors, DbContributor)
+        # TODO check if contributor exists before creating
         contributor_dataset_ids = [
             dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
         ]

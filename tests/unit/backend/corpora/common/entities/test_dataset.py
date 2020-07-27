@@ -6,33 +6,9 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    ProjectStatus,
 )
 from backend.corpora.common.entities.dataset import Dataset
-
-
-class BogusDatasetParams:
-    @classmethod
-    def get(cls):
-        return dict(
-            name="create_dataset",
-            organism="organism",
-            organism_ontology="123",
-            tissue="tissue",
-            tissue_ontology="123",
-            assay="assay",
-            assay_ontology="123",
-            disease="diseas",
-            disease_ontology="123",
-            sex="F",
-            ethnicity="ethnicity",
-            ethnicity_ontology="123",
-            source_data_location="location",
-            preprint_doi="preprint",
-            publication_doi="publication",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
-        )
+from unit.backend.utils import BogusDatasetParams
 
 
 class TestDataset(unittest.TestCase):

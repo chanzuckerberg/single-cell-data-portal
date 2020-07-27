@@ -9,10 +9,11 @@ from backend.corpora.common.corpora_orm import (
     DbDataset,
     DbUser,
 )
+from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
 from backend.corpora.common.utils.db_utils import DbUtils
-from tests.unit.backend.utils import BogusProjectParams
+from tests.unit.backend.utils import BogusProjectParams, BogusDatasetParams
 
 
 class TestProject(unittest.TestCase):
@@ -144,7 +145,7 @@ class TestProject(unittest.TestCase):
         projects = Project.list()
         self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))
 
-    def test__delete__ok(self):
+    def test__cascade_delete_project__ok(self):
         test_project = Project.create(**BogusProjectParams.get(links=[{}]))
         db = DbUtils()
         test_project_id = test_project.id
@@ -155,10 +156,8 @@ class TestProject(unittest.TestCase):
         actual_id = db.query([DbProjectLink], [DbProjectLink.id == test_link_id])[0].id
         self.assertEqual(expected_id, actual_id)
 
-        # Delete the project
-        db.session.delete(test_project.db_object)
-
         # The Project is deleted
+        db.session.delete(test_project.db_object)
         expected_results = None
         actual_results = Project.get_project(test_project_id)
         self.assertEqual(expected_results, actual_results)
@@ -166,4 +165,25 @@ class TestProject(unittest.TestCase):
         # The link should also be deleted.
         expected_results = []
         actual_results = db.query([DbProjectLink], [DbProjectLink.id == test_link_id])
+        self.assertEqual(expected_results, actual_results)
+
+    def test__cascade_delete_project_with_dataset__ok(self):
+        db = DbUtils()
+        test_project = Project.create(**BogusProjectParams.get())
+        expected_project_id = test_project.id
+        test_dataset = Dataset.create(
+            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status)
+        )
+        expected_dataset_id = test_dataset.id
+
+        # The Project is deleted
+        db.session.delete(test_project.db_object)
+        db.session.expire_all()
+        expected_results = None
+        actual_results = Project.get_project(expected_project_id)
+        self.assertEqual(expected_results, actual_results)
+
+        # The dataset is delete
+        expected_results = None
+        actual_results = Dataset.get(expected_dataset_id)
         self.assertEqual(expected_results, actual_results)
