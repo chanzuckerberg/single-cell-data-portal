@@ -70,11 +70,19 @@ class Dataset(Entity):
             **kwargs,
         )
 
+        #  Get existing contributors by email.
+        contributor_emails = set(contributor.get('email') for contributor in contributors)
+        existing_contributors = cls.db.session.query([DbContributor], [DbContributor.email in contributor_emails])
+        existing_emails = set(contributor.email for contributor in existing_contributors)
+
+        #  Create new contributors
+        new_contributors = [contributor for contributor in contributors if contributor.get('email') not in existing_emails]
+        new_contributors = cls._create_sub_objects(new_contributors, DbContributor)
+
         #  Linking many contributors to many datasets
-        contributors = cls._create_sub_objects(contributors, DbContributor)
-        # TODO check if contributor exists before creating
+        add_contributors = [*new_contributors, *existing_contributors]
         contributor_dataset_ids = [
-            dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
+            dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in add_contributors
         ]
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
 

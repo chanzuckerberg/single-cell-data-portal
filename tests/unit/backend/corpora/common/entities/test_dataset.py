@@ -6,8 +6,10 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
-)
+    ProjectStatus)
+from backend.corpora.common.entities import Project
 from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.utils.db_utils import DbUtils
 from unit.backend.utils import BogusDatasetParams
 
 
@@ -82,3 +84,23 @@ class TestDataset(unittest.TestCase):
         generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]
         dataset = Dataset.list()
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
+
+    def test__cascade_delete_project_with_dataset__ok(self):
+        db = DbUtils()
+        test_dataset = Dataset.create(
+            **BogusDatasetParams.get(project_id="test_project_id", project_status=ProjectStatus.LIVE.name,
+                                     artifacts=[{}], deployment_directories=[{}], contributors=[{'id':'test_contributor_id'}])
+        )
+        test_dataset_id = test_dataset.id
+
+        # The Dataset is deleted
+        test_dataset.delete()
+        db.session.expire_all()
+        expected_dataset_id = None
+        actual_dataset = Dataset.get(test_dataset_id)
+        self.assertEqual(expected_dataset_id, actual_dataset)
+
+        # The Project exists
+        expected_results = "test_project_id"
+        actual_results = Project.get(("test_project_id", ProjectStatus.LIVE.name)).id
+        self.assertEqual(expected_results, actual_results)
