@@ -1,3 +1,4 @@
+import typing
 import unittest
 
 from backend.corpora.common.corpora_orm import (
@@ -6,11 +7,15 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    ProjectStatus)
-from backend.corpora.common.entities import Project
+    ProjectStatus,
+    DbDataset,
+    DbProject,
+    Base,
+)
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils
 from unit.backend.utils import BogusDatasetParams
+from unit.backend.utils import DBTestHelpers
 
 
 class TestDataset(unittest.TestCase):
@@ -86,16 +91,10 @@ class TestDataset(unittest.TestCase):
         """
         Create a dataset with a new contributor and an existing contributor.
         """
-        contributors = [
-            dict(name="bob", institution="school", email="some@email.com"),
-            dict(email="test_email")
-                 ]
+        contributors = [dict(name="bob", institution="school", email="some@email.com"), dict(email="test_email")]
 
         dataset_params = BogusDatasetParams.get()
-        dataset = Dataset.create(
-            **dataset_params,
-            contributors=contributors,
-        )
+        dataset = Dataset.create(**dataset_params, contributors=contributors,)
 
         expected_dataset_id = dataset.id
         expected_artifacts = [art.to_dict() for art in dataset.artifacts]
@@ -121,21 +120,67 @@ class TestDataset(unittest.TestCase):
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
 
     def test__cascade_delete_project_with_dataset__ok(self):
-        db = DbUtils()
+        # Create the dataset
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(project_id="test_project_id", project_status=ProjectStatus.LIVE.name,
-                                     artifacts=[{}], deployment_directories=[{}], contributors=[{'email':'test_email'}])
+            **BogusDatasetParams.get(
+                project_id="test_project_id",
+                project_status=ProjectStatus.LIVE.name,
+                artifacts=[{}],
+                deployment_directories=[{}],
+                contributors=[{"email": "test_email"}],
+            )
         )
-        test_dataset_id = test_dataset.id
+        test_dataset_ids = [(test_dataset.id, DbDataset)]
+        test_artifact_ids = [(art.id, DbDatasetArtifact) for art in test_dataset.artifacts]
+        test_deployed_directory_ids = [(dep.id, DbDeploymentDirectory) for dep in test_dataset.deployment_directories]
+        test_contributor_ids = [(con.id, DbContributor) for con in test_dataset.contributors]
+        test_project_ids = [(("test_project_id", ProjectStatus.LIVE.name), DbProject)]
 
-        # The Dataset is deleted
+        with self.subTest("verify everything exists"):
+            expected_exists = (
+                test_contributor_ids
+                + test_project_ids
+                + test_dataset_ids
+                + test_artifact_ids
+                + test_deployed_directory_ids
+            )
+            self.assertRowsExist(expected_exists)
+
+        # Delete the dataset
         test_dataset.delete()
-        db.session.expire_all()
-        expected_dataset_id = None
-        actual_dataset = Dataset.get(test_dataset_id)
-        self.assertEqual(expected_dataset_id, actual_dataset)
 
-        # The Project exists
-        expected_results = "test_project_id"
-        actual_results = Project.get(("test_project_id", ProjectStatus.LIVE.name)).id
-        self.assertEqual(expected_results, actual_results)
+        with self.subTest("Verify Deletion"):
+            expected_deleted = test_dataset_ids + test_artifact_ids + test_deployed_directory_ids
+            expected_exists = test_contributor_ids + test_project_ids
+            self.assertRowsDeleted(expected_deleted)
+            self.assertRowsExist(expected_exists)
+
+    def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
+        """
+        Verify if rows have been deleted from the database.
+        :param tests: a list of tuples with (primary_key, table)
+        """
+        db = DbUtils()
+        db.session.expire_all()
+        for p_key, table in tests:
+            if len(p_key) == 2:
+                # handle the special case for projects with a composite primary key
+                actual = db.query([table], [table.id == p_key[0], table.status == p_key[1]])
+            else:
+                actual = db.query([table], [table.id == p_key])
+            self.assertFalse(actual, f"Row not deleted {table.__name__}:{p_key}")
+
+    def assertRowsExist(self, tests):
+        """
+        Verify if rows exist in the database.
+        :param tests: a list of tuples with (primary_key, table)
+        """
+        db = DbUtils()
+        db.session.expire_all()
+        for p_key, table in tests:
+            if len(p_key) == 2:
+                # handle the special case for projects with a composite primary key
+                actual = db.query([table], [table.id == p_key[0], table.status == p_key[1]])
+            else:
+                actual = db.query([table], [table.id == p_key])
+            self.assertTrue(actual, f"Row does not exist {table.__name__}:{p_key}")

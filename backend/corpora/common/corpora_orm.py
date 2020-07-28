@@ -265,10 +265,7 @@ class DbDataset(Base):
         "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
     )
     contributors = relationship(
-        "DbContributor",
-        secondary=lambda: DbDatasetContributor().__table__,
-        back_populates="datasets",
-        cascade="all, delete",
+        "DbContributor", secondary=lambda: DbDatasetContributor().__table__, back_populates="datasets",
     )
 
     # Composite FK

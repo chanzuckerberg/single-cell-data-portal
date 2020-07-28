@@ -96,7 +96,7 @@ class Dataset(Entity):
         existing_contributors = []
         new_contributors = []
         for contributor in contributors:
-            email = contributor.get('email')
+            email = contributor.get("email")
             if email:
                 result = cls.db.query([DbContributor], [DbContributor.email == email])
                 if result:
