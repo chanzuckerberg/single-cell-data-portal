@@ -1,9 +1,6 @@
 import logging
 import typing
 import uuid
-from datetime import datetime
-
-from sqlalchemy import and_
 
 logger = logging.getLogger(__name__)
 
@@ -53,45 +50,6 @@ class Entity:
         """
         return [cls(obj) for obj in cls.db.query([cls.table])]
 
-    @classmethod
-    def list_attributes_in_time_range(
-        cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
-    ) -> typing.List[typing.Dict]:
-        """
-        Queries the database for Entities that have been created within the specified time range. Return only the
-        entity attributes in `list_attributes`.
-
-        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
-        timestamp since the epoch in UTC timezone.
-        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
-        timestamp since the epoch in UTC timezone.
-        :param filters: additional filters to apply to the query.
-        :param list_attributes: A list of entity attributes to return. If None, the class default is used.
-        :return: The results is a list of flattened dictionaries containing the `list_attributes`
-        """
-
-        filters = filters if filters else []
-        list_attributes = list_attributes if list_attributes else cls.list_attributes
-        table = cls.table
-
-        def to_dict(db_object):
-            _result = {}
-            for _field in db_object._fields:
-                _result[_field] = getattr(db_object, _field)
-            return _result
-
-        if to_date:
-            filters.append(cls.table.created_at <= datetime.fromtimestamp(to_date))
-        if from_date:
-            filters.append(table.created_at >= datetime.fromtimestamp(from_date))
-
-        results = [
-            to_dict(result)
-            for result in cls.db.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
-        ]
-
-        return results
-
     def save(self):
         """
         Writes the current object state to the database
@@ -108,7 +66,7 @@ class Entity:
 
     @classmethod
     def _create_sub_objects(
-        cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None, primary_keys: typing.List[str] = None
+        cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None
     ) -> typing.List[Base]:
         """
         Create `rows` in `db_table` associated with Entity Object during object creation. A new UUID is generated and a
@@ -116,8 +74,6 @@ class Entity:
 
         :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
-        :param primary_keys: Additional columns required to build the primary key. This is used when the primary consist
-        of multiple columns.
         :param add_columns: Additional columns attributes or modifications to add to the row.
 
         This can be used when there are shared column values that need to be added across all the new rows.
