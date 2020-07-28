@@ -59,10 +59,10 @@ paths:
       tags:
         - submissions
       description: >-
-        Opens a new submission with a unique UUID if a submission is not already open for a project. If a project UUID
-        is not provided, then a project UUID will be generated. Otherwise, the project details based on the given
-        project UUID will be used to pre-populate the newly created submission entity. On success, a message will be
-        returned with the project’s UUID.
+        Opens a new submission. If a project UUID is not provided, then a project UUID will be generated and a blank
+        submission will be created. If a project UUID is provided, a submission is opened to modify the existing
+        project. At most, one submission can be open for a project. The project UUID will be used to pre-populate the
+        newly created submission. On success, a message will be returned with the project UUID.
       operationId: corpora.lambdas.api.v1.submission.create_new_submission
       requestBody:
         content:
