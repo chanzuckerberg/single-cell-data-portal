@@ -334,6 +334,9 @@ paths:
         Publish a project to Corpora as either public or private. The visibility of the project will either make it
         visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
         to public, the successful execution of this operation will move the Submission to a CLOSED state.
+
+        If publishing modification to a previously published project, this will replace the old project with the new
+        published project. The old project will not longer be accessible.
       operationId: corpora.lambdas.api.v1.submission.publish_submission
       parameters:
         - $ref: "#/components/parameters/path_project_uuid"
