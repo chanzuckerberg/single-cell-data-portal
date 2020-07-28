@@ -8,12 +8,11 @@ from functools import wraps
 import chalice
 import connexion
 from chalice import Chalice, CORSConfig
-from flask import jsonify
+from connexion import FlaskApi, ProblemException, problem
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from corpora.common.utils.exceptions import AuthorizationError
 from corpora.common.authorizer import assert_authorized
 from corpora.common.utils.json import CustomJSONEncoder
 
@@ -101,15 +100,21 @@ def get_chalice_app(flask_app):
 
     @app.route("/")
     def serve_swagger_ui():
-        return chalice.Response(status_code=200, headers={"Content-Type": "text/html"}, body=swagger_ui_html)
+        return chalice.Response(
+            status_code=200,
+            headers={"Content-Type": "text/html", "X-AWS-REQUEST-ID": app.lambda_context.aws_request_id},
+            body=swagger_ui_html,
+        )
 
     flask_app.json_encoder = CustomJSONEncoder
 
-    @flask_app.errorhandler(AuthorizationError)
-    def handle_authorization_error(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
+    @flask_app.errorhandler(ProblemException)
+    def handle_authorization_error(exception):
+        response = problem(
+            exception.status, exception.title, exception.type, exception.instance, exception.headers, exception.ext
+        )
+        response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
+        return FlaskApi.get_response(response)
 
     return app
 

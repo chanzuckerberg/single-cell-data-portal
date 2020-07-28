@@ -1,4 +1,8 @@
+import typing
 import uuid
+from datetime import datetime
+
+from sqlalchemy import and_
 
 from .entity import Entity
 from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
@@ -67,6 +71,45 @@ class Project(Entity):
     @classmethod
     def list_projects_in_time_range(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(*args, filters=[DbProject.status == ProjectStatus.LIVE.name], **kwargs)
+
+    @classmethod
+    def list_attributes_in_time_range(
+        cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+    ) -> typing.List[typing.Dict]:
+        """
+        Queries the database for Entities that have been created within the specified time range. Return only the
+        entity attributes in `list_attributes`.
+
+        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
+        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
+        timestamp since the epoch in UTC timezone.
+        :param filters: additional filters to apply to the query.
+        :param list_attributes: A list of entity attributes to return. If None, the class default is used.
+        :return: The results is a list of flattened dictionaries containing the `list_attributes`
+        """
+
+        filters = filters if filters else []
+        list_attributes = list_attributes if list_attributes else cls.list_attributes
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        if to_date:
+            filters.append(cls.table.created_at <= datetime.fromtimestamp(to_date))
+        if from_date:
+            filters.append(table.created_at >= datetime.fromtimestamp(from_date))
+
+        results = [
+            to_dict(result)
+            for result in cls.db.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
+        ]
+
+        return results
 
     @classmethod
     def get_submission(cls, project_uuid):
