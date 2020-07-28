@@ -15,7 +15,6 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils
 from unit.backend.utils import BogusDatasetParams
-from unit.backend.utils import DBTestHelpers
 
 
 class TestDataset(unittest.TestCase):
