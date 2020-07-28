@@ -1,6 +1,6 @@
 from flask import make_response, jsonify
 
-from ....common.utils.exceptions import AuthorizationError
+from ....common.utils.exceptions import ForbiddenHTTPException
 from ....common.entities import Project
 
 
@@ -22,7 +22,7 @@ def get_submission_details(project_uuid: str):
         result = project.reshape_for_api()
         return make_response(jsonify(result), 200)
     else:
-        raise AuthorizationError()
+        raise ForbiddenHTTPException()
 
 
 def delete_submission(path_project_uuid: str):
