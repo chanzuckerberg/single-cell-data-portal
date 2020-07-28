@@ -1,3 +1,4 @@
+import typing
 import uuid
 
 from .entity import Entity
@@ -70,26 +71,41 @@ class Dataset(Entity):
             **kwargs,
         )
 
-        #  Get existing contributors by email.
-        contributor_emails = set(contributor.get('email') for contributor in contributors)
-        existing_contributors = cls.db.session.query([DbContributor], [DbContributor.email in contributor_emails])
-        existing_emails = set(contributor.email for contributor in existing_contributors)
-
-        #  Create new contributors
-        new_contributors = [contributor for contributor in contributors if contributor.get('email') not in existing_emails]
-        new_contributors = cls._create_sub_objects(new_contributors, DbContributor)
-
         #  Linking many contributors to many datasets
-        add_contributors = [*new_contributors, *existing_contributors]
+        add_contributors = cls.create_contributors(contributors)
         contributor_dataset_ids = [
             dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in add_contributors
         ]
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
 
         cls.db.session.add(new_db_object)
-        cls.db.session.add_all(contributors)
-        cls.db.session.flush()
         cls.db.session.add_all(dataset_contributor)
         cls.db.commit()
 
         return cls(new_db_object)
+
+    @classmethod
+    def create_contributors(cls, contributors: typing.List[dict]) -> typing.List[DbContributor]:
+        """
+        Take a list of contributor. Retrieve them from the database if they exists, otherwise create them. Return a list
+        of DbContributors.
+        :param contributors: a dictionary containing all of the columns for a DbContributor row.
+        :return: a list of DbContributor objects.
+        """
+        existing_contributors = []
+        new_contributors = []
+        for contributor in contributors:
+            email = contributor.get('email')
+            if email:
+                contributor = cls.db.query([DbContributor], [DbContributor.email == email])
+                if contributor:
+                    existing_contributors.append(contributor[0])
+                else:
+                    new_contributors.append(contributor)
+
+        #  Create new contributors
+        new_contributors = cls._create_sub_objects(new_contributors, DbContributor)
+        if new_contributors:
+            cls.db.session.add_all(new_contributors)
+            cls.db.commit()
+        return [*new_contributors, *existing_contributors]

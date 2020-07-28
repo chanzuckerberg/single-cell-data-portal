@@ -89,7 +89,7 @@ class TestDataset(unittest.TestCase):
         db = DbUtils()
         test_dataset = Dataset.create(
             **BogusDatasetParams.get(project_id="test_project_id", project_status=ProjectStatus.LIVE.name,
-                                     artifacts=[{}], deployment_directories=[{}], contributors=[{'id':'test_contributor_id'}])
+                                     artifacts=[{}], deployment_directories=[{}], contributors=[{'email':'test_email'}])
         )
         test_dataset_id = test_dataset.id
 
