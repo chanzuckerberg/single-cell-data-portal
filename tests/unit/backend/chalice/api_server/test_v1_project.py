@@ -141,3 +141,4 @@ class TestProject(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/project/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
+        self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
