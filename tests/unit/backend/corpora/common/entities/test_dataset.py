@@ -79,6 +79,35 @@ class TestDataset(unittest.TestCase):
                 self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
                 self.assertCountEqual(expected_contributors, actual_dataset.contributors)
 
+    def test__create_with_existing_contributor__ok(self):
+        """
+        Create a dataset with a new contributor and an existing contributor.
+        """
+        contributors = [
+            dict(name="bob", institution="school", email="some@email.com"),
+            dict(email="test_email")
+                 ]
+
+        dataset_params = BogusDatasetParams.get()
+        dataset = Dataset.create(
+            **dataset_params,
+            contributors=contributors,
+        )
+
+        expected_dataset_id = dataset.id
+        expected_artifacts = dataset.artifacts
+        expected_deployment_directories = dataset.deployment_directories
+        expected_contributors = dataset.contributors
+
+        # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
+        Dataset.db.session.expire_all()
+
+        actual_dataset = Dataset.get(expected_dataset_id)
+        self.assertEqual(expected_dataset_id, actual_dataset.id)
+        self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
+        self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
+        self.assertCountEqual(expected_contributors, actual_dataset.contributors)
+
     def test__list__ok(self):
         generate = 2
         generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]

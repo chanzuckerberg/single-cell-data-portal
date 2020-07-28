@@ -79,6 +79,7 @@ class Dataset(Entity):
         dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
 
         cls.db.session.add(new_db_object)
+        cls.db.session.flush()
         cls.db.session.add_all(dataset_contributor)
         cls.db.commit()
 
@@ -97,9 +98,9 @@ class Dataset(Entity):
         for contributor in contributors:
             email = contributor.get('email')
             if email:
-                contributor = cls.db.query([DbContributor], [DbContributor.email == email])
-                if contributor:
-                    existing_contributors.append(contributor[0])
+                result = cls.db.query([DbContributor], [DbContributor.email == email])
+                if result:
+                    existing_contributors.append(result[0])
                 else:
                     new_contributors.append(contributor)
 
