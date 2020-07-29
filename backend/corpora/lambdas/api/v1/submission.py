@@ -30,7 +30,7 @@ def delete_submission(project_uuid: str):
     #  TODO delete uploaded files if they are not associated with a published project
     if project:
         project.delete()
-        return make_response(jsonify(), 202)
+        return make_response("", 202)
     else:
         raise ForbiddenHTTPException()
 

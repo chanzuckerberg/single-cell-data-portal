@@ -79,3 +79,9 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
         test_url = furl(path=f"/v1/submission/{test_project.id}")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
+
+    def test__delete_submission_uuid__403_not_found(self):
+        """Verify the test project exists and the expected fields exist."""
+        test_url = furl(path="/v1/submission/AAAA-BBBB-CCCC-DDDD")
+        response = self.app.delete(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(403, response.status_code)

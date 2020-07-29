@@ -90,7 +90,7 @@ class TestDataset(unittest.TestCase):
         """
         Create a dataset with a new contributor and an existing contributor.
         """
-        contributors = [dict(name="bob", institution="school", email="some@email.com"), {'id':"test_contributor_id"}]
+        contributors = [dict(name="bob", institution="school", email="some@email.com"), {"id": "test_contributor_id"}]
 
         dataset_params = BogusDatasetParams.get()
         dataset = Dataset.create(**dataset_params, contributors=contributors,)

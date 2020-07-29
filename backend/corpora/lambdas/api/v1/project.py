@@ -27,7 +27,7 @@ def delete_project(project_uuid: str):
     #  TODO delete uploaded files
     if project:
         project.delete()
-        return make_response(202)
+        return make_response("", 202)
     else:
         raise ForbiddenHTTPException()
 
