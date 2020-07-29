@@ -84,3 +84,10 @@ class Dataset(Entity):
         cls.db.commit()
 
         return cls(new_db_object)
+
+    def delete(self):
+        contributors = self.db_object.contributors
+        for contributor in contributors:
+            if len(contributor.datasets) == 1:
+                self.db.delete(contributor)
+        super().delete()
