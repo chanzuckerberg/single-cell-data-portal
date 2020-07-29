@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from ....common.utils.exceptions import ForbiddenHTTPException
-from ....common.entities import Project
+from ....common.entities import Project, Dataset
 
 
 def get_submissions_list(query_user_uuid: str = ""):
@@ -35,21 +35,27 @@ def delete_submission(project_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def add_file_to_submission(path_project_uuid: str, request_body: dict):
+def add_file_to_submission(project_uuid: str, request_body: dict):
     raise NotImplementedError
 
 
-def delete_dataset_from_submission(path_project_uuid: str, path_dataset_uuid: str):
+def delete_dataset_from_submission(project_uuid: str, dataset_uuid: str):
+    dataset = Dataset.get(dataset_uuid)
+    # TODO delete uploaded files if they are not assoicated with a published project
+    if dataset and dataset.project_id == project_uuid and dataset.is_submission():
+        dataset.delete()
+        return make_response("", 202)
+    else:
+        raise ForbiddenHTTPException()
+
+
+def validate_submission(project_uuid: str):
     raise NotImplementedError
 
 
-def validate_submission(path_project_uuid: str):
+def save_submission(project_uuid: str, request_body: dict):
     raise NotImplementedError
 
 
-def save_submission(path_project_uuid: str, request_body: dict):
-    raise NotImplementedError
-
-
-def publish_submission(path_project_uuid: str):
+def publish_submission(project_uuid: str):
     raise NotImplementedError

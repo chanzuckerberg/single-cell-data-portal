@@ -2,7 +2,8 @@ import typing
 import uuid
 
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
+from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor, \
+    ProjectStatus
 
 
 class Dataset(Entity):
@@ -112,3 +113,6 @@ class Dataset(Entity):
             cls.db.session.add_all(new_contributors)
             cls.db.commit()
         return [*new_contributors, *existing_contributors]
+
+    def is_submission(self):
+        return self.db_object.project_status == ProjectStatus.EDIT.name
