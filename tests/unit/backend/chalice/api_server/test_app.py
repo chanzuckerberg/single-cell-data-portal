@@ -8,3 +8,4 @@ class TestAPI(BaseAPITest, unittest.TestCase):
         """ If this fails then the server does not work """
         response = self.app.get("/")
         response.raise_for_status()
+        self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())

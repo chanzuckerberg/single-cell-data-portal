@@ -30,16 +30,21 @@ paths:
               schema:
                 type: object
                 properties:
-                  project_uuid:
-                    $ref: "#/components/schemas/project_uuid"
-                  name:
-                    type: string
-                  processing_state:
-                    type: string
-                  validation_state:
-                    type: string
-                  user_uuid:
-                    type: string
+                  submissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/project_uuid"
+                        name:
+                          type: string
+                        processing_state:
+                          type: string
+                        validation_state:
+                          type: string
+                        owner_id:
+                          type: string
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -54,10 +59,10 @@ paths:
       tags:
         - submissions
       description: >-
-        Opens a new submission with a unique UUID if a submission is not already open for a project. If a project UUID
-        is not provided, then a project UUID will be generated. Otherwise, the project details based on the given
-        project UUID will be used to pre-populate the newly created submission entity. On success, a message will be
-        returned with the project’s UUID.
+        Opens a new submission. If a project UUID is not provided, then a project UUID will be generated and a blank
+        submission will be created. If a project UUID is provided, a submission is opened to modify the existing
+        project. At most, one submission can be open for a project. The project UUID will be used to pre-populate the
+        newly created submission. On success, a message will be returned with the project UUID.
       operationId: corpora.lambdas.api.v1.submission.create_new_submission
       requestBody:
         content:
@@ -110,7 +115,11 @@ paths:
         - $ref: "#/components/parameters/path_project_uuid"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: Return the submission metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/project"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -325,6 +334,9 @@ paths:
         Publish a project to Corpora as either public or private. The visibility of the project will either make it
         visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
         to public, the successful execution of this operation will move the Submission to a CLOSED state.
+
+        If publishing modification to a previously published project, this will replace the old project with the new
+        published project. The old project will not longer be accessible.
       operationId: corpora.lambdas.api.v1.submission.publish_submission
       parameters:
         - $ref: "#/components/parameters/path_project_uuid"
