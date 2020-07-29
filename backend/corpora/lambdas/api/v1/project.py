@@ -24,7 +24,7 @@ def get_project_details(project_uuid: str):
 
 def delete_project(project_uuid: str):
     project = Project.get_project(project_uuid)
-    #  TODO delete uploaded files
+    #  TODO delete uploaded files if they are not linked to a submission
     if project:
         project.delete()
         return make_response("", 202)
