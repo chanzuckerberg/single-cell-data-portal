@@ -14,7 +14,8 @@ well-labeled repository of interoperable datasets.
 
 ### Pre-requisites
 1. Python >= 3.6
-1. [install moreutils](https://joeyh.name/code/moreutils/)
+1. [install moreutils](https://joeyh.name/code/moreutils/). If brew is installed used `brew install moreutils`.
+1. [install gettext](https://www.gnu.org/software/gettext/). If brew is installed used `brew install gettext`.
 1. [Install and configure awscli](docs/awscli.md)
 1. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
 1. [Set development flags](docs/dev_flags.md)
