@@ -96,13 +96,15 @@ class Dataset(Entity):
         existing_contributors = []
         new_contributors = []
         for contributor in contributors:
-            email = contributor.get("email")
-            if email:
-                result = cls.db.query([DbContributor], [DbContributor.email == email])
+            _id = contributor.pop("id", None)
+            if _id:
+                result = cls.db.query([DbContributor], [DbContributor.id == _id])
                 if result:
                     existing_contributors.append(result[0])
                 else:
                     new_contributors.append(contributor)
+            else:
+                new_contributors.append(contributor)
 
         #  Create new contributors
         new_contributors = cls._create_sub_objects(new_contributors, DbContributor)

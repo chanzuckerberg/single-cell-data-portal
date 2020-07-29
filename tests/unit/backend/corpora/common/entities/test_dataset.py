@@ -90,7 +90,7 @@ class TestDataset(unittest.TestCase):
         """
         Create a dataset with a new contributor and an existing contributor.
         """
-        contributors = [dict(name="bob", institution="school", email="some@email.com"), dict(email="test_email")]
+        contributors = [dict(name="bob", institution="school", email="some@email.com"), {'id':"test_contributor_id"}]
 
         dataset_params = BogusDatasetParams.get()
         dataset = Dataset.create(**dataset_params, contributors=contributors,)
@@ -110,6 +110,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(expected_dataset_id, actual_dataset.id)
         self.assertCountEqual(expected_artifacts, actual_artifacts)
         self.assertCountEqual(expected_deployment_directories, actual_deployment_directories)
+        self.assertEqual(2, len(actual_contributors))
         self.assertCountEqual(expected_contributors, actual_contributors)
 
     def test__list__ok(self):
@@ -126,7 +127,7 @@ class TestDataset(unittest.TestCase):
                 project_status=ProjectStatus.LIVE.name,
                 artifacts=[{}],
                 deployment_directories=[{}],
-                contributors=[{"email": "test_email"}],
+                contributors=[{"id": "test_contributor_id"}],
             )
         )
         test_dataset_ids = [(test_dataset.id, DbDataset)]

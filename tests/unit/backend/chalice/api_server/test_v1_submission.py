@@ -60,3 +60,6 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/submission/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
+
+    def test__delete_submission_uuid__ok(self):
+        pass
