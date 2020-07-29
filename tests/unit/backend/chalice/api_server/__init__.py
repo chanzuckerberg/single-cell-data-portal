@@ -22,11 +22,6 @@ class BaseAPITest:
         A helper function to remove timestamps from the response body.
         :param body: The decoded json response body
         :return: The decode json response body with timestamps removed.
-        
-        >>> base = BaseAPITest()
-        >>> test_body = {"created_at": "123", "updated_at":123,"list": [{"created_at": 1234, "updated_at", 1234}], "dict1": {"created_at":123, "update_at":1234}}
-        >>> result = base.remove_timestamps(test_body)
-        >>> assert result == {'list1':[],"dict1":{}}
         """
 
         def _remove_timestamps(jrb):
