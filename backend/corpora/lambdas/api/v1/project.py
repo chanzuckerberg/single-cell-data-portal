@@ -32,5 +32,5 @@ def delete_project(project_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def get_project_dataset(path_dataset_uuid: str):
+def get_project_dataset(dataset_uuid: str):
     raise NotImplementedError
