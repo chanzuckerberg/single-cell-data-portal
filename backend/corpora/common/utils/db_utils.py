@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class DbUtils:
     """DbUtils as a singleton to avoid creating excess sessions."""
+
     __instance = None
 
     class __DbUtils:
