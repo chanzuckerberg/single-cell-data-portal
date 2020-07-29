@@ -25,8 +25,14 @@ def get_submission_details(project_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def delete_submission(path_project_uuid: str):
-    raise NotImplementedError
+def delete_submission(project_uuid: str):
+    project = Project.get_submission(project_uuid)
+    #  TODO delete uploaded files if they are not associated with a published project
+    if project:
+        project.delete()
+        return make_response(jsonify(), 202)
+    else:
+        raise ForbiddenHTTPException()
 
 
 def add_file_to_submission(path_project_uuid: str, request_body: dict):

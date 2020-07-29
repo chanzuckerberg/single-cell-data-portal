@@ -22,8 +22,14 @@ def get_project_details(project_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def delete_project(path_project_uuid: str):
-    raise NotImplementedError
+def delete_project(project_uuid: str):
+    project = Project.get_project(project_uuid)
+    #  TODO delete uploaded files
+    if project:
+        project.delete()
+        return make_response(202)
+    else:
+        raise ForbiddenHTTPException()
 
 
 def get_project_dataset(path_dataset_uuid: str):
