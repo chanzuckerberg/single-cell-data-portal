@@ -136,23 +136,9 @@ class TestProject(BaseAPITest, unittest.TestCase):
         expected_json_body = json.dumps(expected_body)
         self.assertEqual(actual_json_body, expected_json_body)
 
-    @staticmethod
-    def remove_timestamps(body: dict) -> dict:
-        """
-        A helper function to remove timestamps from the response body.
-        :param body: The decoded json response body
-        :return: The decode json response body with timestamps removed.
-        """
-
-        def _remove_timestamps(jrb):
-            jrb.pop("created_at", None)
-            jrb.pop("updated_at", None)
-            for value in jrb.values():
-                if isinstance(value, dict):
-                    _remove_timestamps(value)
-                elif isinstance(value, list):
-                    for list_value in value:
-                        _remove_timestamps(list_value)
-            return jrb
-
-        return _remove_timestamps(body)
+    def test__get_project_uuid__403_not_found(self):
+        """Verify the test project exists and the expected fields exist."""
+        test_url = furl(path="/v1/project/AAAA-BBBB-CCCC-DDDD")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(403, response.status_code)
+        self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())

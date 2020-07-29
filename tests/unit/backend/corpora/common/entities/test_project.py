@@ -85,7 +85,7 @@ class TestProject(unittest.TestCase):
 
         with self.subTest("from_date"):
             # Projects from_date are returned.
-            actual_projects = Project.list_in_time_range(from_date=from_date)
+            actual_projects = Project.list_attributes_in_time_range(from_date=from_date)
             self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
             expected_ids = [created_inbetween.id, created_after.id, "test_project_id"]
             actual_ids = [p["id"] for p in actual_projects]
@@ -96,7 +96,7 @@ class TestProject(unittest.TestCase):
 
         with self.subTest("to_date"):
             # Projects to_date are returned.
-            actual_projects = Project.list_in_time_range(to_date=to_date)
+            actual_projects = Project.list_attributes_in_time_range(to_date=to_date)
             self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
             expected_ids = [created_before.id, created_inbetween.id]
             actual_ids = [p["id"] for p in actual_projects]
@@ -104,7 +104,7 @@ class TestProject(unittest.TestCase):
 
         with self.subTest("from_date->to_date"):
             # Projects between to_date and from_date are returned.
-            actual_projects = Project.list_in_time_range(to_date=to_date, from_date=from_date)
+            actual_projects = Project.list_attributes_in_time_range(to_date=to_date, from_date=from_date)
             self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
             self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
             expected_ids = [created_inbetween.id]
@@ -113,7 +113,7 @@ class TestProject(unittest.TestCase):
 
         with self.subTest("No parameters"):
             """All projects are returned."""
-            actual_projects = Project.list_in_time_range()
+            actual_projects = Project.list_attributes_in_time_range()
             expected_ids = [created_before.id, created_inbetween.id, created_after.id]
             actual_ids = [p["id"] for p in actual_projects]
             # Check if the test ids we created are present.
