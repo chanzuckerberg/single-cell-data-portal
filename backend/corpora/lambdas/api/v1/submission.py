@@ -49,13 +49,17 @@ def delete_dataset_from_submission(project_uuid: str, dataset_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def validate_submission(project_uuid: str):
+def validate_submission(path_project_uuid: str):
     raise NotImplementedError
 
 
-def save_submission(project_uuid: str, request_body: dict):
+def validate_submission(path_project_uuid: str):
     raise NotImplementedError
 
 
-def publish_submission(project_uuid: str):
+def save_submission(path_project_uuid: str, request_body: dict):
+    raise NotImplementedError
+
+
+def publish_submission(path_project_uuid: str):
     raise NotImplementedError
