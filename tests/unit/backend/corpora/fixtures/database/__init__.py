@@ -45,9 +45,10 @@ class TestDatabase:
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
         self._create_test_contributors()
-        self._create_test_cxguser()
+        self._create_test_cellxgene_user()
         self._create_test_cellxgene_dataset()
         self._create_test_annotation()
+        self._populate_test_data_many()
 
     def _create_test_users(self):
         user = DbUser(id="test_user_id", name="test_user", email="test_email")
@@ -144,10 +145,10 @@ class TestDatabase:
 
     def _populate_test_data_many(self):
         self._create_test_cellxgene_users()
-        self._create_test_cxgdatasets()
+        self._create_test_cellxgene_datasets()
         self._create_test_annotations()
 
-    def _create_test_cxguser(self):
+    def _create_test_cellxgene_user(self):
         user = CellxGeneUser(id="test_user_id")
         self.db.session.add(user)
         self.db.session.commit()
@@ -182,7 +183,7 @@ class TestDatabase:
         self.db.session.add_all(users)
         self.db.session.commit()
 
-    def _create_test_cxgdatasets(self, dataset_count: int = 10):
+    def _create_test_cellxgene_datasets(self, dataset_count: int = 10):
         datasets = []
         for i in range(dataset_count):
             datasets.append(CellxGeneDataset(id=self.get_random_string(), name=self.get_random_string()))

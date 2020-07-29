@@ -6,18 +6,17 @@ import os
 import sys
 
 from sqlalchemy import create_engine
-#
-# pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-# sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.corpora_orm import Base
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
+from .corpora_config import CorporaDbConfig
+from .corpora_orm import Base
 
 
 from sqlalchemy.schema import DropTable
 from sqlalchemy.ext.compiler import compiles
 from server.db.cellxgene_orm import Base as CellxGeneBase
-
 
 
 @compiles(DropTable, "postgresql")
