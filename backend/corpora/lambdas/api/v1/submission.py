@@ -35,7 +35,7 @@ def delete_submission(project_uuid: str):
         raise ForbiddenHTTPException()
 
 
-def add_file_to_submission(project_uuid: str, request_body: dict):
+def add_file_to_submission(path_project_uuid: str, request_body: dict):
     raise NotImplementedError
 
 
