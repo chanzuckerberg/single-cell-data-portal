@@ -121,7 +121,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "id": "test_project_id",
             "links": [{"type": "RAW_DATA", "url": "test_url"}],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user", },  # noqa
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",
@@ -170,11 +170,11 @@ class TestProject(BaseAPITest, unittest.TestCase):
 
 
 class TestProjectDataset(BaseAPITest, unittest.TestCase):
-
     def test__delete_dataset__ok(self):
         test_project = Project.create(**BogusProjectParams.get(status=ProjectStatus.EDIT.name))
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status))
+            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status)
+        )
         expected_dataset_id = test_dataset.id
 
         # Verify Dataset Exists
@@ -182,7 +182,7 @@ class TestProjectDataset(BaseAPITest, unittest.TestCase):
         resp = self.app.get(submission_url.url, headers=dict(host="localhost"))
         resp_json = json.loads(resp.body)
 
-        actual_dataset_ids = [dataset['id'] for dataset in resp_json['datasets']]
+        actual_dataset_ids = [dataset["id"] for dataset in resp_json["datasets"]]
         self.assertIn(expected_dataset_id, actual_dataset_ids)
 
         # Delete the dataset
@@ -194,7 +194,7 @@ class TestProjectDataset(BaseAPITest, unittest.TestCase):
         resp = self.app.get(submission_url.url, headers=dict(host="localhost"))
         resp_json = json.loads(resp.body)
         expected_dataset_id = test_dataset.id
-        actual_dataset_ids = [dataset['id'] for dataset in resp_json['datasets']]
+        actual_dataset_ids = [dataset["id"] for dataset in resp_json["datasets"]]
         self.assertNotIn(expected_dataset_id, actual_dataset_ids)
 
     def test__delete_dataset__403_not_found(self):
@@ -206,7 +206,8 @@ class TestProjectDataset(BaseAPITest, unittest.TestCase):
     def test__delete_dataset__403_not_in_project(self):
         test_project = Project.create(**BogusProjectParams.get(status=ProjectStatus.EDIT.name))
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status))
+            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status)
+        )
         expected_dataset_id = test_dataset.id
 
         # Verify Dataset Exists
@@ -214,7 +215,7 @@ class TestProjectDataset(BaseAPITest, unittest.TestCase):
         resp = self.app.get(submission_url.url, headers=dict(host="localhost"))
         resp_json = json.loads(resp.body)
 
-        actual_dataset_ids = [dataset['id'] for dataset in resp_json['datasets']]
+        actual_dataset_ids = [dataset["id"] for dataset in resp_json["datasets"]]
         self.assertIn(expected_dataset_id, actual_dataset_ids)
 
         # Delete the dataset
@@ -227,5 +228,5 @@ class TestProjectDataset(BaseAPITest, unittest.TestCase):
         resp = self.app.get(submission_url.url, headers=dict(host="localhost"))
         resp_json = json.loads(resp.body)
 
-        actual_dataset_ids = [dataset['id'] for dataset in resp_json['datasets']]
+        actual_dataset_ids = [dataset["id"] for dataset in resp_json["datasets"]]
         self.assertIn(expected_dataset_id, actual_dataset_ids)

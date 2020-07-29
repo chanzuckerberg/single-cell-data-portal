@@ -100,13 +100,13 @@ class TestDataset(unittest.TestCase):
                 project_status=ProjectStatus.LIVE.name,
                 artifacts=[{}],
                 deployment_directories=[{}],
-                contributors=[{"id": "test_contributor_id"}, {'name': 'bob'}],
+                contributors=[{"id": "test_contributor_id"}, {"name": "bob"}],
             )
         )
         test_dataset_ids = [(test_dataset.id, DbDataset)]
         test_artifact_ids = [(art.id, DbDatasetArtifact) for art in test_dataset.artifacts]
         test_deployed_directory_ids = [(dep.id, DbDeploymentDirectory) for dep in test_dataset.deployment_directories]
-        if test_dataset.contributors[0].name == 'bob':
+        if test_dataset.contributors[0].name == "bob":
             test_contributor_bob_id = [(test_dataset.contributors[0].id, DbContributor)]
             test_contributor_id = [(test_dataset.contributors[1].id, DbContributor)]
         else:
@@ -129,7 +129,9 @@ class TestDataset(unittest.TestCase):
         test_dataset.delete()
 
         with self.subTest("Verify Deletion"):
-            expected_deleted = test_dataset_ids + test_artifact_ids + test_deployed_directory_ids + test_contributor_bob_id
+            expected_deleted = (
+                test_dataset_ids + test_artifact_ids + test_deployed_directory_ids + test_contributor_bob_id
+            )
             expected_exists = test_contributor_id + test_project_ids
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
