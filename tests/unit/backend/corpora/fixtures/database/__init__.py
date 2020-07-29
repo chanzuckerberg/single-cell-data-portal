@@ -1,5 +1,9 @@
 import os
+import random
+import string
 import sys
+
+from sqlalchemy import func
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -21,7 +25,10 @@ from backend.corpora.common.corpora_orm import (
     DbDatasetContributor,
     DbUser,
     DbDeploymentDirectory,
+    Base
 )
+from server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation
+from server.db.cellxgene_orm import Base as cxgBase
 
 
 class TestDatabase:
@@ -38,6 +45,9 @@ class TestDatabase:
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
         self._create_test_contributors()
+        self._create_test_cxguser()
+        self._create_test_cellxgene_dataset()
+        self._create_test_annotation()
 
     def _create_test_users(self):
         user = DbUser(id="test_user_id", name="test_user", email="test_email")
@@ -131,3 +141,67 @@ class TestDatabase:
         )
         self.db.session.add(dataset_contributor)
         self.db.session.commit()
+
+    def _populate_test_data_many(self):
+        self._create_test_cellxgene_users()
+        self._create_test_cxgdatasets()
+        self._create_test_annotations()
+
+    def _create_test_cxguser(self):
+        user = CellxGeneUser(id="test_user_id")
+        self.db.session.add(user)
+        self.db.session.commit()
+
+    def _create_test_cellxgene_dataset(self):
+        dataset = CellxGeneDataset(
+            id="test_dataset_id",
+            name="test_dataset",
+        )
+        self.db.session.add(dataset)
+        self.db.session.commit()
+
+    def _create_test_annotation(self):
+        annotation = Annotation(
+            id="test_annotation_id",
+            tiledb_uri="tiledb_uri",
+            user_id="test_user_id",
+            dataset_id="test_dataset_id"
+        )
+        self.db.session.add(annotation)
+        self.db.session.commit()
+
+    @staticmethod
+    def get_random_string():
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(12))
+
+    def _create_test_cellxgene_users(self, user_count: int = 10):
+        users = []
+        for i in range(user_count):
+            users.append(CellxGeneUser(id=self.get_random_string()))
+        self.db.session.add_all(users)
+        self.db.session.commit()
+
+    def _create_test_cxgdatasets(self, dataset_count: int = 10):
+        datasets = []
+        for i in range(dataset_count):
+            datasets.append(CellxGeneDataset(id=self.get_random_string(), name=self.get_random_string()))
+        self.db.session.add_all(datasets)
+        self.db.session.commit()
+
+    def _create_test_annotations(self, annotation_count: int = 10):
+        annotations = []
+        for i in range(annotation_count):
+            dataset = self.order_by_random(CellxGeneDataset)
+            user = self.order_by_random(DbUser)
+            annotations.append(Annotation(
+                id=self.get_random_string(),
+                tiledb_uri=self.get_random_string(),
+                user_id=user.id,
+                dataset_id=dataset.id
+            ))
+        self.db.session.add_all(annotations)
+        self.db.session.commit()
+
+    def order_by_random(self, table: cxgBase):
+        return self.db.session.query(table).order_by(func.random()).first()

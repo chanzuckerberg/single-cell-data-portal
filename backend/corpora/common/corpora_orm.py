@@ -1,6 +1,4 @@
 import enum
-import os
-import sys
 from datetime import datetime
 
 from sqlalchemy import (
@@ -17,11 +15,9 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, sessionmaker
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
 
-from .corpora_config import CorporaDbConfig
-from .utils.exceptions import CorporaException
+from backend.corpora.common.corpora_config import CorporaDbConfig
+from backend.corpora.common.utils.exceptions import CorporaException
 
 
 class TransformingBase(object):
@@ -162,7 +158,6 @@ class DbUser(Base):
     A registered Corpora user.
     Maintains user details such as contact information and access control settings.
     """
-
     __tablename__ = "user"
 
     id = Column(String, primary_key=True)
