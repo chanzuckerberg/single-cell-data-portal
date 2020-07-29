@@ -53,10 +53,6 @@ def validate_submission(path_project_uuid: str):
     raise NotImplementedError
 
 
-def validate_submission(path_project_uuid: str):
-    raise NotImplementedError
-
-
 def save_submission(path_project_uuid: str, request_body: dict):
     raise NotImplementedError
 
