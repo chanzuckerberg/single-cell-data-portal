@@ -50,7 +50,7 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_table("annotation")
     op.drop_table("cxguser")
     op.drop_table("cxgdataset")
-    op.drop_table("annotation")
 
