@@ -177,6 +177,7 @@ def print_summary(adata):
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
 
+
 # Process h5ad
 ad = sc.read_h5ad(
     "YeLab_corpora_test.h5ad"

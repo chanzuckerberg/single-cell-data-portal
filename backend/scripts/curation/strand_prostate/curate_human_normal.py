@@ -12,7 +12,8 @@ Note from Gervaise Henry:
 Data was normalized and scaled using the newer SCTransform method which does not use a scaling
 factor method (uses Pearson’s residuals instead):
 
-sc10x <- SCTransform(sc10x,vars.to.regress=c("nFeature_RNA","percent.mito"),verbose=FALSE,return.only.var.genes=FALSE,assay="RNA")
+sc10x <- SCTransform(sc10x,vars.to.regress=c("nFeature_RNA","percent.mito"),
+verbose=FALSE,return.only.var.genes=FALSE,assay="RNA")
 
 The ethnicities are:
 Sample prefix D17: Caucasian

@@ -9,7 +9,8 @@ Note from Gervaise Henry:
 Data was normalized and scaled using the newer SCTransform method which does not use a scaling
 factor method (uses Pearson’s residuals instead):
 
-sc10x <- SCTransform(sc10x,vars.to.regress=c("nFeature_RNA","percent.mito"),verbose=FALSE,return.only.var.genes=FALSE,assay="RNA")
+sc10x <- SCTransform(sc10x,vars.to.regress=c("nFeature_RNA","percent.mito"),
+verbose=FALSE,return.only.var.genes=FALSE,assay="RNA")
 
 Expect an updated h5ad from Gervaise where he will include a raw count matrix and correct a minor
 bug that over-filtered some cells.
@@ -129,6 +130,7 @@ def print_summary(adata):
          'assay_ontology', 'disease_ontology', 'cell_type_ontology', 'ethnicity_ontology'])
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
+
 
 # Process mouse epithelial h5ad
 ad = sc.read_h5ad("2020Prostate_muPrUr_epi.h5ad")
