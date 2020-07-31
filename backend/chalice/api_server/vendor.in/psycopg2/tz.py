@@ -2,11 +2,11 @@
 
 This module holds two different tzinfo implementations that can be used as
 the 'tzinfo' argument to datetime constructors, directly passed to psycopg
-functions or used to set the .tzinfo_factory attribute in cursors. 
+functions or used to set the .tzinfo_factory attribute in cursors.
 """
 # psycopg/tz.py - tzinfo implementation
 #
-# Copyright (C) 2003-2010 Federico Di Gregorio  <fog@debian.org>
+# Copyright (C) 2003-2019 Federico Di Gregorio  <fog@debian.org>
 #
 # psycopg2 is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published
@@ -31,6 +31,7 @@ import time
 
 ZERO = datetime.timedelta(0)
 
+
 class FixedOffsetTimezone(datetime.tzinfo):
     """Fixed offset in minutes east from UTC.
 
@@ -43,7 +44,7 @@ class FixedOffsetTimezone(datetime.tzinfo):
     offset and name that instance will be returned. This saves memory and
     improves comparability.
 
-    .. __: http://docs.python.org/library/datetime.html#datetime-tzinfo
+    .. __: https://docs.python.org/library/datetime.html
     """
     _name = None
     _offset = ZERO
@@ -52,7 +53,7 @@ class FixedOffsetTimezone(datetime.tzinfo):
 
     def __init__(self, offset=None, name=None):
         if offset is not None:
-            self._offset = datetime.timedelta(minutes = offset)
+            self._offset = datetime.timedelta(minutes=offset)
         if name is not None:
             self._name = name
 
@@ -74,7 +75,7 @@ class FixedOffsetTimezone(datetime.tzinfo):
 
     def __getinitargs__(self):
         offset_mins = self._offset.seconds // 60 + self._offset.days * 24 * 60
-        return (offset_mins, self._name)
+        return offset_mins, self._name
 
     def utcoffset(self, dt):
         return self._offset
@@ -85,7 +86,7 @@ class FixedOffsetTimezone(datetime.tzinfo):
         else:
             seconds = self._offset.seconds + self._offset.days * 86400
             hours, seconds = divmod(seconds, 3600)
-            minutes = seconds/60
+            minutes = seconds / 60
             if minutes:
                 return "%+03d:%d" % (hours, minutes)
             else:
@@ -95,12 +96,13 @@ class FixedOffsetTimezone(datetime.tzinfo):
         return ZERO
 
 
-STDOFFSET = datetime.timedelta(seconds = -time.timezone)
+STDOFFSET = datetime.timedelta(seconds=-time.timezone)
 if time.daylight:
-    DSTOFFSET = datetime.timedelta(seconds = -time.altzone)
+    DSTOFFSET = datetime.timedelta(seconds=-time.altzone)
 else:
     DSTOFFSET = STDOFFSET
 DSTDIFF = DSTOFFSET - STDOFFSET
+
 
 class LocalTimezone(datetime.tzinfo):
     """Platform idea of local timezone.
@@ -129,6 +131,7 @@ class LocalTimezone(datetime.tzinfo):
         stamp = time.mktime(tt)
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0
+
 
 LOCAL = LocalTimezone()
 

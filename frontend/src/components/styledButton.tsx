@@ -13,17 +13,17 @@ const StyledButton: FC<Props> = ({ label, disabled, handleClick }) => {
     <Button
       sx={
         {
+          backgroundColor: disabled ? "muted" : "steelblue",
+          borderRadius: "1px",
+          color: disabled ? "gray" : "white",
+          cursor: disabled ? "default" : "pointer",
+          fontWeight: "100",
           height: "35px",
+          margin: "0px 5px",
           minWidth: "100px",
           padding: "5px 20px",
-          textAlign: "center",
-          borderRadius: "1px",
-          fontWeight: "100",
-          margin: "0px 5px",
-          color: disabled ? "gray" : "white",
-          backgroundColor: disabled ? "muted" : "steelblue",
-          cursor: disabled ? "default" : "pointer",
           pointerEvents: disabled ? "none" : "default",
+          textAlign: "center",
         } as SystemStyleObject
       }
       onClick={disabled ? undefined : handleClick}
