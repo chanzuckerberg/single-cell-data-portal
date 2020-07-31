@@ -16,7 +16,6 @@ from backend.corpora.common.corpora_orm import (
     DbProject,
     DbProjectLink,
     DbDataset,
-    DbProjectDataset,
     DbDatasetArtifact,
     DbContributor,
     DbDatasetContributor,
@@ -66,6 +65,7 @@ class TestDatabase:
             id="test_project_link_id",
             project_id="test_project_id",
             project_status=ProjectStatus.LIVE.name,
+            link_name="test_link_name",
             link_url="test_url",
             link_type=ProjectLinkType.RAW_DATA.name,
         )
@@ -89,20 +89,16 @@ class TestDatabase:
             sex="test_sex",
             ethnicity="test_ethnicity",
             ethnicity_ontology="test_ethnicity_ontology",
+            development_stage="test_development_stage",
+            development_stage_ontology="test_development_stage_ontology",
             source_data_location="test_source_data_location",
             preprint_doi="test_preprint_doi",
             publication_doi="test_publication_doi",
+            project_id="test_project_id",
+            project_status=ProjectStatus.LIVE.name,
         )
         self.db.session.add(dataset)
         self.db.session.commit()
-
-        project_dataset = DbProjectDataset(
-            id="test_project_dataset_id",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
-            dataset_id=test_dataset_id,
-        )
-        self.db.session.add(project_dataset)
 
         deployment_directory = DbDeploymentDirectory(
             id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"

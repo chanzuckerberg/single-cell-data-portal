@@ -1,7 +1,38 @@
 import unittest
 
-from backend.corpora.common.corpora_orm import DbContributor, DbDatasetArtifact, DbDeploymentDirectory
+from backend.corpora.common.corpora_orm import (
+    DbContributor,
+    DbDatasetArtifact,
+    DbDeploymentDirectory,
+    DatasetArtifactType,
+    DatasetArtifactFileType,
+    ProjectStatus,
+)
 from backend.corpora.common.entities.dataset import Dataset
+
+
+class BogusDatasetParams:
+    @classmethod
+    def get(cls):
+        return dict(
+            name="create_dataset",
+            organism="organism",
+            organism_ontology="123",
+            tissue="tissue",
+            tissue_ontology="123",
+            assay="assay",
+            assay_ontology="123",
+            disease="diseas",
+            disease_ontology="123",
+            sex="F",
+            ethnicity="ethnicity",
+            ethnicity_ontology="123",
+            source_data_location="location",
+            preprint_doi="preprint",
+            publication_doi="publication",
+            project_id="test_project_id",
+            project_status=ProjectStatus.LIVE.name,
+        )
 
 
 class TestDataset(unittest.TestCase):
@@ -28,3 +59,50 @@ class TestDataset(unittest.TestCase):
     def test__get__does_not_exist(self):
         non_existent_key = "non_existent_id"
         self.assertEqual(Dataset.get(non_existent_key), None)
+
+    def test__create__ok(self):
+        """
+        Create a dataset with a variable number of artifacts, contributors, and deployment_directories
+        """
+        artifact_params = dict(
+            filename="filename_1",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri="some_uri",
+        )
+
+        deployment_directory_params = dict(environment="test", url="test_url")
+
+        contributor_params = dict(name="bob", institution="school", email="some@email.com")
+
+        dataset_params = BogusDatasetParams.get()
+
+        for i in range(3):
+            with self.subTest(i):
+                dataset = Dataset.create(
+                    **dataset_params,
+                    artifacts=[artifact_params] * i,
+                    contributors=[contributor_params] * i,
+                    deployment_directories=[deployment_directory_params] * i,
+                )
+
+                expected_dataset_id = dataset.id
+                expected_artifacts = dataset.artifacts
+                expected_deployment_directories = dataset.deployment_directories
+                expected_contributors = dataset.contributors
+
+                # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
+                Dataset.db.session.expire_all()
+
+                actual_dataset = Dataset.get(expected_dataset_id)
+                self.assertEqual(expected_dataset_id, actual_dataset.id)
+                self.assertCountEqual(expected_artifacts, actual_dataset.artifacts)
+                self.assertCountEqual(expected_deployment_directories, actual_dataset.deployment_directories)
+                self.assertCountEqual(expected_contributors, actual_dataset.contributors)
+
+    def test__list__ok(self):
+        generate = 2
+        generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]
+        dataset = Dataset.list()
+        self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))

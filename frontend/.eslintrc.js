@@ -35,6 +35,11 @@ module.exports = {
   },
   plugins: ["@typescript-eslint", "react", "sonarjs"],
   rules: {
+    "sort-keys": [
+      "error",
+      "asc",
+      { caseSensitive: true, natural: false, minKeys: 2 },
+    ],
     // Disable prop-types as we use TypeScript for type checking
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
