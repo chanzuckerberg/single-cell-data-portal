@@ -26,9 +26,8 @@ def basic_curation(adata):
     # of dictionaries
     # first make strings json acceptable while maintaining compatibility with names that contain
     # apostrophe
-    json_acceptable_str = \
-        [author_dict.replace("{\'", "{\"").replace("\': \'", "\": \"").replace("\', \'","\", \"").replace(
-            "\'}", "\"}") for author_dict in list(adata.uns['authors'])]
+    json_acceptable_str = [author_dict.replace("{\'", "{\"").replace("\': \'", "\": \"").replace(
+        "\', \'", "\", ""\"").replace("\'}", "\"}") for author_dict in list(adata.uns['authors'])]
     # decode str into dict
     adata.uns['contributors'] = [json.loads(author_dict) for author_dict in json_acceptable_str]
     del adata.uns['authors']

@@ -32,25 +32,24 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [
-        {'name': 'Diya B. Joseph'},
-        {'name': 'Gervaise H. Henry'},
-        {'name': 'Alicia Malewska'},
-        {'name': 'Nida S. Iqbal'},
-        {'name': 'Hannah M. Ruetten'},
-        {'name': 'Anne E. Turco'},
-        {'name': 'Lisa L. Abler'},
-        {'name': 'Simran K. Sandhu'},
-        {'name': 'Mark T. Cadena'},
-        {'name': 'Venkat S. Malladi'},
-        {'name': 'Jeffrey C. Reese'},
-        {'name': 'Ryan J. Mauck'},
-        {'name': 'Jeffrey C. Gahan'},
-        {'name': 'Ryan C. Hutchinson'},
-        {'name': 'Claus G. Roehrborn'},
-        {'name': 'Linda A. Baker'},
-        {'name': 'Chad M. Vezina'},
-        {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
+    adata.uns['contributors'] = [{'name': 'Diya B. Joseph'},
+                                 {'name': 'Gervaise H. Henry'},
+                                 {'name': 'Alicia Malewska'},
+                                 {'name': 'Nida S. Iqbal'},
+                                 {'name': 'Hannah M. Ruetten'},
+                                 {'name': 'Anne E. Turco'},
+                                 {'name': 'Lisa L. Abler'},
+                                 {'name': 'Simran K. Sandhu'},
+                                 {'name': 'Mark T. Cadena'},
+                                 {'name': 'Venkat S. Malladi'},
+                                 {'name': 'Jeffrey C. Reese'},
+                                 {'name': 'Ryan J. Mauck'},
+                                 {'name': 'Jeffrey C. Gahan'},
+                                 {'name': 'Ryan C. Hutchinson'},
+                                 {'name': 'Claus G. Roehrborn'},
+                                 {'name': 'Linda A. Baker'},
+                                 {'name': 'Chad M. Vezina'},
+                                 {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
 
     adata.uns['preprint_doi'] = "https://doi.org/10.1101/2020.02.19.937615"
     adata.uns['publication_doi'] = "https://doi.org/10.1002/pros.24020"

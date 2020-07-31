@@ -74,10 +74,9 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [
-        {'name': 'First Author'},
-        {'name': 'Penultimate Author', 'email': 'email@university.edu'},
-        {'name': 'Last Author', 'email': 'email@university.edu'}]
+    adata.uns['contributors'] = [{'name': 'First Author'},
+                                 {'name': 'Penultimate Author', 'email': 'email@university.edu'},
+                                 {'name': 'Last Author', 'email': 'email@university.edu'}]
 
     adata.uns['preprint_doi'] = "doi:preprint"
     adata.uns['default_embedding'] = 'X_umap'

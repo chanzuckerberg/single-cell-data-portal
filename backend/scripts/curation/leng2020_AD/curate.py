@@ -25,24 +25,23 @@ def basic_curation(adata):
     del adata.obsm['X_CCA']
     del adata.obsm['X_CCA.ALIGNED']
 
-    adata.uns['contributors'] = [
-        {'name': 'Kun Leng'},
-        {'name': 'Emmy Li'},
-        {'name': 'Rana Eser'},
-        {'name': 'Antonia Piergies'},
-        {'name': 'Rene Sit'},
-        {'name': 'Michelle Tan'},
-        {'name': 'Norma Neff'},
-        {'name': 'Song Hua Li'},
-        {'name': 'Roberta Diehl Rodriguez'},
-        {'name': 'Claudia Kimie Suemoto'},
-        {'name': 'Renata Elaine Paraizo Leite'},
-        {'name': 'Carlos A. Pasqualucci'},
-        {'name': 'William W. Seeley'},
-        {'name': 'Salvatore Spina'},
-        {'name': 'Helmut Heinsen'},
-        {'name': 'Lea T. Grinberg', 'email': 'lea.grinberg@ucsf.edu'},
-        {'name': 'Martin Kampmann', 'email': 'martin.kampmann@ucsf.edu'}]
+    adata.uns['contributors'] = [{'name': 'Kun Leng'},
+                                 {'name': 'Emmy Li'},
+                                 {'name': 'Rana Eser'},
+                                 {'name': 'Antonia Piergies'},
+                                 {'name': 'Rene Sit'},
+                                 {'name': 'Michelle Tan'},
+                                 {'name': 'Norma Neff'},
+                                 {'name': 'Song Hua Li'},
+                                 {'name': 'Roberta Diehl Rodriguez'},
+                                 {'name': 'Claudia Kimie Suemoto'},
+                                 {'name': 'Renata Elaine Paraizo Leite'},
+                                 {'name': 'Carlos A. Pasqualucci'},
+                                 {'name': 'William W. Seeley'},
+                                 {'name': 'Salvatore Spina'},
+                                 {'name': 'Helmut Heinsen'},
+                                 {'name': 'Lea T. Grinberg', 'email': 'lea.grinberg@ucsf.edu'},
+                                 {'name': 'Martin Kampmann', 'email': 'martin.kampmann@ucsf.edu'}]
 
     adata.uns['preprint_doi'] = "https://doi.org/10.1101/2020.04.04.025825"
     adata.uns['default_embedding'] = 'X_tSNE'

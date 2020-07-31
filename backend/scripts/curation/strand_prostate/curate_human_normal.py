@@ -40,23 +40,22 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [
-        {'name': 'Gervaise H Henry'},
-        {'name': 'Alicia Malewska'},
-        {'name': 'Diya B Joseph'},
-        {'name': 'Venkat S Malladi'},
-        {'name': 'Jeon Lee'},
-        {'name': 'Jose Torrealba'},
-        {'name': 'Ryan J Mauck'},
-        {'name': 'Jeffrey C Gahan'},
-        {'name': 'Ganesh V Raj'},
-        {'name': 'Claus G Roehrborn'},
-        {'name': 'Gary C Hon'},
-        {'name': 'Malcolm P MacConmara'},
-        {'name': 'Jeffrey C Reese'},
-        {'name': 'Ryan C Hutchinson'},
-        {'name': 'Chad M Vezina'},
-        {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
+    adata.uns['contributors'] = [{'name': 'Gervaise H Henry'},
+                                 {'name': 'Alicia Malewska'},
+                                 {'name': 'Diya B Joseph'},
+                                 {'name': 'Venkat S Malladi'},
+                                 {'name': 'Jeon Lee'},
+                                 {'name': 'Jose Torrealba'},
+                                 {'name': 'Ryan J Mauck'},
+                                 {'name': 'Jeffrey C Gahan'},
+                                 {'name': 'Ganesh V Raj'},
+                                 {'name': 'Claus G Roehrborn'},
+                                 {'name': 'Gary C Hon'},
+                                 {'name': 'Malcolm P MacConmara'},
+                                 {'name': 'Jeffrey C Reese'},
+                                 {'name': 'Ryan C Hutchinson'},
+                                 {'name': 'Chad M Vezina'},
+                                 {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
 
     adata.uns['preprint_doi'] = "https://doi.org/10.1101/439935"
     adata.uns['publication_doi'] = "https://doi.org/10.1016/j.celrep.2018.11.086"
