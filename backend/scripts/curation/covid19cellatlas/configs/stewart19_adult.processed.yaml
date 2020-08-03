@@ -1,0 +1,74 @@
+obs:
+    tissue_ontology_term_id: UBERON:0002113
+    assay_ontology_term_id: EFO:0009899
+    disease_ontology_term_id: PATO:0000461
+    cell_type_ontology_term_id:
+        broad_celltype:
+            Ascending vasa recta endothelium: CL:1001036
+            B cell: CL:0000236
+            CD4 T cell: CL:0000624
+            CD8 T cell: CL:0000625
+            Connecting tubule: CL:1000507
+            Descending vasa recta endothelium: CL:1001036
+            Epithelial progenitor cell: Epithelial progenitor cell
+            Fibroblast: CL:0000057
+            Glomerular endothelium: UBERON:0004189
+            Intercalated cell: CL:0005010
+            MNP-a/classical monocyte derived: CL:0000860
+            MNP-b/non-classical monocyte derived: CL:0000875
+            MNP-c/dendritic cell: CL:0000451
+            MNP-d/Tissue macrophage: CL:1000698
+            Mast cell: CL:0000097 
+            Myofibroblast: CL:0000186
+            NK cell: CL:0000623
+            NKT cell: CL:0000814
+            Neutrophil: CL:0000775
+            Pelvic epithelium: UBERON:0000483
+            Peritubular capillary endothelium: CL:1001033
+            Plasmacytoid dendritic cell: CL:0000784
+            Podocyte: CL:0000653
+            Principal cell: CL:0005009
+            Proximal tubule: UBERON:0004134
+            Thick ascending limb of Loop of Henle: UBERON:0001291
+            Transitional urothelium: UBERON:0000365
+    sex: unknown
+    ethnicity_ontology_term_id:  unknown
+    development_stage_ontology_term_id: HsapDv:0000087
+uns:
+    version:
+        corpora_schema_version: 1.0.0
+        corpora_encoding_version: 0.0.1
+    organism_ontology_term_id: NCBITaxon:9606
+    title: Spatio-temporal immune zonation of the human kidney
+    layer_descriptions:
+        X: seurat NormalizeData
+    contributors:
+        - name: Ni Huang
+          institution: Sanger Institute
+          email: nh3@sanger.ac.uk
+    publication_doi: https://dx.doi.org/10.1126%2Fscience.aat5031
+    project_name: Spatio-temporal immune zonation of the human kidney
+    project_description: >
+        Tissue-resident immune cells are important for organ homeostasis and defense. The epithelium may contribute
+        to these functions directly, or via crosstalk with immune cells. We used single cell RNA sequencing to
+        resolve the spatio-temporal immune topology of the human kidney. We reveal anatomically-defined expression
+        patterns of immune genes within the epithelial compartment, with anti-microbial peptide transcripts evident
+        in pelvic epithelium in the mature, but not fetal kidney. A network of tissue-resident myeloid and lymphoid
+        immune cells was evident in both fetal and mature kidney, with post-natal acquisition of transcriptional
+        programs that promote infection-defense capabilities. Epithelial-immune crosstalk orchestrated localization
+        of anti-bacterial macrophages and neutrophils to the regions of the kidney most susceptible to infection.
+        Overall, our study provides a global overview of how the immune landscape of the human kidney is zonated to
+        counter the dominant immunological challenge.
+    project_links:
+        - link_name: Human Cell Atlas
+          link_url: https://data.humancellatlas.org/explore/projects/abe1a013-af7a-45ed-8c26-f3793c24a1f4
+          link_type: RAW_DATA
+        - link_name: Kidney Cell Atlas
+          link_url: https://www.kidneycellatlas.org/
+          link_type: OTHER
+        - link_name: Github
+          link_url: https://github.com/bjstewart1/kidney_sc_immune
+          link_type: OTHER
+        - link_name: Kidney Cell Atlas
+          link_url: https://www.kidneycellatlas.org/
+          link_type: SUMMARY
