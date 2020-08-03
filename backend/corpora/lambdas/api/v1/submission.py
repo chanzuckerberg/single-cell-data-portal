@@ -28,6 +28,7 @@ def get_submission_details(project_uuid: str):
 def delete_submission(project_uuid: str):
     project = Project.get_submission(project_uuid)
     #  TODO delete uploaded files if they are not associated with a published project
+    #   see https://github.com/chanzuckerberg/corpora-data-portal/issues/506
     if project:
         project.delete()
         return make_response("", 202)
@@ -42,6 +43,7 @@ def add_file_to_submission(project_uuid: str, request_body: dict):
 def delete_dataset_from_submission(project_uuid: str, dataset_uuid: str):
     dataset = Dataset.get(dataset_uuid)
     # TODO delete uploaded files if they are not assoicated with a published project
+    #   see https://github.com/chanzuckerberg/corpora-data-portal/issues/506
     if dataset and dataset.project_id == project_uuid and dataset.is_submission():
         dataset.delete()
         return make_response("", 202)

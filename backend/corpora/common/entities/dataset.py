@@ -86,6 +86,10 @@ class Dataset(Entity):
         return cls(new_db_object)
 
     def delete(self):
+        """
+        Delete the Dataset and all child objects. Contributors connect to a dataset are deleted if they are not longer
+        connected to any datasets.
+        """
         contributors = self.db_object.contributors
         for contributor in contributors:
             if len(contributor.datasets) == 1:
