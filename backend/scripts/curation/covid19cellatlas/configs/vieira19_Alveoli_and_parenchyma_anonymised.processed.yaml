@@ -1,0 +1,78 @@
+obs:
+    tissue_ontology_term_id: UBERON:0008946
+    assay_ontology_term_id: EFO:0008995
+    disease_ontology_term_id:
+        Donor:
+            298C: MONDO:0005049
+            290B: hypoxic brain damage
+            296C: MONDO:0005049
+            292B: MONDO:0005049
+            284C: hypoxic brain damage
+            302C: PATO:0000461
+    cell_type_ontology_term_id:
+        BroadCellType:
+            B cells: CL:0000236
+            Basal: CL:0000646
+            Ciliated: CL:1000271
+            Dendritic cells: CL:0000451
+            Endothelial: CL:1001567
+            Fibroblasts: CL:0002553
+            Luminal_Macrophages: CL:1001603
+            Lymphatic: UBERON:0018227
+            Mast cells: CL:0000097
+            Mesothelium: UBERON:0001136
+            Neutrophils: CL:0000775
+            Secretory: CL:1000272
+            Smooth muscle: UBERON:0001135
+            T and NK: T and NK
+            Type 2 alveolar: CL:0002063
+            Type_1_alveolar: CL:0002062
+    sex: 
+        Donor:
+            298C: male
+            290B: female
+            296C: female
+            292B: male
+            284C: male
+            302C: male
+    ethnicity_ontology_term_id: unknown
+    development_stage_ontology_term_id: 
+        Donor:
+            298C: HsapDv:0000092
+            290B: HsapDv:0000092 
+            296C: HsapDv:0000090
+            292B: HsapDv:0000092
+            284C: HsapDv:0000092
+            302C: HsapDv:0000090
+uns:
+    version:
+        corpora_schema_version: 1.0.0
+        corpora_encoding_version: 0.0.1
+    organism_ontology_term_id: NCBITaxon:9606
+    title: A cellular census of human lungs identifies novel cell states in health and in asthma - parenchyma
+    layer_descriptions:
+        X: seurat
+    contributors:
+        - name: Ni Huang
+          institution: Sanger Institute
+          email: nh3@sanger.ac.uk
+    publication_doi: https://doi.org/10.1038/s41591-019-0468-5
+    project_name: A cellular census of human lungs identifies novel cell states in health and in asthma
+    project_description: >
+        Human lungs enable efficient gas exchange and form an interface with the environment, which depends on mucosal
+        immunity for protection against infectious agents. Tightly controlled interactions between structural and
+        immune cells are required to maintain lung homeostasis. Here, we use single-cell transcriptomics to chart the
+        cellular landscape of upper and lower airways and lung parenchyma in healthy lungs, and lower airways in
+        asthmatic lungs. We report location-dependent airway epithelial cell states and a novel subset of
+        tissue-resident memory T cells. In the lower airways of patients with asthma, mucous cell hyperplasia is shown
+        to stem from a novel mucous ciliated cell state, as well as goblet cell hyperplasia. We report the presence of
+        pathogenic effector type 2 helper T cells (TH2) in asthmatic lungs and find evidence for type 2 cytokines in
+        maintaining the altered epithelial cell states. Unbiased analysis of cell-cell interactions identifies a shift
+        from airway structural cell communication in healthy lungs to a TH2-dominated interactome in asthmatic lungs.
+    project_links:
+        - link_name: Lung Cell Atlas
+          link_url: http://www.lungcellatlas.org/
+          link_type: OTHER
+        - link_name: Lung Cell Atlas
+          link_url: http://www.lungcellatlas.org/
+          link_type: SUMMARY
