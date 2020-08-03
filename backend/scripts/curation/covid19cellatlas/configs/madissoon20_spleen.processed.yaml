@@ -1,0 +1,80 @@
+obs:
+    tissue_ontology_term_id: UBERON:0002106
+    assay_ontology_term_id: EFO:0009899 
+    disease_ontology_term_id: PATO:0000461
+    cell_type_ontology_term_id:
+        Celltypes:
+            T_CD8_MAIT: CL:0000625
+            NK_CD160pos: CL:0000623
+            T_CD8_activated: CL:0000906
+            B_mantle: CL:0000236
+            NK_FCGR3Apos: CL:0000623
+            T_CD4_fh: CL:0002038
+            T_cell_dividing: CL:0000084
+            B_follicular: CL:0000843
+            T_CD8_CTL: CL:0000794
+            T_CD4_reg: CL:0000815
+            T_CD4_naive: CL:0000895
+            T_CD4_conv: CL:0000624
+            Monocyte: CL:0000576
+            NK_dividing: CL:0000623
+            B_T_doublet: B_T_doublet
+            DC_2: CL:0000784
+            Macrophage: CL:0000235
+            ILC: CL:0001065
+            T_CD8_gd: CL:0000798
+            DC_1: CL:0000990
+            Plasma_IgM: CL:0000986
+            B_Hypermutation: CL:0000236
+            Plasma_IgG: CL:0000985
+            Platelet: CL:0000233
+            DC_plasmacytoid: CL:0000784
+            Plasmablast: CL:0000980
+            DC_activated: CL:0000451
+            CD34_progenitor: CL:0001059
+            Unknown: Unknown
+    sex: unknown
+    ethnicity_ontology_term_id: unknown
+    development_stage_ontology_term_id: unknown
+uns:
+    version:
+        corpora_schema_version: 1.0.0
+        corpora_encoding_version: 0.0.1
+    organism_ontology_term_id: NCBITaxon:9606
+    title: scRNA-seq assessment of human spleen tissue stability after cold preservation
+    layer_descriptions:
+        X: scanpy log-transformed and normalized
+    contributors:
+        - name: Ni Huang
+          institution: Sanger Institute
+          email: nh3@sanger.ac.uk
+    publication_doi:  10.1186/s13059-019-1906-x
+    project_name: scRNA-seq assessment of the human lung, spleen, and esophagus tissue stability after cold preservation
+    project_description: >
+        This study assesses the effect of cold storage on fresh healthy spleen, esophagus, and lung from >= 5
+        donors over 72 h. We collect 240,000 high-quality single-cell transcriptomes with detailed cell type annotations and
+        whole genome sequences of donors, enabling future eQTL studies. Our data provide a valuable resource for the
+        study of these 3 organs and will allow cross-organ comparison of cell types.
+        We see little effect of cold ischemic time on cell yield, total number of reads per cell, and other quality control
+        metrics in any of the tissues within the first 24 h. However, we observe a decrease in the proportions of lung T cells
+        at 72 h, higher percentage of mitochondrial reads, and increased contamination by background ambient RNA reads
+        in the 72-h samples in the spleen, which is cell type specific.
+    project_links:
+        - link_url: https://www.protocols.io/view/cgap-human-spleen-dissociation-tissue-stability-st-32rgqd6
+          link_name: CGAP Human Spleen Dissociation - Tissue Stability Study
+          link_type: PROTOCOL
+        - link_url: https://www.protocols.io/view/cgap-human-lung-dissociation-tissue-stability-stud-34kgquw
+          link_name: CGAP Human Lung Dissociation - Tissue Stability Study
+          link_type: PROTOCOL
+        - link_url: https://www.protocols.io/view/cgap-human-oesophagus-epithelium-dissociation-tiss-34fgqtn
+          link_name: CGAP Human Oesophagus Epithelium Dissociation - Tissue Stability
+          link_type: PROTOCOL
+        - link_url: https://prod.data.humancellatlas.org/explore/projects/c4077b3c-5c98-4d26-a614-246d12c2e5d7
+          link_name: Human Cell Atlas
+          link_type: RAW_DATA
+        - link_url: https://www.tissuestabilitycellatlas.org/
+          link_name: Tissue Stability Cell Atlas
+          link_type: OTHER
+        - link_url: https://www.tissuestabilitycellatlas.org/
+          link_name: Tissue Stability Cell Atlas
+          link_type: SUMMARY
