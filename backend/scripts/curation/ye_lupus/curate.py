@@ -74,32 +74,36 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [{'name': 'First Author'},
-                                 {'name': 'Penultimate Author', 'email': 'email@university.edu'},
-                                 {'name': 'Last Author', 'email': 'email@university.edu'}]
+    adata.uns["contributors"] = [
+        {"name": "First Author"},
+        {"name": "Penultimate Author", "email": "email@university.edu"},
+        {"name": "Last Author", "email": "email@university.edu"},
+    ]
 
-    adata.uns['preprint_doi'] = "doi:preprint"
-    adata.uns['default_embedding'] = 'X_umap'
+    adata.uns["preprint_doi"] = "doi:preprint"
+    adata.uns["default_embedding"] = "X_umap"
 
     # Add continuous metadata
     metrics = sc.pp.calculate_qc_metrics(adata.raw, inplace=False)
-    ad.obs['n_counts'] = metrics[0]['total_counts']
-    ad.obs['n_genes'] = metrics[0]['n_genes_by_counts']
+    ad.obs["n_counts"] = metrics[0]["total_counts"]
+    ad.obs["n_genes"] = metrics[0]["n_genes_by_counts"]
 
 
 def remix(adata, title: str):
     """Create the full Corpora remix"""
 
-    adata.obs[
-        'assay_ontology'] = "EFO:0008995"  # ambiguous 10x assay
+    adata.obs["assay_ontology"] = "EFO:0008995"  # ambiguous 10x assay
     adata.obs["assay"] = utils.ontology.get_ontology_label(
-        "EFO:0008995")  # change from author's "10x_chromium" to "10x sequencing"
+        "EFO:0008995"
+    )  # change from author's "10x_chromium" to "10x sequencing"
     del adata.obs["EFO"]
 
     disease_ontology_map = {"0000000": "PATO:0000461", "0007915": "MONDO:0007915"}
     adata.obs["disease_ontology"] = adata.obs["MONDO"].map(disease_ontology_map)
-    disease_map = {disease_ontology: utils.ontology.get_ontology_label(disease_ontology) for
-                   disease_ontology in adata.obs['disease_ontology'].unique()}
+    disease_map = {
+        disease_ontology: utils.ontology.get_ontology_label(disease_ontology)
+        for disease_ontology in adata.obs["disease_ontology"].unique()
+    }
     adata.obs["disease"] = adata.obs["disease_ontology"].map(disease_map)
     del adata.obs["MONDO"]
 
@@ -123,18 +127,22 @@ def remix(adata, title: str):
     cell_type_ontology_map = {cl_term: "CL:" + cl_term for cl_term in adata.obs["CL"]}
     adata.obs["cell_type_ontology"] = adata.obs["CL"].map(cell_type_ontology_map)
     cell_type_map = {
-        cl_term: utils.ontology.get_ontology_label(cl_term) if cl_term != "CL:NA" else "Prolif" for
-        cl_term in adata.obs["cell_type_ontology"].unique()}
+        cl_term: utils.ontology.get_ontology_label(cl_term) if cl_term != "CL:NA" else "Prolif"
+        for cl_term in adata.obs["cell_type_ontology"].unique()
+    }
     del adata.obs["cell_type"]
     adata.obs["cell_type"] = adata.obs["cell_type_ontology"].map(cell_type_map)
     del adata.obs["CL"]
 
-    ethnicity_ontology_map = {hancestro_term: "HANCESTRO:" + hancestro_term for hancestro_term in
-                              adata.obs["HANCESTRO"]}
+    ethnicity_ontology_map = {
+        hancestro_term: "HANCESTRO:" + hancestro_term for hancestro_term in adata.obs["HANCESTRO"]
+    }
     adata.obs["ethnicity_ontology"] = adata.obs["HANCESTRO"].map(ethnicity_ontology_map)
     del adata.obs["HANCESTRO"]
-    ethnicity_map = {ethnicity_ontology: utils.ontology.get_ontology_label(ethnicity_ontology) for
-                     ethnicity_ontology in adata.obs["ethnicity_ontology"].unique()}
+    ethnicity_map = {
+        ethnicity_ontology: utils.ontology.get_ontology_label(ethnicity_ontology)
+        for ethnicity_ontology in adata.obs["ethnicity_ontology"].unique()
+    }
     adata.obs["ethnicity"] = adata.obs["ethnicity_ontology"].map(ethnicity_map)
     del adata.obs["Ethnicity"]
 
@@ -171,16 +179,26 @@ def print_summary(adata):
 
     # Print missing cell fields required by Corpora schema
     remix_cellfields = np.array(
-        ['tissue', 'assay', 'disease', 'cell_type', 'sex', 'ethnicity', 'tissue_ontology',
-         'assay_ontology', 'disease_ontology', 'cell_type_ontology', 'ethnicity_ontology'])
+        [
+            "tissue",
+            "assay",
+            "disease",
+            "cell_type",
+            "sex",
+            "ethnicity",
+            "tissue_ontology",
+            "assay_ontology",
+            "disease_ontology",
+            "cell_type_ontology",
+            "ethnicity_ontology",
+        ]
+    )
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
 
 
 # Process h5ad
-ad = sc.read_h5ad(
-    "YeLab_corpora_test.h5ad"
-)
+ad = sc.read_h5ad("YeLab_corpora_test.h5ad")
 basic_curation(ad)
 print_summary(ad)
 ad.write("YeLab_corpora_test-curated.h5ad", compression="gzip")

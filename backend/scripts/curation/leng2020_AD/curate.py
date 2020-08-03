@@ -22,39 +22,41 @@ def basic_curation(adata):
         raise Exception("Gene symbols not unique.")
 
     # These are deleted at the request of the submitter
-    del adata.obsm['X_CCA']
-    del adata.obsm['X_CCA.ALIGNED']
+    del adata.obsm["X_CCA"]
+    del adata.obsm["X_CCA.ALIGNED"]
 
-    adata.uns['contributors'] = [{'name': 'Kun Leng'},
-                                 {'name': 'Emmy Li'},
-                                 {'name': 'Rana Eser'},
-                                 {'name': 'Antonia Piergies'},
-                                 {'name': 'Rene Sit'},
-                                 {'name': 'Michelle Tan'},
-                                 {'name': 'Norma Neff'},
-                                 {'name': 'Song Hua Li'},
-                                 {'name': 'Roberta Diehl Rodriguez'},
-                                 {'name': 'Claudia Kimie Suemoto'},
-                                 {'name': 'Renata Elaine Paraizo Leite'},
-                                 {'name': 'Carlos A. Pasqualucci'},
-                                 {'name': 'William W. Seeley'},
-                                 {'name': 'Salvatore Spina'},
-                                 {'name': 'Helmut Heinsen'},
-                                 {'name': 'Lea T. Grinberg', 'email': 'lea.grinberg@ucsf.edu'},
-                                 {'name': 'Martin Kampmann', 'email': 'martin.kampmann@ucsf.edu'}]
+    adata.uns["contributors"] = [
+        {"name": "Kun Leng"},
+        {"name": "Emmy Li"},
+        {"name": "Rana Eser"},
+        {"name": "Antonia Piergies"},
+        {"name": "Rene Sit"},
+        {"name": "Michelle Tan"},
+        {"name": "Norma Neff"},
+        {"name": "Song Hua Li"},
+        {"name": "Roberta Diehl Rodriguez"},
+        {"name": "Claudia Kimie Suemoto"},
+        {"name": "Renata Elaine Paraizo Leite"},
+        {"name": "Carlos A. Pasqualucci"},
+        {"name": "William W. Seeley"},
+        {"name": "Salvatore Spina"},
+        {"name": "Helmut Heinsen"},
+        {"name": "Lea T. Grinberg", "email": "lea.grinberg@ucsf.edu"},
+        {"name": "Martin Kampmann", "email": "martin.kampmann@ucsf.edu"},
+    ]
 
-    adata.uns['preprint_doi'] = "https://doi.org/10.1101/2020.04.04.025825"
-    adata.uns['default_embedding'] = 'X_tSNE'
+    adata.uns["preprint_doi"] = "https://doi.org/10.1101/2020.04.04.025825"
+    adata.uns["default_embedding"] = "X_tSNE"
 
 
 def remix(adata, title: str):
     """Create the full Corpora remix"""
 
     # First fill in missing metadata fields
-    adata.obs['assay_ontology'] = "EFO:0009899"
+    adata.obs["assay_ontology"] = "EFO:0009899"
     adata.obs["assay"] = utils.ontology.get_ontology_label("EFO:0009899")
 
-    adata.obs['sex'] = "male"
+    adata.obs["sex"] = "male"
 
     adata.obs["disease_ontology"] = "MONDO:0004975"
     adata.obs["disease"] = utils.ontology.get_ontology_label("MONDO:0004975")
@@ -67,33 +69,34 @@ def remix(adata, title: str):
 
     adata.uns["title"] = title
 
-    adata.uns[
-        "project_name"] = "Molecular characterization of selectively vulnerable neurons in " \
-                          "Alzheimer’s Disease"
-    adata.uns[
-        "project_description"] = "Single-nuclei RNA sequencing of caudal entorhinal cortex and " \
-                                 "superior frontal gyrus from individuals spanning the " \
-                                 "neuropathological progression of AD"
-    adata.uns["project_raw_data_links"] = [
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147528"]
+    adata.uns["project_name"] = "Molecular characterization of selectively vulnerable neurons in " "Alzheimer’s Disease"
+    adata.uns["project_description"] = (
+        "Single-nuclei RNA sequencing of caudal entorhinal cortex and "
+        "superior frontal gyrus from individuals spanning the "
+        "neuropathological progression of AD"
+    )
+    adata.uns["project_raw_data_links"] = ["https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147528"]
     adata.uns["project_other_links"] = ["https://www.synapse.org/#!Synapse:syn21788402/wiki/601825"]
 
     # Set the cell ontology values
-    cell_type_map = {'Exc': 'excitatory neuron',
-                     'OPC': 'oligodendrocyte precursor cell',
-                     'Inh': 'inhibitory neuron',
-                     'Micro': 'mature microglial cell',
-                     'Astro': 'mature astrocyte',
-                     'Oligo': 'oligodendrocyte',
-                     'Endo': 'endothelial cell'}
+    cell_type_map = {
+        "Exc": "excitatory neuron",
+        "OPC": "oligodendrocyte precursor cell",
+        "Inh": "inhibitory neuron",
+        "Micro": "mature microglial cell",
+        "Astro": "mature astrocyte",
+        "Oligo": "oligodendrocyte",
+        "Endo": "endothelial cell",
+    }
 
-    adata.obs["cell_type"] = adata.obs["clusterAssignment"].str.split(":|\\.", expand=True)[1].map(
-        cell_type_map)
+    adata.obs["cell_type"] = adata.obs["clusterAssignment"].str.split(":|\\.", expand=True)[1].map(cell_type_map)
     del adata.obs["clusterAssignment"]
 
     # make dictionary mapping cell_type to CL term
-    cell_type_ontology_map = {cell_type: utils.ontology.lookup_candidate_term(cell_type)[0][0] for
-                              cell_type in adata.obs['cell_type'].unique()}
+    cell_type_ontology_map = {
+        cell_type: utils.ontology.lookup_candidate_term(cell_type)[0][0]
+        for cell_type in adata.obs["cell_type"].unique()
+    }
     # result: {'excitatory neuron': 'CL:0008030', 'oligodendrocyte precursor cell': 'CL:0002453',
     # 'inhibitory neuron': 'CL:0008029', 'mature microglial cell': 'CL:0002629',
     # 'mature astrocyte': 'CL:0002627', 'oligodendrocyte': 'CL:0000128', 'endothelial cell':
@@ -102,7 +105,7 @@ def remix(adata, title: str):
     adata.obs["cell_type_ontology"] = adata.obs["cell_type"].map(cell_type_ontology_map)
 
     # optional
-    adata.uns['tags'] = ['AD', "Alzheimer's Disease", 'neurons']
+    adata.uns["tags"] = ["AD", "Alzheimer's Disease", "neurons"]
 
     # Now translate the gene symbols and sum new duplicates
     # Note that we're pulling from raw here. That's where the raw counts that we can sum are
@@ -124,8 +127,7 @@ def remix(adata, title: str):
     # Perform the same tranformations on the new values as they did in the paper
     # Divide counts of each cell by sizeFactors from logNormCounts used by author
     r, c = remix_adata.X.nonzero()
-    rX_sp = csr_matrix(((1.0 / remix_adata.obs.sizeFactors)[r], (r, c)),
-                       shape=(remix_adata.X.shape))
+    rX_sp = csr_matrix(((1.0 / remix_adata.obs.sizeFactors)[r], (r, c)), shape=(remix_adata.X.shape))
     remix_adata.X = remix_adata.X.multiply(rX_sp)
 
     sc.pp.log1p(remix_adata, base=2)
@@ -151,8 +153,20 @@ def print_summary(adata):
 
     # Print missing cell fields required by Corpora schema
     remix_cellfields = np.array(
-        ['tissue', 'assay', 'disease', 'cell_type', 'sex', 'ethnicity', 'tissue_ontology',
-         'assay_ontology', 'disease_ontology', 'cell_type_ontology', 'ethnicity_ontology'])
+        [
+            "tissue",
+            "assay",
+            "disease",
+            "cell_type",
+            "sex",
+            "ethnicity",
+            "tissue_ontology",
+            "assay_ontology",
+            "disease_ontology",
+            "cell_type_ontology",
+            "ethnicity_ontology",
+        ]
+    )
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
 
@@ -162,8 +176,11 @@ ad = sc.read_h5ad("EC_allCells/kampmann_lab_human_AD_snRNAseq_EC.h5ad")
 basic_curation(ad)
 print_summary(ad)
 ad.write("EC_allCells/kampmann_lab_human_AD_snRNAseq_EC-curated.h5ad", compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: caudal entorhinal cortex")
+rad = remix(
+    ad,
+    title="Molecular characterization of selectively vulnerable neurons in "
+    "Alzheimer’s Disease: caudal entorhinal cortex",
+)
 print_summary(rad)
 rad.write("EC_allCells/kampmann_lab_human_AD_snRNAseq_EC-remixed.h5ad", compression="gzip")
 
@@ -172,8 +189,11 @@ ad = sc.read_h5ad("SFG_allCells/kampmann_lab_human_AD_snRNAseq_SFG.h5ad")
 basic_curation(ad)
 print_summary(ad)
 ad.write("SFG_allCells/kampmann_lab_human_AD_snRNAseq_SFG-curated.h5ad", compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: superior frontal gyrus")
+rad = remix(
+    ad,
+    title="Molecular characterization of selectively vulnerable neurons in "
+    "Alzheimer’s Disease: superior frontal gyrus",
+)
 print_summary(rad)
 rad.write("SFG_allCells/kampmann_lab_human_AD_snRNAseq_SFG-remixed.h5ad", compression="gzip")
 
@@ -182,8 +202,9 @@ ad = sc.read_h5ad("EC_subclusters/EC_astrocytes/kampmann_lab_human_AD_snRNAseq_E
 basic_curation(ad)
 print_summary(ad)
 ad.write("EC_subclusters/EC_astrocytes/kampmann_lab_human_AD_snRNAseq_EC_astrocytes-curated.h5ad", compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: EC astrocytes")
+rad = remix(
+    ad, title="Molecular characterization of selectively vulnerable neurons in " "Alzheimer’s Disease: EC astrocytes"
+)
 print_summary(rad)
 rad.write("EC_subclusters/EC_astrocytes/kampmann_lab_human_AD_snRNAseq_EC_astrocytes-remixed.h5ad", compression="gzip")
 
@@ -191,33 +212,48 @@ rad.write("EC_subclusters/EC_astrocytes/kampmann_lab_human_AD_snRNAseq_EC_astroc
 ad = sc.read_h5ad("EC_subclusters/EC_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons.h5ad")
 basic_curation(ad)
 print_summary(ad)
-ad.write("EC_subclusters/EC_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons-curated.h5ad",
-         compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: EC excitatoryNeurons")
+ad.write(
+    "EC_subclusters/EC_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons-curated.h5ad",
+    compression="gzip",
+)
+rad = remix(
+    ad,
+    title="Molecular characterization of selectively vulnerable neurons in "
+    "Alzheimer’s Disease: EC excitatoryNeurons",
+)
 print_summary(rad)
-rad.write("EC_subclusters/EC_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons-remixed.h5ad",
-          compression="gzip")
+rad.write(
+    "EC_subclusters/EC_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons-remixed.h5ad",
+    compression="gzip",
+)
 
 # Process EC_inhibitoryNeurons
 ad = sc.read_h5ad("EC_subclusters/EC_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons.h5ad")
 basic_curation(ad)
 print_summary(ad)
-ad.write("EC_subclusters/EC_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-curated.h5ad",
-         compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: EC inhibitoryNeurons")
+ad.write(
+    "EC_subclusters/EC_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-curated.h5ad",
+    compression="gzip",
+)
+rad = remix(
+    ad,
+    title="Molecular characterization of selectively vulnerable neurons in "
+    "Alzheimer’s Disease: EC inhibitoryNeurons",
+)
 print_summary(rad)
-rad.write("EC_subclusters/EC_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-remixed.h5ad",
-          compression="gzip")
+rad.write(
+    "EC_subclusters/EC_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-remixed.h5ad",
+    compression="gzip",
+)
 
 # Process EC_microglia
 ad = sc.read_h5ad("EC_subclusters/EC_microglia/kampmann_lab_human_AD_snRNAseq_EC_microglia.h5ad")
 basic_curation(ad)
 print_summary(ad)
 ad.write("EC_subclusters/EC_microglia/kampmann_lab_human_AD_snRNAseq_EC_microglia-curated.h5ad", compression="gzip")
-rad = remix(ad, title="Molecular characterization of selectively vulnerable neurons in "
-                      "Alzheimer’s Disease: EC microglia")
+rad = remix(
+    ad, title="Molecular characterization of selectively vulnerable neurons in " "Alzheimer’s Disease: EC microglia"
+)
 print_summary(rad)
 rad.write("EC_subclusters/EC_microglia/kampmann_lab_human_AD_snRNAseq_EC_microglia-remixed.h5ad", compression="gzip")
 
@@ -225,45 +261,62 @@ rad.write("EC_subclusters/EC_microglia/kampmann_lab_human_AD_snRNAseq_EC_microgl
 ad = sc.read_h5ad("SFG_subclusters/SFG_astrocytes/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes.h5ad")
 basic_curation(ad)
 print_summary(ad)
-ad.write("SFG_subclusters/SFG_astrocytes/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes-curated.h5ad",
-         compression="gzip")
-rad = remix(ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in "
-                      "Alzheimer’s Disease: SFG astrocytes")
+ad.write(
+    "SFG_subclusters/SFG_astrocytes/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes-curated.h5ad", compression="gzip"
+)
+rad = remix(
+    ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in " "Alzheimer’s Disease: SFG astrocytes"
+)
 print_summary(rad)
-rad.write("SFG_subclusters/SFG_astrocytes/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes-remixed.h5ad",
-          compression="gzip")
+rad.write(
+    "SFG_subclusters/SFG_astrocytes/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes-remixed.h5ad", compression="gzip"
+)
 
 # Process SFG_excitatoryNeurons
 ad = sc.read_h5ad("SFG_subclusters/SFG_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons.h5ad")
 basic_curation(ad)
 print_summary(ad)
-ad.write("SFG_subclusters/SFG_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons-curated.h5ad",
-         compression="gzip")
-rad = remix(ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in "
-                      "Alzheimer’s Disease: SFG excitatoryNeurons")
+ad.write(
+    "SFG_subclusters/SFG_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons-curated.h5ad",
+    compression="gzip",
+)
+rad = remix(
+    ad,
+    title="MolSFGular characterization of selSFGtively vulnerable neurons in "
+    "Alzheimer’s Disease: SFG excitatoryNeurons",
+)
 print_summary(rad)
-rad.write("SFG_subclusters/SFG_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons-remixed.h5ad",
-          compression="gzip")
+rad.write(
+    "SFG_subclusters/SFG_excitatoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons-remixed.h5ad",
+    compression="gzip",
+)
 
 # Process SFG_inhibitoryNeurons
 ad = sc.read_h5ad("SFG_subclusters/SFG_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons.h5ad")
 basic_curation(ad)
 print_summary(ad)
-ad.write("SFG_subclusters/SFG_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons-curated.h5ad",
-         compression="gzip")
-rad = remix(ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in "
-                      "Alzheimer’s Disease: SFG inhibitoryNeurons")
+ad.write(
+    "SFG_subclusters/SFG_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons-curated.h5ad",
+    compression="gzip",
+)
+rad = remix(
+    ad,
+    title="MolSFGular characterization of selSFGtively vulnerable neurons in "
+    "Alzheimer’s Disease: SFG inhibitoryNeurons",
+)
 print_summary(rad)
-rad.write("SFG_subclusters/SFG_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons-remixed.h5ad",
-          compression="gzip")
+rad.write(
+    "SFG_subclusters/SFG_inhibitoryNeurons/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons-remixed.h5ad",
+    compression="gzip",
+)
 
 # Process SFG_microglia
 ad = sc.read_h5ad("SFG_subclusters/SFG_microglia/kampmann_lab_human_AD_snRNAseq_SFG_microglia.h5ad")
 basic_curation(ad)
 print_summary(ad)
 ad.write("SFG_subclusters/SFG_microglia/kampmann_lab_human_AD_snRNAseq_SFG_microglia-curated.h5ad", compression="gzip")
-rad = remix(ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in "
-                      "Alzheimer’s Disease: SFG microglia")
+rad = remix(
+    ad, title="MolSFGular characterization of selSFGtively vulnerable neurons in " "Alzheimer’s Disease: SFG microglia"
+)
 print_summary(rad)
-rad.write("SFG_subclusters/SFG_microglia/kampmann_lab_human_AD_snRNAseq_SFG_microglia-remixed.h5ad",
-          compression="gzip")
+rad.write("SFG_subclusters/SFG_microglia/kampmann_lab_human_AD_snRNAseq_SFG_microglia-remixed.h5ad", compression="gzip")

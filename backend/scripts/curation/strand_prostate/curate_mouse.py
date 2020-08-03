@@ -32,83 +32,90 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [{'name': 'Diya B. Joseph'},
-                                 {'name': 'Gervaise H. Henry'},
-                                 {'name': 'Alicia Malewska'},
-                                 {'name': 'Nida S. Iqbal'},
-                                 {'name': 'Hannah M. Ruetten'},
-                                 {'name': 'Anne E. Turco'},
-                                 {'name': 'Lisa L. Abler'},
-                                 {'name': 'Simran K. Sandhu'},
-                                 {'name': 'Mark T. Cadena'},
-                                 {'name': 'Venkat S. Malladi'},
-                                 {'name': 'Jeffrey C. Reese'},
-                                 {'name': 'Ryan J. Mauck'},
-                                 {'name': 'Jeffrey C. Gahan'},
-                                 {'name': 'Ryan C. Hutchinson'},
-                                 {'name': 'Claus G. Roehrborn'},
-                                 {'name': 'Linda A. Baker'},
-                                 {'name': 'Chad M. Vezina'},
-                                 {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
+    adata.uns["contributors"] = [
+        {"name": "Diya B. Joseph"},
+        {"name": "Gervaise H. Henry"},
+        {"name": "Alicia Malewska"},
+        {"name": "Nida S. Iqbal"},
+        {"name": "Hannah M. Ruetten"},
+        {"name": "Anne E. Turco"},
+        {"name": "Lisa L. Abler"},
+        {"name": "Simran K. Sandhu"},
+        {"name": "Mark T. Cadena"},
+        {"name": "Venkat S. Malladi"},
+        {"name": "Jeffrey C. Reese"},
+        {"name": "Ryan J. Mauck"},
+        {"name": "Jeffrey C. Gahan"},
+        {"name": "Ryan C. Hutchinson"},
+        {"name": "Claus G. Roehrborn"},
+        {"name": "Linda A. Baker"},
+        {"name": "Chad M. Vezina"},
+        {"name": "Douglas W Strand", "email": "douglas.strand@utsouthwestern.edu"},
+    ]
 
-    adata.uns['preprint_doi'] = "https://doi.org/10.1101/2020.02.19.937615"
-    adata.uns['publication_doi'] = "https://doi.org/10.1002/pros.24020"
+    adata.uns["preprint_doi"] = "https://doi.org/10.1101/2020.02.19.937615"
+    adata.uns["publication_doi"] = "https://doi.org/10.1002/pros.24020"
 
-    adata.uns['default_embedding'] = 'X_umap'
+    adata.uns["default_embedding"] = "X_umap"
 
 
 def remix(adata, title: str):
     """Create the full Corpora remix"""
 
     # First fill in missing metadata fields
-    adata.obs['assay_ontology'] = "EFO:0009899"
+    adata.obs["assay_ontology"] = "EFO:0009899"
     adata.obs["assay"] = utils.ontology.get_ontology_label("EFO:0009899")
 
-    adata.obs['sex'] = "male"
+    adata.obs["sex"] = "male"
 
     adata.obs["disease_ontology"] = "PATO:0000461"
     adata.obs["disease"] = utils.ontology.get_ontology_label("PATO:0000461")
 
-    tissue_ontology_map = {'Prostate': 'UBERON:0002367',
-                           'Urethra': 'UBERON:0001333'}
-    adata.obs['tissue_ontology'] = adata.obs['Region'].map(tissue_ontology_map)
-    del adata.obs['Region']
+    tissue_ontology_map = {"Prostate": "UBERON:0002367", "Urethra": "UBERON:0001333"}
+    adata.obs["tissue_ontology"] = adata.obs["Region"].map(tissue_ontology_map)
+    del adata.obs["Region"]
 
-    tissue_map = {uberon: utils.ontology.get_ontology_label(uberon) for
-                  uberon in ad.obs['tissue_ontology'].unique()}
-    adata.obs['tissue'] = adata.obs['tissue_ontology'].map(tissue_map)
+    tissue_map = {uberon: utils.ontology.get_ontology_label(uberon) for uberon in ad.obs["tissue_ontology"].unique()}
+    adata.obs["tissue"] = adata.obs["tissue_ontology"].map(tissue_map)
 
     adata.uns["organism_ontology"] = "NCBITaxon:10090"
     adata.uns["organism"] = utils.ontology.get_ontology_label("NCBITaxon:10090")
 
-    adata.uns['title'] = title
+    adata.uns["title"] = title
 
     adata.uns["project_name"] = "Mouse Prostate and Urethral Cell Atlas"
-    adata.uns[
-        "project_description"] = "Single-cell RNA-sequencing of adult mouse lower urinary tracts."
-    adata.uns["project_raw_data_links"] = [
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145929"]
+    adata.uns["project_description"] = "Single-cell RNA-sequencing of adult mouse lower urinary tracts."
+    adata.uns["project_raw_data_links"] = ["https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145929"]
     adata.uns["project_other_links"] = [
         "https://www.gudmap.org/chaise/record/#2/Common:Collection/RID=16-WM8C",
-        "https://strandlab.net/sc.data/"]
+        "https://strandlab.net/sc.data/",
+    ]
 
     # Set the cell ontology values
-    cell_type_map = {'BE': 'basal cell of prostate epithelium',
-                     'LE': 'luminal cell of prostate epithelium',
-                     'Ur': 'urethral luminal'}
+    cell_type_map = {
+        "BE": "basal cell of prostate epithelium",
+        "LE": "luminal cell of prostate epithelium",
+        "Ur": "urethral luminal",
+    }
 
-    cell_type_ontology_map = {'BE': 'CL:0002341',
-                              'LE': 'CL:0002340',
-                              'Ur': 'NA'}
+    cell_type_ontology_map = {"BE": "CL:0002341", "LE": "CL:0002340", "Ur": "NA"}
 
     adata.obs["cell_type"] = adata.obs["Population"].map(cell_type_map)
     adata.obs["cell_type_ontology"] = adata.obs["Population"].map(cell_type_ontology_map)
     del adata.obs["Population"]
 
     # optional
-    adata.uns['tags'] = ['GUDMAP', 'flow cytometry', 'mouse cell atlas', 'mouse prostate',
-                         'prostate cancer', 'prostate epithelia', 'prostate stroma',
-                         'single-cell RNA sequencing', 'zonal anatomy']
+    adata.uns["tags"] = [
+        "GUDMAP",
+        "flow cytometry",
+        "mouse cell atlas",
+        "mouse prostate",
+        "prostate cancer",
+        "prostate epithelia",
+        "prostate stroma",
+        "single-cell RNA sequencing",
+        "zonal anatomy",
+    ]
 
     return adata
 
@@ -125,8 +132,20 @@ def print_summary(adata):
 
     # Print missing cell fields required by Corpora schema
     remix_cellfields = np.array(
-        ['tissue', 'assay', 'disease', 'cell_type', 'sex', 'ethnicity', 'tissue_ontology',
-         'assay_ontology', 'disease_ontology', 'cell_type_ontology', 'ethnicity_ontology'])
+        [
+            "tissue",
+            "assay",
+            "disease",
+            "cell_type",
+            "sex",
+            "ethnicity",
+            "tissue_ontology",
+            "assay_ontology",
+            "disease_ontology",
+            "cell_type_ontology",
+            "ethnicity_ontology",
+        ]
+    )
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
 

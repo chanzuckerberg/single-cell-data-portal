@@ -40,56 +40,57 @@ def basic_curation(adata):
     if not adata.var.index.is_unique:
         raise Exception("Gene symbols not unique.")
 
-    adata.uns['contributors'] = [{'name': 'Gervaise H Henry'},
-                                 {'name': 'Alicia Malewska'},
-                                 {'name': 'Diya B Joseph'},
-                                 {'name': 'Venkat S Malladi'},
-                                 {'name': 'Jeon Lee'},
-                                 {'name': 'Jose Torrealba'},
-                                 {'name': 'Ryan J Mauck'},
-                                 {'name': 'Jeffrey C Gahan'},
-                                 {'name': 'Ganesh V Raj'},
-                                 {'name': 'Claus G Roehrborn'},
-                                 {'name': 'Gary C Hon'},
-                                 {'name': 'Malcolm P MacConmara'},
-                                 {'name': 'Jeffrey C Reese'},
-                                 {'name': 'Ryan C Hutchinson'},
-                                 {'name': 'Chad M Vezina'},
-                                 {'name': 'Douglas W Strand', 'email': 'douglas.strand@utsouthwestern.edu'}]
+    adata.uns["contributors"] = [
+        {"name": "Gervaise H Henry"},
+        {"name": "Alicia Malewska"},
+        {"name": "Diya B Joseph"},
+        {"name": "Venkat S Malladi"},
+        {"name": "Jeon Lee"},
+        {"name": "Jose Torrealba"},
+        {"name": "Ryan J Mauck"},
+        {"name": "Jeffrey C Gahan"},
+        {"name": "Ganesh V Raj"},
+        {"name": "Claus G Roehrborn"},
+        {"name": "Gary C Hon"},
+        {"name": "Malcolm P MacConmara"},
+        {"name": "Jeffrey C Reese"},
+        {"name": "Ryan C Hutchinson"},
+        {"name": "Chad M Vezina"},
+        {"name": "Douglas W Strand", "email": "douglas.strand@utsouthwestern.edu"},
+    ]
 
-    adata.uns['preprint_doi'] = "https://doi.org/10.1101/439935"
-    adata.uns['publication_doi'] = "https://doi.org/10.1016/j.celrep.2018.11.086"
+    adata.uns["preprint_doi"] = "https://doi.org/10.1101/439935"
+    adata.uns["publication_doi"] = "https://doi.org/10.1016/j.celrep.2018.11.086"
 
-    adata.uns['default_embedding'] = 'X_tsne'
+    adata.uns["default_embedding"] = "X_tsne"
 
 
 def remix(adata, title: str):
     """Create the full Corpora remix"""
 
     # First fill in missing metadata fields
-    adata.obs['assay_ontology'] = "EFO:0009899"
+    adata.obs["assay_ontology"] = "EFO:0009899"
     adata.obs["assay"] = utils.ontology.get_ontology_label("EFO:0009899")
 
     # Sex of patients
-    adata.obs['sex'] = "male"
+    adata.obs["sex"] = "male"
 
     adata.obs["disease_ontology"] = "PATO:0000461"
     adata.obs["disease"] = utils.ontology.get_ontology_label("PATO:0000461")
 
-    adata.obs['tissue_ontology'] = "UBERON:0002367"
-    adata.obs['tissue'] = utils.ontology.get_ontology_label("UBERON:0002367")
+    adata.obs["tissue_ontology"] = "UBERON:0002367"
+    adata.obs["tissue"] = utils.ontology.get_ontology_label("UBERON:0002367")
 
     adata.uns["organism_ontology"] = "NCBITaxon:9606"
     adata.uns["organism"] = utils.ontology.get_ontology_label("NCBITaxon:9606")
 
-    adata.uns['title'] = title
+    adata.uns["title"] = title
 
     adata.uns["project_name"] = "Normal Human Prostate Cell Atlas"
-    adata.uns[
-        "project_description"] = "Creation of a cellular anatomy of the young human prostate by scRNA " \
-                                 "sequencing."
-    adata.uns["project_raw_data_links"] = [
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE117403"]
+    adata.uns["project_description"] = (
+        "Creation of a cellular anatomy of the young human prostate by scRNA " "sequencing."
+    )
+    adata.uns["project_raw_data_links"] = ["https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE117403"]
     adata.uns["project_other_links"] = ["https://git.biohpc.swmed.edu/StrandLab/sc-TissueMapper_Pr"]
 
     # Set the cell ontology values
@@ -103,35 +104,47 @@ def remix(adata, title: str):
     # Leu = leukocyte
     # SM = smooth muscle
 
-    cell_type_map = {'BE': 'basal cell of prostate epithelium',
-                     'Club': 'club cell of prostate epithelium',
-                     'Endo': 'prostate gland microvascular endothelial cell',
-                     'Fib': 'fibroblast of connective tissue of prostate',
-                     'Hillock': 'hillock cell of prostate epithelium',
-                     'LE': 'luminal cell of prostate epithelium',
-                     'Leu': 'leukocyte',
-                     'NE': 'endocrine-paracrine cell of prostate gland',
-                     'SM': 'smooth muscle cell of prostate'}
+    cell_type_map = {
+        "BE": "basal cell of prostate epithelium",
+        "Club": "club cell of prostate epithelium",
+        "Endo": "prostate gland microvascular endothelial cell",
+        "Fib": "fibroblast of connective tissue of prostate",
+        "Hillock": "hillock cell of prostate epithelium",
+        "LE": "luminal cell of prostate epithelium",
+        "Leu": "leukocyte",
+        "NE": "endocrine-paracrine cell of prostate gland",
+        "SM": "smooth muscle cell of prostate",
+    }
 
-    cell_type_ontology_map = {'BE': 'CL:0002341',
-                              'Club': 'NA',
-                              'Endo': 'CL:2000059',
-                              'Fib': 'CL:1000299',
-                              'Hillock': 'NA',
-                              'LE': 'CL:0002340',
-                              'Leu': 'CL:0000738',
-                              'NE': 'CL:0002313',
-                              'SM': 'CL:1000487'}
+    cell_type_ontology_map = {
+        "BE": "CL:0002341",
+        "Club": "NA",
+        "Endo": "CL:2000059",
+        "Fib": "CL:1000299",
+        "Hillock": "NA",
+        "LE": "CL:0002340",
+        "Leu": "CL:0000738",
+        "NE": "CL:0002313",
+        "SM": "CL:1000487",
+    }
 
     adata.obs["cell_type"] = adata.obs["Population"].map(cell_type_map)
     adata.obs["cell_type_ontology"] = adata.obs["Population"].map(cell_type_ontology_map)
     del adata.obs["Population"]
 
     # optional
-    adata.uns['tags'] = ['GUDMAP', 'benign prostatic hyperplasia', 'flow cytometry',
-                         'human cell atlas', 'human prostate', 'prostate cancer',
-                         'prostate epithelia', 'prostate stroma', 'single-cell RNA sequencing',
-                         'zonal anatomy']
+    adata.uns["tags"] = [
+        "GUDMAP",
+        "benign prostatic hyperplasia",
+        "flow cytometry",
+        "human cell atlas",
+        "human prostate",
+        "prostate cancer",
+        "prostate epithelia",
+        "prostate stroma",
+        "single-cell RNA sequencing",
+        "zonal anatomy",
+    ]
 
     return adata
 
@@ -148,8 +161,20 @@ def print_summary(adata):
 
     # Print missing cell fields required by Corpora schema
     remix_cellfields = np.array(
-        ['tissue', 'assay', 'disease', 'cell_type', 'sex', 'ethnicity', 'tissue_ontology',
-         'assay_ontology', 'disease_ontology', 'cell_type_ontology', 'ethnicity_ontology'])
+        [
+            "tissue",
+            "assay",
+            "disease",
+            "cell_type",
+            "sex",
+            "ethnicity",
+            "tissue_ontology",
+            "assay_ontology",
+            "disease_ontology",
+            "cell_type_ontology",
+            "ethnicity_ontology",
+        ]
+    )
     missing_remix_cellfields = np.array(set(remix_cellfields) - set(adata.obs.columns.values))
     print("MISSING CORPORA FIELDS:", missing_remix_cellfields)
 
