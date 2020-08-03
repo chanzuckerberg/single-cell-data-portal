@@ -22,6 +22,7 @@ class Entity:
     """
 
     table: Base = None  # The DbTable represented by this entity.
+    list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
     db = DbUtils()
 
     def __init__(self, db_object: Base):
@@ -65,7 +66,7 @@ class Entity:
 
     @classmethod
     def _create_sub_objects(
-        cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None, primary_keys: typing.List[str] = None
+        cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None
     ) -> typing.List[Base]:
         """
         Create `rows` in `db_table` associated with Entity Object during object creation. A new UUID is generated and a
@@ -73,8 +74,6 @@ class Entity:
 
         :param rows: A list of dictionaries each specifying a row to insert or modify
         :param db_table: The Table to add or modify rows
-        :param primary_keys: Additional columns required to build the primary key. This is used when the primary consist
-        of multiple columns.
         :param add_columns: Additional columns attributes or modifications to add to the row.
 
         This can be used when there are shared column values that need to be added across all the new rows.
