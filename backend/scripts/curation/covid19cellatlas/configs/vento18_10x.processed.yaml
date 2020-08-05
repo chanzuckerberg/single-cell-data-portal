@@ -1,0 +1,94 @@
+obs:
+    tissue_ontology_term_id:
+        Location:
+            Blood: UBERON:0000178
+            Decidua: UBERON:0002450
+            Placenta: UBERON:0001987
+    assay_ontology_term_id: EFO:0009310
+    disease_ontology_term_id: PATO:0000461
+    cell_type_ontology_term_id:
+        CellType:
+            DC1: CL:0000990
+            DC2: CL:0000784
+            EVT: CL:0008036
+            Endo (f): CL:0000115
+            Endo (m): CL:0000115
+            Endo L: CL:0000115
+            Granulocytes: CL:0000094
+            HB: CL:3000001
+            ILC3: CL:0001071
+            MAIT: CL:0000940
+            MO: CL:0000576
+            NK CD16+: CL:0000939
+            NK CD16-: CL:0000938
+            'PB Naive CD4 ': CL:0000895
+            PB Naive CD8: CL:0000900
+            PB clonal CD8: CL:0000084
+            Plasma: CL:0000786
+            SCT: CL:0000525
+            Treg: CL:0000815
+            VCT: CL:2000060
+            dM1: CL:0000863
+            dM2: CL:0000890 
+            dM3: CL:0000235
+            dNK p: CL:0002343
+            dNK1: CL:0002343
+            dNK2: CL:0002343
+            dNK3: CL:0002343
+            dP1: CL:0008033
+            dP2: CL:0008033
+            dS1: UBERON:0003891
+            dS2: UBERON:0003891
+            dS3: UBERON:0003891
+            dT CD4: CL:0000624
+            dT CD8: CL:0000625
+            fFB1: CL:0000057
+            fFB2: CL:0000057
+    sex: unknown
+    ethnicity_ontology_term_id: unknown
+    development_stage_ontology_term_id:
+        Stage:
+            12+2 LMP(10+2 PCW): HsapDv:0000051
+            9+4 LMP(7+4 PCW): HsapDv:0000050
+            8 + 2 LMP (6 + 2 PCW): HsapDv:0000047
+            12 + 1 LMP (12 + 1 PCW): HsapDv:0000050
+            9+2 GW / LMP (7 PCW): HsapDv:0000048
+            6 GW / LMP (4 PCW): HsapDv:0000002
+            9 + 2GW (7 + 2 PCW): HsapDv:0000048
+uns:
+    version:
+        corpora_schema_version: 1.0.0
+        corpora_encoding_version: 0.0.1
+    organism_ontology_term_id: NCBITaxon:9606
+    title: Single-cell reconstruction of the early maternal-fetal interface in humans - 10x
+    layer_descriptions:
+        X: normalized, log-transformed
+    contributors:
+        - name: Ni Huang
+          institution: Sanger Institute
+          email: nh3@sanger.ac.uk
+    publication_doi: https://doi.org/10.1038/s41586-018-0698-6
+    project_name: Single-cell reconstruction of the early maternal-fetal interface in humans
+    project_description: >
+        During early human pregnancy the uterine mucosa transforms into the decidua, into which the fetal placenta
+        implants and where placental trophoblast cells intermingle and communicate with maternal cells.
+        Trophoblast-decidual interactions underlie common diseases of pregnancy, including pre-eclampsia and
+        stillbirth. Here we profile the transcriptomes of about 70,000 single cells from first-trimester placentas
+        with matched maternal blood and decidual cells. The cellular composition of human decidua reveals subsets
+        of perivascular and stromal cells that are located in distinct decidual layers. There are three major subsets
+        of decidual natural killer cells that have distinctive immunomodulatory and chemokine profiles. We develop a
+        repository of ligand-receptor complexes and a statistical tool to predict the cell-type specificity of
+        cell-cell communication via these molecular interactions. Our data identify many regulatory interactions that
+        prevent harmful innate or adaptive immune responses in this environment. Our single-cell atlas of the
+        maternal-fetal interface reveals the cellular organization of the decidua and placenta, and the interactions
+        that are critical for placentation and reproductive success.
+    project_links:
+        - link_name: ArrayExpress
+          link_url: https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6701/
+          link_type: RAW_DATA
+        - link_name: Human Cell Atlas
+          link_url: https://data.humancellatlas.org/explore/projects/f83165c5-e2ea-4d15-a5cf-33f3550bffde
+          link_type: RAW_DATA
+        - link_name: Nature
+          link_url: https://www.nature.com/articles/s41586-018-0698-6
+          link_type: SUMMARY
