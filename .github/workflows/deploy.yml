@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - tsmith/psycopg_fix
 
 env:
   DEPLOYMENT_STAGE: "dev"
