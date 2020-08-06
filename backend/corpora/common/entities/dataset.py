@@ -95,3 +95,7 @@ class Dataset(Entity):
             if len(contributor.datasets) == 1:
                 self.db.delete(contributor)
         super().delete()
+
+
+    def __repr__(self):
+        return f"<Dataset({self.id})>"

@@ -10,7 +10,7 @@ db/new_migration:
 
 db/connect:
 	$(eval DATABASE_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | fromjson.database_uri'))
-	psql --dbname $(DATABASE_URI)
+	psql --dbname=$(DATABASE_URI)
 
 db/download:
     # Download the database to corpora_dev-<date>.sqlc

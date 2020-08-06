@@ -151,3 +151,6 @@ class Project(Entity):
             dataset["preprint_doi"] = dict(title=dataset.pop("preprint_doi"))
             dataset["publication_doi"] = dict(title=dataset.pop("publication_doi"))
         return result
+
+    def __repr__(self):
+        return f"<Project({self.id}, {self.status})>"
