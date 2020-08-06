@@ -1,7 +1,7 @@
 import React, { FC, useState } from "react";
-import { COOKIE_KEYS } from "src/common/constants/cookieKeys";
-import { getCookie } from "src/common/cookies/getCookies";
-import { BOOLEAN, setCookie } from "src/common/cookies/setCookies";
+import { LOCAL_STORAGE_KEYS } from "src/common/constants/localStorageKeys";
+import { get } from "src/common/localStorage/get";
+import { BOOLEAN, set } from "src/common/localStorage/set";
 import { ButtonWrapper, Link, NoButton, OKButton, Wrapper } from "./style";
 
 const TOS_LINK = "https://cellxgene.cziscience.com/static/deploy/tos.html";
@@ -14,12 +14,12 @@ const CookieBanner: FC = () => {
   if (isHidden) return null;
 
   function handleOKClick() {
-    setCookie(COOKIE_KEYS.COOKIES_ACCEPTED, BOOLEAN.TRUE);
+    set(LOCAL_STORAGE_KEYS.COOKIE_DECISION, BOOLEAN.TRUE);
     setIsHidden(true);
   }
 
   function handleNoClick() {
-    setCookie(COOKIE_KEYS.COOKIES_ACCEPTED, BOOLEAN.FALSE);
+    set(LOCAL_STORAGE_KEYS.COOKIE_DECISION, BOOLEAN.FALSE);
     setIsHidden(true);
   }
 
@@ -44,7 +44,7 @@ const CookieBanner: FC = () => {
 };
 
 function getHasClickedOnBanner() {
-  return getCookie(COOKIE_KEYS.COOKIES_ACCEPTED) !== "";
+  return get(LOCAL_STORAGE_KEYS.COOKIE_DECISION) !== null;
 }
 
 export default CookieBanner;
