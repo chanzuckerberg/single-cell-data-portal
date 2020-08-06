@@ -18,7 +18,6 @@ export const Wrapper = styled.div`
   border-radius: 4px;
   padding: 32px;
   box-shadow: 0px 5px 9px 1px rgba(169, 169, 169, 0.75);
-
   letter-spacing: 0.15px;
 `;
 
@@ -36,7 +35,6 @@ const sharedButtonStyle = css`
   border-radius: 3px;
   font-weight: 600;
   line-height: 16px;
-  align-items: center;
   text-align: center;
   padding: 7px;
   border-style: none;
@@ -49,24 +47,15 @@ const BUTTON_BLUE = "#0076dc";
 export const OKButton = styled.button`
   ${sharedButtonStyle}
   background-color: ${BUTTON_BLUE};
-  border-radius: 3px;
-  font-weight: 600;
-  line-height: 16px;
-  align-items: center;
-  text-align: center;
-  color: #ffffff;
-  padding: 7px;
-  border-style: none;
-  width: 150px;
-  height: 30px;
-  cursor: pointer;
+  color: white;
   margin-right: 10px;
+  width: 150px;
 `;
 
 export const NoButton = styled.button`
   ${sharedButtonStyle}
-  width: 90px;
   background-color: white;
-  color: ${BUTTON_BLUE};
   border: 1px solid ${BUTTON_BLUE};
+  color: ${BUTTON_BLUE};
+  width: 90px;
 `;

@@ -9,7 +9,7 @@ const PRIVACY_LINK =
   "https://cellxgene.cziscience.com/static/deploy/privacy.html";
 
 const CookieBanner: FC = () => {
-  const [isHidden, setIsHidden] = useState(getHasClickedOnBanner());
+  const [isHidden, setIsHidden] = useState(hasClickedOnBanner());
 
   if (isHidden) return null;
 
@@ -43,7 +43,7 @@ const CookieBanner: FC = () => {
   );
 };
 
-function getHasClickedOnBanner() {
+function hasClickedOnBanner() {
   return get(LOCAL_STORAGE_KEYS.COOKIE_DECISION) !== null;
 }
 
