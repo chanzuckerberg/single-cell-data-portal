@@ -100,3 +100,10 @@ class Entity:
             row = db_table(**_columns)
             db_objs.append(row)
         return db_objs
+
+    def delete(self):
+        """
+        Delete an object from the database.
+        """
+        self.db.delete(self.db_object)
+        self.db.commit()
