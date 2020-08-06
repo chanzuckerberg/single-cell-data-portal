@@ -92,7 +92,7 @@ class TestDataset(unittest.TestCase):
         dataset = Dataset.list()
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
 
-    def test__cascade_delete_project_with_dataset__ok(self):
+    def test__cascade_delete_dataset__ok(self):
         # Create the dataset
         test_dataset = Dataset.create(
             **BogusDatasetParams.get(
@@ -130,9 +130,13 @@ class TestDataset(unittest.TestCase):
 
         with self.subTest("Verify Deletion"):
             expected_deleted = (
-                test_dataset_ids + test_artifact_ids + test_deployed_directory_ids + test_contributor_bob_id
+                test_dataset_ids
+                + test_artifact_ids
+                + test_deployed_directory_ids
+                + test_contributor_bob_id
+                + test_contributor_id
             )
-            expected_exists = test_contributor_id + test_project_ids
+            expected_exists = test_project_ids
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
 
