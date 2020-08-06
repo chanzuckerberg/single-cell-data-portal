@@ -1,4 +1,7 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
+import { COOKIE_KEYS } from "src/common/constants/cookieKeys";
+import { getCookie } from "src/common/cookies/getCookies";
+import { BOOLEAN, setCookie } from "src/common/cookies/setCookies";
 import { ButtonWrapper, Link, NoButton, OKButton, Wrapper } from "./style";
 
 const TOS_LINK = "https://cellxgene.cziscience.com/static/deploy/tos.html";
@@ -6,6 +9,20 @@ const PRIVACY_LINK =
   "https://cellxgene.cziscience.com/static/deploy/privacy.html";
 
 const CookieBanner: FC = () => {
+  const [isHidden, setIsHidden] = useState(getHasClickedOnBanner());
+
+  if (isHidden) return null;
+
+  function handleOKClick() {
+    setCookie(COOKIE_KEYS.COOKIES_ACCEPTED, BOOLEAN.TRUE);
+    setIsHidden(true);
+  }
+
+  function handleNoClick() {
+    setCookie(COOKIE_KEYS.COOKIES_ACCEPTED, BOOLEAN.FALSE);
+    setIsHidden(true);
+  }
+
   return (
     <Wrapper>
       By using this site, you are agreeing to our{" "}
@@ -19,11 +36,15 @@ const CookieBanner: FC = () => {
       </Link>
       .
       <ButtonWrapper>
-        <OKButton>I&lsquo;m OK with cookies</OKButton>
-        <NoButton>No thanks</NoButton>
+        <OKButton onClick={handleOKClick}>I&lsquo;m OK with cookies</OKButton>
+        <NoButton onClick={handleNoClick}>No thanks</NoButton>
       </ButtonWrapper>
     </Wrapper>
   );
 };
+
+function getHasClickedOnBanner() {
+  return getCookie(COOKIE_KEYS.COOKIES_ACCEPTED) !== "";
+}
 
 export default CookieBanner;
