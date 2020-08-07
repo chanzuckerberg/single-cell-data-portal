@@ -1,7 +1,3 @@
-export function get(key: string) {
-  try {
-    return window?.localStorage?.getItem(key);
-  } catch (e) {
-    return null;
-  }
+export function get(key: string): string | null {
+  return window?.localStorage?.getItem(key) || null;
 }
