@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
+import CookieBanner from "src/components/CookieBanner";
 import { API_URL } from "src/globals";
 import { Project } from "../common/entities";
 import Layout from "../components/Layout";
@@ -16,6 +17,7 @@ const Index: FC = () => {
     <Layout>
       <SEO title="Explore Data" />
       {projects ? <ProjectsList projects={projects} /> : "Loading projects..."}
+      <CookieBanner />
     </Layout>
   );
 };
