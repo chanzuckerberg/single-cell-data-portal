@@ -24,9 +24,15 @@ class TestAuthorizer(unittest.TestCase):
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
+        cls.auth_config = dict(
+            api_base_url="https://czi-single-cell.auth0.com",
+            audience=cls.auth0_secret["audience"],
+            client_id=cls.auth0_secret["client_id"],
+        )
+
     def test_postive(self):
         token = self.get_auth_token()
-        assert_authorized({"Authorization": f"bearer {token['access_token']}"})
+        assert_authorized({"Authorization": f"bearer {token['access_token']}"}, self.auth_config)
 
     def test_not_bearer(self):
         sample_non_bearer_auth_token = {
@@ -35,34 +41,34 @@ class TestAuthorizer(unittest.TestCase):
             "Accept": "application/json",
         }
         with self.assertRaises(UnauthorizedError):
-            assert_authorized(sample_non_bearer_auth_token)
+            assert_authorized(sample_non_bearer_auth_token, self.auth_config)
 
     def test_invalid_token(self):
         token = self.get_auth_token()
         header, msg, hash = token["access_token"].split(".")
         with self.subTest("short hash"):
             with self.assertRaises(UnauthorizedError):
-                assert_authorized({"Authorization": f"bearer {token['access_token'][:-1]}"})
+                assert_authorized({"Authorization": f"bearer {token['access_token'][:-1]}"}, self.auth_config)
 
         with self.subTest("wrong hash"):
             with self.assertRaises(UnauthorizedError):
                 _token = ".".join([header, msg, "0" * len(hash)])
-                assert_authorized({"Authorization": f"bearer {_token}"})
+                assert_authorized({"Authorization": f"bearer {_token}"}, self.auth_config)
 
         with self.subTest("wrong header"):
             with self.assertRaises(UnauthorizedError):
                 _token = ".".join(["0" * len(header), msg, hash])
-                assert_authorized({"Authorization": f"bearer {_token}"})
+                assert_authorized({"Authorization": f"bearer {_token}"}, self.auth_config)
 
         with self.subTest("short header"):
             with self.assertRaises(UnauthorizedError):
                 _token = token["access_token"][1:]
-                assert_authorized({"Authorization": f"bearer {_token}"})
+                assert_authorized({"Authorization": f"bearer {_token}"}, self.auth_config)
 
         with self.subTest("wrong message"):
             with self.assertRaises(UnauthorizedError):
                 _token = ".".join([header, "0" * len(msg), hash])
-                assert_authorized({"Authorization": f"bearer {_token}"})
+                assert_authorized({"Authorization": f"bearer {_token}"}, self.auth_config)
 
     def get_auth_token(self) -> dict:
         return requests.post(

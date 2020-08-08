@@ -1,36 +1,46 @@
-import os
 from functools import lru_cache
-
 import requests
+import json
+import os
 from chalice import UnauthorizedError
 from jose import jwt, JWTError
-
-USERINFO_ENDPOINT = "https://czi-single-cell.auth0.com/userinfo"
-
-AUTH0_DOMAIN = "czi-single-cell.auth0.com"
-API_AUDIENCE = f"https://api.{os.environ['DEPLOYMENT_STAGE']}.corpora.cziscience.com"
-ALGORITHMS = ["RS256"]
+from .utils.aws_secret import AwsSecret
 
 
-def assert_authorized(headers: dict) -> dict:
+def get_oauth_config():
+    """Return oauth configuration from aws secret"""
+    deployment = os.environ["DEPLOYMENT_STAGE"]
+    if deployment == "test":
+        # if running locally, the callback_base_url must be the localhost
+        secret_name = "corpora/backend/dev/auth0-secret"
+        config = json.loads(AwsSecret(secret_name).value)
+        config["callback_base_url"] = "http://localhost:5000"
+    else:
+        secret_name = f"corpora/backend/{deployment}/auth0-secret"
+        config = json.loads(AwsSecret(secret_name).value)
+    return config
+
+
+def assert_authorized_token(token: str, auth_config: dict) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
-    :param headers: The http headers from the request.
+    :param token: The token
     :return: The decoded access token and userinfo.
     """
-
-    token = get_token_auth_header(headers)
     try:
         unverified_header = jwt.get_unverified_header(token)
     except JWTError:
         raise UnauthorizedError(msg="Unable to parse authentication token.")
-    public_keys = get_public_keys(AUTH0_DOMAIN)
+    auth0_domain = auth_config["api_base_url"]
+    audience = auth_config["audience"]
+    public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
+        algorithms = ["RS256"]
         try:
-            payload = jwt.decode(
-                token, public_key, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer=f"https://{AUTH0_DOMAIN}/"
-            )
+            if not auth0_domain.endswith("/"):
+                auth0_domain += "/"
+            payload = jwt.decode(token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain)
         except jwt.ExpiredSignatureError:
             raise UnauthorizedError(msg="token is expired")
         except jwt.JWTClaimsError:
@@ -38,15 +48,20 @@ def assert_authorized(headers: dict) -> dict:
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
-        if os.environ["DEPLOYMENT_STAGE"] != "test":
-            """
-            In the environments we are using an Auth0 machine to machine access token which does not
-            connect to a user, therefore there is no userinfo to get.
-            """
-            payload["userinfo"] = get_userinfo(token)
-
         return payload
+
     raise UnauthorizedError(msg="Unable to find appropriate key")
+
+
+def assert_authorized(headers: dict, auth_config: dict) -> dict:
+    """
+    Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
+    :param headers: The http headers from the request.
+    :return: The decoded access token and userinfo.
+    """
+
+    token = get_token_auth_header(headers)
+    return assert_authorized_token(token, auth_config)
 
 
 def get_token_auth_header(headers: dict) -> str:
@@ -69,11 +84,20 @@ def get_token_auth_header(headers: dict) -> str:
     return token
 
 
-def get_userinfo(token):
-    resp = requests.post(USERINFO_ENDPOINT, headers={"Authorization": token})
-    assert not resp.ok
-    userinfo = resp.json()
-    assert not userinfo["email_verified"]
+def get_userinfo(token: str, auth_config: dict) -> dict:
+    if token is None:
+        userinfo = dict(is_authenticated=False)
+        return userinfo
+
+    payload = assert_authorized_token(token, auth_config)
+
+    userinfo = dict(
+        is_authenticated=True,
+        id=payload.get("sub"),
+        name=payload.get("name"),
+        email=payload.get("email"),
+        email_verified=payload.get("email_verified"),
+    )
     return userinfo
 
 
@@ -83,8 +107,7 @@ def get_openid_config(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: the openid configuration
     """
-
-    res = requests.get("https://{op}/.well-known/openid-configuration".format(op=openid_provider))
+    res = requests.get("{op}/.well-known/openid-configuration".format(op=openid_provider))
     res.raise_for_status()
     return res.json()
 
