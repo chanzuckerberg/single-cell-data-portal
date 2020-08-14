@@ -13,7 +13,7 @@
     "gatsby-plugin-manifest": "^2.3.3",
     "gatsby-plugin-offline": "^3.1.2",
     "gatsby-plugin-react-helmet": "^3.2.2",
-    "gatsby-plugin-sharp": "^2.5.4",
+    "gatsby-plugin-sharp": "^2.6.27",
     "gatsby-plugin-styled-components": "^3.3.8",
     "gatsby-plugin-theme-ui": "^0.3.0",
     "gatsby-plugin-typescript": "^2.4.8",
