@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Dataset as IDataset, Project as IProject } from "src/common/entities";
 import MoreInformation from "./components/MoreInformation";
-import ViewDatasetAssets from "./components/ViewDatasetAssets";
+import ViewDataset from "./components/ViewDataset";
 import { Name, Wrapper } from "./style";
 
 interface Props {
@@ -13,7 +13,7 @@ const Dataset: FC<Props> = ({ dataset, links }) => {
   return (
     <Wrapper>
       <Name>{dataset.name}</Name>
-      <ViewDatasetAssets datasetAssets={dataset.dataset_assets} />
+      <ViewDataset deployments={dataset.dataset_deployments} />
       <MoreInformation links={links} />
     </Wrapper>
   );

@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
+import { PROJECTS } from "src/common/fixtures/projects";
 import CookieBanner from "src/components/CookieBanner";
 import { API_URL } from "src/globals";
 import { Project } from "../common/entities";
@@ -42,7 +43,10 @@ async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
     return memo;
   }, [] as Project[]);
 
-  setProjects(allProjects);
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  setProjects([...allProjects, ...PROJECTS]);
 }
 
 async function fetchProject(id: string): Promise<Project> {
