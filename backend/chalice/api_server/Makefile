@@ -31,7 +31,6 @@ destroy:
 .PHONY: deploy
 deploy: package
 	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
-	make upload-deployed
 
 .PHONY: ci-deploy
 ci-deploy: retrieve-deployed
