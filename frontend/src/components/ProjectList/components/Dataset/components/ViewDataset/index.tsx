@@ -8,6 +8,8 @@ interface Props {
 }
 
 const ViewDataset: FC<Props> = ({ deployments }) => {
+  // (thuang): Temp
+  // Currently BE only returns 1 Remix cellxgene link
   const deployment = deployments[0];
 
   return (
@@ -18,7 +20,7 @@ const ViewDataset: FC<Props> = ({ deployments }) => {
         target="_blank"
         rel="noopener"
       >
-        Remix
+        View in cellxgene
         <br />
       </StyledAnchor>
     </Wrapper>

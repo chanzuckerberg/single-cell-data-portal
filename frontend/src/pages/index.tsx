@@ -1,23 +1,36 @@
 import React, { FC, useEffect, useState } from "react";
-import { PROJECTS } from "src/common/fixtures/projects";
 import CookieBanner from "src/components/CookieBanner";
+import ProjectsList from "src/components/ProjectList";
 import { API_URL } from "src/globals";
 import { Project } from "../common/entities";
 import Layout from "../components/Layout";
-import ProjectsList from "../components/ProjectList";
 import SEO from "../components/seo";
 
-const Index: FC = () => {
+const Content: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchProjects(setProjects);
+    fetchProjects({
+      setIsLoading,
+      setProjects,
+    });
   }, []);
 
+  if (isLoading) return <div>Loading projects...</div>;
+
+  return projects ? (
+    <ProjectsList projects={projects} />
+  ) : (
+    <div>Could not find any projects. Please try again!</div>
+  );
+};
+
+const Index: FC = () => {
   return (
     <Layout>
       <SEO title="Explore Data" />
-      {projects ? <ProjectsList projects={projects} /> : "Loading projects..."}
+      <Content />
       <CookieBanner />
     </Layout>
   );
@@ -27,26 +40,36 @@ interface ProjectResponse {
   id: string;
 }
 
-async function fetchProjects(setProjects: (allProjects: Project[]) => void) {
-  const response = await (await fetch(`${API_URL}/v1/project`)).json();
-  const projectIds: string[] = response.projects.map(
-    (project: ProjectResponse) => project.id
-  );
+interface FetchProjectsArgs {
+  setProjects: (allProjects: Project[]) => void;
+  setIsLoading: (state: boolean) => void;
+}
 
-  const results = await Promise.allSettled(projectIds.map(fetchProject));
+async function fetchProjects({ setProjects, setIsLoading }: FetchProjectsArgs) {
+  setIsLoading(true);
 
-  const allProjects = results.reduce((memo, result) => {
-    if (result.status === "fulfilled") {
-      memo.push(result.value);
-    }
+  try {
+    const response = await (await fetch(`${API_URL}/v1/project`)).json();
+    const projectIds: string[] = response.projects.map(
+      (project: ProjectResponse) => project.id
+    );
 
-    return memo;
-  }, [] as Project[]);
+    const results = await Promise.allSettled(projectIds.map(fetchProject));
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  setProjects([...allProjects, ...PROJECTS]);
+    const allProjects = results.reduce((memo, result) => {
+      if (result.status === "fulfilled") {
+        memo.push(result.value);
+      }
+
+      return memo;
+    }, [] as Project[]);
+
+    setProjects(allProjects);
+  } catch (error) {
+    console.error(error);
+  }
+
+  setIsLoading(false);
 }
 
 async function fetchProject(id: string): Promise<Project> {
