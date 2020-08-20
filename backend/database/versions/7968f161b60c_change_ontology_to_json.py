@@ -6,7 +6,6 @@ Create Date: 2020-08-20 08:58:21.531154
 
 """
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 
