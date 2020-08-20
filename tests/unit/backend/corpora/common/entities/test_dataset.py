@@ -25,9 +25,7 @@ class TestDataset(unittest.TestCase):
         dataset = Dataset.get(self.uuid)
         self.assertEqual(dataset.id, self.uuid)
         self.assertEqual(len(dataset.assay), 1)
-        self.assertDictEqual(
-            dataset.assay[0],
-            {"ontology_term_id": "test_obo", "label": "test_assay"})
+        self.assertDictEqual(dataset.assay[0], {"ontology_term_id": "test_obo", "label": "test_assay"})
 
         # Verify Artifact relationship
         self.assertIsInstance(dataset.artifacts[0], DbDatasetArtifact)
