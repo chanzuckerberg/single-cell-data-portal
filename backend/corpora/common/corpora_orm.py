@@ -31,7 +31,7 @@ class TransformingBase(object):
     """
 
     def __iter__(self):
-        return self.to_dict().iteritems()
+        return iter(self.to_dict().items())
 
     def to_dict(self, backref: "Base" = None) -> dict:
         """
