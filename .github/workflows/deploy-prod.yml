@@ -1,9 +1,9 @@
-name: Deploy Staging
+name: Deploy Prod
 
 on:
   push:
     branches:
-      - tsmith/auto-prod
+      - prod
 
 env:
   DEPLOYMENT_STAGE: prod
