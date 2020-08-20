@@ -1,0 +1,54 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - tsmith/auto-prod
+
+env:
+  DEPLOYMENT_STAGE: prod
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get install moreutils
+      - name: Deploy API Server
+        run: make ci-deploy -C backend/chalice/api_server
+      - name: Deploy Cloudfront Invalidator
+        run: make redeploy -C backend/chalice/cloudfront_invalidator
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+      - name: Install Gatsby
+        run: npm install -g gatsby
+      - name: Deploy Frontend
+        run: make deploy -C frontend
