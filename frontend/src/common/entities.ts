@@ -46,8 +46,8 @@ export interface Dataset {
   name: string;
   // source_data_location: string;
   // revision: number;
-  // dataset_deployments: { id: string; environment: string; link: string }[];
-  dataset_assets: DatasetAsset[];
+  dataset_deployments: DatasetDeployment[];
+  // dataset_assets: DatasetAsset[];
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
@@ -71,6 +71,12 @@ export interface DatasetAsset {
   file_name: string;
   type: DATASET_ASSET_TYPE;
   s3_uri: string;
+}
+
+export interface DatasetDeployment {
+  id: string;
+  environment: string;
+  link: string;
 }
 
 // interface Contributor {
