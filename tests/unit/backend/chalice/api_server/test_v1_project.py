@@ -67,8 +67,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "attestation": {"needed": False, "tc_uri": "test_tc_uri"},
             "datasets": [
                 {
-                    "assay": "test_assay",
-                    "assay_ontology": "test_assay_ontology",
+                    "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
                     "contributors": [
                         {
                             "email": "test_email",
@@ -96,25 +95,24 @@ class TestProject(BaseAPITest, unittest.TestCase):
                             "url": "test_url",
                         }
                     ],
-                    "development_stage": "test_development_stage",
-                    "development_stage_ontology": "test_development_stage_ontology",
-                    "disease": "test_disease",
-                    "disease_ontology": "test_disease_ontology",
-                    "ethnicity": "test_ethnicity",
-                    "ethnicity_ontology": "test_ethnicity_ontology",
+                    "development_stage": [{"label": "test_develeopment_stage", "ontology_term_id": "test_obo"}],
+                    "disease": [
+                        {"label": "test_disease", "ontology_term_id": "test_obo"},
+                        {"label": "test_disease2", "ontology_term_id": "test_obp"},
+                        {"label": "test_disease3", "ontology_term_id": "test_obq"},
+                    ],
+                    "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
-                    "organism": "test_organism",
-                    "organism_ontology": "test_organism_ontology",
+                    "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "preprint_doi": {"title": "test_preprint_doi"},
                     "project_id": "test_project_id",
                     "project_status": "LIVE",
                     "publication_doi": {"title": "test_publication_doi"},
                     "revision": 0,
-                    "sex": "test_sex",
+                    "sex": ["test_sex", "test_sex2"],
+                    "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
                     "source_data_location": "test_source_data_location",
-                    "tissue": "test_tissue",
-                    "tissue_ontology": "test_tissue_ontology",
                 }
             ],
             "description": "test_description",
@@ -132,9 +130,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         actual_body = self.remove_timestamps(json.loads(response.body))
-        actual_json_body = json.dumps(actual_body, sort_keys=True)
-        expected_json_body = json.dumps(expected_body)
-        self.assertEqual(actual_json_body, expected_json_body)
+        self.assertDictEqual(actual_body, expected_body)
 
     def test__get_project_uuid__403_not_found(self):
         """Verify the test project exists and the expected fields exist."""
