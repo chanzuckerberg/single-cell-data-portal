@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable sonarjs/no-duplicate-string */
-import { DATASET_ASSET_FORMAT, DATASET_ASSET_TYPE, Project } from "../entities";
+import { DATASET_ASSET_TYPE, Project } from "../entities";
 
 // Dataset URL example:
 // "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/"
@@ -9,40 +9,24 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "krasnow_lab_human_lung_cell_atlas_10x-1-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "krasnow_lab_human_lung_cell_atlas_10x-1-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "krasnow_lab_human_lung_cell_atlas_10x-1-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "krasnow_lab_human_lung_cell_atlas_10x-1-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id: "Krasnow Lab Human Lung Cell Atlas, 10X",
         name: "Krasnow Lab Human Lung Cell Atlas, 10X",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "krasnow_lab_human_lung_cell_atlas_smartseq2-2-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "krasnow_lab_human_lung_cell_atlas_smartseq2-2-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "krasnow_lab_human_lung_cell_atlas_smartseq2-2-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "krasnow_lab_human_lung_cell_atlas_smartseq2-2-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id: "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
@@ -63,20 +47,12 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "human_cell_landscape-3-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "human_cell_landscape-3-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "human_cell_landscape-3-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "human_cell_landscape-3-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id: "Human Cell Landscape",
@@ -97,41 +73,24 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "human_fetal_liver_single_cell_transcriptome-13-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "human_fetal_liver_single_cell_transcriptome-13-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "human_fetal_liver_single_cell_transcriptome-13-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "human_fetal_liver_single_cell_transcriptome-13-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id: "Human fetal liver single cell transcriptome data",
         name: "Human fetal liver single cell transcriptome data",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "cell_atlas_of_thymic_development-14-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "cell_atlas_of_thymic_development-14-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "cell_atlas_of_thymic_development-14-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "cell_atlas_of_thymic_development-14-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -154,24 +113,13 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "cellular_census_of_human_lungs_alveoli_and_parenchyma-15-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id:
-              "cellular_census_of_human_lungs_alveoli_and_parenchyma-15-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name:
-              "cellular_census_of_human_lungs_alveoli_and_parenchyma-15-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "cellular_census_of_human_lungs_alveoli_and_parenchyma-15-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -180,20 +128,12 @@ export const PROJECTS: Project[] = [
           "A cellular census of human lungs identifies novel cell states in health and in asthma - parenchyma",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "cellular_census_of_human_lungs_nasal-16-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "cellular_census_of_human_lungs_nasal-16-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "cellular_census_of_human_lungs_nasal-16-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "cellular_census_of_human_lungs_nasal-16-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -202,20 +142,12 @@ export const PROJECTS: Project[] = [
           "A cellular census of human lungs identifies novel cell states in health and in asthma - nasal",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name: "cellular_census_of_human_lungs_bronchi-17-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id: "cellular_census_of_human_lungs_bronchi-17-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name: "cellular_census_of_human_lungs_bronchi-17-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id: "cellular_census_of_human_lungs_bronchi-17-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -224,24 +156,13 @@ export const PROJECTS: Project[] = [
           "A cellular census of human lungs identifies novel cell states in health and in asthma - bronchi",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_lung-18-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_lung-18-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_lung-18-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_lung-18-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -264,24 +185,13 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_spleen-19-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_spleen-19-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name:
-              "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_spleen-19-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_spleen-19-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -305,24 +215,13 @@ export const PROJECTS: Project[] = [
   {
     datasets: [
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:
@@ -331,24 +230,13 @@ export const PROJECTS: Project[] = [
           "Allergic inflammatory memory in human respiratory epithelial progenitor cells - nasal scrapings",
       },
       {
-        dataset_assets: [
+        dataset_deployments: [
           {
-            file_name:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10-original",
-            format: DATASET_ASSET_FORMAT.CXG,
-            id:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10-original",
-            s3_uri: "abc-original",
-            type: DATASET_ASSET_TYPE.ORIGINAL,
-          },
-          {
-            file_name:
-              "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10-remix",
-            format: DATASET_ASSET_FORMAT.H5AD,
+            environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10-remix",
-            s3_uri: "abc-remix",
-            type: DATASET_ASSET_TYPE.REMIX,
+            link:
+              "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
         id:

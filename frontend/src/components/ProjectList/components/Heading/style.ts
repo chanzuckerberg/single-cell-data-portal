@@ -24,15 +24,14 @@ export const View = styled.div`
   ${fontStyle}
   margin-right: ${LAYOUT.VIEW_MARGIN}%;
   width: ${LAYOUT.VIEW}%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Info = styled.div`
   ${fontStyle}
   width: ${LAYOUT.INFO}%;
-`;
-
-export const QuestionMarkWrapper = styled.span`
-  position: absolute;
 `;
 
 export const QuestionMark = styled.img`
