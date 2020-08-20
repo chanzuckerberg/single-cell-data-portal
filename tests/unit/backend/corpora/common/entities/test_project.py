@@ -38,7 +38,10 @@ class TestProject(unittest.TestCase):
         dataset = project.datasets[0]
         self.assertIsInstance(dataset, DbDataset)
         self.assertEqual(dataset.id, "test_dataset_id")
-        self.assertEqual(dataset.assay, "test_assay")
+        self.assertEqual(len(dataset.assay), 1)
+        self.assertDictEqual(
+            dataset.assay[0],
+            {"ontology_term_id": "test_obo", "label": "test_assay"})
 
         # Verify Link relationship
         self.assertIsInstance(project.links[0], DbProjectLink)
