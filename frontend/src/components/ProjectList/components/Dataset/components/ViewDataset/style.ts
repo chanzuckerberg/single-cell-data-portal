@@ -15,28 +15,16 @@ export const SelectWrapper = styled.div`
   position: relative;
 `;
 
-export const StyledSelect = styled.select`
+export const StyledAnchor = styled.a`
   ${fontStyle}
-  font-size: 12px;
-  font-weight: 600;
-  color: white;
-  background-color: #318ad8;
-  border: none;
-  border-radius: 15px;
+  text-decoration: none;
+  color: #318ad8;
+  background-color: white;
+  border: 1px solid #318ad8;
+  border-radius: 5px;
   appearance: none;
   padding: 0 20px;
   width: 180px;
   height: 30px;
-`;
-
-export const Arrow = styled.p`
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid #ffffff;
-  border-style: none solid solid none;
-  box-sizing: border-box;
-  transform: rotate(45deg);
-  position: absolute;
-  top: calc(50% - 6px);
-  right: 10%;
+  text-align: center;
 `;

@@ -1,16 +1,8 @@
 import React, { FC } from "react";
 import questionMarkSvg from "src/components/ProjectList/components/Heading/questionMark.svg";
-import {
-  Info,
-  Name,
-  QuestionMark,
-  QuestionMarkWrapper,
-  View,
-  Wrapper,
-} from "./style";
+import { Info, Name, QuestionMark, View, Wrapper } from "./style";
 
-const TOOLTIP_MESSAGE =
-  "A minimally harmonized dataset as well as the originally submitted dataset are available for exploration within cellxgene. The harmonized dataset may have metadata labels that have been changed from the original dataset in order to create consistency across the collection of datasets as a whole.";
+const TOOLTIP_MESSAGE = `cellxgene augments datasets with a minimal set of metadata fields designed to enable comparisons across datasets. In cases where these columns conflict with author's metadata, the author's columns are prefixed by "original_"`;
 
 const Heading: FC = () => {
   return (
@@ -18,9 +10,9 @@ const Heading: FC = () => {
       <Name>Name of dataset</Name>
       <View>
         View dataset in cellxgene
-        <QuestionMarkWrapper title={TOOLTIP_MESSAGE}>
+        <span title={TOOLTIP_MESSAGE}>
           <QuestionMark src={questionMarkSvg} alt="question mark" />
-        </QuestionMarkWrapper>
+        </span>
       </View>
       <Info>More information</Info>
     </Wrapper>
