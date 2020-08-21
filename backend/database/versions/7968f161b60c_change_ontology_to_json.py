@@ -75,6 +75,12 @@ def upgrade():
 
 
 def downgrade():
+    """
+    This will cleanly downgrade the _schema_, but it's not possible to losslessly downgrade
+    the _data_. So rather than discard elements in the json arrays, it just stringifies the
+    whole thing. After running this, you'll have a bunch of values that need to be parsed
+    and decisions about which elements to get rid off will need to be made.
+    """
     op.alter_column(table_name="dataset", column_name="organism", type_=String())
     op.add_column("dataset", Column("organism_ontology", String()))
 
