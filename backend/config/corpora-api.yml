@@ -568,37 +568,38 @@ components:
           type: string
         institution:
           type: string
+    ontology_element:
+      type: object
+      properties:
+        ontology_term_id:
+          type: string
+        label:
+          type: string
+    ontology_element_array:
+      type: array
+      items:
+          $ref: '#/components/schemas/ontology_element'
     dataset:
       type: object
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
         assay:
-          type: string
-        assay_ontology:
-          type: string
+          $ref: '#/components/schemas/ontology_element_array'
         tissue:
-          type: string
-        tissue_ontology:
-          type: string
-        disease_state:
-          type: string
-        disease_state_ontology:
-          type: string
+          $ref: '#/components/schemas/ontology_element_array'
+        disease:
+          $ref: '#/components/schemas/ontology_element_array'
         sex:
-          type: string
+          type: array
+          items:
+            type: string
         ethnicity:
-          type: string
-        ethnicity_ontology:
-          type: string
+          $ref: '#/components/schemas/ontology_element_array'
         organism:
-          type: string
-        organism_ontology:
-          type: string
+          $ref: '#/components/schemas/ontology_element'
         development_stage:
-          type: string
-        development_stage_ontology:
-          type: string
+          $ref: '#/components/schemas/ontology_element_array'
         title:
           type: string
         source_data_location:

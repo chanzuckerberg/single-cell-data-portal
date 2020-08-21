@@ -14,6 +14,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -30,7 +31,7 @@ class TransformingBase(object):
     """
 
     def __iter__(self):
-        return self.to_dict().iteritems()
+        return iter(self.to_dict().items())
 
     def to_dict(self, backref: "Base" = None) -> dict:
         """
@@ -237,19 +238,13 @@ class DbDataset(Base):
     id = Column(String, primary_key=True)
     revision = Column(Integer)
     name = Column(String)
-    organism = Column(String)
-    organism_ontology = Column(String)
-    tissue = Column(String)
-    tissue_ontology = Column(String)
-    assay = Column(String)
-    assay_ontology = Column(String)
-    disease = Column(String)
-    disease_ontology = Column(String)
-    sex = Column(String)
-    ethnicity = Column(String)
-    ethnicity_ontology = Column(String)
-    development_stage = Column(String)
-    development_stage_ontology = Column(String)
+    organism = Column(JSONB)
+    tissue = Column(JSONB)
+    assay = Column(JSONB)
+    disease = Column(JSONB)
+    sex = Column(JSONB)
+    ethnicity = Column(JSONB)
+    development_stage = Column(JSONB)
     source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)

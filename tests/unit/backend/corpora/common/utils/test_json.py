@@ -38,10 +38,11 @@ class TestCustomJSONEncoder(unittest.TestCase):
         self._verify_json_encoding(test_enum_value, expected_enum)
 
     def test_base(self):
-        params = dict(id="foo", name="bar")
+        params = dict(id="foo", name=None)
         test_base = DBTest(**params)
         expected_base = json.dumps(params, sort_keys=True)
         self._verify_json_encoding(test_base, expected_base)
+        self.assertDictEqual({k: v for k, v in test_base}, params)
 
     def test_entity(self):
         params = dict(id="foo", name="bar")

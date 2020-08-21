@@ -25,6 +25,8 @@ class BaseAPITest:
         """
 
         def _remove_timestamps(jrb):
+            if not isinstance(jrb, dict):
+                return
             jrb.pop("created_at", None)
             jrb.pop("updated_at", None)
             for value in jrb.values():
