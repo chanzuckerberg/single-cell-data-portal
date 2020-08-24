@@ -76,7 +76,7 @@ export interface DatasetAsset {
 export interface DatasetDeployment {
   id: string;
   environment: string;
-  link: string;
+  url: string;
 }
 
 // interface Contributor {
