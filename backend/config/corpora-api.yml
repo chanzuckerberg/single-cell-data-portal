@@ -561,10 +561,10 @@ components:
     userinfo:
       type: object
       properties:
-        is_authentifacted:
+        is_authenticated:
           type: bool
         id:
-          $ref: "#/components/schemas/project_uuid"
+          $ref: "#/components/schemas/user_uuid"
         name:
           type: string
         email:
