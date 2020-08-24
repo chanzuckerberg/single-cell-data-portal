@@ -13,7 +13,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "krasnow_lab_human_lung_cell_atlas_10x-1-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -25,7 +25,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "krasnow_lab_human_lung_cell_atlas_smartseq2-2-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -51,7 +51,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "human_cell_landscape-3-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -77,7 +77,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "human_fetal_liver_single_cell_transcriptome-13-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -89,7 +89,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "cell_atlas_of_thymic_development-14-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -118,7 +118,7 @@ export const PROJECTS: Project[] = [
             environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "cellular_census_of_human_lungs_alveoli_and_parenchyma-15-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -132,7 +132,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "cellular_census_of_human_lungs_nasal-16-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -146,7 +146,7 @@ export const PROJECTS: Project[] = [
           {
             environment: DATASET_ASSET_TYPE.REMIX,
             id: "cellular_census_of_human_lungs_bronchi-17-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -161,7 +161,7 @@ export const PROJECTS: Project[] = [
             environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_lung-18-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -190,7 +190,7 @@ export const PROJECTS: Project[] = [
             environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "ischaemic_sensitivity_of_human_tissue_by_single_cell_RNA_seq_spleen-19-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -220,7 +220,7 @@ export const PROJECTS: Project[] = [
             environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],
@@ -235,7 +235,7 @@ export const PROJECTS: Project[] = [
             environment: DATASET_ASSET_TYPE.REMIX,
             id:
               "Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10-remix",
-            link:
+            url:
               "https://cellxgene.cziscience.com/d/krasnow_lab_human_lung_cell_atlas_10x-1.cxg/",
           },
         ],

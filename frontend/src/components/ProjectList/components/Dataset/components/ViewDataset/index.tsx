@@ -15,8 +15,8 @@ const ViewDataset: FC<Props> = ({ deployments }) => {
   return (
     <Wrapper>
       <StyledAnchor
-        key={deployment.link}
-        href={deployment.link}
+        key={deployment.url}
+        href={deployment.url}
         target="_blank"
         rel="noopener"
       >

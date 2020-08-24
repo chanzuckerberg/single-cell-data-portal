@@ -578,28 +578,28 @@ components:
     ontology_element_array:
       type: array
       items:
-          $ref: '#/components/schemas/ontology_element'
+        $ref: "#/components/schemas/ontology_element"
     dataset:
       type: object
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
         assay:
-          $ref: '#/components/schemas/ontology_element_array'
+          $ref: "#/components/schemas/ontology_element_array"
         tissue:
-          $ref: '#/components/schemas/ontology_element_array'
+          $ref: "#/components/schemas/ontology_element_array"
         disease:
-          $ref: '#/components/schemas/ontology_element_array'
+          $ref: "#/components/schemas/ontology_element_array"
         sex:
           type: array
           items:
             type: string
         ethnicity:
-          $ref: '#/components/schemas/ontology_element_array'
+          $ref: "#/components/schemas/ontology_element_array"
         organism:
-          $ref: '#/components/schemas/ontology_element'
+          $ref: "#/components/schemas/ontology_element"
         development_stage:
-          $ref: '#/components/schemas/ontology_element_array'
+          $ref: "#/components/schemas/ontology_element_array"
         title:
           type: string
         source_data_location:
@@ -615,7 +615,7 @@ components:
                 type: string
               environment:
                 type: string
-              link:
+              url:
                 type: string
         dataset_assets:
           type: array
