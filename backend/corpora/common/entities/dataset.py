@@ -96,6 +96,5 @@ class Dataset(Entity):
                 self.db.delete(contributor)
         super().delete()
 
-
     def __repr__(self):
         return f"<Dataset({self.id})>"

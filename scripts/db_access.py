@@ -16,11 +16,10 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from backend.corpora.common.entities import Project, Dataset
 
-os.environ["DEPLOYMENT_STAGE"] = 'dev'  # This can be change to match the stage you are targeting
-os.environ["CORPORA_LOCAL_DEV"] = ''  # This is required to target the postsql db hosted on localhost:5432
+os.environ["DEPLOYMENT_STAGE"] = "dev"  # This can be change to match the stage you are targeting
+os.environ["CORPORA_LOCAL_DEV"] = ""  # This is required to target the postsql db hosted on localhost:5432
 
 
 projects = Project.list()
 print(projects)
 pprint(projects[0].to_dict())
-
