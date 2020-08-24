@@ -70,6 +70,15 @@ class TestDatabase:
             link_type=ProjectLinkType.RAW_DATA.name,
         )
         self.db.session.add(project_link)
+        project_summary_link = DbProjectLink(
+            id="test_project_summary_link_id",
+            project_id="test_project_id",
+            project_status=ProjectStatus.LIVE.name,
+            link_name="test_summary_link_name",
+            link_url="test_summary_url",
+            link_type=ProjectLinkType.SUMMARY.name,
+        )
+        self.db.session.add(project_summary_link)
         self.db.session.commit()
 
     def _create_test_datasets(self):
