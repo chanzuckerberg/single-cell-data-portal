@@ -544,7 +544,7 @@ components:
                 type: string
               type:
                 type: string
-                enum: [PROTOCOL, RAW_DATA, OTHER]
+                enum: [PROTOCOL, RAW_DATA, SUMMARY, OTHER]
         attestation:
           type: object
           properties:

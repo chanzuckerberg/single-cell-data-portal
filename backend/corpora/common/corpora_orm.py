@@ -122,11 +122,13 @@ class ProjectLinkType(enum.Enum):
 
     PROTOCOL - A link to a sequencing protocol.
     RAW_DATA - A link to a raw data repository.
+    SUMMARY - The "summary" link cellxgene should display.
     OTHER - Other.
     """
 
     PROTOCOL = "Protocol"
     RAW_DATA = "Raw data"
+    SUMMARY = "Summary"
     OTHER = "Other"
 
 
