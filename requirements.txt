@@ -15,6 +15,6 @@ pandas
 PyMySQL==0.9.3
 pytest
 requests>=2.22.0
-s3fs
+s3fs==0.4.2
 scanpy
 -r ./backend/chalice/api_server/requirements.txt
