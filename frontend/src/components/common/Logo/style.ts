@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 export const Logo = styled(Image)`
-  width: ${({ size = 35 }: LogoProps) => `${size}px`};
+  width: ${({ size = 200 }: LogoProps) => `${size}px`};
   height: 35px;
 `;
 
