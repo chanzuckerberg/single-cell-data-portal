@@ -33,8 +33,11 @@ module.exports = {
     },
   ],
   siteMetadata: {
-    author: `@gatsbyjs`,
-    description: `Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.`,
-    title: `data.humancellatlas.org`,
+    author: `Chan Zuckerberg Initiative`,
+    description: `
+    The cellxgene data portal is a repository of public, explorable single-cell datasets.
+    If you have a public dataset which you would like hosted for visualization on this site, with a link to embed on your own site or manuscript, please drop us a note at cellxgene@chanzuckerberg.com.
+    `,
+    title: `cellxgene`,
   },
 };
