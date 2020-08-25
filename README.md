@@ -25,7 +25,7 @@ well-labeled repository of interoperable datasets.
 |------|-------------|--------|
 |`DEPLOYMENT_STAGE`|Specifies an app deployment stage for tasks such as deployments and functional tests.|`dev`, `staging`, `prod`|
 |`AWS_PROFILE`|Specifies the profile used to interact with AWS resources via awscli.|`single-cell-dev`, `single-cell-prod`|
-|`CORPORA_LOCAL_DEV`|If this variable is set to any value, the Corpora app will operate in local development mode.|Any|
+|`CORPORA_LOCAL_DEV`|If this variable is set to any value, the Corpora app will look for the database on localhost:5432|Any|
 
 ### Commands
 | Command | Description | Notes |
@@ -45,8 +45,12 @@ well-labeled repository of interoperable datasets.
 1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
 
-
 ### Running unittests
 1. Set `AWS_PROFILE`
-1. Build the chalice app for the api-server `$ make package -C ./backend/chalice/api_server`
 1. Run the tests `$ make unit-test`
+
+### Running functional tests
+1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
+1. Run `make local-database` to setup and populate a locally hosted database.
+1. Run `make local-backend` to setup the api on a locally.
+1. In another terminal run `make functional-test`

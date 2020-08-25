@@ -4,7 +4,7 @@ import unittest
 
 import requests
 
-API_URL = {"dev": "https://api.dev.corpora.cziscience.com", "test": "http://localhost:3000"}
+API_URL = {"dev": "https://api.dev.corpora.cziscience.com", "test": "http://localhost:5000"}
 
 
 class TestApi(unittest.TestCase):
