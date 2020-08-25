@@ -13,7 +13,7 @@ API_URL = {
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
+        cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
     def setUp(self):
         self.api = API_URL.get(self.deployment_stage)
