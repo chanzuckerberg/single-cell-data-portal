@@ -1,27 +1,11 @@
 from functools import lru_cache
 import requests
-import json
-import os
 from chalice import UnauthorizedError
 from jose import jwt, JWTError
-from .utils.aws_secret import AwsSecret
+from .corpora_config import CorporaAuthConfig
 
 
-def get_oauth_config():
-    """Return oauth configuration from aws secret"""
-    deployment = os.environ["DEPLOYMENT_STAGE"]
-    if deployment == "test":
-        # if running locally, the callback_base_url must be the localhost
-        secret_name = "corpora/backend/dev/auth0-secret"
-        config = json.loads(AwsSecret(secret_name).value)
-        config["callback_base_url"] = "http://localhost:5000"
-    else:
-        secret_name = f"corpora/backend/{deployment}/auth0-secret"
-        config = json.loads(AwsSecret(secret_name).value)
-    return config
-
-
-def assert_authorized_token(token: str, auth_config: dict) -> dict:
+def assert_authorized_token(token: str) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param token: The token
@@ -31,8 +15,9 @@ def assert_authorized_token(token: str, auth_config: dict) -> dict:
         unverified_header = jwt.get_unverified_header(token)
     except JWTError:
         raise UnauthorizedError(msg="Unable to parse authentication token.")
-    auth0_domain = auth_config["api_base_url"]
-    audience = auth_config["audience"]
+    auth_config = CorporaAuthConfig()
+    auth0_domain = auth_config.api_base_url
+    audience = auth_config.audience
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
@@ -53,7 +38,7 @@ def assert_authorized_token(token: str, auth_config: dict) -> dict:
     raise UnauthorizedError(msg="Unable to find appropriate key")
 
 
-def assert_authorized(headers: dict, auth_config: dict) -> dict:
+def assert_authorized(headers: dict) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param headers: The http headers from the request.
@@ -61,7 +46,7 @@ def assert_authorized(headers: dict, auth_config: dict) -> dict:
     """
 
     token = get_token_auth_header(headers)
-    return assert_authorized_token(token, auth_config)
+    return assert_authorized_token(token)
 
 
 def get_token_auth_header(headers: dict) -> str:
@@ -84,12 +69,12 @@ def get_token_auth_header(headers: dict) -> str:
     return token
 
 
-def get_userinfo(token: str, auth_config: dict) -> dict:
+def get_userinfo(token: str) -> dict:
     if token is None:
         userinfo = dict(is_authenticated=False)
         return userinfo
 
-    payload = assert_authorized_token(token, auth_config)
+    payload = assert_authorized_token(token)
 
     userinfo = dict(
         is_authenticated=True,

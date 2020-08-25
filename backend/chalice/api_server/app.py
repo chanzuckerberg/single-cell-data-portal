@@ -14,9 +14,10 @@ from connexion import FlaskApi, ProblemException, problem
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from corpora.common.authorizer import assert_authorized_token, get_oauth_config
+from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws_secret import AwsSecret
+from corpora.common.corpora_config import CorporaAuthConfig
 
 cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
@@ -30,9 +31,8 @@ def requires_auth():
     def decorate(func):
         @wraps(func)
         def call(*args, **kwargs):
-            config = get_oauth_config()
-            token = app.current_request.cookies.get(config["cookie_name"])
-            assert_authorized_token(token, config)
+            token = app.current_request.cookies.get(CorporaAuthConfig.cookie_name)
+            assert_authorized_token(token)
             return func(*args, **kwargs)
 
         return call
