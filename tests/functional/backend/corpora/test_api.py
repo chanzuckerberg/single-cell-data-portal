@@ -4,10 +4,7 @@ import unittest
 
 import requests
 
-API_URL = {
-    "dev": "https://api.dev.corpora.cziscience.com",
-    "test": "http://localhost:3000"
-}
+API_URL = {"dev": "https://api.dev.corpora.cziscience.com", "test": "http://localhost:3000"}
 
 
 class TestApi(unittest.TestCase):
@@ -35,6 +32,6 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
 
-        for project in data['projects']:
+        for project in data["projects"]:
             self.assertIsInstance(project["id"], str)
             self.assertIsInstance(project["created_at"], float)
