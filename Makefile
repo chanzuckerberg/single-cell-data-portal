@@ -22,6 +22,23 @@ clean_test_db:
 	-docker stop test_db
 	-docker rm test_db
 
+.PHONY: local-server
+local-server: local-backend local-frontend
+
 .PHONY: functional-test
 functional-test:
 	python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose
+
+.PHONY: local-database
+local-database: clean_test_db
+	docker run -d -p 5432:5432 --name test_db -e POSTGRES_PASSWORD=test_pw postgres
+	python ./scripts/populate_db.py
+
+
+.PHONY: local-backend
+local-backend: local-database
+	$(MAKE) local-server -C ./backend/chalice/api_server DEPLOYMENT_STAGE=test
+
+.PHONY: local-frontend
+local-frontend:
+	$(MAKE) local-server -C ./frontend DEPLOYMENT_STAGE=test
