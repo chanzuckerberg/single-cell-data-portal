@@ -88,7 +88,13 @@ def create_adata():
 
     umap = pd.read_csv("epi_cells_umap.txt", sep="\t", header=0, skiprows=[1], index_col=0)
     umap = umap.reindex(X.index)
-    metadata = pd.read_csv("epithelial_metadata_alexandria.txt", sep="\t", header=0, index_col=0, skiprows=[1],)
+    metadata = pd.read_csv(
+        "epithelial_metadata_alexandria.txt",
+        sep="\t",
+        header=0,
+        index_col=0,
+        skiprows=[1],
+    )
     metadata = metadata.reindex(X.index)
 
     metadata = metadata.drop(columns=["CellID"])  # This is already the index

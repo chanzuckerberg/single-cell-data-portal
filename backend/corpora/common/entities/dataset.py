@@ -57,7 +57,9 @@ class Dataset(Entity):
             publication_doi=publication_doi,
             artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key)),
             deployment_directories=cls._create_sub_objects(
-                deployment_directories, DbDeploymentDirectory, add_columns=dict(dataset_id=primary_key),
+                deployment_directories,
+                DbDeploymentDirectory,
+                add_columns=dict(dataset_id=primary_key),
             ),
             **kwargs,
         )
