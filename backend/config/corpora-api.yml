@@ -522,6 +522,8 @@ paths:
 
   /v1/userinfo:
     get:
+      security:
+        - cookieAuth: []
       tags:
         - authentication
       summary: retrieve user information if the user is logged in
@@ -778,3 +780,8 @@ components:
     auth0:
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
+      x-tokenInfoFunc: corpora.lambdas.api.v1.authentication.logout
+      cookieAuth:
+        type: apiKey
+        in: cookie
+        name: cxguser
