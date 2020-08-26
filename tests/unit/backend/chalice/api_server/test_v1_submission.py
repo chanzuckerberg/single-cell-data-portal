@@ -41,7 +41,11 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "datasets": [],
             "description": "",
             "links": [],
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
+            "owner": {
+                "email": "test_email",
+                "id": "test_user_id",
+                "name": "test_user",
+            },  # noqa
             "processing_state": "IN_VALIDATION",
             "s3_bucket_key": "",
             "validation_state": "NOT_VALIDATED",

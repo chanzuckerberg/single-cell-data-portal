@@ -13,7 +13,7 @@ from .utils.math_utils import sizeof_formatted
 
 
 class DatasetValidator:
-    """ Validates a dataset file that has been uploaded by a submitted to ensure that the correct required metadata
+    """Validates a dataset file that has been uploaded by a submitted to ensure that the correct required metadata
     has been inputted in the expected locations of the file (based on file type) and ensures that no PII exists in
     the dataset file."""
 

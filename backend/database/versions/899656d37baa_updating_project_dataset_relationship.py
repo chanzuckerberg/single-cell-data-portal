@@ -31,7 +31,11 @@ def upgrade():
     op.add_column("dataset", Column("project_id", String(), nullable=True))
     op.add_column("dataset", Column("project_status", String(), nullable=True))
     op.create_foreign_key(
-        "fk_project", "dataset", "project", ["project_id", "project_status"], ["id", "status"],
+        "fk_project",
+        "dataset",
+        "project",
+        ["project_id", "project_status"],
+        ["id", "status"],
     )
 
     # Drop the ProjectDataset table
@@ -58,10 +62,18 @@ def downgrade():
     )
 
     op.create_foreign_key(
-        "fk_project", "project_dataset", "project", ["project_id", "project_status"], ["id", "status"],
+        "fk_project",
+        "project_dataset",
+        "project",
+        ["project_id", "project_status"],
+        ["id", "status"],
     )
     op.create_foreign_key(
-        "fk_dataset_id", "project_dataset", "dataset", ["dataset_id"], ["id"],
+        "fk_dataset_id",
+        "project_dataset",
+        "dataset",
+        ["dataset_id"],
+        ["id"],
     )
     op.create_table(
         "project_dataset",

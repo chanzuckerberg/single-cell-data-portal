@@ -121,7 +121,12 @@ def remix(adata):
 
     development_stage_ontology_map = {}
     for k in tissue_ontology_map:
-        if k.startswith("Adult") or k in ("CordBlood", "Placenta", "ChorionicVillus", "CordBloodCD34P",):
+        if k.startswith("Adult") or k in (
+            "CordBlood",
+            "Placenta",
+            "ChorionicVillus",
+            "CordBloodCD34P",
+        ):
             development_stage_ontology_map[k] = "HsapDv:0000087"
         elif k.startswith("Fetal"):
             development_stage_ontology_map[k] = "HsapDv:0000037"

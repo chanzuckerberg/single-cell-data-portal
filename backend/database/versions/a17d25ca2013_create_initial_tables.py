@@ -55,7 +55,11 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_project_owner", "project", "user", ["owner"], ["id"],
+        "fk_project_owner",
+        "project",
+        "user",
+        ["owner"],
+        ["id"],
     )
 
     # ProjectLink table
@@ -74,7 +78,11 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_project", "project_link", "project", ["project_id", "project_status"], ["id", "status"],
+        "fk_project",
+        "project_link",
+        "project",
+        ["project_id", "project_status"],
+        ["id", "status"],
     )
 
     # Dataset table
@@ -123,7 +131,11 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_dataset_id", "dataset_artifact", "dataset", ["dataset_id"], ["id"],
+        "fk_dataset_id",
+        "dataset_artifact",
+        "dataset",
+        ["dataset_id"],
+        ["id"],
     )
 
     # DatasetDeployment table
@@ -138,7 +150,11 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_dataset_id", "dataset_deployment", "dataset", ["dataset_id"], ["id"],
+        "fk_dataset_id",
+        "dataset_deployment",
+        "dataset",
+        ["dataset_id"],
+        ["id"],
     )
 
     # ProjectDataset table
@@ -153,10 +169,18 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_project", "project_dataset", "project", ["project_id", "project_status"], ["id", "status"],
+        "fk_project",
+        "project_dataset",
+        "project",
+        ["project_id", "project_status"],
+        ["id", "status"],
     )
     op.create_foreign_key(
-        "fk_dataset_id", "project_dataset", "dataset", ["dataset_id"], ["id"],
+        "fk_dataset_id",
+        "project_dataset",
+        "dataset",
+        ["dataset_id"],
+        ["id"],
     )
 
     # Contributor table
@@ -181,10 +205,18 @@ def upgrade():
     )
 
     op.create_foreign_key(
-        "fk_contributor_id", "dataset_contributor", "contributor", ["contributor_id"], ["id"],
+        "fk_contributor_id",
+        "dataset_contributor",
+        "contributor",
+        ["contributor_id"],
+        ["id"],
     )
     op.create_foreign_key(
-        "fk_dataset_id", "dataset_contributor", "dataset", ["dataset_id"], ["id"],
+        "fk_dataset_id",
+        "dataset_contributor",
+        "dataset",
+        ["dataset_id"],
+        ["id"],
     )
 
 

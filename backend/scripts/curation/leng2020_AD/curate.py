@@ -111,7 +111,9 @@ def remix(adata, title: str):
     # Note that we're pulling from raw here. That's where the raw counts that we can sum are
     upgraded_var_index = utils.hgnc.get_upgraded_var_index(adata.var)
     merged_raw_counts = pd.DataFrame.sparse.from_spmatrix(
-        adata.raw.X, index=adata.obs.index, columns=upgraded_var_index,
+        adata.raw.X,
+        index=adata.obs.index,
+        columns=upgraded_var_index,
     ).sum(axis=1, level=0, skipna=False)
 
     # Create the new anndata object with the summed values
