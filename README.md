@@ -51,6 +51,10 @@ well-labeled repository of interoperable datasets.
 
 ### Running functional tests
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
+1. In another terminal run `make functional-test`
+
+### Running local functional tests 
+1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. Run `make local-database` to setup and populate a locally hosted database.
 1. Run `make local-backend` to setup the api on a locally.
 1. In another terminal run `make functional-test`
