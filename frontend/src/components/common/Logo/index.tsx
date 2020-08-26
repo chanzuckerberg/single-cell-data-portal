@@ -1,5 +1,6 @@
 import React, { FC } from "react";
-import { CorporaWrapper, Logo as StyledLogo, LogoWrapper } from "./style";
+import logo from "src/common/images/logo.svg";
+import { Logo as StyledLogo, LogoWrapper } from "./style";
 
 interface Props {
   small?: boolean;
@@ -8,11 +9,7 @@ interface Props {
 export const Logo: FC<Props> = ({ small }) => {
   return (
     <LogoWrapper>
-      <StyledLogo
-        size={small ? 20 : undefined}
-        src="https://chanzuckerberg.com/wp-content/themes/czi/img/logo-minified.svg"
-      />
-      <CorporaWrapper small={small}>Corpora</CorporaWrapper>
+      <StyledLogo size={small ? 100 : undefined} src={String(logo)} />
     </LogoWrapper>
   );
 };

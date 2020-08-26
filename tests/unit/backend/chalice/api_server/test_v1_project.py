@@ -117,7 +117,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             ],
             "description": "test_description",
             "id": "test_project_id",
-            "links": [{"type": "RAW_DATA", "url": "test_url"}],
+            "links": [{"type": "RAW_DATA", "url": "test_url"}, {"type": "SUMMARY", "url": "test_summary_url"}],
             "name": "test_project",
             "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
