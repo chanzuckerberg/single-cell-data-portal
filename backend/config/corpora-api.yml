@@ -522,12 +522,12 @@ paths:
 
   /v1/userinfo:
     get:
-      security:
-        - cookieAuth: []
       tags:
         - authentication
       summary: retrieve user information if the user is logged in
       operationId: corpora.lambdas.api.v1.authentication.userinfo
+      security:
+        - cxguserCookie: []
       responses:
         "200":
           description: OK
@@ -563,16 +563,14 @@ components:
     userinfo:
       type: object
       properties:
-        is_authenticated:
-          type: bool
         id:
           $ref: "#/components/schemas/user_uuid"
         name:
+          description: The user's name
           type: string
         email:
+          description: The user's email
           type: string
-        email_verified:
-          type: bool
     project_uuid:
       description: A unique identifier of a Project.
       type: string
@@ -780,8 +778,10 @@ components:
     auth0:
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
-      x-tokenInfoFunc: corpora.lambdas.api.v1.authentication.logout
-      cookieAuth:
-        type: apiKey
-        in: cookie
-        name: cxguser
+    cxguserCookie:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
+
+
