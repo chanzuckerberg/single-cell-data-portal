@@ -27,4 +27,3 @@ retrieve-vars:
 .PHONY: upload-vars
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
-

@@ -8,11 +8,8 @@ export EXPORT_ENV_VARS_TO_LAMBDA=APP_NAME DEPLOYMENT_STAGE
 export S3_DEPLOYMENT_FILE=s3://org-corpora-$(DEPLOYMENT_STAGE)-infra-$(ACCOUNT_ID)/chalice/$(APP_NAME)_deployed.json
 export LOCAL_DEPLOYED_PATH=.chalice/deployed
 export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
-export VPC_ID=$(shell aws ec2 describe-vpcs | jq -rc '.Vpcs[] | select((.Tags != null) and (.Tags[].Value == "sc-dev")) | .VpcId')
-export PRIVATE_SUBNET_IDS=$(shell aws ec2 describe-subnets | jq -rc '.Subnets[] | select((.Tags != null) and (.VpcId == "$(VPC_ID)") and (.Tags[].Value | contains("sc-$(DEPLOYMENT_STAGE)-private"))) | .SubnetId')
-export PRIVATE_SUBNET_ID_1=$(shell cut -d' ' -f1 <<<"$(PRIVATE_SUBNET_IDS)")
-export PRIVATE_SUBNET_ID_2=$(shell cut -d' ' -f2 <<<"$(PRIVATE_SUBNET_IDS)")
-export PRIVATE_SUBNET_ID_3=$(shell cut -d' ' -f3 <<<"$(PRIVATE_SUBNET_IDS)")
+export VPC_ID=$(shell aws ec2 describe-vpcs | jq -rc '.Vpcs[] | select((.Tags != null) and (.Tags[].Value == "sc-${DEPLOYMENT_STAGE}")) | .VpcId')
+export PRIVATE_SUBNET_IDS=$(shell aws ec2 describe-subnets | jq -rc '[.Subnets[] | select((.Tags != null) and (.VpcId == "$(VPC_ID)") and (.Tags[].Value | contains("sc-$(DEPLOYMENT_STAGE)-private"))) | .SubnetId]')
 export SECURITY_GROUP_ID=$(shell aws ec2 describe-security-groups | jq -rc '.SecurityGroups[] | select(.GroupName == "corpora-api-lambda-$(DEPLOYMENT_STAGE)") | .GroupId')
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
@@ -31,7 +28,6 @@ destroy:
 .PHONY: deploy
 deploy: package
 	chalice deploy --stage $(DEPLOYMENT_STAGE) --api-gateway-stage $(DEPLOYMENT_STAGE)
-	make upload-deployed
 
 .PHONY: ci-deploy
 ci-deploy: retrieve-deployed
@@ -61,9 +57,7 @@ build-chalice-config:
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.env=env.DEPLOYMENT_STAGE config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).tags.service=env.APP_NAME config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).api_gateway_stage=env.DEPLOYMENT_STAGE config.json | sponge config.json
-	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_1] config.json | sponge config.json
-	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_2] config.json | sponge config.json
-	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).subnet_ids+=[env.PRIVATE_SUBNET_ID_3] config.json | sponge config.json
+	cd .chalice; jq --argjson subnets '$(PRIVATE_SUBNET_IDS)' '.stages.$(DEPLOYMENT_STAGE).subnet_ids=$$subnets' config.json | sponge config.json
 	cd .chalice; jq .stages.$(DEPLOYMENT_STAGE).security_group_ids+=[env.SECURITY_GROUP_ID] config.json | sponge config.json
 
 .PHONY: local-server

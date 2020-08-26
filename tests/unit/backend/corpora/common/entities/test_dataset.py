@@ -24,7 +24,8 @@ class TestDataset(unittest.TestCase):
     def test__get__ok(self):
         dataset = Dataset.get(self.uuid)
         self.assertEqual(dataset.id, self.uuid)
-        self.assertEqual(dataset.assay, "test_assay")
+        self.assertEqual(len(dataset.assay), 1)
+        self.assertDictEqual(dataset.assay[0], {"ontology_term_id": "test_obo", "label": "test_assay"})
 
         # Verify Artifact relationship
         self.assertIsInstance(dataset.artifacts[0], DbDatasetArtifact)
