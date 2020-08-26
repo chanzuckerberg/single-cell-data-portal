@@ -25,7 +25,7 @@ well-labeled repository of interoperable datasets.
 |------|-------------|--------|
 |`DEPLOYMENT_STAGE`|Specifies an app deployment stage for tasks such as deployments and functional tests.|`dev`, `staging`, `prod`|
 |`AWS_PROFILE`|Specifies the profile used to interact with AWS resources via awscli.|`single-cell-dev`, `single-cell-prod`|
-|`CORPORA_LOCAL_DEV`|If this variable is set to any value, the Corpora app will look for the database on localhost:5432|Any|
+|`CORPORA_LOCAL_DEV`|If this variable is set to any value, the Corpora app will look for the database on __localhost:5432__ and will use the aws secret _corpora/backend/${DEPLOYMENT_STAGE}/database_local_. |Any|
 
 ### Commands
 | Command | Description | Notes |
