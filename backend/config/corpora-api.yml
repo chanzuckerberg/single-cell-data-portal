@@ -492,11 +492,85 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/login:
+    get:
+      tags:
+        - authentication
+      summary: login to the system
+      operationId: corpora.lambdas.api.v1.authentication.login
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/logout:
+    get:
+      tags:
+        - authentication
+      summary: logout of the system
+      operationId: corpora.lambdas.api.v1.authentication.logout
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/userinfo:
+    get:
+      tags:
+        - authentication
+      summary: retrieve user information if the user is logged in
+      operationId: corpora.lambdas.api.v1.authentication.userinfo
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userinfo"
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/oauth2/callback:
+    get:
+      tags:
+        - authentication
+      summary: callback function from auth server after login
+      operationId: corpora.lambdas.api.v1.authentication.oauth2_callback
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
 components:
   schemas:
     user_uuid:
       description: A unique identifier of a logged in User of Corpora.
       type: string
+    userinfo:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/user_uuid"
+        name:
+          description: The user's name
+          type: string
+        email:
+          description: The user's email
+          type: string
     project_uuid:
       description: A unique identifier of a Project.
       type: string
@@ -705,3 +779,10 @@ components:
     auth0:
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
+    cxguserCookie:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
+
+

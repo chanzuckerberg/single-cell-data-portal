@@ -7,6 +7,7 @@ from chalice import UnauthorizedError
 
 from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws_secret import AwsSecret
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 
 """
@@ -24,6 +25,14 @@ class TestAuthorizer(unittest.TestCase):
         secret_name = "corpora/cicd/test/auth0-secret"  # using the same secret for all non production stages.
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
+        config = CorporaAuthConfig()
+        config.set(
+            dict(
+                api_base_url="https://czi-single-cell.auth0.com",
+                audience=cls.auth0_secret["audience"],
+                client_id=cls.auth0_secret["client_id"],
+            )
+        )
 
     def test_postive(self):
         token = self.get_auth_token()
