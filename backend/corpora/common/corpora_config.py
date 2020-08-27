@@ -27,5 +27,7 @@ class CorporaAuthConfig(SecretConfig):
             self.config["callback_base_url"] = "http://localhost:5000"
         else:
             super().__init__(
-                component_name="backend", secret_name="auth0-secret", **kwargs,
+                component_name="backend",
+                secret_name="auth0-secret",
+                **kwargs,
             )
