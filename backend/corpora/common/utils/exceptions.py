@@ -10,3 +10,8 @@ class CorporaException(Exception):
 class ForbiddenHTTPException(ProblemException):
     def __init__(self, detail: str = "User is not authorized to access this resource.", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.forbidden, title="Forbidden", detail=detail, *args, **kwargs)
+
+
+class NotFoundHTTPException(ProblemException):
+    def __init__(self, detail: str = "Resource not found.", *args, **kwargs) -> None:
+        super().__init__(status=requests.codes.not_found, title="Not Found", detail=detail, *args, **kwargs)
