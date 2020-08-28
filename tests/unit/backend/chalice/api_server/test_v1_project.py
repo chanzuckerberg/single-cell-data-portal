@@ -11,6 +11,70 @@ from tests.unit.backend.utils import BogusProjectParams
 
 
 class TestProject(BaseAPITest, unittest.TestCase):
+    def validate_projects_response_structure(self, body):
+        self.assertIn("projects", body)
+        self.assertTrue(all(k in ["projects", "from_date", "to_date"] for k in body))
+
+        for project in body["projects"]:
+            self.assertListEqual(sorted(project.keys()), ["created_at", "id"])
+            self.assertGreaterEqual(datetime.fromtimestamp(project["created_at"]).year, 1969)
+
+    def validate_project_uuid_response_structure(self, body):
+        required_keys = [
+            "name",
+            "description",
+            "id",
+            "s3_bucket_key",
+            "owner",
+            "status",
+            "processing_state",
+            "validation_state",
+            "links",
+            "attestation",
+            "datasets",
+            "created_at",
+            "updated_at",
+        ]
+        self.assertListEqual(sorted(body.keys()), sorted(required_keys))
+        self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
+        self.assertGreaterEqual(datetime.fromtimestamp(body["updated_at"]).year, 1969)
+
+        self.assertListEqual(sorted(body["owner"].keys()), ["created_at", "email", "id", "name", "updated_at"])
+
+        for link in body["links"]:
+            self.assertListEqual(sorted(link.keys()), ["name", "type", "url"])
+
+        for dataset in body["datasets"]:
+            required_keys = [
+                "id",
+                "assay",
+                "tissue",
+                "disease",
+                "sex",
+                "ethnicity",
+                "organism",
+                "development_stage",
+                "name",
+                "source_data_location",
+                "revision",
+                "dataset_deployments",
+                "dataset_assets",
+                "contributors",
+                "preprint_doi",
+                "publication_doi",
+                "created_at",
+                "updated_at",
+                "project_id",
+                "project_status",
+            ]
+            self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
+
+            for contributor in dataset["contributors"]:
+                for key in ["id", "name"]:
+                    self.assertIn(key, contributor)
+                for key in contributor:
+                    self.assertIn(key, ["id", "name", "email", "institution", "created_at", "updated_at"])
+
     def test__list_project__ok(self):
         path = "/v1/project"
         headers = dict(host="localhost")
@@ -29,6 +93,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
+            self.validate_projects_response_structure(actual_body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
             self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(None, actual_body.get("from_date"))
@@ -38,6 +103,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
+            self.validate_projects_response_structure(actual_body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
             self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(actual_body["from_date"], from_date)
@@ -47,6 +113,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
+            self.validate_projects_response_structure(actual_body)
             self.assertIn(expected_id, [p["id"] for p in actual_body["projects"]])
             self.assertEqual(to_date, actual_body["to_date"])
             self.assertEqual(None, actual_body.get("from_date"))
@@ -56,6 +123,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             response = self.app.get(test_url.url, headers=headers)
             response.raise_for_status()
             actual_body = json.loads(response.body)
+            self.validate_projects_response_structure(actual_body)
             self.assertEqual(expected_id, actual_body["projects"][0]["id"])
             self.assertEqual(creation_time, actual_body["projects"][0]["created_at"])
             self.assertEqual(from_date, actual_body["from_date"])
@@ -105,10 +173,10 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
-                    "preprint_doi": {"title": "test_preprint_doi"},
+                    "preprint_doi": "test_preprint_doi",
                     "project_id": "test_project_id",
                     "project_status": "LIVE",
-                    "publication_doi": {"title": "test_publication_doi"},
+                    "publication_doi": "test_publication_doi",
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
@@ -117,13 +185,12 @@ class TestProject(BaseAPITest, unittest.TestCase):
             ],
             "description": "test_description",
             "id": "test_project_id",
-            "links": [{"type": "RAW_DATA", "url": "test_url"}, {"type": "SUMMARY", "url": "test_summary_url"}],
+            "links": [
+                {"type": "RAW_DATA", "name": "test_link_name", "url": "test_url"},
+                {"type": "SUMMARY", "name": "test_summary_link_name", "url": "test_summary_url"},
+            ],
             "name": "test_project",
-            "owner": {
-                "email": "test_email",
-                "id": "test_user_id",
-                "name": "test_user",
-            },  # noqa
+            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",
@@ -133,6 +200,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/project/test_project_id")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
+        self.validate_project_uuid_response_structure(json.loads(response.body))
         actual_body = self.remove_timestamps(json.loads(response.body))
         self.assertDictEqual(actual_body, expected_body)
 

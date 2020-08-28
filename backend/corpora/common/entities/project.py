@@ -143,11 +143,11 @@ class Project(Entity):
         # Reshape the data to match.
         result["s3_bucket_key"] = result.pop("s3_bucket", None)
         result["owner"] = result.pop("user")
-        result["links"] = [dict(url=link["link_url"], type=link["link_type"]) for link in result["links"]]
+        result["links"] = [
+            dict(url=link["link_url"], name=link["link_name"], type=link["link_type"]) for link in result["links"]
+        ]
         result["attestation"] = dict(needed=result.pop("needs_attestation", None), tc_uri=result.pop("tc_uri", None))
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            dataset["preprint_doi"] = dict(title=dataset.pop("preprint_doi"))
-            dataset["publication_doi"] = dict(title=dataset.pop("publication_doi"))
         return result

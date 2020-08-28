@@ -402,16 +402,21 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - projects
                 properties:
                   projects:
                     type: array
                     items:
                       type: object
+                      required:
+                        - id
+                        - created_at
                       properties:
-                        project_uuid:
+                        id:
                           $ref: "#/components/schemas/project_uuid"
-                        creation_date:
-                          type: integer
+                        created_at:
+                          type: number
                   from_date:
                     type: integer
                   to_date:
@@ -582,7 +587,24 @@ components:
       enum: [PUBLIC, PRIVATE]
     project:
       type: object
+      required:
+        - name
+        - description
+        - id
+        - owner
+        - status
+        - processing_state
+        - validation_state
+        - links
+        - attestation
+        - datasets
+        - created_at
+        - updated_at
       properties:
+        created_at:
+          type: number
+        updated_at:
+          type: number
         description:
           type: string
         name:
@@ -593,11 +615,17 @@ components:
           type: string
         owner:
           type: object
+          required:
+            - id
           properties:
             id:
               $ref: "#/components/schemas/user_uuid"
             email:
               type: string
+            name:
+              type: string
+            updated_at:
+              type: number
         status:
           type: string
           enum: [LIVE, EDIT]
@@ -611,6 +639,10 @@ components:
           type: array
           items:
             type: object
+            required:
+              - name
+              - url
+              - type
             properties:
               name:
                 type: string
@@ -633,6 +665,9 @@ components:
             $ref: "#/components/schemas/dataset"
     contributor:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: string
@@ -642,6 +677,10 @@ components:
           type: string
         institution:
           type: string
+        created_at:
+          type: number
+        updated_at:
+          type: number
     ontology_element:
       type: object
       properties:
@@ -655,6 +694,25 @@ components:
         $ref: "#/components/schemas/ontology_element"
     dataset:
       type: object
+      required:
+        - id
+        - assay
+        - tissue
+        - disease
+        - sex
+        - ethnicity
+        - organism
+        - development_stage
+        - name
+        - source_data_location
+        - revision
+        - dataset_deployments
+        - dataset_assets
+        - contributors
+        - preprint_doi
+        - publication_doi
+        - project_id
+        - project_status
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -674,7 +732,7 @@ components:
           $ref: "#/components/schemas/ontology_element"
         development_stage:
           $ref: "#/components/schemas/ontology_element_array"
-        title:
+        name:
           type: string
         source_data_location:
           type: string
@@ -700,9 +758,13 @@ components:
           items:
             $ref: "#/components/schemas/contributor"
         preprint_doi:
-          $ref: "#/components/schemas/doi"
+          type: string
         publication_doi:
-          $ref: "#/components/schemas/doi"
+          type: string
+        project_id:
+          $ref: "#/components/schemas/project_uuid"
+        project_status:
+          type: string
     dataset_asset:
       type: object
       properties:
@@ -718,18 +780,6 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
-    doi:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        data:
-          type: string
-        journal:
-          type: string
-
   parameters:
     path_project_uuid:
       name: project_uuid
