@@ -1,9 +1,9 @@
 from functools import lru_cache
 import requests
 from chalice import UnauthorizedError
-from jose import jwt, JWTError
 from .corpora_config import CorporaAuthConfig
-
+from jose import jwt
+from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 def assert_authorized_token(token: str) -> dict:
     """
@@ -26,9 +26,9 @@ def assert_authorized_token(token: str) -> dict:
             if not auth0_domain.endswith("/"):
                 auth0_domain += "/"
             payload = jwt.decode(token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain)
-        except jwt.ExpiredSignatureError:
-            raise UnauthorizedError(msg="token is expired")
-        except jwt.JWTClaimsError:
+        except ExpiredSignatureError:
+            raise
+        except JWTClaimsError:
             raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
@@ -38,15 +38,19 @@ def assert_authorized_token(token: str) -> dict:
     raise UnauthorizedError(msg="Unable to find appropriate key")
 
 
+
 def assert_authorized(headers: dict) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param headers: The http headers from the request.
     :return: The decoded access token and userinfo.
     """
+    try:
+        token = get_token_auth_header(headers)
+        return assert_authorized_token(token)
+    except ExpiredSignatureError:
+        raise UnauthorizedError(msg="token is expired")
 
-    token = get_token_auth_header(headers)
-    return assert_authorized_token(token)
 
 
 def get_token_auth_header(headers: dict) -> str:
