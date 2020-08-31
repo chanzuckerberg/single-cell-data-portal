@@ -150,7 +150,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
                             "filename": "test_filename",
                             "filetype": "H5AD",
                             "id": "test_dataset_artifact_id",
-                            "s3_uri": "test_s3_uri",
+                            "s3_uri": "s3://corpora-data-test/test_s3_uri.h5ad",
                             "type": "ORIGINAL",
                             "user_submitted": True,
                         }
@@ -190,7 +190,11 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 {"type": "SUMMARY", "name": "test_summary_link_name", "url": "test_summary_url"},
             ],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
+            "owner": {
+                "email": "test_email",
+                "id": "test_user_id",
+                "name": "test_user",
+            },  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",

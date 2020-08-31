@@ -121,7 +121,7 @@ class TestDatabase:
             filetype=DatasetArtifactFileType.H5AD.name,
             type=DatasetArtifactType.ORIGINAL.name,
             user_submitted=True,
-            s3_uri="test_s3_uri",
+            s3_uri="s3://corpora-data-test/test_s3_uri.h5ad",
         )
         self.db.session.add(dataset_artifact)
         self.db.session.commit()

@@ -468,22 +468,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/dataset/{dataset_uuid}/artifact/{artifact_uuid}:
-    head:
-      summary: Retrieve an artifact's metadata given a dataset and artifact UUID
-      description: >
-        Given a dataset and artifact UUID, return the metadata for that file. The metadata is returned in the headers.
-      operationId: corpora.lambdas.api.v1.dataset.head_dataset_artifact
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
-        - name: artifact_uuid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Returns metadata
+  /v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset
@@ -493,7 +478,7 @@ paths:
       operationId: corpora.lambdas.api.v1.dataset.post_dataset_artifact
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
-        - name: artifact_uuid
+        - name: asset_uuid
           in: path
           required: true
           schema:
@@ -506,10 +491,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_uuid:
+                  dataset_id:
                     type: string
-                  dataset_presigned_url:
+                  presigned_url:
                     type: string
+                  file_name:
+                    type: string
+                  file_size:
+                    type: number
         "401":
           $ref: "#/components/responses/401"
         "403":

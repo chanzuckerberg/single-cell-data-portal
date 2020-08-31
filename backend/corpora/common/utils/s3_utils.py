@@ -1,12 +1,13 @@
+import logging
+import typing
+
 import boto3
 from botocore.exceptions import ClientError
-import logging
-
-from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
 
-def generate_file_url(bucket_name, file_prefix, expiration: int = 3600, s3=None) -> str:
+
+def generate_file_url(bucket_name: str, file_prefix: str, expiration: int = 3600, s3=None) -> typing.Union[str, None]:
     """
     Generate a presigned URL for a file for user download.
     :param bucket_name: S3 name of the bucket
@@ -22,13 +23,13 @@ def generate_file_url(bucket_name, file_prefix, expiration: int = 3600, s3=None)
             "get_object", Params={"Bucket": bucket_name, "Key": file_prefix}, ExpiresIn=expiration
         )
     except ClientError:
-        logger.exception(f"Failed to generate presigned URL for {file_prefix}")
-        raise CorporaException()
+        logger.exception(f"Failed to generate presigned URL for '{file_prefix}'.")
+        return
 
     return response
 
 
-def head_file(bucket_name, file_prefix: str, s3=None) -> dict:
+def head_file(bucket_name: str, file_prefix: str, s3=None) -> typing.Union[dict, None]:
     """
     The HEAD operation retrieves metadata from an S3 object.
     :param bucket_name: S3 name of the bucket
@@ -41,7 +42,7 @@ def head_file(bucket_name, file_prefix: str, s3=None) -> dict:
     try:
         response = s3.head_object(Bucket=bucket_name, Key=file_prefix)
     except ClientError:
-        logger.exception(f"Failed to retrieve meta data for {file_prefix}.")
-        raise CorporaException()
+        logger.exception(f"Failed to retrieve meta data for '{file_prefix}'.")
+        return
 
     return response
