@@ -4,9 +4,10 @@ import { get } from "src/common/localStorage/get";
 import { BOOLEAN, set } from "src/common/localStorage/set";
 import { ButtonWrapper, Link, NoButton, OKButton, Wrapper } from "./style";
 
-const TOS_LINK = "https://cellxgene.cziscience.com/static/deploy/tos.html";
+const TOS_LINK =
+  "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html";
 const PRIVACY_LINK =
-  "https://cellxgene.cziscience.com/static/deploy/privacy.html";
+  "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html";
 
 const CookieBanner: FC = () => {
   const [isHidden, setIsHidden] = useState(hasClickedOnBanner());
