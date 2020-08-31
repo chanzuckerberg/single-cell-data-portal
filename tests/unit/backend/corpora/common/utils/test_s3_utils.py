@@ -3,7 +3,6 @@ import unittest
 import boto3
 from moto import mock_s3
 
-from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.common.utils.s3_utils import generate_file_url, head_file
 
 
@@ -44,6 +43,4 @@ class TestS3Utils(unittest.TestCase):
         conn = boto3.resource("s3", region_name=region)
         conn.create_bucket(Bucket=bucket)
         s3 = boto3.client("s3", region_name=region)
-
-        with self.assertRaises(CorporaException):
-            head_file(bucket, file_name, s3=s3)
+        self.assertIs(None, head_file(bucket, file_name, s3=s3))
