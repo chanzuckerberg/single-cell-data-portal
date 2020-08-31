@@ -1,21 +1,24 @@
 from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g
 import json
+import os
 import requests
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import urlencode
 import base64
 from ....common.authorizer import get_userinfo, assert_authorized_token
-from ....common.corpora_config import CorporaAuthConfig
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 from jose.exceptions import ExpiredSignatureError
 from chalice import UnauthorizedError
 
 # global oauth client
 oauth_client = None
 
+
 def get_oauth_client(config):
     """Create an oauth client on the first invocation, then return oauth client for subsequent calls"""
     global oauth_client
-    if oauth_client:
+    if oauth_client and os.environ["DEPLOYMENT_STAGE"] != "test":
+        # tests may have different configs
         return oauth_client
 
     oauth = OAuth(current_app)
@@ -66,6 +69,7 @@ def oauth2_callback():
 def save_token(cookie_name, token):
     """Save the token, both in the g scope and in a cookie"""
     g.token = token
+
     @after_this_request
     def _save_cookie(response):
         value = base64.b64encode(json.dumps(dict(token)).encode("utf-8"))
@@ -76,6 +80,7 @@ def save_token(cookie_name, token):
 def remove_token(cookie_name):
     """Remove the token, both from the g scope and the cookie"""
     g.pop("token", None)
+
     @after_this_request
     def _remove_cookie(response):
         response.set_cookie(cookie_name, "", expires=0)
@@ -164,4 +169,3 @@ def refresh_expired_token(token):
         expires_at=data.get("expires_at"),
     )
     return token
-
