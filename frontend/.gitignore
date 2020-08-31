@@ -55,6 +55,9 @@ typings/
 .env*
 !.env.development
 
+# configs
+src/configs/configs.js
+
 # gatsby files
 .cache/
 public

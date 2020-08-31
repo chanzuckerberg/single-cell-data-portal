@@ -23,6 +23,8 @@ clean:
 .PHONY: retrieve-vars
 retrieve-vars:
 	aws s3 cp $(S3_ENVIRONMENT_FILE) .env.production
+	# Copy the appropriate configs
+	cp src/configs/$(DEPLOYMENT_STAGE).js src/configs/configs.js
 
 .PHONY: upload-vars
 upload-vars:

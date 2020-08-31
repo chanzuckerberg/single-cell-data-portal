@@ -1,54 +1,44 @@
-<!-- AUTO-GENERATED-CONTENT:START (STARTER) -->
-<p align="center">
-  <a href="https://www.gatsbyjs.org">
-    <img alt="Gatsby" src="https://www.gatsbyjs.org/monogram.svg" width="60" />
-  </a>
-</p>
-<h1 align="center">
-  Data Portal Frontend
-</h1>
-<p align="center">
-  Powered by Gatsby
-</p>
+# Development
 
-## Development
+1. **Install dependencies.**
 
-1.  **Install dependencies.**
+   ```shell
+   # Install gatsby globally
+   npm install -g gatsby
 
-    ```shell
-    # Install gatsby globally
-    npm install -g gatsby
+   # Install project dependencies
+   npm install
+   ```
 
-    # Install project dependencies
-    npm install
-    ```
+1. **Set Up Environment Variables**
 
-1.  **Set Up Environment Variables**
+   Create the the environment file and populate the variables.
 
-    Create the the environment file and populate the variables.
+1. **Host the backend locally.**
 
-1.  **Host the backend locally.**
+   Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on
+   `http://localhost:5000`.
 
-    Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on
-    `http://localhost:5000`.
+1. **Build and launch the frontend locally.**
 
-1.  **Build and launch the frontend locally.**
+   1. Create `frontend/configs/configs.js` and paste content from
+      `frontend/configs/local.js`
+   1. Run `gatsby develop`
 
-    ```shell
-    gatsby develop
-    ```
+   Your site is now running at `http://localhost:8000` with hot re-loading!
 
-    Your site is now running at `http://localhost:8000` with hot re-loading!
+1. **Open the source code and start editing!**
 
-1.  **Open the source code and start editing!**
-
-    Modify code in the `src` directory, save your changes and the browser will update in real time.
+   Modify code in the `src` directory, save your changes and the browser will update in real time.
 
 ## Environment Variables
 
-The environment variables used to deploy the website. The variables should be stored in a file name _env.development_
-for development and _env.production_ for production deployments. Do not store sensitive data in the environment
-variables.
+The environment variables for the web application. The variables are stored in /frontend/configs/\*. E.g., `frontend/configs/local.js`
+
+For local development, please copy `local.js` to a new file named `configs.js`
+in the same directory (`frontend/configs/configs.js`)
+
+WARNING: Do not store sensitive data in the environment variables.
 
 | Name            | Description                                          |
 | --------------- | ---------------------------------------------------- |
@@ -56,7 +46,6 @@ variables.
 | AUTH0_CLIENT_ID | The client id of the Auth0 application for this site |
 | AUDIENCE        | The domain of the corpora api                        |
 | API_URL         | The URL to the corpora api                           |
-| CXG_URL         | The URL to CellxGene                                 |
 
 ## Deployment
 
