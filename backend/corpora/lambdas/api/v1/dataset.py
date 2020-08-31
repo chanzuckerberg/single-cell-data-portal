@@ -3,7 +3,7 @@ from flask import make_response, jsonify
 
 from ....common.entities import Dataset
 from ....common.utils.db_utils import db_session
-from ....common.utils.exceptions import NotFoundHTTPException, CorporaException, ServerErrorHTTPException
+from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException
 from ....common.utils.s3_utils import generate_file_url, head_file
 
 
