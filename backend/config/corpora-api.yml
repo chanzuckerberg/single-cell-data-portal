@@ -402,16 +402,21 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - projects
                 properties:
                   projects:
                     type: array
                     items:
                       type: object
+                      required:
+                        - id
+                        - created_at
                       properties:
-                        project_uuid:
+                        id:
                           $ref: "#/components/schemas/project_uuid"
-                        creation_date:
-                          type: integer
+                        created_at:
+                          type: number
                   from_date:
                     type: integer
                   to_date:
@@ -492,11 +497,85 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/login:
+    get:
+      tags:
+        - authentication
+      summary: login to the system
+      operationId: corpora.lambdas.api.v1.authentication.login
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/logout:
+    get:
+      tags:
+        - authentication
+      summary: logout of the system
+      operationId: corpora.lambdas.api.v1.authentication.logout
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/userinfo:
+    get:
+      tags:
+        - authentication
+      summary: retrieve user information if the user is logged in
+      operationId: corpora.lambdas.api.v1.authentication.userinfo
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userinfo"
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/oauth2/callback:
+    get:
+      tags:
+        - authentication
+      summary: callback function from auth server after login
+      operationId: corpora.lambdas.api.v1.authentication.oauth2_callback
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
 components:
   schemas:
     user_uuid:
       description: A unique identifier of a logged in User of Corpora.
       type: string
+    userinfo:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/user_uuid"
+        name:
+          description: The user's name
+          type: string
+        email:
+          description: The user's email
+          type: string
     project_uuid:
       description: A unique identifier of a Project.
       type: string
@@ -508,7 +587,24 @@ components:
       enum: [PUBLIC, PRIVATE]
     project:
       type: object
+      required:
+        - name
+        - description
+        - id
+        - owner
+        - status
+        - processing_state
+        - validation_state
+        - links
+        - attestation
+        - datasets
+        - created_at
+        - updated_at
       properties:
+        created_at:
+          type: number
+        updated_at:
+          type: number
         description:
           type: string
         name:
@@ -519,11 +615,17 @@ components:
           type: string
         owner:
           type: object
+          required:
+            - id
           properties:
             id:
               $ref: "#/components/schemas/user_uuid"
             email:
               type: string
+            name:
+              type: string
+            updated_at:
+              type: number
         status:
           type: string
           enum: [LIVE, EDIT]
@@ -537,6 +639,10 @@ components:
           type: array
           items:
             type: object
+            required:
+              - name
+              - url
+              - type
             properties:
               name:
                 type: string
@@ -559,6 +665,9 @@ components:
             $ref: "#/components/schemas/dataset"
     contributor:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: string
@@ -568,6 +677,10 @@ components:
           type: string
         institution:
           type: string
+        created_at:
+          type: number
+        updated_at:
+          type: number
     ontology_element:
       type: object
       properties:
@@ -581,6 +694,25 @@ components:
         $ref: "#/components/schemas/ontology_element"
     dataset:
       type: object
+      required:
+        - id
+        - assay
+        - tissue
+        - disease
+        - sex
+        - ethnicity
+        - organism
+        - development_stage
+        - name
+        - source_data_location
+        - revision
+        - dataset_deployments
+        - dataset_assets
+        - contributors
+        - preprint_doi
+        - publication_doi
+        - project_id
+        - project_status
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -600,7 +732,7 @@ components:
           $ref: "#/components/schemas/ontology_element"
         development_stage:
           $ref: "#/components/schemas/ontology_element_array"
-        title:
+        name:
           type: string
         source_data_location:
           type: string
@@ -626,9 +758,13 @@ components:
           items:
             $ref: "#/components/schemas/contributor"
         preprint_doi:
-          $ref: "#/components/schemas/doi"
+          type: string
         publication_doi:
-          $ref: "#/components/schemas/doi"
+          type: string
+        project_id:
+          $ref: "#/components/schemas/project_uuid"
+        project_status:
+          type: string
     dataset_asset:
       type: object
       properties:
@@ -644,18 +780,6 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
-    doi:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        data:
-          type: string
-        journal:
-          type: string
-
   parameters:
     path_project_uuid:
       name: project_uuid
@@ -705,3 +829,10 @@ components:
     auth0:
       type: openIdConnect
       openIdConnectUrl: https://example.com/.well-known/openid-configuration
+    cxguserCookie:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
+
+

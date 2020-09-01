@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+import json
 from collections import defaultdict
 from functools import wraps
 
@@ -13,8 +14,10 @@ from connexion import FlaskApi, ProblemException, problem
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from corpora.common.authorizer import assert_authorized
+from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
+from corpora.common.utils.aws_secret import AwsSecret
+from corpora.common.corpora_config import CorporaAuthConfig
 
 cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
@@ -28,7 +31,8 @@ def requires_auth():
     def decorate(func):
         @wraps(func)
         def call(*args, **kwargs):
-            assert_authorized(app.current_request.headers)
+            token = app.current_request.cookies.get(CorporaAuthConfig.cookie_name)
+            assert_authorized_token(token)
             return func(*args, **kwargs)
 
         return call
@@ -48,6 +52,17 @@ def get_chalice_app(flask_app):
     flask_app.debug = True
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
+
+    # set the flask secret key, needed for session cookies
+    flask_secret_key = "OpenSesame"
+    deployment = os.environ["DEPLOYMENT_STAGE"]
+    if deployment != "test":
+        secret_name = f"corpora/backend/{os.environ['DEPLOYMENT_STAGE']}/auth0-secret"
+        auth_secret = json.loads(AwsSecret(secret_name).value)
+        if auth_secret:
+            flask_secret_key = auth_secret.get("flask_secret_key", flask_secret_key)
+    # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
+    flask_app.config.update(SECRET_KEY=flask_secret_key)
 
     def clean_entry_for_logging(entry):
         log = entry.to_dict()

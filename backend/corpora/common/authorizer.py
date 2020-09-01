@@ -1,15 +1,41 @@
-import os
 from functools import lru_cache
-
 import requests
 from chalice import UnauthorizedError
 from jose import jwt, JWTError
+from .corpora_config import CorporaAuthConfig
 
-USERINFO_ENDPOINT = "https://czi-single-cell.auth0.com/userinfo"
 
-AUTH0_DOMAIN = "czi-single-cell.auth0.com"
-API_AUDIENCE = f"https://api.{os.environ['DEPLOYMENT_STAGE']}.corpora.cziscience.com"
-ALGORITHMS = ["RS256"]
+def assert_authorized_token(token: str) -> dict:
+    """
+    Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
+    :param token: The token
+    :return: The decoded access token and userinfo.
+    """
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+    except JWTError:
+        raise UnauthorizedError(msg="Unable to parse authentication token.")
+    auth_config = CorporaAuthConfig()
+    auth0_domain = auth_config.api_base_url
+    audience = auth_config.audience
+    public_keys = get_public_keys(auth0_domain)
+    public_key = public_keys.get(unverified_header["kid"])
+    if public_key:
+        algorithms = ["RS256"]
+        try:
+            if not auth0_domain.endswith("/"):
+                auth0_domain += "/"
+            payload = jwt.decode(token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain)
+        except jwt.ExpiredSignatureError:
+            raise UnauthorizedError(msg="token is expired")
+        except jwt.JWTClaimsError:
+            raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
+        except Exception:
+            raise UnauthorizedError(msg="Unable to parse authentication token.")
+
+        return payload
+
+    raise UnauthorizedError(msg="Unable to find appropriate key")
 
 
 def assert_authorized(headers: dict) -> dict:
@@ -20,33 +46,7 @@ def assert_authorized(headers: dict) -> dict:
     """
 
     token = get_token_auth_header(headers)
-    try:
-        unverified_header = jwt.get_unverified_header(token)
-    except JWTError:
-        raise UnauthorizedError(msg="Unable to parse authentication token.")
-    public_keys = get_public_keys(AUTH0_DOMAIN)
-    public_key = public_keys.get(unverified_header["kid"])
-    if public_key:
-        try:
-            payload = jwt.decode(
-                token, public_key, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer=f"https://{AUTH0_DOMAIN}/"
-            )
-        except jwt.ExpiredSignatureError:
-            raise UnauthorizedError(msg="token is expired")
-        except jwt.JWTClaimsError:
-            raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
-        except Exception:
-            raise UnauthorizedError(msg="Unable to parse authentication token.")
-
-        if os.environ["DEPLOYMENT_STAGE"] != "test":
-            """
-            In the environments we are using an Auth0 machine to machine access token which does not
-            connect to a user, therefore there is no userinfo to get.
-            """
-            payload["userinfo"] = get_userinfo(token)
-
-        return payload
-    raise UnauthorizedError(msg="Unable to find appropriate key")
+    return assert_authorized_token(token)
 
 
 def get_token_auth_header(headers: dict) -> str:
@@ -69,11 +69,20 @@ def get_token_auth_header(headers: dict) -> str:
     return token
 
 
-def get_userinfo(token):
-    resp = requests.post(USERINFO_ENDPOINT, headers={"Authorization": token})
-    assert not resp.ok
-    userinfo = resp.json()
-    assert not userinfo["email_verified"]
+def get_userinfo(token: str) -> dict:
+    if token is None:
+        userinfo = dict(is_authenticated=False)
+        return userinfo
+
+    payload = assert_authorized_token(token)
+
+    userinfo = dict(
+        is_authenticated=True,
+        id=payload.get("sub"),
+        name=payload.get("name"),
+        email=payload.get("email"),
+        email_verified=payload.get("email_verified"),
+    )
     return userinfo
 
 
@@ -83,8 +92,7 @@ def get_openid_config(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: the openid configuration
     """
-
-    res = requests.get("https://{op}/.well-known/openid-configuration".format(op=openid_provider))
+    res = requests.get("{op}/.well-known/openid-configuration".format(op=openid_provider))
     res.raise_for_status()
     return res.json()
 
