@@ -1,9 +1,3 @@
-import os
-import sys
-
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
-
 from backend.scripts.create_db import create_db
 from backend.corpora.common.utils.db_utils import DbUtils
 from backend.corpora.common.corpora_orm import (
@@ -22,6 +16,8 @@ from backend.corpora.common.corpora_orm import (
     DbUser,
     DbDeploymentDirectory,
 )
+
+from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
 class TestDatabase:
@@ -121,7 +117,7 @@ class TestDatabase:
             filetype=DatasetArtifactFileType.H5AD.name,
             type=DatasetArtifactType.ORIGINAL.name,
             user_submitted=True,
-            s3_uri="s3://corpora-data-test/test_s3_uri.h5ad",
+            s3_uri=f"s3://{CorporaTestCaseUsingMockAWS.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad",
         )
         self.db.session.add(dataset_artifact)
         self.db.session.commit()

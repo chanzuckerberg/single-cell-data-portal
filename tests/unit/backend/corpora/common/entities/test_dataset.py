@@ -141,6 +141,17 @@ class TestDataset(unittest.TestCase):
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
 
+    def test_get_asset__ok(self):
+        dataset = Dataset.get(self.uuid)
+        expected_asset_id = "test_dataset_artifact_id"
+        asset = dataset.get_asset("test_dataset_artifact_id")
+        self.assertEqual(expected_asset_id, asset.id)
+
+    def test_get_asset__not_found(self):
+        dataset = Dataset.get(self.uuid)
+        asset = dataset.get_asset("fake_asset")
+        self.assertEqual(None, asset)
+
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
         Verify if rows have been deleted from the database.

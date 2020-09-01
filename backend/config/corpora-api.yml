@@ -475,7 +475,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: corpora.lambdas.api.v1.dataset.post_dataset_artifact
+      operationId: corpora.lambdas.api.v1.dataset.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
         - name: asset_uuid
@@ -491,8 +491,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_id:
-                    type: string
+                  dataset_uuid:
+                    $ref: "#/components/schemas/dataset_uuid"
                   presigned_url:
                     type: string
                   file_name:
