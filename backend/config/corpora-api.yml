@@ -499,6 +499,8 @@ paths:
                     type: string
                   file_size:
                     type: number
+                  file_type:
+                    $ref: "#/components/schemas/asset_format"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -780,14 +782,25 @@ components:
         id:
           type: string
         format:
-          type: string
-          enum: [H5AD, RDS, LOOM, CXG]
+          $ref: "#/components/schemas/asset_format"
         file_name:
           type: string
         type:
           type: string
           enum: [REMIX, ORIGINAL]
         s3_uri:
+          type: string
+    asset_format:
+      type: string
+      enum: [H5AD, RDS, LOOM, CXG]
+    problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
           type: string
   parameters:
     path_project_uuid:
@@ -825,15 +838,34 @@ components:
       description: Accepted
     400:
       description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     401:
       description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     403:
       description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     409:
       description: File conflict.
-
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
   securitySchemes:
     auth0:
       type: openIdConnect

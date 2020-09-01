@@ -126,7 +126,8 @@ def get_chalice_app(flask_app):
     @flask_app.errorhandler(ProblemException)
     def handle_authorization_error(exception):
         response = problem(
-            exception.status, exception.title, exception.type, exception.instance, exception.headers, exception.ext
+            exception.status, exception.title, exception.detail, exception.type, exception.instance, exception.headers,
+            exception.ext
         )
         response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
         return FlaskApi.get_response(response)

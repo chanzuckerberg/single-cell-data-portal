@@ -32,12 +32,22 @@ class TestDataset(BaseAPITest, unittest.TestCase):
         self.assertEqual(expected_body, actual_body)
 
     @mock_s3
-    def test__post_dataset_artifact__NOT_FOUND(self):
+    def test__post_dataset_artifact__file_NOT_FOUND(self):
         bucket = "corpora-data-test"
         region = "us-west-2"
         conn = boto3.resource("s3", region_name=region)
         conn.create_bucket(Bucket=bucket)
 
         test_url = furl(path="/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
+        response = self.app.post(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+
+    def test__post_dataset_artifact__dataset_NOT_FOUND(self):
+        test_url = furl(path="/v1/dataset/fake_id/asset/test_dataset_artifact_id")
+        response = self.app.post(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+
+    def test__post_dataset_artifact__asset_NOT_FOUND(self):
+        test_url = furl(path="/v1/dataset/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
