@@ -41,13 +41,20 @@ class TestDataset(BaseAPITest, unittest.TestCase):
         test_url = furl(path="/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
+        body = json.loads(response.body)
+        self.assertEqual("'dataset/test_dataset_id/asset/test_dataset_artifact_id' not found.", body['detail'])
 
     def test__post_dataset_artifact__dataset_NOT_FOUND(self):
         test_url = furl(path="/v1/dataset/fake_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
+        body = json.loads(response.body)
+        self.assertEqual("'dataset/fake_id' not found.", body['detail'])
+        print(body)
 
     def test__post_dataset_artifact__asset_NOT_FOUND(self):
         test_url = furl(path="/v1/dataset/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
+        body = json.loads(response.body)
+        self.assertEqual("'dataset/test_dataset_id/asset/fake_asset' not found.", body['detail'])
