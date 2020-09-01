@@ -782,7 +782,8 @@ components:
         id:
           type: string
         format:
-          $ref: "#/components/schemas/asset_format"
+          type: string
+          enum: [H5AD, RDS, LOOM, CXG]
         file_name:
           type: string
         type:
@@ -790,9 +791,6 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
-    asset_format:
-      type: string
-      enum: [H5AD, RDS, LOOM, CXG]
     problem:
       type: object
       properties:
