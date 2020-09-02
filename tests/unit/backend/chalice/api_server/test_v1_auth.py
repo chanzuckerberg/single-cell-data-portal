@@ -123,6 +123,7 @@ class TestAuth(unittest.TestCase):
             test_url = f"/v1/oauth2/callback?code=fakecode&state={args['state']}"
             response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
             self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
             cxguser_cookie = response.headers["Set-Cookie"]
 
@@ -154,6 +155,11 @@ class TestAuth(unittest.TestCase):
         with self.subTest("logout"):
             response = self.app.get("/v1/logout", headers=headers)
             self.assertEqual(response.status_code, 302)
+            location = response.headers["Location"]
+            split = urllib.parse.urlsplit(location)
+            args = dict(urllib.parse.parse_qsl(split.query))
+            self.assertTrue(location.startswith(f"{self.auth_config.api_base_url}/v2/logout"))
+            self.assertEqual(args["returnTo"], self.auth_config.redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
             self.assertTrue(response.headers["Set-Cookie"].startswith("cxguser=;"))
 

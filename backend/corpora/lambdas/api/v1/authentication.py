@@ -49,7 +49,7 @@ def logout():
     """api call,  logout of the system"""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
-    params = {"returnTo": config.callback_base_url, "client_id": config.client_id}
+    params = {"returnTo": config.redirect_to_frontend, "client_id": config.client_id}
     response = redirect(client.api_base_url + "/v2/logout?" + urlencode(params))
     # remove the cookie
     remove_token(config.cookie_name)
@@ -63,7 +63,7 @@ def oauth2_callback():
     token = client.authorize_access_token()
     # write the cookie
     save_token(config.cookie_name, token)
-    return redirect(config.callback_base_url)
+    return redirect(config.redirect_to_frontend)
 
 
 def save_token(cookie_name, token):
