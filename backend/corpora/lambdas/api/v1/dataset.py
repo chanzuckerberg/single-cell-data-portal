@@ -19,11 +19,10 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
         raise NotFoundHTTPException(f"'dataset/{dataset_uuid}/asset/{asset_uuid}' not found.")
 
     # Retrieve S3 metadata
-    metadata = asset.get_s3_metadata()
-    if not metadata:
+    file_size = asset.get_s3_metadata()
+    if not file_size:
         raise NotFoundHTTPException(f"'dataset/{dataset_uuid}/asset/{asset_uuid}' not found.")
-    else:
-        file_size = metadata["ContentLength"]
+
 
     # Generate presigned URL
     presigned_url = asset.generate_file_url()
