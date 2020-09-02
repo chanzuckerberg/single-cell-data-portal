@@ -49,7 +49,6 @@ export const OKButton = styled.button`
   background-color: ${BUTTON_BLUE};
   color: white;
   margin-right: 10px;
-  width: 150px;
 `;
 
 export const NoButton = styled.button`
