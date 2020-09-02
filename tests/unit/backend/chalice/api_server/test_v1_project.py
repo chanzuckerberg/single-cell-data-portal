@@ -150,7 +150,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
                             "filename": "test_filename",
                             "filetype": "H5AD",
                             "id": "test_dataset_artifact_id",
-                            "s3_uri": "s3://corpora-data-test/test_s3_uri.h5ad",
+                            "s3_uri": "s3://bogus_bucket/test_s3_uri.h5ad",
                             "type": "ORIGINAL",
                             "user_submitted": True,
                         }
