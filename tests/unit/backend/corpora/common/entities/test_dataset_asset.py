@@ -1,11 +1,10 @@
-import unittest
-
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
-class TestDataset(CorporaTestCaseUsingMockAWS):
+class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
     def setUp(self):
+        super().setUp()
         self.uuid = "test_dataset_artifact_id"
 
     def test__get__ok(self):
