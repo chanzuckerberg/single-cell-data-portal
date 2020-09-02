@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
 import CookieBanner from "src/components/CookieBanner";
 import ProjectsList from "src/components/ProjectList";
-import { API_URL } from "src/globals";
+import { API_URL } from "src/configs/configs";
 import { Project } from "../common/entities";
 import Layout from "../components/Layout";
 import SEO from "../components/seo";
