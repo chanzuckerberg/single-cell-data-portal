@@ -499,8 +499,6 @@ paths:
                     type: string
                   file_size:
                     type: number
-                  file_type:
-                    $ref: "#/components/schemas/asset_format"
         "401":
           $ref: "#/components/responses/401"
         "403":
