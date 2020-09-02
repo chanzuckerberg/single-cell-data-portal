@@ -19,7 +19,7 @@ class DatasetAsset(Entity):
 
         self.bucket_name, self.file_prefix = self.s3_uri[5:].split("/", 1)
 
-    def generate_file_url(self, expiration: int = 3600) -> typing.Union[str, None]:
+    def generate_file_url(self, expiration: int = 604800) -> typing.Union[str, None]:
         """
         Generate a presigned URL for a file for user download.
         :param expiration: Presigned URL expiration in seconds
