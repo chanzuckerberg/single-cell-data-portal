@@ -1,14 +1,71 @@
+from backend.corpora.common.corpora_orm import (
+    DatasetArtifactType,
+    DatasetArtifactFileType,
+)
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.utils import BogusDatasetParams
 
 
 class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.uuid = "test_dataset_artifact_id"
+        self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
 
     def test__get__ok(self):
         asset = DatasetAsset.get(self.uuid)
         self.assertEqual(self.uuid, asset.id)
         self.assertEqual(self.CORPORA_TEST_CONFIG["bucket_name"], asset.bucket_name)
         self.assertEqual("test_s3_uri.h5ad", asset.file_prefix)
+
+    def test__generate_file_url__OK(self):
+        file_name = "test_generate_file_url.h5ad"
+        content = "This is test_generate_file_url.h5ad"
+
+        # Create S3 object
+        self.create_s3_object(file_name, self.bucket_name, content=content)
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset(file_name)
+
+        url = asset.generate_file_url()
+        self.assertIn(file_name, url)
+        self.assertIn("Expires=", url)
+
+    def test__get_file_size__OK(self):
+        file_name = "test_head_file.txt"
+        content = "This is test_head_file."
+
+        # Create S3 object
+        self.create_s3_object(file_name, self.bucket_name, content=content)
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset(file_name)
+
+        file_size = asset.get_file_size()
+        self.assertEqual(len(content), file_size)
+
+    def test__get_file_size__not_found(self):
+        file_name = "fake_file.txt"
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset(file_name)
+        self.assertIs(None, asset.get_file_size())
+
+    def create_dataset_asset(self, file_name):
+        # Create the Dataset Asset
+        artifact_params = dict(
+            filename="filename_1",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=f"s3://{self.bucket_name}/{file_name}",
+        )
+        dataset_params = BogusDatasetParams.get()
+        dataset = Dataset.create(
+            **dataset_params,
+            artifacts=[artifact_params],
+        )
+        return dataset.get_asset(dataset.artifacts[0].id)
