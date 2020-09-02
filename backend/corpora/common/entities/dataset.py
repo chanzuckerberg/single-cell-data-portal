@@ -1,7 +1,7 @@
 import typing
 import uuid
 
-from backend.corpora.common.entities.asset import Asset
+from backend.corpora.common.entities.dataset_asset import DatasetAsset
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
 
@@ -81,25 +81,19 @@ class Dataset(Entity):
 
         return cls(new_db_object)
 
-    def get_asset(self, asset_uuid) -> typing.Union[Asset, None]:
+    def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.
         :param asset_uuid: uuid of the asset to find
         :return: If the asset is found it is returned, else None is returned.
         """
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
-        if not asset:
-            return
-        else:
-            return Asset(asset[0])
+        return None if not asset else DatasetAsset(asset[0])
 
     def delete(self):
         """
         Delete the Dataset and all child objects. Contributors connect to a dataset are deleted if they are not longer
         connected to any datasets.
-
-        TODO: Must also delete s3 objects related to the asset.
-        :return:
         """
         contributors = self.db_object.contributors
         for contributor in contributors:

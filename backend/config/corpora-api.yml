@@ -793,9 +793,7 @@ components:
           type: string
     problem:
       type: object
-      description: >-
-        The error response shape based on
-        (Problem Details for HTTP APIs)[https://tools.ietf.org/html/draft-ietf-appsawg-http-problem-00] document.
+      description: Error message container for HTTP APIs.
       properties:
         type:
           type: string

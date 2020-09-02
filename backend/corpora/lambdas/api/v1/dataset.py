@@ -37,5 +37,5 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
             file_size=file_size,
             presigned_url=presigned_url,
         ),
-        201,
+        200,
     )
