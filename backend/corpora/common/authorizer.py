@@ -8,7 +8,7 @@ from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 
 def assert_authorized_token(token: str) -> dict:
-    """ "
+    """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param token: The token
     :return: The decoded access token and userinfo.
