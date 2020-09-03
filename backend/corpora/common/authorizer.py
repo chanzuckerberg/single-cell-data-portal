@@ -25,7 +25,7 @@ def assert_authorized_token(token: str) -> dict:
     if public_key:
         algorithms = ["RS256"]
         options = {}
-        # in some test situations ignore the verifying the signature and issuer
+        # in some test situations ignore verifying the signature and issuer
         if os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e")):
             options = {"verify_signature": False, "verify_iss": False}
         try:
@@ -37,7 +37,7 @@ def assert_authorized_token(token: str) -> dict:
         except ExpiredSignatureError:
             raise
         except JWTClaimsError:
-            raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
+            raise UnauthorizedError(msg="Incorrect claims, please check the audience and issuer.")
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
@@ -56,7 +56,7 @@ def assert_authorized(headers: dict) -> dict:
         token = get_token_auth_header(headers)
         return assert_authorized_token(token)
     except ExpiredSignatureError:
-        raise UnauthorizedError(msg="token is expired")
+        raise UnauthorizedError(msg="Token is expired.")
 
 
 def get_token_auth_header(headers: dict) -> str:

@@ -7,8 +7,8 @@ import time
 from flask import Flask, jsonify, make_response, request, redirect
 import random
 from multiprocessing import Process
-from tests.unit.backend.chalice import ChaliceTestHarness
 from backend.corpora.common.corpora_config import CorporaAuthConfig
+from tests.unit.backend.chalice.api_server import BaseAPITest
 
 # Create a mocked out oauth server, which servers all the endpoints needed by the oauth type.
 mock_oauth_app = Flask("mock_oauth_app")
@@ -77,7 +77,7 @@ def launch_mock_oauth():
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
-class TestAuth(unittest.TestCase):
+class TestAuth(BaseAPITest, unittest.TestCase):
     def setUp(self):
         self.mock_oauth_process = Process(target=launch_mock_oauth)
         self.mock_oauth_process.start()
@@ -93,8 +93,6 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(userinfo["email_verified"], True)
 
     def test__auth_flow(self):
-        corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
-        self.app = ChaliceTestHarness(corpora_api_dir)
         self.auth_config = CorporaAuthConfig()
         self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
         self.auth_config._config["callback_base_url"] = "http://localhost:5000"

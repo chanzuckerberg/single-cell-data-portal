@@ -1,21 +1,29 @@
-from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g
+from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response
 import json
 import os
 import requests
 from authlib.integrations.flask_client import OAuth
+from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from urllib.parse import urlencode
 import base64
 from ....common.authorizer import get_userinfo, assert_authorized_token
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from jose.exceptions import ExpiredSignatureError
 from chalice import UnauthorizedError
+from typing import Optional
+
 
 # global oauth client
 oauth_client = None
 
 
-def get_oauth_client(config):
-    """Create an oauth client on the first invocation, then return oauth client for subsequent calls"""
+def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
+    """Create an oauth client on the first invocation, then return oauth client for subsequent calls.
+
+    :param config:  An object containing the auth configuration.
+    :return: The oauth client.
+    """
+
     global oauth_client
     if oauth_client and os.environ["DEPLOYMENT_STAGE"] != "test":
         # tests may have different configs
@@ -36,8 +44,8 @@ def get_oauth_client(config):
     return oauth_client
 
 
-def login():
-    """api call,  initiate the login process"""
+def login() -> Response:
+    """API call: initiate the login process."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
     callbackurl = f"{config.callback_base_url}/v1/oauth2/callback"
@@ -45,8 +53,8 @@ def login():
     return response
 
 
-def logout():
-    """api call,  logout of the system"""
+def logout() -> Response:
+    """API call: logout of the system."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
     params = {"returnTo": config.redirect_to_frontend, "client_id": config.client_id}
@@ -56,8 +64,8 @@ def logout():
     return response
 
 
-def oauth2_callback():
-    """api call,  redirect from the auth server after login successful"""
+def oauth2_callback() -> Response:
+    """API call: redirect from the auth server after login successful."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
     token = client.authorize_access_token()
@@ -66,8 +74,12 @@ def oauth2_callback():
     return redirect(config.redirect_to_frontend)
 
 
-def save_token(cookie_name, token):
-    """Save the token, both in the g scope and in a cookie"""
+def save_token(cookie_name: str, token: dict) -> None:
+    """Save the token, both in the g scope and in a cookie.
+
+    :param cookie_name: The name of the cookie that is updated or created.
+    :param token: A dict containing the token information.
+    """
     g.token = token
 
     @after_this_request
@@ -77,8 +89,11 @@ def save_token(cookie_name, token):
         return response
 
 
-def remove_token(cookie_name):
-    """Remove the token, both from the g scope and the cookie"""
+def remove_token(cookie_name: str) -> None:
+    """Remove the token, both from the g scope and the cookie
+
+    :param cookie_name:  The name of the cookie to be removed.
+    """
     g.pop("token", None)
 
     @after_this_request
@@ -87,17 +102,27 @@ def remove_token(cookie_name):
         return response
 
 
-def decode_token(tokenstr):
-    """Return a token dictionary from the string representation of the token"""
+def decode_token(tokenstr: str) -> dict:
+    """Return a token dictionary from the string representation of the token.
+
+    :param tokenstr:  The string representation of the token.
+    :return: The token dictionary.
+    """
     value = base64.b64decode(tokenstr)
     token = json.loads(value)
     return token
 
 
-def get_token(cookie_name):
-    """Return the token.  first look in the g scope, then in the cookie.  It is important to put the
+def get_token(cookie_name: str) -> dict:
+    """Return the token.
+
+    First look in the g scope, then in the cookie.  It is important to put the
     cookie in the g scope to properly handle refresh tokens, where the new token has not yet been written
-    into a cookie before it needs to be accessed."""
+    into a cookie before it needs to be accessed.
+
+    :param cookie_name:  The name of the cookie that stores the token.
+    :return: The token dictionary.
+    """
     if "token" in g:
         return g.token
 
@@ -106,12 +131,16 @@ def get_token(cookie_name):
     return g.token
 
 
-def check_token(token):
-    """check the validity of the token.  If the token has expired, attempt to refresh the token.
-    if valid, return the payload of the id_token, otherwise throw an UnauthorizedError"""
+def check_token(token: dict) -> dict:
+    """Check the validity of the token.
+
+    If the token has expired, attempt to refresh the token.
+    if valid, return the payload of the id_token, otherwise throw an UnauthorizedError.
+
+    :param token: a dictionary that contains the token information.
+    """
     try:
         payload = assert_authorized_token(token.get("id_token"))
-        return payload
     except ExpiredSignatureError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
@@ -122,30 +151,44 @@ def check_token(token):
             payload = assert_authorized_token(token.get("id_token"))
             # update the cookie with then refreshed token
             save_token(auth_config.cookie_name, token)
-            return payload
         except ExpiredSignatureError:
             remove_token(auth_config.cookie_name)
             raise UnauthorizedError("token is expired")
 
+    return payload
 
-def apikey_info_func(tokenstr, required_scopes):
+
+def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     """Function used by connexion in the securitySchemes.
-    The return dictionary must contains a "sub" key"""
+
+    The return dictionary must contains a "sub" key.
+
+    :params tokenstr:  A string representation of the token
+    :params required_scopes: List of required scopes (currently not used).
+    :return: The token dictionary.
+    """
     token = decode_token(tokenstr)
     payload = check_token(token)
     return payload
 
 
-def userinfo():
-    """api call,  retrieve the user info from the id token stored in the cookie"""
+def userinfo() -> Response:
+    """API call: retrieve the user info from the id token stored in the cookie"""
     config = CorporaAuthConfig()
     token = get_token(config.cookie_name)
     userinfo = get_userinfo(token.get("id_token"))
     return make_response(jsonify(userinfo))
 
 
-def refresh_expired_token(token):
-    """Attempt to refresh the expired token.  If successful save return the new token, otherwise return None"""
+def refresh_expired_token(token: dict) -> Optional[dict]:
+    """Attempt to refresh the expired token.
+
+    If successful, save and return the new token, otherwise return None.
+
+    :param token: a dictionary that contains the token information.
+    :return: Either the new token dict, or None.
+    """
+
     auth_config = CorporaAuthConfig()
     refresh_token = token.get("refresh_token")
     if not refresh_token:
