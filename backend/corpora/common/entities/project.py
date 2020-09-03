@@ -142,7 +142,8 @@ class Project(Entity):
         result = self.to_dict()
         # Reshape the data to match.
         result["s3_bucket_key"] = result.pop("s3_bucket", None)
-        result["owner"] = result.pop("user")
+        result.pop("user", None)
+        result.pop("owner", None)
         result["links"] = [
             dict(url=link["link_url"], name=link["link_name"], type=link["link_type"]) for link in result["links"]
         ]
@@ -150,4 +151,5 @@ class Project(Entity):
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
+            dataset.pop("contributors", None)
         return result
