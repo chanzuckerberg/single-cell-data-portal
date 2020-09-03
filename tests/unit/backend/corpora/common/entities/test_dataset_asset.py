@@ -22,7 +22,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
         asset = DatasetAsset.get(self.uuid)
         self.assertEqual(self.uuid, asset.id)
         self.assertEqual(self.CORPORA_TEST_CONFIG["bucket_name"], asset.bucket_name)
-        self.assertEqual("test_s3_uri.h5ad", asset.file_prefix)
+        self.assertEqual("test_s3_uri.h5ad", asset.key_name)
 
     def test__generate_file_url__OK(self):
         file_name = "test_generate_file_url.h5ad"
