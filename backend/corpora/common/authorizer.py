@@ -1,8 +1,10 @@
 from functools import lru_cache
 import requests
+import os
 from chalice import UnauthorizedError
-from jose import jwt, JWTError
-from .corpora_config import CorporaAuthConfig
+from backend.corpora.common.corpora_config import CorporaAuthConfig
+from jose import jwt
+from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 
 def assert_authorized_token(token: str) -> dict:
@@ -22,14 +24,20 @@ def assert_authorized_token(token: str) -> dict:
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
         algorithms = ["RS256"]
+        options = {}
+        # in some test situations ignore verifying the signature and issuer
+        if os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e")):
+            options = {"verify_signature": False, "verify_iss": False}
         try:
             if not auth0_domain.endswith("/"):
                 auth0_domain += "/"
-            payload = jwt.decode(token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain)
-        except jwt.ExpiredSignatureError:
-            raise UnauthorizedError(msg="token is expired")
-        except jwt.JWTClaimsError:
-            raise UnauthorizedError(msg="incorrect claims, please check the audience and issuer")
+            payload = jwt.decode(
+                token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain, options=options
+            )
+        except ExpiredSignatureError:
+            raise
+        except JWTClaimsError:
+            raise UnauthorizedError(msg="Incorrect claims, please check the audience and issuer.")
         except Exception:
             raise UnauthorizedError(msg="Unable to parse authentication token.")
 
@@ -44,9 +52,11 @@ def assert_authorized(headers: dict) -> dict:
     :param headers: The http headers from the request.
     :return: The decoded access token and userinfo.
     """
-
-    token = get_token_auth_header(headers)
-    return assert_authorized_token(token)
+    try:
+        token = get_token_auth_header(headers)
+        return assert_authorized_token(token)
+    except ExpiredSignatureError:
+        raise UnauthorizedError(msg="Token is expired.")
 
 
 def get_token_auth_header(headers: dict) -> str:
@@ -104,6 +114,5 @@ def get_public_keys(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: Public Keys
     """
-
     keys = requests.get(get_openid_config(openid_provider)["jwks_uri"]).json()["keys"]
     return {key["kid"]: key for key in keys}

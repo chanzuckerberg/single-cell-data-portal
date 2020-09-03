@@ -18,6 +18,10 @@ class CorporaDbConfig(SecretConfig):
 
 
 class CorporaAuthConfig(SecretConfig):
+    """
+    For a description of the secret key contents, see backend/config/auth0-secret-template.json.
+    """
+
     def __init__(self, *args, **kwargs):
         deployment = os.environ["DEPLOYMENT_STAGE"]
         if deployment == "test":
@@ -31,3 +35,6 @@ class CorporaAuthConfig(SecretConfig):
                 secret_name="auth0-secret",
                 **kwargs,
             )
+            if not self.config_is_loaded():
+                self.load()
+            self.config["callback_base_url"] = "http://localhost:5000"
