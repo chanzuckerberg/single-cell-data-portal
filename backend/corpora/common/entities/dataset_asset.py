@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 
 from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -17,20 +18,22 @@ class DatasetAsset(Entity):
     def __init__(self, db_object: DbDatasetArtifact):
         super().__init__(db_object)
 
-        self.bucket_name, self.file_prefix = self.s3_uri[5:].split("/", 1)
+        url = urlparse(self.s3_uri)
+        self.bucket_name = url.netloc
+        self.key_name = url.path[1:]
 
     def generate_file_url(self, expiration: int = 604800) -> typing.Union[str, None]:
         """
         Generate a presigned URL for a file for user download.
-        :param expiration: Presigned URL expiration in seconds
+        :param expiration: Presigned URL expiration in seconds. The default is 1 week.
         :return: Presigned URL to download the requested file
         """
         try:
             response = self.s3.generate_presigned_url(
-                "get_object", Params={"Bucket": self.bucket_name, "Key": self.file_prefix}, ExpiresIn=expiration
+                "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
-            logger.exception(f"Failed to generate presigned URL for '{self.file_prefix}'.")
+            logger.exception(f"Failed to generate presigned URL for '{self.key_name}'.")
             return None
         else:
             return response
@@ -42,9 +45,9 @@ class DatasetAsset(Entity):
         """
 
         try:
-            response = self.s3.head_object(Bucket=self.bucket_name, Key=self.file_prefix)
+            response = self.s3.head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
-            logger.exception(f"Failed to retrieve meta data for '{self.file_prefix}'.")
+            logger.exception(f"Failed to retrieve meta data for '{self.key_name}'.")
             return None
         else:
             return response["ContentLength"]

@@ -150,7 +150,7 @@ class TestDataset(unittest.TestCase):
     def test__get_asset__not_found(self):
         dataset = Dataset.get(self.uuid)
         asset = dataset.get_asset("fake_asset")
-        self.assertEqual(None, asset)
+        self.assertIsNone(asset)
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """

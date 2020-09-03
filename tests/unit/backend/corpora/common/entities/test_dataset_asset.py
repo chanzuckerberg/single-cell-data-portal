@@ -36,15 +36,14 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
 
     @mock.patch("backend.corpora.common.entities.dataset_asset.DatasetAsset.s3.generate_presigned_url")
     def test__generate_file_url__ERROR(self, mock_generate_presigned_url):
-        def side_effect(*args, **kwargs):
-            raise ClientError({}, "mock ClientError")
-
-        mock_generate_presigned_url.side_effect = side_effect
+        mock_generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
 
         # Create the Dataset Asset
         asset = self.create_dataset_asset("test__generate_file_url__ERROR.h5ad")
 
-        url = asset.generate_file_url()
+        with self.assertLogs(level="ERROR") as logger:
+            url = asset.generate_file_url()
+        self.assertIn("Failed to generate presigned URL", logger.output[0])
         self.assertEqual(None, url)
 
     def test__get_file_size__OK(self):
@@ -65,7 +64,11 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
 
         # Create the Dataset Asset
         asset = self.create_dataset_asset(file_name)
-        self.assertIs(None, asset.get_file_size())
+
+        with self.assertLogs(level="ERROR") as logger:
+            file_size = asset.get_file_size()
+        self.assertIn("Failed to retrieve meta data", logger.output[0])
+        self.assertIsNone(file_size)
 
     def create_dataset_asset(self, file_name):
         # Create the Dataset Asset
