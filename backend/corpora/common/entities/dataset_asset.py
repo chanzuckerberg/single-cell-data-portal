@@ -19,8 +19,8 @@ class DatasetAsset(Entity):
         super().__init__(db_object)
 
         self.url = urlparse(self.s3_uri)
-        self.bucket_name = url.netloc
-        self.key_name = url.path[1:]
+        self.bucket_name = self.url.netloc
+        self.key_name = self.url.path[1:]
 
     def generate_file_url(self, expiration: int = 604800) -> typing.Union[str, None]:
         """
