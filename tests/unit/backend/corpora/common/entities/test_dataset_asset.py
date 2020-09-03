@@ -1,3 +1,7 @@
+import mock
+
+from botocore.exceptions import ClientError
+
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     DatasetArtifactFileType,
@@ -22,10 +26,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
 
     def test__generate_file_url__OK(self):
         file_name = "test_generate_file_url.h5ad"
-        content = "This is test_generate_file_url.h5ad"
-
-        # Create S3 object
-        self.create_s3_object(file_name, self.bucket_name, content=content)
 
         # Create the Dataset Asset
         asset = self.create_dataset_asset(file_name)
@@ -33,6 +33,18 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
         url = asset.generate_file_url()
         self.assertIn(file_name, url)
         self.assertIn("Expires=", url)
+
+    @mock.patch('backend.corpora.common.entities.dataset_asset.DatasetAsset.s3.generate_presigned_url')
+    def test__generate_file_url__ERROR(self, mock_generate_presigned_url):
+        def side_effect(*args, **kwargs):
+            raise ClientError({}, 'mock ClientError')
+        mock_generate_presigned_url.side_effect = side_effect
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset("test__generate_file_url__ERROR.h5ad")
+        
+        url = asset.generate_file_url()
+        self.assertEqual(None, url)
 
     def test__get_file_size__OK(self):
         file_name = "test_head_file.txt"

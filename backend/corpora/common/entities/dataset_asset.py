@@ -32,8 +32,8 @@ class DatasetAsset(Entity):
         except ClientError:
             logger.exception(f"Failed to generate presigned URL for '{self.file_prefix}'.")
             return None
-
-        return response
+        else:
+            return response
 
     def get_file_size(self) -> typing.Union[int, None]:
         """
