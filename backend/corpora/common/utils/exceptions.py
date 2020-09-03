@@ -9,7 +9,7 @@ class CorporaException(Exception):
 
 class ServerErrorHTTPException(ProblemException):
     def __init__(
-        self, detail: str = "An internal server error has occured. Please try again later.", *args, **kwargs
+        self, detail: str = "An internal server error has occurred. Please try again later.", *args, **kwargs
     ) -> None:
         super().__init__(
             status=requests.codes.server_error, title="Internal Server Error", detail=detail, *args, **kwargs
