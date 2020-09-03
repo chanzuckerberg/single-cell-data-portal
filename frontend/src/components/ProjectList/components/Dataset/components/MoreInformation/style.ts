@@ -1,4 +1,4 @@
-import { LAYOUT } from "src/components/ProjectList/common/style";
+import { LAYOUT } from "src/components/common/layout";
 import styled from "styled-components";
 
 export const Wrapper = styled.div`

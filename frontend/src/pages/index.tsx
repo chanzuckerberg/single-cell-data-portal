@@ -8,7 +8,7 @@ import SEO from "../components/seo";
 
 const Content: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetchProjects({

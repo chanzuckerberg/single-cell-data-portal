@@ -10,6 +10,6 @@ export const MainWrapper = styled.div`
   min-width: 800px;
   width: 100%;
   min-height: 83vh;
-  padding: 0 15px;
+  padding: 15px 25px;
   margin: 0 auto;
 `;
