@@ -113,7 +113,7 @@ def get_chalice_app(flask_app):
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()
 
-    @app.route("/", methods=['GET', 'HEAD'])
+    @app.route("/", methods=["GET", "HEAD"])
     def serve_swagger_ui():
         return chalice.Response(
             status_code=200,
