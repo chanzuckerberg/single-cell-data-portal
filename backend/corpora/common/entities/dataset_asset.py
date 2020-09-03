@@ -45,6 +45,6 @@ class DatasetAsset(Entity):
             response = self.s3.head_object(Bucket=self.bucket_name, Key=self.file_prefix)
         except ClientError:
             logger.exception(f"Failed to retrieve meta data for '{self.file_prefix}'.")
-            return
+            return None
         else:
             return response["ContentLength"]
