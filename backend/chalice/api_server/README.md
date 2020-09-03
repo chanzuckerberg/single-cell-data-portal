@@ -12,7 +12,7 @@ Filename                  | Purpose                           | Information link
 `requirements-dev.txt`    |Developer environment dependencies | [Pip requirements files](https://pip.readthedocs.io/en/1.1/requirements.html)
 `Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
 `../../config/iam-policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
-
+`../../config/auth0-secret-template.json` | Description of the auth configuration secret | [auth0-secret-template.json](../../config/auth0-secret-template.json)
 ## Development
 1.  Ensure project [pre-requisites](../../../README.md#Pre-requisites) are met.
 

@@ -18,26 +18,8 @@ class CorporaDbConfig(SecretConfig):
 
 
 class CorporaAuthConfig(SecretConfig):
-
     """
-    secret keys:
-
-    - api_base_url
-        the location to the auth0 tenant base url
-    - client_id
-        the id of the auth0 tenant
-    - client_secret
-        the secret key, known to the auth0 tenant and the data portal backend
-    - audience
-        same as the client_id, which is required for id_tokens.
-    - flask_secret_key
-        the secret used to encrypt the flask session cookies
-    - callback_base_url
-        the data portal api base url
-    - cookie_name
-        the name of the cookie that stores the tokens
-    - redirect_to_frontend
-        the location of the front end, this is where the user is redirected after login/logout.
+    For a description of the secret key contents, see backend/config/auth0-secret-template.json.
     """
 
     def __init__(self, *args, **kwargs):
