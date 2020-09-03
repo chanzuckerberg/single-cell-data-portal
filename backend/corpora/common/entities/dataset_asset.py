@@ -31,7 +31,7 @@ class DatasetAsset(Entity):
             )
         except ClientError:
             logger.exception(f"Failed to generate presigned URL for '{self.file_prefix}'.")
-            return
+            return None
 
         return response
 
