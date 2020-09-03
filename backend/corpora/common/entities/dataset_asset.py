@@ -18,7 +18,7 @@ class DatasetAsset(Entity):
     def __init__(self, db_object: DbDatasetArtifact):
         super().__init__(db_object)
 
-        url = urlparse(self.s3_uri)
+        self.url = urlparse(self.s3_uri)
         self.bucket_name = url.netloc
         self.key_name = url.path[1:]
 
@@ -33,7 +33,7 @@ class DatasetAsset(Entity):
                 "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
-            logger.exception(f"Failed to generate presigned URL for '{self.key_name}'.")
+            logger.exception(f"Failed to generate presigned URL for '{self.url}'.")
             return None
         else:
             return response
@@ -47,7 +47,7 @@ class DatasetAsset(Entity):
         try:
             response = self.s3.head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
-            logger.exception(f"Failed to retrieve meta data for '{self.key_name}'.")
+            logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None
         else:
             return response["ContentLength"]
