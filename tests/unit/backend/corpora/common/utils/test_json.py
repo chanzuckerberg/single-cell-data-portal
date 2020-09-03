@@ -66,25 +66,23 @@ class TestCustomJSONEncoder(unittest.TestCase):
             ("'", '"\'"'),
             (
                 "https://s3.us-west-2.amazonaws.com/bogus_bucket/test_generate_file_url.h5ad?AWSAccessKeyId"
-                "=ASIA2F53T2CQNMN2LBN5&Signature=tohsICVhzs9sJdNrG06Yh8%2FpM8Y%3D&x-amz-security-token=FwoGZXIvYXdzEMf%2F"
-                "%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDI%2FAU5xheJUplKF8GiLmAj03%2BzMJ34xAA%2Bz3IQzXZEUdJQcw4kih0b74%2Fftiw"
-                "%2BWBh6bFUsUdO60mZLWafKFatbegWbzxcuW7funOqkfXgL59s%2Bph8xnYOi1KDD88r%2FTiWsX9UZ1CgW9Fai"
-                "%2FZYvqUKYJaRfAtZ9v6g9COoVSic5YITWjinfVv85XajO6IJvzwRTXKfXyVFGIrmVwarsUDyik2%2F0a3E9aSXLO9WPvM85"
-                "%2FCCON00cZlubwab9O9R4ahZBTqJjvje4mWPfmqxAT1KEejSLEAE5Bv1OTUNaIYPYNM3nibLvIi%2B25YVd1WUgvdnxfWhTMMa"
-                "%2FZH9qcr%2F2oir%2F%2BBIjpJUkVPnHLdh5%2BYdMaL1ABGq3"
-                "%2BoMU4AbrmHZIc2U6uT7C3IoaZgk2KzWACZH7Li1DRoyiyurS2K3RPLUZ1eUKvwrGFWgs2ZNtpBaiQ39qepqVtAg1Ks9tc9pRJU3l1A"
-                "VbaAGj1NMVtm6thR61w4AQNvwCoo27rF%2BgUyIz2Th4H%2B7PXBvEDNp8qoUYn7rMPp%2BFdEXQCO3V5kvabHZojO&Expires=15997"
-                "72637",
-                '"https://s3.us-west-2.amazonaws.com/bogus_bucket/test_generate_file_url.h5ad?AWSAccessKeyId'
-                "=ASIA2F53T2CQNMN2LBN5&Signature=tohsICVhzs9sJdNrG06Yh8%2FpM8Y%3D&x-amz-security-token=FwoGZXIvYXdzEMf%2F"
-                "%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDI%2FAU5xheJUplKF8GiLmAj03%2BzMJ34xAA%2Bz3IQzXZEUdJQcw4kih0b74%2Fftiw"
-                "%2BWBh6bFUsUdO60mZLWafKFatbegWbzxcuW7funOqkfXgL59s%2Bph8xnYOi1KDD88r%2FTiWsX9UZ1CgW9Fai"
-                "%2FZYvqUKYJaRfAtZ9v6g9COoVSic5YITWjinfVv85XajO6IJvzwRTXKfXyVFGIrmVwarsUDyik2%2F0a3E9aSXLO9WPvM85"
-                "%2FCCON00cZlubwab9O9R4ahZBTqJjvje4mWPfmqxAT1KEejSLEAE5Bv1OTUNaIYPYNM3nibLvIi%2B25YVd1WUgvdnxfWhTMMa"
-                "%2FZH9qcr%2F2oir%2F%2BBIjpJUkVPnHLdh5%2BYdMaL1ABGq3"
-                "%2BoMU4AbrmHZIc2U6uT7C3IoaZgk2KzWACZH7Li1DRoyiyurS2K3RPLUZ1eUKvwrGFWgs2ZNtpBaiQ39qepqVtAg1Ks9tc9pRJU3l1A"
-                "VbaAGj1NMVtm6thR61w4AQNvwCoo27rF%2BgUyIz2Th4H%2B7PXBvEDNp8qoUYn7rMPp%2BFdEXQCO3V5kvabHZojO&Expires=15997"
-                '72637"',
+                "=ASIA2F53T2CQNMN2LBN5&Signature=tohsICVhzs9sJdNrG06Yh8%2FpM8Y%3D&x-amz-security-token=FwoGZXIvYXdzEMf%"
+                "2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDI%2FAU5xheJUplKF8GiLmAj03%2BzMJ34xAA%2Bz3IQzXZEUdJQcw4kih0b74%2Fftiw%"
+                "2BWBh6bFUsUdO60mZLWafKFatbegWbzxcuW7funOqkfXgL59s%2Bph8xnYOi1KDD88r%2FTiWsX9UZ1CgW9Fai%2FZYvqUKYJaRfAt"
+                "Z9v6g9COoVSic5YITWjinfVv85XajO6IJvzwRTXKfXyVFGIrmVwarsUDyik2%2F0a3E9aSXLO9WPvM85%2FCCON00cZlubwab9O9R4"
+                "ahZBTqJjvje4mWPfmqxAT1KEejSLEAE5Bv1OTUNaIYPYNM3nibLvIi%2B25YVd1WUgvdnxfWhTMMa%2FZH9qcr%2F2oir%2F%2BBIj"
+                "pJUkVPnHLdh5%2BYdMaL1ABGq3%2BoMU4AbrmHZIc2U6uT7C3IoaZgk2KzWACZH7Li1DRoyiyurS2K3RPLUZ1eUKvwrGFWgs2ZNtpB"
+                "aiQ39qepqVtAg1Ks9tc9pRJU3l1AVbaAGj1NMVtm6thR61w4AQNvwCoo27rF%2BgUyIz2Th4H%2B7PXBvEDNp8qoUYn7rMPp%2BFdE"
+                "XQCO3V5kvabHZojO&Expires=1599772637",
+                '"https://s3.us-west-2.amazonaws.com/bogus_bucket/test_generate_file_url.h5ad?AWSAccessKeyId=ASIA2F53T2'
+                'CQNMN2LBN5&Signature=tohsICVhzs9sJdNrG06Yh8%2FpM8Y%3D&x-amz-security-token=FwoGZXIvYXdzEMf%2F%2F%2F%2'
+                'F%2F%2F%2F%2F%2F%2FwEaDI%2FAU5xheJUplKF8GiLmAj03%2BzMJ34xAA%2Bz3IQzXZEUdJQcw4kih0b74%2Fftiw%2BWBh6bFUs'
+                'UdO60mZLWafKFatbegWbzxcuW7funOqkfXgL59s%2Bph8xnYOi1KDD88r%2FTiWsX9UZ1CgW9Fai%2FZYvqUKYJaRfAtZ9v6g9COoV'
+                'Sic5YITWjinfVv85XajO6IJvzwRTXKfXyVFGIrmVwarsUDyik2%2F0a3E9aSXLO9WPvM85%2FCCON00cZlubwab9O9R4ahZBTqJjvj'
+                'e4mWPfmqxAT1KEejSLEAE5Bv1OTUNaIYPYNM3nibLvIi%2B25YVd1WUgvdnxfWhTMMa%2FZH9qcr%2F2oir%2F%2BBIjpJUkVPnHLd'
+                'h5%2BYdMaL1ABGq3%2BoMU4AbrmHZIc2U6uT7C3IoaZgk2KzWACZH7Li1DRoyiyurS2K3RPLUZ1eUKvwrGFWgs2ZNtpBaiQ39qepqV'
+                'tAg1Ks9tc9pRJU3l1AVbaAGj1NMVtm6thR61w4AQNvwCoo27rF%2BgUyIz2Th4H%2B7PXBvEDNp8qoUYn7rMPp%2BFdEXQCO3V5kva'
+                'bHZojO&Expires=1599772637"',
             ),
         ]
         for test, expected in tests:
