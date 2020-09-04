@@ -468,16 +468,21 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/dataset/{dataset_uuid}:
+  /v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: corpora.lambdas.api.v1.project.get_project_dataset
+      operationId: corpora.lambdas.api.v1.dataset.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
+        - name: asset_uuid
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -487,9 +492,13 @@ paths:
                 type: object
                 properties:
                   dataset_uuid:
+                    $ref: "#/components/schemas/dataset_uuid"
+                  presigned_url:
                     type: string
-                  dataset_presigned_url:
+                  file_name:
                     type: string
+                  file_size:
+                    type: number
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -780,6 +789,16 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
   parameters:
     path_project_uuid:
       name: project_uuid
@@ -816,15 +835,34 @@ components:
       description: Accepted
     400:
       description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     401:
       description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     403:
       description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     409:
       description: File conflict.
-
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
   securitySchemes:
     auth0:
       type: openIdConnect

@@ -150,7 +150,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
                             "filename": "test_filename",
                             "filetype": "H5AD",
                             "id": "test_dataset_artifact_id",
-                            "s3_uri": "test_s3_uri",
+                            "s3_uri": "s3://bogus_bucket/test_s3_uri.h5ad",
                             "type": "ORIGINAL",
                             "user_submitted": True,
                         }
@@ -194,7 +194,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "email": "test_email",
                 "id": "test_user_id",
                 "name": "test_user",
-            },  # noqa
+            },
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",
