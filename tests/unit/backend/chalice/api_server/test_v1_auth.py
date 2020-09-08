@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import unittest
 import urllib.parse
 import jose.jwt
@@ -7,7 +8,6 @@ import time
 from flask import Flask, jsonify, make_response, request, redirect
 import random
 from multiprocessing import Process
-from backend.corpora.common.corpora_config import CorporaAuthConfig
 from tests.unit.backend.chalice.api_server import BaseAPITest
 
 # Create a mocked out oauth server, which servers all the endpoints needed by the oauth type.
@@ -93,6 +93,17 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.assertEqual(userinfo["email_verified"], True)
 
     def test__auth_flow(self):
+        old_path = sys.path.copy()
+
+        def restore_path(p):
+            sys.path = p
+
+        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
+        self.addCleanup(restore_path, old_path)
+        from corpora.common.corpora_config import CorporaAuthConfig
+
+        # Use the CorporaAuthConfig used by the chalice app
+
         self.auth_config = CorporaAuthConfig()
         self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
         self.auth_config._config["callback_base_url"] = "http://localhost:5000"

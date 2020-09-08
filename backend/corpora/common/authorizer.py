@@ -1,10 +1,12 @@
-from functools import lru_cache
-import requests
 import os
+from functools import lru_cache
+
+import requests
 from chalice import UnauthorizedError
-from backend.corpora.common.corpora_config import CorporaAuthConfig
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
+
+from .corpora_config import CorporaAuthConfig
 
 
 def assert_authorized_token(token: str) -> dict:

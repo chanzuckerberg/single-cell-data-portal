@@ -1,17 +1,18 @@
-from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response
+import base64
 import json
 import os
+from typing import Optional
+from urllib.parse import urlencode
+
 import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
-from urllib.parse import urlencode
-import base64
-from ....common.authorizer import get_userinfo, assert_authorized_token
-from backend.corpora.common.corpora_config import CorporaAuthConfig
-from jose.exceptions import ExpiredSignatureError
 from chalice import UnauthorizedError
-from typing import Optional
+from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response
+from jose.exceptions import ExpiredSignatureError
 
+from ....common.authorizer import get_userinfo, assert_authorized_token
+from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
 oauth_client = None
