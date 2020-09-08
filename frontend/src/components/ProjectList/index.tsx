@@ -14,8 +14,8 @@ const ProjectsList: FC<Props> = ({ projects }) => {
     <>
       <Heading />
       {projects
-        .flatMap(project =>
-          project.datasets.map(dataset => ({ dataset, links: project.links }))
+        .flatMap((project) =>
+          project.datasets.map((dataset) => ({ dataset, links: project.links }))
         )
         .map(({ dataset, links }) => (
           <Dataset key={dataset.id} dataset={dataset} links={links} />

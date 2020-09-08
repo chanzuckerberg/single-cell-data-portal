@@ -1,5 +1,5 @@
 import { fontStyle as fontStyleBase } from "src/components/common/theme";
-import { LAYOUT } from "src/components/common/layout";
+import { LAYOUT } from "src/components/ProjectList/common/layout";
 import styled, { css } from "styled-components";
 
 const fontStyle = css`
