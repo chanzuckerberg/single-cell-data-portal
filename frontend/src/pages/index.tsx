@@ -68,6 +68,7 @@ async function fetchProjects({ setProjects, setIsLoading }: FetchProjectsArgs) {
   } catch (error) {
     console.error(error);
   }
+
   setIsLoading(false);
 }
 
