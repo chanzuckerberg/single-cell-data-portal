@@ -11,7 +11,7 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-  /v1/submission:
+  /dp/v1/submission:
     get:
       summary: List open submissions in Corpora
       tags:
@@ -102,7 +102,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/submission/{project_uuid}:
+  /dp/v1/submission/{project_uuid}:
     get:
       summary: Get a project's submission details by UUID
       tags:
@@ -151,7 +151,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/submission/{project_uuid}/file:
+  /dp/v1/submission/{project_uuid}/file:
     put:
       summary: Add a file to a submission
       tags:
@@ -215,7 +215,7 @@ paths:
         "409":
           $ref: "#/components/responses/409"
 
-  /v1/submission/{project_uuid}/dataset/{dataset_uuid}:
+  /dp/v1/submission/{project_uuid}/dataset/{dataset_uuid}:
     delete:
       summary: Delete a project's dataset file
       tags:
@@ -237,7 +237,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/submission/{project_uuid}/validate:
+  /dp/v1/submission/{project_uuid}/validate:
     post:
       tags:
         - submissions
@@ -270,7 +270,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/submission/{project_uuid}/save:
+  /dp/v1/submission/{project_uuid}/save:
     post:
       tags:
         - submissions
@@ -325,7 +325,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/submission/{project_uuid}/publish:
+  /dp/v1/submission/{project_uuid}/publish:
     post:
       tags:
         - submissions
@@ -374,7 +374,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/project:
+  /dp/v1/project:
     get:
       tags:
         - projects
@@ -424,7 +424,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/project/{project_uuid}:
+  /dp/v1/project/{project_uuid}:
     get:
       tags:
         - projects
@@ -468,7 +468,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
+  /dp/v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset
@@ -506,7 +506,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/login:
+  /dp/v1/login:
     get:
       tags:
         - authentication
@@ -520,7 +520,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /v1/logout:
+  /dp/v1/logout:
     get:
       tags:
         - authentication
@@ -534,7 +534,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /v1/userinfo:
+  /dp/v1/userinfo:
     get:
       tags:
         - authentication
@@ -555,7 +555,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /v1/oauth2/callback:
+  /dp/v1/oauth2/callback:
     get:
       tags:
         - authentication
@@ -835,5 +835,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
-
-

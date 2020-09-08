@@ -100,13 +100,13 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         headers = dict(host="localhost")
 
         with self.subTest("userinfo_not_authenticated"):
-            response = self.app.get("/v1/userinfo", headers=headers)
+            response = self.app.get("/dp/v1/userinfo", headers=headers)
             self.assertEqual(401, response.status_code)
             body = json.loads(response.body)
             self.assertEqual(body["detail"], "No authorization token provided")
 
         with self.subTest("login"):
-            response = self.app.get("/v1/login", headers=headers)
+            response = self.app.get("/dp/v1/login", headers=headers)
             self.assertEqual(response.status_code, 302)
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
@@ -115,10 +115,10 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             self.assertTrue("response_type=code" in location)
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")
-            self.assertTrue("/v1/oauth2/callback" in args["redirect_uri"])
+            self.assertTrue("/dp/v1/oauth2/callback" in args["redirect_uri"])
 
             # follow redirect
-            test_url = f"/v1/oauth2/callback?code=fakecode&state={args['state']}"
+            test_url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
             response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
@@ -126,7 +126,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             cxguser_cookie = response.headers["Set-Cookie"]
 
             # check userinfo
-            response = self.app.get("/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
+            response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             body = json.loads(response.body)
             self.check_user_info(body)
@@ -136,7 +136,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             time.sleep(TOKEN_EXPIRES + 1)
 
             # check the userinfo again (token has now expired, make sure it is refreshed)
-            response = self.app.get("/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
+            response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             body = json.loads(response.body)
             self.check_user_info(body)
@@ -144,14 +144,14 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             cxguser_cookie = response.headers["Set-Cookie"]
 
             # check the userinfo again (make sure the replacement cookie works)
-            response = self.app.get("/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
+            response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             body = json.loads(response.body)
             self.check_user_info(body)
             self.assertFalse("Set-Cookie" in response.headers)
 
         with self.subTest("logout"):
-            response = self.app.get("/v1/logout", headers=headers)
+            response = self.app.get("/dp/v1/logout", headers=headers)
             self.assertEqual(response.status_code, 302)
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
@@ -162,5 +162,5 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             self.assertTrue(response.headers["Set-Cookie"].startswith("cxguser=;"))
 
             # check userinfo
-            response = self.app.get("/v1/userinfo", headers=dict(host="localhost"))
+            response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost"))
             self.assertEqual(401, response.status_code)

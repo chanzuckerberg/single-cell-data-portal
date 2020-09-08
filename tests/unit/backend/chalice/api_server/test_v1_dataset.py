@@ -14,7 +14,7 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         self.create_s3_object(s3_file_name, bucket, content=content)
 
         expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
-        test_url = furl(path="/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
+        test_url = furl(path="/dp/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         actual_body = json.loads(response.body)
@@ -23,14 +23,14 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(expected_body, actual_body)
 
     def test__post_dataset_asset__file_SERVER_ERROR(self):
-        test_url = furl(path="/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
+        test_url = furl(path="/dp/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(500, response.status_code)
         body = json.loads(response.body)
         self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        test_url = furl(path="/v1/dataset/fake_id/asset/test_dataset_artifact_id")
+        test_url = furl(path="/dp/v1/dataset/fake_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
         body = json.loads(response.body)
@@ -38,7 +38,7 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         print(body)
 
     def test__post_dataset_asset__asset_NOT_FOUND(self):
-        test_url = furl(path="/v1/dataset/test_dataset_id/asset/fake_asset")
+        test_url = furl(path="/dp/v1/dataset/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
         body = json.loads(response.body)

@@ -49,7 +49,7 @@ async function fetchProjects({ setProjects, setIsLoading }: FetchProjectsArgs) {
   setIsLoading(true);
 
   try {
-    const response = await (await fetch(`${API_URL}/v1/project`)).json();
+    const response = await (await fetch(`${API_URL}/dp/v1/project`)).json();
     const projectIds: string[] = response.projects.map(
       (project: ProjectResponse) => project.id
     );
@@ -73,7 +73,7 @@ async function fetchProjects({ setProjects, setIsLoading }: FetchProjectsArgs) {
 }
 
 async function fetchProject(id: string): Promise<Project> {
-  return (await fetch(`${API_URL}/v1/project/${id}`)).json();
+  return (await fetch(`${API_URL}/dp/v1/project/${id}`)).json();
 }
 
 export default Index;
