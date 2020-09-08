@@ -600,7 +600,6 @@ components:
         - name
         - description
         - id
-        - owner
         - status
         - processing_state
         - validation_state
@@ -622,19 +621,6 @@ components:
           $ref: "#/components/schemas/project_uuid"
         s3_bucket_key:
           type: string
-        owner:
-          type: object
-          required:
-            - id
-          properties:
-            id:
-              $ref: "#/components/schemas/user_uuid"
-            email:
-              type: string
-            name:
-              type: string
-            updated_at:
-              type: number
         status:
           type: string
           enum: [LIVE, EDIT]
@@ -672,24 +658,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset"
-    contributor:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        institution:
-          type: string
-        created_at:
-          type: number
-        updated_at:
-          type: number
     ontology_element:
       type: object
       properties:
@@ -717,7 +685,6 @@ components:
         - revision
         - dataset_deployments
         - dataset_assets
-        - contributors
         - preprint_doi
         - publication_doi
         - project_id
@@ -762,10 +729,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"
-        contributors:
-          type: array
-          items:
-            $ref: "#/components/schemas/contributor"
         preprint_doi:
           type: string
         publication_doi:
