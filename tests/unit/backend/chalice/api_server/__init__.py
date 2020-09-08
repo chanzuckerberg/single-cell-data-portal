@@ -12,8 +12,8 @@ class BaseAPITest:
 
     @classmethod
     def setUpClass(cls):
-        corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
-        cls.app = ChaliceTestHarness(corpora_api_dir)
+        cls.corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
+        cls.app = ChaliceTestHarness(cls.corpora_api_dir)
         cls.maxDiff = None  # Easier to compare json responses.
 
     @staticmethod
