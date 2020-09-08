@@ -1,7 +1,7 @@
 import typing
 import uuid
 
-from backend.corpora.common.entities.dataset_asset import DatasetAsset
+from .dataset_asset import DatasetAsset
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
 
