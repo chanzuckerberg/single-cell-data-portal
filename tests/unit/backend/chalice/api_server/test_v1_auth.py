@@ -98,7 +98,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         def restore_path(p):
             sys.path = p
 
-        sys.path.insert(0, os.path.join(cls.corpora_api_dir, "chalicelib"))  # noqa
+        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
         self.addCleanup(restore_path, old_path)
         from corpora.common.corpora_config import CorporaAuthConfig
 
