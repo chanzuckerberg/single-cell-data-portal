@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "baseUrl": ".",
     "esModuleInterop": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -8,23 +9,28 @@
       "dom",
       "es2020"
     ],
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "node",
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext",
-    "baseUrl": ".",
     "paths": {
       "src/*": [
         "./src/*"
-      ],
-    }
+      ]
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "types": [
+      "jest-playwright-preset",
+      "expect-playwright",
+      "jest",
+    ]
   },
   "exclude": [
     "node_modules",
     "public",
     ".cache"
-  ],
+  ]
 }

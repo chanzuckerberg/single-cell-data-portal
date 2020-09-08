@@ -19,6 +19,7 @@ const ViewDataset: FC<Props> = ({ deployments }) => {
         href={deployment.url}
         target="_blank"
         rel="noopener"
+        data-test-id="view-dataset-link"
       >
         View in cellxgene
         <br />
