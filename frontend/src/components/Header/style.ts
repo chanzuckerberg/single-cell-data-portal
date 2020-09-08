@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { layout } from "../common/layout";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -13,10 +14,7 @@ export const Wrapper = styled.div`
 `;
 
 export const MainWrapper = styled.div`
-  max-width: 1400px;
-  min-width: 800px;
-  width: 100%;
+  ${layout}
   padding-left: 22px;
   margin: 0 auto;
 `;
-

@@ -39,6 +39,7 @@ jobs:
       - name: Lint src with eslint
         working-directory: ./frontend
         run: |
+          npm run prettier-check
           npm run lint
 
   unit-test:
