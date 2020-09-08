@@ -7,9 +7,9 @@ const TOOLTIP_MESSAGE = `cellxgene augments datasets with a minimal set of metad
 const Heading: FC = () => {
   return (
     <Wrapper>
-      <Name>Name of dataset</Name>
+      <Name>Dataset name</Name>
       <View>
-        View dataset in cellxgene
+        View in cellxgene
         <span title={TOOLTIP_MESSAGE}>
           <QuestionMark src={questionMarkSvg} alt="question mark" />
         </span>

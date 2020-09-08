@@ -2,6 +2,7 @@ import React, { FC, useState } from "react";
 import { LOCAL_STORAGE_KEYS } from "src/common/constants/localStorageKeys";
 import { get } from "src/common/localStorage/get";
 import { BOOLEAN, set } from "src/common/localStorage/set";
+import { isSSR } from "../../common/utils/isSSR";
 import { ButtonWrapper, Link, NoButton, OKButton, Wrapper } from "./style";
 
 const TOS_LINK =
@@ -45,6 +46,9 @@ const CookieBanner: FC = () => {
 };
 
 function hasClickedOnBanner() {
+  // (thuang): We don't wanna show the banner on the SSR'd page
+  if (isSSR()) return true;
+
   return get(LOCAL_STORAGE_KEYS.COOKIE_DECISION) !== null;
 }
 

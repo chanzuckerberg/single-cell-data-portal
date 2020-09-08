@@ -4,10 +4,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": [
-      "dom",
-      "es2020"
-    ],
+    "lib": ["dom", "es2020"],
     "module": "commonjs",
     "noEmit": true,
     "noUnusedLocals": true,
@@ -17,14 +14,8 @@
     "target": "esnext",
     "baseUrl": ".",
     "paths": {
-      "src/*": [
-        "./src/*"
-      ],
+      "src/*": ["./src/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache"
-  ],
+  "exclude": ["node_modules", "public", ".cache"]
 }
