@@ -1,11 +1,10 @@
 import React, { FC } from "react";
-import { HomepageLink } from "../common/HomepageLink";
-import { Wrapper } from "./style";
+import { MainWrapper, Wrapper } from "./style";
 
 const Footer: FC = () => {
   return (
     <Wrapper>
-      <HomepageLink small />
+      <MainWrapper>© 2020 cellxgene</MainWrapper>
     </Wrapper>
   );
 };

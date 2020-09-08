@@ -20,7 +20,7 @@ const ViewDataset: FC<Props> = ({ deployments }) => {
         target="_blank"
         rel="noopener"
       >
-        View in cellxgene
+        View
         <br />
       </StyledAnchor>
     </Wrapper>
