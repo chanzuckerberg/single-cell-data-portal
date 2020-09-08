@@ -25,7 +25,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "description",
             "id",
             "s3_bucket_key",
-            "owner",
             "status",
             "processing_state",
             "validation_state",
@@ -38,8 +37,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
         self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
         self.assertGreaterEqual(datetime.fromtimestamp(body["updated_at"]).year, 1969)
-
-        self.assertListEqual(sorted(body["owner"].keys()), ["created_at", "email", "id", "name", "updated_at"])
 
         for link in body["links"]:
             self.assertListEqual(sorted(link.keys()), ["name", "type", "url"])
@@ -59,7 +56,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "revision",
                 "dataset_deployments",
                 "dataset_assets",
-                "contributors",
                 "preprint_doi",
                 "publication_doi",
                 "created_at",
@@ -68,12 +64,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "project_status",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
-
-            for contributor in dataset["contributors"]:
-                for key in ["id", "name"]:
-                    self.assertIn(key, contributor)
-                for key in contributor:
-                    self.assertIn(key, ["id", "name", "email", "institution", "created_at", "updated_at"])
 
     def test__list_project__ok(self):
         path = "/v1/project"
@@ -136,21 +126,13 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "datasets": [
                 {
                     "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
-                    "contributors": [
-                        {
-                            "email": "test_email",
-                            "id": "test_contributor_id",
-                            "institution": "test_institution",
-                            "name": "test_contributor_name",
-                        }
-                    ],
                     "dataset_assets": [
                         {
                             "dataset_id": "test_dataset_id",
                             "filename": "test_filename",
                             "filetype": "H5AD",
                             "id": "test_dataset_artifact_id",
-                            "s3_uri": "test_s3_uri",
+                            "s3_uri": "s3://bogus_bucket/test_s3_uri.h5ad",
                             "type": "ORIGINAL",
                             "user_submitted": True,
                         }
@@ -190,7 +172,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 {"type": "SUMMARY", "name": "test_summary_link_name", "url": "test_summary_url"},
             ],
             "name": "test_project",
-            "owner": {"email": "test_email", "id": "test_user_id", "name": "test_user",},  # noqa
             "processing_state": "NA",
             "s3_bucket_key": "test_s3_bucket",
             "status": "LIVE",

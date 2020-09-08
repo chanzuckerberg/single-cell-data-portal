@@ -1,5 +1,7 @@
+import typing
 import uuid
 
+from backend.corpora.common.entities.dataset_asset import DatasetAsset
 from .entity import Entity
 from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
 
@@ -78,6 +80,15 @@ class Dataset(Entity):
         cls.db.commit()
 
         return cls(new_db_object)
+
+    def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
+        """
+        Retrieve the asset if it exists in the dataset.
+        :param asset_uuid: uuid of the asset to find
+        :return: If the asset is found it is returned, else None is returned.
+        """
+        asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
+        return None if not asset else DatasetAsset(asset[0])
 
     def delete(self):
         """

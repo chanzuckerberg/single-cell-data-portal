@@ -1,8 +1,8 @@
+import json
 import logging
 import os
 import re
 import sys
-import json
 from collections import defaultdict
 from functools import wraps
 
@@ -113,7 +113,7 @@ def get_chalice_app(flask_app):
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()
 
-    @app.route("/")
+    @app.route("/", methods=["GET", "HEAD"])
     def serve_swagger_ui():
         return chalice.Response(
             status_code=200,
@@ -124,9 +124,15 @@ def get_chalice_app(flask_app):
     flask_app.json_encoder = CustomJSONEncoder
 
     @flask_app.errorhandler(ProblemException)
-    def handle_authorization_error(exception):
+    def handle_corpora_error(exception):
         response = problem(
-            exception.status, exception.title, exception.type, exception.instance, exception.headers, exception.ext
+            exception.status,
+            exception.title,
+            exception.detail,
+            exception.type,
+            exception.instance,
+            exception.headers,
+            exception.ext,
         )
         response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
         return FlaskApi.get_response(response)

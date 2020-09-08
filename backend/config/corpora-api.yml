@@ -468,16 +468,21 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/dataset/{dataset_uuid}:
+  /v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: corpora.lambdas.api.v1.project.get_project_dataset
+      operationId: corpora.lambdas.api.v1.dataset.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
+        - name: asset_uuid
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -487,9 +492,13 @@ paths:
                 type: object
                 properties:
                   dataset_uuid:
+                    $ref: "#/components/schemas/dataset_uuid"
+                  presigned_url:
                     type: string
-                  dataset_presigned_url:
+                  file_name:
                     type: string
+                  file_size:
+                    type: number
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -591,7 +600,6 @@ components:
         - name
         - description
         - id
-        - owner
         - status
         - processing_state
         - validation_state
@@ -613,19 +621,6 @@ components:
           $ref: "#/components/schemas/project_uuid"
         s3_bucket_key:
           type: string
-        owner:
-          type: object
-          required:
-            - id
-          properties:
-            id:
-              $ref: "#/components/schemas/user_uuid"
-            email:
-              type: string
-            name:
-              type: string
-            updated_at:
-              type: number
         status:
           type: string
           enum: [LIVE, EDIT]
@@ -663,24 +658,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset"
-    contributor:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        institution:
-          type: string
-        created_at:
-          type: number
-        updated_at:
-          type: number
     ontology_element:
       type: object
       properties:
@@ -708,7 +685,6 @@ components:
         - revision
         - dataset_deployments
         - dataset_assets
-        - contributors
         - preprint_doi
         - publication_doi
         - project_id
@@ -753,10 +729,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"
-        contributors:
-          type: array
-          items:
-            $ref: "#/components/schemas/contributor"
         preprint_doi:
           type: string
         publication_doi:
@@ -779,6 +751,16 @@ components:
           type: string
           enum: [REMIX, ORIGINAL]
         s3_uri:
+          type: string
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
           type: string
   parameters:
     path_project_uuid:
@@ -816,15 +798,34 @@ components:
       description: Accepted
     400:
       description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     401:
       description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     403:
       description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     409:
       description: File conflict.
-
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
   securitySchemes:
     auth0:
       type: openIdConnect
