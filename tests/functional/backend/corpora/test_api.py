@@ -26,7 +26,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
 
     def test_get_projects(self):
-        res = requests.get(f"{self.api}/v1/project")
+        res = requests.get(f"{self.api}/dp/v1/project")
 
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)

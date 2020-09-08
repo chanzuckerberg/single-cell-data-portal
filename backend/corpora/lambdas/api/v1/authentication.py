@@ -49,7 +49,7 @@ def login() -> Response:
     """API call: initiate the login process."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
-    callbackurl = f"{config.callback_base_url}/v1/oauth2/callback"
+    callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
     response = client.authorize_redirect(redirect_uri=callbackurl)
     return response
 

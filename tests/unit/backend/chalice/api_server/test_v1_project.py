@@ -66,7 +66,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
     def test__list_project__ok(self):
-        path = "/v1/project"
+        path = "/dp/v1/project"
         headers = dict(host="localhost")
 
         from_date = int(datetime.fromtimestamp(60).timestamp())
@@ -178,7 +178,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "validation_state": "NOT_VALIDATED",
         }
 
-        test_url = furl(path="/v1/project/test_project_id")
+        test_url = furl(path="/dp/v1/project/test_project_id")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         self.validate_project_uuid_response_structure(json.loads(response.body))
@@ -187,7 +187,7 @@ class TestProject(BaseAPITest, unittest.TestCase):
 
     def test__get_project_uuid__403_not_found(self):
         """Verify the test project exists and the expected fields exist."""
-        test_url = furl(path="/v1/project/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/dp/v1/project/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())

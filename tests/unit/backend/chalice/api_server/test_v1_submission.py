@@ -11,7 +11,7 @@ from tests.unit.backend.utils import BogusProjectParams
 
 class TestSubmission(BaseAPITest, unittest.TestCase):
     def test__list_submission__ok(self):
-        path = "/v1/submission"
+        path = "/dp/v1/submission"
         headers = dict(host="localhost")
         expected_name = "test submission"
         test_project = Project.create(**BogusProjectParams.get(name=expected_name, status=ProjectStatus.EDIT.name))
@@ -46,7 +46,7 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "validation_state": "NOT_VALIDATED",
         }
 
-        test_url = furl(path=f"/v1/submission/{test_project.id}")
+        test_url = furl(path=f"/dp/v1/submission/{test_project.id}")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         actual_body = self.remove_timestamps(json.loads(response.body))
@@ -56,6 +56,6 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
 
     def test__get_submission_uuid__403_not_found(self):
         """Verify the test project exists and the expected fields exist."""
-        test_url = furl(path="/v1/submission/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/dp/v1/submission/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
