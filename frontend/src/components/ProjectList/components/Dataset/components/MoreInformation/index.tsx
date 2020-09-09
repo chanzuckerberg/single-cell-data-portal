@@ -1,31 +1,47 @@
-import { FC } from "react";
+import React, { FC } from "react";
 import { Project } from "src/common/entities";
+import { StyledAnchor, Wrapper } from "./style";
+
+interface AnchorProps {
+  url: string;
+}
+
+const Anchor: FC<AnchorProps> = ({ url, children }) => {
+  return (
+    <StyledAnchor href={url} target="_blank" rel="noopener">
+      {children}
+    </StyledAnchor>
+  );
+};
 
 interface Props {
   links: Project["links"];
 }
 
-const MoreInformation: FC<Props> = () => {
-  return null;
+const MoreInformation: FC<Props> = ({ links }) => {
+  const uniqueLinks = Array.from(
+    new Map(links.map((link) => [link.url, link.name]))
+  );
 
-  // (thuang): Temporarily comment this out until BE has `link.name`
-  // return (
-  //   <Wrapper>
-  //     {links.map(link => {
-  //       return (
-  //         <StyledAnchor
-  //           key={link.url}
-  //           href={link.url}
-  //           target="_blank"
-  //           rel="noopener"
-  //         >
-  //           {link.name}
-  //           <br />
-  //         </StyledAnchor>
-  //       );
-  //     })}
-  //   </Wrapper>
-  // );
+  const styledLinks = uniqueLinks.map((link, index) => {
+    const [url, name] = link;
+
+    if (index === uniqueLinks.length - 1) {
+      return (
+        <Anchor key={url} url={url}>
+          {name}
+        </Anchor>
+      );
+    } else {
+      return (
+        <Anchor key={url} url={url}>
+          {name},&nbsp;
+        </Anchor>
+      );
+    }
+  });
+
+  return <Wrapper>{styledLinks}</Wrapper>;
 };
 
 export default MoreInformation;

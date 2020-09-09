@@ -21,7 +21,6 @@ export interface Project {
   // processing_state: string;
   // s3_bucket_key: string;
   // validation_state: string;
-  // links: { url: string; type: string }[];
   // attestation: {
   //   needed: boolean;
   //   tc_uri: string;
