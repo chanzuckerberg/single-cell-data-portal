@@ -14,6 +14,18 @@ export const Wrapper = styled.div`
 export const MainWrapper = styled.div`
   ${fontStyle}
   ${layout}
-  padding: 0 15px;
+  padding-left: 15px;
   margin: 0 auto;
 `;
+
+export const StyledAnchor = styled.a`
+  ${fontStyle}
+  text-decoration: none;
+  color: #0076dc;
+  appearance: none;
+  padding-left: 15px;
+  width: 100px;
+  height: 30px;
+  text-align: center;
+`;
+

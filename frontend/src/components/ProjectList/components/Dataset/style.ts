@@ -6,6 +6,9 @@ export const Wrapper = styled.div`
   :nth-child(even) {
     background: rgba(191, 204, 214, 0.2);
   }
+  :last-of-type {
+    border-bottom: none;
+  }
   display: flex;
   min-height: 40px;
   border-bottom: 1px solid #e5e5e5;
