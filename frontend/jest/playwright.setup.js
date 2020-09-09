@@ -18,6 +18,7 @@ beforeEach(async () => {
   const client = await page.context().newCDPSession(page);
 
   await client.send("Animation.setPlaybackRate", {
+    // (thuang): Max speed to "disable" animation
     playbackRate: 12,
   });
 });

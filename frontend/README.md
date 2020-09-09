@@ -77,33 +77,64 @@ WARNING: Do not store sensitive data in the environment variables.
 
 ## Smoke Test
 
-### Update Tests
+### If you are actively adding/updating tests
+
+When we add/update tests, we typically want an FE server running constantly,
+so we can see our code changes reflected in the UI as quickly as possible.
+
+As a result, [Gatsby Dev Build](#gatsby-dev-build) steps allow you to run smoke
+tests against the already running FE server in dev mode. This is different from [If you just want to run smoke tests](#if-you-just-want-to-run-smoke-tests), which starts the FE server for you before the test and shuts it down after the test is done.
+
+[Gatsby Prod Build](#gatsby-prod-build) builds the app in prod mode, which includes
+various optimizations and Server Side Rendering.
+
+The upside of running prod build
+is that the experience is closer to what real users get, the downside is that
+it takes longer to build the app and run the tests.
+
+As a result, PR test runs
+prod build smoke test for you as a guard to prevent us from shipping things that
+work in dev build, but not prod build.
 
 #### Gatsby Dev Build
 
+Start an FE server in dev mode and run smoke test against it
+
 1. Start FE server: `npm run develop`
 
-2. Run tests: `npm run e2e`
+1. Run tests: `npm run e2e`
 
 #### Gatsby Prod Build
+
+Start an FE server in prod mode and run smoke test against it
 
 1. Start FE server: `npm run build-and-start-prod`
 
 1. Run tests: `npm run e2e-localProd`
 
-### Local
+NOTE: `npm run smoke-test-prod-build` combines the steps above
+
+### If you just want to run smoke tests
+
+If you don't have an FE server running already and want the command to start one for you for the duration of the smoke tests, the commands below will do that for you.
 
 #### FE + Dev BE
 
+This starts an FE server that hits **dev environment** API server
+
 1. Requirements:
 
-   1. Your `src/configs/configs.js` points to Dev API URL instead of `localhost`. E.g., `https://api.dev.corpora.cziscience.com`
+   1. Your `src/configs/configs.js` points to Dev API URL instead of `localhost`.
+
+      E.g., `https://api.dev.corpora.cziscience.com`
 
 1. For Gatsby Prod Build: `npm run smoke-test-prod-build`
 
 1. For Gatsby Dev Build: `npm run smoke-test`
 
 #### FE + Local BE
+
+This starts an FE server that hits a **local** API server
 
 1. Requirements:
 
@@ -113,6 +144,9 @@ WARNING: Do not store sensitive data in the environment variables.
 1. For Gatsby Prod Build: `npm run smoke-test-with-local-backend`
 
 ### CI/CD
+
+These are the commands we integrate in CI/CD pipeline for PR test and
+after deployment tests
 
 1. PR: `npm run smoke-test-with-local-backend-ci`
 1. Dev: `npm run e2e-dev`
