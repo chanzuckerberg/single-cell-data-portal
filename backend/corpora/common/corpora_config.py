@@ -37,4 +37,3 @@ class CorporaAuthConfig(SecretConfig):
             )
             if not self.config_is_loaded():
                 self.load()
-            self.config["callback_base_url"] = "http://localhost:5000"
