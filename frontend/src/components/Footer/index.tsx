@@ -5,9 +5,8 @@ const Footer: FC = () => {
   return (
     <Wrapper>
       <MainWrapper>
-        © 2020 cellxgene
+        © {new Date().getFullYear()} cellxgene
         <StyledAnchor
-          key={"mailto:cellxgene@chanzuckerberg.com"}
           href={"mailto:cellxgene@chanzuckerberg.com"}
           target="_blank"
           rel="noopener"
@@ -15,9 +14,6 @@ const Footer: FC = () => {
           Contact
         </StyledAnchor>
         <StyledAnchor
-          key={
-            "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"
-          }
           href={
             "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"
           }
@@ -27,9 +23,6 @@ const Footer: FC = () => {
           Terms of Service
         </StyledAnchor>
         <StyledAnchor
-          key={
-            "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"
-          }
           href={
             "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"
           }
