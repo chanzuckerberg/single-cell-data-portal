@@ -15,16 +15,24 @@ const Footer: FC = () => {
           Contact
         </StyledAnchor>
         <StyledAnchor
-          key={"https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"}
-          href={"https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"}
+          key={
+            "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"
+          }
+          href={
+            "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"
+          }
           target="_blank"
           rel="noopener"
         >
           Terms of Service
         </StyledAnchor>
         <StyledAnchor
-          key={"https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"}
-          href={"https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"}
+          key={
+            "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"
+          }
+          href={
+            "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"
+          }
           target="_blank"
           rel="noopener"
         >

@@ -28,4 +28,3 @@ export const StyledAnchor = styled.a`
   height: 30px;
   text-align: center;
 `;
-
