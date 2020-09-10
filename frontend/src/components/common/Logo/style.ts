@@ -14,6 +14,12 @@ export const Logo = styled(Image)`
 export const LogoWrapper = styled.span`
   display: flex;
   align-items: center;
+  margin-top: 8px;
+
+  img {
+    height: 35px;
+    width: initial;
+  }
 `;
 
 interface CorporaWrapperProps {

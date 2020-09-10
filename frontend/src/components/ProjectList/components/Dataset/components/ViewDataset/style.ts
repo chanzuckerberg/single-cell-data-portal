@@ -21,11 +21,14 @@ export const StyledAnchor = styled.a`
   color: #0076dc;
   background-color: white;
   border: 1px solid #0076dc;
-  box-shadow: inset 0px -1px 1px rgba(16, 22, 26, 0.2);
   border-radius: 3px;
   appearance: none;
-  padding: 0 20px;
-  width: 100px;
-  height: 30px;
+  padding: 2px 20px;
   text-align: center;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: #0076dc;
+    color: white;
+  }
 `;
