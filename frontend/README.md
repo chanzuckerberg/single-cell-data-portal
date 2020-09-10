@@ -145,7 +145,7 @@ This starts an FE server that hits a **local** API server
 
 ### CI/CD
 
-These are the commands we integrate in CI/CD pipeline for PR test and
+These are the commands we integrate in CI/CD pipeline for PR tests and
 after deployment tests
 
 1. PR: `npm run smoke-test-with-local-backend-ci`
