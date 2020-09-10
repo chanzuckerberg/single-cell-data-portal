@@ -12,6 +12,7 @@ export const Wrapper = styled.div`
   display: flex;
   padding-bottom: 9px;
   border-bottom: 1px solid black;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 export const Name = styled.div`
