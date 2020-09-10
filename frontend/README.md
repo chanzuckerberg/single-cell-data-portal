@@ -23,8 +23,8 @@
 
 1. **Build and launch the frontend locally.**
 
-   1. Create `frontend/configs/configs.js` and paste content from
-      `frontend/configs/local.js`
+   1. Create `frontend/src/configs/configs.js` and paste content from
+      `frontend/src/configs/local.js`
    1. Run `gatsby develop`
 
    Your site is now running at `http://localhost:8000` with hot re-loading!
