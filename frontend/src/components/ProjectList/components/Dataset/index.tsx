@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Dataset as IDataset, Project as IProject } from "src/common/entities";
 import MoreInformation from "./components/MoreInformation";
 import ViewDataset from "./components/ViewDataset";
-import { Name, Wrapper } from "./style";
+import { Name, NameChild, Wrapper } from "./style";
 
 interface Props {
   dataset: IDataset;
@@ -12,7 +12,9 @@ interface Props {
 const Dataset: FC<Props> = ({ dataset, links }) => {
   return (
     <Wrapper>
-      <Name data-test-id="dataset-name">{dataset.name}</Name>
+      <Name data-test-id="dataset-name" title={dataset.name}>
+        <NameChild>{dataset.name}</NameChild>
+      </Name>
       <ViewDataset deployments={dataset.dataset_deployments} />
       <MoreInformation links={links} />
     </Wrapper>

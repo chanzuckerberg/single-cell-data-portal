@@ -15,10 +15,17 @@ export const Wrapper = styled.div`
 `;
 
 export const Name = styled.div`
-  ${fontStyle}
   width: ${LAYOUT.NAME}%;
   margin-right: ${LAYOUT.NAME_MARGIN}%;
   display: flex;
   align-items: center;
-  padding-left: 10px;
+  line-height: 1.3;
+  padding: 12px 0 12px 10px;
+`;
+
+export const NameChild = styled.div`
+  ${fontStyle};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
