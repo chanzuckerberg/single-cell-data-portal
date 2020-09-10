@@ -21,7 +21,7 @@ div[role="group"][tabindex] {
 html {
   background-color: white !important; /* gatsby seems to be inserting global CSS using emotion, but we don't know how. The color is #6363CE */
   min-height: 100vh;
-  font: 112.5%/1.45em "Montserrat", sans-serif;
+  font: "Montserrat", sans-serif;
   box-sizing: border-box;
   overflow-y: scroll;
 }

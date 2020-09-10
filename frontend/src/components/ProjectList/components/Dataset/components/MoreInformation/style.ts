@@ -5,11 +5,18 @@ import styled from "styled-components";
 export const Wrapper = styled.div`
   width: ${LAYOUT.INFO}%;
   align-items: center;
+  line-height: 1.2;
+  padding: 12px 0;
+  display: flex;
 `;
 
 export const StyledAnchor = styled.a`
   ${fontStyle}
   text-decoration: none;
-  line-height: 18px;
   color: #318ad8;
+  display: contents;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
