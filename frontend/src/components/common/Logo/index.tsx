@@ -8,7 +8,7 @@ interface Props {
 
 export const Logo: FC<Props> = ({ small }) => {
   return (
-    <LogoWrapper>
+    <LogoWrapper data-test-id="logo">
       <StyledLogo size={small ? 100 : undefined} src={String(logo)} />
     </LogoWrapper>
   );
