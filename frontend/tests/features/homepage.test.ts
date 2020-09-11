@@ -1,4 +1,4 @@
-import { goToPage } from "e2e/utils/helpers";
+import { goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestTag, getText } from "../utils/selectors";
 

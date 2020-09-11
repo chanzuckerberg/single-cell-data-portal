@@ -82,9 +82,8 @@ jobs:
           cp src/configs/local.js src/configs/configs.js
           npm install
       - name: smoke test prod build with local BE server
-        working-directory: ./frontend
         run: |
-          npm run smoke-test-with-local-backend-ci
+          make smoke-test-with-local-backend-ci
 
   unit-test:
     runs-on: ubuntu-latest

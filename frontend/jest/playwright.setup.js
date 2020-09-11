@@ -1,6 +1,6 @@
 /**
  * `frontend/jest-playwright.config.js` is for configuring Playwright's launch config options
- * `frontend/e2e/playwright.setup.js` is for configuring `jest`, `browser`,
+ * `frontend/jest/playwright.setup.js` is for configuring `jest`, `browser`,
  * and `page` objects
  */
 
