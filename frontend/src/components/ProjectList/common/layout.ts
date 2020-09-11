@@ -4,5 +4,7 @@ export enum LAYOUT {
   NAME_MARGIN = 4.17,
   VIEW = 14.81,
   VIEW_MARGIN = 6.02,
+  DOWNLOAD = 16,
+  DOWNLOAD_MARGIN = 6.02,
   INFO = 26.67,
 }

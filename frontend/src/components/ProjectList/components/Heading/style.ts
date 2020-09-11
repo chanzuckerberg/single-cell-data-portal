@@ -42,3 +42,12 @@ export const QuestionMark = styled.img`
   top: 3px;
   left: 5px;
 `;
+
+export const Download = styled.div`
+  ${fontStyle}
+  margin-right: ${LAYOUT.DOWNLOAD_MARGIN}%;
+  width: ${LAYOUT.DOWNLOAD}%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
