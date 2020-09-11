@@ -15,7 +15,6 @@ module.exports = {
     "react-app",
     "plugin:sonarjs/recommended",
     "plugin:jest-playwright/recommended",
-    "@blueprintjs/eslint-config",
   ],
   overrides: [
     // Override some TypeScript rules just for .js files

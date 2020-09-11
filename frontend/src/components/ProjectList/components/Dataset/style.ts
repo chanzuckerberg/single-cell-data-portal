@@ -24,7 +24,7 @@ export const Name = styled.div`
 `;
 
 export const NameChild = styled.div`
-  ${fontStyle};
+  ${fontStyle}
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
