@@ -1,5 +1,5 @@
-import { Dialog } from "@blueprintjs/core";
 import React, { FC } from "react";
+import { StyledDialog } from "./style";
 
 interface Props {
   onClose: () => void;
@@ -8,11 +8,9 @@ interface Props {
 
 const Modal: FC<Props> = ({ onClose, isOpen, children }) => {
   return (
-    <div>
-      <Dialog isOpen={isOpen} onClose={onClose}>
-        <div>{children}</div>
-      </Dialog>
-    </div>
+    <StyledDialog isOpen={isOpen} onClose={onClose}>
+      <div>{children}</div>
+    </StyledDialog>
   );
 };
 
