@@ -4,14 +4,14 @@ info:
   title: Chan Zuckerburg Initiative cellxgene Data Portal API
   description: >-
     This API is under development, and subject frequent breaking changes without notice. Users are encouraged to use the
-    https://api.cellxgene.cziscience.com.
+    https://cellxgene.cziscience.com to access the cellxgene Data Portal.
 servers:
   - description: Production environment
-    url: https://api.cellxgene.cziscience.com
+    url: https://api.corpora.cziscience.com
   - description: Development environment
-    url: https://api.dev.cellxgene.cziscience.com
+    url: https://api.dev.corpora.cziscience.com
   - description: Staging environment
-    url: https://api.staging.cellxgene.cziscience.com
+    url: https://api.staging.corpora.cziscience.com
 paths:
   /dp/v1/submission:
     get:
