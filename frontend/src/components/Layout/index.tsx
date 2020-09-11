@@ -1,3 +1,4 @@
+import "@blueprintjs/core/lib/css/blueprint.css";
 import React, { FC } from "react";
 import { ThemeProvider } from "theme-ui";
 import Footer from "../Footer";
