@@ -1,8 +1,10 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: Corpora Data Portal API
-  description: CZI Corpora Data Portal API
+  title: Chan Zuckerburg Initiative cellxgene Data Portal API
+  description: >-
+    This API is under development, and subject frequent breaking changes without notice. Users are encouraged to use the
+    https://cellxgene.cziscience.com to access the cellxgene Data Portal.
 servers:
   - description: Production environment
     url: https://api.corpora.cziscience.com
