@@ -3,9 +3,11 @@ ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
 BROWSER_S3=corpora-static-site-$(DEPLOYMENT_STAGE)-$(ACCOUNT_ID)
 S3_ENVIRONMENT_FILE=s3://$(BROWSER_S3)/env.production
 
-ifndef DEPLOYMENT_STAGE
-$(error Please set the DEPLOYMENT_STAGE environment before deploying)
-endif
+define check-deployment-stage-flag
+  ifndef DEPLOYMENT_STAGE
+		$(error Please set the DEPLOYMENT_STAGE environment before deploying)
+	endif
+endef
 
 deploy: init retrieve-vars
 
@@ -22,6 +24,7 @@ clean:
 
 .PHONY: retrieve-vars
 retrieve-vars:
+	$(check-deployment-stage-flag)
 	aws s3 cp $(S3_ENVIRONMENT_FILE) .env.production
 	# Copy the appropriate configs
 	cp src/configs/$(DEPLOYMENT_STAGE).js src/configs/configs.js
@@ -29,3 +32,11 @@ retrieve-vars:
 .PHONY: upload-vars
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
+
+.PHONY: smoke-test-with-local-backend
+smoke-test-with-local-backend:
+	npm run smoke-test-with-local-backend
+
+.PHONY: smoke-test-with-local-backend-ci
+smoke-test-with-local-backend-ci:
+	npm run smoke-test-with-local-backend-ci

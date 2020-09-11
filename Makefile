@@ -35,3 +35,11 @@ local-database: clean_test_db
 .PHONY: local-backend
 local-backend:
 	$(MAKE) local-server -C ./backend/chalice/api_server
+
+.PHONY: smoke-test-with-local-backend
+smoke-test-with-local-backend:
+	$(MAKE) smoke-test-with-local-backend -C ./frontend
+
+.PHONY: smoke-test-with-local-backend-ci
+smoke-test-with-local-backend-ci:
+	$(MAKE) smoke-test-with-local-backend-ci -C ./frontend
