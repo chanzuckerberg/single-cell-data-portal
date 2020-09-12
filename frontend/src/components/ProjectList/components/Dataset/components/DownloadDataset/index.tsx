@@ -3,10 +3,7 @@ import Modal from "src/components/common/Modal";
 import Content from "./components/Content";
 
 const DownloadDataset: FC = () => {
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const toggleOpen = () => setIsOpen(!isOpen);
 

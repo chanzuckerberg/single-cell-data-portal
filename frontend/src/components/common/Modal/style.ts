@@ -5,7 +5,9 @@ export const StyledDialog = styled(Dialog)`
   && {
     .bp3-heading {
       font-size: 16px;
-      line-height: 19px;
+      height: 57px;
+      display: flex;
+      align-items: center;
     }
 
     background-color: white;
