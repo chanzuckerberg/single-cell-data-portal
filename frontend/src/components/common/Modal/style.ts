@@ -1,16 +1,12 @@
 import { Dialog } from "@blueprintjs/core";
 import styled from "styled-components";
-import { fontStyle } from "../theme";
 
 export const StyledDialog = styled(Dialog)`
   && {
     .bp3-heading {
-      ${fontStyle}
       font-size: 16px;
       line-height: 19px;
     }
-
-    ${fontStyle}
 
     background-color: white;
     padding-bottom: 0px;
