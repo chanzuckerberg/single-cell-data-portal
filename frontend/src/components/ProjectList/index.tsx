@@ -15,7 +15,7 @@ const ProjectsList: FC<Props> = ({ projects }) => {
     <>
       <h1>Datasets</h1>
       <p>
-        Explore public Dataset or add your own. <Link to="">Learn more</Link>
+        Explore public dataset or add your own. <Link to="">Learn more</Link>
       </p>
       <Heading />
       {projects
