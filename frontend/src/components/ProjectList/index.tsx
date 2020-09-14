@@ -1,3 +1,4 @@
+import { Link } from "gatsby";
 import React, { FC } from "react";
 import { Project as IProject } from "src/common/entities";
 import Dataset from "./components/Dataset";
@@ -12,6 +13,10 @@ const ProjectsList: FC<Props> = ({ projects }) => {
 
   return (
     <>
+      <h1>Datasets</h1>
+      <p>
+        Explore public Dataset or add your own. <Link to="">Learn more</Link>
+      </p>
       <Heading />
       {projects
         .flatMap((project) =>
