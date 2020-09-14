@@ -11,12 +11,10 @@ const DownloadDataset: FC = () => {
   return (
     <div>
       <Wrapper>
-        <StyledButton onClick={toggleOpen}>
-          Download
-          <Modal isOpen={isOpen} onClose={toggleOpen}>
-            <Content />
-          </Modal>
-        </StyledButton>
+        <StyledButton onClick={toggleOpen}>Download </StyledButton>
+        <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
+          <Content />
+        </Modal>
       </Wrapper>
     </div>
   );

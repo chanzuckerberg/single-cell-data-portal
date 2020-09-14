@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { fontStyle as rawFontStyle } from "../common/theme";
+import { BLUE, fontStyle as rawFontStyle } from "../common/theme";
 
 const fontStyle = css`
   ${rawFontStyle}
@@ -42,11 +42,9 @@ const sharedButtonStyle = css`
   cursor: pointer;
 `;
 
-const BUTTON_BLUE = "#0076dc";
-
 export const OKButton = styled.button`
   ${sharedButtonStyle}
-  background-color: ${BUTTON_BLUE};
+  background-color: ${BLUE};
   color: white;
   margin-right: 10px;
 `;
@@ -54,7 +52,7 @@ export const OKButton = styled.button`
 export const NoButton = styled.button`
   ${sharedButtonStyle}
   background-color: white;
-  border: 1px solid ${BUTTON_BLUE};
-  color: ${BUTTON_BLUE};
+  border: 1px solid ${BLUE};
+  color: ${BLUE};
   width: 90px;
 `;
