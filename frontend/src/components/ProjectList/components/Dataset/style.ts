@@ -15,8 +15,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Name = styled.div`
-  width: ${LAYOUT.NAME}%;
-  margin-right: ${LAYOUT.NAME_MARGIN}%;
+  flex: ${LAYOUT.NAME};
   display: flex;
   align-items: center;
   line-height: 1.3;

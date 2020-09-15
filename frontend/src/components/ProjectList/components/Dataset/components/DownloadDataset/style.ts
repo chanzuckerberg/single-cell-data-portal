@@ -1,15 +1,5 @@
 import { fontStyle } from "src/components/common/theme";
-import { LAYOUT } from "src/components/ProjectList/common/layout";
 import styled from "styled-components";
-
-export const Wrapper = styled.div`
-  width: ${LAYOUT.DOWNLOAD}%;
-  margin-right: ${LAYOUT.DOWNLOAD_MARGIN}%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 5em;
-`;
 
 export const StyledButton = styled.button`
   ${fontStyle}

@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Project } from "src/common/entities";
-import { StyledAnchor, Wrapper } from "./style";
-
+import { SmallColumn } from "../../common/style";
+import { StyledAnchor } from "./style";
 interface AnchorProps {
   url: string;
 }
@@ -41,7 +41,7 @@ const MoreInformation: FC<Props> = ({ links }) => {
     }
   });
 
-  return <Wrapper>{styledLinks}</Wrapper>;
+  return <SmallColumn>{styledLinks}</SmallColumn>;
 };
 
 export default MoreInformation;
