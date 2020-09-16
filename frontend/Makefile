@@ -3,11 +3,7 @@ ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
 BROWSER_S3=corpora-static-site-$(DEPLOYMENT_STAGE)-$(ACCOUNT_ID)
 S3_ENVIRONMENT_FILE=s3://$(BROWSER_S3)/env.production
 
-define check-deployment-stage-flag
-  ifndef DEPLOYMENT_STAGE
-		$(error Please set the DEPLOYMENT_STAGE environment before deploying)
-	endif
-endef
+check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 
 deploy: init retrieve-vars
 
@@ -24,7 +20,7 @@ clean:
 
 .PHONY: retrieve-vars
 retrieve-vars:
-	$(check-deployment-stage-flag)
+	$(call check-var-defined,DEPLOYMENT_STAGE)
 	aws s3 cp $(S3_ENVIRONMENT_FILE) .env.production
 	# Copy the appropriate configs
 	cp src/configs/$(DEPLOYMENT_STAGE).js src/configs/configs.js
