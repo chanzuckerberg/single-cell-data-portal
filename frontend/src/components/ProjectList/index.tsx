@@ -16,7 +16,7 @@ const ProjectsList: FC<Props> = ({ projects }) => {
       <p>
         The cellxgene data portal is a repository of public, explorable
         single-cell datasets. If you have a public dataset which you would like
-        hosted for visualization on this site, please let us know at
+        hosted for visualization on this site, please let us know at{" "}
         <a href="mailto:cellxgene@chanzuckerberg.com">
           cellxgene@chanzuckerberg.com
         </a>
