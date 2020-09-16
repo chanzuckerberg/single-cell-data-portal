@@ -1,4 +1,3 @@
-import { Link } from "gatsby";
 import React, { FC } from "react";
 import { Project as IProject } from "src/common/entities";
 import Dataset from "./components/Dataset";
@@ -15,7 +14,13 @@ const ProjectsList: FC<Props> = ({ projects }) => {
     <>
       <h1>Datasets</h1>
       <p>
-        Explore public dataset or add your own. <Link to="">Learn more</Link>
+        The cellxgene data portal is a repository of public, explorable
+        single-cell datasets. If you have a public dataset which you would like
+        hosted for visualization on this site, please let us know at
+        <a href="mailto:cellxgene@chanzuckerberg.com">
+          cellxgene@chanzuckerberg.com
+        </a>
+        .
       </p>
       <Heading />
       {projects
