@@ -1,0 +1,31 @@
+name: "Scale test api (via cloudfront)"
+
+on:
+  schedule:
+    - cron: "0 0 * * Sun"
+  push:
+    branches:
+      - dunitz/565-auto-scale-test
+
+jobs:
+  locust-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          pip install locust
+      - name: Call script
+        run: |
+          locust -f scripts/scale_test.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/ --run-time 1m 2>&1 | tee locust_dev_stats.txt
+      - name: Slack success webhook
+        env:
+          STATS: $(tail -n 14 locust_dev_stats.txt)
+        run: |
+          echo $STATS
+
+
