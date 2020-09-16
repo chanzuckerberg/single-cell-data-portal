@@ -1,6 +1,6 @@
 import random
 import time
-from locust import HttpUser, between, task, events
+from locust import HttpUser, between, task
 
 random.seed(time.time())
 
@@ -27,19 +27,3 @@ class WebsiteUser(HttpUser):
     def get_project_info(self):
         self.client.get(random.choice(self.project_urls))
 
-    @events.quitting.add_listener
-    def _(environment, **kw):
-        if environment.stats.total.fail_ratio > 0.01:
-            msg = "Test failed due to failure ratio > 1%"
-            environment.process_exit_code = 1
-        elif environment.stats.total.avg_response_time > 200:
-            msg = "Test failed due to average response time ratio > 200 ms"
-            environment.process_exit_code = 1
-        elif environment.stats.total.get_response_time_percentile(0.95) > 500:
-            msg = "Test failed due to 95th percentile response time > 500 ms"
-            environment.process_exit_code = 1
-        else:
-            environment.process_exit_code = 0
-
-    def slack_alert(self):
-        pass
