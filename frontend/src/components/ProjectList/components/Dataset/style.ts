@@ -20,6 +20,7 @@ export const Name = styled.div`
   align-items: center;
   line-height: 1.3;
   padding: 12px 0 12px 10px;
+  max-width: 620px;
 `;
 
 export const NameChild = styled.div`
