@@ -1,6 +1,8 @@
 import React, { FC } from "react";
 import Modal from "src/components/common/Modal";
+import { SmallColumn } from "../../common/style";
 import Content from "./components/Content";
+import { StyledButton } from "./style";
 
 const DownloadDataset: FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -8,12 +10,14 @@ const DownloadDataset: FC = () => {
   const toggleOpen = () => setIsOpen(!isOpen);
 
   return (
-    <div>
-      <button onClick={toggleOpen}>Download</button>
-      <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
+    <SmallColumn>
+      <StyledButton data-test-id="dataset-download-button" onClick={toggleOpen}>
+        Download{" "}
+      </StyledButton>
+      <Modal isOpen={isOpen} onClose={toggleOpen}>
         <Content />
       </Modal>
-    </div>
+    </SmallColumn>
   );
 };
 

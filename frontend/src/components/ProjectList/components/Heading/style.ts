@@ -1,6 +1,6 @@
 import { fontStyle as fontStyleBase } from "src/components/common/theme";
-import { LAYOUT } from "src/components/ProjectList/common/layout";
 import styled, { css } from "styled-components";
+import { LAYOUT } from "../../common/layout";
 
 const fontStyle = css`
   ${fontStyleBase}
@@ -16,22 +16,7 @@ export const Wrapper = styled.div`
 
 export const Name = styled.div`
   ${fontStyle}
-  margin-right: ${LAYOUT.NAME_MARGIN}%;
-  width: ${LAYOUT.NAME}%;
-`;
-
-export const View = styled.div`
-  ${fontStyle}
-  margin-right: ${LAYOUT.VIEW_MARGIN}%;
-  width: ${LAYOUT.VIEW}%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-export const Info = styled.div`
-  ${fontStyle}
-  width: ${LAYOUT.INFO}%;
+  flex: ${LAYOUT.NAME};
 `;
 
 export const QuestionMark = styled.img`

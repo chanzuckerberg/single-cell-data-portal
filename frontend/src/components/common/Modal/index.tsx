@@ -5,12 +5,11 @@ import { StyledDialog } from "./style";
 interface Props {
   onClose: () => void;
   isOpen: boolean;
-  title: string;
 }
 
-const Modal: FC<Props> = ({ onClose, title, isOpen, children }) => {
+const Modal: FC<Props> = ({ onClose, isOpen, children }) => {
   return (
-    <StyledDialog title={title} isOpen={isOpen} onClose={onClose}>
+    <StyledDialog isOpen={isOpen} onClose={onClose}>
       <div className={Classes.DIALOG_BODY}>{children}</div>
     </StyledDialog>
   );
