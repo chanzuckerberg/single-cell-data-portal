@@ -34,17 +34,20 @@ module.exports = {
     // Allows for the parsing of modern ECMAScript features
     sourceType: "module", // Allows for the use of imports
   },
-  plugins: ["@typescript-eslint", "react", "sonarjs"],
+  plugins: ["@typescript-eslint", "react", "sonarjs", "@blueprintjs"],
   rules: {
+    // Disable prop-types as we use TypeScript for type checking
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "react/prop-types": "off",
     "sort-keys": [
       "error",
       "asc",
-      { caseSensitive: true, natural: false, minKeys: 2 },
+      {
+        caseSensitive: true,
+        minKeys: 2,
+        natural: false,
+      },
     ],
-    // Disable prop-types as we use TypeScript for type checking
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "react/prop-types": "off",
   },
   settings: {
     react: {

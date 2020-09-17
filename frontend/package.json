@@ -6,10 +6,12 @@
   "author": "Kyle Mathews <mathews.kyle@gmail.com>",
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.6.4",
+    "@blueprintjs/core": "^3.31.0",
     "@types/react-helmet": "^6.0.0",
     "babel-plugin-styled-components": "^1.11.1",
     "bl": "^4.0.3",
     "gatsby": "^2.24.60",
+    "clipboard-copy": "^3.1.0",
     "gatsby-image": "^2.3.2",
     "gatsby-plugin-manifest": "^2.3.3",
     "gatsby-plugin-offline": "^3.1.2",
@@ -29,6 +31,7 @@
     "theme-ui": "^0.3.1"
   },
   "devDependencies": {
+    "@blueprintjs/eslint-plugin": "^0.2.2",
     "@types/jest": "^26.0.10",
     "@types/react-dom": "^16.9.8",
     "@types/styled-components": "^5.1.0",
@@ -55,11 +58,11 @@
     "gatsby-plugin-asset-path": "^3.0.2",
     "gatsby-plugin-root-import": "^2.0.5",
     "husky": "^4.3.0",
-    "lint-staged": "^10.3.0",
-    "prettier": "2.1.1",
     "jest": "^26.4.0",
     "jest-playwright-preset": "^1.3.1",
+    "lint-staged": "^10.3.0",
     "playwright": "^1.3.0",
+    "prettier": "2.1.1",
     "prettier-plugin-organize-imports": "^1.1.0",
     "start-server-and-test": "^1.11.3",
     "stylelint": "^13.6.1",
@@ -81,6 +84,7 @@
     "test": "jest jest/config.js",
     "e2e": "TEST_ENV=local jest --config jest/e2e.config.js",
     "e2e-localProd": "TEST_ENV=localProd jest --config jest/e2e.config.js",
+    "e2e-localProd-ci": "DEBUG=pw:api TEST_ENV=localProd jest --config jest/e2e.config.js",
     "e2e-dev": "TEST_ENV=dev jest --config jest/e2e.config.js",
     "e2e-staging": "TEST_ENV=staging jest --config jest/e2e.config.js",
     "e2e-prod": "TEST_ENV=prod jest --config jest/e2e.config.js",
@@ -94,7 +98,7 @@
     "smoke-test": "start-server-and-test start :8000 e2e",
     "smoke-test-prod-build": "start-server-and-test build-and-start-prod :9000 e2e-localProd",
     "smoke-test-with-local-backend": "start-server-and-test build-and-start-local-backend :5000 build-and-start-prod :9000 e2e-localProd",
-    "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd"
+    "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd-ci"
   },
   "repository": {
     "type": "git",
