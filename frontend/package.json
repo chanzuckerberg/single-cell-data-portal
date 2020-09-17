@@ -9,7 +9,9 @@
     "@blueprintjs/core": "^3.31.0",
     "@types/react-helmet": "^6.0.0",
     "babel-plugin-styled-components": "^1.11.1",
-    "gatsby": "^2.24.47",
+    "bl": "^4.0.3",
+    "gatsby": "^2.24.60",
+    "clipboard-copy": "^3.1.0",
     "gatsby-image": "^2.3.2",
     "gatsby-plugin-manifest": "^2.3.3",
     "gatsby-plugin-offline": "^3.1.2",
@@ -81,6 +83,7 @@
     "test": "jest jest/config.js",
     "e2e": "TEST_ENV=local jest --config jest/e2e.config.js",
     "e2e-localProd": "TEST_ENV=localProd jest --config jest/e2e.config.js",
+    "e2e-localProd-ci": "DEBUG=pw:api TEST_ENV=localProd jest --config jest/e2e.config.js",
     "e2e-dev": "TEST_ENV=dev jest --config jest/e2e.config.js",
     "e2e-staging": "TEST_ENV=staging jest --config jest/e2e.config.js",
     "e2e-prod": "TEST_ENV=prod jest --config jest/e2e.config.js",
@@ -94,7 +97,7 @@
     "smoke-test": "start-server-and-test start :8000 e2e",
     "smoke-test-prod-build": "start-server-and-test build-and-start-prod :9000 e2e-localProd",
     "smoke-test-with-local-backend": "start-server-and-test build-and-start-local-backend :5000 build-and-start-prod :9000 e2e-localProd",
-    "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd"
+    "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd-ci"
   },
   "repository": {
     "type": "git",

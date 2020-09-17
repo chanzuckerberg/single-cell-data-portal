@@ -13,7 +13,12 @@ const DEFAULT_LAUNCH_CONFIG = {
   ignoreHTTPSErrors: true,
 };
 
+const DEFAULT_CONTEXT_CONFIG = {
+  acceptDownloads: true,
+};
+
 module.exports = {
   browserContext: "incognito",
+  contextOptions: DEFAULT_CONTEXT_CONFIG,
   launchOptions: DEFAULT_LAUNCH_CONFIG,
 };
