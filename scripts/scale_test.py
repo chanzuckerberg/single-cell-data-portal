@@ -26,4 +26,3 @@ class WebsiteUser(HttpUser):
     @task
     def get_project_info(self):
         self.client.get(random.choice(self.project_urls))
-

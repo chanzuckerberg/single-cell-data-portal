@@ -22,7 +22,9 @@ from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 class TestDatabase:
     fake_s3_file = f"s3://{CorporaTestCaseUsingMockAWS.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
     real_s3_file = (
-        "s3://corpora-data-dev/5394b6f0-a80f-4598-8d81-e4a98e50f64e/f5e61152-d4f1-499e-b075-3a44a3307fe5/Single_cell_drug_screening_k562-43-remixed.h5ad"
+        "s3://corpora-data-dev/5394b6f0-a80f-4598-8d81-e4a98e50f64e/"
+        + "f5e61152-d4f1-499e-b075-3a44a3307fe5/"
+        + "Single_cell_drug_screening_k562-43-remixed.h5ad"
     )
 
     def __init__(self, real_data=False):
