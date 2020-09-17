@@ -744,10 +744,12 @@ components:
       properties:
         id:
           type: string
-        format:
+        dataset_id:
+          type: string
+        filetype:
           type: string
           enum: [H5AD, RDS, LOOM, CXG]
-        file_name:
+        filename:
           type: string
         type:
           type: string

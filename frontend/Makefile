@@ -29,6 +29,10 @@ retrieve-vars:
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
 
+.PHONY: smoke-test-prod-build
+smoke-test-prod-build:
+	npm run smoke-test-prod-build
+
 .PHONY: smoke-test-with-local-backend
 smoke-test-with-local-backend:
 	npm run smoke-test-with-local-backend

@@ -46,7 +46,7 @@ export interface Dataset {
   // source_data_location: string;
   // revision: number;
   dataset_deployments: DatasetDeployment[];
-  // dataset_assets: DatasetAsset[];
+  dataset_assets: DatasetAsset[];
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
@@ -66,8 +66,9 @@ export enum DATASET_ASSET_TYPE {
 
 export interface DatasetAsset {
   id: string;
-  format: DATASET_ASSET_FORMAT;
-  file_name: string;
+  dataset_id: string;
+  filetype: DATASET_ASSET_FORMAT;
+  filename: string;
   type: DATASET_ASSET_TYPE;
   s3_uri: string;
 }

@@ -17,7 +17,10 @@ const Dataset: FC<Props> = ({ dataset, links }) => {
         <NameChild>{dataset.name}</NameChild>
       </Name>
       <ViewDataset deployments={dataset.dataset_deployments} />
-      <DownloadDataset />
+      <DownloadDataset
+        name={dataset.name}
+        dataAssets={dataset.dataset_assets}
+      />
       <MoreInformation links={links} />
     </Wrapper>
   );
