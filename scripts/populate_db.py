@@ -9,4 +9,4 @@ sys.path.insert(0, pkg_root)  # noqa
 from tests.unit.backend.corpora.fixtures.database import TestDatabase
 
 if __name__ == "__main__":
-    TestDatabase()
+    TestDatabase(real_data=True)

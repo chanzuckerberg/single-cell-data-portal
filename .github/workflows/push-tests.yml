@@ -79,11 +79,11 @@ jobs:
           make package -C ./backend/chalice/api_server
 
           cd frontend
-          cp src/configs/dev.js src/configs/configs.js
+          cp src/configs/local.js src/configs/configs.js
           npm install
-      - name: smoke test prod build with Dev BE server
+      - name: smoke test prod build with local BE server
         run: |
-          make smoke-test-prod-build
+          make smoke-test-with-local-backend-ci
 
   unit-test:
     runs-on: ubuntu-latest

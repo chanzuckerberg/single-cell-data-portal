@@ -20,7 +20,7 @@ parser.add_argument(
     "--log-level",
     help=str([logging.getLevelName(i) for i in range(0, 60, 10)]),
     choices={logging.getLevelName(i) for i in range(0, 60, 10)},
-    default=logging.DEBUG,
+    default=logging.INFO,
 )
 args = parser.parse_args()
 logging.basicConfig(level=args.log_level, stream=sys.stderr)

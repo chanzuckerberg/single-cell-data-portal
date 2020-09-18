@@ -16,12 +16,15 @@ from backend.corpora.common.corpora_orm import (
     DbUser,
     DbDeploymentDirectory,
 )
-
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
 class TestDatabase:
-    def __init__(self):
+    fake_s3_file = f"s3://{CorporaTestCaseUsingMockAWS.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
+    real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
+
+    def __init__(self, real_data=False):
+        self.real_data = real_data
         create_db()
         self.db = DbUtils()
         self._populate_test_data()
@@ -117,7 +120,7 @@ class TestDatabase:
             filetype=DatasetArtifactFileType.H5AD.name,
             type=DatasetArtifactType.ORIGINAL.name,
             user_submitted=True,
-            s3_uri=f"s3://{CorporaTestCaseUsingMockAWS.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad",
+            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
         )
         self.db.session.add(dataset_artifact)
         self.db.session.commit()
