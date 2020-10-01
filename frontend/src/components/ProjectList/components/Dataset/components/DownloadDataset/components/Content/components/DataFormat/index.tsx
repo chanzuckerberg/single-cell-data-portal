@@ -31,7 +31,7 @@ const DataFormat: FC<Props> = ({
         onChange={handleChange}
         selectedValue={format}
       >
-        <Radio label=".anndata" value={DATASET_ASSET_FORMAT.H5AD} />
+        <Radio label=".h5ad (AnnData v0.7)" value={DATASET_ASSET_FORMAT.H5AD} />
         <Radio label=".loom" value={DATASET_ASSET_FORMAT.LOOM} />
         <Radio label=".rds (Seurat v3)" value={DATASET_ASSET_FORMAT.RDS} />
       </RadioGroup>

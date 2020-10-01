@@ -2,6 +2,9 @@ import React, { FC } from "react";
 import { Section, Text, Title } from "../common/style";
 import { Spinner } from "./style";
 
+export const PROMPT_TEXT =
+  "Select one of the data formats to view its download details.";
+
 interface Props {
   selected: boolean;
   fileSize: number;
@@ -21,7 +24,7 @@ const Details: FC<Props> = ({
     }
 
     if (!selected) {
-      return "Select from an above data format to view download details.";
+      return PROMPT_TEXT;
     }
 
     return `${Math.floor(fileSize / MEGA_BYTES)}MB`;
