@@ -1,3 +1,4 @@
+import { PROMPT_TEXT } from "src/components/ProjectList/components/Dataset/components/DownloadDataset/components/Content/components/Details";
 import { goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestTag, getText } from "../utils/selectors";
@@ -36,14 +37,12 @@ describe("Homepage", () => {
       ).toBeTruthy();
 
       await expect(page).toHaveSelector(getText("DATA FORMAT"));
-      await expect(page).toHaveSelector(getText(".anndata"));
+      await expect(page).toHaveSelector(getText(".h5ad (AnnData v0.7)"));
       await expect(page).toHaveSelector(getText(".loom"));
       await expect(page).toHaveSelector(getText(".rds (Seurat v3)"));
 
       await expect(page).toHaveSelector(getText("DOWNLOAD DETAILS"));
-      await expect(page).toHaveSelector(
-        getText("Select from an above data format to view download details.")
-      );
+      await expect(page).toHaveSelector(getText(PROMPT_TEXT));
     });
 
     it("downloads a file", async () => {
@@ -51,7 +50,7 @@ describe("Homepage", () => {
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
 
-      await page.click(getText(".anndata"));
+      await page.click(getText(".h5ad (AnnData v0.7)"));
 
       const downloadLink = await page.getAttribute(
         getTestTag("download-asset-download-button"),

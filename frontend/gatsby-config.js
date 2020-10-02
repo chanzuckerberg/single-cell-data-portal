@@ -37,7 +37,7 @@ module.exports = {
     author: `Chan Zuckerberg Initiative`,
     description: `
     The cellxgene data portal is a repository of public, explorable single-cell datasets.
-    If you have a public dataset which you would like hosted for visualization on this site, please drop us a note at cellxgene@chanzuckerberg.com.
+    If you have a public dataset that you would like hosted on this site, please drop us a note at cellxgene@chanzuckerberg.com.
     `,
     title: `cellxgene`,
   },

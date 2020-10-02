@@ -11,7 +11,7 @@ export const Code = styled.code`
   box-sizing: border-box;
   border-radius: 4px;
   height: 52px;
-  overflow: auto;
+  overflow: hidden;
   display: block;
   font-size: 13px;
   line-height: 18px;
