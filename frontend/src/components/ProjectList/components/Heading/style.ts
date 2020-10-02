@@ -17,6 +17,9 @@ export const Wrapper = styled.div`
 export const Name = styled.div`
   ${fontStyle}
   flex: ${LAYOUT.NAME};
+  /* (thuang): width is ignored when flex is used */
+  min-width: 620px;
+  max-width: 620px;
 `;
 
 export const QuestionMark = styled.img`
