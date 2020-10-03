@@ -1,0 +1,838 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: Corpora Data Portal API
+  description: CZI Corpora Data Portal API
+servers:
+  - description: Production environment
+    url: https://api.corpora.cziscience.com
+  - description: Development environment
+    url: https://api.dev.corpora.cziscience.com
+  - description: Staging environment
+    url: https://api.staging.corpora.cziscience.com
+paths:
+  /v1/submission:
+    get:
+      summary: List open submissions in Corpora
+      tags:
+        - submissions
+      description: >-
+        Lists all submissions by their UUIDs that currently exist in Corpora. If a parameter is specified as a filter,
+        then only submissions that meet the given criteria will be outputted.
+      operationId: corpora.lambdas.api.v1.submission.get_submissions_list
+      parameters:
+        - $ref: "#/components/parameters/query_user_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  submissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/project_uuid"
+                        name:
+                          type: string
+                        processing_state:
+                          type: string
+                        validation_state:
+                          type: string
+                        owner_id:
+                          type: string
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+    post:
+      summary: Create a new project submission
+      tags:
+        - submissions
+      description: >-
+        Opens a new submission. If a project UUID is not provided, then a project UUID will be generated and a blank
+        submission will be created. If a project UUID is provided, a submission is opened to modify the existing
+        project. At most, one submission can be open for a project. The project UUID will be used to pre-populate the
+        newly created submission. On success, a message will be returned with the project UUID.
+      operationId: corpora.lambdas.api.v1.submission.create_new_submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                needs_attestation:
+                  type: boolean
+                  description: >-
+                    Determines whether this project requires attestation in which case this project cannot be submitted
+                    without a Terms and Conditions file also uploaded.
+                project_uuid:
+                  type: string
+                  description: >-
+                    If the submission is created in order to update an existing publicly published project, then a
+                    Project UUID must be provided in order to backfill the new submission entity with the existing
+                    project details for modification.
+              required:
+                - needs_attestation
+      responses:
+        "201":
+          description: A new submissions has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: "#/components/schemas/project_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/submission/{project_uuid}:
+    get:
+      summary: Get a project's submission details by UUID
+      tags:
+        - submissions
+      description: >-
+        Returns all available metadata information about a project submission, including URIs of datasets that are
+        attached to the project.
+      operationId: corpora.lambdas.api.v1.submission.get_submission_details
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      responses:
+        "200":
+          description: Return the submission metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/project"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+    delete:
+      summary: Delete a submission
+      tags:
+        - submissions
+      description: >-
+        Deletes the submission associated with the given project UUID. This does not delete the project if the project
+        associated with the submission has been previously publicly published.
+      operationId: corpora.lambdas.api.v1.submission.delete_submission
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/submission/{project_uuid}/file:
+    put:
+      summary: Add a file to a submission
+      tags:
+        - submissions
+      description: >-
+        TODO: https://github.com/chanzuckerberg/corpora-data-portal/issues/361
+        Adds a dataset file or a legal file to the project’s S3 bucket. If a legal file is uploaded (verified by a
+        standard name), then the requirement for attestation for the project will be satisfied and accordingly noted in
+        the submission entity. A quick validation will be performed to ensure that if the file is a data file, then the
+        extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
+        name, it will replace it and increment the revision value of the dataset.
+      operationId: corpora.lambdas.api.v1.submission.add_file_to_submission
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  description: >-
+                    The name of the file that is being uploaded. A duplicate filename, will result in the overwrite of
+                    the existing file.
+                  type: string
+                filetype:
+                  type: string
+                  enum: [legal, data]
+                  description: >-
+                    The filetype will be one of {legal or data} which provides information on how to handle the file. If
+                    legal, then an update is made to the Submission entity signifying that the T&C form has been
+                    submitted.
+                body:
+                  type: string
+                  format: binary
+                  description: The contents of the file to be added to the submission.
+              required:
+                - filename
+      responses:
+        "201":
+          description: File was successfully added to submission.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  s3_uri:
+                    type: string
+                  dataset_uuid:
+                    type: string
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
+
+  /v1/submission/{project_uuid}/dataset/{dataset_uuid}:
+    delete:
+      summary: Delete a project's dataset file
+      tags:
+        - submissions
+      description: >-
+        Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
+        outputted.
+      operationId: corpora.lambdas.api.v1.submission.delete_dataset_from_submission
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "202":
+          description: Accepted
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/submission/{project_uuid}/validate:
+    post:
+      tags:
+        - submissions
+      summary: Validate a project
+      description: >-
+        Validates the project to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
+        there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
+        the validation is also stored in the backend database.
+      operationId: corpora.lambdas.api.v1.submission.validate_submission
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: "#/components/schemas/project_uuid"
+                  result:
+                    type: string
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/submission/{project_uuid}/save:
+    post:
+      tags:
+        - submissions
+      summary: Save a project
+      description: >-
+        If needed (i.e. project level metadata was not inputted via a form and instead embedded in the matrix file),
+        extracts the project-level metadata from the datasets or uses the given project-level metadata add via the
+        body parameter and saves it to the database. The new project metadata state will be returned in the response on
+        success.
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      operationId: corpora.lambdas.api.v1.submission.save_submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: A schema that has fields for all available project-level metadata.
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                raw_data_link:
+                  type: array
+                  items:
+                    type: string
+                protocol_link:
+                  type: array
+                  items:
+                    type: string
+                other_information_link:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: "#/components/schemas/project_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/submission/{project_uuid}/publish:
+    post:
+      tags:
+        - submissions
+      summary: Publish a project
+      description: >-
+        Publish a project to Corpora as either public or private. The visibility of the project will either make it
+        visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
+        to public, the successful execution of this operation will move the Submission to a CLOSED state.
+
+        If publishing modification to a previously published project, this will replace the old project with the new
+        published project. The old project will not longer be accessible.
+      operationId: corpora.lambdas.api.v1.submission.publish_submission
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: >-
+                A schema that contains a field dictating the visibility of the deployments.
+              type: object
+              properties:
+                visibility:
+                  description: >-
+                    Determines the visibility of the project, that will either make the project visible on the public
+                    sites or only viewable through obfuscated URLs.
+                  $ref: "#/components/schemas/visibility"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_uuid:
+                    $ref: "#/components/schemas/project_uuid"
+                  visibility:
+                    $ref: "#/components/schemas/visibility"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/project:
+    get:
+      tags:
+        - projects
+      summary: List published projects in Corpora
+      description: >-
+        This lists all projects and their UUIDs that currently exist in the corpora. If a parameter is specified as
+        a filter, then only projects that meet the status criteria will be outputted.
+      operationId: corpora.lambdas.api.v1.project.get_projects_list
+      parameters:
+        - $ref: "#/components/parameters/query_user_uuid"
+        - name: from_date
+          in: query
+          schema:
+            type: integer
+          description: The date after which projects should have been created. In seconds since epoch.
+        - name: to_date
+          in: query
+          description: The date before which projects should have been created. In seconds since epoch.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - projects
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - created_at
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/project_uuid"
+                        created_at:
+                          type: number
+                  from_date:
+                    type: integer
+                  to_date:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/400"
+
+  /v1/project/{project_uuid}:
+    get:
+      tags:
+        - projects
+      summary: Get a project's full details
+      description: >-
+        This will return all datasets and associated attributes.
+      operationId: corpora.lambdas.api.v1.project.get_project_details
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/project"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+    delete:
+      tags:
+        - projects
+      summary: Delete a project
+      description: >-
+        Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such
+        project exists, then a warning will be outputted.
+      operationId: corpora.lambdas.api.v1.project.delete_project
+      parameters:
+        - $ref: "#/components/parameters/path_project_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/dataset/{dataset_uuid}:
+    post:
+      tags:
+        - dataset
+      summary: Request to download a dataset
+      description: >-
+        Request to download a file which on success will generate a pre-signed URL to download the dataset.
+      operationId: corpora.lambdas.api.v1.project.get_project_dataset
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_uuid:
+                    type: string
+                  dataset_presigned_url:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/login:
+    get:
+      tags:
+        - authentication
+      summary: login to the system
+      operationId: corpora.lambdas.api.v1.authentication.login
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/logout:
+    get:
+      tags:
+        - authentication
+      summary: logout of the system
+      operationId: corpora.lambdas.api.v1.authentication.logout
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/userinfo:
+    get:
+      tags:
+        - authentication
+      summary: retrieve user information if the user is logged in
+      operationId: corpora.lambdas.api.v1.authentication.userinfo
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userinfo"
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/oauth2/callback:
+    get:
+      tags:
+        - authentication
+      summary: callback function from auth server after login
+      operationId: corpora.lambdas.api.v1.authentication.oauth2_callback
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+components:
+  schemas:
+    user_uuid:
+      description: A unique identifier of a logged in User of Corpora.
+      type: string
+    userinfo:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/user_uuid"
+        name:
+          description: The user's name
+          type: string
+        email:
+          description: The user's email
+          type: string
+    project_uuid:
+      description: A unique identifier of a Project.
+      type: string
+    dataset_uuid:
+      description: A unique identifier of a Dataset.
+      type: string
+    visibility:
+      type: string
+      enum: [PUBLIC, PRIVATE]
+    project:
+      type: object
+      required:
+        - name
+        - description
+        - id
+        - owner
+        - status
+        - processing_state
+        - validation_state
+        - links
+        - attestation
+        - datasets
+        - created_at
+        - updated_at
+      properties:
+        created_at:
+          type: number
+        updated_at:
+          type: number
+        description:
+          type: string
+        name:
+          type: string
+        id:
+          $ref: "#/components/schemas/project_uuid"
+        s3_bucket_key:
+          type: string
+        owner:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: "#/components/schemas/user_uuid"
+            email:
+              type: string
+            name:
+              type: string
+            updated_at:
+              type: number
+        status:
+          type: string
+          enum: [LIVE, EDIT]
+        processing_state:
+          type: string
+          enum: [NA, IN_VALIDATION, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
+        validation_state:
+          type: string
+          enum: [NOT_VALIDATED, VALID, INVALID]
+        links:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - url
+              - type
+            properties:
+              name:
+                type: string
+              url:
+                type: string
+              type:
+                type: string
+                enum: [PROTOCOL, RAW_DATA, SUMMARY, OTHER]
+        attestation:
+          type: object
+          properties:
+            needed:
+              type: boolean
+            tc_uri:
+              description: A uri to the projects terms and conditions.
+              type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset"
+    contributor:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        institution:
+          type: string
+        created_at:
+          type: number
+        updated_at:
+          type: number
+    ontology_element:
+      type: object
+      properties:
+        ontology_term_id:
+          type: string
+        label:
+          type: string
+    ontology_element_array:
+      type: array
+      items:
+        $ref: "#/components/schemas/ontology_element"
+    dataset:
+      type: object
+      required:
+        - id
+        - assay
+        - tissue
+        - disease
+        - sex
+        - ethnicity
+        - organism
+        - development_stage
+        - name
+        - source_data_location
+        - revision
+        - dataset_deployments
+        - dataset_assets
+        - contributors
+        - preprint_doi
+        - publication_doi
+        - project_id
+        - project_status
+      properties:
+        id:
+          $ref: "#/components/schemas/dataset_uuid"
+        assay:
+          $ref: "#/components/schemas/ontology_element_array"
+        tissue:
+          $ref: "#/components/schemas/ontology_element_array"
+        disease:
+          $ref: "#/components/schemas/ontology_element_array"
+        sex:
+          type: array
+          items:
+            type: string
+        ethnicity:
+          $ref: "#/components/schemas/ontology_element_array"
+        organism:
+          $ref: "#/components/schemas/ontology_element"
+        development_stage:
+          $ref: "#/components/schemas/ontology_element_array"
+        name:
+          type: string
+        source_data_location:
+          type: string
+        revision:
+          type: integer
+        dataset_deployments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              environment:
+                type: string
+              url:
+                type: string
+        dataset_assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset_asset"
+        contributors:
+          type: array
+          items:
+            $ref: "#/components/schemas/contributor"
+        preprint_doi:
+          type: string
+        publication_doi:
+          type: string
+        project_id:
+          $ref: "#/components/schemas/project_uuid"
+        project_status:
+          type: string
+    dataset_asset:
+      type: object
+      properties:
+        id:
+          type: string
+        format:
+          type: string
+          enum: [H5AD, RDS, LOOM, CXG]
+        file_name:
+          type: string
+        type:
+          type: string
+          enum: [REMIX, ORIGINAL]
+        s3_uri:
+          type: string
+  parameters:
+    path_project_uuid:
+      name: project_uuid
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/project_uuid"
+    path_dataset_uuid:
+      name: dataset_uuid
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_uuid"
+    path_filename:
+      name: filename
+      description: The name of a file to add, remove, or download.
+      in: path
+      required: true
+      schema:
+        type: string
+    query_user_uuid:
+      name: user_uuid
+      description: an ID that represents the user.
+      in: query
+      schema:
+        $ref: "#/components/schemas/user_uuid"
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    400:
+      description: Invalid parameter.
+    401:
+      description: Failed to authenticate.
+    403:
+      description: Unauthorized.
+    404:
+      description: Resource not found.
+    409:
+      description: File conflict.
+
+  securitySchemes:
+    auth0:
+      type: openIdConnect
+      openIdConnectUrl: https://example.com/.well-known/openid-configuration
+    cxguserCookie:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
+
+
