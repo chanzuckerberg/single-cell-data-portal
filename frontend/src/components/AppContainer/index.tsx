@@ -1,22 +1,23 @@
 import loadable from "@loadable/component";
-import { Router } from "@reach/router";
+import { RouteComponentProps, Router } from "@reach/router";
 import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
+import { Props } from "src/views/Collection";
 
-const AsyncHomepage = loadable(
+const AsyncHomepage = loadable<RouteComponentProps>(
   () => /*webpackChunkName: 'Homepage' */ import("src/views/Homepage")
 );
 
-const AsyncMyCollections = loadable(
+const AsyncMyCollections = loadable<RouteComponentProps>(
   () =>
     /*webpackChunkName: 'AsyncMyCollections' */ import(
       "src/views/MyCollections"
     )
 );
 
-const AsyncCollection = loadable(
+const AsyncCollection = loadable<Props>(
   () => /*webpackChunkName: 'AsyncCollection' */ import("src/views/Collection")
 );
 
