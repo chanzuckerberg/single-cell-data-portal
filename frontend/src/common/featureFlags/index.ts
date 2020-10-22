@@ -19,16 +19,5 @@ export function get(key: string): string | null {
     setLocalStorage(FEATURE_FLAG_PREFIX + key, URLValueAsBooleanString);
   }
 
-  const localStorageValue = getLocalStorage(FEATURE_FLAG_PREFIX + key);
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log("-------URLValue", URLValue);
-  console.log("-------localStorageValue", localStorageValue);
-
-  return localStorageValue;
+  return getLocalStorage(FEATURE_FLAG_PREFIX + key);
 }
