@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Project } from "src/common/entities";
+import { Collection } from "src/common/entities";
 import { SmallColumn } from "../../common/style";
 import { StyledAnchor, Wrapper } from "./style";
 interface AnchorProps {
@@ -15,7 +15,7 @@ const Anchor: FC<AnchorProps> = ({ url, children }) => {
 };
 
 interface Props {
-  links: Project["links"];
+  links: Collection["links"];
 }
 
 const MoreInformation: FC<Props> = ({ links }) => {

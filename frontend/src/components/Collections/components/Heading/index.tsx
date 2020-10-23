@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import questionMarkSvg from "src/components/ProjectList/components/Heading/questionMark.svg";
+import questionMarkSvg from "src/components/Collections/components/Heading/questionMark.svg";
 import { SmallColumn } from "../Dataset/common/style";
 import { Name, QuestionMark, Wrapper } from "./style";
 
