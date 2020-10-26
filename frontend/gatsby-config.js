@@ -7,7 +7,6 @@ module.exports = {
     "gatsby-plugin-react-helmet",
     "gatsby-plugin-root-import",
     "gatsby-plugin-styled-components",
-    "gatsby-plugin-styled-components",
     {
       resolve: "gatsby-plugin-asset-path",
     },

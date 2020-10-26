@@ -7,12 +7,11 @@
 
 import { graphql, useStaticQuery } from "gatsby";
 import React, { FC } from "react";
-import { Helmet, MetaProps } from "react-helmet";
+import { Helmet, HelmetProps } from "react-helmet";
 
-interface Props {
+interface Props extends HelmetProps {
   description?: string;
   lang?: string;
-  meta?: MetaProps[];
   title: string;
 }
 
