@@ -39,3 +39,29 @@ async function fetchCollection(_: unknown, id: string): Promise<Collection> {
 export function useCollection(id: string) {
   return useQuery<Collection>([USE_COLLECTION, id], fetchCollection);
 }
+
+export async function createCollection(payload: string): Promise<string> {
+  const json = await (
+    await fetch(API_URL + API.CREATE_COLLECTION, {
+      body: payload,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+  ).json();
+
+  return json.collection_uuid;
+}
+
+export const formDataToObject = function (formData: FormData) {
+  const payload: { [key: string]: unknown } = {};
+
+  formData.forEach((value, key: string) => {
+    const translatedKey = key.replace("-", "_");
+
+    payload[translatedKey] = value;
+  });
+
+  return payload;
+};

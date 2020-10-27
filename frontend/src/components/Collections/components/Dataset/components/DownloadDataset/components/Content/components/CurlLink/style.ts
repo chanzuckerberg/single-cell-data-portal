@@ -1,4 +1,4 @@
-import { GREY } from "src/components/common/theme";
+import { GRAY } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const CodeWrapper = styled.div`
@@ -7,7 +7,7 @@ export const CodeWrapper = styled.div`
 `;
 
 export const Code = styled.code`
-  border: 1px solid ${GREY.VERY_LIGHT};
+  border: 1px solid ${GRAY.VERY_LIGHT};
   box-sizing: border-box;
   border-radius: 4px;
   height: 52px;
@@ -39,7 +39,7 @@ export const CodeMask = styled.div`
 `;
 
 export const Tip = styled.div`
-  color: ${GREY.TIPS};
+  color: ${GRAY.TIPS};
   font-size: 12px;
   width: 490px;
 `;

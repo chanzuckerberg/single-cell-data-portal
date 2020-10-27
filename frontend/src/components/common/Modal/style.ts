@@ -1,6 +1,6 @@
 import { Classes, Dialog } from "@blueprintjs/core";
 import styled from "styled-components";
-import { GREY } from "../theme";
+import { GRAY } from "../theme";
 
 export const StyledDialog = styled(Dialog)`
   && {
@@ -19,8 +19,8 @@ export const StyledDialog = styled(Dialog)`
 
       margin: 0;
       height: 52px;
-      background: ${GREY.LIGHT};
-      border: 1px solid ${GREY.BORDER_LIGHT};
+      background: ${GRAY.LIGHT};
+      border: 1px solid ${GRAY.BORDER_LIGHT};
       border-radius: 4px;
     }
 

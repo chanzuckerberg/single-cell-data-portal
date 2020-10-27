@@ -1,4 +1,4 @@
-import { BLUE, GREY } from "src/components/common/theme";
+import { GRAY, OLD_BLUE } from "src/components/common/theme";
 import styled, { css } from "styled-components";
 
 export const Wrapper = styled.div`
@@ -15,13 +15,13 @@ const buttonStyle = css`
 export const Cancel = styled.button`
   ${buttonStyle}
   background-color: transparent;
-  color: ${GREY.DARK};
+  color: ${GRAY.DARK};
   font-size: 14px;
 `;
 
 const sharedDownloadStyle = css`
   ${buttonStyle}
-  background-color: ${BLUE};
+  background-color: ${OLD_BLUE};
   color: white;
   font-size: 14px;
   width: 80px;

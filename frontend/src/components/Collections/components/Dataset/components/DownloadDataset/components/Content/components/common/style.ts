@@ -1,11 +1,11 @@
-import { BLUE } from "src/components/common/theme";
+import { OLD_BLUE } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const Title = styled.div`
   font-weight: 700;
   font-size: 12px;
   line-height: 14px;
-  color: ${BLUE};
+  color: ${OLD_BLUE};
   margin-bottom: 8px;
 `;
 
