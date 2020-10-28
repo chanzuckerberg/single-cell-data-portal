@@ -30,16 +30,22 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         # tests may have different configs
         return oauth_client
 
+    code_challenge_method = None
+    try:
+        code_challenge_method = config.code_challenge_method
+    except RuntimeError:
+        pass
+
     oauth = OAuth(current_app)
-    api_base_url = config.api_base_url
     oauth_client = oauth.register(
         "oauth",
+        code_challenge_method=code_challenge_method,
         client_id=config.client_id,
         client_secret=config.client_secret,
-        api_base_url=api_base_url,
-        refresh_token_url=f"{api_base_url}/oauth/token",
-        access_token_url=f"{api_base_url}/oauth/token",
-        authorize_url=f"{api_base_url}/authorize",
+        api_base_url=config.api_base_url,
+        refresh_token_url=config.api_token_url,
+        access_token_url=config.api_token_url,
+        authorize_url=config.api_authorize_url,
         client_kwargs={"scope": "openid profile email offline_access"},
     )
     return oauth_client
@@ -201,7 +207,7 @@ def refresh_expired_token(token: dict) -> Optional[dict]:
         "client_secret": auth_config.client_secret,
     }
     headers = {"content-type": "application/x-www-form-urlencoded"}
-    request = requests.post(f"{auth_config.api_base_url}/oauth/token", urlencode(params), headers=headers)
+    request = requests.post(auth_config.api_token_url, urlencode(params), headers=headers)
     if request.status_code != 200:
         # unable to refresh the token
         return None

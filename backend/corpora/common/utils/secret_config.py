@@ -36,6 +36,7 @@ class SecretConfig:
         """
 
         super(SecretConfig, self).__init__()
+        self._defaults = {}
         self._component_name = component_name
         self._deployment = deployment or os.environ["DEPLOYMENT_STAGE"]
         self._secret_name = secret_name
@@ -47,9 +48,19 @@ class SecretConfig:
 
     def __getattr__(self, name):
         if self.config_is_loaded():
-            return self.value_from_config(name) or self.value_from_env(name) or self.raise_error(name)
+            return (
+                self.value_from_config(name)
+                or self.value_from_env(name)
+                or self.value_from_defaults(name)
+                or self.raise_error(name)
+            )
         else:
-            return self.value_from_env(name) or (self.load() and self.value_from_config(name)) or self.raise_error(name)
+            return (
+                self.value_from_env(name)
+                or (self.load() and self.value_from_config(name))
+                or self.value_from_defaults(name)
+                or self.raise_error(name)
+            )
 
     @classmethod
     def reset(cls):
@@ -64,6 +75,9 @@ class SecretConfig:
 
         self.__class__._config = config
         self.__class__.use_env = False
+
+    def set_defaults(self, defaults):
+        self._defaults = defaults
 
     def load(self):
         if self._source == "aws":
@@ -101,6 +115,9 @@ class SecretConfig:
             return self.config[name]
         else:
             return None
+
+    def value_from_defaults(self, name):
+        return self._defaults.get(name)
 
     def value_from_env(self, name):
         if self.__class__.use_env and name.upper() in os.environ:

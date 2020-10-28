@@ -62,7 +62,7 @@ build-chalice-config:
 
 .PHONY: local-server
 local-server: package
-	python run_local_server.py
+	python3 run_local_server.py
 
 .PHONY: retrieve-deployed
 retrieve-deployed:
