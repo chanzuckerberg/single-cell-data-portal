@@ -32,7 +32,10 @@ class DbUtils:
             :param entity_id: Primary key of desired row
             :return: SQLAlchemy Table object, None if not found
             """
-            return self.session.query(table).get(entity_id)
+            try:
+                return self.session.query(table).get(entity_id)
+            except SQLAlchemyError:
+                self.failure_handler()
 
         def query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
             """
@@ -41,11 +44,14 @@ class DbUtils:
             :param filter_args: List of SQLAlchemy filter conditions
             :return: List of SQLAlchemy query response objects
             """
-            return (
-                self.session.query(*table_args).filter(*filter_args).all()
-                if filter_args
-                else self.session.query(*table_args).all()
-            )
+            try:
+                return (
+                    self.session.query(*table_args).filter(*filter_args).all()
+                    if filter_args
+                    else self.session.query(*table_args).all()
+                )
+            except SQLAlchemyError:
+                self.failure_handler()
 
         def commit(self):
             """
@@ -54,13 +60,19 @@ class DbUtils:
             try:
                 self.session.commit()
             except SQLAlchemyError:
-                self.session.rollback()
-                msg = "Failed to commit."
-                logger.exception(msg)
-                raise CorporaException(msg)
+                self.failure_handler()
+
+        def failure_handler(self):
+            self.session.rollback()
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)
 
         def delete(self, db_object: Base):
-            self.session.delete(db_object)
+            try:
+                self.session.delete(db_object)
+            except SQLAlchemyError:
+                self.failure_handler()
 
         def close(self):
             self.session.close()
