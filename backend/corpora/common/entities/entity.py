@@ -78,11 +78,11 @@ class Entity:
 
          This can be used when there are shared column values that need to be added across all the new rows.
          For example: DbProjectLink generated for a specific project should all have the same DbProjectLink.project_id
-         and DbProjectLink.project_status. The function call would be:
+         and DbProjectLink.project_visibility. The function call would be:
          >>>> cls._create_sub_objects(
          >>>>    [{'link_url':'abc', 'link_type': ProjectLinkType.OTHER}],
          >>>>    DbProjectLink,
-         >>>>    add_columns={'project_id':'abcd','project_status':ProjectStatus.EDIT}
+         >>>>    add_columns={'project_id':'abcd','project_visibility':CollectionVisibility.PRIVATE}
          >>>>    )
 
          Another use would be to overwrite column specified in the rows.

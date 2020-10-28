@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import and_
 
 from .entity import Entity
-from ..corpora_orm import DbProject, DbProjectLink, ProjectStatus
+from ..corpora_orm import DbProject, DbProjectLink, CollectionVisibility
 
 
 class Project(Entity):
@@ -18,15 +18,12 @@ class Project(Entity):
     @classmethod
     def create(
         cls,
-        status: str,
+        visibility: str,
         name: str = "",
         description: str = "",
         owner: str = "",
-        s3_bucket: str = "",
         tc_uri: str = "",
         needs_attestation: bool = False,
-        processing_state: str = "",
-        validation_state: str = "",
         links: list = None,
         **kwargs,
     ) -> "Project":
@@ -41,17 +38,14 @@ class Project(Entity):
 
         new_db_object = DbProject(
             id=primary_key,
-            status=status,
+            visibility=visibility,
             name=name,
             description=description,
             owner=owner,
-            s3_bucket=s3_bucket,
             tc_uri=tc_uri,
             needs_attestation=needs_attestation,
-            processing_state=processing_state,
-            validation_state=validation_state,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_status=status)
+                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_visibility=visibility)
             ),
             **kwargs,
         )
@@ -66,11 +60,13 @@ class Project(Entity):
         Given the project_uuid, retrieve a live project.
         :param project_uuid:
         """
-        return cls.get((project_uuid, ProjectStatus.LIVE.name))
+        return cls.get((project_uuid, CollectionVisibility.PUBLIC.name))
 
     @classmethod
     def list_projects_in_time_range(cls, *args, **kwargs):
-        return cls.list_attributes_in_time_range(*args, filters=[DbProject.status == ProjectStatus.LIVE.name], **kwargs)
+        return cls.list_attributes_in_time_range(
+            *args, filters=[DbProject.visibility == CollectionVisibility.PUBLIC.name], **kwargs
+        )
 
     @classmethod
     def list_attributes_in_time_range(
@@ -117,18 +113,16 @@ class Project(Entity):
         Given the project_uuid, retrieve a live project.
         :param project_uuid:
         """
-        return cls.get((project_uuid, ProjectStatus.EDIT.name))
+        return cls.get((project_uuid, CollectionVisibility.PRIVATE.name))
 
     @classmethod
     def list_submissions(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             *args,
-            filters=[DbProject.status == ProjectStatus.EDIT.name],
+            filters=[DbProject.visibility == CollectionVisibility.PRIVATE.name],
             list_attributes=[
                 DbProject.id,
                 DbProject.name,
-                DbProject.processing_state,
-                DbProject.validation_state,
                 DbProject.owner,
             ],
             **kwargs,
@@ -141,7 +135,6 @@ class Project(Entity):
         """
         result = self.to_dict()
         # Reshape the data to match.
-        result["s3_bucket_key"] = result.pop("s3_bucket", None)
         result.pop("user", None)
         result.pop("owner", None)
         result["links"] = [

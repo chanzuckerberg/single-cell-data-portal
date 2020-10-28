@@ -41,10 +41,6 @@ paths:
                           $ref: "#/components/schemas/project_uuid"
                         name:
                           type: string
-                        processing_state:
-                          type: string
-                        validation_state:
-                          type: string
                         owner_id:
                           type: string
         "400":
@@ -200,7 +196,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
+                  visibility:
                     type: string
                   s3_uri:
                     type: string
@@ -602,9 +598,7 @@ components:
         - name
         - description
         - id
-        - status
-        - processing_state
-        - validation_state
+        - visibility
         - links
         - attestation
         - datasets
@@ -621,17 +615,9 @@ components:
           type: string
         id:
           $ref: "#/components/schemas/project_uuid"
-        s3_bucket_key:
+        visibility:
           type: string
-        status:
-          type: string
-          enum: [LIVE, EDIT]
-        processing_state:
-          type: string
-          enum: [NA, IN_VALIDATION, IN_ARTIFACT_CREATION, IN_DEPLOYMENT]
-        validation_state:
-          type: string
-          enum: [NOT_VALIDATED, VALID, INVALID]
+          enum: [PUBLIC, PRIVATE]
         links:
           type: array
           items:
@@ -648,6 +634,8 @@ components:
               type:
                 type: string
                 enum: [PROTOCOL, RAW_DATA, SUMMARY, OTHER]
+        obfuscated_uuid:
+          type: string
         attestation:
           type: object
           properties:
@@ -683,14 +671,13 @@ components:
         - organism
         - development_stage
         - name
-        - source_data_location
         - revision
         - dataset_deployments
         - dataset_assets
         - preprint_doi
         - publication_doi
         - project_id
-        - project_status
+        - project_visibility
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -711,8 +698,6 @@ components:
         development_stage:
           $ref: "#/components/schemas/ontology_element_array"
         name:
-          type: string
-        source_data_location:
           type: string
         revision:
           type: integer
@@ -737,7 +722,7 @@ components:
           type: string
         project_id:
           $ref: "#/components/schemas/project_uuid"
-        project_status:
+        project_visibility:
           type: string
     dataset_asset:
       type: object

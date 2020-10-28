@@ -73,17 +73,17 @@ class DBSessionMaker:
         return self.session_maker(**kwargs)
 
 
-class ProjectStatus(enum.Enum):
+class CollectionVisibility(enum.Enum):
     """
-    Describes a DbProject's status.
+    Describes a DbProject's visibility.
     At most, one LIVE and one EDIT entry of a Project may exist at a time.
 
-    LIVE - a published and publicly viewable Project.
-    EDIT - an open Submission, i.e an unpublished and non-public Project.
+    PUBLIC - a published and publicly viewable Project.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Project.
     """
 
-    LIVE = "Live"
-    EDIT = "Edit"
+    PUBLIC = "Public"
+    PRIVATE = "Private"
 
 
 class ProcessingState(enum.Enum):
@@ -160,24 +160,6 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbUser(Base):
-    """
-    A registered Corpora user.
-    Maintains user details such as contact information and access control settings.
-    """
-
-    __tablename__ = "user"
-
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    email = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
-
-    # Relationships
-    projects = relationship("DbProject", back_populates="user")
-
-
 class DbProject(Base):
     """
     A Corpora project represents an in progress or live submission of a lab experiment.
@@ -187,20 +169,19 @@ class DbProject(Base):
     __tablename__ = "project"
 
     id = Column(String, primary_key=True)
-    status = Column(String, primary_key=True)  # Enum(ProjectStatus). Enum type unsupported for composite FKs.
-    owner = Column(ForeignKey("user.id"), nullable=False)
+    visibility = Column(
+        Enum(CollectionVisibility), primary_key=True, default=CollectionVisibility.PRIVATE
+    )  # Enum(CollectionVisibility). Enum type unsupported for composite FKs.
+    owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
-    s3_bucket = Column(String)
     tc_uri = Column(String)
     needs_attestation = Column(Boolean)
-    processing_state = Column(Enum(ProcessingState))
-    validation_state = Column(Enum(ValidationState))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
+    obfuscated_uuid = Column(String, default="")
 
     # Relationships
-    user = relationship("DbUser", uselist=False, back_populates="projects")
     links = relationship("DbProjectLink", back_populates="project", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="project", cascade="all, delete-orphan")
 
@@ -214,7 +195,7 @@ class DbProjectLink(Base):
 
     id = Column(String, primary_key=True)
     project_id = Column(String, nullable=False)
-    project_status = Column(String, nullable=False)
+    project_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
     link_name = Column(String)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
@@ -225,7 +206,7 @@ class DbProjectLink(Base):
     project = relationship("DbProject", uselist=False, back_populates="links")
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
+    __table_args__ = (ForeignKeyConstraint([project_id, project_visibility], [DbProject.id, DbProject.visibility]), {})
 
 
 class DbDataset(Base):
@@ -247,11 +228,11 @@ class DbDataset(Base):
     sex = Column(JSONB)
     ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
-    source_data_location = Column(String)
     preprint_doi = Column(String)
     publication_doi = Column(String)
+    is_valid = Column(Boolean, default=False)
     project_id = Column(String, nullable=False)
-    project_status = Column(String, nullable=False)
+    project_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
@@ -268,12 +249,12 @@ class DbDataset(Base):
     )
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
+    __table_args__ = (ForeignKeyConstraint([project_id, project_visibility], [DbProject.id, DbProject.visibility]), {})
 
 
 class DbDatasetArtifact(Base):
     """
-    Represents a DbUser uploaded or Corpora generated file linked to a DbDataset.
+    Represents a user uploaded or Corpora generated file linked to a DbDataset.
     All matrices and cellxgene objects are examples of a DbDatasetArtifact.
     """
 
@@ -303,7 +284,6 @@ class DbDeploymentDirectory(Base):
 
     id = Column(String, primary_key=True)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    environment = Column(String)
     url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)

@@ -7,7 +7,7 @@ from backend.corpora.common.corpora_orm import (
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    ProjectStatus,
+    CollectionVisibility,
     DbDataset,
     DbProject,
     Base,
@@ -55,7 +55,7 @@ class TestDataset(unittest.TestCase):
             s3_uri="some_uri",
         )
 
-        deployment_directory_params = dict(environment="test", url="test_url")
+        deployment_directory_params = dict(url="test_url")
 
         contributor_params = dict(name="bob", institution="school", email="some@email.com")
 
@@ -98,7 +98,7 @@ class TestDataset(unittest.TestCase):
         test_dataset = Dataset.create(
             **BogusDatasetParams.get(
                 project_id="test_project_id",
-                project_status=ProjectStatus.LIVE.name,
+                project_visibility=CollectionVisibility.PUBLIC.name,
                 artifacts=[{}],
                 deployment_directories=[{}],
                 contributors=[{"id": "test_contributor_id"}, {"name": "bob"}],
@@ -113,7 +113,7 @@ class TestDataset(unittest.TestCase):
         else:
             test_contributor_bob_id = [(test_dataset.contributors[1].id, DbContributor)]
             test_contributor_id = [(test_dataset.contributors[0].id, DbContributor)]
-        test_project_ids = [(("test_project_id", ProjectStatus.LIVE.name), DbProject)]
+        test_project_ids = [(("test_project_id", CollectionVisibility.PUBLIC.name), DbProject)]
 
         with self.subTest("verify everything exists"):
             expected_exists = (
@@ -162,7 +162,7 @@ class TestDataset(unittest.TestCase):
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for projects with a composite primary key
-                actual = db.query([table], [table.id == p_key[0], table.status == p_key[1]])
+                actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
                 actual = db.query([table], [table.id == p_key])
             self.assertFalse(actual, f"Row not deleted {table.__name__}:{p_key}")
@@ -177,7 +177,7 @@ class TestDataset(unittest.TestCase):
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for projects with a composite primary key
-                actual = db.query([table], [table.id == p_key[0], table.status == p_key[1]])
+                actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
                 actual = db.query([table], [table.id == p_key])
             self.assertTrue(actual, f"Row does not exist {table.__name__}:{p_key}")
