@@ -16,4 +16,4 @@ General information about Alembic migrations can be found [here](https://alembic
 1. Makes changes to ./corpora/common/corpora_orm.py
 1. Set DEPLOYMENT_STAGE=dev, CORPORA_LOCAL_DEV=1
 1. Run `make db/connect`
-1. Follow [How to perform a database migration](#how_to_perform_a_database_migration) instructions except use `make db/new_migration_auto MESSAGE="purpose_of_migration"`
+1. Follow [How to perform a database migration](#how_to_perform_a_database_migration) instructions except use `make db/new_migration_auto MESSAGE="purpose_of_migration"`. See [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect).
