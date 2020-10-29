@@ -1,11 +1,12 @@
 import unittest
 from datetime import datetime
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from backend.corpora.common.corpora_orm import ProjectLinkType, DbProjectLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.project import Project
 from backend.corpora.common.utils.db_utils import DbUtils
-from backend.corpora.common.utils.exceptions import CorporaException
 from tests.unit.backend.utils import BogusProjectParams, BogusDatasetParams
 
 
@@ -13,6 +14,11 @@ class TestProject(unittest.TestCase):
     def setUp(self):
         self.uuid = "test_project_id"
         self.visibility = CollectionVisibility.PUBLIC.name
+        self.db = DbUtils()
+
+    def tearDown(self):
+        self.db.session.rollback()
+        self.db.close()
 
     def test__get__ok(self):
         key = (self.uuid, self.visibility)
@@ -41,7 +47,7 @@ class TestProject(unittest.TestCase):
 
     def test__get__invalid_visibility(self):
         invalid_visibility_key = (self.uuid, "invalid_visibility")
-        with self.assertRaises(CorporaException):
+        with self.assertRaises(SQLAlchemyError):
             Project.get(invalid_visibility_key)
 
     def test__create__ok(self):

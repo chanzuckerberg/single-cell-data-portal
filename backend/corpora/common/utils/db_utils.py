@@ -32,10 +32,7 @@ class DbUtils:
             :param entity_id: Primary key of desired row
             :return: SQLAlchemy Table object, None if not found
             """
-            try:
-                return self.session.query(table).get(entity_id)
-            except SQLAlchemyError:
-                self.failure_handler()
+            return self.session.query(table).get(entity_id)
 
         def query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
             """
@@ -44,35 +41,20 @@ class DbUtils:
             :param filter_args: List of SQLAlchemy filter conditions
             :return: List of SQLAlchemy query response objects
             """
-            try:
-                return (
-                    self.session.query(*table_args).filter(*filter_args).all()
-                    if filter_args
-                    else self.session.query(*table_args).all()
-                )
-            except SQLAlchemyError:
-                self.failure_handler()
+            return (
+                self.session.query(*table_args).filter(*filter_args).all()
+                if filter_args
+                else self.session.query(*table_args).all()
+            )
 
         def commit(self):
             """
             Commit changes to the database and roll back if error.
             """
-            try:
-                self.session.commit()
-            except SQLAlchemyError:
-                self.failure_handler()
-
-        def failure_handler(self):
-            self.session.rollback()
-            msg = "Failed to commit."
-            logger.exception(msg)
-            raise CorporaException(msg)
+            self.session.commit()
 
         def delete(self, db_object: Base):
-            try:
-                self.session.delete(db_object)
-            except SQLAlchemyError:
-                self.failure_handler()
+            self.session.delete(db_object)
 
         def close(self):
             self.session.close()
@@ -93,6 +75,11 @@ def db_session(func):
         try:
             rv = func(*args, **kwargs)
             return rv
+        except SQLAlchemyError:
+            db.session.rollback()
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)
         finally:
             db.close()
 
