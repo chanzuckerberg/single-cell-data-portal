@@ -594,8 +594,6 @@ components:
         - datasets
         - created_at
         - updated_at
-        - contact_name
-        - contact_email
         - data_submission_policy_version
       properties:
         created_at:
