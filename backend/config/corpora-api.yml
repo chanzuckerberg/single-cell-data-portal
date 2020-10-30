@@ -604,6 +604,9 @@ components:
         - datasets
         - created_at
         - updated_at
+        - contact_name
+        - contact_email
+        - data_submission_policy_version
       properties:
         created_at:
           type: number
@@ -635,6 +638,12 @@ components:
                 type: string
                 enum: [PROTOCOL, RAW_DATA, SUMMARY, OTHER]
         obfuscated_uuid:
+          type: string
+        contact_name:
+          type: string
+        contact_email:
+          type: string
+        data_submission_policy_version:
           type: string
         attestation:
           type: object
@@ -674,9 +683,7 @@ components:
         - revision
         - dataset_deployments
         - dataset_assets
-        - preprint_doi
-        - publication_doi
-        - project_id
+        - collection_id
         - collection_visibility
       properties:
         id:
@@ -716,14 +723,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"
-        preprint_doi:
-          type: string
-        publication_doi:
-          type: string
-        project_id:
+        collection_id:
           $ref: "#/components/schemas/project_uuid"
         collection_visibility:
           type: string
+        cell_count:
+          type: integer
     dataset_asset:
       type: object
       properties:

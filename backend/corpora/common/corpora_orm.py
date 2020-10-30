@@ -126,10 +126,11 @@ class ProjectLinkType(enum.Enum):
     OTHER - Other.
     """
 
-    PROTOCOL = "Protocol"
-    RAW_DATA = "Raw data"
-    SUMMARY = "Summary"
-    OTHER = "Other"
+    DOI = "doi"
+    RAW_DATA = "raw_date"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
 
 
 class DatasetArtifactFileType(enum.Enum):
@@ -170,7 +171,7 @@ class DbProject(Base):
 
     id = Column(String, primary_key=True)
     visibility = Column(
-        Enum(CollectionVisibility), primary_key=True, default=CollectionVisibility.PRIVATE
+        Enum(CollectionVisibility), primary_key=True, nullable=False
     )  # Enum(CollectionVisibility). Enum type unsupported for composite FKs.
     owner = Column(String, nullable=False)
     name = Column(String)
@@ -180,6 +181,9 @@ class DbProject(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
     obfuscated_uuid = Column(String, default="")
+    contact_name = Column(String, default="")
+    contact_email = Column(String, default="")
+    data_submission_policy_version = Column(String, nullable=False)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="project", cascade="all, delete-orphan")
@@ -195,7 +199,7 @@ class DbProjectLink(Base):
 
     id = Column(String, primary_key=True)
     collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
+    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(String)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
@@ -231,11 +235,10 @@ class DbDataset(Base):
     sex = Column(JSONB)
     ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
-    preprint_doi = Column(String)
-    publication_doi = Column(String)
+    cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
+    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
@@ -244,11 +247,6 @@ class DbDataset(Base):
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset", cascade="all, delete-orphan")
     deployment_directories = relationship(
         "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
-    )
-    contributors = relationship(
-        "DbContributor",
-        secondary=lambda: DbDatasetContributor().__table__,
-        back_populates="datasets",
     )
 
     # Composite FK
@@ -296,39 +294,3 @@ class DbDeploymentDirectory(Base):
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
-
-
-class DbContributor(Base):
-    """
-    A data contributor. Typically a researcher associated with an institution.
-    """
-
-    __tablename__ = "contributor"
-
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    institution = Column(String)
-    email = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
-
-    # Relationships
-    datasets = relationship(
-        "DbDataset", secondary=lambda: DbDatasetContributor().__table__, back_populates="contributors"
-    )
-
-
-class DbDatasetContributor(Base):
-    """
-    Associates a DbDataset with a DbContributor.
-    DbDatasets may have many DbContributors.
-    DbContributors may have many DbDatasets.
-    """
-
-    __tablename__ = "dataset_contributor"
-
-    id = Column(String, primary_key=True)
-    contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)

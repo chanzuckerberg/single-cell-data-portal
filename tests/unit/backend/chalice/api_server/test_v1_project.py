@@ -31,6 +31,9 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "created_at",
             "updated_at",
             "obfuscated_uuid",
+            "contact_email",
+            "contact_name",
+            "data_submission_policy_version",
         ]
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
         self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
@@ -53,8 +56,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "revision",
                 "dataset_deployments",
                 "dataset_assets",
-                "preprint_doi",
-                "publication_doi",
                 "created_at",
                 "updated_at",
                 "collection_id",
@@ -154,11 +155,9 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
-                    "preprint_doi": "test_preprint_doi",
                     "collection_id": "test_project_id",
                     "collection_visibility": "PUBLIC",
                     "is_valid": False,
-                    "publication_doi": "test_publication_doi",
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
@@ -168,11 +167,14 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "id": "test_project_id",
             "links": [
                 {"type": "RAW_DATA", "name": "test_link_name", "url": "test_url"},
-                {"type": "SUMMARY", "name": "test_summary_link_name", "url": "test_summary_url"},
+                {"type": "OTHER", "name": "test_summary_link_name", "url": "test_summary_url"},
             ],
             "name": "test_project",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
+            "contact_email": "",
+            "contact_name": "",
+            "data_submission_policy_version": "0",
         }
 
         test_url = furl(path="/dp/v1/project/test_project_id")

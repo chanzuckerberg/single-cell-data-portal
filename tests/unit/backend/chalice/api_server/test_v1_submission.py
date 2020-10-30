@@ -44,6 +44,9 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "description": "",
             "obfuscated_uuid": "",
             "links": [],
+            "contact_email": "",
+            "contact_name": "",
+            "data_submission_policy_version": "0",
         }
 
         test_url = furl(path=f"/dp/v1/submission/{test_project.id}")

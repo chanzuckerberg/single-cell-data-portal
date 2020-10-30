@@ -7,8 +7,7 @@ class BogusProjectParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
-            visibility=CollectionVisibility.PRIVATE.name,
-            owner="test_user_id",
+            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", data_submission_policy_version=0
         )
         bogus_data.update(**kwargs)
         return bogus_data
@@ -34,8 +33,6 @@ class BogusDatasetParams:
             sex=["male", "female", "mixed"],
             ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
-            preprint_doi="preprint",
-            publication_doi="publication",
             collection_id="test_project_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
