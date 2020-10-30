@@ -122,7 +122,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
             args = dict(urllib.parse.parse_qsl(split.query))
-            self.assertTrue(location.startswith(f"{self.auth_config.api_base_url}/authorize"))
+            self.assertTrue(location.startswith(f"{self.auth_config.api_authorize_url}"))
             self.assertTrue("response_type=code" in location)
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")

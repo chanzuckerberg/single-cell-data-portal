@@ -1,7 +1,9 @@
 import logging
+import os
 import time
 
 import anndata
+import boto3
 import s3fs
 from numpy import ndarray
 from pandas import DataFrame, Series
@@ -20,7 +22,7 @@ class DatasetValidator:
     def __init__(self, s3_uri):
         self.s3_uri = s3_uri
         self.s3_path = s3_uri.replace("s3://", "")
-        self.s3_file_system = s3fs.S3FileSystem()
+        self.s3_file_system = s3fs.S3FileSystem(anon=False, client_kwargs={'endpoint_url': os.getenv("BOTO_ENDPOINT_URL")})
 
         # Read in ontologies
         for ontology in CorporaConstants.CORPORA_ONTOLOGIES:
