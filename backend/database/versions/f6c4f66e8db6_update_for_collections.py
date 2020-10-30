@@ -15,77 +15,99 @@ down_revision = "9023d0bf61ab"
 branch_labels = None
 depends_on = None
 
+# Enum 'type' for PostgreSQL
+enum_projectlink = 'projectlink'
+# Set temporary enum 'type' for PostgreSQL
+tmp_enum_projectlink = 'tmp_' + enum_projectlink
+
+# Options for Enum
+old_options = ("RAW_DATA", "PROTOCOL", "SUMMARY", "OTHER")
+new_options = sorted(["DOI", "RAW_DATA", "PROTOCOL", "LAB_WEBSITE", "OTHER"])
+
+# Create enum fields
+old_type = sa.Enum(*old_options, name=enum_projectlink)
+new_type = sa.Enum(*new_options, name=enum_projectlink)
 
 def upgrade():
     # For more information about the changes executed here, please visit the design document and the approved
     # modifications to the database UML:
     # https://github.com/chanzuckerberg/single-cell/blob/main/rfcs/0001-data-portal-architecture/text.md
 
+    def _add_visibility(table):
+        prefix1 = "" if table == "project" else "collection_"
+        prefix2 = "" if table == "project" else "project_"
+        op.add_column(
+            table, sa.Column(f"{prefix1}visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), nullable=True)
+        )
+        op.execute(f"UPDATE {table} SET {prefix1}visibility = 'PUBLIC' WHERE {prefix2}status = 'LIVE'")
+        op.execute(f"UPDATE {table} SET {prefix1}visibility = 'PRIVATE' WHERE {prefix2}status = 'EDIT'")
+        op.alter_column(table, f"{prefix1}visibility", nullable=False)
+        if table != "project":
+            op.alter_column(table, f"{prefix2}id", nullable=False, new_column_name=f"{prefix1}id")
+        op.drop_column(table, f"{prefix2}status")
+
+    def _add_nullable_false(table, column, type, default):
+        op.add_column(table, sa.Column(column, type, nullable=True))
+        op.execute(f"UPDATE {table} SET {column} = {default}")
+        op.alter_column(table, column, nullable=False)
+
     # Create Visibility Enum
     visibility_enum = postgresql.ENUM("PUBLIC", "PRIVATE", name="collectionvisibility")
     visibility_enum.create(op.get_bind())
 
-    # Add visibility column
-    op.add_column(
-        "project", sa.Column("visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE")
-    )
-    op.add_column(
-        "dataset",
-        sa.Column(
-            "collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"
-        ),
-    )
-    op.add_column(
-        "project_link",
-        sa.Column(
-            "collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"
-        ),
-    )
-
-    # Map Status to Visibility Column
-    op.execute("UPDATE project SET visibility = 'PUBLIC' WHERE status = 'LIVE'")
-    op.execute("UPDATE project SET visibility = 'PRIVATE' WHERE status = 'EDIT'")
-    op.execute("UPDATE dataset SET collection_visibility = 'PUBLIC' WHERE project_status = 'LIVE'")
-    op.execute("UPDATE dataset SET collection_visibility = 'PRIVATE' WHERE project_status = 'EDIT'")
-    op.execute("UPDATE project_link SET collection_visibility = 'PUBLIC' WHERE project_status = 'LIVE'")
-    op.execute("UPDATE project_link SET collection_visibility = 'PRIVATE' WHERE project_status = 'EDIT'")
-
     # Remove (id, status) Primary and Foreign Key Constraint
     op.execute("ALTER TABLE project DROP CONSTRAINT project_pkey CASCADE")
 
-    # Add (id, visibility) Primary and Foreign Key Constraint
+    # Update Project Table
+    _add_visibility("project")
     op.create_primary_key("project_pkey", "project", ["id", "visibility"])
-    op.alter_column("project_link", "project_id", nullable=False, new_column_name="collection_id")
+    op.add_column('project', sa.Column('contact_email', sa.String(), nullable=True))
+    op.add_column('project', sa.Column('contact_name', sa.String(), nullable=True))
+    _add_nullable_false("project", 'data_submission_policy_version', sa.String(), default="0")
+    op.add_column('project', sa.Column('obfuscated_uuid', sa.String(), nullable=True))
+    op.drop_constraint("project_owner_fkey", "project", type_="foreignkey")
+    op.drop_column('project', 'processing_state')
+    op.drop_column('project', 's3_bucket')
+    op.drop_column('project', 'needs_attestation')
+    op.drop_column('project', 'tc_uri')
+    op.drop_column('project', 'validation_state')
+
+    # Update Project Link Table
+    _add_visibility("project_link")
     op.create_foreign_key(
         None, "project_link", "project", ["collection_id", "collection_visibility"], ["id", "visibility"]
     )
-    op.alter_column("dataset", "project_id", nullable=False, new_column_name="collection_id")
+
+    # Update Dataset Table
+    _add_visibility("dataset")
     op.create_foreign_key(None, "dataset", "project", ["collection_id", "collection_visibility"], ["id", "visibility"])
+    op.add_column('dataset', sa.Column('cell_count', sa.Integer(), nullable=True))
+    op.add_column('dataset', sa.Column('is_valid', sa.Boolean(), nullable=True))
+    op.drop_column('dataset', 'publication_doi')
+    op.drop_column('dataset', 'source_data_location')
+    op.drop_column('dataset', 'preprint_doi')
 
-    # Drop Status Columns
-    op.drop_column("dataset", "project_status")
-    op.drop_column("project_link", "project_status")
-    op.drop_column("project", "status")
-
-    # Update Columns in Dataset Table
-    op.add_column("dataset", sa.Column("is_valid", sa.Boolean(), nullable=True))
-    op.drop_column("dataset", "source_data_location")
-
-    # Remove Columns from deployment_directory
+    # Update Deployment_Directory Table
     op.drop_column("deployment_directory", "environment")
 
-    # Update Columns in Project Table
-    op.add_column("project", sa.Column("obfuscated_uuid", sa.String(), nullable=True))
-    op.drop_constraint("project_owner_fkey", "project", type_="foreignkey")
-    op.drop_column("project", "processing_state")
-    op.drop_column("project", "s3_bucket")
-    op.drop_column("project", "validation_state")
-
-    # Remove User Table
-    op.drop_table("user")
+    # Remove Tables
+    op.drop_table('dataset_contributor')
+    op.drop_table('contributor')
+    op.drop_table('user')
 
     # Drop Project Status Enum
     sa.Enum(name="projectstatus").drop(op.get_bind(), checkfirst=False)
+
+    # Update Link Type Enum
+    # Rename current enum type to tmp_
+    op.execute("DELETE FROM project_link WHERE project_link.link_type = 'SUMMARY';")
+    op.execute('ALTER TYPE ' + enum_projectlink + ' RENAME TO ' + tmp_enum_projectlink)
+    # Create new enum type in db
+    new_type.create(op.get_bind())
+    # Update column to use new enum type
+    op.execute('ALTER TABLE project_link ALTER COLUMN link_type TYPE ' + enum_projectlink + ' USING link_type::text::' + enum_projectlink)
+    # Drop old enum type
+    op.execute('DROP TYPE ' + tmp_enum_projectlink)
     # ### end Alembic commands ###
 
 
