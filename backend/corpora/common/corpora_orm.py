@@ -122,12 +122,11 @@ class ProjectLinkType(enum.Enum):
 
     PROTOCOL - A link to a sequencing protocol.
     RAW_DATA - A link to a raw data repository.
-    SUMMARY - The "summary" link cellxgene should display.
     OTHER - Other.
     """
 
     DOI = "doi"
-    RAW_DATA = "raw_date"
+    RAW_DATA = "raw_data"
     PROTOCOL = "protocol"
     LAB_WEBSITE = "lab_website"
     OTHER = "other"
@@ -176,8 +175,6 @@ class DbProject(Base):
     owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
-    tc_uri = Column(String)
-    needs_attestation = Column(Boolean)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
     obfuscated_uuid = Column(String, default="")

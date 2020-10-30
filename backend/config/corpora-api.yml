@@ -68,19 +68,12 @@ paths:
             schema:
               type: object
               properties:
-                needs_attestation:
-                  type: boolean
-                  description: >-
-                    Determines whether this project requires attestation in which case this project cannot be submitted
-                    without a Terms and Conditions file also uploaded.
                 project_uuid:
                   type: string
                   description: >-
                     If the submission is created in order to update an existing publicly published project, then a
                     Project UUID must be provided in order to backfill the new submission entity with the existing
                     project details for modification.
-              required:
-                - needs_attestation
       responses:
         "201":
           description: A new submissions has been created.
@@ -156,9 +149,7 @@ paths:
         - submissions
       description: >-
         TODO: https://github.com/chanzuckerberg/corpora-data-portal/issues/361
-        Adds a dataset file or a legal file to the project’s S3 bucket. If a legal file is uploaded (verified by a
-        standard name), then the requirement for attestation for the project will be satisfied and accordingly noted in
-        the submission entity. A quick validation will be performed to ensure that if the file is a data file, then the
+        Adds a dataset file to the project’s S3 bucket. A quick validation will be performed to ensure that if the file is a data file, then the
         extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
         name, it will replace it and increment the revision value of the dataset.
       operationId: corpora.lambdas.api.v1.submission.add_file_to_submission
@@ -600,7 +591,6 @@ components:
         - id
         - visibility
         - links
-        - attestation
         - datasets
         - created_at
         - updated_at
@@ -636,7 +626,7 @@ components:
                 type: string
               type:
                 type: string
-                enum: [PROTOCOL, RAW_DATA, SUMMARY, OTHER]
+                enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
         obfuscated_uuid:
           type: string
         contact_name:
@@ -645,14 +635,6 @@ components:
           type: string
         data_submission_policy_version:
           type: string
-        attestation:
-          type: object
-          properties:
-            needed:
-              type: boolean
-            tc_uri:
-              description: A uri to the projects terms and conditions.
-              type: string
         datasets:
           type: array
           items:

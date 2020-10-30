@@ -38,8 +38,6 @@ class TestDatabase:
             owner="test_user_id",
             name="test_project",
             description="test_description",
-            tc_uri="test_tc_uri",
-            needs_attestation=False,
             data_submission_policy_version="0",
             # contact_email="some@someplace.place",
             # contact_name="John Doe",

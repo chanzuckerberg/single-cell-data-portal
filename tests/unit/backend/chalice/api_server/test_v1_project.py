@@ -26,7 +26,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "id",
             "visibility",
             "links",
-            "attestation",
             "datasets",
             "created_at",
             "updated_at",
@@ -123,7 +122,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
     def test__get_project_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
         expected_body = {
-            "attestation": {"needed": False, "tc_uri": "test_tc_uri"},
             "datasets": [
                 {
                     "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],

@@ -39,7 +39,6 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
             "id": test_project.id,
             "name": expected_name,
             "visibility": "PRIVATE",
-            "attestation": {"needed": False, "tc_uri": ""},
             "datasets": [],
             "description": "",
             "obfuscated_uuid": "",

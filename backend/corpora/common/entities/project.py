@@ -22,8 +22,6 @@ class Project(Entity):
         name: str = "",
         description: str = "",
         owner: str = "",
-        tc_uri: str = "",
-        needs_attestation: bool = False,
         links: list = None,
         **kwargs,
     ) -> "Project":
@@ -42,8 +40,6 @@ class Project(Entity):
             name=name,
             description=description,
             owner=owner,
-            tc_uri=tc_uri,
-            needs_attestation=needs_attestation,
             links=cls._create_sub_objects(
                 links, DbProjectLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
             ),
@@ -140,7 +136,6 @@ class Project(Entity):
         result["links"] = [
             dict(url=link["link_url"], name=link["link_name"], type=link["link_type"]) for link in result["links"]
         ]
-        result["attestation"] = dict(needed=result.pop("needs_attestation", None), tc_uri=result.pop("tc_uri", None))
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
