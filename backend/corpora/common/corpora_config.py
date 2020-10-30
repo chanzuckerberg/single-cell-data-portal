@@ -37,7 +37,6 @@ class CorporaAuthConfig(SecretConfig):
             )
             if not self.config_is_loaded():
                 self.load()
-        self.update_defaults()
 
     def get_defaults_template(self):
         return {

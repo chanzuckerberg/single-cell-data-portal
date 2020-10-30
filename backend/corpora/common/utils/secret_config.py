@@ -36,7 +36,7 @@ class SecretConfig:
         """
 
         super(SecretConfig, self).__init__()
-        self._defaults = {}
+
         self._component_name = component_name
         self._deployment = deployment or os.environ["DEPLOYMENT_STAGE"]
         self._secret_name = secret_name
@@ -65,6 +65,7 @@ class SecretConfig:
     @classmethod
     def reset(cls):
         cls._config = None
+        cls._defaults = {}
         cls.use_env = False
 
     def set(self, config):
@@ -75,19 +76,21 @@ class SecretConfig:
 
         self.__class__._config = config
         self.__class__.use_env = False
+        self.update_defaults()
 
     def get_defaults_template(self):
         return {}
 
     def update_defaults(self):
         for k, v in self.get_defaults_template().items():
-            self._defaults[k] = v.format(**self.config)
+            self.__class__._defaults[k] = v.format(**self.config)
 
     def load(self):
         if self._source == "aws":
             self.load_from_aws()
         else:
             self.load_from_file(self._source)
+        self.update_defaults()
         return True  # so we can be used in 'and' statements
 
     def config_is_loaded(self):

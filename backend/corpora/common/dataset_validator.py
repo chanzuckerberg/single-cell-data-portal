@@ -3,7 +3,6 @@ import os
 import time
 
 import anndata
-import boto3
 import s3fs
 from numpy import ndarray
 from pandas import DataFrame, Series
