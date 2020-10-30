@@ -677,7 +677,7 @@ components:
         - preprint_doi
         - publication_doi
         - project_id
-        - project_visibility
+        - collection_visibility
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -722,7 +722,7 @@ components:
           type: string
         project_id:
           $ref: "#/components/schemas/project_uuid"
-        project_visibility:
+        collection_visibility:
           type: string
     dataset_asset:
       type: object
