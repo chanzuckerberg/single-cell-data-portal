@@ -1,9 +1,5 @@
-from backend.scripts.create_db import create_db
-from backend.corpora.common.utils.db_utils import DbUtils
 from backend.corpora.common.corpora_orm import (
-    ProjectStatus,
-    ProcessingState,
-    ValidationState,
+    CollectionVisibility,
     ProjectLinkType,
     DatasetArtifactType,
     DatasetArtifactFileType,
@@ -11,11 +7,10 @@ from backend.corpora.common.corpora_orm import (
     DbProjectLink,
     DbDataset,
     DbDatasetArtifact,
-    DbContributor,
-    DbDatasetContributor,
-    DbUser,
     DbDeploymentDirectory,
 )
+from backend.corpora.common.utils.db_utils import DbUtils
+from backend.scripts.create_db import create_db
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
@@ -31,30 +26,21 @@ class TestDatabase:
         del self.db
 
     def _populate_test_data(self):
-        self._create_test_users()
         self._create_test_projects()
         self._create_test_project_links()
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
-        self._create_test_contributors()
-
-    def _create_test_users(self):
-        user = DbUser(id="test_user_id", name="test_user", email="test_email")
-        self.db.session.add(user)
-        self.db.session.commit()
 
     def _create_test_projects(self):
         project = DbProject(
             id="test_project_id",
-            status=ProjectStatus.LIVE.name,
+            visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
             name="test_project",
             description="test_description",
-            s3_bucket="test_s3_bucket",
-            tc_uri="test_tc_uri",
-            needs_attestation=False,
-            processing_state=ProcessingState.NA.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
+            data_submission_policy_version="0",
+            # contact_email="some@someplace.place",
+            # contact_name="John Doe",
         )
         self.db.session.add(project)
         self.db.session.commit()
@@ -62,8 +48,8 @@ class TestDatabase:
     def _create_test_project_links(self):
         project_link = DbProjectLink(
             id="test_project_link_id",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_link_name",
             link_url="test_url",
             link_type=ProjectLinkType.RAW_DATA.name,
@@ -71,11 +57,11 @@ class TestDatabase:
         self.db.session.add(project_link)
         project_summary_link = DbProjectLink(
             id="test_project_summary_link_id",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_summary_link_name",
             link_url="test_summary_url",
-            link_type=ProjectLinkType.SUMMARY.name,
+            link_type=ProjectLinkType.OTHER.name,
         )
         self.db.session.add(project_summary_link)
         self.db.session.commit()
@@ -97,17 +83,14 @@ class TestDatabase:
             sex=["test_sex", "test_sex2"],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
-            source_data_location="test_source_data_location",
-            preprint_doi="test_preprint_doi",
-            publication_doi="test_publication_doi",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.db.session.add(dataset)
         self.db.session.commit()
 
         deployment_directory = DbDeploymentDirectory(
-            id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"
+            id="test_deployment_directory_id", dataset_id=test_dataset_id, url="test_url"
         )
         self.db.session.add(deployment_directory)
         self.db.session.commit()
@@ -123,17 +106,4 @@ class TestDatabase:
             s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
         )
         self.db.session.add(dataset_artifact)
-        self.db.session.commit()
-
-    def _create_test_contributors(self):
-        contributor = DbContributor(
-            id="test_contributor_id", name="test_contributor_name", institution="test_institution", email="test_email"
-        )
-        self.db.session.add(contributor)
-        self.db.session.commit()
-
-        dataset_contributor = DbDatasetContributor(
-            id="test_dataset_contributor_id", contributor_id="test_contributor_id", dataset_id="test_dataset_id"
-        )
-        self.db.session.add(dataset_contributor)
         self.db.session.commit()

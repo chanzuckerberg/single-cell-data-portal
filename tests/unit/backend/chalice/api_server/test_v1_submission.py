@@ -3,7 +3,7 @@ import unittest
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import ProjectStatus
+from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Project
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusProjectParams
@@ -14,13 +14,13 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
         path = "/dp/v1/submission"
         headers = dict(host="localhost")
         expected_name = "test submission"
-        test_project = Project.create(**BogusProjectParams.get(name=expected_name, status=ProjectStatus.EDIT.name))
+        test_project = Project.create(
+            **BogusProjectParams.get(name=expected_name, visibility=CollectionVisibility.PRIVATE.name)
+        )
 
         expected_submission = {
             "id": test_project.id,
             "name": expected_name,
-            "processing_state": "IN_VALIDATION",
-            "validation_state": "NOT_VALIDATED",
             "owner_id": "test_user_id",
         }
         test_url = furl(path=path)
@@ -32,18 +32,20 @@ class TestSubmission(BaseAPITest, unittest.TestCase):
     def test__get_submission_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
         expected_name = "test__get_submission_uuid__ok"
-        test_project = Project.create(**BogusProjectParams.get(name=expected_name, status=ProjectStatus.EDIT.name))
+        test_project = Project.create(
+            **BogusProjectParams.get(name=expected_name, visibility=CollectionVisibility.PRIVATE.name)
+        )
         expected_body = {
             "id": test_project.id,
             "name": expected_name,
-            "status": "EDIT",
-            "attestation": {"needed": False, "tc_uri": ""},
+            "visibility": "PRIVATE",
             "datasets": [],
             "description": "",
+            "obfuscated_uuid": "",
             "links": [],
-            "processing_state": "IN_VALIDATION",
-            "s3_bucket_key": "",
-            "validation_state": "NOT_VALIDATED",
+            "contact_email": "",
+            "contact_name": "",
+            "data_submission_policy_version": "0",
         }
 
         test_url = furl(path=f"/dp/v1/submission/{test_project.id}")

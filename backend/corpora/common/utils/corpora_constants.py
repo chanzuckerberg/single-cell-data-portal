@@ -63,9 +63,6 @@ class CorporaConstants(object):
     ]
     REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS = [
         TypedMetadata(field_name="title", required_type=str),
-        TypedMetadata(field_name="contributors", required_type=list),
-        TypedMetadata(field_name="preprint_doi", required_type=str),
-        TypedMetadata(field_name="publication_doi", required_type=str),
     ]
 
     REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS = [
