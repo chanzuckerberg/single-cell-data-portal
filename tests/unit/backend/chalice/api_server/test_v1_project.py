@@ -57,8 +57,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "publication_doi",
                 "created_at",
                 "updated_at",
-                "project_id",
-                "project_visibility",
+                "collection_id",
+                "collection_visibility",
                 "is_valid",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
@@ -155,8 +155,8 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "preprint_doi": "test_preprint_doi",
-                    "project_id": "test_project_id",
-                    "project_visibility": "PUBLIC",
+                    "collection_id": "test_project_id",
+                    "collection_visibility": "PUBLIC",
                     "is_valid": False,
                     "publication_doi": "test_publication_doi",
                     "revision": 0,

@@ -194,8 +194,8 @@ class DbProjectLink(Base):
     __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
-    project_id = Column(String, nullable=False)
-    project_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
+    collection_id = Column(String, nullable=False)
+    collection_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
     link_name = Column(String)
     link_url = Column(String)
     link_type = Column(Enum(ProjectLinkType))
@@ -206,7 +206,7 @@ class DbProjectLink(Base):
     project = relationship("DbProject", uselist=False, back_populates="links")
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_visibility], [DbProject.id, DbProject.visibility]), {})
+    __table_args__ = (ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]), {})
 
 
 class DbDataset(Base):
@@ -231,8 +231,8 @@ class DbDataset(Base):
     preprint_doi = Column(String)
     publication_doi = Column(String)
     is_valid = Column(Boolean, default=False)
-    project_id = Column(String, nullable=False)
-    project_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
+    collection_id = Column(String, nullable=False)
+    collection_visibility = Column(Enum(CollectionVisibility), default=CollectionVisibility.PRIVATE)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
@@ -249,7 +249,7 @@ class DbDataset(Base):
     )
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_visibility], [DbProject.id, DbProject.visibility]), {})
+    __table_args__ = (ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]), {})
 
 
 class DbDatasetArtifact(Base):

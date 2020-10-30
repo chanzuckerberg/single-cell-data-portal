@@ -166,7 +166,7 @@ class TestProject(unittest.TestCase):
         test_project = Project.create(**BogusProjectParams.get())
         expected_project_id = test_project.id
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(project_id=test_project.id, project_visibility=test_project.visibility)
+            **BogusDatasetParams.get(collection_id=test_project.id, collection_visibility=test_project.visibility)
         )
         expected_dataset_id = test_dataset.id
 

@@ -50,8 +50,8 @@ class TestDatabase:
     def _create_test_project_links(self):
         project_link = DbProjectLink(
             id="test_project_link_id",
-            project_id="test_project_id",
-            project_visibility=CollectionVisibility.PUBLIC.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_link_name",
             link_url="test_url",
             link_type=ProjectLinkType.RAW_DATA.name,
@@ -59,8 +59,8 @@ class TestDatabase:
         self.db.session.add(project_link)
         project_summary_link = DbProjectLink(
             id="test_project_summary_link_id",
-            project_id="test_project_id",
-            project_visibility=CollectionVisibility.PUBLIC.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_summary_link_name",
             link_url="test_summary_url",
             link_type=ProjectLinkType.SUMMARY.name,
@@ -87,8 +87,8 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
             preprint_doi="test_preprint_doi",
             publication_doi="test_publication_doi",
-            project_id="test_project_id",
-            project_visibility=CollectionVisibility.PUBLIC.name,
+            collection_id="test_project_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.db.session.add(dataset)
         self.db.session.commit()

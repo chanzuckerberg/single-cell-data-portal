@@ -45,7 +45,7 @@ class Project(Entity):
             tc_uri=tc_uri,
             needs_attestation=needs_attestation,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(project_id=primary_key, project_visibility=visibility)
+                links, DbProjectLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
             ),
             **kwargs,
         )

@@ -97,8 +97,8 @@ class TestDataset(unittest.TestCase):
         # Create the dataset
         test_dataset = Dataset.create(
             **BogusDatasetParams.get(
-                project_id="test_project_id",
-                project_visibility=CollectionVisibility.PUBLIC.name,
+                collection_id="test_project_id",
+                collection_visibility=CollectionVisibility.PUBLIC.name,
                 artifacts=[{}],
                 deployment_directories=[{}],
                 contributors=[{"id": "test_contributor_id"}, {"name": "bob"}],
