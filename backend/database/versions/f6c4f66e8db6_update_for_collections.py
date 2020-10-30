@@ -31,11 +31,15 @@ def upgrade():
     )
     op.add_column(
         "dataset",
-        sa.Column("collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"),
+        sa.Column(
+            "collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"
+        ),
     )
     op.add_column(
         "project_link",
-        sa.Column("collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"),
+        sa.Column(
+            "collection_visibility", sa.Enum("PUBLIC", "PRIVATE", name="collectionvisibility"), default="PRIVATE"
+        ),
     )
 
     # Map Status to Visibility Column
@@ -51,9 +55,11 @@ def upgrade():
 
     # Add (id, visibility) Primary and Foreign Key Constraint
     op.create_primary_key("project_pkey", "project", ["id", "visibility"])
-    op.alter_column('project_link', 'project_id', nullable=False, new_column_name='collection_id')
-    op.create_foreign_key(None, "project_link", "project", ["collection_id", "collection_visibility"], ["id", "visibility"])
-    op.alter_column('dataset', 'project_id', nullable=False, new_column_name='collection_id')
+    op.alter_column("project_link", "project_id", nullable=False, new_column_name="collection_id")
+    op.create_foreign_key(
+        None, "project_link", "project", ["collection_id", "collection_visibility"], ["id", "visibility"]
+    )
+    op.alter_column("dataset", "project_id", nullable=False, new_column_name="collection_id")
     op.create_foreign_key(None, "dataset", "project", ["collection_id", "collection_visibility"], ["id", "visibility"])
 
     # Drop Status Columns
@@ -149,7 +155,7 @@ def downgrade():
     )
     op.execute("UPDATE project_link SET project_status = 'LIVE' WHERE collection_visibility = 'PUBLIC'")
     op.execute("UPDATE project_link SET project_status = 'EDIT' WHERE collection_visibility = 'PRIVATE'")
-    op.alter_column('project_link', 'collection_id', nullable=False, new_column_name='project_id')
+    op.alter_column("project_link", "collection_id", nullable=False, new_column_name="project_id")
     op.create_foreign_key(
         "project_link_project_id_fkey", "project_link", "project", ["project_id", "project_status"], ["id", "status"]
     )
@@ -168,7 +174,7 @@ def downgrade():
             "project_status", postgresql.ENUM("LIVE", "EDIT", name="projectstatus"), autoincrement=False, default="EDIT"
         ),
     )
-    op.alter_column('dataset', 'collection_id', nullable=False, new_column_name='project_id')
+    op.alter_column("dataset", "collection_id", nullable=False, new_column_name="project_id")
     op.execute("UPDATE dataset SET project_status = 'LIVE' WHERE collection_visibility = 'PUBLIC'")
     op.execute("UPDATE dataset SET project_status = 'EDIT' WHERE collection_visibility = 'PRIVATE'")
     op.create_foreign_key("fk_project", "dataset", "project", ["project_id", "project_status"], ["id", "status"])

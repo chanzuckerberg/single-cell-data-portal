@@ -206,7 +206,10 @@ class DbProjectLink(Base):
     project = relationship("DbProject", uselist=False, back_populates="links")
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]), {})
+    __table_args__ = (
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]),
+        {},
+    )
 
 
 class DbDataset(Base):
@@ -249,7 +252,10 @@ class DbDataset(Base):
     )
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]), {})
+    __table_args__ = (
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]),
+        {},
+    )
 
 
 class DbDatasetArtifact(Base):

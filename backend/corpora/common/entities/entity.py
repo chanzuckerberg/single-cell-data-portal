@@ -77,7 +77,8 @@ class Entity:
          :param add_columns: Additional columns attributes or modifications to add to the row.
 
          This can be used when there are shared column values that need to be added across all the new rows.
-         For example: DbProjectLink generated for a specific project should all have the same DbProjectLink.collection_id
+         For example: DbProjectLink generated for a specific project should all have the same
+         DbProjectLink.collection_id
          and DbProjectLink.collection_visibility. The function call would be:
          >>>> cls._create_sub_objects(
          >>>>    [{'link_url':'abc', 'link_type': ProjectLinkType.OTHER}],
