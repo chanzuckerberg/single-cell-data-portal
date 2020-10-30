@@ -1,4 +1,4 @@
-export interface Project {
+export interface Collection {
   // assays: string[];
   // biosample_categories: string[];
   // cell_count: number;
@@ -6,7 +6,7 @@ export interface Project {
   // cxg_enabled: boolean;
   // description: string;
   // diseases: string[];
-  // id: string;
+  id: string;
   // label: string;
   // organs: string[];
   // paired_end: string[];

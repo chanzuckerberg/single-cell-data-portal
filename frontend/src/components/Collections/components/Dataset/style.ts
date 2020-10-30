@@ -1,5 +1,5 @@
+import { LAYOUT } from "src/components/Collections/common/layout";
 import { fontStyle } from "src/components/common/theme";
-import { LAYOUT } from "src/components/ProjectList/common/layout";
 import styled from "styled-components";
 
 export const Wrapper = styled.div`

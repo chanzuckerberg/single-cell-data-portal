@@ -26,6 +26,7 @@
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-helmet": "^5.2.1",
+    "react-query": "^2.25.2",
     "styled-components": "^5.2.0",
     "theme-ui": "^0.3.1"
   },
@@ -66,6 +67,7 @@
     "playwright": "^1.5.1",
     "prettier": "2.1.1",
     "prettier-plugin-organize-imports": "^1.1.1",
+    "react-query-devtools": "^2.6.0",
     "start-server-and-test": "^1.11.5",
     "stylelint": "^13.7.2",
     "stylelint-config-recommended": "^3.0.0",

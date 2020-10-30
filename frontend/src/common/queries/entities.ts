@@ -1,0 +1,4 @@
+export enum ENTITIES {
+  COLLECTION = "COLLECTION",
+  DATASET = "DATASET",
+}

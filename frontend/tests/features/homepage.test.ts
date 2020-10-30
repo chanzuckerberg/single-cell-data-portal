@@ -1,4 +1,4 @@
-import { PROMPT_TEXT } from "src/components/ProjectList/components/Dataset/components/DownloadDataset/components/Content/components/Details";
+import { PROMPT_TEXT } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/Details";
 import { goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestTag, getText } from "../utils/selectors";
