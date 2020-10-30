@@ -76,8 +76,12 @@ class SecretConfig:
         self.__class__._config = config
         self.__class__.use_env = False
 
-    def set_defaults(self, defaults):
-        self._defaults = defaults
+    def get_defaults_template(self):
+        return {}
+
+    def update_defaults(self):
+        for k, v in self.get_defaults_template().items():
+            self._defaults[k] = v.format(**self.config)
 
     def load(self):
         if self._source == "aws":

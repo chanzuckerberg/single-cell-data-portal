@@ -107,6 +107,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.auth_config = CorporaAuthConfig()
         self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
         self.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        self.auth_config.update_defaults()
 
         headers = dict(host="localhost")
 
