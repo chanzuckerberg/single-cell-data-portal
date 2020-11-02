@@ -126,14 +126,6 @@ Datasets also must have a few other metadata fields for presentation:
 title|String that identifies the dataset
 
 
-If the dataset has an associated preprint or journal publication, these fields are required:
-
-**Field name**|**Description**
-:--|:--
-preprint\_doi|DOI of the associated preprint.
-publication\_doi|DOI of the associated journal publication.
-
-
 #### Presentation Hints
 
 The metadata fields below are optional. They aren't needed for integration, and cellxgene can display the data fine without them, but if they are
