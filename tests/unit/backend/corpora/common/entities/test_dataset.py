@@ -8,7 +8,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     CollectionVisibility,
     DbDataset,
-    DbProject,
+    DbCollection,
     Base,
 )
 from backend.corpora.common.entities.dataset import Dataset
@@ -86,7 +86,7 @@ class TestDataset(unittest.TestCase):
         # Create the dataset
         test_dataset = Dataset.create(
             **BogusDatasetParams.get(
-                collection_id="test_project_id",
+                collection_id="test_collection_id",
                 collection_visibility=CollectionVisibility.PUBLIC.name,
                 artifacts=[{}],
                 deployment_directories=[{}],
@@ -95,10 +95,10 @@ class TestDataset(unittest.TestCase):
         test_dataset_ids = [(test_dataset.id, DbDataset)]
         test_artifact_ids = [(art.id, DbDatasetArtifact) for art in test_dataset.artifacts]
         test_deployed_directory_ids = [(dep.id, DbDeploymentDirectory) for dep in test_dataset.deployment_directories]
-        test_project_ids = [(("test_project_id", CollectionVisibility.PUBLIC.name), DbProject)]
+        test_collection_ids = [(("test_collection_id", CollectionVisibility.PUBLIC.name), DbCollection)]
 
         with self.subTest("verify everything exists"):
-            expected_exists = test_project_ids + test_dataset_ids + test_artifact_ids + test_deployed_directory_ids
+            expected_exists = test_collection_ids + test_dataset_ids + test_artifact_ids + test_deployed_directory_ids
             self.assertRowsExist(expected_exists)
 
         # Delete the dataset
@@ -106,7 +106,7 @@ class TestDataset(unittest.TestCase):
 
         with self.subTest("Verify Deletion"):
             expected_deleted = test_dataset_ids + test_artifact_ids + test_deployed_directory_ids
-            expected_exists = test_project_ids
+            expected_exists = test_collection_ids
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
 
@@ -130,7 +130,7 @@ class TestDataset(unittest.TestCase):
         db.session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
-                # handle the special case for projects with a composite primary key
+                # handle the special case for collections with a composite primary key
                 actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
                 actual = db.query([table], [table.id == p_key])
@@ -145,7 +145,7 @@ class TestDataset(unittest.TestCase):
         db.session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
-                # handle the special case for projects with a composite primary key
+                # handle the special case for collections with a composite primary key
                 actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
                 actual = db.query([table], [table.id == p_key])

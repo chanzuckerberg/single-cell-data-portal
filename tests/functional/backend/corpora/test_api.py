@@ -14,9 +14,9 @@ class TestApi(unittest.TestCase):
 
     def setUp(self):
         self.api = API_URL.get(self.deployment_stage)
-        self.test_project_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
+        self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
         self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
-        self.bad_project_id = "DNE"
+        self.bad_collection_id = "DNE"
         self.bad_file_id = "DNE"
 
     def test_root_route(self):
@@ -25,13 +25,13 @@ class TestApi(unittest.TestCase):
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
 
-    def test_get_projects(self):
-        res = requests.get(f"{self.api}/dp/v1/project")
+    def test_get_collections(self):
+        res = requests.get(f"{self.api}/dp/v1/collection")
 
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
 
-        for project in data["projects"]:
-            self.assertIsInstance(project["id"], str)
-            self.assertIsInstance(project["created_at"], float)
+        for collection in data["collections"]:
+            self.assertIsInstance(collection["id"], str)
+            self.assertIsInstance(collection["created_at"], float)

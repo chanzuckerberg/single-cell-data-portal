@@ -6,9 +6,9 @@ import Heading from "./components/Heading";
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
 
-  if (isFetching && !collections) return <div>Loading projects...</div>;
+  if (isFetching && !collections) return <div>Loading collections...</div>;
 
-  if (!collections) return <div>Sorry, we could not find any projects</div>;
+  if (!collections) return <div>Sorry, we could not find any collections</div>;
 
   return (
     <>
