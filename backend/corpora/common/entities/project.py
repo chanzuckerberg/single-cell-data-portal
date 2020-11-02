@@ -133,6 +133,7 @@ class Project(Entity):
         # Reshape the data to match.
         result.pop("user", None)
         result.pop("owner", None)
+        result.pop("obfuscated_uuid", None)
         result["links"] = [
             dict(url=link["link_url"], name=link["link_name"], type=link["link_type"]) for link in result["links"]
         ]
