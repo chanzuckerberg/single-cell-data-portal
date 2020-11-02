@@ -136,8 +136,8 @@ publication\_doi|DOI of the associated journal publication.
 
 #### Presentation Hints
 
-The metadata fields below are fully optional. They aren't needed for integration, and cellxgene can present the data fine without them, but if they are
-present cellxgene will do something with them. This allows submitters to fine-tune how their datasets are presented, which is a common request.
+The metadata fields below are optional. They aren't needed for integration, and cellxgene can display the data fine without them, but if they are
+included cellxgene will do something with them. This allows submitters to fine-tune how their datasets are presented, which is a common request.
 
 
 <table>
