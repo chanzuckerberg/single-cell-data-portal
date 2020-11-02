@@ -175,7 +175,7 @@ class DatasetValidator:
     def verify_uns(self, data_object: anndata.AnnData):
         """
         Validate the unstructured attribute of the AnnData object to ensure that it contains the appropriate
-        dataset-level and project-level metadata and outputs which metadata fields are missing. Note that no
+        dataset-level and collection-level metadata and outputs which metadata fields are missing. Note that no
         exception is thrown when metadata is found to be missing and rather an informative message is outputted instead.
         """
 

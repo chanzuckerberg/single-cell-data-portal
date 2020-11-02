@@ -18,7 +18,7 @@ export interface CollectionResponse {
 async function fetchCollections(): Promise<CollectionResponse[]> {
   const json = await (await fetch(API_URL + API.COLLECTIONS)).json();
 
-  return json.projects;
+  return json.collections;
 }
 
 export function useCollections() {

@@ -3,7 +3,7 @@ from backend.corpora.common.corpora_orm import (
 )
 
 
-class BogusProjectParams:
+class BogusCollectionParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
@@ -33,7 +33,7 @@ class BogusDatasetParams:
             sex=["male", "female", "mixed"],
             ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
-            collection_id="test_project_id",
+            collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
 
