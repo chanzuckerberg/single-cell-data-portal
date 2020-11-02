@@ -40,25 +40,25 @@ There are a few requirements that are needed for the cellxgene Explorer to work 
     present in every submission, for example as a barcode.
 *   **Unique feature identifiers**. Every feature (usually a gene or transcript) also needs a unique identifier. This is occasionally not present because
     of one-to-many mappings between gene symbols and other gene ids. In cases where there are duplicated feature identifiers, they will need to be appropriately
-    combined before submission.
+    combined before submission. For example, raw counts will be summed and logged counts will be exponentiated, summed, and logged.
 *   **No PII**. No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a
-    [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing). It is not always possible to determine
-    automatically whether metadata contains PII. For example, a field that looks like a date could be a date of birth or just some other date. So tooling will
-    warn submitters for potential PII and allow them to attest that it is not personally identifiable.
+    [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
 
 ### Matrix Layers
 
 The count matrix itself can exist in several forms. Generally, there is a "raw" count matrix without scaling, filtering, normalization, etc. And there is
 a "final" matrix that is used in the publication with QC and various corrections. There can also be several intermediate matrices.
 
-These different transformations of the count matrix are called "layers" in several file formats. Submissions to the Data Portal must contain at least one layer,
-the "raw" layer. They may optionally also have a "final" layer used for presentation, and each layer must be identified.
+These different transformations of the count matrix are called "layers" in several file formats. Submissions to the Data Portal must contain the "raw"
+layer.
 
 
 ### Schema Version
 
 Datasets in the Data Portal must store the version of the schema they follow (that is, the version of this document) as
-well as the version of the particular encoding used:
+well as the version of the particular encoding used. The encoding is documented
+[elsewhere](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md) and describes techincal details
+of how the schema should be serialized in a particular file format.
 
 **Field name**|**Constraints**
 :--|:--
