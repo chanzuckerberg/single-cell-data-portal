@@ -9,9 +9,11 @@ interface Props {
 const Collection: FC<Props> = ({ id }) => {
   const { data: collection } = useCollection(id);
 
+  if (!collection?.datasets) return null;
+
   return (
     <>
-      {collection?.datasets
+      {collection.datasets
         .map((dataset) => ({
           dataset,
           links: collection.links,
