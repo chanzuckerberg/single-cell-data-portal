@@ -51,13 +51,7 @@ class DbUtils:
             """
             Commit changes to the database and roll back if error.
             """
-            try:
-                self.session.commit()
-            except SQLAlchemyError:
-                self.session.rollback()
-                msg = "Failed to commit."
-                logger.exception(msg)
-                raise CorporaException(msg)
+            self.session.commit()
 
         def delete(self, db_object: Base):
             self.session.delete(db_object)
@@ -81,6 +75,11 @@ def db_session(func):
         try:
             rv = func(*args, **kwargs)
             return rv
+        except SQLAlchemyError:
+            db.session.rollback()
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)
         finally:
             db.close()
 

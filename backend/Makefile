@@ -8,6 +8,10 @@ db/new_migration:
 	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
 	alembic -c=./config/database.ini revision --message $(MESSAGE)
 
+db/new_migration_auto:
+	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
+	alembic -c=./config/database.ini revision --autogenerate --message $(MESSAGE)
+
 db/connect:
 	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))

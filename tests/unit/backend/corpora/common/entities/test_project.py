@@ -1,16 +1,10 @@
-import logging
 import unittest
 from datetime import datetime
 
-from backend.corpora.common.corpora_orm import (
-    ProjectLinkType,
-    DbProjectLink,
-    ProjectStatus,
-    DbDataset,
-    DbUser,
-)
+from sqlalchemy.exc import SQLAlchemyError
+
+from backend.corpora.common.corpora_orm import ProjectLinkType, DbProjectLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.entities.entity import logger as entity_logger
 from backend.corpora.common.entities.project import Project
 from backend.corpora.common.utils.db_utils import DbUtils
 from tests.unit.backend.utils import BogusProjectParams, BogusDatasetParams
@@ -19,20 +13,21 @@ from tests.unit.backend.utils import BogusProjectParams, BogusDatasetParams
 class TestProject(unittest.TestCase):
     def setUp(self):
         self.uuid = "test_project_id"
-        self.status = ProjectStatus.LIVE.name
+        self.visibility = CollectionVisibility.PUBLIC.name
+        self.db = DbUtils()
+
+    def tearDown(self):
+        self.db.session.rollback()
+        self.db.close()
 
     def test__get__ok(self):
-        key = (self.uuid, self.status)
+        key = (self.uuid, self.visibility)
 
         project = Project.get(key)
 
         # Verify Columns
         self.assertEqual(project.name, "test_project")
         self.assertEqual(project.owner, "test_user_id")
-
-        # Verify User relationship
-        self.assertIsInstance(project.user, DbUser)
-        self.assertEqual(project.user.id, "test_user_id")
 
         # Verify Dataset relationship
         dataset = project.datasets[0]
@@ -46,16 +41,14 @@ class TestProject(unittest.TestCase):
         self.assertEqual(project.links[0].id, "test_project_link_id")
 
     def test__get__does_not_exist(self):
-        non_existent_key = ("non_existent_id", self.status)
+        non_existent_key = ("non_existent_id", self.visibility)
 
         self.assertEqual(Project.get(non_existent_key), None)
 
-    def test__get__invalid_status(self):
-        invalid_status_key = (self.uuid, "invalid_status")
-        with self.assertLogs(entity_logger, logging.INFO) as logs:
-            self.assertEqual(Project.get(invalid_status_key), None)
-        self.assertIn("Unable to find a row with primary key", logs.output[0])
-        self.assertEqual(Project.get(invalid_status_key), None)
+    def test__get__invalid_visibility(self):
+        invalid_visibility_key = (self.uuid, "invalid_visibility")
+        with self.assertRaises(SQLAlchemyError):
+            Project.get(invalid_visibility_key)
 
     def test__create__ok(self):
         """
@@ -69,14 +62,14 @@ class TestProject(unittest.TestCase):
             with self.subTest(i):
                 project = Project.create(links=[link_params] * i, **project_params)
 
-                project_key = (project.id, project.status)
+                project_key = (project.id, project.visibility)
                 expected_links = project.links
 
                 # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 Project.db.session.expire_all()
 
                 actual_project = Project.get(project_key)
-                self.assertEqual(project_key, (actual_project.id, actual_project.status))
+                self.assertEqual(project_key, (actual_project.id, actual_project.visibility))
                 self.assertCountEqual(expected_links, actual_project.links)
 
     def test__list_in_time_range__ok(self):
@@ -125,16 +118,16 @@ class TestProject(unittest.TestCase):
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
     def test__list_projects_in_time_range___ok(self):
-        """Live projects are returned"""
+        """Public projects are returned"""
         from_date = 10
         created_at = datetime.fromtimestamp(20)
         to_date = 30
         expected_project = Project.create(
-            **BogusProjectParams.get(created_at=created_at, status=ProjectStatus.LIVE.name)
+            **BogusProjectParams.get(created_at=created_at, visibility=CollectionVisibility.PUBLIC.name)
         )
 
-        # Generate a project with Edit status. This should not show up in the results.
-        Project.create(**BogusProjectParams.get(created_at=created_at, status=ProjectStatus.EDIT.name))
+        # Generate a project with Private visibility. This should not show up in the results.
+        Project.create(**BogusProjectParams.get(created_at=created_at, visibility=CollectionVisibility.PRIVATE.name))
 
         actual_projects = Project.list_projects_in_time_range(to_date=to_date, from_date=from_date)
         expected_projects = [{"created_at": created_at, "id": expected_project.id}]
@@ -173,7 +166,7 @@ class TestProject(unittest.TestCase):
         test_project = Project.create(**BogusProjectParams.get())
         expected_project_id = test_project.id
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(project_id=test_project.id, project_status=test_project.status)
+            **BogusDatasetParams.get(collection_id=test_project.id, collection_visibility=test_project.visibility)
         )
         expected_dataset_id = test_dataset.id
 

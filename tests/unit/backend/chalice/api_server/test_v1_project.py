@@ -4,7 +4,7 @@ from datetime import datetime
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import ProjectStatus
+from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Project
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusProjectParams
@@ -24,15 +24,15 @@ class TestProject(BaseAPITest, unittest.TestCase):
             "name",
             "description",
             "id",
-            "s3_bucket_key",
-            "status",
-            "processing_state",
-            "validation_state",
+            "visibility",
             "links",
-            "attestation",
             "datasets",
             "created_at",
             "updated_at",
+            "obfuscated_uuid",
+            "contact_email",
+            "contact_name",
+            "data_submission_policy_version",
         ]
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
         self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
@@ -52,16 +52,14 @@ class TestProject(BaseAPITest, unittest.TestCase):
                 "organism",
                 "development_stage",
                 "name",
-                "source_data_location",
                 "revision",
                 "dataset_deployments",
                 "dataset_assets",
-                "preprint_doi",
-                "publication_doi",
                 "created_at",
                 "updated_at",
-                "project_id",
-                "project_status",
+                "collection_id",
+                "collection_visibility",
+                "is_valid",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
@@ -74,7 +72,9 @@ class TestProject(BaseAPITest, unittest.TestCase):
         to_date = int(datetime.fromtimestamp(80).timestamp())
 
         test_project = Project.create(
-            **BogusProjectParams.get(status=ProjectStatus.LIVE.name, created_at=datetime.fromtimestamp(creation_time)),
+            **BogusProjectParams.get(
+                visibility=CollectionVisibility.PUBLIC.name, created_at=datetime.fromtimestamp(creation_time)
+            ),
         )
         expected_id = test_project.id
 
@@ -122,7 +122,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
     def test__get_project_uuid__ok(self):
         """Verify the test project exists and the expected fields exist."""
         expected_body = {
-            "attestation": {"needed": False, "tc_uri": "test_tc_uri"},
             "datasets": [
                 {
                     "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
@@ -140,7 +139,6 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "dataset_deployments": [
                         {
                             "dataset_id": "test_dataset_id",
-                            "environment": "test",
                             "id": "test_deployment_directory_id",
                             "url": "test_url",
                         }
@@ -155,27 +153,26 @@ class TestProject(BaseAPITest, unittest.TestCase):
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
-                    "preprint_doi": "test_preprint_doi",
-                    "project_id": "test_project_id",
-                    "project_status": "LIVE",
-                    "publication_doi": "test_publication_doi",
+                    "collection_id": "test_project_id",
+                    "collection_visibility": "PUBLIC",
+                    "is_valid": False,
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
-                    "source_data_location": "test_source_data_location",
                 }
             ],
             "description": "test_description",
             "id": "test_project_id",
             "links": [
                 {"type": "RAW_DATA", "name": "test_link_name", "url": "test_url"},
-                {"type": "SUMMARY", "name": "test_summary_link_name", "url": "test_summary_url"},
+                {"type": "OTHER", "name": "test_summary_link_name", "url": "test_summary_url"},
             ],
             "name": "test_project",
-            "processing_state": "NA",
-            "s3_bucket_key": "test_s3_bucket",
-            "status": "LIVE",
-            "validation_state": "NOT_VALIDATED",
+            "visibility": "PUBLIC",
+            "obfuscated_uuid": "",
+            "contact_email": "",
+            "contact_name": "",
+            "data_submission_policy_version": "0",
         }
 
         test_url = furl(path="/dp/v1/project/test_project_id")
