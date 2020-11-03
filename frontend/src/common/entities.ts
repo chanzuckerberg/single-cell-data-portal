@@ -1,3 +1,11 @@
+export enum LINK_TYPE {
+  DOI = "DOI",
+  RAW_DATA = "RAW_DATA",
+  PROTOCOL = "PROTOCOL",
+  LAB_WEBSITE = "LAB_WEBSITE",
+  OTHER = "OTHER",
+}
+
 export interface Collection {
   // assays: string[];
   // biosample_categories: string[];
@@ -12,7 +20,7 @@ export interface Collection {
   // paired_end: string[];
   // publication_title: string;
   // species: string[];
-  // name: string;
+  name: string;
   // owner: {
   //   id: string;
   //   email: string;
@@ -26,7 +34,7 @@ export interface Collection {
   //   tc_uri: string;
   // };
   datasets: Dataset[];
-  links: { name: string; url: string }[];
+  links: { name: string; url: string; type: LINK_TYPE }[];
 }
 
 export interface Dataset {
