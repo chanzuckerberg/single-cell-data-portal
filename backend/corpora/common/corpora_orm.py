@@ -196,7 +196,7 @@ class DbCollection(Base):
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
 
 
-class DbCollectionLink(Base):
+class DbProjectLink(Base):
     """
     Represents an external web link for DbCollections such as protocols and supplementary data repositories.
     """
@@ -221,6 +221,10 @@ class DbCollectionLink(Base):
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         {},
     )
+
+
+# provide a consistent name
+DbCollectionLink = DbProjectLink
 
 
 class DbDataset(Base):
