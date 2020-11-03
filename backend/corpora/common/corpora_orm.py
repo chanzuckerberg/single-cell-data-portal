@@ -85,8 +85,10 @@ class ProjectVisibility(enum.Enum):
     PUBLIC = "Public"
     PRIVATE = "Private"
 
+
 # provide a consistent name
 CollectionVisibility = ProjectVisibility
+
 
 class ProcessingState(enum.Enum):
     """
@@ -133,8 +135,10 @@ class ProjectLinkType(enum.Enum):
     LAB_WEBSITE = "lab_website"
     OTHER = "other"
 
+
 # provide a consistent name
 CollectionLinkType = ProjectLinkType
+
 
 class DatasetArtifactFileType(enum.Enum):
     """
