@@ -60,6 +60,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
                 "collection_id",
                 "collection_visibility",
                 "is_valid",
+                "cell_count"
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
@@ -155,6 +156,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "collection_id": "test_collection_id",
                     "collection_visibility": "PUBLIC",
+                    "cell_count": None,
                     "is_valid": False,
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
