@@ -630,8 +630,10 @@ components:
           nullable: true
         contact_name:
           type: string
+          nullable: true
         contact_email:
           type: string
+          nullable: true
         data_submission_policy_version:
           type: string
         datasets:
