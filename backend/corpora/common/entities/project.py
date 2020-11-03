@@ -139,6 +139,5 @@ class Project(Entity):
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            dataset.pop("cell_count", None)
 
         return result

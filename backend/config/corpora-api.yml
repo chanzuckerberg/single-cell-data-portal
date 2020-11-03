@@ -627,6 +627,7 @@ components:
                 enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
         obfuscated_uuid:
           type: string
+          nullable: true
         contact_name:
           type: string
         contact_email:
@@ -665,6 +666,7 @@ components:
         - dataset_assets
         - collection_id
         - collection_visibility
+        - cell_count
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -709,6 +711,7 @@ components:
           type: string
         cell_count:
           type: integer
+          nullable: true
     dataset_asset:
       type: object
       properties:
