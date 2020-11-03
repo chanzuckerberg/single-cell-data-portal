@@ -5,14 +5,14 @@ from datetime import datetime
 from sqlalchemy import and_
 
 from .entity import Entity
-from ..corpora_orm import DbProject, DbProjectLink, CollectionVisibility
+from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 
 
-class Project(Entity):
-    table = DbProject
-    list_attributes = (DbProject.id, DbProject.created_at)
+class Collection(Entity):
+    table = DbCollection
+    list_attributes = (DbCollection.id, DbCollection.created_at)
 
-    def __init__(self, db_object: DbProject):
+    def __init__(self, db_object: DbCollection):
         super().__init__(db_object)
 
     @classmethod
@@ -24,9 +24,9 @@ class Project(Entity):
         owner: str = "",
         links: list = None,
         **kwargs,
-    ) -> "Project":
+    ) -> "Collection":
         """
-        Create a new Project and related objects and store in the database. UUIDs are generated for all new table
+        Create a new Collection and related objects and store in the database. UUIDs are generated for all new table
         entries.
         """
         primary_key = str(uuid.uuid4())
@@ -34,14 +34,14 @@ class Project(Entity):
         # Setting Defaults
         links = links if links else []
 
-        new_db_object = DbProject(
+        new_db_object = DbCollection(
             id=primary_key,
             visibility=visibility,
             name=name,
             description=description,
             owner=owner,
             links=cls._create_sub_objects(
-                links, DbProjectLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
+                links, DbCollectionLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
             ),
             **kwargs,
         )
@@ -51,17 +51,17 @@ class Project(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def get_project(cls, project_uuid):
+    def get_collection(cls, collection_uuid):
         """
-        Given the project_uuid, retrieve a live project.
-        :param project_uuid:
+        Given the collection_uuid, retrieve a live collection.
+        :param collection_uuid:
         """
-        return cls.get((project_uuid, CollectionVisibility.PUBLIC.name))
+        return cls.get((collection_uuid, CollectionVisibility.PUBLIC.name))
 
     @classmethod
-    def list_projects_in_time_range(cls, *args, **kwargs):
+    def list_collections_in_time_range(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(
-            *args, filters=[DbProject.visibility == CollectionVisibility.PUBLIC.name], **kwargs
+            *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
         )
 
     @classmethod
@@ -72,9 +72,9 @@ class Project(Entity):
         Queries the database for Entities that have been created within the specified time range. Return only the
         entity attributes in `list_attributes`.
 
-        :param to_date: If provided, only lists projects that were created before this date. Format of param is Unix
+        :param to_date: If provided, only lists collections that were created before this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
-        :param from_date: If provided, only lists projects that were created after this date. Format of param is Unix
+        :param from_date: If provided, only lists collections that were created after this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
         :param filters: additional filters to apply to the query.
         :param list_attributes: A list of entity attributes to return. If None, the class default is used.
@@ -104,29 +104,29 @@ class Project(Entity):
         return results
 
     @classmethod
-    def get_submission(cls, project_uuid):
+    def get_submission(cls, collection_uuid):
         """
-        Given the project_uuid, retrieve a live project.
-        :param project_uuid:
+        Given the collection_uuid, retrieve a live collection.
+        :param collection_uuid:
         """
-        return cls.get((project_uuid, CollectionVisibility.PRIVATE.name))
+        return cls.get((collection_uuid, CollectionVisibility.PRIVATE.name))
 
     @classmethod
     def list_submissions(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             *args,
-            filters=[DbProject.visibility == CollectionVisibility.PRIVATE.name],
+            filters=[DbCollection.visibility == CollectionVisibility.PRIVATE.name],
             list_attributes=[
-                DbProject.id,
-                DbProject.name,
-                DbProject.owner,
+                DbCollection.id,
+                DbCollection.name,
+                DbCollection.owner,
             ],
             **kwargs,
         )
 
     def reshape_for_api(self) -> dict:
         """
-        Reshape the project to match the expected api output.
+        Reshape the collection to match the expected api output.
         :return: A dictionary that can be converted into JSON matching the expected api response.
         """
         result = self.to_dict()

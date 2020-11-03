@@ -38,7 +38,7 @@ paths:
                       type: object
                       properties:
                         id:
-                          $ref: "#/components/schemas/project_uuid"
+                          $ref: "#/components/schemas/collection_uuid"
                         name:
                           type: string
                         owner_id:
@@ -53,14 +53,14 @@ paths:
           $ref: "#/components/responses/404"
 
     post:
-      summary: Create a new project submission
+      summary: Create a new collection submission
       tags:
         - submissions
       description: >-
-        Opens a new submission. If a project UUID is not provided, then a project UUID will be generated and a blank
-        submission will be created. If a project UUID is provided, a submission is opened to modify the existing
-        project. At most, one submission can be open for a project. The project UUID will be used to pre-populate the
-        newly created submission. On success, a message will be returned with the project UUID.
+        Opens a new submission. If a collection UUID is not provided, then a collection UUID will be generated and a blank
+        submission will be created. If a collection UUID is provided, a submission is opened to modify the existing
+        collection. At most, one submission can be open for a collection. The collection UUID will be used to pre-populate the
+        newly created submission. On success, a message will be returned with the collection UUID.
       operationId: corpora.lambdas.api.v1.submission.create_new_submission
       requestBody:
         content:
@@ -68,12 +68,12 @@ paths:
             schema:
               type: object
               properties:
-                project_uuid:
+                collection_uuid:
                   type: string
                   description: >-
-                    If the submission is created in order to update an existing publicly published project, then a
-                    Project UUID must be provided in order to backfill the new submission entity with the existing
-                    project details for modification.
+                    If the submission is created in order to update an existing publicly published collection, then a
+                    Collection UUID must be provided in order to backfill the new submission entity with the existing
+                    collection details for modification.
       responses:
         "201":
           description: A new submissions has been created.
@@ -82,8 +82,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  project_uuid:
-                    $ref: "#/components/schemas/project_uuid"
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -93,24 +93,24 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{project_uuid}:
+  /dp/v1/submission/{collection_uuid}:
     get:
-      summary: Get a project's submission details by UUID
+      summary: Get a collection's submission details by UUID
       tags:
         - submissions
       description: >-
-        Returns all available metadata information about a project submission, including URIs of datasets that are
-        attached to the project.
+        Returns all available metadata information about a collection submission, including URIs of datasets that are
+        attached to the collection.
       operationId: corpora.lambdas.api.v1.submission.get_submission_details
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: Return the submission metadata.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/project"
+                $ref: "#/components/schemas/collection"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -125,11 +125,11 @@ paths:
       tags:
         - submissions
       description: >-
-        Deletes the submission associated with the given project UUID. This does not delete the project if the project
+        Deletes the submission associated with the given collection UUID. This does not delete the collection if the collection
         associated with the submission has been previously publicly published.
       operationId: corpora.lambdas.api.v1.submission.delete_submission
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -142,19 +142,19 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{project_uuid}/file:
+  /dp/v1/submission/{collection_uuid}/file:
     put:
       summary: Add a file to a submission
       tags:
         - submissions
       description: >-
         TODO: https://github.com/chanzuckerberg/corpora-data-portal/issues/361
-        Adds a dataset file to the project’s S3 bucket. A quick validation will be performed to ensure that if the file is a data file, then the
+        Adds a dataset file to the collection’s S3 bucket. A quick validation will be performed to ensure that if the file is a data file, then the
         extension is one of the accepted types (i.e. .loom, .h5ad, or .rds). If a file already exists with the same
         name, it will replace it and increment the revision value of the dataset.
       operationId: corpora.lambdas.api.v1.submission.add_file_to_submission
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
         content:
           application/json:
@@ -204,17 +204,17 @@ paths:
         "409":
           $ref: "#/components/responses/409"
 
-  /dp/v1/submission/{project_uuid}/dataset/{dataset_uuid}:
+  /dp/v1/submission/{collection_uuid}/dataset/{dataset_uuid}:
     delete:
-      summary: Delete a project's dataset file
+      summary: Delete a collection's dataset file
       tags:
         - submissions
       description: >-
-        Deletes a file from the project’s S3 bucket if the file exists. If no such file exists, then a warning will be
+        Deletes a file from the collection’s S3 bucket if the file exists. If no such file exists, then a warning will be
         outputted.
       operationId: corpora.lambdas.api.v1.submission.delete_dataset_from_submission
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
         "202":
@@ -226,18 +226,18 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{project_uuid}/validate:
+  /dp/v1/submission/{collection_uuid}/validate:
     post:
       tags:
         - submissions
-      summary: Validate a project
+      summary: Validate a collection
       description: >-
-        Validates the project to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
+        Validates the collection to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
         there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
         the validation is also stored in the backend database.
       operationId: corpora.lambdas.api.v1.submission.validate_submission
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: OK
@@ -246,8 +246,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  project_uuid:
-                    $ref: "#/components/schemas/project_uuid"
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
                   result:
                     type: string
                   message:
@@ -259,24 +259,24 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{project_uuid}/save:
+  /dp/v1/submission/{collection_uuid}/save:
     post:
       tags:
         - submissions
-      summary: Save a project
+      summary: Save a collection
       description: >-
-        If needed (i.e. project level metadata was not inputted via a form and instead embedded in the matrix file),
-        extracts the project-level metadata from the datasets or uses the given project-level metadata add via the
-        body parameter and saves it to the database. The new project metadata state will be returned in the response on
+        If needed (i.e. collection level metadata was not inputted via a form and instead embedded in the matrix file),
+        extracts the collection-level metadata from the datasets or uses the given collection-level metadata add via the
+        body parameter and saves it to the database. The new collection metadata state will be returned in the response on
         success.
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       operationId: corpora.lambdas.api.v1.submission.save_submission
       requestBody:
         content:
           application/json:
             schema:
-              description: A schema that has fields for all available project-level metadata.
+              description: A schema that has fields for all available collection-level metadata.
               type: object
               properties:
                 name:
@@ -303,8 +303,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  project_uuid:
-                    $ref: "#/components/schemas/project_uuid"
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -314,21 +314,21 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{project_uuid}/publish:
+  /dp/v1/submission/{collection_uuid}/publish:
     post:
       tags:
         - submissions
-      summary: Publish a project
+      summary: Publish a collection
       description: >-
-        Publish a project to Corpora as either public or private. The visibility of the project will either make it
+        Publish a collection to Corpora as either public or private. The visibility of the collection will either make it
         visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
         to public, the successful execution of this operation will move the Submission to a CLOSED state.
 
-        If publishing modification to a previously published project, this will replace the old project with the new
-        published project. The old project will not longer be accessible.
+        If publishing modification to a previously published collection, this will replace the old collection with the new
+        published collection. The old collection will not longer be accessible.
       operationId: corpora.lambdas.api.v1.submission.publish_submission
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
         content:
           application/json:
@@ -339,7 +339,7 @@ paths:
               properties:
                 visibility:
                   description: >-
-                    Determines the visibility of the project, that will either make the project visible on the public
+                    Determines the visibility of the collection, that will either make the collection visible on the public
                     sites or only viewable through obfuscated URLs.
                   $ref: "#/components/schemas/visibility"
       responses:
@@ -350,8 +350,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  project_uuid:
-                    $ref: "#/components/schemas/project_uuid"
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
                   visibility:
                     $ref: "#/components/schemas/visibility"
         "400":
@@ -363,25 +363,25 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/project:
+  /dp/v1/collection:
     get:
       tags:
-        - projects
-      summary: List published projects in Corpora
+        - collections
+      summary: List published collections in Corpora
       description: >-
-        This lists all projects and their UUIDs that currently exist in the corpora. If a parameter is specified as
-        a filter, then only projects that meet the status criteria will be outputted.
-      operationId: corpora.lambdas.api.v1.project.get_projects_list
+        This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
+        a filter, then only collections that meet the status criteria will be outputted.
+      operationId: corpora.lambdas.api.v1.collection.get_collections_list
       parameters:
         - $ref: "#/components/parameters/query_user_uuid"
         - name: from_date
           in: query
           schema:
             type: integer
-          description: The date after which projects should have been created. In seconds since epoch.
+          description: The date after which collections should have been created. In seconds since epoch.
         - name: to_date
           in: query
-          description: The date before which projects should have been created. In seconds since epoch.
+          description: The date before which collections should have been created. In seconds since epoch.
           schema:
             type: integer
       responses:
@@ -392,9 +392,9 @@ paths:
               schema:
                 type: object
                 required:
-                  - projects
+                  - collections
                 properties:
-                  projects:
+                  collections:
                     type: array
                     items:
                       type: object
@@ -403,7 +403,7 @@ paths:
                         - created_at
                       properties:
                         id:
-                          $ref: "#/components/schemas/project_uuid"
+                          $ref: "#/components/schemas/collection_uuid"
                         created_at:
                           type: number
                   from_date:
@@ -413,23 +413,23 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/project/{project_uuid}:
+  /dp/v1/collection/{collection_uuid}:
     get:
       tags:
-        - projects
-      summary: Get a project's full details
+        - collections
+      summary: Get a collection's full details
       description: >-
         This will return all datasets and associated attributes.
-      operationId: corpora.lambdas.api.v1.project.get_project_details
+      operationId: corpora.lambdas.api.v1.collection.get_collection_details
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/project"
+                $ref: "#/components/schemas/collection"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -439,14 +439,14 @@ paths:
 
     delete:
       tags:
-        - projects
-      summary: Delete a project
+        - collections
+      summary: Delete a collection
       description: >-
-        Deletes an entire project from Corpora, including any generated artifacts/assets and deployments. If no such
-        project exists, then a warning will be outputted.
-      operationId: corpora.lambdas.api.v1.project.delete_project
+        Deletes an entire collection from Corpora, including any generated artifacts/assets and deployments. If no such
+        collection exists, then a warning will be outputted.
+      operationId: corpora.lambdas.api.v1.collection.delete_collection
       parameters:
-        - $ref: "#/components/parameters/path_project_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -574,8 +574,8 @@ components:
         email:
           description: The user's email
           type: string
-    project_uuid:
-      description: A unique identifier of a Project.
+    collection_uuid:
+      description: A unique identifier of a Collection.
       type: string
     dataset_uuid:
       description: A unique identifier of a Dataset.
@@ -583,7 +583,7 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
-    project:
+    collection:
       type: object
       required:
         - name
@@ -605,7 +605,7 @@ components:
         name:
           type: string
         id:
-          $ref: "#/components/schemas/project_uuid"
+          $ref: "#/components/schemas/collection_uuid"
         visibility:
           type: string
           enum: [PUBLIC, PRIVATE]
@@ -706,7 +706,7 @@ components:
           items:
             $ref: "#/components/schemas/dataset_asset"
         collection_id:
-          $ref: "#/components/schemas/project_uuid"
+          $ref: "#/components/schemas/collection_uuid"
         collection_visibility:
           type: string
         cell_count:
@@ -740,12 +740,12 @@ components:
         detail:
           type: string
   parameters:
-    path_project_uuid:
-      name: project_uuid
+    path_collection_uuid:
+      name: collection_uuid
       in: path
       required: true
       schema:
-        $ref: "#/components/schemas/project_uuid"
+        $ref: "#/components/schemas/collection_uuid"
     path_dataset_uuid:
       name: dataset_uuid
       in: path
