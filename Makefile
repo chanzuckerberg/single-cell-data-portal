@@ -29,7 +29,7 @@ functional-test:
 .PHONY: local-database
 local-database: clean_test_db
 	docker run -d -p 5432:5432 --name test_db -e POSTGRES_PASSWORD=test_pw postgres
-	python ./scripts/populate_db.py
+	python3 ./scripts/populate_db.py
 
 
 .PHONY: local-backend
