@@ -75,11 +75,11 @@ class DBSessionMaker:
 
 class CollectionVisibility(enum.Enum):
     """
-    Describes a DbProject's visibility.
-    At most, one LIVE and one EDIT entry of a Project may exist at a time.
+    Describes a DbCollection's visibility.
+    At most, one LIVE and one EDIT entry of a Collection may exist at a time.
 
-    PUBLIC - a published and publicly viewable Project.
-    PRIVATE - an open Submission, i.e an unpublished and non-public Project.
+    PUBLIC - a published and publicly viewable Collection.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Collection.
     """
 
     PUBLIC = "Public"
@@ -88,7 +88,7 @@ class CollectionVisibility(enum.Enum):
 
 class ProcessingState(enum.Enum):
     """
-    Enumerates DbProject states in the data processing pipeline from upload to deployment.
+    Enumerates DbCollection states in the data processing pipeline from upload to deployment.
 
     NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
     IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
@@ -104,11 +104,11 @@ class ProcessingState(enum.Enum):
 
 class ValidationState(enum.Enum):
     """
-    Enumerates DbProject validation states.
+    Enumerates DbCollection validation states.
 
     NOT_VALIDATED - Validation not performed yet.
-    VALID - Project is valid.
-    INVALID - Project is invalid.
+    VALID - Collection is valid.
+    INVALID - Collection is invalid.
     """
 
     NOT_VALIDATED = "Not validated"
@@ -118,7 +118,7 @@ class ValidationState(enum.Enum):
 
 class ProjectLinkType(enum.Enum):
     """
-    Enumerates DbProject external web link types.
+    Enumerates DbCollection external web link types.
 
     PROTOCOL - A link to a sequencing protocol.
     RAW_DATA - A link to a raw data repository.
@@ -130,6 +130,10 @@ class ProjectLinkType(enum.Enum):
     PROTOCOL = "protocol"
     LAB_WEBSITE = "lab_website"
     OTHER = "other"
+
+
+# provide a consistent name
+CollectionLinkType = ProjectLinkType
 
 
 class DatasetArtifactFileType(enum.Enum):
@@ -160,12 +164,13 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbProject(Base):
+class DbCollection(Base):
     """
-    A Corpora project represents an in progress or live submission of a lab experiment.
-    DbProjects are associated with one or more single-cell datasets and links to external repositories.
+    A Corpora collection represents an in progress or live submission of a lab experiment.
+    DbCollections are associated with one or more single-cell datasets and links to external repositories.
     """
 
+    # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
     id = Column(String, primary_key=True)
@@ -183,15 +188,16 @@ class DbProject(Base):
     data_submission_policy_version = Column(String, nullable=False)
 
     # Relationships
-    links = relationship("DbProjectLink", back_populates="project", cascade="all, delete-orphan")
-    datasets = relationship("DbDataset", back_populates="project", cascade="all, delete-orphan")
+    links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
+    datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
 
 
 class DbProjectLink(Base):
     """
-    Represents an external web link for DbProjects such as protocols and supplementary data repositories.
+    Represents an external web link for DbCollections such as protocols and supplementary data repositories.
     """
 
+    # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
@@ -199,18 +205,22 @@ class DbProjectLink(Base):
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(String)
     link_url = Column(String)
-    link_type = Column(Enum(ProjectLinkType))
+    link_type = Column(Enum(CollectionLinkType))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", uselist=False, back_populates="links")
+    collection = relationship("DbCollection", uselist=False, back_populates="links")
 
     # Composite FK
     __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]),
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         {},
     )
+
+
+# provide a consistent name
+DbCollectionLink = DbProjectLink
 
 
 class DbDataset(Base):
@@ -240,7 +250,7 @@ class DbDataset(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", uselist=False, back_populates="datasets")
+    collection = relationship("DbCollection", uselist=False, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset", cascade="all, delete-orphan")
     deployment_directories = relationship(
         "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
@@ -248,7 +258,7 @@ class DbDataset(Base):
 
     # Composite FK
     __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbProject.id, DbProject.visibility]),
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         {},
     )
 

@@ -1,10 +1,10 @@
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
-    ProjectLinkType,
+    CollectionLinkType,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    DbProject,
-    DbProjectLink,
+    DbCollection,
+    DbCollectionLink,
     DbDataset,
     DbDatasetArtifact,
     DbDeploymentDirectory,
@@ -26,44 +26,44 @@ class TestDatabase:
         del self.db
 
     def _populate_test_data(self):
-        self._create_test_projects()
-        self._create_test_project_links()
+        self._create_test_collections()
+        self._create_test_collection_links()
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
 
-    def _create_test_projects(self):
-        project = DbProject(
-            id="test_project_id",
+    def _create_test_collections(self):
+        collection = DbCollection(
+            id="test_collection_id",
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            name="test_project",
+            name="test_collection",
             description="test_description",
             data_submission_policy_version="0",
             # contact_email="some@someplace.place",
             # contact_name="John Doe",
         )
-        self.db.session.add(project)
+        self.db.session.add(collection)
         self.db.session.commit()
 
-    def _create_test_project_links(self):
-        project_link = DbProjectLink(
-            id="test_project_link_id",
-            collection_id="test_project_id",
+    def _create_test_collection_links(self):
+        collection_link = DbCollectionLink(
+            id="test_collection_link_id",
+            collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_link_name",
             link_url="test_url",
-            link_type=ProjectLinkType.RAW_DATA.name,
+            link_type=CollectionLinkType.RAW_DATA.name,
         )
-        self.db.session.add(project_link)
-        project_summary_link = DbProjectLink(
-            id="test_project_summary_link_id",
-            collection_id="test_project_id",
+        self.db.session.add(collection_link)
+        collection_summary_link = DbCollectionLink(
+            id="test_collection_summary_link_id",
+            collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_summary_link_name",
             link_url="test_summary_url",
-            link_type=ProjectLinkType.OTHER.name,
+            link_type=CollectionLinkType.OTHER.name,
         )
-        self.db.session.add(project_summary_link)
+        self.db.session.add(collection_summary_link)
         self.db.session.commit()
 
     def _create_test_datasets(self):
@@ -83,7 +83,7 @@ class TestDatabase:
             sex=["test_sex", "test_sex2"],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
-            collection_id="test_project_id",
+            collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.db.session.add(dataset)
