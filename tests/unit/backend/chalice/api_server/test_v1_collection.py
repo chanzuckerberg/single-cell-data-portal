@@ -60,7 +60,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
                 "collection_id",
                 "collection_visibility",
                 "is_valid",
-                "cell_count"
+                "cell_count",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
