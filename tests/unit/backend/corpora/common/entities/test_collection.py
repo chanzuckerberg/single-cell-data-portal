@@ -70,7 +70,7 @@ class TestCollection(unittest.TestCase):
 
                 actual_collection = Collection.get(collection_key)
                 self.assertEqual(collection_key, (actual_collection.id, actual_collection.visibility))
-                self.assertCountEqual(expected_links, actual_project.links)
+                self.assertCountEqual(expected_links, actual_collection.links)
 
     def test__list_in_time_range__ok(self):
         created_before = Collection.create(**BogusCollectionParams.get(), created_at=datetime.fromtimestamp(10))
@@ -81,69 +81,71 @@ class TestCollection(unittest.TestCase):
 
         with self.subTest("from_date"):
             # Collections from_date are returned.
-            actual_projects = Collection.list_attributes_in_time_range(from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
-            expected_ids = [created_inbetween.id, created_after.id, "test_project_id"]
-            actual_ids = [p["id"] for p in actual_projects]
+            actual_collections = Collection.list_attributes_in_time_range(from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_collections]))
+            expected_ids = [created_inbetween.id, created_after.id, "test_collection_id"]
+            actual_ids = [p["id"] for p in actual_collections]
             # Check if the test ids we created are present.
-            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # As a result of other tests, more collections have likely been created and will be return in the results,
             # so we can't do an exact match.
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
         with self.subTest("to_date"):
             # Collections to_date are returned.
-            actual_projects = Collection.list_attributes_in_time_range(to_date=to_date)
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            actual_collections = Collection.list_attributes_in_time_range(to_date=to_date)
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_collections]))
             expected_ids = [created_before.id, created_inbetween.id]
-            actual_ids = [p["id"] for p in actual_projects]
+            actual_ids = [p["id"] for p in actual_collections]
             self.assertCountEqual(expected_ids, actual_ids)
 
         with self.subTest("from_date->to_date"):
             # Collections between to_date and from_date are returned.
-            actual_projects = Collection.list_attributes_in_time_range(to_date=to_date, from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_projects]))
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_projects]))
+            actual_collections = Collection.list_attributes_in_time_range(to_date=to_date, from_date=from_date)
+            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_collections]))
+            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_collections]))
             expected_ids = [created_inbetween.id]
-            actual_ids = [p["id"] for p in actual_projects]
+            actual_ids = [p["id"] for p in actual_collections]
             self.assertCountEqual(expected_ids, actual_ids)
 
         with self.subTest("No parameters"):
-            """All projects are returned."""
-            actual_projects = Collection.list_attributes_in_time_range()
+            """All collections are returned."""
+            actual_collections = Collection.list_attributes_in_time_range()
             expected_ids = [created_before.id, created_inbetween.id, created_after.id]
-            actual_ids = [p["id"] for p in actual_projects]
+            actual_ids = [p["id"] for p in actual_collections]
             # Check if the test ids we created are present.
-            # As a result of other tests, more projects have likely been created and will be return in the results,
+            # As a result of other tests, more collections have likely been created and will be return in the results,
             # so we can't do an exact match.
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
-    def test__list_projects_in_time_range___ok(self):
-        """Public projects are returned"""
+    def test__list_collections_in_time_range___ok(self):
+        """Public collections are returned"""
         from_date = 10
         created_at = datetime.fromtimestamp(20)
         to_date = 30
-        expected_project = Collection.create(
+        expected_collection = Collection.create(
             **BogusCollectionParams.get(created_at=created_at, visibility=CollectionVisibility.PUBLIC.name)
         )
 
-        # Generate a project with Private visibility. This should not show up in the results.
-        Collection.create(**BogusCollectionParams.get(created_at=created_at, visibility=CollectionVisibility.PRIVATE.name))
+        # Generate a collection with Private visibility. This should not show up in the results.
+        Collection.create(
+            **BogusCollectionParams.get(created_at=created_at, visibility=CollectionVisibility.PRIVATE.name)
+        )
 
-        actual_projects = Collection.list_projects_in_time_range(to_date=to_date, from_date=from_date)
-        expected_projects = [{"created_at": created_at, "id": expected_project.id}]
-        self.assertCountEqual(expected_projects, actual_projects)
+        actual_collections = Collection.list_collections_in_time_range(to_date=to_date, from_date=from_date)
+        expected_collections = [{"created_at": created_at, "id": expected_collection.id}]
+        self.assertCountEqual(expected_collections, actual_collections)
 
     def test__list__ok(self):
         generate = 2
         generated_ids = [Collection.create(**BogusCollectionParams.get()).id for _ in range(generate)]
-        projects = Collection.list()
-        self.assertTrue(set(generated_ids).issubset([p.id for p in projects]))
+        collections = Collection.list()
+        self.assertTrue(set(generated_ids).issubset([p.id for p in collections]))
 
-    def test__cascade_delete_project__ok(self):
-        test_project = Collection.create(**BogusCollectionParams.get(links=[{}]))
+    def test__cascade_delete_collection__ok(self):
+        test_collection = Collection.create(**BogusCollectionParams.get(links=[{}]))
         db = DbUtils()
-        test_project_id = test_project.id
-        test_link_id = test_project.links[0].id
+        test_collection_id = test_collection.id
+        test_link_id = test_collection.links[0].id
 
         # Check if the link exists.
         expected_id = test_link_id
@@ -151,9 +153,9 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(expected_id, actual_id)
 
         # The Collection is deleted
-        db.session.delete(test_project.db_object)
+        db.session.delete(test_collection.db_object)
         expected_results = None
-        actual_results = Collection.get_project(test_project_id)
+        actual_results = Collection.get_collection(test_collection_id)
         self.assertEqual(expected_results, actual_results)
 
         # The link should also be deleted.
@@ -161,20 +163,20 @@ class TestCollection(unittest.TestCase):
         actual_results = db.query([DbCollectionLink], [DbCollectionLink.id == test_link_id])
         self.assertEqual(expected_results, actual_results)
 
-    def test__cascade_delete_project_with_dataset__ok(self):
+    def test__cascade_delete_collection_with_dataset__ok(self):
         db = DbUtils()
-        test_project = Collection.create(**BogusCollectionParams.get())
-        expected_project_id = test_project.id
+        test_collection = Collection.create(**BogusCollectionParams.get())
+        expected_collection_id = test_collection.id
         test_dataset = Dataset.create(
-            **BogusDatasetParams.get(collection_id=test_project.id, collection_visibility=test_project.visibility)
+            **BogusDatasetParams.get(collection_id=test_collection.id, collection_visibility=test_collection.visibility)
         )
         expected_dataset_id = test_dataset.id
 
         # The Collection is deleted
-        db.session.delete(test_project.db_object)
+        db.session.delete(test_collection.db_object)
         db.session.expire_all()
         expected_results = None
-        actual_results = Collection.get_project(expected_project_id)
+        actual_results = Collection.get_collection(expected_collection_id)
         self.assertEqual(expected_results, actual_results)
 
         # The dataset is delete
