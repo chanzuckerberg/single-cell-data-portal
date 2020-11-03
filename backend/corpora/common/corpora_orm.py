@@ -192,7 +192,7 @@ class DbCollection(Base):
     data_submission_policy_version = Column(String, nullable=False)
 
     # Relationships
-    links = relationship("DbCollectionLink", back_populates="collection", cascade="all, delete-orphan")
+    links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
 
 
