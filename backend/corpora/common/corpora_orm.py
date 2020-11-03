@@ -73,7 +73,7 @@ class DBSessionMaker:
         return self.session_maker(**kwargs)
 
 
-class ProjectVisibility(enum.Enum):
+class CollectionVisibility(enum.Enum):
     """
     Describes a DbCollection's visibility.
     At most, one LIVE and one EDIT entry of a Collection may exist at a time.
@@ -84,10 +84,6 @@ class ProjectVisibility(enum.Enum):
 
     PUBLIC = "Public"
     PRIVATE = "Private"
-
-
-# provide a consistent name
-CollectionVisibility = ProjectVisibility
 
 
 class ProcessingState(enum.Enum):
