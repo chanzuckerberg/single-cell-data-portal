@@ -73,7 +73,7 @@ class DBSessionMaker:
         return self.session_maker(**kwargs)
 
 
-class CollectionVisibility(enum.Enum):
+class ProjectVisibility(enum.Enum):
     """
     Describes a DbCollection's visibility.
     At most, one LIVE and one EDIT entry of a Collection may exist at a time.
@@ -85,6 +85,8 @@ class CollectionVisibility(enum.Enum):
     PUBLIC = "Public"
     PRIVATE = "Private"
 
+# provide a consistent name
+CollectionVisibility = ProjectVisibility
 
 class ProcessingState(enum.Enum):
     """
@@ -116,7 +118,7 @@ class ValidationState(enum.Enum):
     INVALID = "Invalid"
 
 
-class CollectionLinkType(enum.Enum):
+class ProjectLinkType(enum.Enum):
     """
     Enumerates DbCollection external web link types.
 
@@ -131,6 +133,8 @@ class CollectionLinkType(enum.Enum):
     LAB_WEBSITE = "lab_website"
     OTHER = "other"
 
+# provide a consistent name
+CollectionLinkType = ProjectLinkType
 
 class DatasetArtifactFileType(enum.Enum):
     """
@@ -166,7 +170,8 @@ class DbCollection(Base):
     DbCollections are associated with one or more single-cell datasets and links to external repositories.
     """
 
-    __tablename__ = "collection"
+    # the tablename is "project" instead of "collection" to avoid migrating the database
+    __tablename__ = "project"
 
     id = Column(String, primary_key=True)
     visibility = Column(
@@ -192,7 +197,8 @@ class DbCollectionLink(Base):
     Represents an external web link for DbCollections such as protocols and supplementary data repositories.
     """
 
-    __tablename__ = "collection_link"
+    # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
+    __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
     collection_id = Column(String, nullable=False)
