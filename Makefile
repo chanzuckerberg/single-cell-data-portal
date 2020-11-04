@@ -20,7 +20,7 @@ unit-test:
 .PHONY: unittest
 unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
-		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose --failfast;
+		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
 clean_test_db:
 	-docker stop test_db
