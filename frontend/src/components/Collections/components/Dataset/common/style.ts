@@ -1,5 +1,5 @@
 import { LAYOUT } from "src/components/Collections/common/layout";
-import { BLUE, fontStyle } from "src/components/common/theme";
+import { fontStyle, OLD_BLUE } from "src/components/common/theme";
 import styled, { css } from "styled-components";
 
 export const columnStyle = css`
@@ -17,9 +17,9 @@ export const SmallColumn = styled.div`
 export const buttonStyle = css`
   ${fontStyle}
   text-decoration: none;
-  color: ${BLUE};
+  color: ${OLD_BLUE};
   background-color: white;
-  border: 1px solid ${BLUE};
+  border: 1px solid ${OLD_BLUE};
   border-radius: 3px;
   appearance: none;
   padding: 2px 20px;
@@ -27,7 +27,7 @@ export const buttonStyle = css`
   box-sizing: border-box;
 
   &:hover {
-    background-color: ${BLUE};
+    background-color: ${OLD_BLUE};
     color: white;
     text-decoration: none;
     cursor: pointer;

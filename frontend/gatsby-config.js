@@ -3,6 +3,7 @@ module.exports = {
   // E.g., cellxgene.cziscience.com/dp/foo.js
   assetPrefix: "/dp",
   plugins: [
+    "gatsby-plugin-sass",
     "gatsby-plugin-typescript",
     "gatsby-plugin-react-helmet",
     "gatsby-plugin-root-import",
