@@ -8,7 +8,7 @@ random.seed(time.time())
 class WebsiteUser(HttpUser):
     wait_time = between(1, 2)
     collection_urls = [
-        f"dp/v1/collection/{p}"
+        f"dp/v1/collections/{p}"
         for p in [
             # Todo @mdunitz -- get collection ids from database
             "e7c47289-22fe-440e-ba24-a4434ac3f379",
@@ -21,7 +21,7 @@ class WebsiteUser(HttpUser):
 
     @task
     def get_collections(self):
-        self.client.get("dp/v1/collection")
+        self.client.get("dp/v1/collections")
 
     @task
     def get_collection_info(self):
