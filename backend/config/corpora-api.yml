@@ -441,6 +441,27 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+    post:
+      tags:
+        - collections
+      summary: Create a collection
+      description: >-
+        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
+      operationId: corpora.lambdas.api.v1.collection.create_collection
+      parameters:
+        - requestBody:
+            content:
+              application/json:
+                schema:
+                  description: >-
+                    A schema that contains a field dictating the visibility of the deployments.
+                  type: object
+                  properties:
+                    visibility:
+                      description: >-
+                        Determines the visibility of the collection, that will either make the collection visible on the public
+                        sites or only viewable through obfuscated URLs.
+                      $ref: "#/components/schemas/collection"
     delete:
       tags:
         - collections

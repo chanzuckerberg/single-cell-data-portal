@@ -1,5 +1,8 @@
+import os
 from flask import make_response, jsonify
 
+from ....common.corpora_orm import CollectionVisibility
+from ....common.utils import json
 from ....common.utils.db_utils import db_session
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
@@ -48,6 +51,24 @@ def get_collection_details_auth(collection_uuid: str, visibility: str, user):
     else:
         raise ForbiddenHTTPException()
 
+
+@db_session
+def create_collection(body: object):
+    try:
+        # get user id
+        collection_data = json.loads(body)
+        collection = Collection(
+            visibility=CollectionVisibility.PRIVATE,
+            name=collection_data.name,
+            description=collection_data.description,
+            owner=collection_data.contact_name,
+            links=collection_data.links)
+
+        return make_response(jsonify({"collection_uuid": collection.id}), 200)
+    except NotAuthorized:
+        return make_response(401)
+    except Exception as e:
+        return make_response(jsonify({"error": e}), 400)
 
 @db_session
 def delete_collection(collection_uuid: str):
