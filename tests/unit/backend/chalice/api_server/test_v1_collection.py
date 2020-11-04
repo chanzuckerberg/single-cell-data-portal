@@ -65,7 +65,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
     def test__list_collection__ok(self):
-        path = "/dp/v1/collection"
+        path = "/dp/v1/collections"
         headers = dict(host="localhost")
 
         from_date = int(datetime.fromtimestamp(60).timestamp())
@@ -177,7 +177,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "data_submission_policy_version": "0",
         }
 
-        test_url = furl(path="/dp/v1/collection/test_collection_id")
+        test_url = furl(path="/dp/v1/collections/test_collection_id")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
         self.validate_collection_uuid_response_structure(json.loads(response.body))
@@ -186,7 +186,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
-        test_url = furl(path="/dp/v1/collection/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())

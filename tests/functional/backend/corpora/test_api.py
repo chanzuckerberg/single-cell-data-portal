@@ -26,7 +26,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
 
     def test_get_collections(self):
-        res = requests.get(f"{self.api}/dp/v1/collection")
+        res = requests.get(f"{self.api}/dp/v1/collections")
 
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
