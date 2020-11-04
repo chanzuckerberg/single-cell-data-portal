@@ -424,6 +424,8 @@ paths:
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.collection.get_collection_details
+      security:
+        - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_visibility"
@@ -587,6 +589,7 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
+      default: PRIVATE
     collection:
       type: object
       required:
@@ -779,6 +782,7 @@ components:
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
+
   responses:
     200:
       description: OK.
