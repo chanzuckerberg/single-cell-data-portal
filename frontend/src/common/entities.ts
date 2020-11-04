@@ -6,6 +6,12 @@ export enum LINK_TYPE {
   OTHER = "OTHER",
 }
 
+export interface Link {
+  name: string;
+  url: string;
+  type: LINK_TYPE;
+}
+
 export interface Collection {
   // assays: string[];
   // biosample_categories: string[];
@@ -34,7 +40,7 @@ export interface Collection {
   //   tc_uri: string;
   // };
   datasets: Dataset[];
-  links: { name: string; url: string; type: LINK_TYPE }[];
+  links: Link[];
 }
 
 export interface Dataset {
