@@ -12,7 +12,7 @@ export interface Collection {
   // cell_count: number;
   // contributors: Contributor[];
   // cxg_enabled: boolean;
-  // description: string;
+  description: string;
   // diseases: string[];
   id: string;
   // label: string;
