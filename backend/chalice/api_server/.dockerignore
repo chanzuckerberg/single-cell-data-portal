@@ -1,0 +1,9 @@
+.chalice/deployments/
+.chalice/venv/
+.chalice/deployed/
+.chalice/config.json
+.chalice/policy-*.json
+chalicelib
+!chalicelib/index.html
+vendor
+__pycache__/

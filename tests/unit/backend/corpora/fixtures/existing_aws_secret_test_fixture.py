@@ -1,6 +1,7 @@
 import uuid
 
 import boto3
+import os
 
 
 class ExistingAwsSecretTestFixture:
@@ -18,7 +19,7 @@ class ExistingAwsSecretTestFixture:
     EXISTING_SECRET_DEFAULT_VALUE = '{"top":"secret"}'
 
     def __init__(self, secret_name=None, secret_value=None):
-        self.secrets_mgr = boto3.client("secretsmanager")
+        self.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         self.name = secret_name or self.SECRET_ID_TEMPLATE.format(uuid.uuid4())
         self._value = secret_value or self.EXISTING_SECRET_DEFAULT_VALUE
         self._secret = None
@@ -28,7 +29,10 @@ class ExistingAwsSecretTestFixture:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.delete()
+        try:
+            self.delete()
+        except:
+            print("failed to delete secret")
 
     @property
     def value(self):
@@ -39,4 +43,4 @@ class ExistingAwsSecretTestFixture:
         return self._secret["ARN"]
 
     def delete(self):
-        self.secrets_mgr.delete_secret(SecretId=self.arn, ForceDeleteWithoutRecovery=True)
+        self.secrets_mgr.delete_secret(SecretId=self.name, ForceDeleteWithoutRecovery=True)

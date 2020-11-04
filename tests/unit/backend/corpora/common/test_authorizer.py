@@ -34,10 +34,12 @@ class TestAuthorizer(unittest.TestCase):
             )
         )
 
+    @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
     def test_postive(self):
         token = self.get_auth_token()
         assert_authorized({"Authorization": f"bearer {token['access_token']}"})
 
+    @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
     def test_not_bearer(self):
         sample_non_bearer_auth_token = {
             "Authorization": "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW",
@@ -47,6 +49,7 @@ class TestAuthorizer(unittest.TestCase):
         with self.assertRaises(UnauthorizedError):
             assert_authorized(sample_non_bearer_auth_token)
 
+    @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
     def test_invalid_token(self):
         token = self.get_auth_token()
         header, msg, hash = token["access_token"].split(".")

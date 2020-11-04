@@ -40,3 +40,11 @@ smoke-test-with-local-backend:
 .PHONY: smoke-test-with-local-backend-ci
 smoke-test-with-local-backend-ci:
 	npm run smoke-test-with-local-backend-ci
+
+.PHONY: smoke-test-with-local-dev
+smoke-test-with-local-dev:
+	# HACK/TODO - Temporarily reroute backend requests to docker-compose backend DNS name.
+	cp src/configs/local-docker.js src/configs/configs.js
+	npm run e2e
+	cp src/configs/local.js src/configs/configs.js
+	

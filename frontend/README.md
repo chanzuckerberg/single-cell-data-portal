@@ -1,37 +1,7 @@
 # Data Portal Front End
 
 ## Development
-
-1. **Install dependencies.**
-
-   ```shell
-   # Install gatsby globally
-   npm install -g gatsby
-
-   # Install project dependencies
-   npm install
-   ```
-
-1. **Set Up Environment Variables**
-
-   Create the the environment file and populate the variables.
-
-1. **Host the backend locally.**
-
-   Follow [backend instructions](../backend/chalice/api_server/README.md#Development)to deploy the backend API on
-   `http://localhost:5000`.
-
-1. **Build and launch the frontend locally.**
-
-   1. Create `frontend/src/configs/configs.js` and paste content from
-      `frontend/src/configs/local.js`
-   1. Run `gatsby develop`
-
-   Your site is now running at `http://localhost:8000` with hot re-loading!
-
-1. **Open the source code and start editing!**
-
-   Modify code in the `src` directory, save your changes and the browser will update in real time.
+See [DEV_ENV.md](DEV_ENV.md) for local dev quickstart
 
 ## Environment Variables
 
