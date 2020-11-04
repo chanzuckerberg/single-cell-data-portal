@@ -104,15 +104,17 @@ class TestAuth(BaseAPITest, unittest.TestCase):
 
         # Configure the CorporaAuthConfig used by the chalice app
         self.auth_config = CorporaAuthConfig()
-        self.auth_config.set({
-            "api_base_url": f"http://localhost:{PORT}",
-            "callback_base_url": "http://localhost:5000",
-            "client_id": "test_client_id",
-            "audience": "test_client_id",
-            "client_secret": "test_client_secret",
-            "redirect_to_frontend": "http://foo",
-            "cookie_name": "cxguser",
-        })
+        self.auth_config.set(
+            {
+                "api_base_url": f"http://localhost:{PORT}",
+                "callback_base_url": "http://localhost:5000",
+                "client_id": "test_client_id",
+                "audience": "test_client_id",
+                "client_secret": "test_client_secret",
+                "redirect_to_frontend": "http://foo",
+                "cookie_name": "cxguser",
+            }
+        )
 
         headers = dict(host="localhost")
 
