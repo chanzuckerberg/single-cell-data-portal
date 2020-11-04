@@ -14,7 +14,7 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless requirements.txt has changed.
 WORKDIR /chalice
-ADD chalice/api_server/requirements.txt /chalice/requirements.txt
+ADD requirements.txt /chalice/requirements.txt
 RUN python3 -m pip install -r requirements.txt
 
 # Add our api server code.
