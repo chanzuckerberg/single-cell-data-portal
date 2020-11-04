@@ -77,6 +77,7 @@ def launch_mock_oauth():
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
+@unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "Auth is currently TODO in docker")
 class TestAuth(BaseAPITest, unittest.TestCase):
     def setUp(self):
         self.mock_oauth_process = Process(target=launch_mock_oauth)

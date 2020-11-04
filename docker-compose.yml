@@ -58,12 +58,17 @@ services:
       - IS_DOCKER_DEV=yes # This skips some unit tests.
     command: ["python3", "/chalice/run_local_server.py", "--host", "0.0.0.0"]
     volumes:
+      # Create a packaged chalice app.
       - ./backend/chalice/api_server:/chalice
       - ./backend/corpora:/chalice/chalicelib/corpora
       - ./backend/config:/chalice/chalicelib/config
-      # TODO - avoid file mounts where possible!
-      - ./backend/chalice/api_server/.chalice/config.json.dev:/chalice/.chalice/config.json
+      - ./backend/chalice/api_server/.chalice-dev:/chalice/.chalice
+      # Mount dirs in a layout suitable for running tests.
       - .:/corpora-data-portal
+      # The unit tests ALSO depend on having a packaged chalice app.
+      - ./backend/chalice/api_server/.chalice-dev:/corpora-data-portal/backend/chalice/api_server/.chalice
+      - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
+      - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
   oidc:
     image: soluto/oidc-server-mock
     ports:
