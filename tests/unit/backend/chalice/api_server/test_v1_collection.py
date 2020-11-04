@@ -1,16 +1,37 @@
 import json
 import unittest
 from datetime import datetime
+from multiprocessing import Process
 
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
+from tests.unit.backend.chalice.api_server.mock_auth import PORT, launch_mock_oauth, get_auth_token
 
 
 class TestCollection(BaseAPITest, unittest.TestCase):
+    def setUp(self):
+        self.mock_oauth_process = Process(target=launch_mock_oauth)
+        self.mock_oauth_process.start()
+
+
+
+        # Use the CorporaAuthConfig used by the chalice app
+
+        self.auth_config = CorporaAuthConfig()
+        self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
+        self.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        self.auth_config.update_defaults()
+
+        headers = dict(host="localhost")
+
+    def tearDown(self):
+        self.mock_oauth_process.terminate()
+
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
@@ -177,8 +198,9 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "data_submission_policy_version": "0",
         }
 
-        test_url = furl(path="/dp/v1/collections/test_collection_id")
-        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        test_url = furl(path="/dp/v1/collections/test_collection_id?visibility=PUBLIC")
+        cxguser_cookie = get_auth_token(self.app)
+        response = self.app.get(test_url.url, headers=dict(host="localhost"), Cookie=cxguser_cookie)
         response.raise_for_status()
         self.validate_collection_uuid_response_structure(json.loads(response.body))
         actual_body = self.remove_timestamps(json.loads(response.body))

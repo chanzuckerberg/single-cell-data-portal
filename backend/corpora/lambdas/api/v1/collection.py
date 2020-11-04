@@ -16,7 +16,7 @@ def get_collections_list(user_uuid: str = "", from_date: int = None, to_date: in
 
 
 @db_session
-def get_collection_details(collection_uuid: str):
+def get_collection_details(collection_uuid: str, visibility: str):
     collection = Collection.get_collection(collection_uuid)
     if collection:
         result = collection.reshape_for_api()

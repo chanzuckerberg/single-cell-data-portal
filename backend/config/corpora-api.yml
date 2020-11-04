@@ -188,7 +188,7 @@ paths:
                 type: object
                 properties:
                   visibility:
-                    type: string
+                    $ref: "#/components/schemas/visibility"
                   s3_uri:
                     type: string
                   dataset_uuid:
@@ -421,8 +421,11 @@ paths:
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.collection.get_collection_details
+      security:
+        - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -583,6 +586,7 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
+      default: PRIVATE
     collection:
       type: object
       required:
@@ -607,8 +611,7 @@ components:
         id:
           $ref: "#/components/schemas/collection_uuid"
         visibility:
-          type: string
-          enum: [PUBLIC, PRIVATE]
+          $ref: "#/components/schemas/visibility"
         links:
           type: array
           items:
@@ -710,7 +713,7 @@ components:
         collection_id:
           $ref: "#/components/schemas/collection_uuid"
         collection_visibility:
-          type: string
+          $ref: "#/components/schemas/visibility"
         cell_count:
           type: integer
           nullable: true
@@ -767,7 +770,11 @@ components:
       in: query
       schema:
         $ref: "#/components/schemas/user_uuid"
-
+    query_visibility:
+      name: visibility
+      in: query
+      schema:
+        $ref: "#/components/schemas/visibility"
   responses:
     200:
       description: OK.
@@ -806,9 +813,6 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
   securitySchemes:
-    auth0:
-      type: openIdConnect
-      openIdConnectUrl: https://example.com/.well-known/openid-configuration
     cxguserCookie:
       type: apiKey
       in: cookie
