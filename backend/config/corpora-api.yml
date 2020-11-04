@@ -363,7 +363,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/collection:
+  /dp/v1/collections:
     get:
       tags:
         - collections
@@ -413,7 +413,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/collection/{collection_uuid}:
+  /dp/v1/collections/{collection_uuid}:
     get:
       tags:
         - collections
