@@ -3,7 +3,7 @@ import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import psl from "psl";
 import React, { FC } from "react";
-import { LINK_TYPE } from "src/common/entities";
+import { Link, LINK_TYPE } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
 import {
   CenterAlignedDiv,
@@ -62,6 +62,20 @@ const RenderEmptyDatasets = () => {
   );
 };
 
+const renderLinks = (links: Link[]) => {
+  return links.map(({ url, type }) => {
+    if (!Object.values(LINK_TYPE).includes(type)) return null;
+    const domain = getDomain(url);
+    if (domain)
+      return (
+        <React.Fragment key={`${type}+${url}`}>
+          <span className={Classes.TEXT_MUTED}>{type}</span>
+          <a href={url}>{domain}</a>
+        </React.Fragment>
+      );
+  });
+};
+
 const Collection: FC<Props> = ({ id }) => {
   const { data: collection } = useCollection(id ?? "");
   if (!collection) return null;
@@ -71,19 +85,7 @@ const Collection: FC<Props> = ({ id }) => {
       <CollectionInfo>
         <H3>{collection.name}</H3>
         <Description>{collection.description}</Description>
-        <LinkContainer>
-          {collection.links?.map(({ url, type }) => {
-            if (!Object.values(LINK_TYPE).includes(type)) return null;
-            const domain = getDomain(url);
-            if (domain)
-              return (
-                <React.Fragment key={`${type}+${url}`}>
-                  <span className={Classes.TEXT_MUTED}>{type}</span>
-                  <a href={url}>{domain}</a>
-                </React.Fragment>
-              );
-          })}
-        </LinkContainer>
+        <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
       </CollectionInfo>
       <CollectionButtons>
         <StyledButton
