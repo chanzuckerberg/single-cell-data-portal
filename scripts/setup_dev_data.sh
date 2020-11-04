@@ -24,15 +24,16 @@ done
 echo " done"
 
 echo "Creating secretsmanager secrets"
-aws --endpoint-url=${LOCALSTACK_URL} s3api create-bucket --bucket corpora-data-dev &> /dev/null || true
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &> /dev/null || true
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager create-secret --name corpora/backend/test/database_local &> /dev/null || true
+local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
+${local_aws} s3api create-bucket --bucket corpora-data-dev &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &> /dev/null || true
 
 
 echo "Updating secrets"
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager update-secret --secret-id corpora/backend/dev/auth0-secret --secret-string '{
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/auth0-secret --secret-string '{
     "client_id": "dev-client-id",
     "client_secret": "dev-client-secret",
     "audience": "dev-client-id",
@@ -46,20 +47,20 @@ aws --endpoint-url=${LOCALSTACK_URL} secretsmanager update-secret --secret-id co
 }' || true
 
 # TODO: python3 -m unittest tests.unit.backend.corpora.common.test_authorizer.TestAuthorizer.test_invalid_token
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-secret --secret-string '{
+${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-secret --secret-string '{
     "client_id": "",
     "client_secret": "",
     "audience": "",
     "grant_type": ""
 }' || true
 
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
-aws --endpoint-url=${LOCALSTACK_URL} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
 
 # Make a 1mb data file
 echo "Writing test file to s3"
 dd if=/dev/zero of=fake-h5ad-file.h5ad bs=1024 count=1024 &> /dev/null
-aws --endpoint-url=${LOCALSTACK_URL} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
+${local_aws} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
 rm fake-h5ad-file.h5ad
 
 echo "Populating test db"
