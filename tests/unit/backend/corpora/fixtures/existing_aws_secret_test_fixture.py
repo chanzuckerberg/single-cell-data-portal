@@ -1,6 +1,7 @@
 import uuid
 
 import boto3
+from botocore.exceptions import ClientError
 import os
 
 
@@ -31,7 +32,7 @@ class ExistingAwsSecretTestFixture:
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             self.delete()
-        except:
+        except ClientError:
             print("failed to delete secret")
 
     @property
