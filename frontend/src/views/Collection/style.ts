@@ -1,8 +1,11 @@
 import { Button } from "@blueprintjs/core";
 import styled from "styled-components";
 
-export const StyledButton = styled(Button)`
-  margin-left: 16px;
+export const ViewGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
+  margin-top: 128px;
 `;
 
 export const TopBar = styled.div`
@@ -12,16 +15,18 @@ export const TopBar = styled.div`
   flex-direction: row;
 `;
 
-export const ViewGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  width: 100%;
-  margin-top: 128px;
-`;
-
 export const CollectionInfo = styled.div`
   grid-column: 1 / span 5;
   margin-bottom: 24px;
+`;
+
+export const Description = styled.div`
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: -0.1px;
+  text-align: left;
 `;
 
 export const LinkContainer = styled.div`
@@ -37,13 +42,8 @@ export const CollectionButtons = styled.div`
   justify-self: end;
 `;
 
-export const Description = styled.div`
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 18px;
-  letter-spacing: -0.1px;
-  text-align: left;
+export const StyledButton = styled(Button)`
+  margin-left: 16px;
 `;
 
 export const DatasetContainer = styled.div`
@@ -64,4 +64,5 @@ export const CenterAlignedDiv = styled.div`
   line-height: 18px;
   letter-spacing: -0.10000000149011612px;
   text-align: left;
+  color: #5c7080;
 `;
