@@ -17,6 +17,8 @@ import LinkInput, { LinkValue, TYPES } from "./components/LinkInput";
 import Policy from "./components/Policy";
 import { ContactWrapper, Form, StyledInput } from "./style";
 
+const POLICY_PAYLOAD_KEY = "data_submission_policy_version";
+
 interface Props {
   onClose: () => void;
 }
@@ -52,9 +54,7 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const [links, setLinks] = useState<Link[]>([
-    { id: Date.now(), isValid: false, type: TYPES.DOI, url: "" },
-  ]);
+  const [links, setLinks] = useState<Link[]>([]);
 
   const queryCache = useQueryCache();
 
@@ -72,14 +72,6 @@ const Content: FC<Props> = (props) => {
     const isPolicyChecked = policyVersion !== "";
 
     const result = areLinksValid && areFieldsValid && isPolicyChecked;
-
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("areLinksValid", areLinksValid);
-    console.log("areFieldsValid", areFieldsValid);
-    console.log("isPolicyChecked", isPolicyChecked);
-    console.log("result", result);
 
     if (result !== isValid) {
       setIsValid(result);
@@ -132,6 +124,12 @@ const Content: FC<Props> = (props) => {
           <Policy handleChange={handlePolicyChange} />
         </Form>
       </div>
+      <Footer />
+    </>
+  );
+
+  function Footer() {
+    return (
       <div className={Classes.DIALOG_FOOTER}>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
           <Button
@@ -152,14 +150,10 @@ const Content: FC<Props> = (props) => {
           </Button>
         </div>
       </div>
-    </>
-  );
+    );
+  }
 
   async function onSubmit() {
-    // payload add links
-    // mutate(JSON.string(payload))
-    // set collectionId and redirect
-
     if (!formEl?.current) return;
 
     const formData = new FormData(formEl.current);
@@ -169,22 +163,11 @@ const Content: FC<Props> = (props) => {
     const payloadLinks = links.map(({ type, url }) => ({ type, url }));
 
     payload.links = payloadLinks;
-    payload["data_submission_policy_version"] = policyVersion;
-
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("---payload", payload);
-    console.log("---JSON.stringify(payload)", JSON.stringify(payload));
+    payload[POLICY_PAYLOAD_KEY] = policyVersion;
 
     setIsLoading(true);
 
-    const collectionId = (await mutate(JSON.stringify(payload))) as string;
-
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("---------collectionId", collectionId);
+    const collectionId = (await mutate()) as string;
 
     setIsLoading(false);
 
@@ -216,11 +199,6 @@ const Content: FC<Props> = (props) => {
 
     const newLinks = [...links];
     newLinks[index] = newLink;
-
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("--------newLinks", newLinks);
 
     setLinks(newLinks);
   }

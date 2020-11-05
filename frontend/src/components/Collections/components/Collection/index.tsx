@@ -9,11 +9,6 @@ interface Props {
 const Collection: FC<Props> = ({ id }) => {
   const { data: collection } = useCollection(id);
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log(">>>>>>>>>>> collection", collection);
-
   if (!collection?.datasets) return null;
 
   return (

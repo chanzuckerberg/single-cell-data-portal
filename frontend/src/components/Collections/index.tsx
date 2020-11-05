@@ -8,11 +8,6 @@ import { TitleWrapper } from "./style";
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log("----collections", collections);
-
   if (isFetching && !collections) return <div>Loading collections...</div>;
 
   if (!collections) return <div>Sorry, we could not find any collections</div>;

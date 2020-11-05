@@ -40,7 +40,7 @@ export function useCollection(id: string) {
   return useQuery<Collection>([USE_COLLECTION, id], fetchCollection);
 }
 
-export async function createCollection(payload: string): Promise<string> {
+export async function createCollection(): Promise<string> {
   // DEBUG
   // DEBUG
   // DEBUG
@@ -50,25 +50,7 @@ export async function createCollection(payload: string): Promise<string> {
     }, 2 * 1000);
   });
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  return "2";
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const json = await (
-  //   await fetch(API_URL + API.CREATE_COLLECTION, {
-  //     body: payload,
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     method: "POST",
-  //   })
-  // ).json();
-
-  // return json.collection_uuid;
+  return "673637cf-dcb7-45e1-bb88-72a27c50c8ca";
 }
 
 export const formDataToObject = function (formData: FormData) {
