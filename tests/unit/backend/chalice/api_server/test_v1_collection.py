@@ -1,4 +1,6 @@
 import json
+import sys
+import os
 import unittest
 from datetime import datetime
 from multiprocessing import Process
@@ -6,7 +8,6 @@ from multiprocessing import Process
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
@@ -18,16 +19,20 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.mock_oauth_process = Process(target=launch_mock_oauth)
         self.mock_oauth_process.start()
 
+        old_path = sys.path.copy()
 
+        def restore_path(p):
+            sys.path = p
+
+        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
+        self.addCleanup(restore_path, old_path)
+        from corpora.common.corpora_config import CorporaAuthConfig
 
         # Use the CorporaAuthConfig used by the chalice app
-
         self.auth_config = CorporaAuthConfig()
         self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
         self.auth_config._config["callback_base_url"] = "http://localhost:5000"
         self.auth_config.update_defaults()
-
-        headers = dict(host="localhost")
 
     def tearDown(self):
         self.mock_oauth_process.terminate()
