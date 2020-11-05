@@ -421,8 +421,6 @@ paths:
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.collection.get_collection_details
-      security:
-        - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_visibility"
@@ -453,6 +451,33 @@ paths:
       responses:
         "202":
           $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /dp/v1/collections/a/{collection_uuid}:
+    get:
+      tags:
+        - collections
+      summary: Get a collection's full details
+      description: >-
+        This will return all datasets and associated attributes.
+      operationId: corpora.lambdas.api.v1.collection.get_collection_details_auth
+      security:
+        - cxguserCookie: []
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/query_visibility"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
         "401":
           $ref: "#/components/responses/401"
         "403":
