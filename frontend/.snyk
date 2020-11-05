@@ -1,0 +1,89 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JS-DECOMPRESSTAR-559095:
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.650Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.650Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.650Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > download > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > download > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-wrapper > download > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-wrapper > download > decompress > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.651Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > download > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.652Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > download > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.652Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-wrapper > download > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.652Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-wrapper > download > decompress > decompress-tarbz2 > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.652Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-build > download > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-build > download > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby-plugin-sharp > imagemin-mozjpeg > mozjpeg > bin-wrapper > download > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin > bin-wrapper > download > decompress > decompress-targz > decompress-tar:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+  SNYK-JS-NODESASS-541000:
+    - node-sass:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+  SNYK-JS-NODESASS-541002:
+    - node-sass:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+  SNYK-JS-TRIM-1017038:
+    - gatsby > gatsby-cli > gatsby-recipes > remark-parse > trim:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby > gatsby-cli > gatsby-recipes > @mdx-js/mdx > remark-parse > trim:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby > gatsby-cli > gatsby-recipes > @mdx-js/runtime > @mdx-js/mdx > remark-parse > trim:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+  'snyk:lic:npm:pngquant-bin:GPL-3.0':
+    - gatsby-plugin-sharp > imagemin-pngquant > pngquant-bin:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+  'snyk:lic:npm:potrace:GPL-2.0':
+    - gatsby-plugin-sharp > potrace:
+        reason: None given
+        expires: '2020-12-05T17:43:19.653Z'
+    - gatsby-transformer-sharp > potrace:
+        reason: None given
+        expires: '2020-12-05T17:43:19.654Z'
+patch: {}
