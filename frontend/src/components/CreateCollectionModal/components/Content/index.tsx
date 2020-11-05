@@ -20,6 +20,8 @@ import { ContactWrapper, Form, StyledInput } from "./style";
 
 const POLICY_PAYLOAD_KEY = "data_submission_policy_version";
 
+const REQUIRED_FIELD_TEXT = "Required";
+
 interface Props {
   onClose: () => void;
 }
@@ -89,6 +91,7 @@ const Content: FC<Props> = (props) => {
             name={FIELD_NAMES.NAME}
             text="Collection Name"
             handleChange={handleInputChange}
+            placeholder={REQUIRED_FIELD_TEXT}
           />
           <StyledLabel htmlFor="description">
             <LabelText>Description</LabelText>
@@ -96,6 +99,7 @@ const Content: FC<Props> = (props) => {
               name={FIELD_NAMES.DESCRIPTION}
               id={FIELD_NAMES.DESCRIPTION}
               handleChange={handleInputChange}
+              placeholder={REQUIRED_FIELD_TEXT}
               fill
             />
           </StyledLabel>
@@ -104,11 +108,13 @@ const Content: FC<Props> = (props) => {
               name={FIELD_NAMES.CONTACT_NAME}
               text="Contact Name"
               handleChange={handleInputChange}
+              placeholder={REQUIRED_FIELD_TEXT}
             />
             <StyledInput
               name={FIELD_NAMES.CONTACT_EMAIL}
               text="Contact Email"
               handleChange={handleInputChange}
+              placeholder={REQUIRED_FIELD_TEXT}
             />
           </ContactWrapper>
           {links.map(({ type, id }, index) => (
