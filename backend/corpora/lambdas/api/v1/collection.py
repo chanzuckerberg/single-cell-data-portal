@@ -18,6 +18,7 @@ def get_collections_list(user_uuid: str = "", from_date: int = None, to_date: in
 @db_session
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(collection_uuid, visibility)
+
     if collection:
         if user == collection.owner:
             access_type = "WRITE"
