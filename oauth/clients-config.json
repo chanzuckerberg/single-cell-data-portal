@@ -1,7 +1,7 @@
 [{
-        "ClientId": "dev-client-id",
+        "ClientId": "local-client-id",
         "ClientSecrets": [
-          "dev-client-secret"
+          "local-client-secret"
         ],
         "Description": "Client for client credentials flow",
         "AllowedGrantTypes": [

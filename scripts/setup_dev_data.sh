@@ -34,9 +34,9 @@ ${local_aws} secretsmanager create-secret --name corpora/backend/test/database_l
 
 echo "Updating secrets"
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/auth0-secret --secret-string '{
-    "client_id": "dev-client-id",
-    "client_secret": "dev-client-secret",
-    "audience": "dev-client-id",
+    "client_id": "local-client-id",
+    "client_secret": "local-client-secret",
+    "audience": "local-client-id",
     "code_challenge_method": "S256",
     "api_authorize_url": "'"${OIDC_BROWSER_URL}"'/connect/authorize",
     "api_base_url": "'"${OIDC_BROWSER_URL}"'",
