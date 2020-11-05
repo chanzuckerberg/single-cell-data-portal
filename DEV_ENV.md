@@ -29,6 +29,7 @@ The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setu
 | `make local-init`         | Launch a new local dev env and populate it with test data.                           |                                                          |
 | `make local-start`        | Start a local dev environment that's been stopped.                                   |                                                          |
 | `make local-stop`         | Stop the local dev environment.                                                      |                                                          |
+| `make local-dbconsole`    | Connect to the local database.                                                       |                                                          |
 | `make local-logs`         | Tail the logs of the dev env containers.                                             | Run `make local-logs CONTAINER=backend` to tail the logs of a specific container. Dev containers are: backend, frontend, localstack, database, oidc |
 | `make local-shell CONTAINER=frontend`  | Open a command shell in one of the dev containers                       | Dev containers are: backend, frontend, localstack, database, oidc |
 | `make local-status`       | Show the status of the containers in the dev environment.                            |                                                          |
