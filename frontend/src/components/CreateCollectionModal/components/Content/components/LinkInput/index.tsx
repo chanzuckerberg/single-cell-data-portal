@@ -1,6 +1,10 @@
 import { IconNames } from "@blueprintjs/icons";
 import { debounce } from "lodash-es";
 import React, { FC } from "react";
+import {
+  COLLECTION_LINK_TYPE,
+  COLLECTION_LINK_TYPE_OPTIONS,
+} from "src/common/entities";
 import Input from "src/components/common/Form/Input";
 import { GRAY } from "src/components/common/theme";
 import { DEBOUNCE_TIME_MS } from "src/components/CreateCollectionModal/components/Content/common/constants";
@@ -13,22 +17,6 @@ export type LinkValue = {
   index: number;
 };
 
-export enum TYPES {
-  DOI = "DOI",
-  RAW_DATA = "RAW_DATA",
-  PROTOCOL = "PROTOCOL",
-  LAB_WEBSITE = "LAB_WEBSITE",
-  OTHER = "OTHER",
-}
-
-export const OPTIONS = {
-  [TYPES.DOI]: { text: "DOI", value: TYPES.DOI },
-  [TYPES.RAW_DATA]: { text: "Raw Data", value: TYPES.RAW_DATA },
-  [TYPES.PROTOCOL]: { text: "Protocol", value: TYPES.PROTOCOL },
-  [TYPES.LAB_WEBSITE]: { text: "Lab Website", value: TYPES.LAB_WEBSITE },
-  [TYPES.OTHER]: { text: "Other", value: TYPES.OTHER },
-};
-
 const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
@@ -36,7 +24,7 @@ interface Props {
   handleChange: ({ id, value, isValid }: LinkValue) => void;
   id: number;
   index: number;
-  type: TYPES;
+  type: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
 }
 
@@ -47,7 +35,7 @@ const LinkInput: FC<Props> = ({
   type,
   index,
 }) => {
-  const option = OPTIONS[type];
+  const option = COLLECTION_LINK_TYPE_OPTIONS[type];
 
   const { text, value } = option;
 
@@ -59,7 +47,11 @@ const LinkInput: FC<Props> = ({
         handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
         syncValidation={[isValidHttpUrl, isDOILink(value)]}
         noNameAttr
-        placeholder={value === TYPES.DOI ? DOI_PLACEHOLDER : LINK_PLACEHOLDER}
+        placeholder={
+          value === COLLECTION_LINK_TYPE.DOI
+            ? DOI_PLACEHOLDER
+            : LINK_PLACEHOLDER
+        }
       />
       <IconWrapper>
         <StyledButton
@@ -83,9 +75,11 @@ const LinkInput: FC<Props> = ({
   }
 };
 
-function isDOILink(type: TYPES): (value: string) => true | string {
+function isDOILink(
+  type: COLLECTION_LINK_TYPE
+): (value: string) => true | string {
   return (value: string) => {
-    if (type !== TYPES.DOI) return true;
+    if (type !== COLLECTION_LINK_TYPE.DOI) return true;
 
     const isValid = value.includes("doi.org");
 
@@ -98,7 +92,7 @@ function isValidHttpUrl(url: string): true | string {
 
   try {
     result = new URL(url);
-  } catch (_) {
+  } catch {
     result = { protocol: "" };
   }
 

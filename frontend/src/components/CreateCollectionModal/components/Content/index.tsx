@@ -3,6 +3,7 @@ import { useNavigate } from "@reach/router";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryCache } from "react-query";
 import { ROUTES } from "src/common/constants/routes";
+import { COLLECTION_LINK_TYPE } from "src/common/entities";
 import {
   createCollection,
   formDataToObject,
@@ -13,7 +14,7 @@ import Input from "src/components/common/Form/Input";
 import { LabelText, StyledLabel } from "src/components/common/Form/Input/style";
 import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
-import LinkInput, { LinkValue, TYPES } from "./components/LinkInput";
+import LinkInput, { LinkValue } from "./components/LinkInput";
 import Policy from "./components/Policy";
 import { ContactWrapper, Form, StyledInput } from "./style";
 
@@ -27,7 +28,7 @@ type Link = {
   id: number;
   url: string;
   isValid: boolean;
-  type: TYPES;
+  type: COLLECTION_LINK_TYPE;
 };
 
 enum FIELD_NAMES {
@@ -209,7 +210,7 @@ const Content: FC<Props> = (props) => {
     setLinks(newLinks);
   }
 
-  function handleAddLinkClick(type: TYPES) {
+  function handleAddLinkClick(type: COLLECTION_LINK_TYPE) {
     const link = createLinkInput(type);
 
     const newLinks = [...links, link];
@@ -222,7 +223,7 @@ const Content: FC<Props> = (props) => {
   }
 };
 
-function createLinkInput(type: TYPES) {
+function createLinkInput(type: COLLECTION_LINK_TYPE) {
   return { id: Date.now(), isValid: false, type, url: "" };
 }
 
