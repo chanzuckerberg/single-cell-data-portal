@@ -13,6 +13,9 @@ import {
   ViewGrid,
 } from "./style";
 
+const CLI_README_LINK =
+  "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
+
 interface RouteProps {
   id?: string;
 }
@@ -40,7 +43,8 @@ const RenderEmptyDatasets = () => {
         <UL>
           <li>
             You must validate your dataset locally. We provide a local CLI
-            script to do this. <StyledLink>Learn More</StyledLink>
+            script to do this.{" "}
+            <StyledLink href={CLI_README_LINK}>Learn More</StyledLink>
           </li>
           <li>
             We only support adding datasets in the h5ad format at this time.
