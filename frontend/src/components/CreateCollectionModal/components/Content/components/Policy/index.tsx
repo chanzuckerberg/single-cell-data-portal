@@ -33,7 +33,7 @@ const Policy: FC<Props> = ({ handleChange }) => {
   return (
     <Wrapper>
       <Checkbox checked={isChecked} onChange={handleChange_}>
-        I agree to cellxgene&#39;s data submission policies.{" "}
+        I agree to cellxgene&#39;s data submission policies.
         <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
           {isOpen ? "Hide" : "Show"} Details
         </Button>

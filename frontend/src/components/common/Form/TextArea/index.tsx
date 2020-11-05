@@ -16,7 +16,7 @@ const DangerIcon = () => {
 interface Props extends ITextAreaProps {
   isValid?: boolean;
   syncValidation?: Array<(value: string) => boolean>;
-  handleChange: ({ isValid, value, name }: Value) => void;
+  handleChange?: ({ isValid, value, name }: Value) => void;
 }
 
 const TextArea: FC<Props> = (props) => {

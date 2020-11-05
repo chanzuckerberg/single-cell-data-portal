@@ -79,6 +79,7 @@ function isDOILink(
   type: COLLECTION_LINK_TYPE
 ): (value: string) => true | string {
   return (value: string) => {
+    // Skip validation if type is not DOI
     if (type !== COLLECTION_LINK_TYPE.DOI) return true;
 
     const isValid = value.includes("doi.org");
