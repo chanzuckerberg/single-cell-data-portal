@@ -18,11 +18,12 @@ class Collection(Entity):
     @classmethod
     def create(
         cls,
-        visibility: str,
+        visibility: CollectionVisibility,
         name: str = "",
         description: str = "",
         owner: str = "",
         links: list = None,
+        data_submission_policy_version: str = "",
         **kwargs,
     ) -> "Collection":
         """
@@ -40,6 +41,7 @@ class Collection(Entity):
             name=name,
             description=description,
             owner=owner,
+            data_submission_policy_version=data_submission_policy_version,
             links=cls._create_sub_objects(
                 links, DbCollectionLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
             ),

@@ -413,6 +413,67 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
+    post:
+      tags:
+        - collections
+      summary: Create a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
+      operationId: corpora.lambdas.api.v1.collection.create_collection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - contact_name
+                - contact_email
+              properties:
+                name:
+                  type: string
+                  description: name of the collecton
+                description:
+                  type: string
+                  description: description of the collection
+                contact_name:
+                  type: string
+                  description: name of the primary person of contact for the collection
+                contact_email:
+                  type: string
+                  description: email of contact person for the collection
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
+                links:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                      type:
+                        type: string
+      responses:
+        "201":
+          description: A new collection has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+
   /dp/v1/collections/{collection_uuid}:
     get:
       tags:
@@ -441,27 +502,6 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-    post:
-      tags:
-        - collections
-      summary: Create a collection
-      description: >-
-        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: corpora.lambdas.api.v1.collection.create_collection
-      parameters:
-        - requestBody:
-            content:
-              application/json:
-                schema:
-                  description: >-
-                    A schema that contains a field dictating the visibility of the deployments.
-                  type: object
-                  properties:
-                    visibility:
-                      description: >-
-                        Determines the visibility of the collection, that will either make the collection visible on the public
-                        sites or only viewable through obfuscated URLs.
-                      $ref: "#/components/schemas/collection"
     delete:
       tags:
         - collections

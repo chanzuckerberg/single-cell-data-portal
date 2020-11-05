@@ -4,9 +4,9 @@ import sys
 import os
 import unittest
 from datetime import datetime
-from multiprocessing import Process
 
 from furl import furl
+from multiprocessing import Process
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
@@ -280,3 +280,50 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
 
+    def test__post_collection_returns_uuid_on_success(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = json.dumps({
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "data_submission_policy_version": "0.0.1",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
+        })
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", 'Content-Type': "application/json"},
+            data=data)
+        self.assertEqual(201, response.status_code)
+
+    def test__post_collection_fails_if_user_not_authorized(self):
+        self.mock_oauth_process.terminate()
+        test_url = furl(path="/dp/v1/collections/")
+        data = json.dumps({
+            "name": "collection name2",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "data_submission_policy_version": "0.0.1",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
+        })
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", 'Content-Type': "application/json"},
+            data=data)
+        self.assertEqual(401, response.status_code)
+
+    def test__post_collection_fails_if_data_missing(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = json.dumps({
+            "name": "bkjbjbjmbjm"
+        })
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", 'Content-Type': "application/json"},
+            data=data)
+        self.assertEqual(400, response.status_code)
