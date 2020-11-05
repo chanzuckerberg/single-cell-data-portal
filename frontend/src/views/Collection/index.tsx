@@ -40,10 +40,7 @@ const RenderEmptyDatasets = () => {
         <UL>
           <li>
             You must validate your dataset locally. We provide a local CLI
-            script to do this.{" "}
-            <Button minimal intent={Intent.PRIMARY}>
-              Learn More
-            </Button>
+            script to do this. <StyledLink>Learn More</StyledLink>
           </li>
           <li>
             We only support adding datasets in the h5ad format at this time.
