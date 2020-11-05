@@ -7,21 +7,24 @@ import {
   Position,
 } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { OPTIONS, TYPES } from "../LinkInput";
+import {
+  COLLECTION_LINK_TYPE,
+  COLLECTION_LINK_TYPE_OPTIONS,
+} from "src/common/entities";
 
 interface Props {
-  handleClick: (type: TYPES) => void;
+  handleClick: (type: COLLECTION_LINK_TYPE) => void;
 }
 
 const OPTION_ORDER = [
-  TYPES.DOI,
-  TYPES.RAW_DATA,
-  TYPES.PROTOCOL,
-  TYPES.LAB_WEBSITE,
-  TYPES.OTHER,
+  COLLECTION_LINK_TYPE.DOI,
+  COLLECTION_LINK_TYPE.RAW_DATA,
+  COLLECTION_LINK_TYPE.PROTOCOL,
+  COLLECTION_LINK_TYPE.LAB_WEBSITE,
+  COLLECTION_LINK_TYPE.OTHER,
 ];
 
-const options = OPTION_ORDER.map((type) => OPTIONS[type]);
+const options = OPTION_ORDER.map((type) => COLLECTION_LINK_TYPE_OPTIONS[type]);
 
 const LinkTypes: FC<Props> = ({ handleClick }) => {
   return (
