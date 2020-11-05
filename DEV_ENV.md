@@ -12,7 +12,7 @@
 ### Containers managed by the dev environment
 The data portal dev environment is a set of containers defined in [docker-compose.yml](docker-compose.yml). The [backend docker image](backend/Dockerfile) and [frontend docker image](frontend/Dockerfile) are built locally. Update any of these files as necessary and run `make local-sync` to sync your dev environment with these configs.
 
-![Dev Environment Containers](docs/dev_env.jpg)
+![Dev Environment Containers](docs/docker_dev.jpg)
 
 ### Updating frontend/backend dependencies
 Both the data portal frontend and backend services will automatically reload when their source code is modified, but they won't automatically rebuild when their dependencies (such as npm or pip package lists) change.
