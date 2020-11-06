@@ -181,7 +181,7 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
 
 def apikey_dummy_info_func(tokenstr: str, required_scopes: list) -> dict:
     """Function used by connexion in the securitySchemes.
-    This acts a a NOP when the user is not logged in.
+    This acts as a NOOP when the user is not logged in.
 
     The return dictionary must contains a "sub" key.
 
