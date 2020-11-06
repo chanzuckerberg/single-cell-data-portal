@@ -1,5 +1,6 @@
 import unittest
 import uuid
+import os
 
 try:
     from unittest.mock import PropertyMock, patch
@@ -25,7 +26,7 @@ class TestSecretConfig(unittest.TestCase):
     def setUpClass(cls):
         # AwsSecret.debug_logging = True
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
-        cls.secrets_mgr = boto3.client("secretsmanager")
+        cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         cls.patcher = patch("backend.corpora.common.utils.aws_secret.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr

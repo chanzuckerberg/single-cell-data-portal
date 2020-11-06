@@ -1,0 +1,18 @@
+[
+  {
+    "SubjectId":"User1",
+    "Username":"User1",
+    "Password":"pwd",
+    "IsActive":true,
+    "Claims": [
+      {
+        "Type": "name",
+        "Value": "Sam Tailor"
+      },
+      {
+        "Type": "email",
+        "Value": "sam.tailor@gmail.com"
+      }
+    ]
+  }
+]

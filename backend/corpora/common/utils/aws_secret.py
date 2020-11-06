@@ -65,7 +65,7 @@ class AwsSecret:
         if not self.exists_in_aws:
             raise RuntimeError("No such secret: {}".format(self.name))
         if not self.is_deleted:
-            self.secrets_mgr.delete_secret(SecretId=self.arn)
+            self.secrets_mgr.delete_secret(SecretId=self.name)
             sleep(self.AWS_SECRETS_MGR_SETTLE_TIME_SEC)  # eventual consistency
             self._load()
 

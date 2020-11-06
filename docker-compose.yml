@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=corpora
+      - POSTGRES_PASSWORD=test_pw
+    volumes:
+      - database:/var/lib/postgresql/data
+  localstack:
+    image: localstack/localstack@sha256:7c6635493185d25165979995fb073fd789c72b6d8b17ef3a70b798d55576732f
+    ports:
+      - "4566:4566"
+    environment:
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=s3,secretsmanager
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - HOST_TMP_FOLDER=${TMPDIR}
+      - DEFAULT_REGION=us-west-2
+    volumes:
+      - localstack:/tmp/localstack
+  frontend:
+    image: corpora-frontend
+    build: frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "8000:8000"
+    command: ["./container_init.sh"]
+    volumes:
+      - ./frontend:/corpora-frontend
+      - /corpora-frontend/node_modules/
+  backend:
+    image: corpora-backend
+    build: backend
+    restart: always
+    depends_on:
+      - localstack
+      - database
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=dev_access_key_id
+      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=dev
+      - RESTART_ON_FAILURE=yes
+      - IS_DOCKER_DEV=yes # This skips some unit tests.
+    command: ["python3", "/chalice/run_local_server.py", "--host", "0.0.0.0"]
+    volumes:
+      # Create a packaged chalice app.
+      - ./backend/chalice/api_server:/chalice
+      - ./backend/corpora:/chalice/chalicelib/corpora
+      - ./backend/config:/chalice/chalicelib/config
+      - ./backend/chalice/api_server/.chalice-dev:/chalice/.chalice
+      # Mount dirs in a layout suitable for running tests.
+      - .:/corpora-data-portal
+      # The unit tests ALSO depend on having a packaged chalice app.
+      - ./backend/chalice/api_server/.chalice-dev:/corpora-data-portal/backend/chalice/api_server/.chalice
+      - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
+      - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
+  oidc:
+    image: soluto/oidc-server-mock
+    ports:
+      - "4011:80"
+      - "8443:443"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      SERVER_OPTIONS_INLINE: |
+        {
+          "AccessTokenJwtType": "JWT",
+          "Discovery": {
+            "ShowKeySet": true
+          }
+        }
+      API_SCOPES_PATH: /tmp/config/api_scopes.json
+      API_RESOURCES_PATH: /tmp/config/api_resources.json
+      USERS_CONFIGURATION_PATH: /tmp/config/users.json
+      CLIENTS_CONFIGURATION_PATH: /tmp/config/clients-config.json
+      ASPNETCORE_URLS: https://+:443;http://+:80
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: <password for pfx file>
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /tmp/pkcs12/certificate.pfx
+    volumes:
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
+      - ./oauth:/tmp/config:ro
+volumes:
+  database:
+  localstack:
