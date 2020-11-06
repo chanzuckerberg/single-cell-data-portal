@@ -22,6 +22,7 @@ def authorize():
     return redirect(callback + f"?code=fakecode&state={state}")
 
 
+
 @mock_oauth_app.route("/oauth/token", methods=["POST"])
 def token():
     expires_at = time.time()
