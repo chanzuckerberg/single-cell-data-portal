@@ -587,7 +587,6 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
-      default: PRIVATE
     collection:
       type: object
       required:
