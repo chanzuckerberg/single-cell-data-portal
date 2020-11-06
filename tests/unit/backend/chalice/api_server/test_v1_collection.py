@@ -209,7 +209,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         }
 
         with self.subTest("auth cookie"):
-            expected_body["access_type"] = "write"
+            expected_body["access_type"] = "WRITE"
             test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
             cxguser_cookie = get_auth_token(self.app)
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
@@ -274,7 +274,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
-        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility='PUBLIC'))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
