@@ -16,17 +16,7 @@ def get_collections_list(user_uuid: str = "", from_date: int = None, to_date: in
 
 
 @db_session
-def get_collection_details(collection_uuid: str, visibility: str):
-    # TODO match obfuscated uuid shape.
-    collection = Collection.get_collection(collection_uuid, visibility)
-    if collection:
-        result = collection.reshape_for_api()
-        return make_response(jsonify(result), 200)
-    else:
-        raise ForbiddenHTTPException()
-
-@db_session
-def get_collection_details_auth(collection_uuid: str, visibility: str, user):
+def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(collection_uuid, visibility)
     if collection:
         if user == collection.owner:
