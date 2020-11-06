@@ -279,3 +279,4 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
+
