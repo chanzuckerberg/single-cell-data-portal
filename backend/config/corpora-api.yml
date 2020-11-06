@@ -824,5 +824,5 @@ components:
     dummyAuth:
       type: apiKey
       in: header
-      name: cxgdummy
+      name: cxgpublic
       x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_dummy_info_func
