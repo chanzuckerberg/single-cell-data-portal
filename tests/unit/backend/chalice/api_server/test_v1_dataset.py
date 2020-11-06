@@ -1,4 +1,6 @@
 import json
+import os
+import unittest
 
 from furl import furl
 
@@ -22,6 +24,7 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         self.assertIsNotNone(presign_url)
         self.assertEqual(expected_body, actual_body)
 
+    @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "This is currently TODO in docker")
     def test__post_dataset_asset__file_SERVER_ERROR(self):
         test_url = furl(path="/dp/v1/dataset/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))

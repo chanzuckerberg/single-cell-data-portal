@@ -40,12 +40,19 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.addCleanup(restore_path, old_path)
         from corpora.common.corpora_config import CorporaAuthConfig
 
-        # Use the CorporaAuthConfig used by the chalice app
-
+        # Configure the CorporaAuthConfig used by the chalice app
         self.auth_config = CorporaAuthConfig()
-        self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
-        self.auth_config._config["callback_base_url"] = "http://localhost:5000"
-        self.auth_config.update_defaults()
+        self.auth_config.set(
+            {
+                "api_base_url": f"http://localhost:{PORT}",
+                "callback_base_url": "http://localhost:5000",
+                "client_id": "test_client_id",
+                "audience": "test_client_id",
+                "client_secret": "test_client_secret",
+                "redirect_to_frontend": "http://foo",
+                "cookie_name": "cxguser",
+            }
+        )
 
         headers = dict(host="localhost")
 

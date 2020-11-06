@@ -74,11 +74,7 @@ progress {
 template {
   display: none;
 }
-a {
-  background-color: transparent;
-  -webkit-text-decoration-skip: objects;
-  color: #1c7cc7; /* Had to manually call the hexcode here; since calling primary wasn't being recognized */
-}
+
 a:active,
 a:hover {
   outline-width: 0;

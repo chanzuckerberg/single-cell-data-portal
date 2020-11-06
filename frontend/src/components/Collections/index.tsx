@@ -1,7 +1,9 @@
 import React, { FC } from "react";
 import { useCollections } from "src/common/queries/collections";
+import CreateCollection from "../CreateCollectionModal";
 import Collection from "./components/Collection";
 import Heading from "./components/Heading";
+import { TitleWrapper } from "./style";
 
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
@@ -12,7 +14,10 @@ const Collections: FC = () => {
 
   return (
     <>
-      <h1>Datasets</h1>
+      <TitleWrapper>
+        <h1>Datasets</h1>
+        <CreateCollection />
+      </TitleWrapper>
       <p>
         The cellxgene data portal is a repository of public, explorable
         single-cell datasets. If you have a public dataset that you would like

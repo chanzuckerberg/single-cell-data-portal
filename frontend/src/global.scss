@@ -1,0 +1,68 @@
+$blue1: #004c9f !default;
+$blue2: #005fc6 !default;
+$blue3: #0e7dec !default;
+$blue4: #459fff !default;
+$blue5: #73b7ff !default;
+
+$pt-grid-size: 8px;
+
+$pt-font-size: $pt-grid-size * 1.75 !default;
+$pt-font-size-large: $pt-grid-size * 2 !default;
+$pt-font-size-small: $pt-grid-size * 1.5 !default;
+
+@import "@blueprintjs/core/src/blueprint.scss";
+
+.bp3-button {
+  box-shadow: inset 0px -1px 1px rgba(16, 22, 26, 0.1) !important;
+  padding: 6px 12px;
+  height: 30px;
+}
+
+.bp3-button.bp3-minimal {
+  box-shadow: none !important;
+}
+
+.bp3-input {
+  border: 1px solid $light-gray1 !important;
+  box-shadow: none;
+  height: 34px;
+}
+
+.bp3-input:focus {
+  border: 2px solid $pt-intent-primary !important;
+  box-shadow: none;
+}
+
+.bp3-input.bp3-intent-danger,
+.bp3-intent-danger .bp3-input {
+  box-shadow: none;
+  border: 2px solid $pt-intent-danger !important;
+}
+
+.bp3-input-group.bp3-intent-danger .bp3-input {
+  box-shadow: none;
+}
+
+.bp3-input-group .bp3-input-action,
+.bp3-input-group > .bp3-input-left-container,
+.bp3-input-group > .bp3-button,
+.bp3-input-group > .bp3-icon {
+  position: absolute;
+  top: $pt-grid-size;
+}
+
+.bp3-dialog {
+  max-width: unset;
+  width: unset;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0px 0px 0px rgba(16, 22, 26, 0.1),
+    0px 4px 8px rgba(16, 22, 26, 0.2), 0px 18px 46px rgba(16, 22, 26, 0.2);
+  border-radius: 6px;
+}
+
+// Temp fix for checkbox
+// https://github.com/palantir/blueprint/issues/2821#issuecomment-414645690
+.bp3-control.bp3-checkbox input:checked ~ .bp3-control-indicator:before {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 0 0-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0 0 12 5z' fill='rgba(255,255,255,1)'/%3E%3C/svg%3E");
+}

@@ -39,3 +39,28 @@ async function fetchCollection(_: unknown, id: string): Promise<Collection> {
 export function useCollection(id: string) {
   return useQuery<Collection>([USE_COLLECTION, id], fetchCollection);
 }
+
+export async function createCollection(): Promise<string> {
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  await new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, 2 * 1000);
+  });
+
+  return "673637cf-dcb7-45e1-bb88-72a27c50c8ca";
+}
+
+export const formDataToObject = function (formData: FormData) {
+  const payload: { [key: string]: unknown } = {};
+
+  formData.forEach((value, key: string) => {
+    const translatedKey = key.replace("-", "_");
+
+    payload[translatedKey] = value;
+  });
+
+  return payload;
+};
