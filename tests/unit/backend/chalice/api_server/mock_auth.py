@@ -16,8 +16,6 @@ PORT = random.randint(10000, 12000)
 TOKEN_EXPIRES = 2
 
 
-
-
 @mock_oauth_app.route("/authorize")
 def authorize():
     callback = request.args.get("redirect_uri")
@@ -29,7 +27,9 @@ def authorize():
 def token():
     expires_at = time.time()
     headers = dict(alg="RS256", kid="fake_kid")
-    payload = dict(name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True, exp=expires_at)
+    payload = dict(
+        name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True, exp=expires_at
+    )
     jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
     r = {
         "access_token": f"access-{time.time()}",
