@@ -20,13 +20,13 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(collection_uuid, visibility)
     if collection:
         if user == collection.owner:
-            access_type = 'write'
-        elif visibility != 'PUBLIC':
+            access_type = "WRITE"
+        elif visibility != "PUBLIC":
             raise ForbiddenHTTPException()
         else:
-            access_type = 'read'
+            access_type = "READ"
         result = collection.reshape_for_api()
-        result['access_type'] = access_type
+        result["access_type"] = access_type
         return make_response(jsonify(result), 200)
     else:
         raise ForbiddenHTTPException()

@@ -81,7 +81,7 @@ def get_chalice_app(flask_app):
         query_string = list(app.current_request.query_params.items()) if app.current_request.query_params else None
 
         # set dummy auth token value for optional security endpoints
-        headers = [*app.current_request.headers.items(), ('cxgdummy', 'dummy')]
+        headers = [*app.current_request.headers.items(), ("cxgdummy", "dummy")]
 
         with flask_app.test_request_context(
             path=resource_path,

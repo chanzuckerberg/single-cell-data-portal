@@ -209,7 +209,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         }
 
         with self.subTest("auth cookie"):
-            expected_body['access_type'] = 'write'
+            expected_body["access_type"] = "write"
             test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
             cxguser_cookie = get_auth_token(self.app)
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
@@ -219,7 +219,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             self.assertDictEqual(actual_body, expected_body)
 
         with self.subTest("no auth cookie"):
-            expected_body['access_type'] = 'read'
+            expected_body["access_type"] = "READ"
             test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
             response = self.app.get(test_url.url, headers=dict(host="localhost"))
             response.raise_for_status()
@@ -232,50 +232,45 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         authenticated = [True, False]
         owns = [True, False]
         visibility = ["public", "private"]
-        obfuscated = [True, False]
+        obfuscated = [False]  # TODO: Once obfuscated uuid are support add True.
         test_cases = [params for params in itertools.product(authenticated, owns, visibility, obfuscated)]
 
         # Generate test collection
         test_collections = dict(
-            public_not_owner=self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="someone else"),
+            public_not_owner=self.generate_collection(
+                visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+            ),
             public_owned=self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"),
-            private_not_owner=self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="someone else"),
+            private_not_owner=self.generate_collection(
+                visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+            ),
             private_owned=self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"),
         )
 
         # run
         for auth, owns, visi, obfu in test_cases:
-            if obfu or (visi == "private" and owns) or (visi == "public"):
+            if obfu or (visi == "private" and owns and auth) or (visi == "public"):
                 expected_response_code = 200
             else:
                 expected_response_code = 403
 
-            test_collection_id = test_collections['_'.join([visi, 'owned' if owns else 'not_owner'])]
-            expected_access_type = "write" if owns and authenticated else "read"
+            test_collection_id = test_collections["_".join([visi, "owned" if owns else "not_owner"])]
+            expected_access_type = "WRITE" if owns and auth else "READ"
 
             with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, obfu:{obfu}, acc:{expected_access_type}"):
                 if obfu:
                     raise NotImplemented()
-                test_url = furl(path=f"/dp/v1/collections/{test_collection_id}", query_params=dict(visibility=visi.upper()))
+                test_url = furl(
+                    path=f"/dp/v1/collections/{test_collection_id}", query_params=dict(visibility=visi.upper())
+                )
                 headers = dict(host="localhost")
                 if auth:
                     headers["Cookie"] = get_auth_token(self.app)
                 response = self.app.get(test_url.url, headers=headers)
                 self.assertEqual(expected_response_code, response.status_code)
-                if expected_response_code==200:
+                if expected_response_code == 200:
                     actual_body = json.loads(response.body)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
-
-    # unauthenticated user
-    # fails to get a private collection
-    # gets a public collection
-    # only has read access to a collection
-
-    # authenticated user
-    # fails to get private collections they dont' own
-    # get's private collection they own with write access
-    # get public collection with read access
-    # get public collections they own with write access
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
