@@ -1,0 +1,6 @@
+[
+  {
+    "Name": "corpora",
+    "Scopes": ["test_scope"]
+  }
+]

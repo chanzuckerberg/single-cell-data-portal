@@ -1,0 +1,31 @@
+[{
+        "ClientId": "local-client-id",
+        "ClientSecrets": [
+          "local-client-secret"
+        ],
+        "Description": "Client for client credentials flow",
+        "AllowedGrantTypes": [
+            "authorization_code"
+        ],
+        "RedirectUris": [
+            "https://localhost:5000/dp/v1/oauth2/callback",
+            "http://localhost:5000/dp/v1/oauth2/callback"
+        ],
+        "AllowedScopes": [
+           "openid", "profile", "email", "offline_access"
+        ],
+	"AllowAccessTokensViaBrowser": true,
+	"AllowOfflineAccess": true,
+	"IdentityTokenLifetime": 3600,
+        "AccessTokenLifetime": 3600,
+        "ClientClaimsPrefix": "",
+	"RequirePkce": false,
+        "Claims": [
+            {
+                "Type": "json_claim",
+                "Value": "['value1', 'value2']",
+                "ValueType": "json"
+            }
+        ]
+    }
+]
