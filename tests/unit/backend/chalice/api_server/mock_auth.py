@@ -72,6 +72,11 @@ def launch_mock_oauth():
 
 
 def get_auth_token(app):
+    """
+    Generated an auth token for testing.
+    :param app: a chalice app.
+    :return:
+    """
     headers = dict(host="localhost")
     response = app.get("/dp/v1/login", headers=headers)
     location = response.headers["Location"]
