@@ -20,7 +20,7 @@ interface Props {
 
 const MoreInformation: FC<Props> = ({ links }) => {
   const uniqueLinks = Array.from(
-    new Map(links.map((link) => [link.url, link.name]))
+    new Map(links.map((link) => [link.link_url, link.link_name]))
   );
 
   const styledLinks = uniqueLinks.map((link, index) => {
@@ -28,13 +28,13 @@ const MoreInformation: FC<Props> = ({ links }) => {
 
     if (index === uniqueLinks.length - 1) {
       return (
-        <div key={url}>
+        <div key={`${name}${url}`}>
           <Anchor url={url}>{name}</Anchor>
         </div>
       );
     } else {
       return (
-        <div key={url}>
+        <div key={`${name}${url}`}>
           <Anchor url={url}>{name},&nbsp;</Anchor>
         </div>
       );

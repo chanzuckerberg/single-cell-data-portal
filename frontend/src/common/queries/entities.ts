@@ -1,4 +1,5 @@
 export enum ENTITIES {
   COLLECTION = "COLLECTION",
   DATASET = "DATASET",
+  USER_INFO = "USER_INFO",
 }
