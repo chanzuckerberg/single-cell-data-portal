@@ -30,11 +30,11 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        test_url = furl(path="/dp/v1/dataset/fake_id/asset/test_dataset_artifact_id")
+        test_url = furl(path="/dp/v1/dataset/test_user_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
         body = json.loads(response.body)
-        self.assertEqual("'dataset/fake_id' not found.", body["detail"])
+        self.assertEqual("'dataset/test_user_id' not found.", body["detail"])
         print(body)
 
     def test__post_dataset_asset__asset_NOT_FOUND(self):
