@@ -83,7 +83,6 @@ def get_chalice_app(flask_app):
         # set dummy auth token value for optional security endpoints
         headers = [*app.current_request.headers.items(), ("cxgpublic", "dummy")]
 
-
         with flask_app.test_request_context(
             path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
