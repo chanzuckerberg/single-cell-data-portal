@@ -263,6 +263,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
                 test_url = furl(path=f"/dp/v1/collections/{test_collection_id}")
                 if visi:
                     test_url.add(query_params=dict(visibility=visi.upper()))
+
                 headers = dict(host="localhost")
                 if auth:
                     headers["Cookie"] = get_auth_token(self.app)

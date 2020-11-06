@@ -602,11 +602,7 @@ components:
       properties:
         access_type:
           type: string
-<<<<<<< HEAD
           enum: [ READ, WRITE ]
-=======
-          enum: [ read, write ]
->>>>>>> WIP
         created_at:
           type: number
         updated_at:

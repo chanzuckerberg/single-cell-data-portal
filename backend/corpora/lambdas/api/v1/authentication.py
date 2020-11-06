@@ -178,6 +178,7 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     payload = check_token(token)
     return payload
 
+
 def apikey_dummy_info_func(tokenstr: str, required_scopes: list) -> dict:
     """Function used by connexion in the securitySchemes.
     This acts a a NOP when the user is not logged in.
