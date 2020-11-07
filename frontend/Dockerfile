@@ -14,7 +14,7 @@ WORKDIR /opt/node_app
 # -- TODO, we should try turning this back on later.
 # USER node
 COPY package.json package-lock.json* ./
-RUN npm install --verbose -no-optional && npm cache clean --force
+RUN npm install --verbose --no-optional && npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 # -- TODO, we should try turning this back on later.
