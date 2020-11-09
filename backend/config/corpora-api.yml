@@ -188,7 +188,7 @@ paths:
                 type: object
                 properties:
                   visibility:
-                    type: string
+                    $ref: "#/components/schemas/visibility"
                   s3_uri:
                     type: string
                   dataset_uuid:
@@ -418,11 +418,15 @@ paths:
       tags:
         - collections
       summary: Get a collection's full details
+      security:
+        - cxguserCookie: []
+        - dummyAuth: []
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.collection.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -596,6 +600,9 @@ components:
         - updated_at
         - data_submission_policy_version
       properties:
+        access_type:
+          type: string
+          enum: [ READ, WRITE ]
         created_at:
           type: number
         updated_at:
@@ -607,8 +614,7 @@ components:
         id:
           $ref: "#/components/schemas/collection_uuid"
         visibility:
-          type: string
-          enum: [PUBLIC, PRIVATE]
+          $ref: "#/components/schemas/visibility"
         links:
           type: array
           items:
@@ -710,7 +716,7 @@ components:
         collection_id:
           $ref: "#/components/schemas/collection_uuid"
         collection_visibility:
-          type: string
+          $ref: "#/components/schemas/visibility"
         cell_count:
           type: integer
           nullable: true
@@ -767,7 +773,12 @@ components:
       in: query
       schema:
         $ref: "#/components/schemas/user_uuid"
-
+    query_visibility:
+      name: visibility
+      in: query
+      schema:
+        $ref: "#/components/schemas/visibility"
+        default: PUBLIC
   responses:
     200:
       description: OK.
@@ -806,11 +817,13 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
   securitySchemes:
-    auth0:
-      type: openIdConnect
-      openIdConnectUrl: https://example.com/.well-known/openid-configuration
     cxguserCookie:
       type: apiKey
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
+    dummyAuth:
+      type: apiKey
+      in: header
+      name: cxgpublic
+      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_dummy_info_func

@@ -51,12 +51,12 @@ class Collection(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def get_collection(cls, collection_uuid):
+    def get_collection(cls, collection_uuid, visibility=CollectionVisibility.PUBLIC.name):
         """
         Given the collection_uuid, retrieve a live collection.
         :param collection_uuid:
         """
-        return cls.get((collection_uuid, CollectionVisibility.PUBLIC.name))
+        return cls.get((collection_uuid, visibility))
 
     @classmethod
     def list_collections_in_time_range(cls, *args, **kwargs):
