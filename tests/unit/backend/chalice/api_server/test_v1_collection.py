@@ -294,28 +294,9 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         })
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", 'Content-Type': "application/json"},
+            headers={"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)},
             data=data)
         self.assertEqual(201, response.status_code)
-
-    def test__post_collection_fails_if_user_not_authorized(self):
-        self.mock_oauth_process.terminate()
-        test_url = furl(path="/dp/v1/collections/")
-        data = json.dumps({
-            "name": "collection name2",
-            "description": "This is a test collection",
-            "contact_name": "person human",
-            "contact_email": "person@human.com",
-            "data_submission_policy_version": "0.0.1",
-            "links": [
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
-        })
-        response = self.app.post(
-            test_url.url,
-            headers={"host": "localhost", 'Content-Type': "application/json"},
-            data=data)
-        self.assertEqual(401, response.status_code)
 
     def test__post_collection_fails_if_data_missing(self):
         test_url = furl(path="/dp/v1/collections/")
@@ -324,6 +305,6 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         })
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", 'Content-Type': "application/json"},
+            headers={"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)},
             data=data)
         self.assertEqual(400, response.status_code)

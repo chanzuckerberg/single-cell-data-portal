@@ -54,8 +54,6 @@ def get_collection_details_auth(collection_uuid: str, visibility: str, user):
 
 @db_session
 def create_collection(body: object, user: str = ""):
-    import pdb
-    pdb.set_trace()
     collection = Collection.create(
         visibility=CollectionVisibility.PRIVATE,
         name=body["name"],

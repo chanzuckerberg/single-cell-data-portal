@@ -35,25 +35,3 @@ class TestApi(unittest.TestCase):
         for collection in data["collections"]:
             self.assertIsInstance(collection["id"], str)
             self.assertIsInstance(collection["created_at"], float)
-
-    def test_create_and_retrieve_collection(self):
-        data = json.dumps(dict(
-            name="test collection",
-            description="This is a test collection",
-            contact_name="person human",
-            contact_email="person@human.com",
-            data_submission_policy_version="0.0.1",
-            links=[
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
-        ))
-        res = requests.post(
-            f"{self.api}/dp/v1/collections",
-            headers={"host": "localhost", 'Content-Type': "application/json"},
-            data=data
-        )
-        import pdb
-        pdb.set_trace()
-        self.assertEqual(res.status_code, requests.codes.created)
-        import pdb
-        pdb.set_trace()

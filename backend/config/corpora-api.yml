@@ -412,7 +412,6 @@ paths:
                     type: integer
         "400":
           $ref: "#/components/responses/400"
-
     post:
       tags:
         - collections
