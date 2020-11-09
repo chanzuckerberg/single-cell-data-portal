@@ -259,7 +259,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
 
             with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, obfu:{obfu}, acc:{expected_access_type}"):
                 if obfu:
-                    raise NotImplemented()
+                    raise NotImplementedError()
                 test_url = furl(
                     path=f"/dp/v1/collections/{test_collection_id}", query_params=dict(visibility=visi.upper())
                 )
@@ -274,7 +274,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
-        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility='PUBLIC'))
+        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
