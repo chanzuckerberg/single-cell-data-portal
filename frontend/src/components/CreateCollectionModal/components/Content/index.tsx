@@ -167,7 +167,12 @@ const Content: FC<Props> = (props) => {
 
     const payload = formDataToObject(formData);
 
-    const payloadLinks = links.map(({ type, url }) => ({ type, url }));
+    const payloadLinks = links.map(({ type, url }) => ({
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      link_type: type,
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      link_url: url,
+    }));
 
     payload.links = payloadLinks;
     payload[POLICY_PAYLOAD_KEY] = policyVersion;
