@@ -80,12 +80,15 @@ def get_chalice_app(flask_app):
         # incompatible with the werkzeug.MultiDict expected by Flask.
         query_string = list(app.current_request.query_params.items()) if app.current_request.query_params else None
 
+        # set dummy auth token value for optional security endpoints
+        headers = [*app.current_request.headers.items(), ("cxgpublic", "dummy")]
+
         with flask_app.test_request_context(
             path=resource_path,
             base_url="https://{}".format(app.current_request.headers["host"]),
             query_string=query_string,
             method=app.current_request.method,
-            headers=list(app.current_request.headers.items()),
+            headers=headers,
             data=req_body,
             environ_base=app.current_request.stage_vars,
         ):

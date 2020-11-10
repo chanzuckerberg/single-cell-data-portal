@@ -1,6 +1,10 @@
+import itertools
 import json
+import sys
+import os
 import unittest
 from datetime import datetime
+from multiprocessing import Process
 
 from furl import furl
 
@@ -8,9 +12,32 @@ from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
+from tests.unit.backend.chalice.api_server.mock_auth import PORT, launch_mock_oauth, get_auth_token
 
 
 class TestCollection(BaseAPITest, unittest.TestCase):
+    def setUp(self):
+        self.mock_oauth_process = Process(target=launch_mock_oauth)
+        self.mock_oauth_process.start()
+
+        old_path = sys.path.copy()
+
+        def restore_path(p):
+            sys.path = p
+
+        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
+        self.addCleanup(restore_path, old_path)
+        from corpora.common.corpora_config import CorporaAuthConfig
+
+        # Use the CorporaAuthConfig used by the chalice app
+        self.auth_config = CorporaAuthConfig()
+        self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
+        self.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        self.auth_config.update_defaults()
+
+    def tearDown(self):
+        self.mock_oauth_process.terminate()
+
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
@@ -33,6 +60,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "contact_email",
             "contact_name",
             "data_submission_policy_version",
+            "access_type",
         ]
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
         self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
@@ -64,6 +92,12 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
+    def generate_collection(self, **params):
+        _collection = Collection.create(**BogusCollectionParams.get(**params))
+        # Cleanup collection after test
+        self.addCleanup(_collection.delete)
+        return _collection.id
+
     def test__list_collection__ok(self):
         path = "/dp/v1/collections"
         headers = dict(host="localhost")
@@ -72,12 +106,9 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         creation_time = 70
         to_date = int(datetime.fromtimestamp(80).timestamp())
 
-        test_collection = Collection.create(
-            **BogusCollectionParams.get(
-                visibility=CollectionVisibility.PUBLIC.name, created_at=datetime.fromtimestamp(creation_time)
-            ),
+        expected_id = self.generate_collection(
+            visibility=CollectionVisibility.PUBLIC.name, created_at=datetime.fromtimestamp(creation_time)
         )
-        expected_id = test_collection.id
 
         with self.subTest("No Parameters"):
             test_url = furl(path=path)
@@ -177,16 +208,73 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "data_submission_policy_version": "0",
         }
 
-        test_url = furl(path="/dp/v1/collections/test_collection_id")
-        response = self.app.get(test_url.url, headers=dict(host="localhost"))
-        response.raise_for_status()
-        self.validate_collection_uuid_response_structure(json.loads(response.body))
-        actual_body = self.remove_timestamps(json.loads(response.body))
-        self.assertDictEqual(actual_body, expected_body)
+        with self.subTest("auth cookie"):
+            expected_body["access_type"] = "WRITE"
+            test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
+            cxguser_cookie = get_auth_token(self.app)
+            response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
+            response.raise_for_status()
+            self.validate_collection_uuid_response_structure(json.loads(response.body))
+            actual_body = self.remove_timestamps(json.loads(response.body))
+            self.assertDictEqual(actual_body, expected_body)
+
+        with self.subTest("no auth cookie"):
+            expected_body["access_type"] = "READ"
+            test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
+            response = self.app.get(test_url.url, headers=dict(host="localhost"))
+            response.raise_for_status()
+            self.validate_collection_uuid_response_structure(json.loads(response.body))
+            actual_body = self.remove_timestamps(json.loads(response.body))
+            self.assertDictEqual(actual_body, expected_body)
+
+    def test__get_collection__ok(self):
+        # Generate test cases
+        authenticated = [True, False]
+        owns = [True, False]
+        visibility = ["public", "private"]
+        obfuscated = [False]  # TODO: Once obfuscated uuid are support add True.
+        test_cases = [params for params in itertools.product(authenticated, owns, visibility, obfuscated)]
+
+        # Generate test collection
+        test_collections = dict(
+            public_not_owner=self.generate_collection(
+                visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+            ),
+            public_owned=self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"),
+            private_not_owner=self.generate_collection(
+                visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+            ),
+            private_owned=self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"),
+        )
+
+        # run
+        for auth, owns, visi, obfu in test_cases:
+            if obfu or (visi == "private" and owns and auth) or (visi == "public"):
+                expected_response_code = 200
+            else:
+                expected_response_code = 403
+
+            test_collection_id = test_collections["_".join([visi, "owned" if owns else "not_owner"])]
+            expected_access_type = "WRITE" if owns and auth else "READ"
+
+            with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, obfu:{obfu}, acc:{expected_access_type}"):
+                if obfu:
+                    raise NotImplementedError()
+                test_url = furl(path=f"/dp/v1/collections/{test_collection_id}")
+                if visi:
+                    test_url.add(query_params=dict(visibility=visi.upper()))
+                headers = dict(host="localhost")
+                if auth:
+                    headers["Cookie"] = get_auth_token(self.app)
+                response = self.app.get(test_url.url, headers=headers)
+                self.assertEqual(expected_response_code, response.status_code)
+                if expected_response_code == 200:
+                    actual_body = json.loads(response.body)
+                    self.assertEqual(expected_access_type, actual_body["access_type"])
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
-        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD")
+        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
         self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
