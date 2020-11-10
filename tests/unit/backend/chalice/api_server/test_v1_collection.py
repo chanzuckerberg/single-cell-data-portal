@@ -339,3 +339,11 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.assertEqual(body['name'], data['name'])
         self.assertEqual(body['contact_name'], body['contact_name'])
         self.assertEqual(body['contact_email'], body['contact_email'])
+
+        # test that non owners cant access
+        no_cookie_headers = {"host": "localhost", 'Content-Type': "application/json"}
+        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url.add(query_params=dict(visibility='PRIVATE'))
+        response = self.app.get(test_url.url, no_cookie_headers)
+        self.assertEqual(403, response.status_code)
+
