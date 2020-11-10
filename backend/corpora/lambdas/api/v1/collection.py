@@ -1,5 +1,3 @@
-import os
-import json
 from flask import make_response, jsonify
 
 from ....common.corpora_orm import CollectionVisibility

@@ -15,12 +15,12 @@ PORT = random.randint(10000, 12000)
 # seconds until the token expires
 TOKEN_EXPIRES = 2
 
+
 @mock_oauth_app.route("/authorize")
 def authorize():
     callback = request.args.get("redirect_uri")
     state = request.args.get("state")
     return redirect(callback + f"?code=fakecode&state={state}")
-
 
 
 @mock_oauth_app.route("/oauth/token", methods=["POST"])
