@@ -183,7 +183,7 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(false);
 
-    navigate(ROUTES.COLLECTION.replace(":id", collectionId));
+    navigate(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
