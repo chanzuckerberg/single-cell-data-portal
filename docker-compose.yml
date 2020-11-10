@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   database:
-    image: postgres
+    image: postgres:13.0
     ports:
       - "5432:5432"
     environment:
@@ -70,7 +70,7 @@ services:
       - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
       - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
   oidc:
-    image: soluto/oidc-server-mock
+    image: soluto/oidc-server-mock:0.3.0
     ports:
       - "4011:80"
       - "8443:443"
