@@ -34,13 +34,15 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 
 
 @db_session
-def create_collection(body: object, user: str = ""):
+def create_collection(body: object, user: str):
     collection = Collection.create(
         visibility=CollectionVisibility.PRIVATE,
         name=body["name"],
         description=body["description"],
         owner=user,
         links=body["links"],
+        contact_name= body['contact_name'],
+        contact_email= body['contact_email'],
         data_submission_policy_version=body["data_submission_policy_version"],
     )
 

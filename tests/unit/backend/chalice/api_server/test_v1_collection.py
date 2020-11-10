@@ -67,7 +67,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.assertGreaterEqual(datetime.fromtimestamp(body["updated_at"]).year, 1969)
 
         for link in body["links"]:
-            self.assertListEqual(sorted(link.keys()), ["name", "type", "url"])
+            self.assertListEqual(sorted(link.keys()), ["link_name", "link_type", "link_url"])
 
         for dataset in body["datasets"]:
             required_keys = [
@@ -197,8 +197,8 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "description": "test_description",
             "id": "test_collection_id",
             "links": [
-                {"type": "RAW_DATA", "name": "test_link_name", "url": "test_url"},
-                {"type": "OTHER", "name": "test_summary_link_name", "url": "test_summary_url"},
+                {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},
+                {"link_type": "OTHER", "link_name": "test_summary_link_name", "link_url": "test_summary_url"},
             ],
             "name": "test_collection",
             "visibility": "PUBLIC",
@@ -308,3 +308,34 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             headers={"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)},
             data=data)
         self.assertEqual(400, response.status_code)
+
+    def test__can_retrieve_created_collection(self):
+        test_url = furl(path="/dp/v1/collections/")
+        headers = {"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)}
+        data = {
+            "name": "another collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "data_submission_policy_version": "0.0.1",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
+        }
+        response = self.app.post(
+            test_url.url,
+            headers=headers,
+            data=json.dumps(data))
+        self.assertEqual(201, response.status_code)
+        collection_uuid = json.loads(response.body)['collection_uuid']
+
+        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url.add(query_params=dict(visibility='PRIVATE'))
+        response = self.app.get(test_url.url, headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.body)
+
+        self.assertEqual(body['description'], data['description'])
+        self.assertEqual(body['name'], data['name'])
+        self.assertEqual(body['contact_name'], body['contact_name'])
+        self.assertEqual(body['contact_email'], body['contact_email'])

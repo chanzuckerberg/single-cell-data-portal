@@ -448,16 +448,7 @@ paths:
                   type: string
                   description: Which data submission policy was the collection submitted under
                 links:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      url:
-                        type: string
-                      type:
-                        type: string
+                  $ref: "#/components/schemas/links"
       responses:
         "201":
           description: A new collection has been created.
@@ -647,6 +638,21 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
+    links:
+      type: array
+      items:
+        type: object
+        required:
+          - link_url
+          - link_type
+        properties:
+          link_name:
+            type: string
+          link_url:
+            type: string
+          link_type:
+            type: string
+            enum: [ PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER ]
     collection:
       type: object
       required:
@@ -676,21 +682,7 @@ components:
         visibility:
           $ref: "#/components/schemas/visibility"
         links:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-              - url
-              - type
-            properties:
-              name:
-                type: string
-              url:
-                type: string
-              type:
-                type: string
-                enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
+          $ref: "#/components/schemas/links"
         obfuscated_uuid:
           type: string
           nullable: true
