@@ -75,9 +75,15 @@ def oauth2_callback() -> Response:
     """API call: redirect from the auth server after login successful."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
-    token = client.authorize_access_token()
-    # write the cookie
-    save_token(config.cookie_name, token)
+    try:
+        token = client.authorize_access_token()
+        # write the cookie
+        save_token(config.cookie_name, token)
+    except Exception as e:
+        current_app.logger.warning(f"Unable to authorize access token: {str(e)}: {str(token)}")
+        # remove the token
+        remove_token(config.cookie_name)
+
     return redirect(config.redirect_to_frontend)
 
 
