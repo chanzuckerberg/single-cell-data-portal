@@ -346,4 +346,3 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         test_url.add(query_params=dict(visibility='PRIVATE'))
         response = self.app.get(test_url.url, no_cookie_headers)
         self.assertEqual(403, response.status_code)
-
