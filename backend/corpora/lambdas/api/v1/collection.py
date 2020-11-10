@@ -34,23 +34,6 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     else:
         raise ForbiddenHTTPException()
 
-@db_session
-def get_collection_details_auth(collection_uuid: str, visibility: str, user):
-    collection = Collection.get_collection(collection_uuid, visibility)
-    if collection:
-        if user == collection.owner:
-            access_type = 'write'
-        elif visibility != 'PUBLIC':
-
-            raise ForbiddenHTTPException()
-        else:
-            access_type = "READ"
-        result = collection.reshape_for_api()
-        result["access_type"] = access_type
-        return make_response(jsonify(result), 200)
-    else:
-        raise ForbiddenHTTPException()
-
 
 @db_session
 def create_collection(body: object, user: str = ""):
