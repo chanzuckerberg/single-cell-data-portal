@@ -37,6 +37,8 @@ export interface Collection {
   // biosample_categories: string[];
   cell_count: number;
   // contributors: Contributor[];
+  contact_email: string;
+  contact_name: string;
   // cxg_enabled: boolean;
   description: string;
   // diseases: string[];
