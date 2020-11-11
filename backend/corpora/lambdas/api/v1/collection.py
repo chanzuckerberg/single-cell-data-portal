@@ -1,5 +1,6 @@
 from flask import make_response, jsonify
 
+from ....common.corpora_orm import CollectionVisibility
 from ....common.utils.db_utils import db_session
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
@@ -30,6 +31,22 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
         return make_response(jsonify(result), 200)
     else:
         raise ForbiddenHTTPException()
+
+
+@db_session
+def create_collection(body: object, user: str):
+    collection = Collection.create(
+        visibility=CollectionVisibility.PRIVATE,
+        name=body["name"],
+        description=body["description"],
+        owner=user,
+        links=body["links"],
+        contact_name=body["contact_name"],
+        contact_email=body["contact_email"],
+        data_submission_policy_version=body["data_submission_policy_version"],
+    )
+
+    return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
 @db_session

@@ -50,7 +50,7 @@ class TestCollection(unittest.TestCase):
         with self.assertRaises(SQLAlchemyError):
             Collection.get(invalid_visibility_key)
 
-    def test__create__ok(self):
+    def test__create_collection_creates_associated_links(self):
         """
         Create a collection with a variable number of links.
         """

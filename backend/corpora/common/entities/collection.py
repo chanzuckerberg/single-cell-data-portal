@@ -18,11 +18,14 @@ class Collection(Entity):
     @classmethod
     def create(
         cls,
-        visibility: str,
+        visibility: CollectionVisibility,
         name: str = "",
         description: str = "",
         owner: str = "",
+        contact_name: str = "",
+        contact_email: str = "",
         links: list = None,
+        data_submission_policy_version: str = "",
         **kwargs,
     ) -> "Collection":
         """
@@ -40,6 +43,9 @@ class Collection(Entity):
             name=name,
             description=description,
             owner=owner,
+            contact_name=contact_name,
+            contact_email=contact_email,
+            data_submission_policy_version=data_submission_policy_version,
             links=cls._create_sub_objects(
                 links, DbCollectionLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
             ),
@@ -134,7 +140,8 @@ class Collection(Entity):
         result.pop("user", None)
         result.pop("owner", None)
         result["links"] = [
-            dict(url=link["link_url"], name=link["link_name"], type=link["link_type"]) for link in result["links"]
+            dict(link_url=link["link_url"], link_name=link["link_name"], link_type=link["link_type"])
+            for link in result["links"]
         ]
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")

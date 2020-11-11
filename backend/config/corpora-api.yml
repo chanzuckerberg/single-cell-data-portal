@@ -412,6 +412,57 @@ paths:
                     type: integer
         "400":
           $ref: "#/components/responses/400"
+    post:
+      tags:
+        - collections
+      summary: Create a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
+      operationId: corpora.lambdas.api.v1.collection.create_collection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - contact_name
+                - contact_email
+              properties:
+                name:
+                  type: string
+                  description: name of the collecton
+                description:
+                  type: string
+                  description: description of the collection
+                contact_name:
+                  type: string
+                  description: name of the primary person of contact for the collection
+                contact_email:
+                  type: string
+                  description: email of contact person for the collection
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
+                links:
+                  $ref: "#/components/schemas/links"
+      responses:
+        "201":
+          description: A new collection has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
 
   /dp/v1/collections/{collection_uuid}:
     get:
@@ -587,6 +638,21 @@ components:
     visibility:
       type: string
       enum: [PUBLIC, PRIVATE]
+    links:
+      type: array
+      items:
+        type: object
+        required:
+          - link_url
+          - link_type
+        properties:
+          link_name:
+            type: string
+          link_url:
+            type: string
+          link_type:
+            type: string
+            enum: [ PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER ]
     collection:
       type: object
       required:
@@ -616,21 +682,7 @@ components:
         visibility:
           $ref: "#/components/schemas/visibility"
         links:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-              - url
-              - type
-            properties:
-              name:
-                type: string
-              url:
-                type: string
-              type:
-                type: string
-                enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
+          $ref: "#/components/schemas/links"
         obfuscated_uuid:
           type: string
           nullable: true
@@ -779,6 +831,7 @@ components:
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
+
   responses:
     200:
       description: OK.
