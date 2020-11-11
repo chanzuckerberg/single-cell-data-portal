@@ -83,6 +83,7 @@ def oauth2_callback() -> Response:
         current_app.logger.warning(f"Unable to authorize access token: {str(e)}: {str(token)}")
         # remove the token
         remove_token(config.cookie_name)
+        raise UnauthorizedError("response from oauth server not valid")
 
     return redirect(config.redirect_to_frontend)
 
