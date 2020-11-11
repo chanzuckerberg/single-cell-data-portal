@@ -41,8 +41,8 @@ def create_collection(body: object, user: str):
         description=body["description"],
         owner=user,
         links=body["links"],
-        contact_name=body['contact_name'],
-        contact_email=body['contact_email'],
+        contact_name=body["contact_name"],
+        contact_email=body["contact_email"],
         data_submission_policy_version=body["data_submission_policy_version"],
     )
 

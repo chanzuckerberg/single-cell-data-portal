@@ -282,36 +282,39 @@ class TestCollection(BaseAPITest, unittest.TestCase):
 
     def test__post_collection_returns_uuid_on_success(self):
         test_url = furl(path="/dp/v1/collections/")
-        data = json.dumps({
-            "name": "collection name",
-            "description": "This is a test collection",
-            "contact_name": "person human",
-            "contact_email": "person@human.com",
-            "data_submission_policy_version": "0.0.1",
-            "links": [
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
-        })
+        data = json.dumps(
+            {
+                "name": "collection name",
+                "description": "This is a test collection",
+                "contact_name": "person human",
+                "contact_email": "person@human.com",
+                "data_submission_policy_version": "0.0.1",
+                "links": [
+                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                    {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+                ],
+            }
+        )
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)},
-            data=data)
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=data,
+        )
         self.assertEqual(201, response.status_code)
 
     def test__post_collection_fails_if_data_missing(self):
         test_url = furl(path="/dp/v1/collections/")
-        data = json.dumps({
-            "name": "bkjbjbjmbjm"
-        })
+        data = json.dumps({"name": "bkjbjbjmbjm"})
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)},
-            data=data)
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=data,
+        )
         self.assertEqual(400, response.status_code)
 
     def test__can_retrieve_created_collection(self):
         test_url = furl(path="/dp/v1/collections/")
-        headers = {"host": "localhost", 'Content-Type': "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         data = {
             "name": "another collection name",
             "description": "This is a test collection",
@@ -320,29 +323,27 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             "data_submission_policy_version": "0.0.1",
             "links": [
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"}]
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
         }
-        response = self.app.post(
-            test_url.url,
-            headers=headers,
-            data=json.dumps(data))
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
-        collection_uuid = json.loads(response.body)['collection_uuid']
+        collection_uuid = json.loads(response.body)["collection_uuid"]
 
         test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
-        test_url.add(query_params=dict(visibility='PRIVATE'))
+        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.body)
 
-        self.assertEqual(body['description'], data['description'])
-        self.assertEqual(body['name'], data['name'])
-        self.assertEqual(body['contact_name'], body['contact_name'])
-        self.assertEqual(body['contact_email'], body['contact_email'])
+        self.assertEqual(body["description"], data["description"])
+        self.assertEqual(body["name"], data["name"])
+        self.assertEqual(body["contact_name"], body["contact_name"])
+        self.assertEqual(body["contact_email"], body["contact_email"])
 
         # test that non owners cant access
-        no_cookie_headers = {"host": "localhost", 'Content-Type': "application/json"}
+        no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
-        test_url.add(query_params=dict(visibility='PRIVATE'))
+        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, no_cookie_headers)
         self.assertEqual(403, response.status_code)

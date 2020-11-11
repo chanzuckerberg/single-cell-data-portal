@@ -17,16 +17,16 @@ class Collection(Entity):
 
     @classmethod
     def create(
-            cls,
-            visibility: CollectionVisibility,
-            name: str = "",
-            description: str = "",
-            owner: str = "",
-            contact_name: str = "",
-            contact_email: str = "",
-            links: list = None,
-            data_submission_policy_version: str = "",
-            **kwargs,
+        cls,
+        visibility: CollectionVisibility,
+        name: str = "",
+        description: str = "",
+        owner: str = "",
+        contact_name: str = "",
+        contact_email: str = "",
+        links: list = None,
+        data_submission_policy_version: str = "",
+        **kwargs,
     ) -> "Collection":
         """
         Create a new Collection and related objects and store in the database. UUIDs are generated for all new table
@@ -72,7 +72,7 @@ class Collection(Entity):
 
     @classmethod
     def list_attributes_in_time_range(
-            cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+        cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
     ) -> typing.List[typing.Dict]:
         """
         Queries the database for Entities that have been created within the specified time range. Return only the
@@ -140,8 +140,8 @@ class Collection(Entity):
         result.pop("user", None)
         result.pop("owner", None)
         result["links"] = [
-            dict(link_url=link["link_url"], link_name=link["link_name"], link_type=link["link_type"]) for link in
-            result["links"]
+            dict(link_url=link["link_url"], link_name=link["link_name"], link_type=link["link_type"])
+            for link in result["links"]
         ]
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
