@@ -1,18 +1,34 @@
 from flask import make_response, jsonify
+from typing import Optional
 
-from ....common.corpora_orm import CollectionVisibility
+from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.utils.db_utils import db_session
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
 
 
 @db_session
-def get_collections_list(user_uuid: str = "", from_date: int = None, to_date: int = None, user=None):
-    result = dict(collections=Collection.list_collections_in_time_range(from_date=from_date, to_date=to_date))
+def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
+
+    all_collections = Collection.list_attributes_in_time_range(
+        from_date=from_date,
+        to_date=to_date,
+        list_attributes=[DbCollection.id, DbCollection.visibility, DbCollection.owner, DbCollection.created_at],
+    )
+
+    collections = []
+    for coll_dict in all_collections:
+        visibility = coll_dict["visibility"]
+        owner = coll_dict["owner"]
+        if visibility == CollectionVisibility.PUBLIC or (user and user == owner):
+            collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"]))
+
+    result = {"collections": collections}
     if from_date:
         result["from_date"] = from_date
     if to_date:
         result["to_date"] = to_date
+
     return make_response(jsonify(result), 200)
 
 
