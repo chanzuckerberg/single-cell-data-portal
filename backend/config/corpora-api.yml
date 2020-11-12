@@ -368,6 +368,9 @@ paths:
       tags:
         - collections
       summary: List published collections in Corpora
+      security:
+        - cxguserCookie: []
+        - dummyAuth: []
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
