@@ -28,4 +28,4 @@ ADD config/corpora-api.yml chalicelib/config/corpora-api.yml
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
 
-CMD ["python3", "run_local_server.py"]
+CMD ["python3", "./run_local_server.py"]
