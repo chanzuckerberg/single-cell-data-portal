@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { layout } from "../common/layout";
-import { PT_GRID_SIZE_PX } from "../common/theme";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -25,12 +24,4 @@ export const MainWrapper = styled.div`
   margin: 0 auto;
   justify-content: space-between;
   align-items: center;
-`;
-
-export const ButtonWrapper = styled.div`
-  a:not(:last-child) {
-    margin-right: ${2 * PT_GRID_SIZE_PX}px;
-  }
-
-  margin-right: ${3 * PT_GRID_SIZE_PX}px;
 `;
