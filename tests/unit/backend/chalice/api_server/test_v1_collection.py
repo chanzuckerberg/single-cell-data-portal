@@ -43,7 +43,7 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
 
         for collection in body["collections"]:
-            self.assertListEqual(sorted(collection.keys()), ["created_at", "id"])
+            self.assertListEqual(sorted(collection.keys()), ["created_at", "id", "visibility"])
             self.assertGreaterEqual(datetime.fromtimestamp(collection["created_at"]).year, 1969)
 
     def validate_collection_uuid_response_structure(self, body):
