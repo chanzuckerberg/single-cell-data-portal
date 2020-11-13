@@ -91,9 +91,6 @@ function LoggedOutButtons() {
       >
         Log In
       </AnchorButton>
-      <AnchorButton href={`${API_URL}${API.LOG_IN}`} intent={Intent.PRIMARY}>
-        Sign Up
-      </AnchorButton>
     </>
   );
 }
