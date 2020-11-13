@@ -139,10 +139,9 @@ class Collection(Entity):
         # Reshape the data to match.
         result.pop("user", None)
         result.pop("owner", None)
-        result["links"] = [
-            dict(link_url=link["link_url"], link_name=link["link_name"], link_type=link["link_type"])
-            for link in result["links"]
-        ]
+        for link in result['links']:
+            if not link['link_name']:
+                link['link_name'] = ''
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
