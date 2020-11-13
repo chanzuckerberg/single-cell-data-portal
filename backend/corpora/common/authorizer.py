@@ -20,7 +20,7 @@ def assert_authorized_token(token: str) -> dict:
     except JWTError:
         raise UnauthorizedError(msg="Unable to parse authentication token.")
     auth_config = CorporaAuthConfig()
-    auth0_domain = auth_config.api_base_url
+    auth0_domain = auth_config.internal_url
     audience = auth_config.audience
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
@@ -28,8 +28,10 @@ def assert_authorized_token(token: str) -> dict:
         algorithms = ["RS256"]
         options = {}
         # in some test situations ignore verifying the signature and issuer
-        if os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e")):
-            options = {"verify_signature": False, "verify_iss": False}
+        if os.environ.get("IS_DOCKER_DEV") or (
+            os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
+        ):
+            options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
         try:
             if not auth0_domain.endswith("/"):
                 auth0_domain += "/"
