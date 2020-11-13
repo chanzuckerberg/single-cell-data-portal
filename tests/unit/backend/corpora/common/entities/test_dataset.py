@@ -3,10 +3,13 @@ import unittest
 
 from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
+    DbDatasetProcessingStatus,
     DbDeploymentDirectory,
     DatasetArtifactType,
     DatasetArtifactFileType,
     CollectionVisibility,
+    UploadStatus,
+    ValidationStatus,
     DbDataset,
     DbCollection,
     Base,
@@ -33,6 +36,11 @@ class TestDataset(unittest.TestCase):
         # Verify Deployment Directory relationship
         self.assertIsInstance(dataset.deployment_directories[0], DbDeploymentDirectory)
         self.assertEqual(dataset.deployment_directories[0].id, "test_deployment_directory_id")
+
+        # Verify Processing Status relationship
+        self.assertIsInstance(dataset.processing_status, DbDatasetProcessingStatus)
+        self.assertEqual(dataset.processing_status.id, "test_dataset_processing_status_id")
+        self.assertEqual(dataset.processing_status.dataset_id, "test_dataset_id")
 
     def test__get__does_not_exist(self):
         non_existent_key = "non_existent_id"
@@ -81,6 +89,34 @@ class TestDataset(unittest.TestCase):
         generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]
         dataset = Dataset.list()
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
+
+    def test__create_with_processing_status(self):
+        """
+        Create a dataset with a processing status
+        """
+
+        dataset_params = BogusDatasetParams.get()
+
+        dataset = Dataset.create(
+            **dataset_params,
+            processing_status={
+                "upload_progress": 9 / 13,
+                "upload_status": UploadStatus.UPLOADING,
+                "validation_status": ValidationStatus.NA,
+            },
+        )
+        expected_dataset_id = dataset.id
+
+        # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
+        Dataset.db.session.expire_all()
+
+        actual_dataset = Dataset.get(expected_dataset_id)
+        self.assertIn("upload_progress", actual_dataset.processing_status)
+        self.assertAlmostEqual(dataset.processing_status["upload_progress"], 9 / 13)
+        self.assertIn("upload_status", actual_dataset.processing_status)
+        self.assertEqual(dataset.processing_status["upload_status"], UploadStatus.UPLOADING)
+        self.assertIn("validation_status", actual_dataset.processing_status)
+        self.assertEqual(dataset.processing_status["validation_status"], ValidationStatus.NA)
 
     def test__cascade_delete_dataset__ok(self):
         # Create the dataset

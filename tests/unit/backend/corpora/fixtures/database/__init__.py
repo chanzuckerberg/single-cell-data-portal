@@ -7,7 +7,11 @@ from backend.corpora.common.corpora_orm import (
     DbCollectionLink,
     DbDataset,
     DbDatasetArtifact,
+    DbDatasetProcessingStatus,
     DbDeploymentDirectory,
+    UploadStatus,
+    ValidationStatus,
+    ConversionStatus,
 )
 from backend.corpora.common.utils.db_utils import DbUtils
 from backend.scripts.create_db import create_db
@@ -30,6 +34,7 @@ class TestDatabase:
         self._create_test_collection_links()
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
+        self._create_test_dataset_processing_status()
 
     def _create_test_collections(self):
         collection = DbCollection(
@@ -106,4 +111,19 @@ class TestDatabase:
             s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
         )
         self.db.session.add(dataset_artifact)
+        self.db.session.commit()
+
+    def _create_test_dataset_processing_status(self):
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_id",
+            dataset_id="test_dataset_id",
+            upload_status=UploadStatus.UPLOADING,
+            upload_progress=4 / 9,
+            validation_status=ValidationStatus.NA,
+            conversion_loom_status=ConversionStatus.NA,
+            conversion_rds_status=ConversionStatus.NA,
+            conversion_cxg_status=ConversionStatus.NA,
+            conversion_anndata_status=ConversionStatus.NA,
+        )
+        self.db.session.add(dataset_processing_status)
         self.db.session.commit()

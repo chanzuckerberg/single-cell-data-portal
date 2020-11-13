@@ -9,6 +9,7 @@ from sqlalchemy import (
     create_engine,
     DateTime,
     Enum,
+    Float,
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
@@ -84,36 +85,6 @@ class CollectionVisibility(enum.Enum):
 
     PUBLIC = "Public"
     PRIVATE = "Private"
-
-
-class ProcessingState(enum.Enum):
-    """
-    Enumerates DbCollection states in the data processing pipeline from upload to deployment.
-
-    NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
-    IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
-    IN_ARTIFACT_CREATION - Following validation, create all Original + Remix matrix formats and cellxgene objects.
-    IN_DEPLOYMENT - The final stage in the pipeline: deploying artifacts to Data Portal and cellxgene applications.
-    """
-
-    NA = "N/A"
-    IN_VALIDATION = "In validation"
-    IN_ARTIFACT_CREATION = "In artifact creation"
-    IN_DEPLOYMENT = "In deployment"
-
-
-class ValidationState(enum.Enum):
-    """
-    Enumerates DbCollection validation states.
-
-    NOT_VALIDATED - Validation not performed yet.
-    VALID - Collection is valid.
-    INVALID - Collection is invalid.
-    """
-
-    NOT_VALIDATED = "Not validated"
-    VALID = "Valid"
-    INVALID = "Invalid"
 
 
 class ProjectLinkType(enum.Enum):
@@ -255,6 +226,9 @@ class DbDataset(Base):
     deployment_directories = relationship(
         "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
     )
+    processing_status = relationship(
+        "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
+    )
 
     # Composite FK
     __table_args__ = (
@@ -301,3 +275,81 @@ class DbDeploymentDirectory(Base):
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
+
+
+class UploadStatus(enum.Enum):
+    """
+    Enumerates the status of an upload
+
+    NA - No associated upload with the dataset
+    WAITING - The upload is enqueued, and waiting for the upload container
+    UPLOADING - The file is actively being uploaded
+    UPLOADED - The upload was completed successfully
+    FAILED - The upload has failed
+    CANCEL_PENDING - The upload is in the process of being canceled
+    CANCELED - The upload has been canceled
+    """
+
+    NA = "N/A"
+    WAITING = "Waiting"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    FAILED = "Failed"
+    CANCEL_PENDING = "Cancel pending"
+    CANCELED = "Canceled"
+
+
+class ValidationStatus(enum.Enum):
+    """
+    Enumerates the status of validation of an uploaded dataset file
+
+    NA - No associated validation with the dataset
+    VALIDATING - The validation script is running
+    VALID - The uploaded file successfully passed validation
+    INVALID - The uploaded file failed validation
+    """
+
+    NA = "N/A"
+    VALIDATING = "Validating"
+    VALID = "Valid"
+    INVALID = "Invalid"
+
+
+class ConversionStatus(enum.Enum):
+    """
+    Enumerates the status of conversion of a valid uploaded file into another file format
+
+    NA - No associated conversion with the dataset, perhaps because the uploaded dataset file
+         was already in this format.
+    CONVERTING = The conversion script is running
+    CONVERTED - Conversion completed and the file was copied to the portal's bucket
+    FAILED - Conversion failed
+    """
+
+    NA = "N/A"
+    CONVERTING = "Converting"
+    CONVERTED = "Converted"
+    FAILED = "Failed"
+
+
+class DbDatasetProcessingStatus(Base):
+    """
+    Represents progress and status of user-initiated upload, validation, and conversion.
+    """
+
+    __tablename__ = "dataset_processing_status"
+
+    id = Column(String, primary_key=True)
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    upload_status = Column(Enum(UploadStatus))
+    upload_progress = Column(Float)
+    upload_message = Column(String)
+    validation_status = Column(Enum(ValidationStatus))
+    validation_message = Column(String)
+    conversion_loom_status = Column(Enum(ConversionStatus))
+    conversion_rds_status = Column(Enum(ConversionStatus))
+    conversion_cxg_status = Column(Enum(ConversionStatus))
+    conversion_anndata_status = Column(Enum(ConversionStatus))
+
+    # Relationships
+    dataset = relationship("DbDataset", back_populates="processing_status")

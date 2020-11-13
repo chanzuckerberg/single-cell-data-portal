@@ -3,7 +3,7 @@ import uuid
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory
+from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus
 
 
 class Dataset(Entity):
@@ -26,6 +26,7 @@ class Dataset(Entity):
         development_stage: list = None,
         artifacts: list = None,
         deployment_directories: list = None,
+        processing_status: dict = None,
         **kwargs,
     ) -> "Dataset":
         """
@@ -37,6 +38,7 @@ class Dataset(Entity):
         # Setting Defaults
         artifacts = artifacts if artifacts else []
         deployment_directories = deployment_directories if deployment_directories else []
+        processing_status = processing_status or {}
 
         new_db_object = DbDataset(
             id=primary_key,
@@ -54,6 +56,9 @@ class Dataset(Entity):
                 deployment_directories,
                 DbDeploymentDirectory,
                 add_columns=dict(dataset_id=primary_key),
+            ),
+            processing_status=cls._create_sub_objects(
+                [processing_status], DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
             ),
             **kwargs,
         )
