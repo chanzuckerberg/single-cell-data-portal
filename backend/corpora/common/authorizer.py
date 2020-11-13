@@ -28,7 +28,9 @@ def assert_authorized_token(token: str) -> dict:
         algorithms = ["RS256"]
         options = {}
         # in some test situations ignore verifying the signature and issuer
-        if os.environ.get("IS_DOCKER_DEV") or (os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))):
+        if os.environ.get("IS_DOCKER_DEV") or (
+            os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
+        ):
             options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
         try:
             if not auth0_domain.endswith("/"):
