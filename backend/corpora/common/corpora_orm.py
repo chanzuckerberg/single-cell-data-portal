@@ -9,6 +9,7 @@ from sqlalchemy import (
     create_engine,
     DateTime,
     Enum,
+    Float,
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
@@ -73,63 +74,37 @@ class DBSessionMaker:
         return self.session_maker(**kwargs)
 
 
-class ProjectStatus(enum.Enum):
+class CollectionVisibility(enum.Enum):
     """
-    Describes a DbProject's status.
-    At most, one LIVE and one EDIT entry of a Project may exist at a time.
+    Describes a DbCollection's visibility.
+    At most, one LIVE and one EDIT entry of a Collection may exist at a time.
 
-    LIVE - a published and publicly viewable Project.
-    EDIT - an open Submission, i.e an unpublished and non-public Project.
-    """
-
-    LIVE = "Live"
-    EDIT = "Edit"
-
-
-class ProcessingState(enum.Enum):
-    """
-    Enumerates DbProject states in the data processing pipeline from upload to deployment.
-
-    NA - Not in the data processing pipeline which can represent pre or post completion of the pipeline.
-    IN_VALIDATION - Following submission, validate datasets for required metadata and absence of PII.
-    IN_ARTIFACT_CREATION - Following validation, create all Original + Remix matrix formats and cellxgene objects.
-    IN_DEPLOYMENT - The final stage in the pipeline: deploying artifacts to Data Portal and cellxgene applications.
+    PUBLIC - a published and publicly viewable Collection.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Collection.
     """
 
-    NA = "N/A"
-    IN_VALIDATION = "In validation"
-    IN_ARTIFACT_CREATION = "In artifact creation"
-    IN_DEPLOYMENT = "In deployment"
-
-
-class ValidationState(enum.Enum):
-    """
-    Enumerates DbProject validation states.
-
-    NOT_VALIDATED - Validation not performed yet.
-    VALID - Project is valid.
-    INVALID - Project is invalid.
-    """
-
-    NOT_VALIDATED = "Not validated"
-    VALID = "Valid"
-    INVALID = "Invalid"
+    PUBLIC = "Public"
+    PRIVATE = "Private"
 
 
 class ProjectLinkType(enum.Enum):
     """
-    Enumerates DbProject external web link types.
+    Enumerates DbCollection external web link types.
 
     PROTOCOL - A link to a sequencing protocol.
     RAW_DATA - A link to a raw data repository.
-    SUMMARY - The "summary" link cellxgene should display.
     OTHER - Other.
     """
 
-    PROTOCOL = "Protocol"
-    RAW_DATA = "Raw data"
-    SUMMARY = "Summary"
-    OTHER = "Other"
+    DOI = "doi"
+    RAW_DATA = "raw_data"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
+
+
+# provide a consistent name
+CollectionLinkType = ProjectLinkType
 
 
 class DatasetArtifactFileType(enum.Enum):
@@ -160,72 +135,63 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbUser(Base):
+class DbCollection(Base):
     """
-    A registered Corpora user.
-    Maintains user details such as contact information and access control settings.
-    """
-
-    __tablename__ = "user"
-
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    email = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
-
-    # Relationships
-    projects = relationship("DbProject", back_populates="user")
-
-
-class DbProject(Base):
-    """
-    A Corpora project represents an in progress or live submission of a lab experiment.
-    DbProjects are associated with one or more single-cell datasets and links to external repositories.
+    A Corpora collection represents an in progress or live submission of a lab experiment.
+    DbCollections are associated with one or more single-cell datasets and links to external repositories.
     """
 
+    # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
     id = Column(String, primary_key=True)
-    status = Column(String, primary_key=True)  # Enum(ProjectStatus). Enum type unsupported for composite FKs.
-    owner = Column(ForeignKey("user.id"), nullable=False)
+    visibility = Column(
+        Enum(CollectionVisibility), primary_key=True, nullable=False
+    )  # Enum(CollectionVisibility). Enum type unsupported for composite FKs.
+    owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
-    s3_bucket = Column(String)
-    tc_uri = Column(String)
-    needs_attestation = Column(Boolean)
-    processing_state = Column(Enum(ProcessingState))
-    validation_state = Column(Enum(ValidationState))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
+    obfuscated_uuid = Column(String, default="")
+    contact_name = Column(String, default="")
+    contact_email = Column(String, default="")
+    data_submission_policy_version = Column(String, nullable=False)
 
     # Relationships
-    user = relationship("DbUser", uselist=False, back_populates="projects")
-    links = relationship("DbProjectLink", back_populates="project", cascade="all, delete-orphan")
-    datasets = relationship("DbDataset", back_populates="project", cascade="all, delete-orphan")
+    links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
+    datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
 
 
 class DbProjectLink(Base):
     """
-    Represents an external web link for DbProjects such as protocols and supplementary data repositories.
+    Represents an external web link for DbCollections such as protocols and supplementary data repositories.
     """
 
+    # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
     id = Column(String, primary_key=True)
-    project_id = Column(String, nullable=False)
-    project_status = Column(String, nullable=False)
+    collection_id = Column(String, nullable=False)
+    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(String)
     link_url = Column(String)
-    link_type = Column(Enum(ProjectLinkType))
+    link_type = Column(Enum(CollectionLinkType))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", uselist=False, back_populates="links")
+    collection = relationship("DbCollection", uselist=False, back_populates="links")
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
+    __table_args__ = (
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
+        {},
+    )
+
+
+# provide a consistent name
+DbCollectionLink = DbProjectLink
 
 
 class DbDataset(Base):
@@ -247,33 +213,33 @@ class DbDataset(Base):
     sex = Column(JSONB)
     ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
-    source_data_location = Column(String)
-    preprint_doi = Column(String)
-    publication_doi = Column(String)
-    project_id = Column(String, nullable=False)
-    project_status = Column(String, nullable=False)
+    cell_count = Column(Integer)
+    is_valid = Column(Boolean, default=False)
+    collection_id = Column(String, nullable=False)
+    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
-    project = relationship("DbProject", uselist=False, back_populates="datasets")
+    collection = relationship("DbCollection", uselist=False, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset", cascade="all, delete-orphan")
     deployment_directories = relationship(
         "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
     )
-    contributors = relationship(
-        "DbContributor",
-        secondary=lambda: DbDatasetContributor().__table__,
-        back_populates="datasets",
+    processing_status = relationship(
+        "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
 
     # Composite FK
-    __table_args__ = (ForeignKeyConstraint([project_id, project_status], [DbProject.id, DbProject.status]), {})
+    __table_args__ = (
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
+        {},
+    )
 
 
 class DbDatasetArtifact(Base):
     """
-    Represents a DbUser uploaded or Corpora generated file linked to a DbDataset.
+    Represents a user uploaded or Corpora generated file linked to a DbDataset.
     All matrices and cellxgene objects are examples of a DbDatasetArtifact.
     """
 
@@ -303,7 +269,6 @@ class DbDeploymentDirectory(Base):
 
     id = Column(String, primary_key=True)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    environment = Column(String)
     url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
@@ -312,37 +277,79 @@ class DbDeploymentDirectory(Base):
     dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
 
 
-class DbContributor(Base):
+class UploadStatus(enum.Enum):
     """
-    A data contributor. Typically a researcher associated with an institution.
+    Enumerates the status of an upload
+
+    NA - No associated upload with the dataset
+    WAITING - The upload is enqueued, and waiting for the upload container
+    UPLOADING - The file is actively being uploaded
+    UPLOADED - The upload was completed successfully
+    FAILED - The upload has failed
+    CANCEL_PENDING - The upload is in the process of being canceled
+    CANCELED - The upload has been canceled
     """
 
-    __tablename__ = "contributor"
+    NA = "N/A"
+    WAITING = "Waiting"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    FAILED = "Failed"
+    CANCEL_PENDING = "Cancel pending"
+    CANCELED = "Canceled"
+
+
+class ValidationStatus(enum.Enum):
+    """
+    Enumerates the status of validation of an uploaded dataset file
+
+    NA - No associated validation with the dataset
+    VALIDATING - The validation script is running
+    VALID - The uploaded file successfully passed validation
+    INVALID - The uploaded file failed validation
+    """
+
+    NA = "N/A"
+    VALIDATING = "Validating"
+    VALID = "Valid"
+    INVALID = "Invalid"
+
+
+class ConversionStatus(enum.Enum):
+    """
+    Enumerates the status of conversion of a valid uploaded file into another file format
+
+    NA - No associated conversion with the dataset, perhaps because the uploaded dataset file
+         was already in this format.
+    CONVERTING = The conversion script is running
+    CONVERTED - Conversion completed and the file was copied to the portal's bucket
+    FAILED - Conversion failed
+    """
+
+    NA = "N/A"
+    CONVERTING = "Converting"
+    CONVERTED = "Converted"
+    FAILED = "Failed"
+
+
+class DbDatasetProcessingStatus(Base):
+    """
+    Represents progress and status of user-initiated upload, validation, and conversion.
+    """
+
+    __tablename__ = "dataset_processing_status"
 
     id = Column(String, primary_key=True)
-    name = Column(String)
-    institution = Column(String)
-    email = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
+    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    upload_status = Column(Enum(UploadStatus))
+    upload_progress = Column(Float)
+    upload_message = Column(String)
+    validation_status = Column(Enum(ValidationStatus))
+    validation_message = Column(String)
+    conversion_loom_status = Column(Enum(ConversionStatus))
+    conversion_rds_status = Column(Enum(ConversionStatus))
+    conversion_cxg_status = Column(Enum(ConversionStatus))
+    conversion_anndata_status = Column(Enum(ConversionStatus))
 
     # Relationships
-    datasets = relationship(
-        "DbDataset", secondary=lambda: DbDatasetContributor().__table__, back_populates="contributors"
-    )
-
-
-class DbDatasetContributor(Base):
-    """
-    Associates a DbDataset with a DbContributor.
-    DbDatasets may have many DbContributors.
-    DbContributors may have many DbDatasets.
-    """
-
-    __tablename__ = "dataset_contributor"
-
-    id = Column(String, primary_key=True)
-    contributor_id = Column(ForeignKey("contributor.id"), nullable=False)
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
+    dataset = relationship("DbDataset", back_populates="processing_status")

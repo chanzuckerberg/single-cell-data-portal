@@ -30,6 +30,7 @@ const AppContainer: FC = () => {
       <AsyncHomepage path={ROUTES.HOMEPAGE} />
       <AsyncMyCollections path={ROUTES.MY_COLLECTIONS} />
       <AsyncCollection path={ROUTES.COLLECTION} />
+      <AsyncCollection path={ROUTES.PRIVATE_COLLECTION} />
     </Router>
   );
 };

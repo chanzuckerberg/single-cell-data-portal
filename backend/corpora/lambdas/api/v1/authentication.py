@@ -30,16 +30,22 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         # tests may have different configs
         return oauth_client
 
+    code_challenge_method = None
+    try:
+        code_challenge_method = config.code_challenge_method
+    except RuntimeError:
+        pass
+
     oauth = OAuth(current_app)
-    api_base_url = config.api_base_url
     oauth_client = oauth.register(
         "oauth",
+        code_challenge_method=code_challenge_method,
         client_id=config.client_id,
         client_secret=config.client_secret,
-        api_base_url=api_base_url,
-        refresh_token_url=f"{api_base_url}/oauth/token",
-        access_token_url=f"{api_base_url}/oauth/token",
-        authorize_url=f"{api_base_url}/authorize",
+        api_base_url=config.api_base_url,
+        refresh_token_url=config.api_token_url,
+        access_token_url=config.api_token_url,
+        authorize_url=config.api_authorize_url,
         client_kwargs={"scope": "openid profile email offline_access"},
     )
     return oauth_client
@@ -69,9 +75,16 @@ def oauth2_callback() -> Response:
     """API call: redirect from the auth server after login successful."""
     config = CorporaAuthConfig()
     client = get_oauth_client(config)
-    token = client.authorize_access_token()
-    # write the cookie
-    save_token(config.cookie_name, token)
+    try:
+        token = client.authorize_access_token()
+        # write the cookie
+        save_token(config.cookie_name, token)
+    except Exception as e:
+        current_app.logger.warning(f"Unable to authorize access token: {str(e)}: {str(token)}")
+        # remove the token
+        remove_token(config.cookie_name)
+        raise UnauthorizedError("response from oauth server not valid")
+
     return redirect(config.redirect_to_frontend)
 
 
@@ -173,6 +186,19 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     return payload
 
 
+def apikey_dummy_info_func(tokenstr: str, required_scopes: list) -> dict:
+    """Function used by connexion in the securitySchemes.
+    This acts as a NOOP when the user is not logged in.
+
+    The return dictionary must contains a "sub" key.
+
+    :params tokenstr:  A string representation of the token
+    :params required_scopes: List of required scopes (currently not used).
+    :return: The token dictionary.
+    """
+    return {"sub": None}
+
+
 def userinfo() -> Response:
     """API call: retrieve the user info from the id token stored in the cookie"""
     config = CorporaAuthConfig()
@@ -201,7 +227,7 @@ def refresh_expired_token(token: dict) -> Optional[dict]:
         "client_secret": auth_config.client_secret,
     }
     headers = {"content-type": "application/x-www-form-urlencoded"}
-    request = requests.post(f"{auth_config.api_base_url}/oauth/token", urlencode(params), headers=headers)
+    request = requests.post(auth_config.api_token_url, urlencode(params), headers=headers)
     if request.status_code != 200:
         # unable to refresh the token
         return None

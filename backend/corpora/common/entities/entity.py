@@ -18,7 +18,7 @@ class Entity:
     of Entity.
 
     Every application-level object must inherit Entity.
-    Examples: Project, Dataset
+    Examples: Collection, Dataset
     """
 
     table: Base = None  # The DbTable represented by this entity.
@@ -77,12 +77,13 @@ class Entity:
          :param add_columns: Additional columns attributes or modifications to add to the row.
 
          This can be used when there are shared column values that need to be added across all the new rows.
-         For example: DbProjectLink generated for a specific project should all have the same DbProjectLink.project_id
-         and DbProjectLink.project_status. The function call would be:
+         For example: DbCollectionLink generated for a specific collection should all have the same
+         DbCollectionLink.collection_id
+         and DbCollectionLink.collection_visibility. The function call would be:
          >>>> cls._create_sub_objects(
-         >>>>    [{'link_url':'abc', 'link_type': ProjectLinkType.OTHER}],
-         >>>>    DbProjectLink,
-         >>>>    add_columns={'project_id':'abcd','project_status':ProjectStatus.EDIT}
+         >>>>    [{'link_url':'abc', 'link_type': CollectionLinkType.OTHER}],
+         >>>>    DbCollectionLink,
+         >>>>    add_columns={'collection_id':'abcd','collection_visibility':CollectionVisibility.PRIVATE}
          >>>>    )
 
          Another use would be to overwrite column specified in the rows.

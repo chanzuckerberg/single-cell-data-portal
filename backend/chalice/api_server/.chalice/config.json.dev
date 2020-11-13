@@ -1,0 +1,25 @@
+{
+  "stages": {
+    "dev": {
+      "lambda_memory_size": 256,
+      "lambda_timeout": 30,
+      "security_group_ids": [ ],
+      "subnet_ids": [ ],
+      "environment_variables": {
+        "APP_NAME": "corpora-api",
+        "DEPLOYMENT_STAGE": "dev",
+        "VERSION": "2.0a"
+      },
+      "tags": {
+        "created-from": "corpora browser",
+        "env": "dev",
+        "service": "corpora-api"
+      },
+      "iam_policy_file": "policy-dev.json",
+      "api_gateway_stage": "dev"
+    }
+  },
+  "version": "2.0",
+  "app_name": "corpora-api",
+  "autogen_policy": false
+}

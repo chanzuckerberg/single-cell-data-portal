@@ -3,74 +3,12 @@ import os
 import sys
 import unittest
 import urllib.parse
-import jose.jwt
 import time
-from flask import Flask, jsonify, make_response, request, redirect
-import random
 from multiprocessing import Process
 from tests.unit.backend.chalice.api_server import BaseAPITest
 
-# Create a mocked out oauth server, which servers all the endpoints needed by the oauth type.
-mock_oauth_app = Flask("mock_oauth_app")
 
-# The port that the mock oauth server will listen on
-PORT = random.randint(10000, 12000)
-
-# seconds until the token expires
-TOKEN_EXPIRES = 2
-
-
-@mock_oauth_app.route("/authorize")
-def authorize():
-    callback = request.args.get("redirect_uri")
-    state = request.args.get("state")
-    return redirect(callback + f"?code=fakecode&state={state}")
-
-
-@mock_oauth_app.route("/oauth/token", methods=["POST"])
-def token():
-    expires_at = time.time()
-    headers = dict(alg="RS256", kid="fake_kid")
-    payload = dict(name="Fake User", sub="fake_id", email="fake_user@email.com", email_verified=True, exp=expires_at)
-    jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
-    r = {
-        "access_token": f"access-{time.time()}",
-        "id_token": jwt,
-        "refresh_token": f"random-{time.time()}",
-        "scope": "openid profile email offline",
-        "expires_in": TOKEN_EXPIRES,
-        "token_type": "Bearer",
-        "expires_at": expires_at,
-    }
-    return make_response(jsonify(r))
-
-
-@mock_oauth_app.route("/v2/logout")
-def logout():
-    return_to = request.args.get("returnTo")
-    return redirect(return_to)
-
-
-@mock_oauth_app.route("/.well-known/openid-configuration")
-def openid_configuration():
-    data = dict(jwks_uri=f"http://localhost:{PORT}/.well-known/jwks.json")
-    return make_response(jsonify(data))
-
-
-@mock_oauth_app.route("/.well-known/jwks.json")
-def jwks():
-    data = dict(
-        alg="RS256",
-        kty="RSA",
-        use="sig",
-        kid="fake_kid",
-    )
-    return make_response(jsonify(dict(keys=[data])))
-
-
-# function to launch the mock oauth server
-def launch_mock_oauth():
-    mock_oauth_app.run(port=PORT)
+from tests.unit.backend.chalice.api_server.mock_auth import PORT, TOKEN_EXPIRES, launch_mock_oauth
 
 
 @unittest.skipIf(
@@ -87,7 +25,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
 
     def check_user_info(self, userinfo):
         self.assertEqual(userinfo["is_authenticated"], True)
-        self.assertEqual(userinfo["id"], "fake_id")
+        self.assertEqual(userinfo["id"], "test_user_id")
         self.assertEqual(userinfo["name"], "Fake User")
         self.assertEqual(userinfo["email"], "fake_user@email.com")
         self.assertEqual(userinfo["email_verified"], True)
@@ -102,11 +40,19 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.addCleanup(restore_path, old_path)
         from corpora.common.corpora_config import CorporaAuthConfig
 
-        # Use the CorporaAuthConfig used by the chalice app
-
+        # Configure the CorporaAuthConfig used by the chalice app
         self.auth_config = CorporaAuthConfig()
-        self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
-        self.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        self.auth_config.set(
+            {
+                "api_base_url": f"http://localhost:{PORT}",
+                "callback_base_url": "http://localhost:5000",
+                "client_id": "test_client_id",
+                "audience": "test_client_id",
+                "client_secret": "test_client_secret",
+                "redirect_to_frontend": "http://foo",
+                "cookie_name": "cxguser",
+            }
+        )
 
         headers = dict(host="localhost")
 
@@ -122,7 +68,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
             args = dict(urllib.parse.parse_qsl(split.query))
-            self.assertTrue(location.startswith(f"{self.auth_config.api_base_url}/authorize"))
+            self.assertTrue(location.startswith(f"{self.auth_config.api_authorize_url}"))
             self.assertTrue("response_type=code" in location)
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")

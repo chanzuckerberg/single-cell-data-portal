@@ -37,3 +37,9 @@ class CorporaAuthConfig(SecretConfig):
             )
             if not self.config_is_loaded():
                 self.load()
+
+    def get_defaults_template(self):
+        return {
+            "api_authorize_url": "{api_base_url}/authorize",
+            "api_token_url": "{api_base_url}/oauth/token",
+        }

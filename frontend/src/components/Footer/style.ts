@@ -1,4 +1,4 @@
-import { BLUE, fontStyle } from "src/components/common/theme";
+import { fontStyle, OLD_BLUE } from "src/components/common/theme";
 import styled from "styled-components";
 import { layout } from "../common/layout";
 
@@ -21,7 +21,7 @@ export const MainWrapper = styled.div`
 export const StyledAnchor = styled.a`
   ${fontStyle}
   text-decoration: none;
-  color: ${BLUE};
+  color: ${OLD_BLUE};
   appearance: none;
   padding-left: 15px;
   width: 100px;

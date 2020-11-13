@@ -63,9 +63,6 @@ class CorporaConstants(object):
     ]
     REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS = [
         TypedMetadata(field_name="title", required_type=str),
-        TypedMetadata(field_name="contributors", required_type=list),
-        TypedMetadata(field_name="preprint_doi", required_type=str),
-        TypedMetadata(field_name="publication_doi", required_type=str),
     ]
 
     REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS = [
@@ -74,12 +71,12 @@ class CorporaConstants(object):
         TypedMetadata(field_name="default_field", required_type=str),
         TypedMetadata(field_name="default_embedding", required_type=str),
     ]
-    OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS = [
-        TypedMetadata(field_name="project_name", required_type=str),
-        TypedMetadata(field_name="project_description", required_type=str),
-        TypedMetadata(field_name="project_protocol_links", required_type=list),
-        TypedMetadata(field_name="project_raw_data_links", required_type=list),
-        TypedMetadata(field_name="project_other_links", required_type=list),
+    OPTIONAL_COLLECTION_LEVEL_METADATA_FIELDS = [
+        TypedMetadata(field_name="collection_name", required_type=str),
+        TypedMetadata(field_name="collection_description", required_type=str),
+        TypedMetadata(field_name="collection_protocol_links", required_type=list),
+        TypedMetadata(field_name="collection_raw_data_links", required_type=list),
+        TypedMetadata(field_name="collection_other_links", required_type=list),
     ]
 
     # Constants related to the dataset format of which a submission to Corpora must be.

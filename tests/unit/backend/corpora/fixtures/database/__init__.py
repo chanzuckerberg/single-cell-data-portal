@@ -1,21 +1,20 @@
-from backend.scripts.create_db import create_db
-from backend.corpora.common.utils.db_utils import DbUtils
 from backend.corpora.common.corpora_orm import (
-    ProjectStatus,
-    ProcessingState,
-    ValidationState,
-    ProjectLinkType,
+    CollectionVisibility,
+    CollectionLinkType,
     DatasetArtifactType,
     DatasetArtifactFileType,
-    DbProject,
-    DbProjectLink,
+    DbCollection,
+    DbCollectionLink,
     DbDataset,
     DbDatasetArtifact,
-    DbContributor,
-    DbDatasetContributor,
-    DbUser,
+    DbDatasetProcessingStatus,
     DbDeploymentDirectory,
+    UploadStatus,
+    ValidationStatus,
+    ConversionStatus,
 )
+from backend.corpora.common.utils.db_utils import DbUtils
+from backend.scripts.create_db import create_db
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
@@ -31,53 +30,45 @@ class TestDatabase:
         del self.db
 
     def _populate_test_data(self):
-        self._create_test_users()
-        self._create_test_projects()
-        self._create_test_project_links()
+        self._create_test_collections()
+        self._create_test_collection_links()
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
-        self._create_test_contributors()
+        self._create_test_dataset_processing_status()
 
-    def _create_test_users(self):
-        user = DbUser(id="test_user_id", name="test_user", email="test_email")
-        self.db.session.add(user)
-        self.db.session.commit()
-
-    def _create_test_projects(self):
-        project = DbProject(
-            id="test_project_id",
-            status=ProjectStatus.LIVE.name,
+    def _create_test_collections(self):
+        collection = DbCollection(
+            id="test_collection_id",
+            visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            name="test_project",
+            name="test_collection",
             description="test_description",
-            s3_bucket="test_s3_bucket",
-            tc_uri="test_tc_uri",
-            needs_attestation=False,
-            processing_state=ProcessingState.NA.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
+            data_submission_policy_version="0",
+            # contact_email="some@someplace.place",
+            # contact_name="John Doe",
         )
-        self.db.session.add(project)
+        self.db.session.add(collection)
         self.db.session.commit()
 
-    def _create_test_project_links(self):
-        project_link = DbProjectLink(
-            id="test_project_link_id",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+    def _create_test_collection_links(self):
+        collection_link = DbCollectionLink(
+            id="test_collection_link_id",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_link_name",
             link_url="test_url",
-            link_type=ProjectLinkType.RAW_DATA.name,
+            link_type=CollectionLinkType.RAW_DATA.name,
         )
-        self.db.session.add(project_link)
-        project_summary_link = DbProjectLink(
-            id="test_project_summary_link_id",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+        self.db.session.add(collection_link)
+        collection_summary_link = DbCollectionLink(
+            id="test_collection_summary_link_id",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
             link_name="test_summary_link_name",
             link_url="test_summary_url",
-            link_type=ProjectLinkType.SUMMARY.name,
+            link_type=CollectionLinkType.OTHER.name,
         )
-        self.db.session.add(project_summary_link)
+        self.db.session.add(collection_summary_link)
         self.db.session.commit()
 
     def _create_test_datasets(self):
@@ -97,17 +88,14 @@ class TestDatabase:
             sex=["test_sex", "test_sex2"],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
-            source_data_location="test_source_data_location",
-            preprint_doi="test_preprint_doi",
-            publication_doi="test_publication_doi",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.db.session.add(dataset)
         self.db.session.commit()
 
         deployment_directory = DbDeploymentDirectory(
-            id="test_deployment_directory_id", dataset_id=test_dataset_id, environment="test", url="test_url"
+            id="test_deployment_directory_id", dataset_id=test_dataset_id, url="test_url"
         )
         self.db.session.add(deployment_directory)
         self.db.session.commit()
@@ -125,15 +113,17 @@ class TestDatabase:
         self.db.session.add(dataset_artifact)
         self.db.session.commit()
 
-    def _create_test_contributors(self):
-        contributor = DbContributor(
-            id="test_contributor_id", name="test_contributor_name", institution="test_institution", email="test_email"
+    def _create_test_dataset_processing_status(self):
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_id",
+            dataset_id="test_dataset_id",
+            upload_status=UploadStatus.UPLOADING,
+            upload_progress=4 / 9,
+            validation_status=ValidationStatus.NA,
+            conversion_loom_status=ConversionStatus.NA,
+            conversion_rds_status=ConversionStatus.NA,
+            conversion_cxg_status=ConversionStatus.NA,
+            conversion_anndata_status=ConversionStatus.NA,
         )
-        self.db.session.add(contributor)
-        self.db.session.commit()
-
-        dataset_contributor = DbDatasetContributor(
-            id="test_dataset_contributor_id", contributor_id="test_contributor_id", dataset_id="test_dataset_id"
-        )
-        self.db.session.add(dataset_contributor)
+        self.db.session.add(dataset_processing_status)
         self.db.session.commit()

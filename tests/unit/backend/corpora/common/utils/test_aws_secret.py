@@ -1,3 +1,4 @@
+import os
 import unittest
 from time import sleep
 
@@ -16,7 +17,7 @@ class TestAwsSecret(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
-        cls.secrets_mgr = boto3.client("secretsmanager")
+        cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         cls.patcher = patch("backend.corpora.common.utils.aws_secret.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr

@@ -1,4 +1,5 @@
 from time import sleep
+import os
 
 import boto3
 from botocore.errorfactory import ClientError
@@ -23,7 +24,7 @@ class AwsSecret:
     def __init__(self, name):
         self._debug("AwsSecret.__init__({})".format(name))
         self.name = name
-        self.secrets_mgr = boto3.client(service_name="secretsmanager")
+        self.secrets_mgr = boto3.client(service_name="secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         self.secret_metadata = None
         self._load()
 
@@ -64,7 +65,7 @@ class AwsSecret:
         if not self.exists_in_aws:
             raise RuntimeError("No such secret: {}".format(self.name))
         if not self.is_deleted:
-            self.secrets_mgr.delete_secret(SecretId=self.arn)
+            self.secrets_mgr.delete_secret(SecretId=self.name)
             sleep(self.AWS_SECRETS_MGR_SETTLE_TIME_SEC)  # eventual consistency
             self._load()
 

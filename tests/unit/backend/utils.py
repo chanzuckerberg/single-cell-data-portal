@@ -1,18 +1,13 @@
 from backend.corpora.common.corpora_orm import (
-    ProcessingState,
-    ValidationState,
-    ProjectStatus,
+    CollectionVisibility,
 )
 
 
-class BogusProjectParams:
+class BogusCollectionParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
-            status=ProjectStatus.EDIT.name,
-            owner="test_user_id",
-            processing_state=ProcessingState.IN_VALIDATION.name,
-            validation_state=ValidationState.NOT_VALIDATED.name,
+            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", data_submission_policy_version=0
         )
         bogus_data.update(**kwargs)
         return bogus_data
@@ -38,11 +33,8 @@ class BogusDatasetParams:
             sex=["male", "female", "mixed"],
             ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
-            source_data_location="location",
-            preprint_doi="preprint",
-            publication_doi="publication",
-            project_id="test_project_id",
-            project_status=ProjectStatus.LIVE.name,
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
 
         bogus_data.update(**kwargs)

@@ -7,7 +7,9 @@ from sqlalchemy import engine_from_config, pool
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
+
 from corpora.common.corpora_config import CorporaDbConfig
+from corpora.common.corpora_orm import DbCollection
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config
@@ -20,20 +22,13 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = DbCollection.metadata
 
 # other values from the config, defined by the needs of env.py, can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-# Get the arguments passed in after running `alembic -x ...` to get the database's deployment stage.
-command_line_arguments = context.get_x_argument(as_dictionary=True)
-if "db" not in command_line_arguments:
-    raise Exception(
-        "We couldn't find `db` in the CLI argument when the `alembic -x` command was run. Please verify that the "
-        "command was run as `alembic -x db=<db_name>` (e.g. `alembic -x db=dev upgrade head`)."
-    )
-database_deployment_stage = command_line_arguments["db"]
+database_deployment_stage = os.environ.get("DEPLOYMENT_STAGE", "test")
 
 
 def run_migrations_offline():
