@@ -42,4 +42,5 @@ class CorporaAuthConfig(SecretConfig):
         return {
             "api_authorize_url": "{api_base_url}/authorize",
             "api_token_url": "{api_base_url}/oauth/token",
+            "internal_url": "{api_base_url}",
         }

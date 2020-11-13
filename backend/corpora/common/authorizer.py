@@ -20,7 +20,7 @@ def assert_authorized_token(token: str) -> dict:
     except JWTError:
         raise UnauthorizedError(msg="Unable to parse authentication token.")
     auth_config = CorporaAuthConfig()
-    auth0_domain = auth_config.api_base_url
+    auth0_domain = auth_config.internal_url
     audience = auth_config.audience
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
