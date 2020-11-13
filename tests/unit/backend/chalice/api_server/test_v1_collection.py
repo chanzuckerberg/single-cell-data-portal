@@ -361,3 +361,38 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, no_cookie_headers)
         self.assertEqual(403, response.status_code)
+
+    def test__list_collection__check_owner(self):
+
+        # Generate test collection
+        public_owned = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+        private_owned = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
+        public_not_owned = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="someone else")
+        private_not_owned = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="someone else")
+
+        path = "/dp/v1/collections"
+        with self.subTest("no auth"):
+            headers = {"host": "localhost", "Content-Type": "application/json"}
+            response = self.app.get(path, headers)
+            response.raise_for_status()
+            result = json.loads(response.body)
+            collections = result.get("collections")
+            self.assertIsNotNone(collections)
+            ids = [collection.get("id") for collection in collections]
+            self.assertIn(public_owned, ids)
+            self.assertIn(public_not_owned, ids)
+            self.assertNotIn(private_owned, ids)
+            self.assertNotIn(private_not_owned, ids)
+
+        with self.subTest("auth"):
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.get(path, headers)
+            response.raise_for_status()
+            result = json.loads(response.body)
+            collections = result.get("collections")
+            self.assertIsNotNone(collections)
+            ids = [collection.get("id") for collection in collections]
+            self.assertIn(public_owned, ids)
+            self.assertIn(public_not_owned, ids)
+            self.assertIn(private_owned, ids)
+            self.assertNotIn(private_not_owned, ids)
