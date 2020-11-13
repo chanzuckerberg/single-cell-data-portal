@@ -71,7 +71,6 @@ class TestCollection(unittest.TestCase):
                 actual_collection = Collection.get(collection_key)
                 self.assertEqual(collection_key, (actual_collection.id, actual_collection.visibility))
                 self.assertCountEqual(expected_links, actual_collection.links)
-                self.assertFalse(any("link_name" in link for link in actual_collection.links))
 
     def test__list_in_time_range__ok(self):
         created_before = Collection.create(**BogusCollectionParams.get(), created_at=datetime.fromtimestamp(10))
