@@ -4,11 +4,9 @@ import sys
 import unittest
 import urllib.parse
 import time
-from multiprocessing import Process
 from tests.unit.backend.chalice.api_server import BaseAPITest
 
-
-from tests.unit.backend.chalice.api_server.mock_auth import PORT, TOKEN_EXPIRES, launch_mock_oauth
+from tests.unit.backend.chalice.api_server.mock_auth import MockOauthApp
 
 
 @unittest.skipIf(
@@ -16,12 +14,17 @@ from tests.unit.backend.chalice.api_server.mock_auth import PORT, TOKEN_EXPIRES,
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
 class TestAuth(BaseAPITest, unittest.TestCase):
-    def setUp(self):
-        self.mock_oauth_process = Process(target=launch_mock_oauth)
-        self.mock_oauth_process.start()
 
-    def tearDown(self):
-        self.mock_oauth_process.terminate()
+    @classmethod
+    def setUpClass(cls):
+        BaseAPITest.setUpClass()
+        cls.mock_oauth_app = MockOauthApp(10001)
+        okay = cls.mock_oauth_app.start()
+        assert(okay)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_oauth_app.terminate()
 
     def check_user_info(self, userinfo):
         self.assertEqual(userinfo["is_authenticated"], True)
@@ -44,7 +47,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.auth_config = CorporaAuthConfig()
         self.auth_config.set(
             {
-                "api_base_url": f"http://localhost:{PORT}",
+                "api_base_url": f"http://localhost:{self.mock_oauth_app.port}",
                 "callback_base_url": "http://localhost:5000",
                 "client_id": "test_client_id",
                 "audience": "test_client_id",
@@ -90,7 +93,7 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             self.assertFalse("Set-Cookie" in response.headers)  # no cookie expected
 
             # sleep so the token expires, then try userinfo again, verify it refreshed
-            time.sleep(TOKEN_EXPIRES + 1)
+            time.sleep(self.mock_oauth_app.token_expires + 1)
 
             # check the userinfo again (token has now expired, make sure it is refreshed)
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))

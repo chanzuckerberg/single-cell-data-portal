@@ -6,37 +6,37 @@ import unittest
 from datetime import datetime
 
 from furl import furl
-from multiprocessing import Process
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
-from tests.unit.backend.chalice.api_server.mock_auth import PORT, launch_mock_oauth, get_auth_token
+from tests.unit.backend.chalice.api_server.mock_auth import MockOauthApp, get_auth_token
 
 
 class TestCollection(BaseAPITest, unittest.TestCase):
-    def setUp(self):
-        self.mock_oauth_process = Process(target=launch_mock_oauth)
-        self.mock_oauth_process.start()
 
-        old_path = sys.path.copy()
+    @classmethod
+    def setUpClass(cls):
+        BaseAPITest.setUpClass()
+        cls.mock_oauth_app = MockOauthApp(10002)
+        okay = cls.mock_oauth_app.start()
+        assert(okay)
 
-        def restore_path(p):
-            sys.path = p
-
-        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
-        self.addCleanup(restore_path, old_path)
+        cls.old_path = sys.path.copy()
+        sys.path.insert(0, os.path.join(cls.corpora_api_dir, "chalicelib"))  # noqa
         from corpora.common.corpora_config import CorporaAuthConfig
 
         # Use the CorporaAuthConfig used by the chalice app
-        self.auth_config = CorporaAuthConfig()
-        self.auth_config._config["api_base_url"] = f"http://localhost:{PORT}"
-        self.auth_config._config["callback_base_url"] = "http://localhost:5000"
-        self.auth_config.update_defaults()
+        cls.auth_config = CorporaAuthConfig()
+        cls.auth_config._config["api_base_url"] = f"http://localhost:{cls.mock_oauth_app.port}"
+        cls.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        cls.auth_config.update_defaults()
 
-    def tearDown(self):
-        self.mock_oauth_process.terminate()
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_oauth_app.terminate()
+        sys.path = cls.old_path
 
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
