@@ -8,3 +8,7 @@ export const ButtonWrapper = styled.div`
 
   margin-right: ${3 * PT_GRID_SIZE_PX}px;
 `;
+
+export const Scientist = styled.span`
+  font-size: ${2 * PT_GRID_SIZE_PX}px;
+`;

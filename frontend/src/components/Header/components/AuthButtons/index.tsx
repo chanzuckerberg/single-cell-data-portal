@@ -14,7 +14,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { API_URL } from "src/configs/configs";
-import { ButtonWrapper } from "./style";
+import { ButtonWrapper, Scientist } from "./style";
 
 const AuthButtons = () => {
   const hasAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
@@ -25,8 +25,8 @@ const AuthButtons = () => {
 
   return (
     <ButtonWrapper>
-      {userInfo?.email ? (
-        <LoggedInButtons email={userInfo.email} />
+      {userInfo?.name ? (
+        <LoggedInButtons name={userInfo.name} />
       ) : (
         <LoggedOutButtons />
       )}
@@ -39,7 +39,7 @@ const SKIN_TONES = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
 const MICROSCOPE = 0x1f52c;
 const ZERO_WIDTH_JOINER = 0x0200d;
 
-function LoggedInButtons({ email }: { email?: string }) {
+function LoggedInButtons({ name }: { name?: string }) {
   const randomInt = Math.random() * 15;
   const sexIndex = Math.floor(randomInt / 5);
   const skinToneIndex = Math.floor(randomInt % 5);
@@ -60,7 +60,7 @@ function LoggedInButtons({ email }: { email?: string }) {
           intent={Intent.PRIMARY}
           rightIcon={IconNames.CARET_DOWN}
         >
-          {<span style={{ fontSize: "18px" }}>{scientist}</span>}
+          <Scientist>{scientist}</Scientist>
         </Button>
       </Popover>
     </>
@@ -69,7 +69,7 @@ function LoggedInButtons({ email }: { email?: string }) {
   function Content() {
     return (
       <Menu>
-        <MenuItem data-testid="user-email" text={`Logged in as: ${email}`} />
+        <MenuItem data-testid="user-name" text={`Logged in as: ${name}`} />
         <MenuItem
           data-testid="log-out"
           text="Log Out"

@@ -22,7 +22,14 @@ async function fetchUserInfo(
 ): Promise<UserInfoResponse | null> {
   if (!hasAuth) return Promise.resolve(null);
 
-  return (await fetch(API_URL + API.USER_INFO)).json();
+  const response = await fetch(API_URL + API.USER_INFO);
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw result;
+  }
+
+  return result;
 }
 
 export function useUserInfo(hasAuth: boolean) {

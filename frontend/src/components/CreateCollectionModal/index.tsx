@@ -29,7 +29,7 @@ const CreateCollection: FC = () => {
     return null;
   }
 
-  const config = userInfo?.email
+  const config = userInfo?.name
     ? {
         canEscapeKeyClose: false,
         canOutsideClickClose: false,
