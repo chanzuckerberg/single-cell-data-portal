@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { Collection } from "src/common/entities";
+import { getUrlHost } from "src/common/utils/getUrlHost";
 import { SmallColumn } from "../../common/style";
 import { StyledAnchor, Wrapper } from "./style";
 interface AnchorProps {
@@ -20,22 +21,25 @@ interface Props {
 
 const MoreInformation: FC<Props> = ({ links }) => {
   const uniqueLinks = Array.from(
-    new Map(links.map((link) => [link.link_url, link.link_name]))
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    new Map(links.map(({ link_url, link_name }) => [link_url, link_name]))
   );
 
   const styledLinks = uniqueLinks.map((link, index) => {
     const [url, name] = link;
 
+    const displayName = name || getUrlHost(url);
+
     if (index === uniqueLinks.length - 1) {
       return (
-        <div key={`${name}${url}`}>
-          <Anchor url={url}>{name}</Anchor>
+        <div key={url}>
+          <Anchor url={url}>{displayName}</Anchor>
         </div>
       );
     } else {
       return (
-        <div key={`${name}${url}`}>
-          <Anchor url={url}>{name},&nbsp;</Anchor>
+        <div key={url}>
+          <Anchor url={url}>{displayName},&nbsp;</Anchor>
         </div>
       );
     }

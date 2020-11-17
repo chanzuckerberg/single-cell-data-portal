@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryCache } from "react-query";
 import { Collection } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
@@ -13,6 +13,7 @@ export const USE_COLLECTIONS = {
 export interface CollectionResponse {
   id: string;
   created_at: string;
+  visibility: VISIBILITY;
 }
 
 async function fetchCollections(): Promise<CollectionResponse[]> {
@@ -30,27 +31,77 @@ export const USE_COLLECTION = {
   id: "collection",
 };
 
-async function fetchCollection(_: unknown, id: string): Promise<Collection> {
-  return (
-    await fetch(apiTemplateToUrl(API_URL + API.COLLECTION, { id }))
-  ).json();
+export type CollectionError = {
+  detail: string;
+  status: number;
+  title: string;
+  type: string;
+};
+
+export enum VISIBILITY {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
 }
 
-export function useCollection(id: string) {
-  return useQuery<Collection>([USE_COLLECTION, id], fetchCollection);
+async function fetchCollection(
+  _: unknown,
+  id: string,
+  visibility: VISIBILITY
+): Promise<Collection> {
+  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+
+  const finalUrl =
+    visibility === VISIBILITY.PRIVATE
+      ? baseUrl + `?visibility=${VISIBILITY.PRIVATE}`
+      : baseUrl;
+
+  const response = await fetch(finalUrl);
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw result;
+  }
+
+  return result;
 }
 
-export async function createCollection(): Promise<string> {
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, 2 * 1000);
+export function useCollection(
+  id: string,
+  visibility: VISIBILITY = VISIBILITY.PUBLIC
+) {
+  return useQuery<Collection>(
+    [USE_COLLECTION, id, visibility],
+    fetchCollection
+  );
+}
+
+export async function createCollection(payload: string): Promise<string> {
+  const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
+    body: payload,
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
   });
 
-  return "673637cf-dcb7-45e1-bb88-72a27c50c8ca";
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json.collection_uuid;
+}
+
+export function useCreateCollection() {
+  const queryCache = useQueryCache();
+
+  return useMutation(createCollection, {
+    onSuccess: () => {
+      queryCache.invalidateQueries(USE_COLLECTIONS);
+    },
+  });
 }
 
 export const formDataToObject = function (formData: FormData) {
