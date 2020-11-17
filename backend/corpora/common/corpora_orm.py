@@ -350,6 +350,8 @@ class DbDatasetProcessingStatus(Base):
     conversion_rds_status = Column(Enum(ConversionStatus))
     conversion_cxg_status = Column(Enum(ConversionStatus))
     conversion_anndata_status = Column(Enum(ConversionStatus))
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")
