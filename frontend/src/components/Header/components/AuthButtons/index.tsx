@@ -14,7 +14,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { API_URL } from "src/configs/configs";
-import { ButtonWrapper, Scientist } from "./style";
+import { ButtonWrapper, Initial } from "./style";
 
 const AuthButtons = () => {
   const hasAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
@@ -26,7 +26,7 @@ const AuthButtons = () => {
   return (
     <ButtonWrapper>
       {userInfo?.name ? (
-        <LoggedInButtons name={userInfo.name} />
+        <LoggedInButtons name={userInfo.name} email={userInfo.email} />
       ) : (
         <LoggedOutButtons />
       )}
@@ -34,33 +34,20 @@ const AuthButtons = () => {
   );
 };
 
-const BASE_EMOJI = [0x1f9d1, 0x1f468, 0x1f469];
-const SKIN_TONES = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
-const MICROSCOPE = 0x1f52c;
-const ZERO_WIDTH_JOINER = 0x0200d;
-
-function LoggedInButtons({ name }: { name?: string }) {
-  const randomInt = Math.random() * 15;
-  const sexIndex = Math.floor(randomInt / 5);
-  const skinToneIndex = Math.floor(randomInt % 5);
-
-  const scientist = String.fromCodePoint(
-    BASE_EMOJI[sexIndex],
-    SKIN_TONES[skinToneIndex],
-    ZERO_WIDTH_JOINER,
-    MICROSCOPE
-  );
+function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
+  const Name = isEmail(name) ? <Initial>{name ? name[0] : ""}</Initial> : name;
 
   return (
     <>
       <Popover content={<Content />}>
         <Button
+          large
           outlined
           minimal
           intent={Intent.PRIMARY}
           rightIcon={IconNames.CARET_DOWN}
         >
-          <Scientist>{scientist}</Scientist>
+          {Name}
         </Button>
       </Popover>
     </>
@@ -69,7 +56,7 @@ function LoggedInButtons({ name }: { name?: string }) {
   function Content() {
     return (
       <Menu>
-        <MenuItem data-testid="user-name" text={`Logged in as: ${name}`} />
+        <MenuItem data-testid="user-email" text={`Logged in as: ${email}`} />
         <MenuItem
           data-testid="log-out"
           text="Log Out"
@@ -93,6 +80,12 @@ function LoggedOutButtons() {
       </AnchorButton>
     </>
   );
+}
+
+function isEmail(name?: string): boolean {
+  if (!name) return false;
+
+  return name.includes("@");
 }
 
 export default AuthButtons;
