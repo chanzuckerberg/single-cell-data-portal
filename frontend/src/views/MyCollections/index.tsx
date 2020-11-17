@@ -1,16 +1,9 @@
 import { H1, Text } from "@blueprintjs/core";
 import React, { FC } from "react";
 import { useCollections } from "src/common/queries/collections";
-import CollectionRow from "src/components/collections/components/CollectionRow";
+import CollectionsGrid from "src/components/Collections/components/CollectionsGrid";
 import { ViewGrid } from "../globalStyle";
-import {
-  CollectionHeaderCell,
-  CollectionsGrid,
-  LeftAlignedHeaderCell,
-  RightAlignedHeaderCell,
-  StyledCreateCollection,
-  TitleAndDescription,
-} from "./style";
+import { StyledCreateCollection, TitleAndDescription } from "./style";
 
 const MyCollections: FC = () => {
   const { data: collections, isFetching } = useCollections();
@@ -27,23 +20,7 @@ const MyCollections: FC = () => {
         </Text>
       </TitleAndDescription>
       <StyledCreateCollection />
-      <CollectionsGrid bordered>
-        <thead>
-          <tr>
-            <CollectionHeaderCell>Collection</CollectionHeaderCell>
-            <LeftAlignedHeaderCell>Organ</LeftAlignedHeaderCell>
-            <LeftAlignedHeaderCell>Assay</LeftAlignedHeaderCell>
-            <LeftAlignedHeaderCell>Species</LeftAlignedHeaderCell>
-            <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
-            <RightAlignedHeaderCell>Status</RightAlignedHeaderCell>
-          </tr>
-        </thead>
-        <tbody>
-          {collections?.map((collection) => (
-            <CollectionRow id={collection.id} key={collection.id} />
-          ))}
-        </tbody>
-      </CollectionsGrid>
+      <CollectionsGrid collections={collections} showStatus />
     </ViewGrid>
   );
 };
