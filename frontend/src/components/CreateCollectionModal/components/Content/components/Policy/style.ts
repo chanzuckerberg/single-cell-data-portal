@@ -19,3 +19,8 @@ export const BulletWrapper = styled.div`
 export const Text = styled.div`
   color: ${GRAY.A};
 `;
+
+export const ContentWrapper = styled.div`
+  overflow-y: scroll;
+  height: ${20 * PT_GRID_SIZE_PX}px;
+`;
