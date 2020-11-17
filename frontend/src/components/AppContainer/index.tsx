@@ -2,8 +2,6 @@ import loadable from "@loadable/component";
 import { RouteComponentProps, Router } from "@reach/router";
 import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
 import { Props } from "src/views/Collection";
 
 const AsyncHomepage = loadable<RouteComponentProps>(
@@ -20,9 +18,6 @@ const AsyncMyCollections = loadable<RouteComponentProps>(
 const AsyncCollection = loadable<Props>(
   () => /*webpackChunkName: 'AsyncCollection' */ import("src/views/Collection")
 );
-
-// (thuang): Check for Create Collection feature flag
-get(FEATURES.CREATE_COLLECTION);
 
 const AppContainer: FC = () => {
   return (

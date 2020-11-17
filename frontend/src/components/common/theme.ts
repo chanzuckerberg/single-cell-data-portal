@@ -40,4 +40,5 @@ export enum BLUE {
   C = "#0E7DEC",
   D = "#459FFF",
   E = "#73B7FF",
+  F = "#DFEFFF",
 }

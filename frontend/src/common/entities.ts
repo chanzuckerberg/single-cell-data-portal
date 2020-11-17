@@ -27,9 +27,9 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
 };
 
 export interface Link {
-  name: string;
-  url: string;
-  type: COLLECTION_LINK_TYPE;
+  link_name: string;
+  link_url: string;
+  link_type: COLLECTION_LINK_TYPE;
 }
 
 export interface Collection {

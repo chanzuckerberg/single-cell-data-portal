@@ -61,7 +61,7 @@ const RenderEmptyDatasets = () => {
 };
 
 const renderLinks = (links: Link[]) => {
-  return links.map(({ url, type }) => {
+  return links.map(({ link_url: url, link_type: type }) => {
     const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
     if (!linkTypeOption) return null;
