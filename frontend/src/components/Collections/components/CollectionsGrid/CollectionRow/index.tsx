@@ -15,6 +15,7 @@ import {
 interface Props {
   id: string;
   showStatus: boolean;
+  showAllWritable: boolean;
 }
 
 const conditionalPopover = (values: string[]) => {
@@ -60,6 +61,8 @@ const CollectionRow: FC<Props> = ({ id, showStatus }) => {
   const { data: collection } = useCollection(id);
 
   if (!collection) return null;
+
+  // if(collection.access_type === )
 
   const dois = collection.links.reduce((acc, link) => {
     if (link.type !== COLLECTION_LINK_TYPE.DOI) return acc;

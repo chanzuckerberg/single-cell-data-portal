@@ -11,9 +11,14 @@ import {
 interface Props {
   collections: CollectionResponse[];
   showStatus: boolean;
+  showAllWritable: boolean;
 }
 
-const CollectionsGrid: FC<Props> = ({ collections, showStatus }) => {
+const CollectionsGrid: FC<Props> = ({
+  collections,
+  showStatus,
+  showAllWritable,
+}) => {
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -34,6 +39,7 @@ const CollectionsGrid: FC<Props> = ({ collections, showStatus }) => {
             id={collection.id}
             key={collection.id}
             showStatus={showStatus}
+            showAllWritable={showAllWritable}
           />
         ))}
       </tbody>

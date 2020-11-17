@@ -20,7 +20,7 @@ const MyCollections: FC = () => {
         </Text>
       </TitleAndDescription>
       <StyledCreateCollection />
-      <CollectionsGrid collections={collections} showStatus />
+      <CollectionsGrid collections={collections} showStatus showAllWritable />
     </ViewGrid>
   );
 };
