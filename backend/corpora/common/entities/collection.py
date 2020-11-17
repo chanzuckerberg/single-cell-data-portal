@@ -140,7 +140,7 @@ class Collection(Entity):
         result.pop("user", None)
         result.pop("owner", None)
         result["links"] = [
-            dict(link_url=link["link_url"], link_name=link["link_name"], link_type=link["link_type"])
+            dict(link_url=link["link_url"], link_name=link["link_name"] or "", link_type=link["link_type"])
             for link in result["links"]
         ]
         for dataset in result["datasets"]:

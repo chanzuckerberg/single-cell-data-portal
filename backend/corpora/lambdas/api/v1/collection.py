@@ -21,7 +21,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
         if visibility == CollectionVisibility.PUBLIC or (user and user == owner):
-            collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"]))
+            collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
 
     result = {"collections": collections}
     if from_date:
