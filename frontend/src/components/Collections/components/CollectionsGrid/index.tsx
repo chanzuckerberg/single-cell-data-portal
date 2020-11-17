@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { ACCESS_TYPE } from "src/common/entities";
 import { CollectionResponse } from "src/common/queries/collections";
 import CollectionRow from "./CollectionRow";
 import {
@@ -11,13 +12,15 @@ import {
 interface Props {
   collections: CollectionResponse[];
   showStatus: boolean;
-  showAllWritable: boolean;
+  accessType: ACCESS_TYPE;
+  includePrivate: boolean;
 }
 
 const CollectionsGrid: FC<Props> = ({
   collections,
   showStatus,
-  showAllWritable,
+  accessType,
+  includePrivate,
 }) => {
   return (
     <StyledCollectionsGrid bordered>
@@ -38,8 +41,7 @@ const CollectionsGrid: FC<Props> = ({
           <CollectionRow
             id={collection.id}
             key={collection.id}
-            showStatus={showStatus}
-            showAllWritable={showAllWritable}
+            {...{ showStatus, accessType, includePrivate }}
           />
         ))}
       </tbody>

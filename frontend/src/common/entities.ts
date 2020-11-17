@@ -32,7 +32,18 @@ export interface Link {
   link_type: COLLECTION_LINK_TYPE;
 }
 
+export enum ACCESS_TYPE {
+  READ = "READ",
+  WRITE = "WRITE",
+}
+
+export enum VISIBILITY_TYPE {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
 export interface Collection {
+  access_type: ACCESS_TYPE;
   assays: string[];
   // biosample_categories: string[];
   cell_count: number;
@@ -57,6 +68,7 @@ export interface Collection {
   // processing_state: string;
   // s3_bucket_key: string;
   // validation_state: string;
+  visibility: VISIBILITY_TYPE;
   // attestation: {
   //   needed: boolean;
   //   tc_uri: string;

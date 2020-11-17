@@ -1,6 +1,10 @@
 import { Classes, Position } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { COLLECTION_LINK_TYPE } from "src/common/entities";
+import {
+  ACCESS_TYPE,
+  COLLECTION_LINK_TYPE,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
 import {
   CollectionTitleText,
@@ -15,7 +19,8 @@ import {
 interface Props {
   id: string;
   showStatus: boolean;
-  showAllWritable: boolean;
+  accessType: ACCESS_TYPE;
+  includePrivate: boolean;
 }
 
 const conditionalPopover = (values: string[]) => {
@@ -57,16 +62,26 @@ const conditionalPopover = (values: string[]) => {
   );
 };
 
-const CollectionRow: FC<Props> = ({ id, showStatus }) => {
+const CollectionRow: FC<Props> = ({
+  id,
+  showStatus,
+  accessType,
+  includePrivate,
+}) => {
   const { data: collection } = useCollection(id);
 
   if (!collection) return null;
 
-  // if(collection.access_type === )
+  // If we only want public datasets do not show private datasets
+  if (!includePrivate && collection.visibility === VISIBILITY_TYPE.PRIVATE)
+    return null;
+
+  // If there is an explicity accessType only show collections with that accessType
+  if (accessType && collection.access_type !== accessType) return null;
 
   const dois = collection.links.reduce((acc, link) => {
-    if (link.type !== COLLECTION_LINK_TYPE.DOI) return acc;
-    const url = new URL(link.url);
+    if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
+    const url = new URL(link.link_url);
     acc.push(url.pathname.substring(1));
     return acc;
   }, [] as string[]);
