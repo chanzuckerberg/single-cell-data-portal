@@ -19,7 +19,7 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollection: FC<{ className?: string }> = () => {
+const CreateCollection: FC<{ className?: string }> = ({ className }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(false);
