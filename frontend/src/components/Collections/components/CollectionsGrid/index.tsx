@@ -41,7 +41,7 @@ const CollectionsGrid: FC<Props> = ({
           <CollectionRow
             id={collection.id}
             key={collection.id}
-            {...{ showStatus, accessType, includePrivate }}
+            {...{ accessType, includePrivate, showStatus }}
           />
         ))}
       </tbody>
