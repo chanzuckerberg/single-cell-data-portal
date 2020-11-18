@@ -35,5 +35,7 @@ async function fetchUserInfo(
 }
 
 export function useUserInfo(hasAuth: boolean) {
-  return useQuery([USE_USER_INFO, { hasAuth }], fetchUserInfo);
+  return useQuery([USE_USER_INFO, { hasAuth }], fetchUserInfo, {
+    retry: false,
+  });
 }
