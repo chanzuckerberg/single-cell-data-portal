@@ -10,6 +10,9 @@ import chalice
 import connexion
 from chalice import Chalice, CORSConfig
 from connexion import FlaskApi, ProblemException, problem
+from flask_cors import CORS
+from urllib.parse import urlparse
+
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -61,6 +64,15 @@ def get_chalice_app(flask_app):
         auth_secret = json.loads(AwsSecret(secret_name).value)
         if auth_secret:
             flask_secret_key = auth_secret.get("flask_secret_key", flask_secret_key)
+            frontend = auth_secret.get("redirect_to_frontend", None)
+            if frontend:
+                if frontend.endswith("/"):
+                    frontend = frontend[:-1]
+                frontend_parse = urlparse(frontend)
+                allowed_origin = f"{frontend_parse.scheme}://{frontend_parse.netloc}"
+                app.log.info(f"CORS allowed_origins: {allowed_origin}")
+                CORS(flask_app, supports_credentials=True, origins=allowed_origin)
+
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     flask_app.config.update(SECRET_KEY=flask_secret_key)
 
