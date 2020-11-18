@@ -3,6 +3,7 @@ import json
 import time
 
 from .corpora_config import CorporaConfig
+
 client = boto3.client("stepfunctions")
 
 
