@@ -28,8 +28,8 @@ const Collections: FC = () => {
         .
       </p>
       <Heading />
-      {collections?.map((collection) => (
-        <Collection id={collection.id} key={collection.id} />
+      {collections?.map(({ id, visibility }) => (
+        <Collection id={id} visibility={visibility} key={id} />
       ))}
     </>
   );

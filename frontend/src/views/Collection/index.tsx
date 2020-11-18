@@ -2,7 +2,8 @@ import { Button, Classes, H3, H4, Intent, UL } from "@blueprintjs/core";
 import { RouteComponentProps } from "@reach/router";
 import React, { FC } from "react";
 import { COLLECTION_LINK_TYPE_OPTIONS, Link } from "src/common/entities";
-import { useCollection } from "src/common/queries/collections";
+import { useCollection, VISIBILITY } from "src/common/queries/collections";
+import { getUrlHost } from "src/common/utils/getUrlHost";
 import {
   CenterAlignedDiv,
   CollectionInfo,
@@ -21,18 +22,6 @@ interface RouteProps {
 }
 
 export type Props = RouteComponentProps<RouteProps>;
-
-const getDomain = (url: string): string | null => {
-  let result;
-
-  try {
-    result = new URL(url);
-  } catch {
-    return null;
-  }
-
-  return result.host;
-};
 
 const RenderEmptyDatasets = () => {
   return (
@@ -66,24 +55,30 @@ const renderLinks = (links: Link[]) => {
 
     if (!linkTypeOption) return null;
 
-    const domain = getDomain(url);
+    const urlHost = getUrlHost(url);
 
     const { text } = linkTypeOption;
 
-    if (!domain) return null;
+    if (!urlHost) return null;
 
     return (
       <React.Fragment key={`${type}+${url}`}>
         <span className={Classes.TEXT_MUTED}>{text}</span>
-        <StyledLink href={url}>{domain}</StyledLink>
+        <StyledLink href={url}>{urlHost}</StyledLink>
       </React.Fragment>
     );
   });
 };
 
 const Collection: FC<Props> = ({ id }) => {
-  const { data: collection } = useCollection(id ?? "");
-  if (!collection) return null;
+  const isPrivate = window.location.pathname.includes("/private");
+
+  const { data: collection, isError } = useCollection(
+    id ?? "",
+    isPrivate ? VISIBILITY.PRIVATE : VISIBILITY.PUBLIC
+  );
+
+  if (!collection || isError) return null;
 
   return (
     <ViewGrid>
