@@ -11,6 +11,8 @@ export LOCAL_DEPLOYED_FILE=$(LOCAL_DEPLOYED_PATH)/$(DEPLOYMENT_STAGE).json
 export VPC_ID=$(shell aws ec2 describe-vpcs | jq -rc '.Vpcs[] | select((.Tags != null) and (.Tags[].Value == "sc-${DEPLOYMENT_STAGE}")) | .VpcId')
 export PRIVATE_SUBNET_IDS=$(shell aws ec2 describe-subnets | jq -rc '[.Subnets[] | select((.Tags != null) and (.VpcId == "$(VPC_ID)") and (.Tags[].Value | contains("sc-$(DEPLOYMENT_STAGE)-private"))) | .SubnetId]')
 export SECURITY_GROUP_ID=$(shell aws ec2 describe-security-groups | jq -rc '.SecurityGroups[] | select(.GroupName == "corpora-api-lambda-$(DEPLOYMENT_STAGE)") | .GroupId')
+export UPLOAD_SFN_ARN = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/config --region us-west-2 | jq -r '.SecretString'| jq .upload_sfn_arn)
+
 ifndef DEPLOYMENT_STAGE
 $(error Please set DEPLOYMENT_STAGE in environment before running make commands)
 endif
