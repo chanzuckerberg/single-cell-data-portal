@@ -1,5 +1,5 @@
 import { Icon } from "@blueprintjs/core";
-import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { GRAY, LIGHT_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const StyledIcon = styled(Icon)`
@@ -23,4 +23,13 @@ export const Text = styled.div`
 export const ContentWrapper = styled.div`
   overflow-y: scroll;
   height: ${20 * PT_GRID_SIZE_PX}px;
+  padding: ${PT_GRID_SIZE_PX}px;
+  border: ${LIGHT_GRAY.C} solid 1px;
+  border-radius: 3px;
+`;
+
+export const AnchorButtonWrapper = styled.span`
+  .bp3-button.bp3-small {
+    padding: 0;
+  }
 `;
