@@ -5,7 +5,7 @@ import {
   COLLECTION_LINK_TYPE,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import { useCollection } from "src/common/queries/collections";
+import { useCollection, VISIBILITY } from "src/common/queries/collections";
 import {
   CollectionTitleText,
   FieldValues,
@@ -68,7 +68,10 @@ const CollectionRow: FC<Props> = ({
   accessType,
   includePrivate,
 }) => {
-  const { data: collection } = useCollection(id);
+  console.log(id);
+  if (id === "b2f48d9e-ecdc-4912-a63c-c637827ff019")
+    console.log("*************======================*********************");
+  const { data: collection } = useCollection(id, VISIBILITY.PRIVATE);
 
   if (!collection) return null;
 
@@ -89,7 +92,11 @@ const CollectionRow: FC<Props> = ({
   return (
     <StyledRow>
       <StyledCell>
-        <CollectionTitleText href={`/collections/${id}`}>
+        <CollectionTitleText
+          href={`/collections/${id}${
+            collection.visibility === VISIBILITY_TYPE.PRIVATE ? "/private" : ""
+          }`}
+        >
           {collection.name}
         </CollectionTitleText>
         <div>{collection.contact_name}</div>
