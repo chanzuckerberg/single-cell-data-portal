@@ -1,13 +1,11 @@
 import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useNavigate } from "@reach/router";
 import React, { FC, useEffect, useRef, useState } from "react";
-import { useMutation, useQueryCache } from "react-query";
 import { ROUTES } from "src/common/constants/routes";
 import { COLLECTION_LINK_TYPE } from "src/common/entities";
 import {
-  createCollection,
   formDataToObject,
-  USE_COLLECTIONS,
+  useCreateCollection,
 } from "src/common/queries/collections";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
@@ -59,13 +57,7 @@ const Content: FC<Props> = (props) => {
 
   const [links, setLinks] = useState<Link[]>([]);
 
-  const queryCache = useQueryCache();
-
-  const [mutate] = useMutation(createCollection, {
-    onSuccess: () => {
-      queryCache.invalidateQueries(USE_COLLECTIONS);
-    },
-  });
+  const [mutate] = useCreateCollection();
 
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
@@ -179,11 +171,13 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    const collectionId = (await mutate()) as string;
+    const collectionId = (await mutate(JSON.stringify(payload))) as string;
 
     setIsLoading(false);
 
-    navigate(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
+    if (collectionId) {
+      navigate(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
+    }
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
