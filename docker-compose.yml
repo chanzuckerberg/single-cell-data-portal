@@ -16,7 +16,7 @@ services:
       - "4566:4566"
     environment:
       - HOSTNAME_EXTERNAL=localstack
-      - SERVICES=s3,secretsmanager
+      - SERVICES=s3,secretsmanager,stepfunctions
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
       - PORT_WEB_UI=${PORT_WEB_UI- }

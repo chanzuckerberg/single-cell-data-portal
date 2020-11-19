@@ -30,6 +30,7 @@ ${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secre
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/config &> /dev/null || true
 
 
 echo "Updating secrets"
@@ -57,6 +58,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-se
 
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "aws::::/upload"}'
 
 # Make a 1mb data file
 echo "Writing test file to s3"
