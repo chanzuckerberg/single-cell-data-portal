@@ -22,7 +22,7 @@ from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws_secret import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
 
-cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
+cors_config = CORSConfig(allow_origin="http://localhost", max_age=600, allow_credentials=True)
 
 
 def requires_auth():
@@ -73,7 +73,7 @@ def get_chalice_app(flask_app):
                 app.log.info(f"CORS allowed_origins: {allowed_origin}")
                 CORS(flask_app, supports_credentials=True, origins=allowed_origin)
     else:
-        allowed_origin = "http://localhost"
+        allowed_origin = r'^http://localhost:\d+'
         app.log.info(f"CORS allowed_origins: {allowed_origin}")
         CORS(flask_app, supports_credentials=True, origins=allowed_origin)
 
