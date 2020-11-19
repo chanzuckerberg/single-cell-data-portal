@@ -72,6 +72,10 @@ def get_chalice_app(flask_app):
                 allowed_origin = f"{frontend_parse.scheme}://{frontend_parse.netloc}"
                 app.log.info(f"CORS allowed_origins: {allowed_origin}")
                 CORS(flask_app, supports_credentials=True, origins=allowed_origin)
+    else:
+        allowed_origin = "http://localhost"
+        app.log.info(f"CORS allowed_origins: {allowed_origin}")
+        CORS(flask_app, supports_credentials=True, origins=allowed_origin)
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     flask_app.config.update(SECRET_KEY=flask_secret_key)
