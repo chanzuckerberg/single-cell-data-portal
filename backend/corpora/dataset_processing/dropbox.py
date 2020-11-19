@@ -1,11 +1,10 @@
-import os
 import subprocess
 import urllib
 
-import requests
-
 
 def fix_dropbox_url(url):
+    """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
+
     pr = urllib.parse.urlparse(url)
 
     if pr.scheme != "https":
@@ -18,27 +17,27 @@ def fix_dropbox_url(url):
         new_query = pr.query.replace("dl=0", "dl=1")
     elif not pr.query:
         new_query = "dl=1"
+    elif "dl=1" in pr.query:
+        new_query = pr.query
     else:
-        new_query = pr.query + "?dl=1"
+        new_query = pr.query + "&dl=1"
 
     pr = pr._replace(query=new_query)
 
     return pr.geturl()
 
 
-def fetch_dropbox_url(dropbox_url):
+def fetch_dropbox_url(dropbox_url, local_path):
+    """Given a dropbox url, download it to local_path.
+
+    Handles fixing the url so it downloads directly.
+    """
 
     fixed_dropbox_url = fix_dropbox_url(dropbox_url)
 
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    subprocess.run(["wget", fixed_dropbox_url, "-O", "local.h5ad"], check=True)
+    subprocess.run(["wget", fixed_dropbox_url, "-O", local_path], check=True)
 
-    resp = requests.head(fixed_dropbox_url, allow_redirects=True)
-    content_length = resp.headers["Content-Length"]
-
-    if os.path.getsize("local.h5ad") != content_length:
-        raise RuntimeError("Downloaded file isn't the correct size!")
-
-    return "local.h5ad"
+    return local_path

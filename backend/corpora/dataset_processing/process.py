@@ -5,9 +5,10 @@ import subprocess
 import sys
 
 import boto3
-import dropbox
 import numpy
 import scanpy
+
+from .dropbox import fetch_dropbox_url
 
 
 def check_env():
@@ -98,7 +99,7 @@ def main():
 
     check_env()
 
-    local_filename = dropbox.fetch_dropbox_url(os.environ["DROPBOX_URL"])
+    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"])
 
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if val_proc.returncode != 0:

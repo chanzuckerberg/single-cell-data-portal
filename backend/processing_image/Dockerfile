@@ -29,4 +29,4 @@ ADD code /
 
 RUN chmod a+x /dataset_processing/run.py
 
-CMD ["/dataset_processing/run.py"]
+CMD ["/dataset_processing/process.py"]
