@@ -12,12 +12,10 @@ step_definition = json.loads(
   "StartAt": "Pass",
   "States": {
     "Pass": {
-      "Comment": "A Pass state passes its input to its output, without performing work. Pass states are useful when constructing and debugging state machines.",
       "Type": "Pass",
       "Next": "Hello World example?"
     },
     "Hello World example?": {
-      "Comment": "A Choice state adds branching logic to a state machine. Choice rules can implement 16 different comparison operators, and can be combined using And, Or, and Not",
       "Type": "Choice",
       "Choices": [
         {
@@ -98,12 +96,16 @@ if os.getenv("DEPLOYMENT_STAGE") == "test":
 
     def tearDownModule():
         upload_sfn_arn = json.loads(client_ssm.get_secret_value(SecretId=secret_id)["SecretString"])["upload_sfn_arn"]
-        response = client_sfn.delete_state_machine(stateMachineArn=upload_sfn_arn)
+        client_sfn.delete_state_machine(stateMachineArn=upload_sfn_arn)
         client_ssm.update_secret(SecretId=secret_id, SecretString=old_secret)
 
 
 class Test_Uploader_SFN(unittest.TestCase):
-    def test__happy(self):
+    def test__happy__OK(self):
+        """
+        Invokes the step functions and verified the correct parameters have been passed.
+        :return:
+        """
         input_params = {"collection_uuid": "test_collection_id", "url": "test_url", "dataset_uuid": "test_dataset_uuid"}
         response = start_upload_sfn(**input_params)
         response = client_sfn.describe_execution(executionArn=response["executionArn"])
