@@ -22,7 +22,7 @@ from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws_secret import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
 
-cors_config = CORSConfig(allow_origin="http://localhost", max_age=600, allow_credentials=True)
+cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
 
 def requires_auth():
