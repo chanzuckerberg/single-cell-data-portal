@@ -16,6 +16,14 @@ class CorporaDbConfig(SecretConfig):
             **kwargs,
         )
 
+    def get_defaults_template(self):
+        # The db secret for remote dev envs is {"remote_dev_uri": "postgresql://blah"}
+        # instead of {"database_url": "postgresql://blah"} so we can add a suffix here
+        # based on the remote dev env name.
+        return {
+            "database_uri": "{remote_dev_uri}{os.getenv('REMOTE_DEV_PREFIX')}",
+        }
+
 
 class CorporaAuthConfig(SecretConfig):
     """
