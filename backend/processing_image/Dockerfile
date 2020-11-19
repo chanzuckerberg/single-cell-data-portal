@@ -10,6 +10,7 @@ RUN apt-get update && apt-get -y install \
       libcurl4-openssl-dev \
       libglpk-dev \
       libxml2-dev \
+      wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -22,11 +23,10 @@ RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudi
 # Install python dependencies
 RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0
 RUN pip3 install git+https://github.com/chanzuckerberg/cellxgene.git#egg=cellxgene
+RUN pip3 install awscli
 
-# Add scripts
-COPY make_seurat.R /
-COPY make_loom.py /
-COPY extract_metadata.py /
-COPY run.sh /
+ADD code /
 
-CMD ["/run.sh"]
+RUN chmod a+x /dataset_processing/run.py
+
+CMD ["/dataset_processing/run.py"]
