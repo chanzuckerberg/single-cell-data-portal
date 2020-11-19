@@ -73,7 +73,7 @@ def get_chalice_app(flask_app):
                 app.log.info(f"CORS allowed_origins: {allowed_origin}")
                 CORS(flask_app, supports_credentials=True, origins=allowed_origin)
     else:
-        allowed_origin = r'^http://localhost:\d+'
+        allowed_origin = r"^http://localhost:\d+"
         app.log.info(f"CORS allowed_origins: {allowed_origin}")
         CORS(flask_app, supports_credentials=True, origins=allowed_origin)
 
