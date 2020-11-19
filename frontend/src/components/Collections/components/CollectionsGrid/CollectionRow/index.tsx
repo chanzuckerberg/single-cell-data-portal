@@ -68,9 +68,6 @@ const CollectionRow: FC<Props> = ({
   accessType,
   includePrivate,
 }) => {
-  console.log(id);
-  if (id === "b2f48d9e-ecdc-4912-a63c-c637827ff019")
-    console.log("*************======================*********************");
   const { data: collection } = useCollection(id, VISIBILITY.PRIVATE);
 
   if (!collection) return null;
@@ -89,6 +86,9 @@ const CollectionRow: FC<Props> = ({
     return acc;
   }, [] as string[]);
 
+  // TODO: Generate data from datasets #737
+  const { organs, assays, species, cellCount, status } = {} as any;
+
   return (
     <StyledRow>
       <StyledCell>
@@ -104,16 +104,12 @@ const CollectionRow: FC<Props> = ({
           <React.Fragment key={doi}>{doi}</React.Fragment>
         ))}
       </StyledCell>
-      {conditionalPopover(collection.organs)}
-      {conditionalPopover(collection.assays)}
-      {conditionalPopover(collection.species)}
-      <RightAlignedDetailsCell>
-        {collection.cell_count || "-"}
-      </RightAlignedDetailsCell>
+      {conditionalPopover(organs)}
+      {conditionalPopover(assays)}
+      {conditionalPopover(species)}
+      <RightAlignedDetailsCell>{cellCount || "-"}</RightAlignedDetailsCell>
       {showStatus && (
-        <RightAlignedDetailsCell>
-          {collection.status || "-"}
-        </RightAlignedDetailsCell>
+        <RightAlignedDetailsCell>{status || "-"}</RightAlignedDetailsCell>
       )}
     </StyledRow>
   );
