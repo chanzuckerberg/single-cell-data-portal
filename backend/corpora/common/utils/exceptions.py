@@ -16,6 +16,16 @@ class ServerErrorHTTPException(ProblemException):
         )
 
 
+class TooLargeHTTPException(ProblemException):
+    def __init__(self, detail: str = "The file requested is too large to process.", *args, **kwargs) -> None:
+        super().__init__(status=413, title="Request Entity Too Large", detail=detail, *args, **kwargs)
+
+
+class InvalidParametersHTTPException(ProblemException):
+    def __init__(self, detail: str = "One or more parameters is invalid.", *args, **kwargs) -> None:
+        super().__init__(status=requests.status_codes.bad_request, title="Bad Request", detail=detail, *args, **kwargs)
+
+
 class ForbiddenHTTPException(ProblemException):
     def __init__(self, detail: str = "User is not authorized to access this resource.", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.forbidden, title="Forbidden", detail=detail, *args, **kwargs)

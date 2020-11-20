@@ -6,6 +6,7 @@ from .utils.secret_config import SecretConfig
 class CorporaConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
         super().__init__("backend", secret_name="config", **kwargs)
+        self.set(dict(upload_file_formats=["h5ad"], upload_max_file_size=30))
 
 
 class CorporaDbConfig(SecretConfig):

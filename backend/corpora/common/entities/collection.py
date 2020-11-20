@@ -65,7 +65,9 @@ class Collection(Entity):
         return cls.get((collection_uuid, visibility))
 
     @classmethod
-    def if_owner(cls, collection_uuid: str, visibility: CollectionVisibility, user: str) -> typing.Union["Collection", None]:
+    def if_owner(
+        cls, collection_uuid: str, visibility: CollectionVisibility, user: str
+    ) -> typing.Union["Collection", None]:
         """
 
         :param collection_uuid: the uuid of the collection
