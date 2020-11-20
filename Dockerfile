@@ -12,20 +12,24 @@ RUN apt-get update && \
 
 # RUN envsubst < config/iam-policy-templates/corpora-api-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
 
+WORKDIR /tests
+ADD tests /tests
+
+WORKDIR /scripts
+ADD scripts /scripts
+
+WORKDIR /backend
+ADD backend /backend
+
 # Don't re-run pip install unless requirements.txt has changed.
-WORKDIR /chalice
-ADD requirements.txt /chalice/requirements.txt
 RUN python3 -m pip install -r requirements.txt
 
-# Add our api server code.
-# NOTE: we're relying on .dockerignore to exclude some files
-ADD chalice/api_server /chalice
-RUN mv .chalice/config.json.dev .chalice/config.json
+RUN mv chalice/api_server/.chalice/config.json.dev chalice/api_server/.chalice/config.json
 
 RUN mkdir -p chalicelib config vendor
-ADD corpora chalicelib/corpora
-ADD config/corpora-api.yml chalicelib/config/corpora-api.yml
+ADD backend/corpora chalicelib/corpora
+ADD backend/config/corpora-api.yml chalicelib/config/corpora-api.yml
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
 
-CMD ["python3", "run_local_server.py"]
+CMD ["python3", "/backend/chalice/api_server/run_local_server.py"]
