@@ -3,6 +3,7 @@ import { Collection } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
+import { DEFAULT_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
 export const USE_COLLECTIONS = {
@@ -17,7 +18,9 @@ export interface CollectionResponse {
 }
 
 async function fetchCollections(): Promise<CollectionResponse[]> {
-  const json = await (await fetch(API_URL + API.COLLECTIONS)).json();
+  const json = await (
+    await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   return json.collections;
 }
@@ -55,7 +58,7 @@ async function fetchCollection(
       ? baseUrl + `?visibility=${VISIBILITY.PRIVATE}`
       : baseUrl;
 
-  const response = await fetch(finalUrl);
+  const response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
   const result = await response.json();
 
   if (!response.ok) {
