@@ -20,7 +20,7 @@ from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws_secret import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
 
-ALLOWED_ORIGINS = [
+ALLOWED_ORIGINS = [  # pragma: no cover
     "http://localhost:8000",
     "http://localhost:9000",
     "https://cellxgene.dev.single-cell.czi.technology",
