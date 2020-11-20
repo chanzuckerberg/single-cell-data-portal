@@ -1,18 +1,13 @@
-import {
-  AnchorButton,
-  Button,
-  Checkbox,
-  Collapse,
-  Intent,
-} from "@blueprintjs/core";
+import { Button, Checkbox, Collapse, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import React, { FC, useState } from "react";
 import { GRAY } from "src/components/common/theme";
 import DirectIdentifiers from "./components/DirectPersonalIdentifiers";
 import {
-  AnchorButtonWrapper,
   BulletWrapper,
+  ButtonWrapper,
   ContentWrapper,
+  StyledButton,
   StyledIcon,
   Text,
   Wrapper,
@@ -25,11 +20,11 @@ export const POLICY_BULLETS = {
       It is my responsibility to ensure that this data is not identifiable. In
       particular, I commit that I will remove any{" "}
       <DirectIdentifiers>
-        <AnchorButtonWrapper>
-          <AnchorButton small minimal intent={Intent.PRIMARY}>
+        <ButtonWrapper>
+          <StyledButton small minimal intent={Intent.PRIMARY}>
             direct personal identifiers
-          </AnchorButton>
-        </AnchorButtonWrapper>
+          </StyledButton>
+        </ButtonWrapper>
       </DirectIdentifiers>{" "}
       in the metadata portions of the data, and that CZI may further contact me
       if it believes more work is needed to de-identify it.

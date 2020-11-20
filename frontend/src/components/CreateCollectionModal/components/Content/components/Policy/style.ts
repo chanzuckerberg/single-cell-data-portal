@@ -1,4 +1,4 @@
-import { Icon } from "@blueprintjs/core";
+import { Button, Icon } from "@blueprintjs/core";
 import { GRAY, LIGHT_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
@@ -28,8 +28,16 @@ export const ContentWrapper = styled.div`
   border-radius: 3px;
 `;
 
-export const AnchorButtonWrapper = styled.span`
+export const ButtonWrapper = styled.span`
   .bp3-button.bp3-small {
     padding: 0;
+  }
+`;
+
+export const StyledButton = styled(Button)`
+  && {
+    &:hover {
+      background: unset !important;
+    }
   }
 `;
