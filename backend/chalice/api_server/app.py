@@ -72,7 +72,8 @@ def get_chalice_app(flask_app):
                     allowed_origin = [f"{frontend_parse.scheme}://{frontend_parse.netloc}"]
                 else:
                     allowed_origin.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
-    CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin)
+    CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin, allow_headers=["Content-Type"])
+
     app.log.info(f"CORS allowed_origins: {allowed_origin}")
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
@@ -96,10 +97,10 @@ def get_chalice_app(flask_app):
 
         # set dummy auth token value for optional security endpoints
         headers = [*app.current_request.headers.items(), ("cxgpublic", "dummy")]
-
+        host = app.current_request.headers["host"]
         with flask_app.test_request_context(
             path=resource_path,
-            base_url="https://{}".format(app.current_request.headers["host"]) if app.current_request.headers.get("host") else None,
+            base_url="https://{}".format(host) if host else None,
             query_string=query_string,
             method=app.current_request.method,
             headers=headers,
@@ -125,7 +126,7 @@ def get_chalice_app(flask_app):
     for rule in flask_app.url_map.iter_rules():
         routes[re.sub(r"<(.+?)(:.+?)?>", r"{\1}", rule.rule).rstrip("/")] += rule.methods
     for route, methods in routes.items():
-        app.route(route,methods=list(set([*methods, "OPTIONS"])))(dispatch)
+        app.route(route, methods=list(set([*methods, "OPTIONS"])))(dispatch)
 
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()
