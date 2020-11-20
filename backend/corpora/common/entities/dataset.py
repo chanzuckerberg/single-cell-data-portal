@@ -74,9 +74,12 @@ class Dataset(Entity):
     ) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
-        :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will be removed and replaced with new entries.
-        :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the existing attached entries will be removed and replaced with new entries.
-        :param processing_status: A Processing status entity to create and connect to the dataset. If present, the existing attached entries will be removed and replaced with new entries.
+        :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
+        :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
         if artifacts or deployment_directories or processing_status:
