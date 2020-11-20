@@ -53,6 +53,7 @@ def get_chalice_app(flask_app):
     flask_app.debug = True
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
+    localhost_origin = r"^http://localhost:\d+"
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
@@ -67,13 +68,12 @@ def get_chalice_app(flask_app):
                 if frontend.endswith("/"):
                     frontend = frontend[:-1]
                 frontend_parse = urlparse(frontend)
-                allowed_origin = f"{frontend_parse.scheme}://{frontend_parse.netloc}"
+                allowed_origin = [f"{frontend_parse.scheme}://{frontend_parse.netloc}", localhost_origin]
                 app.log.info(f"CORS allowed_origins: {allowed_origin}")
                 CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin)
     else:
-        allowed_origin = r"^http://localhost:\d+"
-        app.log.info(f"CORS allowed_origins: {allowed_origin}")
-        CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin)
+        app.log.info(f"CORS allowed_origins: {localhost_origin}")
+        CORS(flask_app, max_age=600, supports_credentials=True, origins=localhost_origin)
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     flask_app.config.update(SECRET_KEY=flask_secret_key)
