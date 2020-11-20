@@ -1,3 +1,3 @@
-export const DEFAULT_FETCH_OPTIONS = {
-  credentials: "same-origin" as RequestCredentials,
+export const DEFAULT_FETCH_OPTIONS: RequestInit = {
+  credentials: "include",
 };
