@@ -99,6 +99,12 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.addCleanup(_collection.delete)
         return _collection.id
 
+    def test__list_collection_options__ok(self):
+        path = "/dp/v1/collections"
+        response = self.app.options(path)
+        response.raise_for_status()
+        self.assertIn("X-AWS-REQUEST-ID", response.headers.keys())
+
     def test__list_collection__ok(self):
         path = "/dp/v1/collections"
         headers = dict(host="localhost")

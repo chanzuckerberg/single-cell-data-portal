@@ -53,7 +53,7 @@ def get_chalice_app(flask_app):
     flask_app.debug = True
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
-    localhost_origin = r"^http://localhost:\d+"
+    allowed_origin = ["http://localhost:8000","http://localhost:9000"]
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
@@ -68,12 +68,12 @@ def get_chalice_app(flask_app):
                 if frontend.endswith("/"):
                     frontend = frontend[:-1]
                 frontend_parse = urlparse(frontend)
-                allowed_origin = [f"{frontend_parse.scheme}://{frontend_parse.netloc}", localhost_origin]
-                app.log.info(f"CORS allowed_origins: {allowed_origin}")
-                CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin)
-    else:
-        app.log.info(f"CORS allowed_origins: {localhost_origin}")
-        CORS(flask_app, max_age=600, supports_credentials=True, origins=localhost_origin)
+                if deployment == "prod":
+                    allowed_origin = [f"{frontend_parse.scheme}://{frontend_parse.netloc}"]
+                else:
+                    allowed_origin.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
+    CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin)
+    app.log.info(f"CORS allowed_origins: {allowed_origin}")
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     flask_app.config.update(SECRET_KEY=flask_secret_key)
@@ -99,7 +99,7 @@ def get_chalice_app(flask_app):
 
         with flask_app.test_request_context(
             path=resource_path,
-            base_url="https://{}".format(app.current_request.headers["host"]),
+            base_url="https://{}".format(app.current_request.headers["host"]) if app.current_request.headers.get("host") else None,
             query_string=query_string,
             method=app.current_request.method,
             headers=headers,
@@ -125,7 +125,7 @@ def get_chalice_app(flask_app):
     for rule in flask_app.url_map.iter_rules():
         routes[re.sub(r"<(.+?)(:.+?)?>", r"{\1}", rule.rule).rstrip("/")] += rule.methods
     for route, methods in routes.items():
-        app.route(route, methods=list(set(methods) - {"OPTIONS"}))(dispatch)
+        app.route(route,methods=list(set([*methods, "OPTIONS"])))(dispatch)
 
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()
