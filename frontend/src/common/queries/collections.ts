@@ -80,8 +80,8 @@ export function useCollection(
 
 export async function createCollection(payload: string): Promise<string> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
+    ...DEFAULT_FETCH_OPTIONS,
     body: payload,
-    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
     },
