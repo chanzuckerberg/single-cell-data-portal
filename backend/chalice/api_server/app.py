@@ -8,10 +8,8 @@ from functools import wraps
 
 import chalice
 import connexion
-from chalice import Chalice
+from chalice import Chalice, CORSConfig
 from connexion import FlaskApi, ProblemException, problem
-from flask_cors import CORS, CORSConfig
-from urllib.parse import urlparse
 
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
