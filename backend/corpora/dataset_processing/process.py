@@ -3,12 +3,11 @@
 import os
 import subprocess
 import sys
+import urllib
 
 import boto3
 import numpy
 import scanpy
-
-from .dropbox import fetch_dropbox_url
 
 
 def check_env():
@@ -21,11 +20,49 @@ def check_env():
     if missing:
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
+def fix_dropbox_url(url):
+    """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
+
+    pr = urllib.parse.urlparse(url)
+
+    if pr.scheme != "https":
+        return None
+
+    if pr.netloc != "www.dropbox.com":
+        return None
+
+    if "dl=0" in pr.query:
+        new_query = pr.query.replace("dl=0", "dl=1")
+    elif not pr.query:
+        new_query = "dl=1"
+    elif "dl=1" in pr.query:
+        new_query = pr.query
+    else:
+        new_query = pr.query + "&dl=1"
+
+    pr = pr._replace(query=new_query)
+
+    return pr.geturl()
+
+def fetch_dropbox_url(dropbox_url, local_path):
+    """Given a dropbox url, download it to local_path.
+
+    Handles fixing the url so it downloads directly.
+    """
+
+    fixed_dropbox_url = fix_dropbox_url(dropbox_url)
+
+    if not fixed_dropbox_url:
+        raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
+
+    subprocess.run(["wget", fixed_dropbox_url, "-O", local_path], check=True)
+
+    return local_path
 
 def extract_metadata(filename):
     """Pull metadata out of the AnnData file to insert into the dataset table."""
 
-    adata = scanpy.read_h5ad(sys.argv[1], backed="r")
+    adata = scanpy.read_h5ad(filename, backed="r")
 
     try:
         raw_layer_name = [k for k, v in adata.uns["layer_descriptions"].items() if v == "raw"][0]
@@ -73,14 +110,15 @@ def make_loom(local_filename):
 
     loom_filename = local_filename.replace(".h5ad", ".loom")
     adata.write_loom(loom_filename, True)
+    return loom_filename
 
 
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
-    seurat_proc = subprocess.run(["Rscript", "make_seurat.R", local_filename], capture_output=True)
+    seurat_proc = subprocess.run(["Rscript", "/dataset_processing/make_seurat.R", local_filename], capture_output=True)
     if seurat_proc.returncode != 0:
-        raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stderr}")
+        raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
 
     return local_filename.replace(".h5ad", ".rds")
 
@@ -99,10 +137,10 @@ def main():
 
     check_env()
 
-    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"])
+    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
 
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
-    if val_proc.returncode != 0:
+    if False and val_proc.returncode != 0:
         print("Validation failed!")
         print(f"stdout: {val_proc.stdout}")
         print(f"stderr: {val_proc.stderr}")

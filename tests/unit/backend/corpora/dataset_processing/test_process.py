@@ -6,7 +6,6 @@ import anndata
 import numpy
 import pandas
 
-from backend.corpora.dataset_processing import dropbox
 from backend.corpora.dataset_processing import process
 
 
@@ -66,37 +65,37 @@ class TestDropBox(unittest.TestCase):
     def test_fix_url_direct_download(self):
 
         self.assertEqual(
-            dropbox.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1"),
+            process.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1"),
             "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1",
         )
 
         self.assertEqual(
-            dropbox.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx"),
+            process.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx"),
             "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1",
         )
 
         self.assertEqual(
-            dropbox.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=0"),
+            process.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=0"),
             "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1",
         )
 
         self.assertEqual(
-            dropbox.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever"),
+            process.fix_dropbox_url("https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever"),
             "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever&dl=1",
         )
 
     def test_fix_url_bad(self):
 
-        self.assertIsNone(dropbox.fix_dropbox_url("https://www.googledrive.com/s/a1b/example.docx"))
+        self.assertIsNone(process.fix_dropbox_url("https://www.googledrive.com/s/a1b/example.docx"))
         self.assertIsNone(
-            dropbox.fix_dropbox_url("http://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever&dl=1")
+            process.fix_dropbox_url("http://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever&dl=1")
         )
 
     @patch("subprocess.run")
     def test_fetch_dropbox_url_ok(self, mock_run):
 
         full_dp_url = "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1"
-        dropbox.fetch_dropbox_url(full_dp_url, "my_file.h5ad")
+        process.fetch_dropbox_url(full_dp_url, "my_file.h5ad")
 
         print(mock_run.call_args[0])
 

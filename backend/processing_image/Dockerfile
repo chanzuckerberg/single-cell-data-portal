@@ -27,6 +27,6 @@ RUN pip3 install awscli
 
 ADD code /
 
-RUN chmod a+x /dataset_processing/run.py
+RUN chmod a+x /dataset_processing/process.py
 
 CMD ["/dataset_processing/process.py"]
