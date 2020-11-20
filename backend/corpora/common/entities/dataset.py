@@ -59,7 +59,7 @@ class Dataset(Entity):
             ),
             processing_status=cls._create_sub_objects(
                 [processing_status], DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
-            ),
+            )[0],
             **kwargs,
         )
 
