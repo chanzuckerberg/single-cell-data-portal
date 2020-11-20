@@ -38,6 +38,7 @@ export const StyledButton = styled(Button)`
   && {
     &:hover {
       background: unset !important;
+      text-decoration: underline;
     }
   }
 `;
