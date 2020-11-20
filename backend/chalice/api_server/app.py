@@ -121,7 +121,7 @@ def get_chalice_app(flask_app):
     for rule in flask_app.url_map.iter_rules():
         routes[re.sub(r"<(.+?)(:.+?)?>", r"{\1}", rule.rule).rstrip("/")] += rule.methods
     for route, methods in routes.items():
-        app.route(route, methods=list(set(methods) - {"OPTIONS"}, cors=cors_config))(dispatch)
+        app.route(route, methods=list(set(methods) - {"OPTIONS"}), cors=cors_config)(dispatch)
 
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()
