@@ -3,7 +3,7 @@ import uuid
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus
+from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus, UploadStatus
 
 
 class Dataset(Entity):
@@ -14,20 +14,20 @@ class Dataset(Entity):
 
     @classmethod
     def create(
-        cls,
-        revision: int = 0,
-        name: str = "",
-        organism: dict = None,
-        tissue: list = None,
-        assay: list = None,
-        disease: list = None,
-        sex: list = None,
-        ethnicity: list = None,
-        development_stage: list = None,
-        artifacts: list = None,
-        deployment_directories: list = None,
-        processing_status: dict = None,
-        **kwargs,
+            cls,
+            revision: int = 0,
+            name: str = "",
+            organism: dict = None,
+            tissue: list = None,
+            assay: list = None,
+            disease: list = None,
+            sex: list = None,
+            ethnicity: list = None,
+            development_stage: list = None,
+            artifacts: list = None,
+            deployment_directories: list = None,
+            processing_status: dict = None,
+            **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -131,3 +131,10 @@ class Dataset(Entity):
         Delete the Dataset and all child objects.
         """
         super().delete()
+
+    @staticmethod
+    def new_processing_status():
+        return {
+            "upload_status": UploadStatus.WAITING,
+            "upload_progress": 0,
+        }

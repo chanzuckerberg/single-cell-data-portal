@@ -65,6 +65,18 @@ class Collection(Entity):
         return cls.get((collection_uuid, visibility))
 
     @classmethod
+    def if_owner(cls, collection_uuid: str, visibility: CollectionVisibility, user: str) -> typing.Union["Collection", None]:
+        """
+
+        :param collection_uuid: the uuid of the collection
+        :param visibility: the visibility of the collection
+        :param user: the uuid of the user.
+        :return: a collection if the user is the owner of the collection else None
+        """
+        filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
+        return cls.db.session.query(cls.table).filter(*filters).one_or_none
+
+    @classmethod
     def list_collections_in_time_range(cls, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
