@@ -1,5 +1,10 @@
-import { Button, Icon } from "@blueprintjs/core";
-import { GRAY, LIGHT_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { Icon } from "@blueprintjs/core";
+import {
+  BLUE,
+  GRAY,
+  LIGHT_GRAY,
+  PT_GRID_SIZE_PX,
+} from "src/components/common/theme";
 import styled from "styled-components";
 
 export const StyledIcon = styled(Icon)`
@@ -34,11 +39,14 @@ export const ButtonWrapper = styled.span`
   }
 `;
 
-export const StyledButton = styled(Button)`
-  && {
-    &:hover {
-      background: unset !important;
-      text-decoration: underline;
-    }
+export const StyledButton = styled.button`
+  color: ${BLUE.B};
+  padding: 0;
+  border: none;
+  background: none;
+
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
   }
 `;

@@ -21,9 +21,7 @@ export const POLICY_BULLETS = {
       particular, I commit that I will remove any{" "}
       <DirectIdentifiers>
         <ButtonWrapper>
-          <StyledButton small minimal intent={Intent.PRIMARY}>
-            direct personal identifiers
-          </StyledButton>
+          <StyledButton>direct personal identifiers</StyledButton>
         </ButtonWrapper>
       </DirectIdentifiers>{" "}
       in the metadata portions of the data, and that CZI may further contact me
