@@ -73,7 +73,6 @@ def get_chalice_app(flask_app):
                 else:
                     allowed_origin.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
     CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin, allow_headers=["Content-Type"])
-
     app.log.info(f"CORS allowed_origins: {allowed_origin}")
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
