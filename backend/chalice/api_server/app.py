@@ -57,7 +57,7 @@ def get_chalice_app(flask_app):
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
     deployment = os.environ["DEPLOYMENT_STAGE"]
-    if deployment != "test":
+    if deployment != "test":  # pragma: no cover
         secret_name = f"corpora/backend/{os.environ['DEPLOYMENT_STAGE']}/auth0-secret"
         auth_secret = json.loads(AwsSecret(secret_name).value)
         if auth_secret:
