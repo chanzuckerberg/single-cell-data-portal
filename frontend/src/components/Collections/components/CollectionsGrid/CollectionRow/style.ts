@@ -32,7 +32,7 @@ export const textClippingCSS = css`
 `;
 export const DetailsCell = styled(StyledCell)`
   color: ${GRAY.A};
-  ${textClippingCSS};
+  ${textClippingCSS}
   ${detailsColWidthCSS}
 `;
 export const FieldValues = styled.div`

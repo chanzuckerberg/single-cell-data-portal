@@ -1,4 +1,4 @@
-import { Classes, Position } from "@blueprintjs/core";
+import { Classes, Intent, Position, Tag } from "@blueprintjs/core";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -18,7 +18,6 @@ import {
 } from "./style";
 interface Props {
   id: string;
-  showStatus: boolean;
   accessType: ACCESS_TYPE;
   includePrivate: boolean;
 }
@@ -62,12 +61,7 @@ const conditionalPopover = (values: string[]) => {
   );
 };
 
-const CollectionRow: FC<Props> = ({
-  id,
-  showStatus,
-  accessType,
-  includePrivate,
-}) => {
+const CollectionRow: FC<Props> = ({ id, accessType, includePrivate }) => {
   const { data: collection } = useCollection(id, VISIBILITY.PRIVATE);
 
   if (!collection) return null;
@@ -82,35 +76,41 @@ const CollectionRow: FC<Props> = ({
   const dois = collection.links.reduce((acc, link) => {
     if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
     const url = new URL(link.link_url);
-    acc.push(url.pathname.substring(1));
+    acc.push({ doi: url.pathname.substring(1), link: link.link_url });
     return acc;
-  }, [] as string[]);
+  }, [] as { doi: string; link: string }[]);
+
+  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
 
   // TODO: Generate data from datasets #737
-  const { organs, assays, species, cellCount, status } = {} as any;
+  const { tissue, assays, disease, organism, cellCount } = {} as any;
 
   return (
     <StyledRow>
       <StyledCell>
         <CollectionTitleText
-          href={`/collections/${id}${
-            collection.visibility === VISIBILITY_TYPE.PRIVATE ? "/private" : ""
-          }`}
+          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
         >
           {collection.name}
         </CollectionTitleText>
         <div>{collection.contact_name}</div>
-        {dois?.map((doi) => (
-          <React.Fragment key={doi}>{doi}</React.Fragment>
-        ))}
+        {includePrivate ? (
+          dois?.map((doi) => (
+            <a key={doi.doi} href={doi.link}>
+              {doi.doi}
+            </a>
+          ))
+        ) : (
+          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
+            {isPrivate ? "Private" : "Published"}
+          </Tag>
+        )}
       </StyledCell>
-      {conditionalPopover(organs)}
+      {conditionalPopover(tissue)}
       {conditionalPopover(assays)}
-      {conditionalPopover(species)}
+      {conditionalPopover(disease)}
+      {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cellCount || "-"}</RightAlignedDetailsCell>
-      {showStatus && (
-        <RightAlignedDetailsCell>{status || "-"}</RightAlignedDetailsCell>
-      )}
     </StyledRow>
   );
 };

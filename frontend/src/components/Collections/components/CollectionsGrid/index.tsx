@@ -11,14 +11,12 @@ import {
 
 interface Props {
   collections: CollectionResponse[];
-  showStatus: boolean;
   accessType: ACCESS_TYPE;
   includePrivate: boolean;
 }
 
 const CollectionsGrid: FC<Props> = ({
   collections,
-  showStatus,
   accessType,
   includePrivate,
 }) => {
@@ -27,13 +25,11 @@ const CollectionsGrid: FC<Props> = ({
       <thead>
         <tr>
           <CollectionHeaderCell>Collection</CollectionHeaderCell>
-          <LeftAlignedHeaderCell>Organ</LeftAlignedHeaderCell>
+          <LeftAlignedHeaderCell>Tissue</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Assay</LeftAlignedHeaderCell>
-          <LeftAlignedHeaderCell>Species</LeftAlignedHeaderCell>
+          <LeftAlignedHeaderCell>Disease</LeftAlignedHeaderCell>
+          <LeftAlignedHeaderCell>Organism</LeftAlignedHeaderCell>
           <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
-          {showStatus && (
-            <RightAlignedHeaderCell>Status</RightAlignedHeaderCell>
-          )}
         </tr>
       </thead>
       <tbody>
@@ -41,7 +37,7 @@ const CollectionsGrid: FC<Props> = ({
           <CollectionRow
             id={collection.id}
             key={collection.id}
-            {...{ accessType, includePrivate, showStatus }}
+            {...{ accessType, includePrivate }}
           />
         ))}
       </tbody>
