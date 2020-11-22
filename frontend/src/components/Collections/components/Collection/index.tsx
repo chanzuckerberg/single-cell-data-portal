@@ -1,13 +1,14 @@
 import React, { FC } from "react";
-import { useCollection } from "src/common/queries/collections";
+import { useCollection, VISIBILITY } from "src/common/queries/collections";
 import Dataset from "../Dataset";
 
 interface Props {
   id: string;
+  visibility: VISIBILITY;
 }
 
-const Collection: FC<Props> = ({ id }) => {
-  const { data: collection } = useCollection(id);
+const Collection: FC<Props> = ({ id, visibility }) => {
+  const { data: collection } = useCollection(id, visibility);
 
   if (!collection?.datasets) return null;
 

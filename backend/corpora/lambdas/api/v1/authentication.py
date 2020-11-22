@@ -80,7 +80,7 @@ def oauth2_callback() -> Response:
         # write the cookie
         save_token(config.cookie_name, token)
     except Exception as e:
-        current_app.logger.warning(f"Unable to authorize access token: {str(e)}: {str(token)}")
+        current_app.logger.warning(f"Unable to authorize access token: {str(e)}")
         # remove the token
         remove_token(config.cookie_name)
         raise UnauthorizedError("response from oauth server not valid")

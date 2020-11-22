@@ -38,6 +38,7 @@ module.exports = {
   rules: {
     // Disable prop-types as we use TypeScript for type checking
     "@typescript-eslint/explicit-function-return-type": "off",
+    "react/jsx-no-target-blank": 0,
     "react/prop-types": "off",
     "sort-keys": [
       "error",

@@ -61,6 +61,14 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
   border-radius: 6px;
 }
 
+.bp3-dialog-header {
+  box-shadow: none;
+}
+
+.bp3-dialog-header .bp3-heading {
+  line-height: normal;
+}
+
 // Temp fix for checkbox
 // https://github.com/palantir/blueprint/issues/2821#issuecomment-414645690
 .bp3-control.bp3-checkbox input:checked ~ .bp3-control-indicator:before {
