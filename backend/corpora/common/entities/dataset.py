@@ -57,8 +57,8 @@ class Dataset(Entity):
                 DbDeploymentDirectory,
                 add_columns=dict(dataset_id=primary_key),
             ),
-            processing_status=cls._create_sub_objects(
-                [processing_status], DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
+            processing_status=cls._create_sub_object(
+                processing_status, DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
             ),
             **kwargs,
         )
@@ -68,6 +68,54 @@ class Dataset(Entity):
         cls.db.commit()
 
         return cls(new_db_object)
+
+    def update(
+        self, artifacts: list = None, deployment_directories: list = None, processing_status: list = None, **kwargs
+    ) -> None:
+        """
+        Update an existing dataset to match provided the parameters. The specified column are replaced.
+        :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
+        :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
+        :param kwargs: Any other fields in the dataset that will be replaced.
+        """
+        if artifacts or deployment_directories or processing_status:
+            if artifacts:
+                for af in self.artifacts:
+                    self.db.delete(af)
+                new_db_objects = self._create_sub_objects(
+                    artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
+                )
+                self.db.session.add_all(new_db_objects)
+                kwargs["artifacts"] = new_db_objects
+            if deployment_directories:
+                for dd in self.deployment_directories:
+                    self.db.delete(dd)
+                new_db_objects = self._create_sub_objects(
+                    deployment_directories,
+                    DbDeploymentDirectory,
+                    add_columns=dict(dataset_id=self.id),
+                )
+                self.db.session.add_all(new_db_objects)
+                kwargs["deployment_directories"] = new_db_objects
+            if processing_status:
+                for ps in self.processing_status:
+                    self.db.delete(ps)
+                new_db_object = self._create_sub_object(
+                    processing_status,
+                    DbDatasetProcessingStatus,
+                    add_columns=dict(dataset_id=self.id),
+                )
+                self.db.session.add(new_db_object)
+                kwargs["processing_status"] = new_db_object
+
+            self.db.session.flush()
+
+        super().update(**kwargs)
+        self.db.commit()
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
