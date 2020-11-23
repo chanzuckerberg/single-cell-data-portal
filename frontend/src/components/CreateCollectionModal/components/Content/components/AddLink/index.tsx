@@ -42,7 +42,7 @@ const AddLink: FC<Props> = ({ handleClick }) => {
       content={<LinkTypes handleClick={handleClick} />}
       position={Position.BOTTOM_LEFT}
     >
-      <Button minimal intent={Intent.PRIMARY}>
+      <Button outlined intent={Intent.PRIMARY}>
         Add Link
       </Button>
     </Popover>

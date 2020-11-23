@@ -34,10 +34,19 @@ export enum DARK_GRAY {
   E = "#394B59",
 }
 
+export enum LIGHT_GRAY {
+  A = "#CED9E0",
+  B = "#D8E1E8",
+  C = "#E1E8ED",
+  D = "#EBF1F5",
+  E = "#F5F8FA",
+}
+
 export enum BLUE {
   A = "#004C9F",
   B = "#005FC6",
   C = "#0E7DEC",
   D = "#459FFF",
   E = "#73B7FF",
+  F = "#DFEFFF",
 }

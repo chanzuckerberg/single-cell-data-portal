@@ -9,6 +9,9 @@
   - Modify code in the `frontend/src` directory, save your changes and the browser will update in real time.
   - Modify code in the `backend` directory, and the data portal api will reload automatically.
 
+### OAuth creds
+Username: User1 / Password: pwd ([users are defined here](oauth/users.json))
+
 ### Containers managed by the dev environment
 The data portal dev environment is a set of containers defined in [docker-compose.yml](docker-compose.yml). The [backend docker image](backend/Dockerfile) and [frontend docker image](frontend/Dockerfile) are built locally. Update any of these files as necessary and run `make local-sync` to sync your dev environment with these configs.
 
@@ -34,7 +37,9 @@ The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setu
 | `make local-shell CONTAINER=frontend`  | Open a command shell in one of the dev containers                       | Dev containers are: backend, frontend, localstack, database, oidc |
 | `make local-status`       | Show the status of the containers in the dev environment.                            |                                                          |
 | `make local-clean`        | Remove everything related to the local dev environment (including db data!)          |                                                          |
-| `make local-sync`         | Re-sync the local-environment state after modifying library deps or docker configs     |                                                          |
+| `make local-sync`         | Re-sync the local-environment state after modifying library deps or docker configs    |                                                          |
+| `make local-smoke-test`   | Run e2e-smoke tests in local dev                                                      |                                                          |
+| `make local-unit-test`    | Run backend unit tests in local dev                                                   |                                                          |
 
 ### Make targets for running tests in dev
 | Command                 | Description                                                                          | Notes                                                                                                |
