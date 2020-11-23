@@ -99,6 +99,17 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         self.addCleanup(_collection.delete)
         return _collection.id
 
+    def test__list_collection_options__allow(self):
+        origin = "http://localhost:8000"
+        res = self.app.options("/dp/v1/collections", headers={"origin": origin})
+        res.raise_for_status()
+        self.assertEqual(origin, res.headers["Access-Control-Allow-Origin"])
+
+    def test__list_collection_options__no_allow(self):
+        res = self.app.options("/dp/v1/collections", headers={"origin": "http://localhost:ABCD"})
+        res.raise_for_status()
+        self.assertNotIn("Access-Control-Allow-Origin", res.headers.keys())
+
     def test__list_collection__ok(self):
         path = "/dp/v1/collections"
         headers = dict(host="localhost")
