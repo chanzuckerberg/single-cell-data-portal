@@ -5,7 +5,7 @@ import {
   COLLECTION_LINK_TYPE,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import { useCollection, VISIBILITY } from "src/common/queries/collections";
+import { useCollection } from "src/common/queries/collections";
 import {
   CollectionTitleText,
   FieldValues,
@@ -39,8 +39,6 @@ const conditionalPopover = (values: string[]) => {
             hide: { enabled: false },
             preventOverflow: { enabled: false },
           }}
-          lazy
-          usePortal
           position={Position.BOTTOM}
           popoverClassName={Classes.POPOVER_CONTENT_SIZING}
           content={
@@ -62,7 +60,7 @@ const conditionalPopover = (values: string[]) => {
 };
 
 const CollectionRow: FC<Props> = ({ id, accessType, includePrivate }) => {
-  const { data: collection } = useCollection(id, VISIBILITY.PRIVATE);
+  const { data: collection } = useCollection(id, VISIBILITY_TYPE.PRIVATE);
 
   if (!collection) return null;
 
