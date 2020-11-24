@@ -1,4 +1,5 @@
-import { Classes, Intent, Position, Tag } from "@blueprintjs/core";
+import { Intent, Tag } from "@blueprintjs/core";
+import loadable from "@loadable/component";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -6,14 +7,11 @@ import {
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
+import { StyledCell } from "../common/style";
+import { LeftAlignedDetailsCell } from "./components/common/style";
 import {
   CollectionTitleText,
-  FieldValues,
-  LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
-  StyledButton,
-  StyledCell,
-  StyledPopover,
   StyledRow,
 } from "./style";
 
@@ -23,43 +21,19 @@ interface Props {
   visibility: VISIBILITY_TYPE;
 }
 
+const AsyncPopover = loadable(
+  () =>
+    /*webpackChunkName: 'CollectionRow/components/Popover' */ import(
+      "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/Popover"
+    )
+);
+
 const conditionalPopover = (values: string[]) => {
   if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return (
-    <LeftAlignedDetailsCell>
-      <FieldValues>
-        {values[0]}
-        <br />
-        {values[1]}
-      </FieldValues>
-      {values.length > 2 && (
-        <StyledPopover
-          boundary="window"
-          modifiers={{
-            hide: { enabled: false },
-            preventOverflow: { enabled: false },
-          }}
-          position={Position.BOTTOM}
-          popoverClassName={Classes.POPOVER_CONTENT_SIZING}
-          content={
-            <div>
-              {values.map((val, idx) => (
-                <React.Fragment key={val}>
-                  {val}
-                  {idx !== values.length - 1 && <br />}
-                </React.Fragment>
-              ))}
-            </div>
-          }
-        >
-          <StyledButton minimal>+{values.length - 2}</StyledButton>
-        </StyledPopover>
-      )}
-    </LeftAlignedDetailsCell>
-  );
+  return <AsyncPopover />;
 };
 
 type DOI = {

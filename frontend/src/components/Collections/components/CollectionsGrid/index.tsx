@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { ACCESS_TYPE } from "src/common/entities";
 import { CollectionResponse } from "src/common/queries/collections";
-import CollectionRow from "./CollectionRow";
+import CollectionRow from "./components/CollectionRow";
 import {
   CollectionHeaderCell,
   LeftAlignedHeaderCell,
