@@ -37,6 +37,7 @@ const CollectionsGrid: FC<Props> = ({
           <CollectionRow
             id={collection.id}
             key={collection.id}
+            visibility={collection.visibility}
             {...{ accessType, includePrivate }}
           />
         ))}

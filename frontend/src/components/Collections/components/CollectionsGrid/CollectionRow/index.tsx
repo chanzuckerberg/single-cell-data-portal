@@ -21,6 +21,7 @@ interface Props {
   id: string;
   accessType: ACCESS_TYPE;
   includePrivate: boolean;
+  visibility: VISIBILITY_TYPE;
 }
 
 const conditionalPopover = (values: string[]) => {
@@ -62,8 +63,13 @@ const conditionalPopover = (values: string[]) => {
   );
 };
 
-const CollectionRow: FC<Props> = ({ id, accessType, includePrivate }) => {
-  const { data: collection } = useCollection(id, VISIBILITY_TYPE.PRIVATE);
+const CollectionRow: FC<Props> = ({
+  id,
+  accessType,
+  includePrivate,
+  visibility,
+}) => {
+  const { data: collection } = useCollection(id, visibility);
 
   if (!collection) return null;
 
