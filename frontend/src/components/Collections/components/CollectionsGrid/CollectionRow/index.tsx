@@ -20,7 +20,6 @@ import {
 interface Props {
   id: string;
   accessType: ACCESS_TYPE;
-  includePrivate: boolean;
   visibility: VISIBILITY_TYPE;
 }
 
@@ -63,30 +62,28 @@ const conditionalPopover = (values: string[]) => {
   );
 };
 
-const CollectionRow: FC<Props> = ({
-  id,
-  accessType,
-  includePrivate,
-  visibility,
-}) => {
+type DOI = {
+  doi: string;
+  link: string;
+};
+
+const CollectionRow: FC<Props> = ({ id, accessType, visibility }) => {
   const { data: collection } = useCollection(id, visibility);
 
   if (!collection) return null;
 
-  // If we only want public datasets do not show private datasets
-  if (!includePrivate && collection.visibility === VISIBILITY_TYPE.PRIVATE) {
-    return null;
-  }
-
   // If there is an explicity accessType only show collections with that accessType
   if (accessType && collection.access_type !== accessType) return null;
 
-  const dois = collection.links.reduce((acc, link) => {
+  const dois: Array<DOI> = collection.links.reduce((acc, link) => {
     if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
+
     const url = new URL(link.link_url);
+
     acc.push({ doi: url.pathname.substring(1), link: link.link_url });
+
     return acc;
-  }, [] as { doi: string; link: string }[]);
+  }, [] as DOI[]);
 
   const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
 
@@ -102,17 +99,14 @@ const CollectionRow: FC<Props> = ({
           {collection.name}
         </CollectionTitleText>
         <div>{collection.contact_name}</div>
-        {includePrivate ? (
-          dois?.map((doi) => (
-            <a key={doi.doi} href={doi.link}>
-              {doi.doi}
-            </a>
-          ))
-        ) : (
-          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
-            {isPrivate ? "Private" : "Published"}
-          </Tag>
-        )}
+        {dois?.map((doi) => (
+          <a key={doi.doi} href={doi.link}>
+            {doi.doi}
+          </a>
+        ))}
+        <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
+          {isPrivate ? "Private" : "Published"}
+        </Tag>
       </StyledCell>
       {conditionalPopover(tissue)}
       {conditionalPopover(assays)}

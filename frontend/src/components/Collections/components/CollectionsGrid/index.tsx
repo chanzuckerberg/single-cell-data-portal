@@ -12,14 +12,9 @@ import {
 interface Props {
   collections: CollectionResponse[];
   accessType: ACCESS_TYPE;
-  includePrivate: boolean;
 }
 
-const CollectionsGrid: FC<Props> = ({
-  collections,
-  accessType,
-  includePrivate,
-}) => {
+const CollectionsGrid: FC<Props> = ({ collections, accessType }) => {
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -38,7 +33,7 @@ const CollectionsGrid: FC<Props> = ({
             id={collection.id}
             key={collection.id}
             visibility={collection.visibility}
-            {...{ accessType, includePrivate }}
+            {...{ accessType }}
           />
         ))}
       </tbody>

@@ -23,7 +23,6 @@ const MyCollections: FC = () => {
       <StyledCreateCollection />
       <CollectionsGrid
         collections={collections}
-        includePrivate
         accessType={ACCESS_TYPE.WRITE}
       />
     </ViewGrid>
