@@ -55,6 +55,15 @@ class TestDatabase:
             data_submission_policy_version="0",
         )
         self.db.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_id_not_owner",
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="Someone_else",
+            name="test_collection",
+            description="test_description",
+            data_submission_policy_version="0",
+        )
+        self.db.session.add(collection)
         self.db.session.commit()
 
     def _create_test_collection_links(self):

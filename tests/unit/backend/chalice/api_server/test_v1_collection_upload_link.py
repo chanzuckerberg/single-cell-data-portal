@@ -2,12 +2,12 @@ import json
 import sys
 import os
 import unittest
-
+from mock import patch
 from furl import furl
 
+from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
-
 
 class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
     @classmethod
@@ -32,14 +32,66 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         cls.mock_oauth_server.terminate()
         sys.path = cls.old_path
 
-    def test__link__Accepted(self):
+    def setUp(self):
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+
+    def test__link__accepted(self):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {
-            'url': 'https://test_url.com'
-        }
+        body = {'url': self.good_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         response.raise_for_status()
         actual_body = json.loads(response.body)
+        self.assertIn("dataset_uuid", actual_body.keys())
+
+
+    def test__link_no_auth__401(self, mock_get_file_info):
+        path = "/dp/v1/collections/test_collection_id/upload/link"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        body = {'url': self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(401, response.status_code)
+
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size':1, "name":"file.h5ad"})
+    def test__link_not_owner__403(self, mock_get_file_info):
+        path = "/dp/v1/collections/test_collection_id_not_owner/upload/link"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {'url': self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    def test__bad_link__400(self):
+        path = "/dp/v1/collections/test_collection_id/upload/link"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {'url': 'https://test_url.com'}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(400, response.status_code)
+
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size': 1, "name": "file.txt"})
+    def test__unsupported_format__400(self):
+        path = "/dp/v1/collections/test_collection_id/upload/link"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {'url': self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(400, response.status_code)
+
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size': 31 * GB, "name": "file.txt"})
+    def test__oversized__413(self):
+        path = "/dp/v1/collections/test_collection_id/upload/link"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {'url': self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(413, response.status_code)

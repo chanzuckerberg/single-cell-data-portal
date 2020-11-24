@@ -1,4 +1,5 @@
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
 import regex
 import requests
 
@@ -15,9 +16,11 @@ def get_download_url_from_shared_link(url):
     return result
 
 
+dropbox_link_rx = regex.compile(r"https://www.dropbox.com/s/[\w\d]+/.*\?dl=[01]")
+
+
 def verify(url):
-    rx = regex.compile(r"https://www.dropbox.com/s/[\w\d]+/.*\?dl=[01]")
-    return True if rx.fullmatch(url) else False
+    return True if dropbox_link_rx.fullmatch(url) else False
 
 
 def get_file_info(url):
