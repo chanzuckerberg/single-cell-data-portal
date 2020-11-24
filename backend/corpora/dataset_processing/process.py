@@ -20,6 +20,7 @@ def check_env():
     if missing:
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
+
 def fix_dropbox_url(url):
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
 
@@ -44,6 +45,7 @@ def fix_dropbox_url(url):
 
     return pr.geturl()
 
+
 def fetch_dropbox_url(dropbox_url, local_path):
     """Given a dropbox url, download it to local_path.
 
@@ -55,9 +57,10 @@ def fetch_dropbox_url(dropbox_url, local_path):
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    subprocess.run(["wget", fixed_dropbox_url, "-O", local_path], check=True)
+    subprocess.run(["wget", "-nv", fixed_dropbox_url, "-O", local_path], check=True)
 
     return local_path
+
 
 def extract_metadata(filename):
     """Pull metadata out of the AnnData file to insert into the dataset table."""
@@ -138,30 +141,40 @@ def main():
     check_env()
 
     local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
-
+    print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
         print("Validation failed!")
         print(f"stdout: {val_proc.stdout}")
         print(f"stderr: {val_proc.stderr}")
         sys.exit(1)
+    print("Validation complete", flush=True)
 
     metadata_dict = extract_metadata(local_filename)
-    print(metadata_dict)
+    print(metadata_dict, flush=True)
 
-    seurat_filename = make_seurat(local_filename)
-    cxg_dir = make_cxg(local_filename)
     loom_filename = make_loom(local_filename)
+    cxg_dir = make_cxg(local_filename)
+    seurat_filename = make_seurat(local_filename)
 
     s3 = boto3.client("s3")
     s3.upload_file(
-        local_filename, os.environ["ARTIFACTS_BUCKET"], local_filename, ExtraArgs={"ACL": "bucket-owner-full-control"}
+        local_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        os.path.join(os.environ["DATASET_ID"], local_filename),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     s3.upload_file(
-        seurat_filename, os.environ["ARTIFACTS_BUCKET"], seurat_filename, ExtraArgs={"ACL": "bucket-owner-full-control"}
+        seurat_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        os.path.join(os.environ["DATASET_ID"], seurat_filename),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     s3.upload_file(
-        loom_filename, os.environ["ARTIFACTS_BUCKET"], loom_filename, ExtraArgs={"ACL": "bucket-owner-full-control"}
+        loom_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        os.path.join(os.environ["DATASET_ID"], loom_filename),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
     subprocess.run(
@@ -170,7 +183,7 @@ def main():
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/",
+            f"s3://{os.environ['CELLXGENE_BUCKET']}/{os.environ['DATASET_ID']}/explorer/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
