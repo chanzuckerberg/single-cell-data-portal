@@ -9,6 +9,7 @@ from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
 
+
 class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -39,7 +40,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
     def test__link__accepted(self):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {'url': self.good_link}
+        body = {"url": self.good_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -47,21 +48,20 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         actual_body = json.loads(response.body)
         self.assertIn("dataset_uuid", actual_body.keys())
 
-
-    def test__link_no_auth__401(self, mock_get_file_info):
+    def test__link_no_auth__401(self):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        body = {'url': self.dummy_link}
+        body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(401, response.status_code)
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size':1, "name":"file.h5ad"})
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.h5ad"})
     def test__link_not_owner__403(self, mock_get_file_info):
         path = "/dp/v1/collections/test_collection_id_not_owner/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {'url': self.dummy_link}
+        body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -70,27 +70,27 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
     def test__bad_link__400(self):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {'url': 'https://test_url.com'}
+        body = {"url": "https://test_url.com"}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(400, response.status_code)
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size': 1, "name": "file.txt"})
-    def test__unsupported_format__400(self):
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.txt"})
+    def test__unsupported_format__400(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {'url': self.dummy_link}
+        body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(400, response.status_code)
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={'size': 31 * GB, "name": "file.txt"})
-    def test__oversized__413(self):
+    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 31 * GB, "name": "file.txt"})
+    def test__oversized__413(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {'url': self.dummy_link}
+        body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
