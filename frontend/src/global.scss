@@ -76,7 +76,6 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
 }
 
 // Remove box shadow and vertical separators on HTMLTable cells when bordered prop is present
-
 table.bp3-html-table.bp3-html-table-bordered {
   tbody tr td,
   th,

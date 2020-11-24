@@ -1,13 +1,13 @@
 import { Classes, Position } from "@blueprintjs/core";
-import React from "react";
+import React, { FC } from "react";
 import { LeftAlignedDetailsCell } from "../common/style";
 import { FieldValues, StyledButton, StyledPopover } from "./style";
 
-const conditionalPopover = (values: string[]) => {
-  if (!values || values.length === 0) {
-    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
-  }
+interface Props {
+  values: string[];
+}
 
+const Popover: FC<Props> = ({ values }) => {
   return (
     <LeftAlignedDetailsCell>
       <FieldValues>
@@ -42,4 +42,4 @@ const conditionalPopover = (values: string[]) => {
   );
 };
 
-export default conditionalPopover;
+export default Popover;

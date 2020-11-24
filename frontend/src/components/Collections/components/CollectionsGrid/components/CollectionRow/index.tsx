@@ -33,7 +33,7 @@ const conditionalPopover = (values: string[]) => {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return <AsyncPopover />;
+  return <AsyncPopover values={values} />;
 };
 
 type DOI = {
