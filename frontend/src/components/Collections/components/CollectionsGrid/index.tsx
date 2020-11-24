@@ -28,12 +28,12 @@ const CollectionsGrid: FC<Props> = ({ collections, accessType }) => {
         </tr>
       </thead>
       <tbody>
-        {collections?.map((collection) => (
+        {collections?.map(({ id, visibility }) => (
           <CollectionRow
-            id={collection.id}
-            key={collection.id}
-            visibility={collection.visibility}
-            {...{ accessType }}
+            id={id}
+            key={id + visibility}
+            visibility={visibility}
+            accessType={accessType}
           />
         ))}
       </tbody>

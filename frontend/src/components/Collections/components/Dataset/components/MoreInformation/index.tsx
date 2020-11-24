@@ -21,7 +21,6 @@ interface Props {
 
 const MoreInformation: FC<Props> = ({ links }) => {
   const uniqueLinks = Array.from(
-    // eslint-disable-next-line @typescript-eslint/camelcase
     new Map(links.map(({ link_url, link_name }) => [link_url, link_name]))
   );
 

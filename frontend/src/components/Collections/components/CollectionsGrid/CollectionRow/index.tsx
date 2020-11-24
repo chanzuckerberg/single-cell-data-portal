@@ -67,15 +67,19 @@ type DOI = {
   link: string;
 };
 
-const CollectionRow: FC<Props> = ({ id, accessType, visibility }) => {
-  const { data: collection } = useCollection(id, visibility);
+const CollectionRow: FC<Props> = (props) => {
+  const { data: collection } = useCollection(props.id, props.visibility);
 
   if (!collection) return null;
 
   // If there is an explicity accessType only show collections with that accessType
-  if (accessType && collection.access_type !== accessType) return null;
+  if (props.accessType && collection.access_type !== props.accessType) {
+    return null;
+  }
 
-  const dois: Array<DOI> = collection.links.reduce((acc, link) => {
+  const { id, links, visibility, contact_name, name } = collection;
+
+  const dois: Array<DOI> = links.reduce((acc, link) => {
     if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
 
     const url = new URL(link.link_url);
@@ -85,7 +89,7 @@ const CollectionRow: FC<Props> = ({ id, accessType, visibility }) => {
     return acc;
   }, [] as DOI[]);
 
-  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
+  const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
   // TODO: Generate data from datasets #737
   const { tissue, assays, disease, organism, cellCount } = {} as any;
@@ -96,9 +100,9 @@ const CollectionRow: FC<Props> = ({ id, accessType, visibility }) => {
         <CollectionTitleText
           href={`/collections/${id}${isPrivate ? "/private" : ""}`}
         >
-          {collection.name}
+          {name}
         </CollectionTitleText>
-        <div>{collection.contact_name}</div>
+        <div>{contact_name}</div>
         {dois?.map((doi) => (
           <a key={doi.doi} href={doi.link}>
             {doi.doi}
