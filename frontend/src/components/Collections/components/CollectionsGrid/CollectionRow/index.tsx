@@ -16,6 +16,7 @@ import {
   StyledPopover,
   StyledRow,
 } from "./style";
+
 interface Props {
   id: string;
   accessType: ACCESS_TYPE;
@@ -23,8 +24,10 @@ interface Props {
 }
 
 const conditionalPopover = (values: string[]) => {
-  if (!values || values.length === 0)
+  if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
+  }
+
   return (
     <LeftAlignedDetailsCell>
       <FieldValues>
@@ -65,8 +68,9 @@ const CollectionRow: FC<Props> = ({ id, accessType, includePrivate }) => {
   if (!collection) return null;
 
   // If we only want public datasets do not show private datasets
-  if (!includePrivate && collection.visibility === VISIBILITY_TYPE.PRIVATE)
+  if (!includePrivate && collection.visibility === VISIBILITY_TYPE.PRIVATE) {
     return null;
+  }
 
   // If there is an explicity accessType only show collections with that accessType
   if (accessType && collection.access_type !== accessType) return null;
