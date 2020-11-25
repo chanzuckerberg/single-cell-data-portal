@@ -183,7 +183,7 @@ def main():
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/{os.environ['DATASET_ID']}/explorer/",
+            f"s3://{os.environ['CELLXGENE_BUCKET']}/{os.environ['DATASET_ID']}/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",

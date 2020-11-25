@@ -1,4 +1,4 @@
-IMAGE=corpora-processing-${DEPLOYMENT_STAGE}
+IMAGE=corpora-upload-${DEPLOYMENT_STAGE}
 
 # make build
 #	build a local image for testing
@@ -26,4 +26,10 @@ push: login
 	docker tag $(IMAGE):latest $(REPOSITORY_URI):$(VERSION)
 	docker push $(REPOSITORY_URI):$(VERSION)
 
-.phony: build bump_version promote push release login
+promote: login
+	$(eval REPOSITORY_URI = $(shell aws ecr describe-repositories --repository-name $(IMAGE) | jq -r '.repositories[].repositoryUri'))
+	$(eval VERSION=$(shell cat VERSION))
+	docker tag $(REPOSITORY_URI):$(VERSION) $(REPOSITORY_URI):active
+	docker push $(REPOSITORY_URI):active
+
+.phony: build bump_version promote push login
