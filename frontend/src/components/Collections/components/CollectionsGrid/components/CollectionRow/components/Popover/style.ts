@@ -1,23 +1,12 @@
-import { Button, Popover } from "@blueprintjs/core";
-import styled, { css } from "styled-components";
+import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import styled from "styled-components";
 import { textClippingCSS } from "../../../common/style";
 
 export const FieldValues = styled.div`
   ${textClippingCSS}
-  width: inherit;
+  color: ${GRAY.A};
 `;
 
-const popoverButtonCSS = css`
-  border-radius: 3px;
-  align-self: flex-end;
-  padding: 4px 4px;
-  margin-left: 8px;
-`;
-
-export const StyledPopover = styled(Popover)`
-  ${popoverButtonCSS}
-`;
-
-export const StyledButton = styled(Button)`
-  ${popoverButtonCSS}
+export const ContentWrapper = styled.div`
+  padding: ${2 * PT_GRID_SIZE_PX}px;
 `;

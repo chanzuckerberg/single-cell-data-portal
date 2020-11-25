@@ -2,8 +2,6 @@ import styled, { css } from "styled-components";
 
 export const textClippingCSS = css`
   white-space: nowrap;
-  text-overflow: clip;
-  overflow: hidden;
 `;
 
 export const detailsColWidthCSS = css`
