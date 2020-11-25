@@ -9,6 +9,7 @@ import {
 import { useCollection } from "src/common/queries/collections";
 import { StyledCell } from "../common/style";
 import { LeftAlignedDetailsCell } from "./components/common/style";
+import { aggregateDatasetsMetadata } from "./components/common/utils";
 import {
   CollectionTitleText,
   RightAlignedDetailsCell,
@@ -47,11 +48,15 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection) return null;
 
   // If there is an explicity accessType only show collections with that accessType
-  if (props.accessType && collection.access_type !== props.accessType) {
-    return null;
-  }
 
-  const { id, links, visibility, contact_name, name } = collection;
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // if (props.accessType && collection.access_type !== props.accessType) {
+  //   return null;
+  // }
+
+  const { id, links, visibility, contact_name, name, datasets } = collection;
 
   const dois: Array<DOI> = links.reduce((acc, link) => {
     if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
@@ -65,8 +70,13 @@ const CollectionRow: FC<Props> = (props) => {
 
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
-  // TODO: Generate data from datasets #737
-  const { tissue, assays, disease, organism, cellCount } = {} as any;
+  const {
+    tissue,
+    assay,
+    disease,
+    organism,
+    cell_count,
+  } = aggregateDatasetsMetadata(datasets);
 
   return (
     <StyledRow>
@@ -87,10 +97,10 @@ const CollectionRow: FC<Props> = (props) => {
         </Tag>
       </StyledCell>
       {conditionalPopover(tissue)}
-      {conditionalPopover(assays)}
+      {conditionalPopover(assay)}
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
-      <RightAlignedDetailsCell>{cellCount || "-"}</RightAlignedDetailsCell>
+      <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
     </StyledRow>
   );
 };

@@ -60,19 +60,20 @@ export interface Collection {
   updated_at: number;
 }
 
+export type Ontology = {
+  label: string;
+  ontology_term_id: string;
+};
+
 export interface Dataset {
   id: string;
-  // assay: string;
-  // assay_ontology: string;
-  // tissue: string;
-  // tissue_ontology: string;
-  // disease_state: string;
-  // disease_state_ontology: string;
+  assay: Ontology[];
+  tissue: Ontology[];
+  disease: Ontology[];
+  cell_count: number | null;
   // sex: string;
-  // ethnicity: string;
-  // ethnicity_ontology: string;
-  // organism: string;
-  // organism_ontology: string;
+  ethnicity: Ontology;
+  organism: Ontology;
   name: string;
   // source_data_location: string;
   // revision: number;
