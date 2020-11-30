@@ -69,6 +69,7 @@ class Collection(Entity):
         cls, collection_uuid: str, visibility: CollectionVisibility, user: str
     ) -> typing.Union[DbCollection, None]:
         """
+        Return a collection if the user is the owner of a collection.
 
         :param collection_uuid: the uuid of the collection
         :param visibility: the visibility of the collection
