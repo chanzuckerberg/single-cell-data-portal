@@ -25,7 +25,6 @@ if os.getenv("DEPLOYMENT_STAGE") == "test":
     secret_id = "corpora/backend/test/config"
     old_secret = client_ssm.get_secret_value(SecretId=secret_id)["SecretString"]
 
-
     def setUpModule():
         response = client_sfn.create_state_machine(
             name="fake_step",
@@ -34,7 +33,6 @@ if os.getenv("DEPLOYMENT_STAGE") == "test":
         )
         secret_string = json.dumps({"upload_sfn_arn": response["stateMachineArn"]})
         client_ssm.update_secret(SecretId=secret_id, SecretString=secret_string)
-
 
     def tearDownModule():
         upload_sfn_arn = json.loads(client_ssm.get_secret_value(SecretId=secret_id)["SecretString"])["upload_sfn_arn"]
