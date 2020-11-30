@@ -37,7 +37,8 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    def test__link__accepted(self):
+    @patch("backend.corpora.common.upload_sfn.start_upload_sfn", return_value={"executionArn":"aws:::"})
+    def test__link__accepted(self, mocked):
         path = "/dp/v1/collections/test_collection_id/upload/link"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.good_link}
