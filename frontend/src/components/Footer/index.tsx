@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { MainWrapper, StyledAnchor, Wrapper } from "./style";
 
 const Footer: FC = () => {
@@ -13,22 +14,10 @@ const Footer: FC = () => {
         >
           Contact
         </StyledAnchor>
-        <StyledAnchor
-          href={
-            "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html"
-          }
-          target="_blank"
-          rel="noopener"
-        >
+        <StyledAnchor href={ROUTES.TOS} target="_blank" rel="noopener">
           Terms of Service
         </StyledAnchor>
-        <StyledAnchor
-          href={
-            "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html"
-          }
-          target="_blank"
-          rel="noopener"
-        >
+        <StyledAnchor href={ROUTES.PRIVACY} target="_blank" rel="noopener">
           Privacy Policy
         </StyledAnchor>
       </MainWrapper>
