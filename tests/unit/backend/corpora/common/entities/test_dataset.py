@@ -84,6 +84,26 @@ class TestDataset(unittest.TestCase):
                 self.assertCountEqual(expected_artifacts, actual_artifacts)
                 self.assertCountEqual(expected_deployment_directories, actual_deployment_directories)
 
+    def test__update__ok(self):
+        artifact_params = dict(
+            filename="filename_1",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri="some_uri",
+        )
+        deployment_directory_params = dict(url="test_url")
+        dataset_params = BogusDatasetParams.get()
+        dataset = Dataset.create(
+            **dataset_params, artifacts=[artifact_params] * 1, deployment_directories=[deployment_directory_params] * 1
+        )
+        dataset.update(
+            artifacts=[artifact_params] * 1,
+            deployment_directories=[deployment_directory_params] * 1,
+        )
+        actual_dataset = Dataset.get(dataset.id)
+        self.assertEqual(dataset.artifacts, actual_dataset.artifacts)
+
     def test__list__ok(self):
         generate = 2
         generated_ids = [Dataset.create(**BogusDatasetParams.get()).id for _ in range(generate)]
@@ -111,12 +131,9 @@ class TestDataset(unittest.TestCase):
         Dataset.db.session.expire_all()
 
         actual_dataset = Dataset.get(expected_dataset_id)
-        self.assertIn("upload_progress", actual_dataset.processing_status)
-        self.assertAlmostEqual(dataset.processing_status["upload_progress"], 9 / 13)
-        self.assertIn("upload_status", actual_dataset.processing_status)
-        self.assertEqual(dataset.processing_status["upload_status"], UploadStatus.UPLOADING)
-        self.assertIn("validation_status", actual_dataset.processing_status)
-        self.assertEqual(dataset.processing_status["validation_status"], ValidationStatus.NA)
+        self.assertAlmostEqual(actual_dataset.processing_status.upload_progress, 9 / 13)
+        self.assertEqual(actual_dataset.processing_status.upload_status, UploadStatus.UPLOADING)
+        self.assertEqual(actual_dataset.processing_status.validation_status, ValidationStatus.NA)
 
     def test__cascade_delete_dataset__ok(self):
         # Create the dataset
