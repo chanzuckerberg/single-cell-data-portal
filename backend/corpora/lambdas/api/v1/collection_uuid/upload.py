@@ -2,7 +2,7 @@ from flask import make_response
 
 from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
-from .....common.upload_sfn import start_upload_sfn
+from .....common import upload_sfn
 from .....common.utils.db_utils import db_session
 from .....common.entities import Collection, Dataset
 from .....common.utils import dropbox
@@ -33,5 +33,5 @@ def link(collection_uuid: str, body: dict, user: str):
     dataset = Dataset.create(processing_status=Dataset.new_processing_status(), collection=collection)
 
     # Start processing link
-    start_upload_sfn(collection_uuid, dataset.id, url)
+    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, url)
     return make_response({"dataset_uuid": dataset.id}, 202)
