@@ -1,4 +1,4 @@
-import { Button, Popover } from "@blueprintjs/core";
+import { Button, Popover, Tag } from "@blueprintjs/core";
 import { GRAY } from "src/components/common/theme";
 import styled, { css } from "styled-components";
 import { detailsColWidthCSS } from "../style";
@@ -17,6 +17,10 @@ export const CollectionTitleText = styled.a`
 export const DOIText = styled.div`
   font-size: 12px;
   color: ${GRAY.A};
+`;
+export const VisibilityTag = styled(Tag)`
+  border-radius: 3px;
+  padding: 4px 6px;
 `;
 
 // General Cell Style

@@ -1,4 +1,4 @@
-import { Classes, Intent, Position, Tag } from "@blueprintjs/core";
+import { Classes, Intent, Position } from "@blueprintjs/core";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -15,6 +15,7 @@ import {
   StyledCell,
   StyledPopover,
   StyledRow,
+  VisibilityTag,
 } from "./style";
 interface Props {
   id: string;
@@ -95,15 +96,18 @@ const CollectionRow: FC<Props> = ({ id, accessType, includePrivate }) => {
         </CollectionTitleText>
         <div>{collection.contact_name}</div>
         {includePrivate ? (
+          <VisibilityTag
+            minimal
+            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
+          >
+            {isPrivate ? "Private" : "Published"}
+          </VisibilityTag>
+        ) : (
           dois?.map((doi) => (
             <a key={doi.doi} href={doi.link}>
               {doi.doi}
             </a>
           ))
-        ) : (
-          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
-            {isPrivate ? "Private" : "Published"}
-          </Tag>
         )}
       </StyledCell>
       {conditionalPopover(tissue)}
