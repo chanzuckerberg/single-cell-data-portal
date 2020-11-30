@@ -19,7 +19,12 @@ import { ButtonWrapper, Initial } from "./style";
 const AuthButtons = () => {
   const hasAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
 
-  const { data: userInfo, isLoading } = useUserInfo(hasAuth);
+  const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);
+
+  if (userInfo && error) {
+    // (thuang): Force refresh page to log user out
+    window.location.reload();
+  }
 
   if (!hasAuth || isLoading) return null;
 

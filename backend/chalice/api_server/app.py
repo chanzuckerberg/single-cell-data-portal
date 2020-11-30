@@ -8,8 +8,11 @@ from functools import wraps
 
 import chalice
 import connexion
-from chalice import Chalice, CORSConfig
+from chalice import Chalice
 from connexion import FlaskApi, ProblemException, problem
+from flask_cors import CORS
+from urllib.parse import urlparse
+
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -18,8 +21,6 @@ from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws_secret import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
-
-cors_config = CORSConfig(allow_origin="*", max_age=600, allow_credentials=True)
 
 
 def requires_auth():
@@ -52,15 +53,28 @@ def get_chalice_app(flask_app):
     flask_app.debug = True
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
+    allowed_origin = [r"^http://localhost:\d+"]
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
     deployment = os.environ["DEPLOYMENT_STAGE"]
-    if deployment != "test":
+    if deployment != "test":  # pragma: no cover
         secret_name = f"corpora/backend/{os.environ['DEPLOYMENT_STAGE']}/auth0-secret"
         auth_secret = json.loads(AwsSecret(secret_name).value)
         if auth_secret:
             flask_secret_key = auth_secret.get("flask_secret_key", flask_secret_key)
+            frontend = auth_secret.get("redirect_to_frontend", None)
+            if frontend:
+                if frontend.endswith("/"):
+                    frontend = frontend[:-1]
+                frontend_parse = urlparse(frontend)
+                if deployment == "prod":
+                    allowed_origin = [f"{frontend_parse.scheme}://{frontend_parse.netloc}"]
+                else:
+                    allowed_origin.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
+    CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origin, allow_headers=["Content-Type"])
+    app.log.info(f"CORS allowed_origins: {allowed_origin}")
+
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     flask_app.config.update(SECRET_KEY=flask_secret_key)
 
@@ -82,10 +96,10 @@ def get_chalice_app(flask_app):
 
         # set dummy auth token value for optional security endpoints
         headers = [*app.current_request.headers.items(), ("cxgpublic", "dummy")]
-
+        host = app.current_request.headers.get("host")
         with flask_app.test_request_context(
             path=resource_path,
-            base_url="https://{}".format(app.current_request.headers["host"]),
+            base_url="https://{}".format(host) if host else None,
             query_string=query_string,
             method=app.current_request.method,
             headers=headers,
@@ -111,7 +125,7 @@ def get_chalice_app(flask_app):
     for rule in flask_app.url_map.iter_rules():
         routes[re.sub(r"<(.+?)(:.+?)?>", r"{\1}", rule.rule).rstrip("/")] += rule.methods
     for route, methods in routes.items():
-        app.route(route, methods=list(set(methods) - {"OPTIONS"}), cors=cors_config)(dispatch)
+        app.route(route, methods=list(set([*methods, "OPTIONS"])))(dispatch)
 
     with open(os.path.join(pkg_root, "index.html")) as swagger_ui_file_object:
         swagger_ui_html = swagger_ui_file_object.read()

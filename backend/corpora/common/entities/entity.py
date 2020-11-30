@@ -69,10 +69,25 @@ class Entity:
         cls, rows: typing.List[dict], db_table: Base, add_columns: dict = None
     ) -> typing.List[Base]:
         """
+        The same as Entity._create_sub_object, but takes a list of rows
+         :param rows: A list of dictionaries specifying rows to insert or modify
+         :param db_table: The Table to add or modify rows
+         :param add_columns: Additional columns attributes or modifications to add to the row.
+        :return: a list of database objects to create.
+        """
+        add_columns = add_columns if add_columns else {}
+        db_objs = []
+        for row in rows:
+            db_objs.append(cls._create_sub_object(row, db_table, add_columns))
+        return db_objs
+
+    @classmethod
+    def _create_sub_object(cls, row: dict, db_table: Base, add_columns: dict = None):
+        """
          Create `rows` in `db_table` associated with Entity Object during object creation. A new UUID is generated and a
          new row is created for each item in `rows`.
 
-         :param rows: A list of dictionaries each specifying a row to insert or modify
+         :param row: A dictionary specifying a row to insert or modify
          :param db_table: The Table to add or modify rows
          :param add_columns: Additional columns attributes or modifications to add to the row.
 
@@ -81,30 +96,34 @@ class Entity:
          DbCollectionLink.collection_id
          and DbCollectionLink.collection_visibility. The function call would be:
          >>>> cls._create_sub_objects(
-         >>>>    [{'link_url':'abc', 'link_type': CollectionLinkType.OTHER}],
+         >>>>    {'link_url':'abc', 'link_type': CollectionLinkType.OTHER},
          >>>>    DbCollectionLink,
          >>>>    add_columns={'collection_id':'abcd','collection_visibility':CollectionVisibility.PRIVATE}
          >>>>    )
 
          Another use would be to overwrite column specified in the rows.
 
-        :return: a list of database objects to create.
+        :return: a database object to create.
         """
         add_columns = add_columns if add_columns else {}
-        db_objs = []
-        for columns in rows:
-            #  if there are matching keys in columns and add_columns, the key value in add_columns will be used.
-            _columns = dict(**columns)
-            _columns.update(**add_columns)
 
-            _columns["id"] = str(uuid.uuid4())
-            row = db_table(**_columns)
-            db_objs.append(row)
-        return db_objs
+        #  if there are matching keys in columns and add_row, the key value in add_row will be used.
+        new_row = dict(**row)
+        new_row.update(**add_columns)
+
+        new_row["id"] = str(uuid.uuid4())
+        new_row = db_table(**new_row)
+        return new_row
 
     def delete(self):
         """
         Delete an object from the database.
         """
         self.db.delete(self.db_object)
+        self.db.commit()
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
         self.db.commit()

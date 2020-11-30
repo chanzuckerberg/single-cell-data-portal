@@ -34,7 +34,6 @@ const CreateCollection: FC = () => {
         canEscapeKeyClose: false,
         canOutsideClickClose: false,
         content: AsyncContent,
-        isCloseButtonShown: false,
       }
     : {
         canEscapeKeyClose: true,
