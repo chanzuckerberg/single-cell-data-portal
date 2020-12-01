@@ -106,8 +106,8 @@ class TestDataset(unittest.TestCase):
         dataset_params = BogusDatasetParams.get()
         dataset = Dataset.create(
             **dataset_params,
-            artifacts=[artifact_params] * 1,
-            deployment_directories=[deployment_directory_params] * 1,
+            artifacts=[artifact_params],
+            deployment_directories=[deployment_directory_params],
             processing_status=processing_status,
         )
 
@@ -129,8 +129,8 @@ class TestDataset(unittest.TestCase):
         )
 
         dataset.update(
-            artifacts=[new_artifact_params] * 1,
-            deployment_directories=[deployment_directory_params] * 1,
+            artifacts=[new_artifact_params],
+            deployment_directories=[deployment_directory_params],
             processing_status=new_processing_status,
             sex=["other"],
         )

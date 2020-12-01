@@ -85,7 +85,6 @@ class Dataset(Entity):
         if artifacts or deployment_directories or processing_status:
             if artifacts:
                 for af in self.artifacts:
-                    print(af)
                     self.db.delete(af)
                 new_db_objects = self._create_sub_objects(
                     artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
@@ -94,7 +93,6 @@ class Dataset(Entity):
                 kwargs["artifacts"] = new_db_objects
             if deployment_directories:
                 for dd in self.deployment_directories:
-                    print(dd)
                     self.db.delete(dd)
                 new_db_objects = self._create_sub_objects(
                     deployment_directories,
