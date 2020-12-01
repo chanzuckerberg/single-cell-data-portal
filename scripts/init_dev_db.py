@@ -10,7 +10,7 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noq
 sys.path.insert(0, pkg_root)  # noqa
 
 from tests.unit.backend.corpora.fixtures.database import TestDatabase
-from corpora.common.corpora_config import CorporaDbConfig
+from backend.corpora.common.corpora_config import CorporaDbConfig
 
 if __name__ == "__main__":
     engine = create_engine(CorporaDbConfig().database_uri)
