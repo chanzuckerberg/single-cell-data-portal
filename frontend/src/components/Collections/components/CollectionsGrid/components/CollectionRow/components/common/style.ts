@@ -1,3 +1,4 @@
+import { Tag } from "@blueprintjs/core";
 import {
   detailsColWidthCSS,
   StyledCell,
@@ -14,4 +15,8 @@ export const DetailsCell = styled(StyledCell)`
 
 export const LeftAlignedDetailsCell = styled(DetailsCell)`
   text-align: left !important;
+`;
+
+export const StyledTag = styled(Tag)`
+  padding: 2px 6px;
 `;

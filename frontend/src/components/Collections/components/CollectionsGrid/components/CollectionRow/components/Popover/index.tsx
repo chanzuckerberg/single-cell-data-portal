@@ -1,11 +1,10 @@
 import {
-  Button,
-  Intent,
   Popover as PopoverRaw,
+  PopoverInteractionKind,
   Position,
 } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { LeftAlignedDetailsCell } from "../common/style";
+import { LeftAlignedDetailsCell, StyledTag } from "../common/style";
 import { ContentWrapper, FieldValues } from "./style";
 
 interface Props {
@@ -22,7 +21,13 @@ const Popover: FC<Props> = ({ values }) => {
       </FieldValues>
       {values.length > 2 && (
         <PopoverRaw
+          interactionKind={PopoverInteractionKind.HOVER}
           position={Position.BOTTOM}
+          boundary="window"
+          modifiers={{
+            hide: { enabled: false },
+            preventOverflow: { enabled: false },
+          }}
           content={
             <ContentWrapper>
               {values.map((val, idx) => (
@@ -34,9 +39,7 @@ const Popover: FC<Props> = ({ values }) => {
             </ContentWrapper>
           }
         >
-          <Button small outlined intent={Intent.PRIMARY}>
-            +{values.length - 2}
-          </Button>
+          <StyledTag minimal>+{values.length - 2}</StyledTag>
         </PopoverRaw>
       )}
     </LeftAlignedDetailsCell>
