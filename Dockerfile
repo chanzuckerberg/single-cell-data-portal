@@ -12,17 +12,14 @@ RUN apt-get update && \
 
 # RUN envsubst < config/iam-policy-templates/corpora-api-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
 
-WORKDIR /tests
 ADD tests /tests
-
-WORKDIR /scripts
 ADD scripts /scripts
-
 WORKDIR /backend
 ADD backend /backend
+ADD requirements.txt /requirements.txt
 
 # Don't re-run pip install unless requirements.txt has changed.
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install -r /requirements.txt
 
 RUN mv chalice/api_server/.chalice/config.json.dev chalice/api_server/.chalice/config.json
 
