@@ -1,5 +1,14 @@
+.PHONY: db/create
+db/create:
+	# TODO(mbarrien): Figure out which directory init_dev_db should live in
+	python3 ../scripts/init_dev_db.py
+
+.PHONY: db/migrate
 db/migrate:
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
+
+.PHONY: db/init_remote_dev
+db/init_remote_dev: db/create db/migrate
 
 db/rollback:
 	alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
