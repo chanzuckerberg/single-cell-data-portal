@@ -2,9 +2,10 @@ import {
   Popover as PopoverRaw,
   PopoverInteractionKind,
   Position,
+  Tag,
 } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { LeftAlignedDetailsCell, StyledTag } from "../common/style";
+import { LeftAlignedDetailsCell } from "../common/style";
 import { ContentWrapper, FieldValues } from "./style";
 
 interface Props {
@@ -39,7 +40,7 @@ const Popover: FC<Props> = ({ values }) => {
             </ContentWrapper>
           }
         >
-          <StyledTag minimal>+{values.length - 2}</StyledTag>
+          <Tag minimal>+{values.length - 2}</Tag>
         </PopoverRaw>
       )}
     </LeftAlignedDetailsCell>

@@ -3,6 +3,14 @@ $blue2: #005fc6 !default;
 $blue3: #0e7dec !default;
 $blue4: #459fff !default;
 $blue5: #73b7ff !default;
+$blue6: #dfefff !default;
+
+$green1: #0a6640 !default;
+$green2: #0d8050 !default;
+$green3: #0f9960 !default;
+$green4: #15b371 !default;
+$green5: #3dcc91 !default;
+$green6: #e1f7ed !default;
 
 $pt-grid-size: 8px;
 
@@ -67,6 +75,29 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
 
 .bp3-dialog-header .bp3-heading {
   line-height: normal;
+}
+
+.bp3-tag {
+  padding: 2px 6px;
+  background: $gray1;
+  .bp3-minimal {
+    background: $gray5;
+    color: $black;
+  }
+  .bp3-intent-success {
+    background: $green3;
+    .bp3-minimal {
+      color: $blue2;
+      background: $green6;
+    }
+  }
+  .bp3-intent-primary {
+    background: $blue3;
+    .bp3-minimal {
+      color: $blue2;
+      background: $blue6;
+    }
+  }
 }
 
 // Temp fix for checkbox

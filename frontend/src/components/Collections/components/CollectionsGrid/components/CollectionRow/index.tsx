@@ -1,4 +1,4 @@
-import { Intent } from "@blueprintjs/core";
+import { Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
 import {
@@ -8,7 +8,7 @@ import {
 } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
 import { StyledCell } from "../common/style";
-import { LeftAlignedDetailsCell, StyledTag } from "./components/common/style";
+import { LeftAlignedDetailsCell } from "./components/common/style";
 import { aggregateDatasetsMetadata } from "./components/common/utils";
 import {
   CollectionTitleText,
@@ -89,12 +89,9 @@ const CollectionRow: FC<Props> = (props) => {
         <div>{contact_name}</div>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
-          <StyledTag
-            minimal
-            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
-          >
+          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
             {isPrivate ? "Private" : "Published"}
-          </StyledTag>
+          </Tag>
         ) : (
           dois?.map((doi) => (
             <a key={doi.doi} href={doi.link}>
