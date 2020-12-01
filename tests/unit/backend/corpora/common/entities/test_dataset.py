@@ -8,7 +8,6 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     DatasetArtifactFileType,
     CollectionVisibility,
-    ConversionStatus,
     UploadStatus,
     ValidationStatus,
     DbDataset,
@@ -17,7 +16,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils
-from tests.unit.backend.utils import BogusDatasetParams
+from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
 
 
 class TestDataset(unittest.TestCase):
@@ -94,16 +93,9 @@ class TestDataset(unittest.TestCase):
             s3_uri="some_uri",
         )
         deployment_directory_params = dict(url="test_url")
-        processing_status = dict(
-            upload_status=UploadStatus.UPLOADING,
-            upload_progress=1 / 9,
-            validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
-            conversion_rds_status=ConversionStatus.NA,
-            conversion_cxg_status=ConversionStatus.NA,
-            conversion_anndata_status=ConversionStatus.NA,
-        )
+        processing_status = BogusProcessingStatusParams.get()
         dataset_params = BogusDatasetParams.get()
+
         dataset = Dataset.create(
             **dataset_params,
             artifacts=[artifact_params],
@@ -118,15 +110,7 @@ class TestDataset(unittest.TestCase):
             user_submitted=False,
             s3_uri="a_different_uri",
         )
-        new_processing_status = dict(
-            upload_status=UploadStatus.UPLOADING,
-            upload_progress=7 / 9,
-            validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
-            conversion_rds_status=ConversionStatus.NA,
-            conversion_cxg_status=ConversionStatus.NA,
-            conversion_anndata_status=ConversionStatus.NA,
-        )
+        new_processing_status = BogusProcessingStatusParams.get(upload_progress=7 / 9)
 
         dataset.update(
             artifacts=[new_artifact_params],
