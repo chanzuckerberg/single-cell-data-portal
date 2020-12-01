@@ -1,6 +1,8 @@
 # TODO(mbarrien): This should not be calling TestDatabase unconditionally upon import.
 
-from ..backend.corpora.fixtures.database import TestDatabase
+from tests.unit.fixtures.test_db import TestDatabase
 
 
-TestDatabase()
+testdb = TestDatabase()
+testdb.create_db()
+testdb.populate_test_data()

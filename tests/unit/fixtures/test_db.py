@@ -15,17 +15,19 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.utils.db_utils import DbUtils
 from backend.scripts.create_db import create_db
-from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 
 
 class TestDatabase:
-    fake_s3_file = f"s3://{CorporaTestCaseUsingMockAWS.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
+    fake_s3_file = "s3://bogus-bucket/test_s3_uri.h5ad"
     real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
 
-    def __init__(self, real_data=False, do_create_db=True):
+    def __init__(self, real_data=False):
         self.real_data = real_data
-        if do_create_db:
-            create_db()
+
+    def create_db(self):
+        create_db()
+
+    def populate_test_data(self):
         self.db = DbUtils()
         self._populate_test_data()
         del self.db
