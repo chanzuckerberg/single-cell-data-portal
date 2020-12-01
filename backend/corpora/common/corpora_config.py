@@ -21,7 +21,9 @@ class CorporaDbConfig(SecretConfig):
         # instead of {"database_url": "postgresql://blah"} so we can add a suffix here
         # based on the remote dev env name.
         # TODO(mbarrien): HACK HACK HACK! Need to figure out how to get os inside context of secret_config.py
-        remote_dev_prefix = os.getenv('REMOTE_DEV_PREFIX')
+        remote_dev_prefix = os.getenv('REMOTE_DEV_PREFIX', "")
+        if not remote_dev_prefix:
+            return {}
         return {
             "database_uri": "{remote_dev_uri}" + remote_dev_prefix,
         }
