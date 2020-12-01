@@ -84,6 +84,8 @@ class TestDataset(unittest.TestCase):
                 self.assertCountEqual(expected_artifacts, actual_artifacts)
                 self.assertCountEqual(expected_deployment_directories, actual_deployment_directories)
 
+        self.assertTrue(False)
+
     def test__update__ok(self):
         artifact_params = dict(
             filename="filename_1",
