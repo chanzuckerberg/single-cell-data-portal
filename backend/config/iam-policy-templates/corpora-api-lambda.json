@@ -61,6 +61,14 @@
         "ec2:DescribeVpcs"
       ],
       "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "states:StartExecution",
+        "states:DescribeExecution"
+      ],
+      "Resource": $UPLOAD_SFN_ARN
     }
   ]
 }
