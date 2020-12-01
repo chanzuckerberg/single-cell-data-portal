@@ -8,6 +8,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     DatasetArtifactFileType,
     CollectionVisibility,
+    ConversionStatus,
     UploadStatus,
     ValidationStatus,
     DbDataset,
@@ -84,8 +85,6 @@ class TestDataset(unittest.TestCase):
                 self.assertCountEqual(expected_artifacts, actual_artifacts)
                 self.assertCountEqual(expected_deployment_directories, actual_deployment_directories)
 
-        self.assertTrue(False)
-
     def test__update__ok(self):
         artifact_params = dict(
             filename="filename_1",
@@ -95,16 +94,51 @@ class TestDataset(unittest.TestCase):
             s3_uri="some_uri",
         )
         deployment_directory_params = dict(url="test_url")
+        processing_status = dict(
+            upload_status=UploadStatus.UPLOADING,
+            upload_progress=1 / 9,
+            validation_status=ValidationStatus.NA,
+            conversion_loom_status=ConversionStatus.NA,
+            conversion_rds_status=ConversionStatus.NA,
+            conversion_cxg_status=ConversionStatus.NA,
+            conversion_anndata_status=ConversionStatus.NA,
+        )
         dataset_params = BogusDatasetParams.get()
         dataset = Dataset.create(
-            **dataset_params, artifacts=[artifact_params] * 1, deployment_directories=[deployment_directory_params] * 1
-        )
-        dataset.update(
+            **dataset_params,
             artifacts=[artifact_params] * 1,
             deployment_directories=[deployment_directory_params] * 1,
+            processing_status=processing_status,
         )
+
+        new_artifact_params = dict(
+            filename="a_different_filename",
+            filetype=DatasetArtifactFileType.LOOM,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=False,
+            s3_uri="a_different_uri",
+        )
+        new_processing_status = dict(
+            upload_status=UploadStatus.UPLOADING,
+            upload_progress=7 / 9,
+            validation_status=ValidationStatus.NA,
+            conversion_loom_status=ConversionStatus.NA,
+            conversion_rds_status=ConversionStatus.NA,
+            conversion_cxg_status=ConversionStatus.NA,
+            conversion_anndata_status=ConversionStatus.NA,
+        )
+
+        dataset.update(
+            artifacts=[new_artifact_params] * 1,
+            deployment_directories=[deployment_directory_params] * 1,
+            processing_status=new_processing_status,
+            sex=["other"],
+        )
+        Dataset.db.session.expire_all()
         actual_dataset = Dataset.get(dataset.id)
-        self.assertEqual(dataset.artifacts, actual_dataset.artifacts)
+        self.assertEqual(actual_dataset.artifacts[0].filename, "a_different_filename")
+        self.assertEqual(actual_dataset.sex, ["other"])
+        self.assertEqual(actual_dataset.processing_status.upload_progress, 7 / 9)
 
     def test__list__ok(self):
         generate = 2

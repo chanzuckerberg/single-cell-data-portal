@@ -99,4 +99,4 @@ class TestDropBox(unittest.TestCase):
 
         print(mock_run.call_args[0])
 
-        self.assertEqual(mock_run.call_args[0], (["wget", full_dp_url, "-O", "my_file.h5ad"],))
+        self.assertEqual(mock_run.call_args[0], (["wget", "-nv", full_dp_url, "-O", "my_file.h5ad"],))

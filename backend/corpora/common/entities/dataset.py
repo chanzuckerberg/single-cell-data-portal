@@ -70,7 +70,7 @@ class Dataset(Entity):
         return cls(new_db_object)
 
     def update(
-        self, artifacts: list = None, deployment_directories: list = None, processing_status: list = None, **kwargs
+        self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
     ) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
@@ -85,6 +85,7 @@ class Dataset(Entity):
         if artifacts or deployment_directories or processing_status:
             if artifacts:
                 for af in self.artifacts:
+                    print(af)
                     self.db.delete(af)
                 new_db_objects = self._create_sub_objects(
                     artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
@@ -93,6 +94,7 @@ class Dataset(Entity):
                 kwargs["artifacts"] = new_db_objects
             if deployment_directories:
                 for dd in self.deployment_directories:
+                    print(dd)
                     self.db.delete(dd)
                 new_db_objects = self._create_sub_objects(
                     deployment_directories,
@@ -102,8 +104,8 @@ class Dataset(Entity):
                 self.db.session.add_all(new_db_objects)
                 kwargs["deployment_directories"] = new_db_objects
             if processing_status:
-                for ps in self.processing_status:
-                    self.db.delete(ps)
+                if self.processing_status:
+                    self.db.delete(self.processing_status)
                 new_db_object = self._create_sub_object(
                     processing_status,
                     DbDatasetProcessingStatus,
