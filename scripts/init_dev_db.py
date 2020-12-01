@@ -12,8 +12,6 @@ sys.path.insert(0, pkg_root)  # noqa
 from tests.unit.backend.corpora.fixtures.database import TestDatabase
 from corpora.common.corpora_config import CorporaDbConfig
 
-
-print(database_exists(engine.url))
 if __name__ == "__main__":
     engine = create_engine(CorporaDbConfig().database_uri)
 
@@ -21,4 +19,3 @@ if __name__ == "__main__":
         print("Database does not exist, creating database")
         create_database(engine.url)
         TestDatabase(real_data=True)
-
