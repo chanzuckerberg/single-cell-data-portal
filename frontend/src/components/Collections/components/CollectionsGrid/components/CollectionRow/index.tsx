@@ -48,13 +48,9 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection) return null;
 
   // If there is an explicity accessType only show collections with that accessType
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // if (props.accessType && collection.access_type !== props.accessType) {
-  //   return null;
-  // }
+  if (props.accessType && collection.access_type !== props.accessType) {
+    return null;
+  }
 
   const { id, links, visibility, contact_name, name, datasets } = collection;
 
