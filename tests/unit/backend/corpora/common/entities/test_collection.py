@@ -82,7 +82,7 @@ class TestCollection(unittest.TestCase):
         with self.subTest("from_date"):
             # Collections from_date are returned.
             actual_collections = Collection.list_attributes_in_time_range(from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_collections]))
+            self.assertTrue(all([p["created_at"].timestamp() >= from_date for p in actual_collections]))
             expected_ids = [created_inbetween.id, created_after.id, "test_collection_id"]
             actual_ids = [p["id"] for p in actual_collections]
             # Check if the test ids we created are present.
@@ -93,7 +93,7 @@ class TestCollection(unittest.TestCase):
         with self.subTest("to_date"):
             # Collections to_date are returned.
             actual_collections = Collection.list_attributes_in_time_range(to_date=to_date)
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_collections]))
+            self.assertTrue(all([p["created_at"].timestamp() <= to_date for p in actual_collections]))
             expected_ids = [created_before.id, created_inbetween.id]
             actual_ids = [p["id"] for p in actual_collections]
             self.assertCountEqual(expected_ids, actual_ids)
@@ -101,8 +101,8 @@ class TestCollection(unittest.TestCase):
         with self.subTest("from_date->to_date"):
             # Collections between to_date and from_date are returned.
             actual_collections = Collection.list_attributes_in_time_range(to_date=to_date, from_date=from_date)
-            self.assertTrue(all([p["created_at"].timestamp() > from_date for p in actual_collections]))
-            self.assertTrue(all([p["created_at"].timestamp() < to_date for p in actual_collections]))
+            self.assertTrue(all([p["created_at"].timestamp() >= from_date for p in actual_collections]))
+            self.assertTrue(all([p["created_at"].timestamp() <= to_date for p in actual_collections]))
             expected_ids = [created_inbetween.id]
             actual_ids = [p["id"] for p in actual_collections]
             self.assertCountEqual(expected_ids, actual_ids)
@@ -119,9 +119,9 @@ class TestCollection(unittest.TestCase):
 
     def test__list_collections_in_time_range___ok(self):
         """Public collections are returned"""
-        from_date = 10
-        created_at = datetime.fromtimestamp(20)
-        to_date = 30
+        from_date = 10010
+        created_at = datetime.fromtimestamp(10020)
+        to_date = 10030
         expected_collection = Collection.create(
             **BogusCollectionParams.get(created_at=created_at, visibility=CollectionVisibility.PUBLIC.name)
         )

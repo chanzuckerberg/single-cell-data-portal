@@ -1,6 +1,20 @@
-from backend.corpora.common.corpora_orm import (
-    CollectionVisibility,
-)
+from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus
+
+
+class BogusProcessingStatusParams:
+    @classmethod
+    def get(cls, **kwargs):
+        bogus_data = dict(
+            upload_status=UploadStatus.UPLOADING,
+            upload_progress=1 / 9,
+            validation_status=ValidationStatus.NA,
+            conversion_loom_status=ConversionStatus.NA,
+            conversion_rds_status=ConversionStatus.NA,
+            conversion_cxg_status=ConversionStatus.NA,
+            conversion_anndata_status=ConversionStatus.NA,
+        )
+        bogus_data.update(**kwargs)
+        return bogus_data
 
 
 class BogusCollectionParams:

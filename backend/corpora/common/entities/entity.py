@@ -124,6 +124,6 @@ class Entity:
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+            if hasattr(self.db_object, key):
+                setattr(self.db_object, key, value)
         self.db.commit()

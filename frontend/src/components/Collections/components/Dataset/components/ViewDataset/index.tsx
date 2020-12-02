@@ -9,11 +9,13 @@ interface Props {
 
 const ViewDataset: FC<Props> = ({ deployments }) => {
   // (thuang): Temp
-  // Currently BE only returns 1 Remix cellxgene link
+  // Currently BE only returns 0 or 1 Remix cellxgene link
   const deployment = deployments[0];
 
-  return (
-    <SmallColumn>
+  return <SmallColumn>{deployment ? <View /> : "N/A"}</SmallColumn>;
+
+  function View() {
+    return (
       <StyledAnchor
         key={deployment.url}
         href={deployment.url}
@@ -24,8 +26,8 @@ const ViewDataset: FC<Props> = ({ deployments }) => {
         View
         <br />
       </StyledAnchor>
-    </SmallColumn>
-  );
+    );
+  }
 };
 
 export default ViewDataset;

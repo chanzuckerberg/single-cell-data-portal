@@ -16,7 +16,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils
-from tests.unit.backend.utils import BogusDatasetParams
+from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
 
 
 class TestDataset(unittest.TestCase):
@@ -93,16 +93,36 @@ class TestDataset(unittest.TestCase):
             s3_uri="some_uri",
         )
         deployment_directory_params = dict(url="test_url")
+        processing_status = BogusProcessingStatusParams.get()
         dataset_params = BogusDatasetParams.get()
+
         dataset = Dataset.create(
-            **dataset_params, artifacts=[artifact_params] * 1, deployment_directories=[deployment_directory_params] * 1
+            **dataset_params,
+            artifacts=[artifact_params],
+            deployment_directories=[deployment_directory_params],
+            processing_status=processing_status,
         )
+
+        new_artifact_params = dict(
+            filename="a_different_filename",
+            filetype=DatasetArtifactFileType.LOOM,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=False,
+            s3_uri="a_different_uri",
+        )
+        new_processing_status = BogusProcessingStatusParams.get(upload_progress=7 / 9)
+
         dataset.update(
-            artifacts=[artifact_params] * 1,
-            deployment_directories=[deployment_directory_params] * 1,
+            artifacts=[new_artifact_params],
+            deployment_directories=[deployment_directory_params],
+            processing_status=new_processing_status,
+            sex=["other"],
         )
+        Dataset.db.session.expire_all()
         actual_dataset = Dataset.get(dataset.id)
-        self.assertEqual(dataset.artifacts, actual_dataset.artifacts)
+        self.assertEqual(actual_dataset.artifacts[0].filename, "a_different_filename")
+        self.assertEqual(actual_dataset.sex, ["other"])
+        self.assertEqual(actual_dataset.processing_status.upload_progress, 7 / 9)
 
     def test__list__ok(self):
         generate = 2
