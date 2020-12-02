@@ -21,7 +21,7 @@ def link(collection_uuid: str, body: dict, user: str):
     # Get file info
     url = dropbox.get_download_url_from_shared_link(url)
     resp = dropbox.get_file_info(url)
-    if resp["size"] > CorporaConfig().upload_max_file_size * GB:
+    if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
