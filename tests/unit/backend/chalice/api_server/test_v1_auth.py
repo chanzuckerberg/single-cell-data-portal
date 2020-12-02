@@ -109,6 +109,19 @@ class TestAuth(BaseAPITest, unittest.TestCase):
             self.check_user_info(body)
             self.assertFalse("Set-Cookie" in response.headers)
 
+        with self.subTest("login_redirect"):
+            response = self.app.get("/dp/v1/login?redirect=?showCC=1", headers=headers)
+            self.assertEqual(response.status_code, 302)
+            location = response.headers["Location"]
+            split = urllib.parse.urlsplit(location)
+            args = dict(urllib.parse.parse_qsl(split.query))
+
+            # follow redirect
+            test_url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
+            response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend + "?showCC=1")
+
         with self.subTest("logout"):
             response = self.app.get("/dp/v1/logout", headers=headers)
             self.assertEqual(response.status_code, 302)
