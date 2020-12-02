@@ -1,14 +1,10 @@
 import React, { FC, useState } from "react";
 import { LOCAL_STORAGE_KEYS } from "src/common/constants/localStorageKeys";
+import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/localStorage/get";
 import { BOOLEAN, set } from "src/common/localStorage/set";
 import { isSSR } from "../../common/utils/isSSR";
 import { ButtonWrapper, Link, NoButton, OKButton, Wrapper } from "./style";
-
-const TOS_LINK =
-  "https://cellxgene.cziscience.com/static/cellxgene/deploy/tos.html";
-const PRIVACY_LINK =
-  "https://cellxgene.cziscience.com/static/cellxgene/deploy/privacy.html";
 
 const CookieBanner: FC = () => {
   const [isHidden, setIsHidden] = useState(hasClickedOnBanner());
@@ -28,12 +24,12 @@ const CookieBanner: FC = () => {
   return (
     <Wrapper>
       By using this site, you are agreeing to our{" "}
-      <Link href={TOS_LINK} target="_blank" rel="noreferrer">
+      <Link href={ROUTES.TOS} target="_blank" rel="noreferrer">
         terms of service
       </Link>
       . We use cookies to help us improve our future efforts, and we also use
       necessary cookies to make our site work. To learn more, read our{" "}
-      <Link href={PRIVACY_LINK} target="_blank" rel="noreferrer">
+      <Link href={ROUTES.PRIVACY} target="_blank" rel="noreferrer">
         privacy policy
       </Link>
       .
