@@ -39,7 +39,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
     @patch("corpora.common.upload_sfn.start_upload_sfn")
-    def test__link__accepted(self, mocked):
+    def test__link__202(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             path = "/dp/v1/collections/test_collection_id/upload-links"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -98,3 +98,21 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(413, response.status_code)
+
+    def test__link_fake_collection__403(self):
+        path = "/dp/v1/collections/fake/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    def test_link_live_collection__403(self):
+        path = "/dp/v1/collections/test_collection_id_public/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
