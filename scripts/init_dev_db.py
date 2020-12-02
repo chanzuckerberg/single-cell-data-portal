@@ -6,11 +6,10 @@ import sys
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
-from tests.unit.fixtures.test_db import TestDatabase
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from tests.unit.fixtures.test_db import TestDatabase
 from backend.corpora.common.corpora_config import CorporaDbConfig
 
 if __name__ == "__main__":
@@ -21,3 +20,5 @@ if __name__ == "__main__":
         create_database(engine.url)
         TestDatabase(real_data=True)
         testdb.populate_test_data()
+    else:
+        print("Dev DB exists - skipping creation")
