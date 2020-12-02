@@ -453,7 +453,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/collections/{collection_uuid}/upload/link:
+  /dp/v1/collections/{collection_uuid}/upload-links:
     post:
       summary: Start an dataset upload
       tags:

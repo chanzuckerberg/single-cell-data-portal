@@ -41,7 +41,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
     @patch("corpora.common.upload_sfn.start_upload_sfn")
     def test__link__accepted(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            path = "/dp/v1/collections/test_collection_id/upload/link"
+            path = "/dp/v1/collections/test_collection_id/upload-links"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             body = {"url": self.good_link}
 
@@ -52,7 +52,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
             self.assertIn("dataset_uuid", actual_body.keys())
 
     def test__link_no_auth__401(self):
-        path = "/dp/v1/collections/test_collection_id/upload/link"
+        path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json"}
         body = {"url": self.dummy_link}
 
@@ -62,7 +62,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
 
     @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.h5ad"})
     def test__link_not_owner__403(self, mock_get_file_info):
-        path = "/dp/v1/collections/test_collection_id_not_owner/upload/link"
+        path = "/dp/v1/collections/test_collection_id_not_owner/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.dummy_link}
 
@@ -71,7 +71,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         self.assertEqual(403, response.status_code)
 
     def test__bad_link__400(self):
-        path = "/dp/v1/collections/test_collection_id/upload/link"
+        path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": "https://test_url.com"}
 
@@ -81,7 +81,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
 
     @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.txt"})
     def test__unsupported_format__400(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id/upload/link"
+        path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.dummy_link}
 
@@ -91,7 +91,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
 
     @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 31 * GB, "name": "file.txt"})
     def test__oversized__413(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id/upload/link"
+        path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.dummy_link}
 
