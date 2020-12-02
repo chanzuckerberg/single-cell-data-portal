@@ -1,10 +1,11 @@
 import React, { FC } from "react";
-import { useCollection, VISIBILITY } from "src/common/queries/collections";
+import { VISIBILITY_TYPE } from "src/common/entities";
+import { useCollection } from "src/common/queries/collections";
 import Dataset from "../Dataset";
 
 interface Props {
   id: string;
-  visibility: VISIBILITY;
+  visibility: VISIBILITY_TYPE;
 }
 
 const Collection: FC<Props> = ({ id, visibility }) => {

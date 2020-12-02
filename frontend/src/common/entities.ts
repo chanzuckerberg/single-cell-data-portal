@@ -32,50 +32,48 @@ export interface Link {
   link_type: COLLECTION_LINK_TYPE;
 }
 
+export enum ACCESS_TYPE {
+  READ = "READ",
+  WRITE = "WRITE",
+}
+
+export enum VISIBILITY_TYPE {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
 export interface Collection {
-  // assays: string[];
-  // biosample_categories: string[];
-  // cell_count: number;
-  // contributors: Contributor[];
-  // cxg_enabled: boolean;
+  access_type: ACCESS_TYPE;
+  contact_email: string;
+  contact_name: string;
   description: string;
-  // diseases: string[];
   id: string;
-  // label: string;
-  // organs: string[];
-  // paired_end: string[];
-  // publication_title: string;
-  // species: string[];
+  organs: string[];
   name: string;
-  // owner: {
-  //   id: string;
-  //   email: string;
-  // };
-  // status: string;
-  // processing_state: string;
-  // s3_bucket_key: string;
-  // validation_state: string;
-  // attestation: {
-  //   needed: boolean;
-  //   tc_uri: string;
-  // };
+  owner: string;
+  visibility: VISIBILITY_TYPE;
   datasets: Dataset[];
   links: Link[];
+  data_submission_policy_version: string;
+  obfuscated_uuid: string;
+  created_at: number;
+  updated_at: number;
 }
+
+export type Ontology = {
+  label: string;
+  ontology_term_id: string;
+};
 
 export interface Dataset {
   id: string;
-  // assay: string;
-  // assay_ontology: string;
-  // tissue: string;
-  // tissue_ontology: string;
-  // disease_state: string;
-  // disease_state_ontology: string;
+  assay: Ontology[];
+  tissue: Ontology[];
+  disease: Ontology[];
+  cell_count: number | null;
   // sex: string;
-  // ethnicity: string;
-  // ethnicity_ontology: string;
-  // organism: string;
-  // organism_ontology: string;
+  ethnicity: Ontology;
+  organism: Ontology;
   name: string;
   // source_data_location: string;
   // revision: number;

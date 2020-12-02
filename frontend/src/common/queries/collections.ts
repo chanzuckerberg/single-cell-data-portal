@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryCache } from "react-query";
-import { Collection } from "src/common/entities";
+import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -14,7 +14,7 @@ export const USE_COLLECTIONS = {
 export interface CollectionResponse {
   id: string;
   created_at: string;
-  visibility: VISIBILITY;
+  visibility: VISIBILITY_TYPE;
 }
 
 async function fetchCollections(): Promise<CollectionResponse[]> {
@@ -41,21 +41,16 @@ export type CollectionError = {
   type: string;
 };
 
-export enum VISIBILITY {
-  PUBLIC = "PUBLIC",
-  PRIVATE = "PRIVATE",
-}
-
 async function fetchCollection(
   _: unknown,
   id: string,
-  visibility: VISIBILITY
+  visibility: VISIBILITY_TYPE
 ): Promise<Collection> {
   const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
   const finalUrl =
-    visibility === VISIBILITY.PRIVATE
-      ? baseUrl + `?visibility=${VISIBILITY.PRIVATE}`
+    visibility === VISIBILITY_TYPE.PRIVATE
+      ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
       : baseUrl;
 
   const response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
@@ -70,7 +65,7 @@ async function fetchCollection(
 
 export function useCollection(
   id: string,
-  visibility: VISIBILITY = VISIBILITY.PUBLIC
+  visibility: VISIBILITY_TYPE = VISIBILITY_TYPE.PUBLIC
 ) {
   return useQuery<Collection>(
     [USE_COLLECTION, id, visibility],
