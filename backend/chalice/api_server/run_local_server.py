@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import time
+import signal
 
 from chalice.deploy.validate import validate_routes
 from chalice.cli import CLIFactory, reloader
@@ -51,8 +52,10 @@ def run_server(args, stage):
 
     # support autoreload
     project_dir = config.project_dir
-    print(sys.argv)
-    print(os.environ)
+
+    # handle sigterm
+    signal.signal(signal.SIGTERM, lambda *args: sys.exit(0))
+
     rc = reloader.run_with_reloader(server_factory, os.environ, project_dir)
     # Click doesn't sys.exit() with the RC this function.  The
     # recommended way to do this is to use sys.exit() directly,

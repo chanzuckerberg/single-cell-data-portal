@@ -10,17 +10,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm
 
+# Don't re-run pip install unless either requirements.txt has changed.
+ADD requirements.txt /requirements.txt
+ADD backend/chalice/api_server/requirements.txt /requirements-api.txt
+RUN grep -v requirements.txt requirements.txt > reqs.txt \
+    && cat requirements-api.txt >> reqs.txt \
+    && python3 -m pip install -r reqs.txt
+
 # RUN envsubst < config/iam-policy-templates/corpora-api-lambda.json > .chalice/policy-$(DEPLOYMENT_STAGE).json
 
 ADD tests /tests
 ADD scripts /scripts
-WORKDIR /backend
 ADD backend /backend
-ADD requirements.txt /requirements.txt
 
-# Don't re-run pip install unless requirements.txt has changed.
-RUN python3 -m pip install -r /requirements.txt
-
+WORKDIR /backend
 RUN mv chalice/api_server/.chalice/config.json.dev chalice/api_server/.chalice/config.json
 
 RUN mkdir -p chalicelib config vendor
