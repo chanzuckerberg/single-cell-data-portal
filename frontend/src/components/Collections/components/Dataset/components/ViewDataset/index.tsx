@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import React, { FC } from "react";
 import { DatasetDeployment } from "src/common/entities";
 import { SmallColumn } from "../../common/style";

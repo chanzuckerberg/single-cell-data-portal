@@ -655,7 +655,7 @@ components:
             type: string
           link_type:
             type: string
-            enum: [ PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER ]
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
     collection:
       type: object
       required:
@@ -671,7 +671,7 @@ components:
       properties:
         access_type:
           type: string
-          enum: [ READ, WRITE ]
+          enum: [READ, WRITE]
         created_at:
           type: number
         updated_at:

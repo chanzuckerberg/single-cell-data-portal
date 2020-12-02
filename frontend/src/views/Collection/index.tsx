@@ -1,9 +1,14 @@
 import { Button, Classes, H3, H4, Intent, UL } from "@blueprintjs/core";
 import { RouteComponentProps } from "@reach/router";
 import React, { FC } from "react";
-import { COLLECTION_LINK_TYPE_OPTIONS, Link } from "src/common/entities";
-import { useCollection, VISIBILITY } from "src/common/queries/collections";
+import {
+  COLLECTION_LINK_TYPE_OPTIONS,
+  Link,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
+import { useCollection } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
+import { ViewGrid } from "../globalStyle";
 import {
   CenterAlignedDiv,
   CollectionInfo,
@@ -11,7 +16,6 @@ import {
   Description,
   LinkContainer,
   StyledLink,
-  ViewGrid,
 } from "./style";
 
 const CLI_README_LINK =
@@ -75,7 +79,7 @@ const Collection: FC<Props> = ({ id }) => {
 
   const { data: collection, isError } = useCollection(
     id ?? "",
-    isPrivate ? VISIBILITY.PRIVATE : VISIBILITY.PUBLIC
+    isPrivate ? VISIBILITY_TYPE.PRIVATE : VISIBILITY_TYPE.PUBLIC
   );
 
   if (!collection || isError) return null;
