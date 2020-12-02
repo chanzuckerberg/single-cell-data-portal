@@ -8,6 +8,7 @@ from furl import furl
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
+from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 
 
 class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
@@ -39,15 +40,16 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
 
     @patch("corpora.common.upload_sfn.start_upload_sfn")
     def test__link__accepted(self, mocked):
-        path = "/dp/v1/collections/test_collection_id/upload/link"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {"url": self.good_link}
+        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
+            path = "/dp/v1/collections/test_collection_id/upload/link"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            body = {"url": self.good_link}
 
-        test_url = furl(path=path)
-        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
-        self.assertIn("dataset_uuid", actual_body.keys())
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            response.raise_for_status()
+            actual_body = json.loads(response.body)
+            self.assertIn("dataset_uuid", actual_body.keys())
 
     def test__link_no_auth__401(self):
         path = "/dp/v1/collections/test_collection_id/upload/link"
