@@ -1,3 +1,4 @@
+import requests
 from flask import make_response
 
 from .....common.corpora_config import CorporaConfig
@@ -20,7 +21,10 @@ def link(collection_uuid: str, body: dict, user: str):
 
     # Get file info
     url = dropbox.get_download_url_from_shared_link(url)
-    resp = dropbox.get_file_info(url)
+    try:
+        resp = dropbox.get_file_info(url)
+    except requests.HTTPError:
+        raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:

@@ -25,6 +25,7 @@ def verify(url):
 
 def get_file_info(url):
     resp = requests.head(url, allow_redirects=True)
+    resp.raise_for_status()
     return {
         "size": int(resp.headers["content-length"]),
         "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],

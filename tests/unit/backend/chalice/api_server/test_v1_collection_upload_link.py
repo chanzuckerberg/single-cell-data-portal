@@ -72,12 +72,22 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
 
     def test__bad_link__400(self):
         path = "/dp/v1/collections/test_collection_id/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {"url": "https://test_url.com"}
 
-        test_url = furl(path=path)
-        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-        self.assertEqual(400, response.status_code)
+        with self.subTest("Unsupported Provider"):
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            body = {"url": "https://test_url.com"}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("The dropbox shared link is invalid.", json.loads(response.body)["detail"])
+
+        with self.subTest("Bad Dropbox link"):
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            body = {"url": self.dummy_link}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("The URL provided causes an error with Dropbox.", json.loads(response.body)["detail"])
 
     @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.txt"})
     def test__unsupported_format__400(self, mock_func):
