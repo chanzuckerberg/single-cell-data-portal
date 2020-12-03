@@ -1,0 +1,22 @@
+Description: >
+  This deploys a Coropora data portal remote-dev environment
+Parameters:
+  ImageTag:
+    Description: Please provide an image tag
+    Type: String
+
+Resources:
+  DevEnv:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/happy-cf/dp-entrypoint.yml
+      Parameters:
+        ImageTag: !Ref ImageTag
+
+Outputs:
+  FrontendUrl:
+    Description: The URL endpoint for the website service
+    Value: !GetAtt DevEnv.Outputs.FrontendUrl
+  BackendUrl:
+    Description: The URL endpoint for the website service
+    Value: !GetAtt DevEnv.Outputs.BackendUrl

@@ -1,14 +1,25 @@
 .PHONY: db/create
 db/create:
 	# TODO(mbarrien): Figure out which directory init_dev_db should live in
-	python3 ../scripts/init_dev_db.py
+	python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db
 
 .PHONY: db/migrate
 db/migrate:
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
 .PHONY: db/init_remote_dev
-db/init_remote_dev: db/create db/migrate
+db/reset_remote_dev: db/create
+	pip install awscli
+	apt-get update && apt-get install -y postgresql-client jq
+	$(eval DB_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString' | jq -r .remote_dev_uri))
+	# The python script exits with a 1 status code if the db already exists.
+	- python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db && pg_restore --no-owner --clean -d ${DB_URI}/${REMOTE_DEV_PREFIX} scripts/db_snapshot.sqlc
+	python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db
+
+.PHONY: db/init_remote_dev
+db/init_remote_dev: db/create_remote_dev db/migrate
+	python ../../scripts/
+	pg_restore --no-owner --clean ${DB_URI}/${REMOTE_DEV_PREFIX}
 
 db/rollback:
 	alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
@@ -30,7 +41,7 @@ db/download:
     # Download the database to corpora_dev-<date>.sqlc
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
 	$(eval OUTFILE = $(shell date +corpora_${DEPLOYMENT_STAGE}-%Y%m%d%H%M.sqlc))
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	PGPASSWORD=${DB_PW} pg_dump -Fp --dbname=corpora_${DEPLOYMENT_STAGE} --file=${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
 db/import:
     # Imports corpora_dev.sqlc into the corpora_test database
