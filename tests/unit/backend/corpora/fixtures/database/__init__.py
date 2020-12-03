@@ -44,8 +44,33 @@ class TestDatabase:
             name="test_collection",
             description="test_description",
             data_submission_policy_version="0",
-            # contact_email="some@someplace.place",
-            # contact_name="John Doe",
+        )
+        self.db.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_id",
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="test_user_id",
+            name="test_collection",
+            description="test_description",
+            data_submission_policy_version="0",
+        )
+        self.db.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_id_public",
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
+            name="test_collection",
+            description="test_description",
+            data_submission_policy_version="0",
+        )
+        self.db.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_id_not_owner",
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="Someone_else",
+            name="test_collection",
+            description="test_description",
+            data_submission_policy_version="0",
         )
         self.db.session.add(collection)
         self.db.session.commit()

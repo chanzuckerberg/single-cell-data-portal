@@ -4,11 +4,18 @@ from .utils.secret_config import SecretConfig
 
 
 class CorporaConfig(SecretConfig):
+    environ_source = "CORPORA_CONFIG"
+
     def __init__(self, *args, **kwargs):
         super().__init__("backend", secret_name="config", **kwargs)
 
+    def get_defaults_template(self):
+        return {"upload_file_formats": ["h5ad"], "upload_max_file_size_gb": 30}
+
 
 class CorporaDbConfig(SecretConfig):
+    environ_source = "CORPORA_DB_CONFIG"
+
     def __init__(self, *args, **kwargs):
         super().__init__(
             component_name="backend",
@@ -21,6 +28,8 @@ class CorporaAuthConfig(SecretConfig):
     """
     For a description of the secret key contents, see backend/config/auth0-secret-template.json.
     """
+
+    environ_source = "CORPORA_AUTH_CONFIG"
 
     def __init__(self, *args, **kwargs):
         deployment = os.environ["DEPLOYMENT_STAGE"]

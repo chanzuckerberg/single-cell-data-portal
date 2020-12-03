@@ -3,7 +3,7 @@ import uuid
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus
+from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus, UploadStatus
 
 
 class Dataset(Entity):
@@ -131,3 +131,10 @@ class Dataset(Entity):
         Delete the Dataset and all child objects.
         """
         super().delete()
+
+    @staticmethod
+    def new_processing_status():
+        return {
+            "upload_status": UploadStatus.WAITING,
+            "upload_progress": 0,
+        }
