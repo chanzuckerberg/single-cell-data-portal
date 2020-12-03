@@ -163,3 +163,7 @@ class Collection(Entity):
             dataset["dataset_assets"] = dataset.pop("artifacts")
 
         return result
+
+    def publish(self):
+        self.db_object.visibility == CollectionVisibility.PUBLIC
+        self.db.commit()
