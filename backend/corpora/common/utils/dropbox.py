@@ -1,26 +1,33 @@
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from urllib.parse import urlparse
 
 import re
 import requests
 
+dropbox_link_rx = re.compile(r"/s/[\w\d]+/.*")
+
 
 def get_download_url_from_shared_link(url):
+    """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
+
     parsed_url = urlparse(url)
-    query = parse_qs(parsed_url.query)
-    params = {"dl": "1"}
-    query.update(params)
+    if (
+        parsed_url.scheme != "https"
+        or parsed_url.netloc != "www.dropbox.com"
+        or not dropbox_link_rx.fullmatch(parsed_url.path)
+    ):
+        return None
 
-    url_parts = list(parsed_url)
-    url_parts[4] = urlencode(query)
-    result = urlunparse(url_parts)
-    return result
+    if "dl=0" in parsed_url.query:
+        new_query = parsed_url.query.replace("dl=0", "dl=1")
+    elif not parsed_url.query:
+        new_query = "dl=1"
+    elif "dl=1" in parsed_url.query:
+        new_query = parsed_url.query
+    else:
+        new_query = parsed_url.query + "&dl=1"
 
-
-dropbox_link_rx = re.compile(r"https://www.dropbox.com/s/[\w\d]+/.*\?dl=[01]")
-
-
-def verify(url):
-    return True if dropbox_link_rx.fullmatch(url) else False
+    parsed_url = parsed_url._replace(query=new_query)
+    return parsed_url.geturl()
 
 
 def get_file_info(url):
