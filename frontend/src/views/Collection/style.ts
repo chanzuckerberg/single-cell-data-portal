@@ -1,13 +1,6 @@
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
-export const ViewGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  width: 100%;
-  margin-top: 10vh;
-`;
-
 export const CollectionInfo = styled.div`
   grid-column: 1 / span 5;
   margin-bottom: ${3 * PT_GRID_SIZE_PX}px;

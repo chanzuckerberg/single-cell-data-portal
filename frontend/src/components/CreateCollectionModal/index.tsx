@@ -19,7 +19,7 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollection: FC = () => {
+const CreateCollection: FC<{ className?: string }> = ({ className }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +48,7 @@ const CreateCollection: FC = () => {
       <StyledButton
         onMouseOver={() => config.content.preload()}
         onClick={toggleOpen}
+        {...{ className }}
       >
         Create Collection
       </StyledButton>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Classes } from "@blueprintjs/core";
 import React, { FC, useEffect, useState } from "react";
 import { API } from "src/common/API";

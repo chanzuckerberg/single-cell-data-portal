@@ -3,4 +3,6 @@ export enum ROUTES {
   MY_COLLECTIONS = "/my-collections",
   COLLECTION = "/collections/:id",
   PRIVATE_COLLECTION = "/collections/:id/private",
+  TOS = "/tos/",
+  PRIVACY = "/privacy/",
 }
