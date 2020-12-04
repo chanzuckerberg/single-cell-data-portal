@@ -8,7 +8,7 @@ import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from chalice import UnauthorizedError
-from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response
+from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
 from jose.exceptions import ExpiredSignatureError
 
 from ....common.authorizer import get_userinfo, assert_authorized_token
@@ -54,6 +54,10 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
 def login() -> Response:
     """API call: initiate the login process."""
     config = CorporaAuthConfig()
+    redirect = request.args.get("redirect", "")
+    return_to = f"{config.redirect_to_frontend}{redirect}"
+    # save the return path in the session cookie, accessed in the callback function
+    session["oauth_corpora_callback_redirect"] = return_to
     client = get_oauth_client(config)
     callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
     response = client.authorize_redirect(redirect_uri=callbackurl)
@@ -85,7 +89,8 @@ def oauth2_callback() -> Response:
         remove_token(config.cookie_name)
         raise UnauthorizedError("response from oauth server not valid")
 
-    return redirect(config.redirect_to_frontend)
+    return_to = session.pop("oauth_corpora_callback_redirect", "/")
+    return redirect(return_to)
 
 
 def save_token(cookie_name: str, token: dict) -> None:

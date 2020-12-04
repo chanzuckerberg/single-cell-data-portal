@@ -25,6 +25,8 @@ class SecretConfig:
     share that data.
     """
 
+    environ_source = "CONFIG_SOURCE"
+
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_config"):
             cls.reset()
@@ -83,7 +85,7 @@ class SecretConfig:
 
     def update_defaults(self):
         for k, v in self.get_defaults_template().items():
-            self.__class__._defaults[k] = v.format(**self.config)
+            self.__class__._defaults[k] = v.format(**self.config) if isinstance(v, str) else v
 
     def load(self):
         if self._source == "aws":
@@ -111,8 +113,8 @@ class SecretConfig:
     def _determine_source(self, source):
         if source:
             pass
-        elif "CONFIG_SOURCE" in os.environ:
-            source = os.environ["CONFIG_SOURCE"]
+        elif self.environ_source in os.environ:
+            source = os.environ[self.environ_source]
         else:
             source = "aws"
         return source
