@@ -17,17 +17,15 @@ depends_on = None
 
 
 def upgrade():
-    enum_name = "projectlink"
-    tmp_enum_name = "tmp_projectlink"
-    op.execute("ALTER TYPE " + enum_name + " RENAME TO " + tmp_enum_name)
-
-    new_project_link_enum = ENUM("PROTOCOL", "SUMMARY", "RAW_DATA", "OTHER", name="projectlink", create_type=False)
-    new_project_link_enum.create(op.get_bind(), checkfirst=True)
+    project_link_enum = ENUM(name="projectlink")
+    project_link_enum.drop(op.get_bind(), checkfirst=True)
+    project_link_enum = ENUM("PROTOCOL", "SUMMARY", "RAW_DATA", "OTHER", name="projectlink", create_type=False)
+    project_link_enum.create(op.get_bind(), checkfirst=True)
 
     op.alter_column(
         table_name="project_link",
         column_name="link_type",
-        type_=new_project_link_enum,
+        type_=project_link_enum,
         nullable=True,
         postgresql_using=(
             "CASE WHEN link_type = 'PROTOCOL' THEN 'PROTOCOL'::projectlink "
@@ -36,9 +34,6 @@ def upgrade():
             "     END"
         ),
     )
-
-    old_project_link_enum = ENUM(name=tmp_enum_name)
-    old_project_link_enum.drop(op.get_bind(), checkfirst=True)
 
 
 def downgrade():
