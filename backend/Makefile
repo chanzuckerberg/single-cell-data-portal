@@ -1,14 +1,9 @@
-.PHONY: db/create
-db/create:
-	# TODO(mbarrien): Figure out which directory init_dev_db should live in
-	python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db
-
 .PHONY: db/migrate
 db/migrate:
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
 .PHONY: db/init_remote_dev
-db/reset_remote_dev: db/create
+db/init_remote_dev:
 	pip install awscli
 	apt-get update && apt-get install -y postgresql-client jq
 	$(eval DB_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString' | jq -r .remote_dev_uri))
