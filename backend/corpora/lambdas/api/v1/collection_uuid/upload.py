@@ -15,12 +15,11 @@ from .....common.utils.math_utils import GB
 def link(collection_uuid: str, body: dict, user: str):
 
     # Verify Dropbox URL
-    url = body["url"]
-    if not dropbox.verify(url):
+    url = dropbox.get_download_url_from_shared_link(body["url"])
+    if not url:
         raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
 
     # Get file info
-    url = dropbox.get_download_url_from_shared_link(url)
     try:
         resp = dropbox.get_file_info(url)
     except requests.HTTPError:
