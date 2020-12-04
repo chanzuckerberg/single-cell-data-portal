@@ -37,7 +37,7 @@ class TestDropbox(unittest.TestCase):
             ),
             ("https://www.dropbox.com/b/abcd1234/abcd1234?dl=1", "https://www.dropbox.com/b/abcd1234/abcd1234?dl=1"),
             ("https://www.dropbox.com/s/!bcd1234/abcd1234?dl=0", "https://www.dropbox.com/s/!bcd1234/abcd1234?dl=1"),
-            ("https://www.dropbox.com", "https://www.dropbox.com?dl=1")
+            ("https://www.dropbox.com", "https://www.dropbox.com?dl=1"),
         ]
 
         for test, expected in positive_tests:

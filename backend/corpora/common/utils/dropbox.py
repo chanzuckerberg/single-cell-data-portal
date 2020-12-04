@@ -2,14 +2,12 @@ from urllib.parse import urlparse
 
 import requests
 
+
 def get_download_url_from_shared_link(url):
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
 
     parsed_url = urlparse(url)
-    if (
-        parsed_url.scheme != "https"
-        or parsed_url.netloc != "www.dropbox.com"
-    ):
+    if parsed_url.scheme != "https" or parsed_url.netloc != "www.dropbox.com":
         return None
 
     if "dl=0" in parsed_url.query:
