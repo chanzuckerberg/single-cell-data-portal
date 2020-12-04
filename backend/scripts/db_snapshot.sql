@@ -1,3 +1,4 @@
+-- Generated via: pg_dump -Fp --no-privileges --no-owner --no-comments --schema-only 
 --
 -- PostgreSQL database dump
 --
@@ -17,7 +18,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: collectionvisibility; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: collectionvisibility; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.collectionvisibility AS ENUM (
@@ -26,10 +27,8 @@ CREATE TYPE public.collectionvisibility AS ENUM (
 );
 
 
-ALTER TYPE public.collectionvisibility OWNER TO corpora_dev;
-
 --
--- Name: conversionstatus; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: conversionstatus; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.conversionstatus AS ENUM (
@@ -40,10 +39,8 @@ CREATE TYPE public.conversionstatus AS ENUM (
 );
 
 
-ALTER TYPE public.conversionstatus OWNER TO corpora_dev;
-
 --
--- Name: datasetartifactfiletype; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: datasetartifactfiletype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.datasetartifactfiletype AS ENUM (
@@ -54,10 +51,8 @@ CREATE TYPE public.datasetartifactfiletype AS ENUM (
 );
 
 
-ALTER TYPE public.datasetartifactfiletype OWNER TO corpora_dev;
-
 --
--- Name: datasetartifacttype; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: datasetartifacttype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.datasetartifacttype AS ENUM (
@@ -66,10 +61,8 @@ CREATE TYPE public.datasetartifacttype AS ENUM (
 );
 
 
-ALTER TYPE public.datasetartifacttype OWNER TO corpora_dev;
-
 --
--- Name: projectlink; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: projectlink; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.projectlink AS ENUM (
@@ -81,10 +74,8 @@ CREATE TYPE public.projectlink AS ENUM (
 );
 
 
-ALTER TYPE public.projectlink OWNER TO corpora_dev;
-
 --
--- Name: uploadstatus; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: uploadstatus; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.uploadstatus AS ENUM (
@@ -98,10 +89,8 @@ CREATE TYPE public.uploadstatus AS ENUM (
 );
 
 
-ALTER TYPE public.uploadstatus OWNER TO corpora_dev;
-
 --
--- Name: validationstatus; Type: TYPE; Schema: public; Owner: corpora_dev
+-- Name: validationstatus; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.validationstatus AS ENUM (
@@ -112,25 +101,28 @@ CREATE TYPE public.validationstatus AS ENUM (
 );
 
 
-ALTER TYPE public.validationstatus OWNER TO corpora_dev;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.alembic_version (
     version_num character varying(32) NOT NULL
 );
 
+--
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: corpora_dev
+--
 
-ALTER TABLE public.alembic_version OWNER TO corpora_dev;
+COPY public.alembic_version (version_num) FROM stdin;
+7794b1ea430f
+\.
 
 --
--- Name: dataset; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: dataset; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.dataset (
@@ -153,10 +145,8 @@ CREATE TABLE public.dataset (
 );
 
 
-ALTER TABLE public.dataset OWNER TO corpora_dev;
-
 --
--- Name: dataset_artifact; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: dataset_artifact; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.dataset_artifact (
@@ -172,10 +162,8 @@ CREATE TABLE public.dataset_artifact (
 );
 
 
-ALTER TABLE public.dataset_artifact OWNER TO corpora_dev;
-
 --
--- Name: dataset_processing_status; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: dataset_processing_status; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.dataset_processing_status (
@@ -195,10 +183,8 @@ CREATE TABLE public.dataset_processing_status (
 );
 
 
-ALTER TABLE public.dataset_processing_status OWNER TO corpora_dev;
-
 --
--- Name: deployment_directory; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: deployment_directory; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.deployment_directory (
@@ -210,10 +196,8 @@ CREATE TABLE public.deployment_directory (
 );
 
 
-ALTER TABLE public.deployment_directory OWNER TO corpora_dev;
-
 --
--- Name: project; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: project; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.project (
@@ -231,10 +215,8 @@ CREATE TABLE public.project (
 );
 
 
-ALTER TABLE public.project OWNER TO corpora_dev;
-
 --
--- Name: project_link; Type: TABLE; Schema: public; Owner: corpora_dev
+-- Name: project_link; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.project_link (
@@ -249,19 +231,8 @@ CREATE TABLE public.project_link (
 );
 
 
-ALTER TABLE public.project_link OWNER TO corpora_dev;
-
 --
--- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: corpora_dev
---
-
-COPY public.alembic_version (version_num) FROM stdin;
-7794b1ea430f
-\.
-
-
---
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.alembic_version
@@ -269,7 +240,7 @@ ALTER TABLE ONLY public.alembic_version
 
 
 --
--- Name: dataset_artifact dataset_artifact_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset_artifact dataset_artifact_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset_artifact
@@ -277,7 +248,7 @@ ALTER TABLE ONLY public.dataset_artifact
 
 
 --
--- Name: dataset dataset_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset dataset_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset
@@ -285,7 +256,7 @@ ALTER TABLE ONLY public.dataset
 
 
 --
--- Name: dataset_processing_status dataset_processing_status_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset_processing_status dataset_processing_status_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset_processing_status
@@ -293,7 +264,7 @@ ALTER TABLE ONLY public.dataset_processing_status
 
 
 --
--- Name: deployment_directory deployment_directory_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: deployment_directory deployment_directory_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.deployment_directory
@@ -301,7 +272,7 @@ ALTER TABLE ONLY public.deployment_directory
 
 
 --
--- Name: project_link project_link_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: project_link project_link_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.project_link
@@ -309,7 +280,7 @@ ALTER TABLE ONLY public.project_link
 
 
 --
--- Name: project project_pkey; Type: CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: project project_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.project
@@ -317,7 +288,7 @@ ALTER TABLE ONLY public.project
 
 
 --
--- Name: dataset_artifact dataset_artifact_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset_artifact dataset_artifact_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset_artifact
@@ -325,7 +296,7 @@ ALTER TABLE ONLY public.dataset_artifact
 
 
 --
--- Name: dataset dataset_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset dataset_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset
@@ -333,7 +304,7 @@ ALTER TABLE ONLY public.dataset
 
 
 --
--- Name: dataset_processing_status dataset_processing_status_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: dataset_processing_status dataset_processing_status_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.dataset_processing_status
@@ -341,7 +312,7 @@ ALTER TABLE ONLY public.dataset_processing_status
 
 
 --
--- Name: deployment_directory deployment_directory_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: deployment_directory deployment_directory_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.deployment_directory
@@ -349,21 +320,11 @@ ALTER TABLE ONLY public.deployment_directory
 
 
 --
--- Name: project_link project_link_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: corpora_dev
+-- Name: project_link project_link_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.project_link
     ADD CONSTRAINT project_link_collection_id_fkey FOREIGN KEY (collection_id, collection_visibility) REFERENCES public.project(id, visibility);
-
-
---
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: corpora_dev
---
-
-REVOKE ALL ON SCHEMA public FROM rdsadmin;
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO corpora_dev;
-GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --
