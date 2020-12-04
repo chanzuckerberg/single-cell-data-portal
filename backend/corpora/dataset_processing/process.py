@@ -8,7 +8,7 @@ import boto3
 import numpy
 import scanpy
 
-from ..common.utils.dropbox import get_download_url_from_shared_link
+from ..common.utils import dropbox
 
 
 def check_env():
@@ -28,7 +28,7 @@ def fetch_dropbox_url(dropbox_url, local_path):
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
+    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
 
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
