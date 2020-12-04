@@ -139,6 +139,9 @@ def update_db(metadata=None, processing_status=None):
 
     if processing_status:
         status = dataset.processing_status.to_dict()
+        status.pop("dataset")
+        status.pop("created_at")
+        status.pop("updated_at")
         status.update(processing_status)
         dataset.update(processing_status=status)
 

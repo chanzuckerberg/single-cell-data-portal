@@ -12,7 +12,13 @@ import pandas
 
 from moto import mock_s3
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactType, DatasetArtifactFileType
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    DatasetArtifactType,
+    DatasetArtifactFileType,
+    UploadStatus,
+    ValidationStatus,
+)
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 
@@ -173,8 +179,23 @@ class TestDatasetProcessing(unittest.TestCase):
 
         self.assertEqual(len(Dataset.get(dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(dataset_id).artifacts[0].filename, "test_filename")
-
         self.assertEqual(Dataset.get(dataset_id).deployment_directories[0].url, "https://cellxgene.com/data")
+
+        process.update_db(processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5})
+        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADING)
+        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 0.5)
+        self.assertIsNone(Dataset.get(dataset_id).processing_status.validation_status)
+
+        process.update_db(
+            processing_status={
+                "upload_status": UploadStatus.UPLOADED,
+                "upload_progress": 1,
+                "validation_status": ValidationStatus.VALIDATING,
+            }
+        )
+        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
+        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 1)
+        self.assertEqual(Dataset.get(dataset_id).processing_status.validation_status, ValidationStatus.VALIDATING)
 
         fake_env.stop()
 
@@ -190,7 +211,6 @@ class TestDatasetProcessing(unittest.TestCase):
         artifacts = process.create_artifacts(
             str(self.h5ad_filename), str(self.seurat_filename), str(self.loom_filename)
         )
-        print(artifacts)
 
         self.assertEqual(len(artifacts), 3)
 
