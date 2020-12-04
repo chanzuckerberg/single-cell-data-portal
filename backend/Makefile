@@ -17,11 +17,6 @@ db/init_remote_dev:
 
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
-.PHONY: db/init_remote_dev
-db/init_remote_dev: db/create_remote_dev db/migrate
-	python ../../scripts/
-	pg_restore --no-owner --clean ${DB_URI}/${REMOTE_DEV_PREFIX}
-
 db/rollback:
 	alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
 
