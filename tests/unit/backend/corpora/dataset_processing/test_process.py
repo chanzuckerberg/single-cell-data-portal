@@ -1,10 +1,16 @@
 import os
+import pathlib
+import shutil
+import tempfile
 import unittest
 from unittest.mock import patch
 
 import anndata
+import boto3
 import numpy
 import pandas
+
+from moto import mock_s3
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactType, DatasetArtifactFileType
 from backend.corpora.common.entities.collection import Collection
@@ -14,6 +20,21 @@ from backend.corpora.dataset_processing import process
 
 
 class TestDatasetProcessing(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp_dir = tempfile.mkdtemp()
+        cls.h5ad_filename = pathlib.Path(cls.tmp_dir, "test.h5ad")
+        cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
+        cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
+
+        cls.h5ad_filename.touch()
+        cls.seurat_filename.touch()
+        cls.loom_filename.touch()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp_dir)
+
     @patch.dict(
         os.environ,
         {
@@ -160,6 +181,37 @@ class TestDatasetProcessing(unittest.TestCase):
 
         fake_env.stop()
 
+    def test_create_artifacts(self):
+        s3_mock = mock_s3()
+        s3_mock.start()
+        s3 = boto3.client("s3")
+        s3.create_bucket(Bucket="test_bucket")
+
+        fake_env = patch.dict(os.environ, {"DATASET_ID": "aaaa-bbbb-cccc", "ARTIFACT_BUCKET": "test_bucket"})
+        fake_env.start()
+
+        artifacts = process.create_artifacts(
+            str(self.h5ad_filename), str(self.seurat_filename), str(self.loom_filename)
+        )
+        print(artifacts)
+
+        self.assertEqual(len(artifacts), 3)
+
+        self.assertTrue(all(a["user_submitted"] for a in artifacts))
+        self.assertTrue(all(a["s3_uri"].startswith("s3://test_bucket/aaaa-bbbb-cccc/") for a in artifacts))
+        self.assertEqual(len(set(a["filetype"] for a in artifacts)), 3)
+        self.assertTrue(all(a["type"] == DatasetArtifactType.REMIX for a in artifacts))
+
+        resp = s3.list_objects_v2(Bucket="test_bucket", Prefix="aaaa-bbbb-cccc")
+        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
+        self.assertEqual(len(s3_filenames), 3)
+        self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
+        self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+        self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
+
+        fake_env.stop()
+        s3_mock.stop()
+
 
 class TestDropBox(unittest.TestCase):
     def test_fix_url_direct_download(self):
@@ -196,7 +248,5 @@ class TestDropBox(unittest.TestCase):
 
         full_dp_url = "https://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?dl=1"
         process.fetch_dropbox_url(full_dp_url, "my_file.h5ad")
-
-        print(mock_run.call_args[0])
 
         self.assertEqual(mock_run.call_args[0], (["wget", "-nv", full_dp_url, "-O", "my_file.h5ad"],))

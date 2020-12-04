@@ -15,7 +15,7 @@ build:
 	cp -R ../requirements.txt code/
 	cp -R ../chalice/api_server/requirements.txt code/chalice/api_server/requirements.txt
 	docker build -t $(IMAGE) .
-	#rm -rf code/
+	rm -rf code/
 
 login:
 	$(eval REPOSITORY_URI = $(shell aws ecr describe-repositories --repository-name $(IMAGE) | jq -r '.repositories[].repositoryUri'))

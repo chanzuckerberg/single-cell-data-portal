@@ -5,6 +5,8 @@ import subprocess
 import sys
 import urllib
 
+from os.path import basename, join
+
 import boto3
 import numpy
 import scanpy
@@ -17,7 +19,7 @@ except ImportError:
     # We're in the container
     sys.path.append("/code")
     from common.entities.dataset import Dataset
-    from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -62,6 +64,63 @@ def fix_dropbox_url(url):
     pr = pr._replace(query=new_query)
 
     return pr.geturl()
+
+
+def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
+
+    s3 = boto3.client("s3")
+    artifacts = []
+
+    s3.upload_file(
+        h5ad_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(h5ad_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
+
+    artifacts.append(
+        {
+            "filename": basename(h5ad_filename),
+            "filetype": DatasetArtifactFileType.H5AD,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(h5ad_filename)),
+        }
+    )
+
+    s3.upload_file(
+        seurat_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(seurat_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
+    artifacts.append(
+        {
+            "filename": basename(seurat_filename),
+            "filetype": DatasetArtifactFileType.RDS,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(seurat_filename)),
+        }
+    )
+
+    s3.upload_file(
+        loom_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(loom_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
+    artifacts.append(
+        {
+            "filename": basename(loom_filename),
+            "filetype": DatasetArtifactFileType.LOOM,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(loom_filename)),
+        }
+    )
+
+    return artifacts
 
 
 def update_db(metadata=None, processing_status=None):
@@ -199,56 +258,7 @@ def main():
     loom_filename = make_loom(local_filename)
     cxg_dir = make_cxg(local_filename)
     seurat_filename = make_seurat(local_filename)
-    artifacts = []
-
-    s3 = boto3.client("s3")
-    s3.upload_file(
-        local_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], local_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    artifacts.append(
-        {
-            "filename": os.path.basename(local_filename),
-            "filetype": DatasetArtifactFileType.H5AD,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": os.path.join(os.environ["DATASET_ID"], local_filename),
-        }
-    )
-
-    s3.upload_file(
-        seurat_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], seurat_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    artifacts.append(
-        {
-            "filename": os.path.basename(seurat_filename),
-            "filetype": DatasetArtifactFileType.RDS,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": os.path.join(os.environ["DATASET_ID"], seurat_filename),
-        }
-    )
-
-    s3.upload_file(
-        loom_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], loom_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    artifacts.append(
-        {
-            "filename": os.path.basename(loom_filename),
-            "filetype": DatasetArtifactFileType.LOOM,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": os.path.join(os.environ["DATASET_ID"], loom_filename),
-        }
-    )
+    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
 
     subprocess.run(
         [
@@ -264,7 +274,7 @@ def main():
         check=True,
     )
     deployment_directories = [
-        {"url": os.path.join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"], "")}
+        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"], "")}
     ]
 
     update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
