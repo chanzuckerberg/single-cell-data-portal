@@ -10,7 +10,7 @@ class TestDropbox(unittest.TestCase):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    def test__get_download_url__postitive(self):
+    def test__get_download_url__positive(self):
         positive_tests = [
             ("https://www.dropbox.com/s/abcd1234/abcd1234?dl=0", "https://www.dropbox.com/s/abcd1234/abcd1234?dl=1"),
             ("https://www.dropbox.com/s/abcd1234/file.txt?dl=0", "https://www.dropbox.com/s/abcd1234/file.txt?dl=1"),
@@ -35,6 +35,9 @@ class TestDropbox(unittest.TestCase):
                 "https://www.dropbox.com/s/abcd1234/abcd1234?dl=2",
                 "https://www.dropbox.com/s/abcd1234/abcd1234?dl=2&dl=1",
             ),
+            ("https://www.dropbox.com/b/abcd1234/abcd1234?dl=1", "https://www.dropbox.com/b/abcd1234/abcd1234?dl=1"),
+            ("https://www.dropbox.com/s/!bcd1234/abcd1234?dl=0", "https://www.dropbox.com/s/!bcd1234/abcd1234?dl=1"),
+            ("https://www.dropbox.com", "https://www.dropbox.com?dl=1")
         ]
 
         for test, expected in positive_tests:
@@ -45,9 +48,6 @@ class TestDropbox(unittest.TestCase):
     def test_get_download_url_negative(self):
         negative_tests = [
             "https://www.notdropbox.com/s/abcd1234/abcd1234?dl=0",
-            "https://www.dropbox.com/b/abcd1234/abcd1234?dl=0",
-            "https://www.dropbox.com/s/!bcd1234/abcd1234?dl=0",
-            "https://www.dropbox.com",
             "https://www.googledrive.com/s/a1b/example.docx",
             "http://www.dropbox.com/s/a1b2c3d4ef5gh6/example.docx?query=whatever&dl=1",
             "https://www.googledrive.com/s/a1b/example.docx",

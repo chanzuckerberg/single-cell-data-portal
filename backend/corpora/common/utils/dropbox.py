@@ -1,10 +1,6 @@
 from urllib.parse import urlparse
 
-import re
 import requests
-
-dropbox_link_rx = re.compile(r"/s/[\w\d]+/.*")
-
 
 def get_download_url_from_shared_link(url):
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
@@ -13,7 +9,6 @@ def get_download_url_from_shared_link(url):
     if (
         parsed_url.scheme != "https"
         or parsed_url.netloc != "www.dropbox.com"
-        or not dropbox_link_rx.fullmatch(parsed_url.path)
     ):
         return None
 
