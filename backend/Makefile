@@ -12,10 +12,14 @@ db/reset_remote_dev: db/create
 	pip install awscli
 	apt-get update && apt-get install -y postgresql-client jq
 	$(eval DB_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString' | jq -r .remote_dev_uri))
-	# The python script exits with a 1 status code if the db already exists.
-	- python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db && \
+	# The create db script exits with a 1 status code if the db already exists.
+	-@ echo "Creating DB..." && \
+		python ../scripts/populate_db.py --create-schema --skip-populate --skip-recreate-db && \
+		echo "Importing db snapshot..." && \
 		psql ${DB_URI}${REMOTE_DEV_PREFIX} < scripts/db_snapshot.sql && \
+		echo "Writing test data..." && \
 		python ../scripts/populate_db.py --populate-data --skip-recreate-db
+
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
 .PHONY: db/init_remote_dev
