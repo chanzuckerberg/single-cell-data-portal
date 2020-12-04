@@ -15,12 +15,15 @@ const Header: FC = () => {
 
   const { data: userInfo } = useUserInfo(isAuth);
 
+  const isMyCollectionsShown =
+    userInfo?.name && get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
+
   return (
     <Wrapper>
       <MainWrapper>
         <HomepageLink />
         <Right>
-          {userInfo?.name && (
+          {isMyCollectionsShown && (
             <Link to={ROUTES.MY_COLLECTIONS}>
               <MyCollectionsButton intent={Intent.PRIMARY} minimal>
                 My Collections
