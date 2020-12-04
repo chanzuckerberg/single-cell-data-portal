@@ -14,12 +14,14 @@ import scanpy
 try:
     from ..common.entities.dataset import Dataset
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from ..common.utils.db_utils import db_session
 
 except ImportError:
     # We're in the container
     sys.path.append("/code")
     from common.entities.dataset import Dataset
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from common.utils.db_utils import db_session
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -123,13 +125,14 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
     return artifacts
 
 
+@db_session
 def update_db(metadata=None, processing_status=None):
 
     dataset = Dataset.get(os.environ["DATASET_ID"])
 
     if metadata:
 
-        # TODO: Delete this line one mean_genes_per_cell is in the db
+        # TODO: Delete this line once mean_genes_per_cell is in the db
         metadata.pop("mean_genes_per_cell", None)
 
         dataset.update(**metadata)
@@ -181,7 +184,7 @@ def extract_metadata(filename):
         numerator += numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
-    def get_term_pairs(base_term):
+    def _get_term_pairs(base_term):
         base_term_id = base_term + "_ontology_term_id"
         return [
             {"label": k[0], "ontology_term_id": k[1]}
@@ -190,12 +193,12 @@ def extract_metadata(filename):
 
     return {
         "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
-        "tissue": get_term_pairs("tissue"),
-        "assay": get_term_pairs("assay"),
-        "disease": get_term_pairs("disease"),
+        "tissue": _get_term_pairs("tissue"),
+        "assay": _get_term_pairs("assay"),
+        "disease": _get_term_pairs("disease"),
         "sex": list(adata.obs.sex.unique()),
-        "ethnicity": get_term_pairs("ethnicity"),
-        "development_stage": get_term_pairs("development_stage"),
+        "ethnicity": _get_term_pairs("ethnicity"),
+        "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
     }

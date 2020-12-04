@@ -150,16 +150,14 @@ class TestDatasetProcessing(unittest.TestCase):
 
     def test_update_db(self):
 
-        collection = Collection.create(visibility=CollectionVisibility.PUBLIC)
-        dataset = Dataset.create(collection_id=collection.id, collection_visibility=CollectionVisibility.PUBLIC)
+        collection = Collection.create(visibility=CollectionVisibility.PRIVATE)
+        dataset = Dataset.create(collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE)
         dataset_id = dataset.id
 
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
-        Dataset.db.session.expire_all()
         fake_env.start()
 
         process.update_db(metadata={"sex": ["male", "female"]})
-        Dataset.db.session.expire_all()
 
         self.assertListEqual(Dataset.get(dataset_id).sex, ["male", "female"])
 
@@ -172,7 +170,6 @@ class TestDatasetProcessing(unittest.TestCase):
         }
         dep_dir = {"url": "https://cellxgene.com/data"}
         process.update_db(metadata={"artifacts": [artifact], "deployment_directories": [dep_dir]})
-        Dataset.db.session.expire_all()
 
         self.assertEqual(len(Dataset.get(dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(dataset_id).artifacts[0].filename, "test_filename")
