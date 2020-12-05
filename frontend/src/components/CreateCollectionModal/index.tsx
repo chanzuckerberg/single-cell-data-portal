@@ -73,17 +73,16 @@ const CreateCollection: FC<{ className?: string }> = ({ className }) => {
   function toggleOpen() {
     setIsOpen(!isOpen);
     if (shouldModuleOpen) {
-      urlParams.delete(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
-      const currURL = window.location.href;
-      let newURL = currURL.substring(currURL.indexOf("/") + 1).split("?")[0];
-      if (urlParams.toString().length > 0) {
-        newURL = newURL + "?" + urlParams.toString();
-      }
-      console.log(urlParams.toString());
-      console.log(window.location.href);
+      const url = window.location.href;
+      const afterSlashBeforeParam = url
+        .substring(url.indexOf("/") + 1)
+        .split("?")[0];
 
-      window.history.replaceState(null, " ", "/" + newURL);
-      console.log(window.location.href);
+      urlParams.delete(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
+      if (urlParams.toString().length > 0) {
+        const newURL = afterSlashBeforeParam + "?" + urlParams.toString();
+        window.history.replaceState(null, " ", "/" + newURL);
+      }
     }
   }
 };
