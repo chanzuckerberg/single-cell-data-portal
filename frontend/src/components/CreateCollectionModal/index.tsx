@@ -1,6 +1,7 @@
 import { Dialog } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC, useState } from "react";
+import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
@@ -21,8 +22,12 @@ const AsyncCTA = loadable(
 
 const CreateCollection: FC<{ className?: string }> = ({ className }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
+  const urlParams = new URLSearchParams(window.location.search);
+  const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
 
-  const [isOpen, setIsOpen] = useState(false);
+  const shouldModuleOpen = param !== null && param?.toLowerCase() !== "false";
+
+  const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isAuth);
 
   if (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE || isLoading) {
@@ -67,6 +72,19 @@ const CreateCollection: FC<{ className?: string }> = ({ className }) => {
 
   function toggleOpen() {
     setIsOpen(!isOpen);
+    if (shouldModuleOpen) {
+      urlParams.delete(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
+      const currURL = window.location.href;
+      let newURL = currURL.substring(currURL.indexOf("/") + 1).split("?")[0];
+      if (urlParams.toString().length > 0) {
+        newURL = newURL + "?" + urlParams.toString();
+      }
+      console.log(urlParams.toString());
+      console.log(window.location.href);
+
+      window.history.replaceState(null, " ", "/" + newURL);
+      console.log(window.location.href);
+    }
   }
 };
 
