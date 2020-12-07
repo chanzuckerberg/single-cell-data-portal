@@ -113,3 +113,47 @@ export const formDataToObject = function (formData: FormData) {
 
   return payload;
 };
+
+type CollectionUploadLinks = {
+  collectionId: string;
+  payload: string;
+};
+
+async function collectionUploadLinks({
+  collectionId,
+  payload,
+}: CollectionUploadLinks) {
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, {
+    id: collectionId,
+  });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    body: payload,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json.dataset_uuid;
+}
+
+export function useCollectionUploadLinks(
+  id: string,
+  visibility: VISIBILITY_TYPE
+) {
+  const queryCache = useQueryCache();
+
+  return useMutation(collectionUploadLinks, {
+    onSuccess: () => {
+      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+    },
+  });
+}
