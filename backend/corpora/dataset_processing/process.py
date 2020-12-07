@@ -3,7 +3,6 @@
 import os
 import subprocess
 import sys
-import urllib
 
 from os.path import basename, join
 
@@ -14,6 +13,7 @@ import scanpy
 try:
     from ..common.entities.dataset import Dataset
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from ..common.utils import dropbox
     from ..common.utils.db_utils import db_session
 
 except ImportError:
@@ -21,6 +21,7 @@ except ImportError:
     sys.path.append("/code")
     from common.entities.dataset import Dataset
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from common.utils import dropbox
     from common.utils.db_utils import db_session
 
 # This is unfortunate, but this information doesn't appear to live anywhere
@@ -41,31 +42,6 @@ def check_env():
             missing.append(env_var)
     if missing:
         raise EnvironmentError(f"Missing environment variables: {missing}")
-
-
-def fix_dropbox_url(url):
-    """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
-
-    pr = urllib.parse.urlparse(url)
-
-    if pr.scheme != "https":
-        return None
-
-    if pr.netloc != "www.dropbox.com":
-        return None
-
-    if "dl=0" in pr.query:
-        new_query = pr.query.replace("dl=0", "dl=1")
-    elif not pr.query:
-        new_query = "dl=1"
-    elif "dl=1" in pr.query:
-        new_query = pr.query
-    else:
-        new_query = pr.query + "&dl=1"
-
-    pr = pr._replace(query=new_query)
-
-    return pr.geturl()
 
 
 def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
@@ -152,7 +128,7 @@ def fetch_dropbox_url(dropbox_url, local_path):
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = fix_dropbox_url(dropbox_url)
+    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
 
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
