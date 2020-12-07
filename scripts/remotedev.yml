@@ -11,6 +11,7 @@ Resources:
     Properties:
       TemplateURL: https://s3.amazonaws.com/sc-happy-corpora-dev/dp-entrypoint.yml
       Parameters:
+        CustomStackName: !Ref AWS::StackName
         ImageTag: !Ref ImageTag
 
 Outputs:
