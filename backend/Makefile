@@ -2,10 +2,14 @@
 db/migrate:
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
-.PHONY: db/init_remote_dev
-db/init_remote_dev:
+.PHONY: db/remote_migration_init
+db/remote_migration_init:
+	# Run utility installation before invoking these commands.
 	pip install awscli
 	apt-get update && apt-get install -y postgresql-client jq
+
+.PHONY: db/init_remote_dev
+db/init_remote_dev: db/remote_migration_init
 	$(eval DB_URI = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString' | jq -r .remote_dev_uri))
 	# The create db script exits with a 1 status code if the db already exists.
 	-@ echo "Creating DB..." && \
