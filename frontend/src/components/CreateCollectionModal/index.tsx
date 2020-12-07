@@ -25,7 +25,7 @@ const CreateCollection: FC<{ className?: string }> = ({ className }) => {
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
 
-  const shouldModuleOpen = param !== null && param?.toLowerCase() !== "false";
+  const shouldModuleOpen = param?.toLowerCase() === "true";
 
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isAuth);
