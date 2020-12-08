@@ -2,14 +2,15 @@
 
 import os
 import subprocess
-import sys
 
 from os.path import basename, join
 
 import boto3
 import numpy
 import scanpy
+import sys
 
+<<<<<<< HEAD
 try:
     from ..common.entities.dataset import Dataset
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
@@ -33,9 +34,12 @@ DEPLOYMENT_STAGE_TO_URL = {
     "staging": "https://cellxgene.staging.single-cell.czi.technology",
     "prod": "https://cellxgene.cziscience.com",
 }
+from .upload import ProgressTracker, Progress, Upload
+from ..common.utils import dropbox
 
 
 def check_env():
+    """Verify that the required environment variables are set."""
     """Verify that the required environment variables are set."""
 
     missing = []
@@ -137,6 +141,17 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     file_info = dropbox.get_file_info(fixed_dropbox_url)
     download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
+    total_size = dropbox.get_file_info(fixed_dropbox_url)["content-length"]
+    tracker = ProgressTracker(total_size)
+
+    progress_thread = Progress(os.environ["DATASET_ID"], tracker)
+    upload_thread = Upload(fixed_dropbox_url, local_path, tracker)
+
+    progress_thread.start()
+    upload_thread.start()
+
+    upload_thread.join()
+    progress_thread.join()
 
 
 def extract_metadata(filename):
@@ -221,7 +236,6 @@ def make_cxg(local_filename):
 
 
 def main():
-
     check_env()
 
     local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")

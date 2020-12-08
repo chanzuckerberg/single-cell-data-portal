@@ -101,7 +101,33 @@ def db_session(commit=False):
             with db_session_manager(commit):
                 rv = func(*args, **kwargs)
             return rv
+<<<<<<< HEAD
 
         return wrapper
 
     return decorator
+=======
+        except SQLAlchemyError:
+            db.session.rollback()
+            msg = "Failed to commit."
+            logger.exception(msg)
+            raise CorporaException(msg)
+        finally:
+            db.close()
+
+    return wrapper_decorator
+
+
+@contextmanager
+def db_session_manager():
+    try:
+        db = DbUtils()
+        yield db
+    except SQLAlchemyError:
+        db.session.rollback()
+        msg = "Failed to commit."
+        logger.exception(msg)
+        raise CorporaException(msg)
+    finally:
+        db.close()
+>>>>>>> Upload a files and update the status table.
