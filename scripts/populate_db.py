@@ -10,8 +10,12 @@ from sqlalchemy_utils import database_exists, create_database
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+env = os.environ.get("DEPLOYMENT_STAGE")
 from tests.unit.fixtures.test_db import TestDatabase
 from backend.corpora.common.corpora_config import CorporaDbConfig
+# Importing tests.unit overwrites our deployment stage env var.
+# So we're putting it back here.
+os.environ["DEPLOYMENT_STAGE"] = env
 
 @click.command()
 @click.option('--create-schema/--skip-create-schema', default=False, help="Create schema if it doesn't exist")
