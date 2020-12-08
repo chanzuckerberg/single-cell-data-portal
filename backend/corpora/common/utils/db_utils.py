@@ -1,6 +1,7 @@
 import functools
 import logging
 import typing
+from contextlib import contextmanager
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -84,3 +85,17 @@ def db_session(func):
             db.close()
 
     return wrapper_decorator
+
+
+@contextmanager
+def db_session_manager():
+    try:
+        db = DbUtils()
+        yield db
+    except SQLAlchemyError:
+        db.session.rollback()
+        msg = "Failed to commit."
+        logger.exception(msg)
+        raise CorporaException(msg)
+    finally:
+        db.close()

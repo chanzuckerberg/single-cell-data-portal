@@ -2,16 +2,18 @@
 
 import os
 import subprocess
-import sys
 
 import boto3
 import numpy
 import scanpy
+import sys
 
+from .upload import ProgressTracker, Progress, Upload
 from ..common.utils import dropbox
 
 
 def check_env():
+    """Verify that the required environment variables are set."""
     """Verify that the required environment variables are set."""
 
     missing = []
@@ -29,13 +31,20 @@ def fetch_dropbox_url(dropbox_url, local_path):
     """
 
     fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
-
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    subprocess.run(["wget", "-nv", fixed_dropbox_url, "-O", local_path], check=True)
+    total_size = dropbox.get_file_info(fixed_dropbox_url)["content-length"]
+    tracker = ProgressTracker(total_size)
 
-    return local_path
+    progress_thread = Progress(os.environ["DATASET_ID"], tracker)
+    upload_thread = Upload(fixed_dropbox_url, local_path, tracker)
+
+    progress_thread.start()
+    upload_thread.start()
+
+    upload_thread.join()
+    progress_thread.join()
 
 
 def extract_metadata(filename):
@@ -113,7 +122,6 @@ def make_cxg(local_filename):
 
 
 def main():
-
     check_env()
 
     local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
