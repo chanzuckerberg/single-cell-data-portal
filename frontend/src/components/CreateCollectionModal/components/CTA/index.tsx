@@ -28,7 +28,7 @@ const CTA: FC<Props> = ({ onClose }) => {
           </Button>
           <AnchorButton
             intent={Intent.PRIMARY}
-            href={`${API_URL}${API.LOG_IN}?redirect=?${QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT}`}
+            href={`${API_URL}${API.LOG_IN}?redirect=?${QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT}=true`}
           >
             Continue
           </AnchorButton>
