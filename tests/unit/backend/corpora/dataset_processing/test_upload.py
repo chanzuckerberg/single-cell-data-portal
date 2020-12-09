@@ -43,12 +43,3 @@ class TestUpload(unittest.TestCase):
         upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
         self.assertTrue(os.path.exists(local_file))
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
-
-    def test_upload_no_file_size(self):
-        local_file = "local.h5ad"
-        self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}"
-        file_size = -1
-        upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
-        self.assertTrue(os.path.exists(local_file))
-        self.assertEqual(-1, Dataset.get("test_dataset_id").processing_status.upload_progress)

@@ -45,6 +45,7 @@ def get_file_info(url: str) -> dict:
     resp = requests.head(url, allow_redirects=True)
     resp.raise_for_status()
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def _get_key(headers, key):
         try:
@@ -62,3 +63,9 @@ def get_file_info(url: str) -> dict:
     size = resp.headers.get("content-length", "-1")  # size == -1 if it's not in the response.
     return {"size": int(size), "name": name}
 >>>>>>> Uploading with status updates
+=======
+    return {
+        "size": int(resp.headers["content-length"]),
+        "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],
+    }
+>>>>>>> return error on files of unknown file size and type
