@@ -25,10 +25,14 @@ class TestUpload(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.port = random.randint(10000, 20000)
-        cls.server_thread = multiprocessing.Process(
+        cls.server_process = multiprocessing.Process(
             target=start_server, args=("tests/unit/backend/corpora/fixtures", cls.port), daemon=True
         )
-        cls.server_thread.start()
+        cls.server_process.start()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.server_process.terminate()
 
     def cleanup_local_file(self, local_file):
         try:
@@ -44,3 +48,15 @@ class TestUpload(unittest.TestCase):
         upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
         self.assertTrue(os.path.exists(local_file))
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
+
+    def test__wrong_file_size__error(self):
+        local_file = "local.h5ad"
+        self.addCleanup(self.cleanup_local_file, local_file)
+        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        progress_tracker = upload.upload("test_dataset_id", url, local_file, 100, chunk_size=1024, update_frequency=1)
+        self.assertTrue(os.path.exists(local_file))
+        self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
+
+    # if the file size does not match the actual file size
+    # if the url is bad
+    # of the dataset does not exist
