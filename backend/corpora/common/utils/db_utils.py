@@ -69,11 +69,9 @@ class DbUtils:
         return getattr(self.__instance, name)
 
 
-<<<<<<< HEAD
 @contextmanager
 def db_session_manager(commit=False):
     """
-
     :param commit: Changes will be committed when context ends.
     """
     try:
@@ -92,7 +90,6 @@ def db_session_manager(commit=False):
 
 def db_session(commit=False):
     """
-
     :param commit: passed to db_session_manager
     """
 
@@ -102,59 +99,7 @@ def db_session(commit=False):
             with db_session_manager(commit):
                 rv = func(*args, **kwargs)
             return rv
-<<<<<<< HEAD
 
         return wrapper
 
     return decorator
-=======
-        except SQLAlchemyError:
-            db.session.rollback()
-            msg = "Failed to commit."
-            logger.exception(msg)
-            raise CorporaException(msg)
-        finally:
-            db.close()
-
-    return wrapper_decorator
-
-
-=======
->>>>>>> Making suggested changes
-@contextmanager
-def db_session_manager(commit=False):
-    """
-
-    :param commit: Changes will be committed when context ends.
-    """
-    try:
-        db = DbUtils()
-        yield db
-        if commit:
-            db.commit()
-    except SQLAlchemyError:
-        db.session.rollback()
-        msg = "Failed to commit."
-        logger.exception(msg)
-        raise CorporaException(msg)
-    finally:
-        db.close()
-<<<<<<< HEAD
->>>>>>> Upload a files and update the status table.
-=======
-
-
-def db_session(func, commit=False):
-    """
-
-    :param commit: passed to db_session_manager
-    """
-
-    @functools.wraps(func)
-    def wrapper_decorator(*args, **kwargs):
-        with db_session_manager(commit):
-            rv = func(*args, **kwargs)
-            return rv
-
-    return wrapper_decorator
->>>>>>> Making suggested changes

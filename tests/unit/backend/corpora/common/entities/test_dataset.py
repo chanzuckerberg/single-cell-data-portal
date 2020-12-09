@@ -16,6 +16,9 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils
+from backend.corpora.dataset_processing.download import processing_status_updater
+from backend.corpora.dataset_processing.process import update_db
+from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
 
 
@@ -182,6 +185,24 @@ class TestDataset(unittest.TestCase):
             expected_exists = test_collection_ids
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
+
+    def test__update_processing_status__ok(self):
+        dataset = Dataset.get(self.uuid)
+        status = {
+                DbDatasetProcessingStatus.upload_progress: 0,
+                DbDatasetProcessingStatus.upload_status: UploadStatus.WAITING,
+            }
+        processing_status_updater(dataset.processing_status.id, status)
+
+        dataset = Dataset.get(self.uuid)
+        self.assertEqual(dataset.processing_status.upload_status,  UploadStatus.WAITING)
+        update_dataset_processing_status_to_failed(self.uuid)
+
+        dataset = Dataset.get(self.uuid)
+        self.assertEqual(dataset.processing_status.upload_status,  UploadStatus.FAILED)
+
+    def test__update_processing_status__no_dataset(self):
+        self.assertRaises(AttributeError, update_dataset_processing_status_to_failed("fake_uuid"))
 
     def test__get_asset__ok(self):
         dataset = Dataset.get(self.uuid)
