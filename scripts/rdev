@@ -209,7 +209,7 @@ def invoke_wait(ctx, label):
     "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
 )
 @click.pass_context
-def create(ctx, label, tag, wait):
+def create(ctx, label, tag, priority, wait):
     """Create a dev stack with a given tag"""
     print(f"creating {label}")
     command = [
