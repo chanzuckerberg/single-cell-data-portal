@@ -17,6 +17,7 @@ class ProgressTracker:
         self._progress: int = 0
         self.lock: threading.Lock = threading.Lock()
         self.complete: threading.Event = threading.Event()
+        self.cancel: threading.Event = threading.Event()
 
     def progress(self):
         with self.lock:
@@ -40,6 +41,8 @@ def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: in
             resp.raise_for_status()
             with open(local_path, "wb") as fp:
                 for chunk in resp.iter_content(chunk_size=chunk_size):
+                    if tracker.cancel.isSet():
+                        return
                     if chunk:
                         fp.write(chunk)
                         chunk_size = len(chunk)
@@ -63,18 +66,26 @@ def update_progress(upload_uuid: str, tracker: ProgressTracker, frequency: float
     def _update():
         progress = tracker.progress()
         with db_session_manager() as manager:
-            manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == upload_uuid).update(
-                {DbDatasetProcessingStatus.upload_progress: progress}
-            )
+            if progress > 1:
+                tracker.cancel.set()
+                manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == upload_uuid).update(
+                    {DbDatasetProcessingStatus.upload_progress: progress,
+                     DbDatasetProcessingStatus.upload_message: "The file size, does not match the size of the data uploaded."}
+                )
+            else:
+                manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == upload_uuid).update(
+                    {DbDatasetProcessingStatus.upload_progress: progress}
+                )
+                logger.info(f"progress: {100 * progress:.2f} %")
             manager.session.commit()
-            logger.info(f"progress: {100 * progress:.2f} %")
+
 
     while not tracker.complete.wait(frequency):
         _update()
     _update()  # Make sure the progress is update once the upload is complete
 
 
-def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3):
+def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3) -> ProgressTracker:
     """
 
     :param dataset_uuid: The uuid of the dataset the upload will be associated with.
@@ -103,3 +114,4 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
     upload_thread.start()
     upload_thread.join()
     progress_thread.join()
+    return progress_tracker
