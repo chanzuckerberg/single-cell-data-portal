@@ -62,7 +62,11 @@ def login() -> Response:
     # save the return path in the session cookie, accessed in the callback function
     session["oauth_corpora_callback_redirect"] = return_to
     client = get_oauth_client(config)
-    callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
+
+    if os.getenv("API_URL"):
+        callbackurl = f"{os.getenv('API_URL')}/dp/v1/oauth2/callback"
+    else:
+        callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
     response = client.authorize_redirect(redirect_uri=callbackurl)
     return response
 
