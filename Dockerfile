@@ -8,7 +8,8 @@ ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm
+    apt-get install -y gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm && \
+    rm -rf /var/lib/apt/lists/* 
 
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
