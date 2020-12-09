@@ -204,6 +204,7 @@ def invoke_wait(ctx, label):
 @cli.command()
 @click.argument("label")
 @click.argument("tag")
+@click.argument("priority")
 @click.option(
     "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
 )
@@ -225,6 +226,7 @@ def create(ctx, label, tag, wait):
         label,
         "--parameters",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
+        f"ParameterKey=Priority,ParameterValue={priority}",
     ]
     subprocess.check_call(command)
     if wait:
@@ -253,6 +255,7 @@ def update(ctx, label, tag, wait):
         label,
         "--parameters",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
+        "ParameterKey=Priority,UsePreviousValue=true"
     ]
     subprocess.check_call(command)
     if wait:

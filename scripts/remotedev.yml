@@ -4,6 +4,9 @@ Parameters:
   ImageTag:
     Description: Please provide an image tag
     Type: String
+  Priority:
+    Description: Listener rule priority number within the given listener
+    Type: Number
 
 Resources:
   DevEnv:
@@ -13,6 +16,7 @@ Resources:
       Parameters:
         CustomStackName: !Ref AWS::StackName
         ImageTag: !Ref ImageTag
+        Priority: !Ref Priority
 
 Outputs:
   FrontendUrl:
