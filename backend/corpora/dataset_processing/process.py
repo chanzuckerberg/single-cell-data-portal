@@ -124,7 +124,7 @@ def update_db(metadata=None, processing_status=None):
         dataset.update(processing_status=status)
 
 
-def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
+def fetch_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
@@ -136,6 +136,7 @@ def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
     upload(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    return local_path
 
 
 def extract_metadata(filename):

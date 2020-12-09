@@ -228,13 +228,3 @@ class TestDatasetProcessing(unittest.TestCase):
 
         fake_env.stop()
         s3_mock.stop()
-
-    @unittest.skip("slow")
-    def test_fetch_dropbox_url(self):
-        process.fetch_dropbox_url(
-            "test_dataset_id",
-            "https://www.dropbox.com/s/jbnslb8mc10vrty/Single_cell_drug_screening_a549-42-remixed.h5ad?dl=0",
-            "local.h5ad",
-        )
-        self.assertTrue(os.path.exists("local.h5ad"))
-        self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
