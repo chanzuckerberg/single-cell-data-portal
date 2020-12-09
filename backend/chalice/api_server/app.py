@@ -54,6 +54,8 @@ def get_chalice_app(flask_app):
     app.debug = flask_app.debug
     app.log.setLevel(logging.DEBUG)
     allowed_origin = [r"^http://localhost:\d+"]
+    if os.getenv("FRONTEND_URL"):
+        allowed_origin.append(os.getenv("FRONTEND_URL"))
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
