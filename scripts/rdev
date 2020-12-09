@@ -366,7 +366,10 @@ def delete(ctx, label):
     """Delete a dev stack"""
     print(f"deleting {label}")
     envdata = DevEnvDataStore(ctx)
-    env = envdata.delete_env(label)
+    try:
+        env = envdata.delete_env(label)
+    except:
+        print("rdev env doesn't exist in our list")
     command = [
         "aws",
         "cloudformation",
