@@ -31,7 +31,7 @@ def get_file_info(url: str) -> dict:
     """
     resp = requests.head(url, allow_redirects=True)
     resp.raise_for_status()
-    name = resp.headers.get("content-disposition")
-    name = name.split(";")[1].split("=", 1)[1][1:-1] if name else ""  # name is "" if it's not in the response.
-    size = resp.headers.get("content-length", "-1")  # size == -1 if it's not in the response.
-    return {"size": int(size), "name": name}
+    return {
+        "size": int(resp.headers["content-length"]),
+        "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],
+    }

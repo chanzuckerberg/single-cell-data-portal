@@ -87,24 +87,19 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
     with db_session_manager():
         dataset = Dataset.get(dataset_uuid)
         processing_status = dataset.new_processing_status()
-        if file_size == -1:
-            processing_status["upload_progress"] = -1
         dataset.update(processing_status=processing_status)
         upload_uuid = dataset.processing_status.id
     progress_tracker = ProgressTracker(file_size)
 
-    if file_size != -1:
-        progress_thread = threading.Thread(
-            target=update_progress,
-            kwargs=dict(upload_uuid=upload_uuid, tracker=progress_tracker, frequency=update_frequency),
-        )
-        progress_thread.start()
+    progress_thread = threading.Thread(
+        target=update_progress,
+        kwargs=dict(upload_uuid=upload_uuid, tracker=progress_tracker, frequency=update_frequency),
+    )
+    progress_thread.start()
 
     upload_thread = threading.Thread(
         target=uploader, kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size)
     )
     upload_thread.start()
     upload_thread.join()
-
-    if file_size != -1:
-        progress_thread.join()
+    progress_thread.join()

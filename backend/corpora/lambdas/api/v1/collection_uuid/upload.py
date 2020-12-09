@@ -24,6 +24,8 @@ def link(collection_uuid: str, body: dict, user: str):
         resp = dropbox.get_file_info(url)
     except requests.HTTPError:
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
+    except KeyError:
+        raise InvalidParametersHTTPException("Unable to retrieve required information about the file")
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
