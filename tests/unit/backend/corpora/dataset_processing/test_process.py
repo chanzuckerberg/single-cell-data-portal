@@ -233,6 +233,7 @@ class TestDatasetProcessing(unittest.TestCase):
 
         fake_env.stop()
         s3_mock.stop()
+<<<<<<< HEAD
 =======
     @unittest.skip("slow")
     def test_fetch_dropbox_url(self):
@@ -244,3 +245,5 @@ class TestDatasetProcessing(unittest.TestCase):
         self.assertTrue(os.path.exists("local.h5ad"))
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
 >>>>>>> Uploading with status updates
+=======
+>>>>>>> cleanup

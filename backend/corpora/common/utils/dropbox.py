@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 import requests
 
 
+<<<<<<< HEAD
 class DropBoxException(Exception):
     def __init__(self, detail: str = "Invalid response from Dropbox", *args, **kwargs) -> None:
         self.detail = detail
@@ -13,6 +14,8 @@ class MissingHeaderException(DropBoxException):
         self.detail = "Missing header from Dropbox response. " + detail
 
 
+=======
+>>>>>>> cleanup
 def get_download_url_from_shared_link(url: str) -> str:
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
 
@@ -55,7 +58,7 @@ def get_file_info(url: str) -> dict:
     }
 =======
     name = resp.headers.get("content-disposition")
-    name = name.split(";")[1].split("=", 1)[1][1:-1] if name else ""
-    size = resp.headers.get("content-length", "-1")
+    name = name.split(";")[1].split("=", 1)[1][1:-1] if name else ""  # name is "" if it's not in the response.
+    size = resp.headers.get("content-length", "-1")  # size == -1 if it's not in the response.
     return {"size": int(size), "name": name}
 >>>>>>> Uploading with status updates
