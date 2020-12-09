@@ -26,7 +26,7 @@ def get_download_url_from_shared_link(url):
 def get_file_info(url):
     resp = requests.head(url, allow_redirects=True)
     resp.raise_for_status()
-    return {
-        "size": int(resp.headers["content-length"]),
-        "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],
-    }
+    name = resp.headers.get("content-disposition")
+    name = name.split(";")[1].split("=", 1)[1][1:-1] if name else ""
+    size = resp.headers.get("content-length", "-1")
+    return {"size": int(size), "name": name}

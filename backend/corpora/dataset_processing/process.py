@@ -8,7 +8,7 @@ import numpy
 import scanpy
 import sys
 
-from .upload import ProgressTracker, Progress, Upload
+from .upload import upload
 from ..common.utils import dropbox
 
 
@@ -24,7 +24,7 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-def fetch_dropbox_url(dropbox_url, local_path):
+def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
@@ -34,17 +34,8 @@ def fetch_dropbox_url(dropbox_url, local_path):
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    total_size = dropbox.get_file_info(fixed_dropbox_url)["content-length"]
-    tracker = ProgressTracker(total_size)
-
-    progress_thread = Progress(os.environ["DATASET_ID"], tracker)
-    upload_thread = Upload(fixed_dropbox_url, local_path, tracker)
-
-    progress_thread.start()
-    upload_thread.start()
-
-    upload_thread.join()
-    progress_thread.join()
+    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    upload(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
 
 
 def extract_metadata(filename):
@@ -124,7 +115,7 @@ def make_cxg(local_filename):
 def main():
     check_env()
 
-    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = fetch_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
