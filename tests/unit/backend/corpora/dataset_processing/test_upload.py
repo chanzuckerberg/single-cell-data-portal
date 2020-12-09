@@ -6,9 +6,10 @@ import multiprocessing
 import random
 import os
 
+import requests
+
 from backend.corpora.common.entities import Dataset
 from backend.corpora.dataset_processing import upload
-from backend.corpora.common.utils.dropbox import get_file_info
 
 logging.basicConfig(level=logging.INFO)
 
@@ -39,7 +40,7 @@ class TestUpload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
-        file_size = get_file_info(url)["size"]
+        file_size = int(requests.head(url).headers["content-length"])
         upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
         self.assertTrue(os.path.exists(local_file))
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
