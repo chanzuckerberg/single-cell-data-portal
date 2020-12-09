@@ -9,6 +9,73 @@ import boto3
 from botocore.config import Config
 import click
 
+class DevEnvDataStore():
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.secret_id = "happy/rdev-tracker"
+        self.aws_conf = ctx.obj["aws_conf"]
+        self.secret_client = boto3.client("secretsmanager", config=self.aws_conf)
+        self.envs = {}
+        self.envs_loaded = False
+
+    def get_envs(self):
+        if self.envs_loaded:
+            return self.envs
+        secret = json.loads(self.secret_client.get_secret_value(SecretId=self.secret_id)["SecretString"])
+        self.envs = secret
+        self.envs_loaded= True
+        return self.envs
+
+    def write_envs(self):
+        envs = self.get_envs()
+        secret = self.secret_client.put_secret_value(SecretId=self.secret_id, SecretString=json.dumps(envs))
+        return True
+
+    def delete_env(self, env_name):
+        envs = self.get_envs()
+        del envs[env_name]
+        self.envs = envs
+        self.write_envs()
+
+    def update_env(self, env_name, document):
+        envs = self.get_envs()
+        envs[env_name] = document
+        self.envs = envs
+        self.write_envs()
+
+    def get_env(self, env_name):
+        envs = self.get_envs()
+        return envs[env_name]
+
+    def create_env(self, env_name):
+        envs = self.get_envs()
+        if env_name in envs:
+            raise Exception("Env already exists")
+
+        # Find the first available priority id and use it.
+        existing_priorities = set()
+        slots = set(range(1, len(envs) + 1))
+        priority = len(envs) + 1
+        for env in envs.values():
+            existing_priorities.add(env["priority"])
+        free_slots = slots - existing_priorities
+        if len(free_slots):
+            priority = min(free_slots)
+            
+        # Figure out what our current identity is
+        sts_client = boto3.client("sts", config=self.aws_conf)
+        identity = sts_client.get_caller_identity()["Arn"]
+        # Track a creation date for this stack.
+        now = time.time()
+        # Save 
+        env_info = {
+            "priority": priority,
+            "owner": identity.split("/")[-1],
+            "created_at": now,
+        }
+        self.update_env(env_name, env_info)
+        self.write_envs()
+        return env_info
 
 @click.group()
 @click.option("--profile", default="single-cell-dev", help="AWS profile to use")
@@ -22,6 +89,7 @@ def cli(ctx, profile):
     )
     client = boto3.client("cloudformation", config=aws_conf)
     ctx.obj["client"] = client
+    ctx.obj["aws_conf"] = aws_conf
 
 
 def get_secrets(ctx):
@@ -211,6 +279,8 @@ def invoke_wait(ctx, label):
 @click.pass_context
 def create(ctx, label, tag, priority, wait):
     """Create a dev stack with a given tag"""
+    envdata = DevEnvDataStore(ctx)
+    env = envdata.create_env(label)
     print(f"creating {label}")
     command = [
         "aws",
@@ -225,6 +295,7 @@ def create(ctx, label, tag, priority, wait):
         "--stack-name",
         label,
         "--parameters",
+        f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
         f"ParameterKey=Priority,ParameterValue={priority}",
     ]
@@ -243,6 +314,8 @@ def create(ctx, label, tag, priority, wait):
 def update(ctx, label, tag, wait):
     """Update a dev stack tag version"""
     print(f"updating {label}")
+    envdata = DevEnvDataStore(ctx)
+    env = envdata.get_env(label)
     command = [
         "aws",
         "cloudformation",
@@ -254,6 +327,7 @@ def update(ctx, label, tag, wait):
         "--stack-name",
         label,
         "--parameters",
+        f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
         "ParameterKey=Priority,UsePreviousValue=true"
     ]
@@ -291,6 +365,8 @@ def cancelupdate(ctx, label, wait):
 def delete(ctx, label):
     """Delete a dev stack"""
     print(f"deleting {label}")
+    envdata = DevEnvDataStore(ctx)
+    env = envdata.delete_env(label)
     command = [
         "aws",
         "cloudformation",
