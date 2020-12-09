@@ -10,6 +10,7 @@ import boto3
 import numpy
 import pandas
 
+<<<<<<< HEAD
 from moto import mock_s3
 
 from backend.corpora.common.corpora_orm import (
@@ -22,6 +23,9 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 
+=======
+from backend.corpora.common.entities import Dataset
+>>>>>>> Uploading with status updates
 from backend.corpora.dataset_processing import process
 
 
@@ -154,6 +158,7 @@ class TestDatasetProcessing(unittest.TestCase):
         self.assertEqual(extracted_metadata["cell_count"], 50001)
         self.assertAlmostEqual(extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(df) / 50001)
 
+<<<<<<< HEAD
     def test_update_db(self):
 
         collection = Collection.create(visibility=CollectionVisibility.PRIVATE)
@@ -228,3 +233,14 @@ class TestDatasetProcessing(unittest.TestCase):
 
         fake_env.stop()
         s3_mock.stop()
+=======
+    @unittest.skip("slow")
+    def test_fetch_dropbox_url(self):
+        process.fetch_dropbox_url(
+            "test_dataset_id",
+            "https://www.dropbox.com/s/jbnslb8mc10vrty/Single_cell_drug_screening_a549-42-remixed.h5ad?dl=0",
+            "local.h5ad",
+        )
+        self.assertTrue(os.path.exists("local.h5ad"))
+        self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
+>>>>>>> Uploading with status updates

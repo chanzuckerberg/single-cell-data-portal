@@ -41,6 +41,7 @@ def get_file_info(url: str) -> dict:
     """
     resp = requests.head(url, allow_redirects=True)
     resp.raise_for_status()
+<<<<<<< HEAD
 
     def _get_key(headers, key):
         try:
@@ -52,3 +53,9 @@ def get_file_info(url: str) -> dict:
         "size": int(_get_key(resp.headers, "content-length")),
         "name": _get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
     }
+=======
+    name = resp.headers.get("content-disposition")
+    name = name.split(";")[1].split("=", 1)[1][1:-1] if name else ""
+    size = resp.headers.get("content-length", "-1")
+    return {"size": int(size), "name": name}
+>>>>>>> Uploading with status updates

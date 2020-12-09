@@ -11,6 +11,7 @@ import scanpy
 import sys
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 try:
     from ..common.entities.dataset import Dataset
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
@@ -35,6 +36,9 @@ DEPLOYMENT_STAGE_TO_URL = {
     "prod": "https://cellxgene.cziscience.com",
 }
 from .upload import ProgressTracker, Progress, Upload
+=======
+from .upload import upload
+>>>>>>> Uploading with status updates
 from ..common.utils import dropbox
 
 
@@ -50,6 +54,7 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
+<<<<<<< HEAD
 def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
 
     s3 = boto3.client("s3")
@@ -129,6 +134,9 @@ def update_db(metadata=None, processing_status=None):
 
 
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
+=======
+def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
+>>>>>>> Uploading with status updates
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
@@ -139,6 +147,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
+<<<<<<< HEAD
     download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
     total_size = dropbox.get_file_info(fixed_dropbox_url)["content-length"]
@@ -152,6 +161,9 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
 
     upload_thread.join()
     progress_thread.join()
+=======
+    upload(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+>>>>>>> Uploading with status updates
 
 
 def extract_metadata(filename):
@@ -238,7 +250,11 @@ def make_cxg(local_filename):
 def main():
     check_env()
 
+<<<<<<< HEAD
     local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+=======
+    local_filename = fetch_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+>>>>>>> Uploading with status updates
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
