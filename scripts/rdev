@@ -272,12 +272,11 @@ def invoke_wait(ctx, label):
 @cli.command()
 @click.argument("label")
 @click.argument("tag")
-@click.argument("priority")
 @click.option(
     "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
 )
 @click.pass_context
-def create(ctx, label, tag, priority, wait):
+def create(ctx, label, tag, wait):
     """Create a dev stack with a given tag"""
     envdata = DevEnvDataStore(ctx)
     env = envdata.create_env(label)
@@ -297,7 +296,6 @@ def create(ctx, label, tag, priority, wait):
         "--parameters",
         f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
-        f"ParameterKey=Priority,ParameterValue={priority}",
     ]
     subprocess.check_call(command)
     if wait:
@@ -329,7 +327,6 @@ def update(ctx, label, tag, wait):
         "--parameters",
         f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
-        "ParameterKey=Priority,UsePreviousValue=true"
     ]
     subprocess.check_call(command)
     if wait:
@@ -399,7 +396,7 @@ def list(ctx):
 @click.argument("tag")
 @click.pass_context
 def push(ctx, tag):
-    """Wait until a dev stack is updated"""
+    """Build and push docker images to ECR"""
     print("Building images...")
     subprocess.check_call(["docker-compose", "build"])
     secrets = get_secrets(ctx)
