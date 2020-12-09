@@ -56,7 +56,7 @@ def login() -> Response:
     config = CorporaAuthConfig()
     redirect = request.args.get("redirect", "")
     if os.getenv("FRONTEND_URL"):
-        return_to = f"{os.getenv['FRONTEND_URL']}{redirect}"
+        return_to = f"{os.getenv('FRONTEND_URL')}{redirect}"
     else:
         return_to = f"{config.redirect_to_frontend}{redirect}"
     # save the return path in the session cookie, accessed in the callback function
