@@ -101,10 +101,14 @@ def get_secrets(ctx):
     return secrets
 
 
-def run_aws_cmd(ctx, cmd, json_output=True):
-    command = ["aws", "--profile", ctx.obj["aws_profile"]]
+def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
+    command = ["aws", "--profile", ctx.obj["aws_profile"], "--region", "us-west-2"]
     command.extend(cmd)
-    output = subprocess.check_output(command)
+    if return_output:
+        output = subprocess.check_output(command)
+    else:
+        subprocess.check_call(command)
+        return
     if not json_output:
         return output
     return json.loads(output)
@@ -270,6 +274,16 @@ def invoke_wait(ctx, label):
             # We're done.
             print_outputs(ctx, stack=stack)
             return stack
+
+
+@cli.command()
+@click.argument("label")
+@click.argument("service")
+@click.option("--since", default="10m", help="Output logs since <number>s|m|h|d")
+@click.pass_context
+def logs(ctx, label, service, since):
+    """Tail the logs of a service (frontend or backend)"""
+    run_aws_cmd(ctx, ["logs", "tail", "--since", since, "--follow", f"{label}/{service}"], return_output=False, json_output=False)
 
 
 @cli.command()
