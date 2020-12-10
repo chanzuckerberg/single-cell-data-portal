@@ -47,6 +47,12 @@ class DevEnvDataStore():
         envs = self.get_envs()
         return envs[env_name]
 
+    def get_owner(self):
+        # Figure out what our current identity is
+        sts_client = boto3.client("sts", config=self.aws_conf)
+        identity = sts_client.get_caller_identity()["Arn"]
+        return identity.split("/")[-1]
+
     def create_env(self, env_name):
         envs = self.get_envs()
         if env_name in envs:
@@ -62,15 +68,12 @@ class DevEnvDataStore():
         if len(free_slots):
             priority = min(free_slots)
             
-        # Figure out what our current identity is
-        sts_client = boto3.client("sts", config=self.aws_conf)
-        identity = sts_client.get_caller_identity()["Arn"]
         # Track a creation date for this stack.
         now = time.time()
         # Save 
         env_info = {
             "priority": priority,
-            "owner": identity.split("/")[-1],
+            "owner": self.get_owner(),
             "created_at": now,
         }
         self.update_env(env_name, env_info)
@@ -294,6 +297,7 @@ def create(ctx, label, tag, wait):
         "--stack-name",
         label,
         "--parameters",
+        f"ParameterKey=Owner,ParameterValue={envdata.get_owner()}",
         f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
     ]
@@ -325,6 +329,7 @@ def update(ctx, label, tag, wait):
         "--stack-name",
         label,
         "--parameters",
+        f"ParameterKey=Owner,ParameterValue={envdata.get_owner()}",
         f"ParameterKey=Priority,ParameterValue={env['priority']}",
         f"ParameterKey=ImageTag,ParameterValue={tag}",
     ]
