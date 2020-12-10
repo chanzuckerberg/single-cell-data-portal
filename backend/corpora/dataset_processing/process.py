@@ -156,6 +156,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
 <<<<<<< HEAD
+<<<<<<< HEAD
     download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
     total_size = dropbox.get_file_info(fixed_dropbox_url)["content-length"]
@@ -174,6 +175,9 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
 <<<<<<< HEAD
 >>>>>>> Uploading with status updates
 =======
+=======
+    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+>>>>>>> Change upload to download
     return local_path
 >>>>>>> cleanup
 

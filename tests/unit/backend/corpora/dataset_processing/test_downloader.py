@@ -1,4 +1,8 @@
 import http.server
+<<<<<<< HEAD
+=======
+import json
+>>>>>>> Change upload to download
 import logging
 import multiprocessing
 import os
@@ -14,6 +18,12 @@ from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
 
 
+<<<<<<< HEAD
+=======
+logging.basicConfig(level=logging.INFO)
+
+
+>>>>>>> Change upload to download
 def start_server(path, port):
     handler = http.server.SimpleHTTPRequestHandler
     os.chdir(path)
@@ -43,6 +53,7 @@ class TestDownload(unittest.TestCase):
     def test_download_good(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
@@ -50,6 +61,14 @@ class TestDownload(unittest.TestCase):
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
         self.assertEqual(1, status["upload_progress"])
         self.assertTrue(os.path.exists(local_file))
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        file_size = int(requests.head(url).headers["content-length"])
+        status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
+        self.assertTrue(os.path.exists(local_file))
+        self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
+        self.assertEqual(1, status["upload_progress"])
+>>>>>>> Change upload to download
 
     def test__wrong_file_size__FAILED(self):
         """Upload status is set to failed when upload progress exceeds 1. This means the file size provided is smaller
@@ -57,7 +76,11 @@ class TestDownload(unittest.TestCase):
         """
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+>>>>>>> Change upload to download
 
         with self.subTest("Bigger"):
             download.download("test_dataset_id", url, local_file, 1, chunk_size=1024, update_frequency=1)
@@ -72,7 +95,11 @@ class TestDownload(unittest.TestCase):
     def test__stop_download(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+>>>>>>> Change upload to download
 
         progress_tracker = download.ProgressTracker(1)
         progress_tracker.stop_downloader.set()
@@ -83,7 +110,11 @@ class TestDownload(unittest.TestCase):
     def test__bad_url__FAILED(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/fake.txt"
+=======
+        url = f"http://localhost:{self.port}/fake.h5ad"
+>>>>>>> Change upload to download
         download.download("test_dataset_id", url, local_file, 100, chunk_size=1024, update_frequency=1)
         processing_status = Dataset.get("test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
@@ -91,7 +122,11 @@ class TestDownload(unittest.TestCase):
     def test__dataset_does_not_exist__error(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+>>>>>>> Change upload to download
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(AttributeError):
             download.download("test_dataset_id_fake", url, local_file, file_size, chunk_size=1024, update_frequency=1)

@@ -1,5 +1,9 @@
 import logging
 import threading
+<<<<<<< HEAD
+=======
+import queue
+>>>>>>> Change upload to download
 import requests
 
 from ..common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
@@ -17,7 +21,11 @@ class ProgressTracker:
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
+<<<<<<< HEAD
         self.error: Exception = None  # Track errors
+=======
+        self.error: queue.Queue = queue.Queue()  # Track errors
+>>>>>>> Change upload to download
 
     def progress(self):
         with self.progress_lock:
@@ -51,9 +59,14 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
                         chunk_size = len(chunk)
                         tracker.update(chunk_size)
                         logger.debug(f"chunk size: {chunk_size}")
+<<<<<<< HEAD
     except (requests.HTTPError, OSError) as ex:
         tracker.error = ex
         logger.exception(f"Download Failed for {url}")
+=======
+    except requests.HTTPError as ex:
+        tracker.error.put(ex)
+>>>>>>> Change upload to download
     finally:
         tracker.stop_updater.set()
 
@@ -140,10 +153,21 @@ def download(
     download_thread.join()  # Wait for the download thread to complete
     progress_thread.join()  # Wait for the progress thread to complete
 
+<<<<<<< HEAD
     if progress_tracker.error:
         processing_status = {
             DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
             DbDatasetProcessingStatus.upload_message: str(progress_tracker.error),
+=======
+    try:
+        error = progress_tracker.error.get(block=False)
+    except queue.Empty:
+        pass
+    else:
+        processing_status = {
+            DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
+            DbDatasetProcessingStatus.upload_message: str(error),
+>>>>>>> Change upload to download
         }
         processing_status_updater(status_uuid, processing_status)
     with db_session_manager() as manager:
