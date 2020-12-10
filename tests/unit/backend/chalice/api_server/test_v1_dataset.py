@@ -7,7 +7,7 @@ from furl import furl
 
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
-from unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
+from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
 
 
 class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
