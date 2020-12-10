@@ -10,76 +10,124 @@ from botocore.config import Config
 import click
 
 
-class DevEnvDataStore:
+class EnvMeta:
+    tag_map = {
+        "app": "happy/app",
+        "env": "happy/env",
+        "instance": "happy/instance",
+        "owner": "happy/meta/owner",
+        "priority": "happy/meta/priority",
+        "imagetag": "happy/meta/imagetag",
+        "created": "happy/meta/created-at",
+        "updated": "happy/meta/updated-at",
+    }
+
+    parameter_map = {
+        "priority": "Priority",
+        "imagetag": "ImageTag",
+        "owner": "Owner",
+    }
+
+    def __init__(self, env_name):
+        self.env_name = env_name
+        self.meta = {
+            "app": "data-portal",
+            "env": "rdev",
+            "instance": self.env_name,
+        }
+
+    def load(self, existing_tags):
+        for short_tag, tag_name in self.tag_map.items():
+            if tag_name in existing_tags:
+                self.meta[short_tag] = existing_tags[tag_name]
+            elif short_tag not in self.meta:
+                self.meta[short_tag] = ""
+
+    def __getattr__(self, tag):
+        if tag in self.tag_map:
+            return self.meta[tag]
+        return self.__dict__[tag]
+
+    def __setattr__(self, tag, value):
+        if tag in self.tag_map:
+            self.meta[tag] = value
+        else:
+            self.__dict__[tag] = value
+
+    def resolve_owner(self):
+        # Figure out what our current identity is
+        sts_client = boto3.client("sts")
+        identity = sts_client.get_caller_identity()["Arn"]
+        return identity.split("/")[-1].split("@")[0]
+
+    def generate_tag_args(self):
+        args = []
+        for k, v in self.tag_map.items():
+            args.append(f"Key={v},Value={self.meta[k]}")
+        return args
+
+    def generate_parameter_args(self):
+        args = []
+        for k, v in self.parameter_map.items():
+            args.append(f"ParameterKey={v},ParameterValue={self.meta[k]}")
+        return args
+
+    def update(self, tag, env_mgr):
+        envs = env_mgr.get_envs()
+
+        # Track timestamps for this env
+        now = int(time.time())
+        if not self.created:
+            self.created = now
+
+        self.imagetag = tag
+        self.updated = now
+
+        if not self.owner:
+            self.owner = self.resolve_owner()
+
+        if not self.priority:
+            # Find the first available priority id and use it.
+            existing_priorities = set()
+            slots = set(range(1, len(envs) + 1))
+            priority = len(envs) + 1
+            for env in envs.values():
+                existing_priorities.add(int(env["meta"].priority))
+            free_slots = slots - existing_priorities
+            if len(free_slots):
+                priority = min(free_slots)
+            self.priority = priority
+
+
+class DevEnvMgr:
     def __init__(self, ctx):
         self.ctx = ctx
         self.secret_id = "happy/rdev-tracker"
         self.aws_conf = ctx.obj["aws_conf"]
-        self.secret_client = boto3.client("secretsmanager", config=self.aws_conf)
+        self.cf_client = boto3.client("cloudformation", config=self.aws_conf)
         self.envs = {}
         self.envs_loaded = False
 
     def get_envs(self):
         if self.envs_loaded:
             return self.envs
-        secret = json.loads(self.secret_client.get_secret_value(SecretId=self.secret_id)["SecretString"])
-        self.envs = secret
+        envs = self.cf_client.describe_stacks()
+        for env in envs["Stacks"]:
+            if env.get("ParentId"):
+                continue
+            tags = {tag["Key"]: tag["Value"] for tag in env["Tags"]}
+            if not tags.get("happy/app"):
+                continue
+            meta = EnvMeta(env["StackName"])
+            meta.load(tags)
+            outputs = {op["OutputKey"]: op["OutputValue"] for op in env.get("Outputs", {})}
+            self.envs[env["StackName"]] = {"meta": meta, "outputs": outputs}
         self.envs_loaded = True
         return self.envs
-
-    def write_envs(self):
-        envs = self.get_envs()
-        secret = self.secret_client.put_secret_value(SecretId=self.secret_id, SecretString=json.dumps(envs))
-        return True
-
-    def delete_env(self, env_name):
-        envs = self.get_envs()
-        del envs[env_name]
-        self.envs = envs
-        self.write_envs()
-
-    def update_env(self, env_name, document):
-        envs = self.get_envs()
-        envs[env_name] = document
-        self.envs = envs
-        self.write_envs()
 
     def get_env(self, env_name):
         envs = self.get_envs()
         return envs[env_name]
-
-    def get_owner(self):
-        # Figure out what our current identity is
-        sts_client = boto3.client("sts", config=self.aws_conf)
-        identity = sts_client.get_caller_identity()["Arn"]
-        return identity.split("/")[-1]
-
-    def create_env(self, env_name):
-        envs = self.get_envs()
-        if env_name in envs:
-            raise Exception("Env already exists")
-
-        # Find the first available priority id and use it.
-        existing_priorities = set()
-        slots = set(range(1, len(envs) + 1))
-        priority = len(envs) + 1
-        for env in envs.values():
-            existing_priorities.add(env["priority"])
-        free_slots = slots - existing_priorities
-        if len(free_slots):
-            priority = min(free_slots)
-
-        # Track a creation date for this stack.
-        now = time.time()
-        # Save
-        env_info = {
-            "priority": priority,
-            "owner": self.get_owner(),
-            "created_at": now,
-        }
-        self.update_env(env_name, env_info)
-        self.write_envs()
-        return env_info
 
 
 @click.group()
@@ -164,7 +212,14 @@ def get_migration_taskdef(ctx, label):
         ]
         resources = json.loads(subprocess.check_output(cmd))["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
-        resource_map = {item["LogicalResourceId"]: {"arn": item["PhysicalResourceId"], "status": item["ResourceStatus"], "stack_name": item["StackName"]} for item in resources}
+        resource_map = {
+            item["LogicalResourceId"]: {
+                "arn": item["PhysicalResourceId"],
+                "status": item["ResourceStatus"],
+                "stack_name": item["StackName"],
+            }
+            for item in resources
+        }
         resource = resource_map[path[i]]
         arn = resource["arn"]
     return resource
@@ -288,7 +343,7 @@ def logs(ctx, label, service, since):
         json_output=False,
     )
 
-    
+
 def wait_for_migration_update(ctx, label):
     """Wait for the migration task update to complete"""
     migration_stack_arn = get_migration_taskdef(ctx, label)["stack_name"]
@@ -305,8 +360,11 @@ def wait_for_migration_update(ctx, label):
 @click.pass_context
 def create(ctx, label, tag, wait):
     """Create a dev stack with a given tag"""
-    envdata = DevEnvDataStore(ctx)
-    env = envdata.create_env(label)
+    env_meta = EnvMeta(label)
+    env_meta.load({})
+    print(env_meta.meta)
+    env_meta.update(tag, DevEnvMgr(ctx))
+    print(env_meta.meta)
     print(f"creating {label}")
     command = [
         "aws",
@@ -320,14 +378,21 @@ def create(ctx, label, tag, wait):
         "DO_NOTHING",
         "--stack-name",
         label,
-        "--parameters",
-        f"ParameterKey=Owner,ParameterValue={envdata.get_owner()}",
-        f"ParameterKey=Priority,ParameterValue={env['priority']}",
-        f"ParameterKey=ImageTag,ParameterValue={tag}",
     ]
+    tag_args = env_meta.generate_tag_args()
+    if tag_args:
+        command.append("--tags")
+        command.extend(tag_args)
+
+    param_args = env_meta.generate_parameter_args()
+    if param_args:
+        command.append("--parameters")
+        command.extend(param_args)
+
     subprocess.check_call(command)
     if wait:
         stack = invoke_wait(ctx, label)
+
 
 @cli.command()
 @click.argument("label")
@@ -337,8 +402,10 @@ def create(ctx, label, tag, wait):
 def update(ctx, label, tag, wait):
     """Update a dev stack tag version"""
     print(f"updating {label}")
-    envdata = DevEnvDataStore(ctx)
-    env = envdata.get_env(label)
+    envmgr = DevEnvMgr(ctx)
+    env = envmgr.get_env(label)
+    env_meta = env["meta"]
+    env_meta.update(tag, envmgr)
     command = [
         "aws",
         "cloudformation",
@@ -349,11 +416,16 @@ def update(ctx, label, tag, wait):
         ctx.obj["aws_profile"],
         "--stack-name",
         label,
-        "--parameters",
-        f"ParameterKey=Owner,ParameterValue={envdata.get_owner()}",
-        f"ParameterKey=Priority,ParameterValue={env['priority']}",
-        f"ParameterKey=ImageTag,ParameterValue={tag}",
     ]
+    tag_args = env_meta.generate_tag_args()
+    if tag_args:
+        command.append("--tags")
+        command.extend(tag_args)
+
+    param_args = env_meta.generate_parameter_args()
+    if param_args:
+        command.append("--parameters")
+        command.extend(param_args)
     subprocess.check_call(command)
     migration_taskdef = get_migration_taskdef(ctx, label)["arn"]
     # invoke migrations
@@ -391,9 +463,9 @@ def cancelupdate(ctx, label, wait):
 def delete(ctx, label):
     """Delete a dev stack"""
     print(f"deleting {label}")
-    envdata = DevEnvDataStore(ctx)
+    envmgr = DevEnvMgr(ctx)
     try:
-        env = envdata.delete_env(label)
+        is_env = envmgr.get_env(label)
     except:
         print("rdev env doesn't exist in our list")
     command = [
@@ -413,12 +485,18 @@ def delete(ctx, label):
 def list(ctx):
     """List dev stacks"""
     print(f"Listing stacks")
-    stacks = ctx.obj["client"].describe_stacks()
-    for stack in stacks["Stacks"]:
-        if stack.get("ParentId"):
-            # For now, skip sub-stacks
-            continue
-        print(f"Stack: {stack['StackName']} / Status: {stack['StackStatus']}")
+    envmgr = DevEnvMgr(ctx)
+    envs = envmgr.get_envs()
+    col_widths = (15, 15, 10, 10, 10)
+    fmt_string = "{: <%s} {: <%s} {: <%s} {: <%s} {: <%s}" % col_widths
+    print(fmt_string.format("Name", "Owner", "Tag", "Priority", "URLs"))
+    print(fmt_string.format("-----", "-----", "-----", "-----", "-----"))
+    for name, info in envs.items():
+        print(
+            fmt_string.format(
+                name, info["meta"].owner, info["meta"].imagetag, info["meta"].priority, info["outputs"]["FrontendUrl"]
+            )
+        )
 
 
 @cli.command()
