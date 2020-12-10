@@ -15,10 +15,10 @@ class ProgressTracker:
     def __init__(self, file_size: int):
         self.file_size: int = file_size
         self._progress: int = 0
-        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of _progress
+        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_uploader: threading.Event = threading.Event()  # Stops the uploader threads
-        self.error: queue.Queue = queue.Queue(maxsize=1)  # Track errors
+        self.error: queue.Queue = queue.Queue()  # Track errors
 
     def progress(self):
         with self.progress_lock:
@@ -36,6 +36,7 @@ def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: in
     :param url: The URL of the file to be uploaded.
     :param local_path: The local name of the file be uploaded
     :param tracker: Tracks information about the progress of the upload.
+    :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
     :return:
     """
     try:
@@ -43,8 +44,8 @@ def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: in
             resp.raise_for_status()
             with open(local_path, "wb") as fp:
                 for chunk in resp.iter_content(chunk_size=chunk_size):
-                    if tracker.stop_uploader.isSet():
-                        logger.debug("Upload ended early!")
+                    if tracker.stop_uploader.is_set():
+                        logger.info("Upload ended early!")
                         return
                     elif chunk:
                         fp.write(chunk)
@@ -63,13 +64,13 @@ def processing_status_updater(uuid: str, updates: dict):
         manager.session.commit()
 
 
-def updater(upload_uuid: str, tracker: ProgressTracker, frequency: float = 3):
+def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: float):
     """
     Update the progress of an upload to the database using the tracker.
 
-    :param upload_uuid: The uuid of the upload_progress row.
+    :param processing_status_uuid: The uuid of the processing_status row.
     :param tracker: Tracks information about the progress of the upload.
-    :param frequency: The frequency in which the database is updated
+    :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
 
@@ -77,19 +78,27 @@ def updater(upload_uuid: str, tracker: ProgressTracker, frequency: float = 3):
         progress = tracker.progress()
         if progress > 1:
             tracker.stop_uploader.set()
-            processing_status = {
+            message = "The expected file size is smaller than the actual file size."
+            status = {
                 DbDatasetProcessingStatus.upload_progress: progress,
-                DbDatasetProcessingStatus.upload_message: "The file size, does not match the size of the upload.",
+                DbDatasetProcessingStatus.upload_message: message,
                 DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
             }
-        elif progress == 1 and tracker.stop_updater.isSet():
-            processing_status = {
+        elif progress < 1 and tracker.stop_updater.is_set():
+            message = "The expected file size is greater than the actual file size."
+            status = {
+                DbDatasetProcessingStatus.upload_progress: progress,
+                DbDatasetProcessingStatus.upload_message: message,
+                DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
+            }
+        elif progress == 1 and tracker.stop_updater.is_set():
+            status = {
                 DbDatasetProcessingStatus.upload_progress: progress,
                 DbDatasetProcessingStatus.upload_status: UploadStatus.UPLOADED,
             }
         else:
-            processing_status = {DbDatasetProcessingStatus.upload_progress: progress}
-        processing_status_updater(upload_uuid, processing_status)
+            status = {DbDatasetProcessingStatus.upload_progress: progress}
+        processing_status_updater(processing_status_uuid, status)
 
     try:
         while not tracker.stop_updater.wait(frequency):
@@ -107,26 +116,28 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
     :param url: The URL of the file to be uploaded.
     :param local_path: The local name of the file be uploaded
     :param file_size: The size of the file in bytes.
-    :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
+    :param chunk_size: Forwarded to uploader thread
+    :param update_frequency: The frequency in which to update the database in seconds.
     """
     with db_session_manager() as mananger:
         processing_status = Dataset.get(dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         mananger.commit()
-        upload_uuid = processing_status.id
+        status_uuid = processing_status.id
     progress_tracker = ProgressTracker(file_size)
     progress_thread = threading.Thread(
         target=updater,
-        kwargs=dict(upload_uuid=upload_uuid, tracker=progress_tracker, frequency=update_frequency),
+        kwargs=dict(processing_status_uuid=status_uuid, tracker=progress_tracker, frequency=update_frequency),
     )
     progress_thread.start()
     upload_thread = threading.Thread(
         target=uploader, kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size)
     )
     upload_thread.start()
-    upload_thread.join()
-    progress_thread.join()
+    upload_thread.join()  # Wait for the upload thread to complete
+    progress_thread.join()  # Wait for the progress thread to complete
+
     try:
         error = progress_tracker.error.get(block=False)
     except queue.Empty:
@@ -136,4 +147,4 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
             DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
             DbDatasetProcessingStatus.upload_message: str(error),
         }
-        processing_status_updater(upload_uuid, processing_status)
+        processing_status_updater(status_uuid, processing_status)

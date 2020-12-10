@@ -69,24 +69,6 @@ class DbUtils:
         return getattr(self.__instance, name)
 
 
-def db_session(func):
-    @functools.wraps(func)
-    def wrapper_decorator(*args, **kwargs):
-        db = DbUtils()
-        try:
-            rv = func(*args, **kwargs)
-            return rv
-        except SQLAlchemyError:
-            db.session.rollback()
-            msg = "Failed to commit."
-            logger.exception(msg)
-            raise CorporaException(msg)
-        finally:
-            db.close()
-
-    return wrapper_decorator
-
-
 @contextmanager
 def db_session_manager():
     try:
@@ -99,3 +81,13 @@ def db_session_manager():
         raise CorporaException(msg)
     finally:
         db.close()
+
+
+def db_session(func):
+    @functools.wraps(func)
+    def wrapper_decorator(*args, **kwargs):
+        with db_session_manager() as db:
+            rv = func(*args, **kwargs)
+            return rv
+
+    return wrapper_decorator
