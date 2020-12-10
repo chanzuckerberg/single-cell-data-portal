@@ -4,6 +4,9 @@ import requests
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Adding dropbox specific errors
 class DropBoxException(Exception):
     def __init__(self, detail: str = "Invalid response from Dropbox", *args, **kwargs) -> None:
         self.detail = detail
@@ -14,8 +17,11 @@ class MissingHeaderException(DropBoxException):
         self.detail = "Missing header from Dropbox response. " + detail
 
 
+<<<<<<< HEAD
 =======
 >>>>>>> cleanup
+=======
+>>>>>>> Adding dropbox specific errors
 def get_download_url_from_shared_link(url: str) -> str:
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
 
@@ -46,6 +52,9 @@ def get_file_info(url: str) -> dict:
     resp.raise_for_status()
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Adding dropbox specific errors
 
     def _get_key(headers, key):
         try:
@@ -53,6 +62,7 @@ def get_file_info(url: str) -> dict:
         except KeyError:
             raise MissingHeaderException(f"URL({url}) failed head request. '{key}' not present in the header.")
 
+<<<<<<< HEAD
     return {
         "size": int(_get_key(resp.headers, "content-length")),
         "name": _get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
@@ -64,8 +74,10 @@ def get_file_info(url: str) -> dict:
     return {"size": int(size), "name": name}
 >>>>>>> Uploading with status updates
 =======
+=======
+>>>>>>> Adding dropbox specific errors
     return {
-        "size": int(resp.headers["content-length"]),
-        "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],
+        "size": int(_get_key(resp.headers, "content-length")),
+        "name": _get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
     }
 >>>>>>> return error on files of unknown file size and type

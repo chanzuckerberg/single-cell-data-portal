@@ -1,8 +1,11 @@
 import http.server
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import json
 >>>>>>> Change upload to download
+=======
+>>>>>>> Adding dropbox specific errors
 import logging
 import multiprocessing
 import os
@@ -19,11 +22,14 @@ from backend.corpora.dataset_processing import download
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 logging.basicConfig(level=logging.INFO)
 
 
 >>>>>>> Change upload to download
+=======
+>>>>>>> Adding dropbox specific errors
 def start_server(path, port):
     handler = http.server.SimpleHTTPRequestHandler
     os.chdir(path)
@@ -54,6 +60,7 @@ class TestDownload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
 <<<<<<< HEAD
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
@@ -63,12 +70,19 @@ class TestDownload(unittest.TestCase):
         self.assertTrue(os.path.exists(local_file))
 =======
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
+>>>>>>> Adding dropbox specific errors
         file_size = int(requests.head(url).headers["content-length"])
         status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
-        self.assertTrue(os.path.exists(local_file))
+        print(status)
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
         self.assertEqual(1, status["upload_progress"])
+<<<<<<< HEAD
 >>>>>>> Change upload to download
+=======
+        self.assertTrue(os.path.exists(local_file))
+>>>>>>> Adding dropbox specific errors
 
     def test__wrong_file_size__FAILED(self):
         """Upload status is set to failed when upload progress exceeds 1. This means the file size provided is smaller
@@ -77,10 +91,14 @@ class TestDownload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
 <<<<<<< HEAD
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 =======
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
 >>>>>>> Change upload to download
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
+>>>>>>> Adding dropbox specific errors
 
         with self.subTest("Bigger"):
             download.download("test_dataset_id", url, local_file, 1, chunk_size=1024, update_frequency=1)
@@ -96,10 +114,14 @@ class TestDownload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
 <<<<<<< HEAD
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 =======
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
 >>>>>>> Change upload to download
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
+>>>>>>> Adding dropbox specific errors
 
         progress_tracker = download.ProgressTracker(1)
         progress_tracker.stop_downloader.set()
@@ -111,10 +133,14 @@ class TestDownload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
 <<<<<<< HEAD
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/fake.txt"
 =======
         url = f"http://localhost:{self.port}/fake.h5ad"
 >>>>>>> Change upload to download
+=======
+        url = f"http://localhost:{self.port}/fake.txt"
+>>>>>>> Adding dropbox specific errors
         download.download("test_dataset_id", url, local_file, 100, chunk_size=1024, update_frequency=1)
         processing_status = Dataset.get("test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
@@ -123,10 +149,14 @@ class TestDownload(unittest.TestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
 <<<<<<< HEAD
+<<<<<<< HEAD
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 =======
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
 >>>>>>> Change upload to download
+=======
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
+>>>>>>> Adding dropbox specific errors
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(AttributeError):
             download.download("test_dataset_id_fake", url, local_file, file_size, chunk_size=1024, update_frequency=1)
