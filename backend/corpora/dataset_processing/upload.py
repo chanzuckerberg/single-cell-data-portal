@@ -108,7 +108,7 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
         tracker.stop_uploader.set()
 
 
-def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3):
+def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3) -> dict:
     """
     Upload a file from a url and update the processing_status upload fields in the database
 
@@ -118,12 +118,14 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
     :param file_size: The size of the file in bytes.
     :param chunk_size: Forwarded to uploader thread
     :param update_frequency: The frequency in which to update the database in seconds.
+
+    :return: The current dataset processing status.
     """
-    with db_session_manager() as mananger:
+    with db_session_manager() as manager:
         processing_status = Dataset.get(dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
-        mananger.commit()
+        manager.commit()
         status_uuid = processing_status.id
     progress_tracker = ProgressTracker(file_size)
     progress_thread = threading.Thread(
@@ -148,3 +150,6 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
             DbDatasetProcessingStatus.upload_message: str(error),
         }
         processing_status_updater(status_uuid, processing_status)
+    with db_session_manager() as manager:
+        status = manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
+        return status.to_dict()

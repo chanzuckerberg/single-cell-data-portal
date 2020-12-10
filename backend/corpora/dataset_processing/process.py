@@ -134,6 +134,7 @@ def update_db(metadata=None, processing_status=None):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
 =======
 def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
@@ -141,6 +142,9 @@ def fetch_dropbox_url(dataset_uuid, dropbox_url, local_path):
 =======
 def fetch_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
 >>>>>>> cleanup
+=======
+def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
+>>>>>>> Making suggest changes
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
@@ -259,10 +263,14 @@ def main():
     check_env()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
 =======
     local_filename = fetch_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
 >>>>>>> Uploading with status updates
+=======
+    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+>>>>>>> Making suggest changes
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
