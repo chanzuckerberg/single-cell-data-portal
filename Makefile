@@ -126,12 +126,3 @@ local-smoke-test: ## Run frontend/e2e tests in the dev environment
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
 	psql "postgresql://corpora:test_pw@localhost:5432"
-
-.PHONY: remote-update
-remote-update: ## Update a remote dev env (make remote-update DEV_ENV=foobar)
-	docker-compose build
-	docker tag corpora-frontend:latest 401986845158.dkr.ecr.us-west-2.amazonaws.com/corpora-frontend:foo
-	docker tag corpora-backend:latest 401986845158.dkr.ecr.us-west-2.amazonaws.com/corpora-backend:foo
-	docker push corpora-frontend 401986845158.dkr.ecr.us-west-2.amazonaws.com/corpora-frontend:foo
-	docker push corpora-backend 401986845158.dkr.ecr.us-west-2.amazonaws.com/corpora-backend:foo
-	./scripts/remotedev update $(DEV_ENV)
