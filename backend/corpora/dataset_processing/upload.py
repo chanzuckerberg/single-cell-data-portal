@@ -107,7 +107,9 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
         tracker.stop_uploader.set()
 
 
-def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3) -> dict:
+def upload(
+    dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3
+) -> dict:
     """
     Upload a file from a url and update the processing_status upload fields in the database
 
@@ -149,5 +151,7 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
         }
         processing_status_updater(status_uuid, processing_status)
     with db_session_manager() as manager:
-        status = manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
+        status = (
+            manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
+        )
         return status.to_dict()

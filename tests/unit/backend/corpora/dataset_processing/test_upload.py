@@ -49,10 +49,11 @@ class TestUpload(unittest.TestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.h5ad"
         file_size = int(requests.head(url).headers["content-length"])
-        upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
+        status = upload.upload("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
         self.assertTrue(os.path.exists(local_file))
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
-
+        self.assertEqual(1, status["upload_progress"])
+        
     def test__wrong_file_size__FAILED(self):
         """Upload status is set to failed when upload progress exceeds 1. This means the file size provided is smaller
         than the file downloaded.
