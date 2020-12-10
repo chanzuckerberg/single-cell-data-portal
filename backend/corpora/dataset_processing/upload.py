@@ -59,9 +59,8 @@ def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: in
 
 
 def processing_status_updater(uuid: str, updates: dict):
-    with db_session_manager() as manager:
+    with db_session_manager(commit=True) as manager:
         manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
-        manager.session.commit()
 
 
 def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: float):
@@ -121,11 +120,10 @@ def upload(dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_s
 
     :return: The current dataset processing status.
     """
-    with db_session_manager() as manager:
+    with db_session_manager(commit=True):
         processing_status = Dataset.get(dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
-        manager.commit()
         status_uuid = processing_status.id
     progress_tracker = ProgressTracker(file_size)
     progress_thread = threading.Thread(
