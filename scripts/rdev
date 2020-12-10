@@ -132,7 +132,7 @@ def get_outputs(ctx, label=None, stack=None):
     if not stack:
         stack = get_stack(ctx, label)
     outputs = {}
-    for op in stack["Outputs"]:
+    for op in stack.get("Outputs", []):
         outputs[op["OutputKey"]] = op["OutputValue"]
     return outputs
 
@@ -164,9 +164,10 @@ def get_migration_taskdef(ctx, label):
         ]
         resources = json.loads(subprocess.check_output(cmd))["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
-        resource_map = {item["LogicalResourceId"]: item["PhysicalResourceId"] for item in resources}
-        arn = resource_map[path[i]]
-    return arn
+        resource_map = {item["LogicalResourceId"]: {"arn": item["PhysicalResourceId"], "status": item["ResourceStatus"], "stack_name": item["StackName"]} for item in resources}
+        resource = resource_map[path[i]]
+        arn = resource["arn"]
+    return resource
 
 
 @cli.command()
@@ -183,7 +184,7 @@ def migrate(ctx, label):
 
 def _migrate(ctx, label, cluster_arn, subnets, security_groups):
     """Run DB migration task"""
-    taskdef_arn = get_migration_taskdef(ctx, label)
+    taskdef_arn = get_migration_taskdef(ctx, label)["arn"]
     print(f"Using task definition {taskdef_arn}")
     command = [
         "aws",
@@ -287,6 +288,15 @@ def logs(ctx, label, service, since):
         json_output=False,
     )
 
+    
+def wait_for_migration_update(ctx, label):
+    """Wait for the migration task update to complete"""
+    migration_stack_arn = get_migration_taskdef(ctx, label)["stack_name"]
+    # TODO, how do we make sure the migration stack's status isn't from the *last* update????
+    print(f"Waiting for migration stack to be updated: {migration_stack_arn}")
+    invoke_wait(ctx, migration_stack_arn)
+    print(f"Migration stack is ready")
+
 
 @cli.command()
 @click.argument("label")
@@ -319,7 +329,6 @@ def create(ctx, label, tag, wait):
     if wait:
         stack = invoke_wait(ctx, label)
 
-
 @cli.command()
 @click.argument("label")
 @click.argument("tag")
@@ -346,6 +355,11 @@ def update(ctx, label, tag, wait):
         f"ParameterKey=ImageTag,ParameterValue={tag}",
     ]
     subprocess.check_call(command)
+    migration_taskdef = get_migration_taskdef(ctx, label)["arn"]
+    # invoke migrations
+    wait_for_migration_update(ctx, label)
+    ctx.invoke(migrate, label=label)
+    # Wait for the rest of the stack to update.
     if wait:
         invoke_wait(ctx, label)
 
