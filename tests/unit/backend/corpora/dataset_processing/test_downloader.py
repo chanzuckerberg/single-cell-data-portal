@@ -1,5 +1,4 @@
 import http.server
-import json
 import logging
 import multiprocessing
 import os
@@ -13,9 +12,6 @@ from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 def start_server(path, port):
@@ -47,12 +43,13 @@ class TestDownload(unittest.TestCase):
     def test_download_good(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
-        self.assertTrue(os.path.exists(local_file))
+        print(status)
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
         self.assertEqual(1, status["upload_progress"])
+        self.assertTrue(os.path.exists(local_file))
 
     def test__wrong_file_size__FAILED(self):
         """Upload status is set to failed when upload progress exceeds 1. This means the file size provided is smaller
@@ -60,7 +57,7 @@ class TestDownload(unittest.TestCase):
         """
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
 
         with self.subTest("Bigger"):
             download.download("test_dataset_id", url, local_file, 1, chunk_size=1024, update_frequency=1)
@@ -75,7 +72,7 @@ class TestDownload(unittest.TestCase):
     def test__stop_download(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
 
         progress_tracker = download.ProgressTracker(1)
         progress_tracker.stop_downloader.set()
@@ -86,7 +83,7 @@ class TestDownload(unittest.TestCase):
     def test__bad_url__FAILED(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/fake.h5ad"
+        url = f"http://localhost:{self.port}/fake.txt"
         download.download("test_dataset_id", url, local_file, 100, chunk_size=1024, update_frequency=1)
         processing_status = Dataset.get("test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
@@ -94,7 +91,7 @@ class TestDownload(unittest.TestCase):
     def test__dataset_does_not_exist__error(self):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/upload_test_file.h5ad"
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(AttributeError):
             download.download("test_dataset_id_fake", url, local_file, file_size, chunk_size=1024, update_frequency=1)

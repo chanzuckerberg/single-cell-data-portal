@@ -3,7 +3,7 @@ import logging
 import typing
 from contextlib import contextmanager
 
-from sqlalchemy.exc import SQLAlchemyError, InvalidRequestError
+from sqlalchemy.exc import SQLAlchemyError
 
 from .exceptions import CorporaException
 from ..corpora_orm import Base, DBSessionMaker
@@ -97,7 +97,7 @@ def db_session(func, commit=False):
 
     @functools.wraps(func)
     def wrapper_decorator(*args, **kwargs):
-        with db_session_manager(commit) as db:
+        with db_session_manager(commit):
             rv = func(*args, **kwargs)
             return rv
 
