@@ -124,7 +124,7 @@ def update_db(metadata=None, processing_status=None):
         dataset.update(processing_status=status)
 
 
-def fetch_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
+def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
@@ -224,7 +224,7 @@ def main():
 
     check_env()
 
-    local_filename = fetch_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
