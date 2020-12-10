@@ -69,6 +69,7 @@ class DbUtils:
         return getattr(self.__instance, name)
 
 
+<<<<<<< HEAD
 @contextmanager
 def db_session_manager(commit=False):
     """
@@ -118,6 +119,8 @@ def db_session(commit=False):
     return wrapper_decorator
 
 
+=======
+>>>>>>> Making suggested changes
 @contextmanager
 def db_session_manager():
     try:
@@ -130,4 +133,17 @@ def db_session_manager():
         raise CorporaException(msg)
     finally:
         db.close()
+<<<<<<< HEAD
 >>>>>>> Upload a files and update the status table.
+=======
+
+
+def db_session(func):
+    @functools.wraps(func)
+    def wrapper_decorator(*args, **kwargs):
+        with db_session_manager() as db:
+            rv = func(*args, **kwargs)
+            return rv
+
+    return wrapper_decorator
+>>>>>>> Making suggested changes
