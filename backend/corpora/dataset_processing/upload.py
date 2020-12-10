@@ -79,7 +79,7 @@ def updater(upload_uuid: str, tracker: ProgressTracker, frequency: float = 3):
             tracker.stop_uploader.set()
             processing_status = {
                 DbDatasetProcessingStatus.upload_progress: progress,
-                DbDatasetProcessingStatus.upload_message: "The file size, does not match the size of the data uploaded.",
+                DbDatasetProcessingStatus.upload_message: "The file size, does not match the size of the upload.",
                 DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
             }
         elif progress == 1 and tracker.stop_updater.isSet():
