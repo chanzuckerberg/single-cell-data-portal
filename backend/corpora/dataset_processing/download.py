@@ -17,7 +17,7 @@ class ProgressTracker:
         self._progress: int = 0
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
-        self.stop_uploader: threading.Event = threading.Event()  # Stops the uploader threads
+        self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
         self.error: queue.Queue = queue.Queue()  # Track errors
 
     def progress(self):
@@ -29,13 +29,13 @@ class ProgressTracker:
             self._progress += progress
 
 
-def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
+def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
     """
-    Upload the file pointed at by the URL to the local path.
+    Download the file pointed at by the URL to the local path.
 
-    :param url: The URL of the file to be uploaded.
-    :param local_path: The local name of the file be uploaded
-    :param tracker: Tracks information about the progress of the upload.
+    :param url: The URL of the file to be downloaded.
+    :param local_path: The local name of the file to be downloaded
+    :param tracker: Tracks information about the progress of the download.
     :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
     :return:
     """
@@ -44,8 +44,8 @@ def uploader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: in
             resp.raise_for_status()
             with open(local_path, "wb") as fp:
                 for chunk in resp.iter_content(chunk_size=chunk_size):
-                    if tracker.stop_uploader.is_set():
-                        logger.info("Upload ended early!")
+                    if tracker.stop_downloader.is_set():
+                        logger.info("Download ended early!")
                         return
                     elif chunk:
                         fp.write(chunk)
@@ -76,7 +76,7 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
     def _update():
         progress = tracker.progress()
         if progress > 1:
-            tracker.stop_uploader.set()
+            tracker.stop_downloader.set()
             message = "The expected file size is smaller than the actual file size."
             status = {
                 DbDatasetProcessingStatus.upload_progress: progress,
@@ -102,22 +102,22 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
     try:
         while not tracker.stop_updater.wait(frequency):
             _update()
-        _update()  # Make sure the progress is update once the upload is complete
+        _update()  # Make sure the progress is updated once the download is complete
     finally:
-        tracker.stop_uploader.set()
+        tracker.stop_downloader.set()
 
 
-def upload(
+def download(
     dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3
 ) -> dict:
     """
-    Upload a file from a url and update the processing_status upload fields in the database
+    Download a file from a url and update the processing_status upload fields in the database
 
-    :param dataset_uuid: The uuid of the dataset the upload will be associated with.
-    :param url: The URL of the file to be uploaded.
-    :param local_path: The local name of the file be uploaded
+    :param dataset_uuid: The uuid of the dataset the download will be associated with.
+    :param url: The URL of the file to be downloaded.
+    :param local_path: The local name of the file be downloaded.
     :param file_size: The size of the file in bytes.
-    :param chunk_size: Forwarded to uploader thread
+    :param chunk_size: Forwarded to downloader thread
     :param update_frequency: The frequency in which to update the database in seconds.
 
     :return: The current dataset processing status.
@@ -133,11 +133,11 @@ def upload(
         kwargs=dict(processing_status_uuid=status_uuid, tracker=progress_tracker, frequency=update_frequency),
     )
     progress_thread.start()
-    upload_thread = threading.Thread(
-        target=uploader, kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size)
+    download_thread = threading.Thread(
+        target=downloader, kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size)
     )
-    upload_thread.start()
-    upload_thread.join()  # Wait for the upload thread to complete
+    download_thread.start()
+    download_thread.join()  # Wait for the download thread to complete
     progress_thread.join()  # Wait for the progress thread to complete
 
     try:

@@ -24,7 +24,7 @@ except ImportError:
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
     from common.utils.db_utils import db_session
-    from .upload import upload
+    from .download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -135,7 +135,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
-    upload(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
 
 
