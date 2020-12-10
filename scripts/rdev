@@ -9,7 +9,8 @@ import boto3
 from botocore.config import Config
 import click
 
-class DevEnvDataStore():
+
+class DevEnvDataStore:
     def __init__(self, ctx):
         self.ctx = ctx
         self.secret_id = "happy/rdev-tracker"
@@ -23,7 +24,7 @@ class DevEnvDataStore():
             return self.envs
         secret = json.loads(self.secret_client.get_secret_value(SecretId=self.secret_id)["SecretString"])
         self.envs = secret
-        self.envs_loaded= True
+        self.envs_loaded = True
         return self.envs
 
     def write_envs(self):
@@ -67,10 +68,10 @@ class DevEnvDataStore():
         free_slots = slots - existing_priorities
         if len(free_slots):
             priority = min(free_slots)
-            
+
         # Track a creation date for this stack.
         now = time.time()
-        # Save 
+        # Save
         env_info = {
             "priority": priority,
             "owner": self.get_owner(),
@@ -80,6 +81,7 @@ class DevEnvDataStore():
         self.write_envs()
         return env_info
 
+
 @click.group()
 @click.option("--profile", default="single-cell-dev", help="AWS profile to use")
 @click.pass_context
@@ -87,9 +89,7 @@ def cli(ctx, profile):
     ctx.ensure_object(dict)
     ctx.obj["aws_profile"] = profile
     os.environ["AWS_PROFILE"] = profile  # Lame hack. Need to make this smarter.
-    aws_conf = Config(
-        region_name="us-west-2", retries={"max_attempts": 2, "mode": "standard"}
-    )
+    aws_conf = Config(region_name="us-west-2", retries={"max_attempts": 2, "mode": "standard"})
     client = boto3.client("cloudformation", config=aws_conf)
     ctx.obj["client"] = client
     ctx.obj["aws_conf"] = aws_conf
@@ -164,11 +164,10 @@ def get_migration_taskdef(ctx, label):
         ]
         resources = json.loads(subprocess.check_output(cmd))["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
-        resource_map = {
-            item["LogicalResourceId"]: item["PhysicalResourceId"] for item in resources
-        }
+        resource_map = {item["LogicalResourceId"]: item["PhysicalResourceId"] for item in resources}
         arn = resource_map[path[i]]
     return arn
+
 
 @cli.command()
 @click.argument("label")
@@ -239,9 +238,7 @@ def _migrate(ctx, label, cluster_arn, subnets, security_groups):
         taskdef_arn,
     ]
     taskdef = json.loads(subprocess.check_output(taskdef_cmd))["taskDefinition"]
-    log_group = taskdef["containerDefinitions"][0]["logConfiguration"]["options"][
-        "awslogs-group"
-    ]
+    log_group = taskdef["containerDefinitions"][0]["logConfiguration"]["options"]["awslogs-group"]
     print("Log Events:")
     log_cmd = [
         "aws",
@@ -283,15 +280,18 @@ def invoke_wait(ctx, label):
 @click.pass_context
 def logs(ctx, label, service, since):
     """Tail the logs of a service (frontend or backend)"""
-    run_aws_cmd(ctx, ["logs", "tail", "--since", since, "--follow", f"{label}/{service}"], return_output=False, json_output=False)
+    run_aws_cmd(
+        ctx,
+        ["logs", "tail", "--since", since, "--follow", f"{label}/{service}"],
+        return_output=False,
+        json_output=False,
+    )
 
 
 @cli.command()
 @click.argument("label")
 @click.argument("tag")
-@click.option(
-    "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
-)
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
 def create(ctx, label, tag, wait):
     """Create a dev stack with a given tag"""
@@ -323,9 +323,7 @@ def create(ctx, label, tag, wait):
 @cli.command()
 @click.argument("label")
 @click.argument("tag")
-@click.option(
-    "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
-)
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
 def update(ctx, label, tag, wait):
     """Update a dev stack tag version"""
@@ -354,9 +352,7 @@ def update(ctx, label, tag, wait):
 
 @cli.command()
 @click.argument("label")
-@click.option(
-    "--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete"
-)
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
 def cancelupdate(ctx, label, wait):
     """Cancel a dev stack update"""
@@ -463,9 +459,7 @@ def status(ctx, label):
         # Skip any stacks that aren't part of this one.
         if f"/{label}/" not in stack_path:
             continue
-        print(
-            f"Stack: {stack['StackName']} / Status: {stack['StackStatus']} / Reason: {reason}"
-        )
+        print(f"Stack: {stack['StackName']} / Status: {stack['StackStatus']} / Reason: {reason}")
         if reason:
             get_events = [
                 "aws",
