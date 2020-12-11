@@ -10,6 +10,34 @@ from botocore.config import Config
 import click
 
 
+class TablePrinter:
+    def __init__(self, headers):
+        self.rows = []
+        self.widths = []
+
+        self.bump_widths(headers)
+        self.headers = headers
+
+    def bump_widths(self, data):
+        for i in range(len(data)):
+            try:
+                self.widths[i] = max(len(data[i]), self.widths[i])
+            except IndexError:
+                self.widths.append(len(data[i]))
+
+    def add_row(self, row):
+        self.bump_widths(row)
+        self.rows.append(row)
+
+    def print(self):
+        fmt_string = "  ".join(["{: <%s}" % width for width in self.widths])
+        print(fmt_string.format(*self.headers))
+        separators = ["-----" for i in range(len(self.headers))]
+        print(fmt_string.format(*separators))
+        for row in self.rows:
+            print(fmt_string.format(*row))
+
+
 class EnvMeta:
     tag_map = {
         "app": "happy/app",
@@ -118,10 +146,11 @@ class DevEnvMgr:
             tags = {tag["Key"]: tag["Value"] for tag in env["Tags"]}
             if not tags.get("happy/app"):
                 continue
+            status = env.get("StackStatus")
             meta = EnvMeta(env["StackName"])
             meta.load(tags)
             outputs = {op["OutputKey"]: op["OutputValue"] for op in env.get("Outputs", {})}
-            self.envs[env["StackName"]] = {"meta": meta, "outputs": outputs}
+            self.envs[env["StackName"]] = {"meta": meta, "outputs": outputs, "status": status}
         self.envs_loaded = True
         return self.envs
 
@@ -362,9 +391,7 @@ def create(ctx, label, tag, wait):
     """Create a dev stack with a given tag"""
     env_meta = EnvMeta(label)
     env_meta.load({})
-    print(env_meta.meta)
     env_meta.update(tag, DevEnvMgr(ctx))
-    print(env_meta.meta)
     print(f"creating {label}")
     command = [
         "aws",
@@ -487,16 +514,14 @@ def list(ctx):
     print(f"Listing stacks")
     envmgr = DevEnvMgr(ctx)
     envs = envmgr.get_envs()
-    col_widths = (15, 15, 10, 10, 10)
-    fmt_string = "{: <%s} {: <%s} {: <%s} {: <%s} {: <%s}" % col_widths
-    print(fmt_string.format("Name", "Owner", "Tag", "Priority", "URLs"))
-    print(fmt_string.format("-----", "-----", "-----", "-----", "-----"))
+    headings = ["Name", "Owner", "Tag", "Status", "Priority", "URLs"]
+    tp = TablePrinter(headings)
+    # print(fmt_string.format("-----", "-----", "-----", "-----", "-----", "-----"))
     for name, info in envs.items():
-        print(
-            fmt_string.format(
-                name, info["meta"].owner, info["meta"].imagetag, info["meta"].priority, info["outputs"]["FrontendUrl"]
-            )
-        )
+        url = info.get("outputs", {}).get("FrontendUrl", "")
+        status = info.get("status", "")
+        tp.add_row([name, info["meta"].owner, info["meta"].imagetag, status, info["meta"].priority, url])
+    tp.print()
 
 
 @cli.command()
