@@ -1,8 +1,8 @@
 from flask import make_response, jsonify
 
-from ....common.entities import Dataset
+from ....common.entities import Dataset, Collection
 from ....common.utils.db_utils import db_session
-from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException
+from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException, ForbiddenHTTPException
 
 
 @db_session
@@ -37,3 +37,17 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
         ),
         200,
     )
+
+
+@db_session
+def get_status(dataset_uuid: str, user: str):
+    dataset = Dataset.get(dataset_uuid)
+    if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
+        raise ForbiddenHTTPException()
+    status = dataset.processing_status.to_dict()
+    for remove in ["dataset", "created_at", "updated_at"]:
+        status.pop(remove)
+    for key in ["validation_message", "upload_message"]:
+        if status[key] is None:
+            status.pop(key)
+    return make_response(jsonify(status), 200)

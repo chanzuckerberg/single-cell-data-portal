@@ -117,6 +117,25 @@ class TestDatabase:
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.db.session.add(dataset)
+        dataset = DbDataset(
+            id="test_dataset_id_not_owner",
+            revision=0,
+            name="test_dataset_name_not_owner",
+            organism={"ontology_term_id": "test_obo", "label": "test_organism"},
+            tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
+            assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
+            disease=[
+                {"ontology_term_id": "test_obo", "label": "test_disease"},
+                {"ontology_term_id": "test_obp", "label": "test_disease2"},
+                {"ontology_term_id": "test_obq", "label": "test_disease3"},
+            ],
+            sex=["test_sex", "test_sex2"],
+            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
+            collection_id="test_collection_id_not_owner",
+            collection_visibility=CollectionVisibility.PRIVATE.name,
+        )
+        self.db.session.add(dataset)
         self.db.session.commit()
 
         deployment_directory = DbDeploymentDirectory(
