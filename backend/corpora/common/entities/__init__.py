@@ -1,3 +1,3 @@
 from .dataset import Dataset  # noqa
-from .project import Project  # noqa
+from .collection import Collection  # noqa
 from .dataset_asset import DatasetAsset  # noqa

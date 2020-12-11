@@ -488,7 +488,7 @@ class TestDatasetValidator(CorporaTestCaseUsingMockAWS):
             CorporaConstants.REQUIRED_DATASET_PRESENTATION_METADATA_FIELDS
             + CorporaConstants.REQUIRED_DATASET_PRESENTATION_HINTS_METADATA_FIELDS
             + CorporaConstants.REQUIRED_DATASET_METADATA_FIELDS
-            + CorporaConstants.OPTIONAL_PROJECT_LEVEL_METADATA_FIELDS
+            + CorporaConstants.OPTIONAL_COLLECTION_LEVEL_METADATA_FIELDS
         ):
             if metadata_field.required_type is str:
                 uns_data[metadata_field.field_name] = "".join(random.sample(string.ascii_lowercase, 8))

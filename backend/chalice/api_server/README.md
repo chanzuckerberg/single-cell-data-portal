@@ -13,40 +13,9 @@ Filename                  | Purpose                           | Information link
 `Makefile`                |Tools for packaging and deploying  | [Automation and Make](https://swcarpentry.github.io/make-novice/)
 `../../config/iam-policy-template/corpora-api-lambda.json`|IAM policy for the app's IAM role  | [Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html)
 `../../config/auth0-secret-template.json` | Description of the auth configuration secret | [auth0-secret-template.json](../../config/auth0-secret-template.json)
+
 ## Development
-1.  Ensure project [pre-requisites](../../../README.md#Pre-requisites) are met.
-
-1.  Set the following environment variables:
-
-    ```shell
-    export DEPLOYMENT_STAGE=dev
-    export AWS_PROFILE=single-cell-dev
-    ```
-
-1.  Install dependencies
-
-     ```shell
-     pip install -r requirements.txt
-     ```
-
-1.  Enable local connection to the private `dev` RDS instance:
-
-     ```shell
-     ssh -L 5432:corpora-dev-corpora-api.cluster-c81u9imopfwl.us-west-2.rds.amazonaws.com:5432 bastion.dev.single-cell.czi.technology
-     ```
-
-    This command opens an ssh tunnel from `localhost:5432` to the RDS connection endpoint via the `bastion` server.
-    The local port `5432` is fixed and encoded in the DB connection string stored in the AWS Secret at
-    `corpora/backend/<DEPLOYMENT_STAGE>/database_local`.
-
-    Note: Since the default PostgreSQL port is `5432`, the above command will conflict with a local PostgreSQL instance
-    if one is runinng. The currently running instance will need to be stopped before successfully opening an ssh tunnel.
-
-1.  Deploy the Chalice app to http://localhost:5000
-
-     ```shell
-     make local-server
-     ```
+See [DEV_ENV.md](../../../DEV_ENV.md) for a local dev quickstart.
 
 ## Deploy
 1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `dev`, `staging`, `prod`

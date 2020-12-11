@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 import anndata
@@ -20,7 +21,9 @@ class DatasetValidator:
     def __init__(self, s3_uri):
         self.s3_uri = s3_uri
         self.s3_path = s3_uri.replace("s3://", "")
-        self.s3_file_system = s3fs.S3FileSystem()
+        self.s3_file_system = s3fs.S3FileSystem(
+            anon=False, client_kwargs={"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
+        )
 
         # Read in ontologies
         for ontology in CorporaConstants.CORPORA_ONTOLOGIES:
@@ -175,7 +178,7 @@ class DatasetValidator:
     def verify_uns(self, data_object: anndata.AnnData):
         """
         Validate the unstructured attribute of the AnnData object to ensure that it contains the appropriate
-        dataset-level and project-level metadata and outputs which metadata fields are missing. Note that no
+        dataset-level and collection-level metadata and outputs which metadata fields are missing. Note that no
         exception is thrown when metadata is found to be missing and rather an informative message is outputted instead.
         """
 

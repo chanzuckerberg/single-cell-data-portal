@@ -3,7 +3,7 @@ import uuid
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbContributor, DbDatasetContributor
+from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus, UploadStatus
 
 
 class Dataset(Entity):
@@ -24,12 +24,9 @@ class Dataset(Entity):
         sex: list = None,
         ethnicity: list = None,
         development_stage: list = None,
-        source_data_location: str = "",
-        preprint_doi: str = "",
-        publication_doi: str = "",
         artifacts: list = None,
-        contributors: list = None,
         deployment_directories: list = None,
+        processing_status: dict = None,
         **kwargs,
     ) -> "Dataset":
         """
@@ -41,7 +38,7 @@ class Dataset(Entity):
         # Setting Defaults
         artifacts = artifacts if artifacts else []
         deployment_directories = deployment_directories if deployment_directories else []
-        contributors = contributors if contributors else []
+        processing_status = processing_status or {}
 
         new_db_object = DbDataset(
             id=primary_key,
@@ -54,32 +51,71 @@ class Dataset(Entity):
             sex=sex,
             ethnicity=ethnicity,
             development_stage=development_stage,
-            source_data_location=source_data_location,
-            preprint_doi=preprint_doi,
-            publication_doi=publication_doi,
             artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key)),
             deployment_directories=cls._create_sub_objects(
                 deployment_directories,
                 DbDeploymentDirectory,
                 add_columns=dict(dataset_id=primary_key),
             ),
+            processing_status=cls._create_sub_object(
+                processing_status, DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
+            ),
             **kwargs,
         )
 
-        #  Linking many contributors to many datasets
-        contributors = cls._create_sub_objects(contributors, DbContributor)
-        contributor_dataset_ids = [
-            dict(contributor_id=contributor.id, dataset_id=primary_key) for contributor in contributors
-        ]
-        dataset_contributor = cls._create_sub_objects(contributor_dataset_ids, DbDatasetContributor)
-
         cls.db.session.add(new_db_object)
-        cls.db.session.add_all(contributors)
         cls.db.session.flush()
-        cls.db.session.add_all(dataset_contributor)
         cls.db.commit()
 
         return cls(new_db_object)
+
+    def update(
+        self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
+    ) -> None:
+        """
+        Update an existing dataset to match provided the parameters. The specified column are replaced.
+        :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
+        :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
+         existing attached entries will be removed and replaced with new entries.
+        :param kwargs: Any other fields in the dataset that will be replaced.
+        """
+        if artifacts or deployment_directories or processing_status:
+            if artifacts:
+                for af in self.artifacts:
+                    self.db.delete(af)
+                new_db_objects = self._create_sub_objects(
+                    artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
+                )
+                self.db.session.add_all(new_db_objects)
+                kwargs["artifacts"] = new_db_objects
+            if deployment_directories:
+                for dd in self.deployment_directories:
+                    self.db.delete(dd)
+                new_db_objects = self._create_sub_objects(
+                    deployment_directories,
+                    DbDeploymentDirectory,
+                    add_columns=dict(dataset_id=self.id),
+                )
+                self.db.session.add_all(new_db_objects)
+                kwargs["deployment_directories"] = new_db_objects
+            if processing_status:
+                if self.processing_status:
+                    self.db.delete(self.processing_status)
+                new_db_object = self._create_sub_object(
+                    processing_status,
+                    DbDatasetProcessingStatus,
+                    add_columns=dict(dataset_id=self.id),
+                )
+                self.db.session.add(new_db_object)
+                kwargs["processing_status"] = new_db_object
+
+            self.db.session.flush()
+
+        super().update(**kwargs)
+        self.db.commit()
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -92,11 +128,13 @@ class Dataset(Entity):
 
     def delete(self):
         """
-        Delete the Dataset and all child objects. Contributors connect to a dataset are deleted if they are not longer
-        connected to any datasets.
+        Delete the Dataset and all child objects.
         """
-        contributors = self.db_object.contributors
-        for contributor in contributors:
-            if len(contributor.datasets) == 1:
-                self.db.delete(contributor)
         super().delete()
+
+    @staticmethod
+    def new_processing_status():
+        return {
+            "upload_status": UploadStatus.WAITING,
+            "upload_progress": 0,
+        }
