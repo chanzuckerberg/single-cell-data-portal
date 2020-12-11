@@ -417,6 +417,13 @@ def create(ctx, label, tag, wait):
         command.extend(param_args)
 
     subprocess.check_call(command)
+    while True:
+        try:
+            wait_for_migration_update(ctx, label)
+            break
+        except KeyError:
+            time.sleep(2)
+    ctx.invoke(migrate, label=label)
     if wait:
         stack = invoke_wait(ctx, label)
 
