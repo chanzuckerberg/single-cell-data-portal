@@ -258,16 +258,11 @@ def get_migration_taskdef(ctx, label):
 @click.argument("label")
 @click.pass_context
 def migrate(ctx, label):
-    """Run DB migration task in dev account"""
+    """Run DB migration task for given stack"""
     secrets = get_secrets(ctx)
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
-    return _migrate(ctx, label, cluster_arn, subnets, security_groups)
-
-
-def _migrate(ctx, label, cluster_arn, subnets, security_groups):
-    """Run DB migration task"""
     taskdef_arn = get_migration_taskdef(ctx, label)["arn"]
     print(f"Using task definition {taskdef_arn}")
     command = [
@@ -521,13 +516,13 @@ def list(ctx):
     print(f"Listing stacks")
     envmgr = DevEnvMgr(ctx)
     envs = envmgr.get_envs()
-    headings = ["Name", "Owner", "Tag", "Status", "Priority", "URLs"]
+    headings = ["Name", "Owner", "Tag", "Status", "URLs"]
     tp = TablePrinter(headings)
-    # print(fmt_string.format("-----", "-----", "-----", "-----", "-----", "-----"))
+    # print(fmt_string.format("-----", "-----", "-----", "-----", "-----"))
     for name, info in envs.items():
         url = info.get("outputs", {}).get("FrontendUrl", "")
         status = info.get("status", "")
-        tp.add_row([name, info["meta"].owner, info["meta"].imagetag, status, info["meta"].priority, url])
+        tp.add_row([name, info["meta"].owner, info["meta"].imagetag, status, url])
     tp.print()
 
 
