@@ -6,14 +6,14 @@ Document Status: _Approved_
 
 Version: 1.1.0
 
-Date Last Modified: 2020-10-26
+Date Last Modified: 2020-12-11
 
 
 ## Background
 
 cellxgene aims to support the publication and sharing of single-cell datasets as well as the construction of a data corpus that facilitates data integration
 across multiple tissues and experiments. Achieving the latter goal requires some harmonization of metadata and features in the cellxgene Data Portal. But if
-that harmonization is too onerous, it will burden the first goal of rapid data sharing.
+that harmonization is too onerous, it will burden the goal of rapid data sharing.
 
 We balance these two goals by requiring datasets hosted in the cellxgene Data Portal to follow a small schema with only a few required fields. These fields
 are expected to be very useful for data integration and also simply and readily available from data submitters.
@@ -47,10 +47,12 @@ There are a few requirements that are needed for the cellxgene Explorer to work 
 ### Matrix Layers
 
 The count matrix itself can exist in several forms. Generally, there is a "raw" count matrix without scaling, filtering, normalization, etc. And there is
-a "final" matrix that is used in the publication with QC and various corrections. There can also be several intermediate matrices.
+a "final" matrix that is used in the publication with QC and various corrections. There can also be several intermediate matrices. We require that these matrices
+have the same dimensions, so the raw count matrix should include the same cells and genes as the final.
 
 These different transformations of the count matrix are called "layers" in several file formats. Submissions to the Data Portal must contain the "raw"
-layer.
+layer. Note that AnnData objects have an attribute called [raw](https://anndata.readthedocs.io/en/latest/anndata.AnnData.raw.html#anndata.AnnData.raw). This
+could be a natural place to store the raw count matrix, but as long as the locations of the layers are specified, it can go anywhere.
 
 
 ### Schema Version
@@ -79,7 +81,8 @@ sex|"male", "female", "mixed", "unknown", or "other"
 ethnicity|string, "na" if non-human, "unknown" if not available
 development\_stage|string, "unknown" if not available
 
-The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate.
+The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate. Also, if the source of cells is cell culture or organiod, the
+`cell_type` field can be left empty.
 In addition to these free text fields (except sex), each cell must also have ontology values:
 
 **Field name**|**Constraints**
@@ -205,8 +208,8 @@ X_umap for example.
 
 Finally, the dataset-level metadata is stored in `uns`, which is just key-value pairs.
 
-Note that anndata supports "layers" and "raw" values for counts. Those are permitted, but cellxgene will treat `X` as the "final" matrix for further analysis
-and visualization. Once anndata [unifies its treatment of layers](https://github.com/theislab/anndata/issues/244), cellxgene will use the "default" as the
+Note that anndata supports "layers" and "raw" values for counts. Those are permitted, but cellxgene will treat `X` as the "final" matrix for further
+visualization. Once anndata [unifies its treatment of layers](https://github.com/theislab/anndata/issues/244), cellxgene will use the "default" as the
 final matrix, however that ends up being specified. In anndata files, the layer_descriptions dictionary should have a key "X" and optionally "raw.X" to
 describe those layers.
 
