@@ -188,4 +188,4 @@ class TestCollection(unittest.TestCase):
         """Verify datasets are removed when there are none"""
         test_collection = Collection.create(**BogusCollectionParams.get())
         response = test_collection.reshape_for_api()
-        self.assertNotIn('datasets', response.keys())
+        self.assertEqual([], response['datasets'])
