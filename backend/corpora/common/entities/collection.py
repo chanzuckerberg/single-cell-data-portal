@@ -163,6 +163,6 @@ class Collection(Entity):
                 dataset["dataset_deployments"] = dataset.pop("deployment_directories")
                 dataset["dataset_assets"] = dataset.pop("artifacts")
         else:
-            result['datasets'] = []
+            result["datasets"] = []
 
         return result
