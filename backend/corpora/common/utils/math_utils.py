@@ -7,3 +7,4 @@ def sizeof_formatted(num, suffix="B"):
 
 
 GB = 2 ** 30
+MB = 2 ** 20

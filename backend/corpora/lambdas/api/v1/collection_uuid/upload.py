@@ -11,7 +11,7 @@ from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParamete
 from .....common.utils.math_utils import GB
 
 
-@db_session
+@db_session()
 def link(collection_uuid: str, body: dict, user: str):
 
     # Verify Dropbox URL
@@ -24,6 +24,8 @@ def link(collection_uuid: str, body: dict, user: str):
         resp = dropbox.get_file_info(url)
     except requests.HTTPError:
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
+    except dropbox.MissingHeaderException as ex:
+        raise InvalidParametersHTTPException(ex.detail)
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
