@@ -24,6 +24,7 @@ module.exports = {
     {
       options: {
         display: `minimal-ui`, // icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+	crossOrigin: `use-credentials`,
         name: `gatsby-starter-default`,
         short_name: `starter`,
         start_url: `/`,
