@@ -1,8 +1,13 @@
 import unittest
 
+import mock
+import requests
 from requests import HTTPError
-
-from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.common.utils.dropbox import (
+    get_download_url_from_shared_link,
+    get_file_info,
+    MissingHeaderException,
+)
 
 
 class TestDropbox(unittest.TestCase):
@@ -57,9 +62,23 @@ class TestDropbox(unittest.TestCase):
             with self.subTest(test):
                 self.assertIsNone(get_download_url_from_shared_link(test))
 
-    def test_get_file_info(self):
+    def test__get_file_info__OK(self):
         postive_test = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=1"
         get_file_info(postive_test)
 
-        negative_test = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1"
-        self.assertRaises(HTTPError, get_file_info, negative_test)
+    def test__get_file_info__neg(self):
+        with self.subTest("404"):
+            negative_test = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1"
+            self.assertRaises(HTTPError, get_file_info, negative_test)
+
+        with self.subTest("Missing Headers"):
+
+            def make_response():
+                response = requests.Response()
+                response.status_code = 200
+                response.headers = {}
+                return response
+
+            with mock.patch("requests.head", return_value=make_response()):
+                negative_test = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1"
+                self.assertRaises(MissingHeaderException, get_file_info, negative_test)

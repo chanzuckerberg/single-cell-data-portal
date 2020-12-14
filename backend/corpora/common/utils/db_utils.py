@@ -1,6 +1,7 @@
 import functools
 import logging
 import typing
+from contextlib import contextmanager
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -68,19 +69,39 @@ class DbUtils:
         return getattr(self.__instance, name)
 
 
-def db_session(func):
-    @functools.wraps(func)
-    def wrapper_decorator(*args, **kwargs):
-        db = DbUtils()
-        try:
-            rv = func(*args, **kwargs)
-            return rv
-        except SQLAlchemyError:
-            db.session.rollback()
-            msg = "Failed to commit."
-            logger.exception(msg)
-            raise CorporaException(msg)
-        finally:
-            db.close()
+@contextmanager
+def db_session_manager(commit=False):
+    """
 
-    return wrapper_decorator
+    :param commit: Changes will be committed when context ends.
+    """
+    try:
+        db = DbUtils()
+        yield db
+        if commit:
+            db.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        msg = "Failed to commit."
+        logger.exception(msg)
+        raise CorporaException(msg)
+    finally:
+        db.close()
+
+
+def db_session(commit=False):
+    """
+
+    :param commit: passed to db_session_manager
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with db_session_manager(commit):
+                rv = func(*args, **kwargs)
+            return rv
+
+        return wrapper
+
+    return decorator
