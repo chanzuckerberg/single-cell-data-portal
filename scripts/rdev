@@ -191,7 +191,7 @@ def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
     return json.loads(output)
 
 
-def get_stack(ctx, label):
+def get_stack(ctx, stack_name):
     status_cmd = [
         "aws",
         "cloudformation",
@@ -199,23 +199,30 @@ def get_stack(ctx, label):
         "--profile",
         ctx.obj["aws_profile"],
         "--stack-name",
-        label,
+        stack_name,
     ]
     stack = json.loads(subprocess.check_output(status_cmd))["Stacks"][0]
     return stack
 
 
-def get_outputs(ctx, label=None, stack=None):
+def generate_tag():
+    now = datetime.now().strftime("%m%d-%H%M%S")
+    envdata = EnvMeta("")
+    owner = envdata.resolve_owner()
+    return f"{owner}-{now}"
+
+
+def get_outputs(ctx, stack_name=None, stack=None):
     if not stack:
-        stack = get_stack(ctx, label)
+        stack = get_stack(ctx, stack_name)
     outputs = {}
     for op in stack.get("Outputs", []):
         outputs[op["OutputKey"]] = op["OutputValue"]
     return outputs
 
 
-def print_outputs(ctx, label=None, stack=None):
-    outputs = get_outputs(ctx, label, stack)
+def print_outputs(ctx, stack_name=None, stack=None):
+    outputs = get_outputs(ctx, stack_name, stack)
     if not outputs:
         return
     print()
@@ -224,10 +231,10 @@ def print_outputs(ctx, label=None, stack=None):
         print(f"{k}: {v}")
 
 
-def get_migration_taskdef(ctx, label):
+def get_migration_taskdef(ctx, stack_name):
     """Find the migration task definition in our CF stack"""
     path = ["DevEnv", "DevEnv", "MigrateDB", "TaskDefinition"]
-    arn = label
+    arn = stack_name
     path_length = len(path)
     for i in range(path_length):
         cmd = [
@@ -253,17 +260,16 @@ def get_migration_taskdef(ctx, label):
         arn = resource["arn"]
     return resource
 
-
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.pass_context
-def migrate(ctx, label):
+def migrate(ctx, stack_name):
     """Run DB migration task for given stack"""
     secrets = get_secrets(ctx)
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
-    taskdef_arn = get_migration_taskdef(ctx, label)["arn"]
+    taskdef_arn = get_migration_taskdef(ctx, stack_name)["arn"]
     print(f"Using task definition {taskdef_arn}")
     command = [
         "aws",
@@ -337,10 +343,10 @@ def migrate(ctx, label):
     print("done!")
 
 
-def invoke_wait(ctx, label):
+def invoke_wait(ctx, stack_name):
     last_status = ""
     while True:
-        stack = get_stack(ctx, label)
+        stack = get_stack(ctx, stack_name)
         status = stack["StackStatus"]
         if status != last_status:
             print(f"{datetime.now().strftime('%H:%M:%S')} - {status}")
@@ -354,23 +360,23 @@ def invoke_wait(ctx, label):
 
 
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.argument("service")
 @click.option("--since", default="10m", help="Output logs since <number>s|m|h|d")
 @click.pass_context
-def logs(ctx, label, service, since):
+def logs(ctx, stack_name, service, since):
     """Tail the logs of a service (frontend or backend)"""
     run_aws_cmd(
         ctx,
-        ["logs", "tail", "--since", since, "--follow", f"{label}/{service}"],
+        ["logs", "tail", "--since", since, "--follow", f"{stack_name}/{service}"],
         return_output=False,
         json_output=False,
     )
 
 
-def wait_for_migration_update(ctx, label):
+def wait_for_migration_update(ctx, stack_name):
     """Wait for the migration task update to complete"""
-    migration_stack_arn = get_migration_taskdef(ctx, label)["stack_name"]
+    migration_stack_arn = get_migration_taskdef(ctx, stack_name)["stack_name"]
     # TODO, how do we make sure the migration stack's status isn't from the *last* update????
     print(f"Waiting for migration stack to be updated: {migration_stack_arn}")
     invoke_wait(ctx, migration_stack_arn)
@@ -378,16 +384,19 @@ def wait_for_migration_update(ctx, label):
 
 
 @cli.command()
-@click.argument("label")
-@click.argument("tag")
+@click.argument("stack_name")
+@click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
 @click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
-def create(ctx, label, tag, wait):
+def create(ctx, stack_name, tag, wait):
     """Create a dev stack with a given tag"""
-    env_meta = EnvMeta(label)
+    env_meta = EnvMeta(stack_name)
     env_meta.load({})
+    if not tag:
+        tag = generate_tag()
+        ctx.invoke(push, tag=tag)
     env_meta.update(tag, DevEnvMgr(ctx))
-    print(f"creating {label}")
+    print(f"creating {stack_name}")
     command = [
         "aws",
         "cloudformation",
@@ -399,7 +408,7 @@ def create(ctx, label, tag, wait):
         "--on-failure",
         "DO_NOTHING",
         "--stack-name",
-        label,
+        stack_name,
     ]
     tag_args = env_meta.generate_tag_args()
     if tag_args:
@@ -414,25 +423,28 @@ def create(ctx, label, tag, wait):
     subprocess.check_call(command)
     while True:
         try:
-            wait_for_migration_update(ctx, label)
+            wait_for_migration_update(ctx, stack_name)
             break
         except KeyError:
             time.sleep(2)
-    ctx.invoke(migrate, label=label)
+    ctx.invoke(migrate, stack_name=stack_name)
     if wait:
-        stack = invoke_wait(ctx, label)
+        stack = invoke_wait(ctx, stack_name)
 
 
 @cli.command()
-@click.argument("label")
-@click.argument("tag")
+@click.argument("stack_name")
+@click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
 @click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
-def update(ctx, label, tag, wait):
+def update(ctx, stack_name, tag, wait):
     """Update a dev stack tag version"""
-    print(f"updating {label}")
+    print(f"updating {stack_name}")
+    if not tag:
+        tag = generate_tag()
+        ctx.invoke(push, tag=tag)
     envmgr = DevEnvMgr(ctx)
-    env = envmgr.get_env(label)
+    env = envmgr.get_env(stack_name)
     env_meta = env["meta"]
     env_meta.update(tag, envmgr)
     command = [
@@ -444,7 +456,7 @@ def update(ctx, label, tag, wait):
         "--profile",
         ctx.obj["aws_profile"],
         "--stack-name",
-        label,
+        stack_name,
     ]
     tag_args = env_meta.generate_tag_args()
     if tag_args:
@@ -456,22 +468,22 @@ def update(ctx, label, tag, wait):
         command.append("--parameters")
         command.extend(param_args)
     subprocess.check_call(command)
-    migration_taskdef = get_migration_taskdef(ctx, label)["arn"]
+    migration_taskdef = get_migration_taskdef(ctx, stack_name)["arn"]
     # invoke migrations
-    wait_for_migration_update(ctx, label)
-    ctx.invoke(migrate, label=label)
+    wait_for_migration_update(ctx, stack_name)
+    ctx.invoke(migrate, stack_name=stack_name)
     # Wait for the rest of the stack to update.
     if wait:
-        invoke_wait(ctx, label)
+        invoke_wait(ctx, stack_name)
 
 
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
 @click.pass_context
-def cancelupdate(ctx, label, wait):
+def cancelupdate(ctx, stack_name, wait):
     """Cancel a dev stack update"""
-    print(f"Canceling update of {label}")
+    print(f"Canceling update of {stack_name}")
     command = [
         "aws",
         "cloudformation",
@@ -479,22 +491,22 @@ def cancelupdate(ctx, label, wait):
         "--profile",
         ctx.obj["aws_profile"],
         "--stack-name",
-        label,
+        stack_name,
     ]
     subprocess.check_call(command)
     if wait:
-        invoke_wait(ctx, label)
+        invoke_wait(ctx, stack_name)
 
 
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.pass_context
-def delete(ctx, label):
+def delete(ctx, stack_name):
     """Delete a dev stack"""
-    print(f"deleting {label}")
+    print(f"deleting {stack_name}")
     envmgr = DevEnvMgr(ctx)
     try:
-        is_env = envmgr.get_env(label)
+        is_env = envmgr.get_env(stack_name)
     except:
         print("rdev env doesn't exist in our list")
     command = [
@@ -504,7 +516,7 @@ def delete(ctx, label):
         "--profile",
         ctx.obj["aws_profile"],
         "--stack-name",
-        label,
+        stack_name,
     ]
     subprocess.check_call(command)
 
@@ -527,10 +539,12 @@ def list(ctx):
 
 
 @cli.command()
-@click.argument("tag")
+@click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
 @click.pass_context
 def push(ctx, tag):
     """Build and push docker images to ECR"""
+    if not tag:
+        tag = generate_tag()
     print("Building images...")
     subprocess.check_call(["docker-compose", "build"])
     secrets = get_secrets(ctx)
@@ -546,22 +560,23 @@ def push(ctx, tag):
     print("Pushing images...")
     subprocess.check_call(["docker", "push", f"{frontend_ecr}:{tag}"])
     subprocess.check_call(["docker", "push", f"{backend_ecr}:{tag}"])
+    print(f"Built and pushed docker images with tag: {tag}")
 
 
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.pass_context
-def watch(ctx, label):
+def watch(ctx, stack_name):
     """Wait until a dev stack is updated"""
-    invoke_wait(ctx, label)
+    invoke_wait(ctx, stack_name)
 
 
 @cli.command()
-@click.argument("label")
+@click.argument("stack_name")
 @click.pass_context
-def status(ctx, label):
+def status(ctx, stack_name):
     """Get detailed status info for a dev stack"""
-    print(f"checking status for {label}")
+    print(f"checking status for {stack_name}")
     command = [
         "aws",
         "cloudformation",
@@ -576,7 +591,7 @@ def status(ctx, label):
         stack_path = stack.get("RootId") or stack.get("StackId")
         reason = stack.get("StackStatusReason")
         # Skip any stacks that aren't part of this one.
-        if f"/{label}/" not in stack_path:
+        if f"/{stack_name}/" not in stack_path:
             continue
         print(f"Stack: {stack['StackName']} / Status: {stack['StackStatus']} / Reason: {reason}")
         if reason:
@@ -605,7 +620,7 @@ def status(ctx, label):
                 if show_events <= 0:
                     break
         # Capture outputs from this stack to display to our users.
-        if stack["StackName"] == label:
+        if stack["StackName"] == stack_name:
             outputs = get_outputs(ctx, stack=stack)
     print(outputs)
 
