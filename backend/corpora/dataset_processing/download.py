@@ -54,6 +54,10 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
                         logger.debug(f"chunk size: {chunk_size}")
     except requests.HTTPError as ex:
         tracker.error.put(ex)
+        logger.exception("Downloader")
+    except OSError as ex:
+        tracker.error.put(ex)
+        logger.exception("Downloader")
     finally:
         tracker.stop_updater.set()
 
