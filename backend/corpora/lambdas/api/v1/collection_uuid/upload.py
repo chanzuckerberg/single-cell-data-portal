@@ -11,7 +11,7 @@ from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParamete
 from .....common.utils.math_utils import GB
 
 
-@db_session
+@db_session()
 def link(collection_uuid: str, body: dict, user: str):
 
     # Verify Dropbox URL

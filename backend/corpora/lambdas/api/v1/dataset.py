@@ -5,7 +5,7 @@ from ....common.utils.db_utils import db_session
 from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException
 
 
-@db_session
+@db_session()
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
     # retrieve the dataset

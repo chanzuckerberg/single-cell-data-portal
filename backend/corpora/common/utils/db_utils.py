@@ -89,16 +89,19 @@ def db_session_manager(commit=False):
         db.close()
 
 
-def db_session(func, commit=False):
+def db_session(commit=False):
     """
 
     :param commit: passed to db_session_manager
     """
 
-    @functools.wraps(func)
-    def wrapper_decorator(*args, **kwargs):
-        with db_session_manager(commit):
-            rv = func(*args, **kwargs)
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with db_session_manager(commit):
+                rv = func(*args, **kwargs)
             return rv
 
-    return wrapper_decorator
+        return wrapper
+
+    return decorator

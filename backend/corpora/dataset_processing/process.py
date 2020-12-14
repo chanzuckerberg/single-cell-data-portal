@@ -103,7 +103,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
     return artifacts
 
 
-@db_session
+@db_session()
 def update_db(metadata=None, processing_status=None):
 
     dataset = Dataset.get(os.environ["DATASET_ID"])
