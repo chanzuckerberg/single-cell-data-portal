@@ -7,7 +7,7 @@ from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
 
 
-@db_session
+@db_session()
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
 
     all_collections = Collection.list_attributes_in_time_range(
@@ -32,7 +32,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
-@db_session
+@db_session()
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(collection_uuid, visibility)
     if collection:
@@ -49,7 +49,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
         raise ForbiddenHTTPException()
 
 
-@db_session
+@db_session()
 def create_collection(body: object, user: str):
     collection = Collection.create(
         visibility=CollectionVisibility.PRIVATE,
@@ -65,11 +65,11 @@ def create_collection(body: object, user: str):
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
-@db_session
+@db_session()
 def delete_collection(collection_uuid: str):
     raise NotImplementedError
 
 
-@db_session
+@db_session()
 def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError

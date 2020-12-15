@@ -183,3 +183,9 @@ class TestCollection(unittest.TestCase):
         expected_results = None
         actual_results = Dataset.get(expected_dataset_id)
         self.assertEqual(expected_results, actual_results)
+
+    def test__reshape_for_api(self):
+        """Verify datasets are removed when there are none"""
+        test_collection = Collection.create(**BogusCollectionParams.get())
+        response = test_collection.reshape_for_api()
+        self.assertEqual([], response["datasets"])
