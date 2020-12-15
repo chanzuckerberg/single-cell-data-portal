@@ -732,6 +732,7 @@ components:
         data_submission_policy_version:
           type: string
         datasets:
+          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset"
@@ -788,6 +789,7 @@ components:
         revision:
           type: integer
         dataset_deployments:
+          nullable: true
           type: array
           items:
             type: object
@@ -799,6 +801,7 @@ components:
               url:
                 type: string
         dataset_assets:
+          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"
