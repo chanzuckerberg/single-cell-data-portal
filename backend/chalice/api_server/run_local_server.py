@@ -29,6 +29,16 @@ class ForkedHTTPServer(ForkingMixIn, HTTPServer):
     header requesting that the client close the connection is not good enough,
     the browswer will simply open another one and sit on it.
     """
+    allow_reuse_address = True
+    timeout = 2
+
+    # Make sure to reap child processes.
+    def shutdown(self):
+        if self.active_children is None:
+            return
+        for child_pid in self.active_children:
+            os.kill(child_pid, signal.SIGTERM)
+        self.server_close()
 
 
 def get_args():
