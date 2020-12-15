@@ -9,6 +9,7 @@ try:
     from ..common.entities import Dataset
     from ..common.utils.db_utils import db_session_manager
     from ..common.utils.math_utils import MB
+# This is necessary for importing within the upload-failures lambda
 except ValueError:
     pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
     sys.path.insert(0, pkg_root)  # noqa
