@@ -1,25 +1,25 @@
-import { Button, Classes, H3, H4, Intent, UL } from "@blueprintjs/core";
+import { Classes, H3 } from "@blueprintjs/core";
 import { RouteComponentProps } from "@reach/router";
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
 import {
   COLLECTION_LINK_TYPE_OPTIONS,
   Link,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import { useCollection } from "src/common/queries/collections";
+import {
+  useCollection,
+  useCollectionUploadLinks,
+} from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { ViewGrid } from "../globalStyle";
+import { StyledLink } from "./common/style";
+import EmptyDatasets from "./components/EmptyDatasets";
 import {
-  CenterAlignedDiv,
   CollectionInfo,
   DatasetContainer,
   Description,
   LinkContainer,
-  StyledLink,
 } from "./style";
-
-const CLI_README_LINK =
-  "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
 interface RouteProps {
   id?: string;
@@ -27,34 +27,8 @@ interface RouteProps {
 
 export type Props = RouteComponentProps<RouteProps>;
 
-const RenderEmptyDatasets = () => {
-  return (
-    <CenterAlignedDiv>
-      <H4>No datasets uploaded</H4>
-      <div>
-        Before you begin uploading dataset files:
-        <UL>
-          <li>
-            You must validate your dataset locally. We provide a local CLI
-            script to do this.{" "}
-            <StyledLink href={CLI_README_LINK}>Learn More</StyledLink>
-          </li>
-          <li>
-            We only support adding datasets in the h5ad format at this time.
-          </li>
-        </UL>
-      </div>
-      <Button
-        intent={Intent.PRIMARY}
-        outlined
-        text={"Add Dataset from Dropbox"}
-      />
-    </CenterAlignedDiv>
-  );
-};
-
 const renderLinks = (links: Link[]) => {
-  return links.map(({ link_url: url, link_type: type }) => {
+  return links?.map(({ link_url: url, link_type: type }) => {
     const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
     if (!linkTypeOption) return null;
@@ -74,13 +48,25 @@ const renderLinks = (links: Link[]) => {
   });
 };
 
-const Collection: FC<Props> = ({ id }) => {
+const Collection: FC<Props> = ({ id = "" }) => {
   const isPrivate = window.location.pathname.includes("/private");
+  const visibility = isPrivate
+    ? VISIBILITY_TYPE.PRIVATE
+    : VISIBILITY_TYPE.PUBLIC;
 
-  const { data: collection, isError } = useCollection(
-    id ?? "",
-    isPrivate ? VISIBILITY_TYPE.PRIVATE : VISIBILITY_TYPE.PUBLIC
-  );
+  const [uploadLink, setUploadLink] = useState("");
+
+  const { data: collection, isError } = useCollection(id, visibility);
+
+  const [mutate] = useCollectionUploadLinks(id, visibility);
+
+  useEffect(() => {
+    if (!uploadLink) return;
+
+    const payload = JSON.stringify({ url: uploadLink });
+
+    mutate({ collectionId: id, payload });
+  }, [uploadLink, mutate, id]);
 
   if (!collection || isError) return null;
 
@@ -95,10 +81,10 @@ const Collection: FC<Props> = ({ id }) => {
       <DatasetContainer>
         {
           // eslint-disable-next-line no-constant-condition
-          collection.datasets.length > 0 &&
+          collection?.datasets?.length > 0 &&
           // eslint-disable-next-line sonarjs/no-redundant-boolean
           false ? /* DATASETS VIEW GOES HERE */ null : (
-            <RenderEmptyDatasets />
+            <EmptyDatasets onSelectUploadLink={setUploadLink} />
           )
         }
       </DatasetContainer>
