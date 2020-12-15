@@ -15,6 +15,7 @@ try:
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from ..common.utils import dropbox
     from ..common.utils.db_utils import db_session
+    from .download import download
 
 except ImportError:
     # We're in the container
@@ -23,6 +24,7 @@ except ImportError:
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
     from common.utils.db_utils import db_session
+    from .download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -101,7 +103,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
     return artifacts
 
 
-@db_session
+@db_session()
 def update_db(metadata=None, processing_status=None):
 
     dataset = Dataset.get(os.environ["DATASET_ID"])
@@ -122,19 +124,18 @@ def update_db(metadata=None, processing_status=None):
         dataset.update(processing_status=status)
 
 
-def fetch_dropbox_url(dropbox_url, local_path):
+def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
 
     Handles fixing the url so it downloads directly.
     """
 
     fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
-
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    subprocess.run(["wget", "-nv", fixed_dropbox_url, "-O", local_path], check=True)
-
+    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
 
 
@@ -223,7 +224,7 @@ def main():
 
     check_env()
 
-    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:

@@ -5,7 +5,7 @@ from ....common.utils.db_utils import db_session
 from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException, ForbiddenHTTPException
 
 
-@db_session
+@db_session()
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
     # retrieve the dataset
@@ -39,7 +39,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
     )
 
 
-@db_session
+@db_session()
 def get_status(dataset_uuid: str, user: str):
     dataset = Dataset.get(dataset_uuid)
     if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):

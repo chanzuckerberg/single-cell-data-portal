@@ -3,7 +3,17 @@ from urllib.parse import urlparse
 import requests
 
 
-def get_download_url_from_shared_link(url):
+class DropBoxException(Exception):
+    def __init__(self, detail: str = "Invalid response from Dropbox", *args, **kwargs) -> None:
+        self.detail = detail
+
+
+class MissingHeaderException(DropBoxException):
+    def __init__(self, detail: str = "", *args, **kwargs) -> None:
+        self.detail = "Missing header from Dropbox response. " + detail
+
+
+def get_download_url_from_shared_link(url: str) -> str:
     """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
 
     parsed_url = urlparse(url)
@@ -23,10 +33,22 @@ def get_download_url_from_shared_link(url):
     return parsed_url.geturl()
 
 
-def get_file_info(url):
+def get_file_info(url: str) -> dict:
+    """
+    Extract information about a file from a DropBox URL.
+    :param url: a DropBox URL leading to a file.
+    :return: The file name and size of the file.
+    """
     resp = requests.head(url, allow_redirects=True)
     resp.raise_for_status()
+
+    def _get_key(headers, key):
+        try:
+            return headers[key]
+        except KeyError:
+            raise MissingHeaderException(f"URL({url}) failed head request. '{key}' not present in the header.")
+
     return {
-        "size": int(resp.headers["content-length"]),
-        "name": resp.headers["content-disposition"].split(";")[1].split("=", 1)[1][1:-1],
+        "size": int(_get_key(resp.headers, "content-length")),
+        "name": _get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
     }
