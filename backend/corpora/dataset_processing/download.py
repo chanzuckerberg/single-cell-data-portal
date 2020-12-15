@@ -1,11 +1,21 @@
 import logging
 import threading
 import requests
+import os
+import sys
 
-from ..common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
-from ..common.entities import Dataset
-from ..common.utils.db_utils import db_session_manager
-from ..common.utils.math_utils import MB
+try:
+    from ..common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
+    from ..common.entities import Dataset
+    from ..common.utils.db_utils import db_session_manager
+    from ..common.utils.math_utils import MB
+except ValueError:
+    pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
+    sys.path.insert(0, pkg_root)  # noqa
+    from common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
+    from common.entities import Dataset
+    from common.utils.db_utils import db_session_manager
+    from common.utils.math_utils import MB
 
 logger = logging.getLogger(__name__)
 
