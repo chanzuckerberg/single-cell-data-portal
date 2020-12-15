@@ -264,28 +264,33 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
             resp = self.app.get(test_url.url)
             actual_body = self.remove_timestamps(json.loads(resp.body))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type='READ'))
-            self.assertEqual(expected_body.pop('visibility').name, actual_body.pop('visibility'))
+            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
+            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
             self.assertEqual(expected_body, actual_body)
 
         with self.subTest("With a minimal dataset"):
             collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name)
-            self.generate_dataset(collection_id=collection.id,
-                                             organism=None,
-                                             tissue=None,
-                                             assay=None,
-                                             disease=None,
-                                             sex=None,
-                                             ethnicity=None,
-                                             development_stage=None)
+            self.generate_dataset(
+                collection_id=collection.id,
+                organism=None,
+                tissue=None,
+                assay=None,
+                disease=None,
+                sex=None,
+                ethnicity=None,
+                development_stage=None,
+            )
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
 
             resp = self.app.get(test_url.url)
             resp.raise_for_status()
             actual_body = self.remove_timestamps(json.loads(resp.body))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type='READ'))
-            self.assertEqual(expected_body.pop('visibility').name, actual_body.pop('visibility'))
-            self.assertEqual(expected_body['datasets'][0].pop('collection_visibility').name, actual_body['datasets'][0].pop('collection_visibility'))
+            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
+            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
+            self.assertEqual(
+                expected_body["datasets"][0].pop("collection_visibility").name,
+                actual_body["datasets"][0].pop("collection_visibility"),
+            )
             self.assertEqual(expected_body, actual_body)
 
     def test__get_collection__ok(self):
@@ -305,7 +310,9 @@ class TestCollection(BaseAPITest, unittest.TestCase):
             private_not_owner=self.generate_collection(
                 visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
             ).id,
-            private_owned=self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id").id,
+            private_owned=self.generate_collection(
+                visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+            ).id,
         )
 
         # run
@@ -414,8 +421,12 @@ class TestCollection(BaseAPITest, unittest.TestCase):
         # Generate test collection
         public_owned = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id").id
         private_owned = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id").id
-        public_not_owned = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="someone else").id
-        private_not_owned = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="someone else").id
+        public_not_owned = self.generate_collection(
+            visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+        ).id
+        private_not_owned = self.generate_collection(
+            visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+        ).id
 
         path = "/dp/v1/collections"
         with self.subTest("no auth"):
