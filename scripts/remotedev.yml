@@ -7,9 +7,6 @@ Parameters:
   Priority:
     Description: Listener rule priority number within the given listener
     Type: Number
-  Owner:
-    Description: User managing this stack
-    Type: String
 
 Resources:
   DevEnv:
@@ -20,7 +17,6 @@ Resources:
         CustomStackName: !Ref AWS::StackName
         ImageTag: !Ref ImageTag
         Priority: !Ref Priority
-        Owner: !Ref Owner
 
 Outputs:
   FrontendUrl:

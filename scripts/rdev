@@ -53,7 +53,6 @@ class EnvMeta:
     parameter_map = {
         "priority": "Priority",
         "imagetag": "ImageTag",
-        "owner": "Owner",
     }
 
     def __init__(self, env_name):
@@ -538,24 +537,28 @@ def delete(ctx, stack_name):
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
-    taskdef_arn = get_delete_taskdef(ctx, stack_name)["arn"]
-    print(f"Using task definition {taskdef_arn}")
-    print(f"Dropping database")
-    command = [
-        "aws",
-        "ecs",
-        "run-task",
-        "--profile",
-        ctx.obj["aws_profile"],
-        "--cluster",
-        cluster_arn,
-        "--task-definition",
-        taskdef_arn,
-        "--network-configuration",
-        f"awsvpcConfiguration={{subnets=[{subnets}],securityGroups=[{security_groups}],assignPublicIp='DISABLED'}}",
-    ]
-    output = subprocess.check_output(command)
-    print(f"Database dropped")
+    try:
+        taskdef_arn = get_delete_taskdef(ctx, stack_name)["arn"]
+    except KeyError:
+        taskdef_arn = None
+    if taskdef_arn:
+        print(f"Using task definition {taskdef_arn}")
+        print(f"Dropping database")
+        command = [
+            "aws",
+            "ecs",
+            "run-task",
+            "--profile",
+            ctx.obj["aws_profile"],
+            "--cluster",
+            cluster_arn,
+            "--task-definition",
+            taskdef_arn,
+            "--network-configuration",
+            f"awsvpcConfiguration={{subnets=[{subnets}],securityGroups=[{security_groups}],assignPublicIp='DISABLED'}}",
+        ]
+        output = subprocess.check_output(command)
+        print(f"Database dropped")
 
     envmgr = DevEnvMgr(ctx)
     try:
