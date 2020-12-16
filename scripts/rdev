@@ -498,12 +498,65 @@ def cancelupdate(ctx, stack_name, wait):
         invoke_wait(ctx, stack_name)
 
 
+def get_delete_taskdef(ctx, stack_name):
+    """Find the deletion task definition in our CF stack"""
+    path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
+    arn = stack_name
+    path_length = len(path)
+    for i in range(path_length):
+        cmd = [
+            "aws",
+            "cloudformation",
+            "describe-stack-resources",
+            "--profile",
+            ctx.obj["aws_profile"],
+            "--stack-name",
+            arn,
+        ]
+        resources = json.loads(subprocess.check_output(cmd))["StackResources"]
+        # Convert to a map of CloudFormation object name => AWS resource ARN
+        resource_map = {
+            item["LogicalResourceId"]: {
+                "arn": item["PhysicalResourceId"],
+                "status": item["ResourceStatus"],
+                "stack_name": item["StackName"],
+            }
+            for item in resources
+        }
+        resource = resource_map[path[i]]
+        arn = resource["arn"]
+    return resource
+
 @cli.command()
 @click.argument("stack_name")
 @click.pass_context
 def delete(ctx, stack_name):
     """Delete a dev stack"""
     print(f"deleting {stack_name}")
+
+    secrets = get_secrets(ctx)
+    cluster_arn = secrets["cluster_arn"]
+    subnets = secrets["subnets"]
+    security_groups = secrets["security_groups"]
+    taskdef_arn = get_delete_taskdef(ctx, stack_name)["arn"]
+    print(f"Using task definition {taskdef_arn}")
+    print(f"Dropping database")
+    command = [
+        "aws",
+        "ecs",
+        "run-task",
+        "--profile",
+        ctx.obj["aws_profile"],
+        "--cluster",
+        cluster_arn,
+        "--task-definition",
+        taskdef_arn,
+        "--network-configuration",
+        f"awsvpcConfiguration={{subnets=[{subnets}],securityGroups=[{security_groups}],assignPublicIp='DISABLED'}}",
+    ]
+    output = subprocess.check_output(command)
+    print(f"Database dropped")
+
     envmgr = DevEnvMgr(ctx)
     try:
         is_env = envmgr.get_env(stack_name)
@@ -519,6 +572,7 @@ def delete(ctx, stack_name):
         stack_name,
     ]
     subprocess.check_call(command)
+    print(f"Delete done")
 
 
 @cli.command()

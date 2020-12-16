@@ -21,6 +21,12 @@ db/init_remote_dev: db/remote_migration_init
 
 	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
+.PHONY: db/delete_remote_dev
+db/delete_remote_dev: db/remote_migration_init
+	# Delete database.
+	-@ echo "Deleting DB..." && \
+		python ../scripts/populate_db.py --drop-db
+
 db/rollback:
 	alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
 
