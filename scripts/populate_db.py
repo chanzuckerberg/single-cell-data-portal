@@ -11,7 +11,6 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noq
 sys.path.insert(0, pkg_root)  # noqa
 
 env = os.environ.get("DEPLOYMENT_STAGE")
-from tests.unit.fixtures.test_db import TestDatabase
 from backend.corpora.common.corpora_config import CorporaDbConfig
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
@@ -33,7 +32,10 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
             print("Database already exists")
             exit(1)
 
-    testdb = TestDatabase(real_data=True)
+    if recreate_db or populate_data:
+        from tests.unit.fixtures.test_db import TestDatabase
+        testdb = TestDatabase(real_data=True)
+
     # Drop and recreate tables
     if recreate_db:
         testdb.create_db()
