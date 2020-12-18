@@ -29,6 +29,7 @@ class ForkedHTTPServer(ForkingMixIn, HTTPServer):
     header requesting that the client close the connection is not good enough,
     the browswer will simply open another one and sit on it.
     """
+
     allow_reuse_address = True
     timeout = 2
 
