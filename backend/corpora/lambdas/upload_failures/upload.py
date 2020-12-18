@@ -21,7 +21,7 @@ def delete_many_from_s3(bucket_name, dataset_uuid) -> None:
     """
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
-    bucket.objects.filter(Prefix=f"{dataset_uuid}/remixed.").delete()
+    bucket.objects.filter(Prefix=f"{dataset_uuid}/").delete()
 
 
 def update_dataset_processing_status_to_failed(dataset_uuid, error=None) -> None:
