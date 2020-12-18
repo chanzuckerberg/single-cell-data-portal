@@ -33,6 +33,8 @@ jobs:
         run: make ci-deploy -C backend/chalice/api_server
       - name: Deploy Cloudfront Invalidator
         run: make redeploy -C backend/chalice/cloudfront_invalidator
+      - name: Deploy Upload failures handling lambda
+        run: make deploy -C backend/chalice/upload_failures
 
   frontend:
     runs-on: ubuntu-latest
