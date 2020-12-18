@@ -7,6 +7,7 @@ from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_utils import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,6 +28,30 @@ class ProgressTracker:
         with self.progress_lock:
             self._progress += progress
 
+    def cancel(self):
+        self.stop_downloader.set()
+        self.stop_updater.set()
+
+
+def cancel_upload():
+    dataset_uuid = os.environ["DATASET_ID"]
+    print(f"cancelling the upload for {dataset_uuid}")
+
+    # set db to cancelled
+    status = {
+        DbDatasetProcessingStatus.upload_progress: 0,
+        DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
+        DbDatasetProcessingStatus.upload_message: "Cancelled by user",
+    }
+
+    dataset = Dataset.get(dataset_uuid)
+    processing_status_updater(dataset.processing_status.id, status)
+    # delete from s3
+    delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], dataset_uuid)
+    delete_many_from_s3(os.environ["CELLXGENE_BUCKET"], dataset_uuid)
+
+    # exit
+    sys.exit(1)
 
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
     """
@@ -74,6 +99,11 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
     """
 
     def _update():
+        with db_session_manager(commit=True) as db:
+            curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid)
+            if curr_status.upload_status is UploadStatus.CANCEL_PENDING:
+                cancel_upload()
+                tracker.cancel()
         progress = tracker.progress()
         if progress > 1:
             tracker.stop_downloader.set()

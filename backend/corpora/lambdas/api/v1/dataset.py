@@ -1,9 +1,10 @@
 from flask import make_response, jsonify
 
+from ....common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from ....common.entities import Dataset, Collection
 from ....common.utils.db_utils import db_session
 from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException, ForbiddenHTTPException
-
+from ....dataset_processing.download import processing_status_updater
 
 @db_session()
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
@@ -48,3 +49,15 @@ def get_status(dataset_uuid: str, user: str):
     for remove in ["dataset", "created_at", "updated_at"]:
         status.pop(remove)
     return make_response(jsonify(status), 200)
+
+
+@db_session()
+def cancel_dataset_download(dataset_uuid: str):
+    dataset = Dataset.get(dataset_uuid)
+    status = dataset.processing_status.to_dict()
+    assert status.upload_status is not UploadStatus.UPLOADED
+    status = {
+        DbDatasetProcessingStatus.upload_progress: status.upload_progress,
+        DbDatasetProcessingStatus.upload_status: UploadStatus.CANCEL_PENDING,
+    }
+    processing_status_updater(dataset.processing_status.id, status)
