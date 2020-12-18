@@ -42,6 +42,7 @@ class ProgressTracker:
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
     """
     Download the file pointed at by the URL to the local path.
+
     :param url: The URL of the file to be downloaded.
     :param local_path: The local name of the file to be downloaded
     :param tracker: Tracks information about the progress of the download.
@@ -76,6 +77,7 @@ def processing_status_updater(uuid: str, updates: dict):
 def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: float):
     """
     Update the progress of an upload to the database using the tracker.
+
     :param processing_status_uuid: The uuid of the processing_status row.
     :param tracker: Tracks information about the progress of the upload.
     :param frequency: The frequency in which the database is updated in seconds
@@ -121,12 +123,14 @@ def download(
 ) -> dict:
     """
     Download a file from a url and update the processing_status upload fields in the database
+
     :param dataset_uuid: The uuid of the dataset the download will be associated with.
     :param url: The URL of the file to be downloaded.
     :param local_path: The local name of the file be downloaded.
     :param file_size: The size of the file in bytes.
     :param chunk_size: Forwarded to downloader thread
     :param update_frequency: The frequency in which to update the database in seconds.
+
     :return: The current dataset processing status.
     """
     with db_session_manager(commit=True):

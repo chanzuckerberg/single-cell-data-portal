@@ -72,6 +72,7 @@ class DbUtils:
 @contextmanager
 def db_session_manager(commit=False):
     """
+
     :param commit: Changes will be committed when context ends.
     """
     try:
@@ -90,6 +91,7 @@ def db_session_manager(commit=False):
 
 def db_session(commit=False):
     """
+
     :param commit: passed to db_session_manager
     """
 
