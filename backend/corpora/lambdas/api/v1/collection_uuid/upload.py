@@ -1,3 +1,4 @@
+import requests
 from flask import make_response
 
 from .....common.corpora_config import CorporaConfig
@@ -10,17 +11,21 @@ from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParamete
 from .....common.utils.math_utils import GB
 
 
-@db_session
+@db_session()
 def link(collection_uuid: str, body: dict, user: str):
 
     # Verify Dropbox URL
-    url = body["url"]
-    if not dropbox.verify(url):
+    url = dropbox.get_download_url_from_shared_link(body["url"])
+    if not url:
         raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
 
     # Get file info
-    url = dropbox.get_download_url_from_shared_link(url)
-    resp = dropbox.get_file_info(url)
+    try:
+        resp = dropbox.get_file_info(url)
+    except requests.HTTPError:
+        raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
+    except dropbox.MissingHeaderException as ex:
+        raise InvalidParametersHTTPException(ex.detail)
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:

@@ -1,125 +1,73 @@
-# Corpora Schema
+# cellxgene Data Integration Schema
 
 Authors: mkinsella@chanzuckerberg.com
 
 Document Status: _Approved_
 
-Version: 1.0.0
+Version: 1.1.0
 
-Date Last Modified: 2020-07-21
+Date Last Modified: 2020-12-11
 
 
 ## Background
 
-Corpora is for "publishing, exploring, integrating, and re-using" single-cell datasets. There is a tension in those goals. On one hand, focusing on
-publication and exploration means Corpora should let submitters be in full control of how their datasets appear on the platform. This includes everything 
-from metadata fields to the colors in their plots. On the other hand, focusing on integration and re-use means Corpora should require datasets to follow a
-standard schema even if that's at odds with submitters' preferences. Complicating this further, there is no current consensus on exactly how to annotate single
-cell data, and any schema that Corpora adopts will evolve significantly over time.
+cellxgene aims to support the publication and sharing of single-cell datasets as well as the construction of a data corpus that facilitates data integration
+across multiple tissues and experiments. Achieving the latter goal requires some harmonization of metadata and features in the cellxgene Data Portal. But if
+that harmonization is too onerous, it will burden the goal of rapid data sharing.
 
-Corpora will resolve this tension by storing and presenting two forms of submitted matrices. The first form, the "original" matrix, will follow the preferences
-of submitters except where they conflict with a few fundamental requirements. The second form, the Corpora "remix", will follow a more extensive Corpora schema
-that will aim to enable data integration. Having both matrices will allow Corpora to pursue both its publication and integration goals rather than having to
-choose one over the other.
+We balance these two goals by requiring datasets hosted in the cellxgene Data Portal to follow a small schema with only a few required fields. These fields
+are expected to be very useful for data integration and also simply and readily available from data submitters.
 
-Maintaining multiple dataset forms does introduce some complexity into dataset validation and curation as well as the Corpora schema definition. Below, the
-two-tiered approach to both is described.
+Note that the requirements in the schema are just the minimum required information. We expect that datasets will have additional metadata, and this
+will be preserved in datasets submitted to the Data Portal.
 
+## Curation and Validation
 
-## Validation and Curation
+When a submitter is preparing a dataset for the cellxgene Data Portal, they will be able to use a command line tool to apply changes to their dataset so that it
+follows the schema. When that tool successfully completes, it will give the submitter a message that the dataset is ready to be submitted to the Data Portal,
+and it will write the schema version number into the dataset's metadata.
 
-When a dataset is submitted to Corpora, Corpora's validation and curation processes should produce two forms of the dataset and verify that each meets
-Corpora's requirements.
-
-
-1. **Original** - This is the dataset with the metadata, gene identifiers, etc. exactly as it was received from the submitters. The original dataset is
-most useful for publication, since it will match related journal articles or preprints as well as the submitters' opinions about how their results are
-best presented.
-2. **Remix** - This is the dataset intended for integration. It has been adapted to follow the schema for the Corpora remix. That schema will change
-over time, but this adaptation involves changing metadata field names and values, inserting new metadata where necessary, mapping gene ids from one
-annotation to another, introducing ontology values where appropriate, etc
-
-Note that over time there may be more than one "remix" prepared for each dataset as integration use cases evolve. Also note that the "dataset form"
-concept is not related to mere changes to the _format_ of the dataset, like converting from loom to an h5ad. 
-
-The multiple forms of the dataset naturally mean that validation and curation split into multiple levels.
-
-First, there is "basic" validation and curation that is applied to the original form of the dataset. This checks that Corpora's
-[fundamental requirements](#Original-Dataset-Requirements) are met. These are things that are just absolutely needed for the system to work. For example,
-Corpora will not host PII even if a submitter really wants it to. Second, there is the curation of the integration-focused remix dataset. This adapts
-the dataset to all the requirements of the [Corpora remix schema](#Remix-Metadata).
-
-Corpora's curation policies will be very strict regarding the fundamental requirements. Datasets that do not satisfy them will be rejected. But the
-integration-focused curation will be more flexible. While curation is still driven by human interaction, we will strongly urge submitters to supply all
-the required information. And we will also urge them to change their own datasets to match the Corpora schema so that the difference between the "original"
-and the "remix" is very small. If submitters decline to do so, we'll talk with them about their reasons and record their feedback, but we will still add
-the dataset to Corpora, and we will still create the remix variant of the submitted data.
-
-
-### Submitter Incentives
-
-We recognize that Corpora cannot _make_ submitters do anything; following our schema is voluntary. But, Corpora can create incentives. For example, if a
-submitter doesn't want to include "tissue" then their dataset would not show up in tissue-related search results in the Portal. Or if a submitter uses a
-gene annotation that is incompatible with the Corpora schema annotation, then gene card information will not be available for their dataset in cellxgene.
-
-Over time we expect these incentives will lead to broader adoption of the Corpora schema and less friction around creating the remix datasets.
-
-
-### Software vs Policy
-
-Finally, we should draw a distinction between how we approach the schema and validation as a _policy_ versus how we implement it in _software_. The schema,
-especially anything outside of fundamental requirements, will change over time. It might change frequently and significantly as we get feedback from submitters
-and users. So while we might be strict about our validation policies at any given time, our software needs to be very flexible. We need to avoid a situation
-where we can't evolve schema and curation policies because it requires expensive software updates. There will be situations where software features or
-capabilities will be hard or impossible because we prioritize this flexibility.
+Then, when the submitter uploads the dataset to the Data Portal, the Data Portal will verify that the dataset does indeed follow an accepted version of the
+schema. If it does not, it will reject the dataset with an appropriate error message.
 
 ## Schema
 
-### Original Dataset Requirements
+### Basic Requirements
 
-
-These are the fundamental requirements that all dataset must meet, the handful of things our software depends on and mandatory legal requirements. All
-submitted data must comply with these requirements.
-
+There are a few requirements that are needed for the cellxgene Explorer to work correctly or are mandatory legal requirements:
 
 *   **Unique observation identifiers**. Each observation (usually a cell) must have an id that is unique within the dataset. This is usually already
     present in every submission, for example as a barcode.
 *   **Unique feature identifiers**. Every feature (usually a gene or transcript) also needs a unique identifier. This is occasionally not present because
-    of one-to-many mappings between gene symbols and other gene ids. In cases where there are duplicated feature identifiers, they will be summed during
-    curation.
-*   **Type annotations or inferrable types**. For both expression values and metadata, we don't want to have to guess at the type. Typing is already explicit
-    in anndata, loom, Seurat and Bioconductor formats.
+    of one-to-many mappings between gene symbols and other gene ids. In cases where there are duplicated feature identifiers, they will need to be appropriately
+    combined before submission. For example, raw counts will be summed and logged counts will be exponentiated, summed, and logged.
 *   **No PII**. No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a
     [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
 
-
-#### Matrix Layers
+### Matrix Layers
 
 The count matrix itself can exist in several forms. Generally, there is a "raw" count matrix without scaling, filtering, normalization, etc. And there is
-a "final" matrix that is used in the publication with QC and various corrections. There can also be several intermediate matrices.
+a "final" matrix that is used in the publication with QC and various corrections. There can also be several intermediate matrices. We require that these matrices
+have the same dimensions, so the raw count matrix should include the same cells and genes as the final.
 
-These different transformations of the count matrix are called "layers" in several file formats. Submissions to Corpora must contain at least one layer,
-the "raw" layer. They may optionally also have a "final" layer used for presentation, and each layer must be identified.
-
-
-### Remix Metadata
-
-The remaining part of the schema defines what's needed for the Corpora remix. The words "must" and "requirement" are used throughout, but note the
-discussion above regarding curation policies as well the [caution against](#Software-vs-policy) introducing any
-software dependencies on these fields.
+These different transformations of the count matrix are called "layers" in several file formats. Submissions to the Data Portal must contain the "raw"
+layer. Note that AnnData objects have an attribute called [raw](https://anndata.readthedocs.io/en/latest/anndata.AnnData.raw.html#anndata.AnnData.raw). This
+could be a natural place to store the raw count matrix, but as long as the locations of the layers are specified, it can go anywhere.
 
 
-#### Schema Version
+### Schema Version
 
-Remixed Corpora datasets must store the version of the schema they follow (that is, the version of this document) as
-well as the version of the particular encoding used:
+Datasets in the Data Portal must store the version of the schema they follow (that is, the version of this document) as
+well as the version of the particular encoding used. The encoding is documented
+[elsewhere](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md) and describes techincal details
+of how the schema should be serialized in a particular file format.
 
 **Field name**|**Constraints**
 :--|:--
 corpora_schema_version|Follows [SemVer](https://semver.org/) conventions
 corpora_encoding_version|Follows [SemVer](https://semver.org/) conventions
 
-#### Integration Metadata
+### Integration Metadata
 
 To support data integration, each cell must have the following metadata:
 
@@ -133,7 +81,8 @@ sex|"male", "female", "mixed", "unknown", or "other"
 ethnicity|string, "na" if non-human, "unknown" if not available
 development\_stage|string, "unknown" if not available
 
-The `tissue` field must be appended with "(cell culture)" or "(organoid)" if appropriate.
+The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate. Also, if the source of cells is cell culture or organiod, the
+`cell_type` field can be left empty.
 In addition to these free text fields (except sex), each cell must also have ontology values:
 
 **Field name**|**Constraints**
@@ -145,19 +94,15 @@ cell\_type\_ontology\_term\_id|CL term
 ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
 development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
 
-The `tissue_ontology_term_id` field must be appended with "(cell culture)" or "(organoid)" if appropriate.
+The `tissue_ontology_term_id` field must be appended with " (cell culture)" or " (organoid)" if appropriate.
 
 The `ontology_term_id` fields may be empty strings when no appropriate ontology value is available, for example if the
-`cell_type` field describes a cell type for which not ontology term exists or if the `ethnicity` is unknown. If the
+`cell_type` field describes a cell type for which no ontology term exists or if the `ethnicity` is unknown. If the
 field is not empty, then it must be an [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning it is a CURIE
 where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
 
-If ontology terms are missing in the submitted dataset, then as part of preparing the remix dataset, Corpora will insert
-appropriate ontology terms based on text from the submitters.
-
 If the features of the dataset are human genes, then the feature ids must be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved
-gene symbols. If the original dataset does not use HGNC symbols, Corpora will perform a conversion from the submitted features to HGNC symbols. In
-cases where multiple gene symbols are merged into a single symbol, Corpora will sum the counts in the raw data layer.
+gene symbols.
 
 Similarly if the features are mouse genes, then the feature ids must be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
 
@@ -169,37 +114,25 @@ organism|String
 organism\_ontology\_term\_id|NCBITaxon term
 layer\_descriptions|Mapping from {layer\_name: layer\_description, ...} Each description is free text, though one layer must be described as "raw".
 
-As with the ontology fields above, the ontology is added as part of Corpora curation.
 
+### Presentation Metadata
 
-#### Presentation Metadata
-
-There are also fields that are required so that Corpora (both Portal and cellxgene) can present datasets appropriately.
+There are also fields that are required so that the cellxgene Data Portal and Explorer can present datasets appropriately.
 
 Each dataset must have at least one **embedding**, a mapping from each cell to a tuple of floats of length at least 2. These are usually generated by algorithms
-like umap or tsne and are used to display the dataset in cellxgene. If a submitted dataset does not have an embedding, the umap embedding will be calculated
-and inserted during curation.
+like umap or tsne and are used to display the dataset in the Explorer. cellxgene provides a command line tool to add embeddings if they are missing.
 
 Datasets also must have a few other metadata fields for presentation:
 
 **Field name**|**Description**
 :--|:--
 title|String that identifies the dataset
-contributors|A list of {"name": ..., "institution": ..., "email": ...}, where each value is a string. Only "name" is required.
-
-
-If the dataset has an associated preprint or journal publication, these fields are required:
-
-**Field name**|**Description**
-:--|:--
-preprint\_doi|DOI of the associated preprint.
-publication\_doi|DOI of the associated journal publication.
 
 
 #### Presentation Hints
 
-The metadata fields below are fully optional. They aren't needed for integration, and Corpora can present the data fine without them, but if they are
-present Corpora will do something with them. This allows submitters to fine-tune how their datasets are presented, which is a common request.
+The metadata fields below are optional. They aren't needed for integration, and cellxgene can display the data fine without them, but if they are
+included cellxgene will do something with them. This allows submitters to fine-tune how their datasets are presented, which is a common request.
 
 
 <table>
@@ -253,30 +186,9 @@ The color code at the nth position in the array corresponds to category n in the
 </table>
 
 
-Additionally, submitters may include project-level metadata inside their dataset. This information is used to populate project metadata in Corpora when
-the submitted dataset is used to create a new project. 
-
-
-**Field name**|**Description**
-:--|:--
-project\_name|String
-project\_description|Longer description of the project.
-project\_links|List of links associaed with the project.
-
-Much of the project metadata is links. Each link is a dictionary with keys "link_url", "link_name", and "link_type".
-"link_name" gives the text that should be displayed for the link. "link_type" is one of `PROTOCOL`, `RAW_DATA`,
-`SUMMARY`, or `OTHER`. Exactly one link should be of type `SUMMARY`.
-
-#### System Fields
-
-Finally, Corpora inserts a **corpora_dataset_revision** field for internal bookkeeping. This must not be present in the original submitted matrix, and Corpora
-will insert it during curation. Corpora also reserves any metadata fields that start with "corpora_" for future system use, so submitted datasets must not
-have any such fields.
-
-
 ## **Implementations**
 
-Corpora requires submitted count matrices and associated metadata to be in one of three formats: AnnData, Loom, or a Seurat v3 RDS. Other formats are rejected.
+The Data Portal requires submitted count matrices and associated metadata to be in one of three formats: AnnData, Loom, or a Seurat v3 RDS. Other formats are rejected.
 Each of these formats has a way to include metadata along with the count data, so a submission can be entirely contained within a single file. 
 
 
@@ -296,8 +208,8 @@ X_umap for example.
 
 Finally, the dataset-level metadata is stored in `uns`, which is just key-value pairs.
 
-Note that anndata supports "layers" and "raw" values for counts. Those are permitted, but Corpora will treat `X` as the "final" matrix for further analysis
-and visualization. Once anndata [unifies its treatment of layers](https://github.com/theislab/anndata/issues/244), Corpora will use the "default" as the
+Note that anndata supports "layers" and "raw" values for counts. Those are permitted, but cellxgene will treat `X` as the "final" matrix for further
+visualization. Once anndata [unifies its treatment of layers](https://github.com/theislab/anndata/issues/244), cellxgene will use the "default" as the
 final matrix, however that ends up being specified. In anndata files, the layer_descriptions dictionary should have a key "X" and optionally "raw.X" to
 describe those layers.
 
@@ -319,16 +231,16 @@ attributes that ends with "_embeddings".
 Dataset-level metadata is stored in the loom file's `/attrs` hdf5 group, and are accessible as a mapping via the `attrs` attributie in the python
 interface.
 
-Like anndata, loom supports layers, but Corpora will focus on the "main matrix" as the "final" matrix for visualization.
+Like anndata, loom supports layers, but cellxgene will focus on the "main matrix" as the "final" matrix for visualization.
 
 
 ### **Seurat**
 
 [Seurat](https://github.com/satijalab/seurat/wiki) is an R library with a bunch of methods for single-cell data analysis. It defines a "Seurat object"
 which contains all the data and metadata for a dataset. This object is commonly serialized using R's saveRDS and readRDS functions. There are two major
-versions of Seurat objects: 2.0 and 3.0. Corpora requires 3.0 objects.
+versions of Seurat objects: 2.0 and 3.0. cellxgene requires 3.0 objects.
 
-Seurat objects can store multiple "assays" with the default identified as the "`active.assay`". Corpora will only use the data from the active assay.
+Seurat objects can store multiple "assays" with the default identified as the "`active.assay`". cellxgene will only use the data from the active assay.
 Expression data is stored in the data slot of an assay, and is shaped (# of genes, # of cells). Cell and gene ids are available as `colnames` and `rownames`
 of the object, respectively.
 

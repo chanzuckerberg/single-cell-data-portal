@@ -539,6 +539,54 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /dp/v1/dataset/{dataset_uuid}/status:
+    get:
+      tags:
+        - dataset
+      summary: Get the status of a dataset upload.
+      operationId: corpora.lambdas.api.v1.dataset.get_status
+      security:
+        - cxguserCookie: [ ]
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_uuid:
+                    $ref: "#/components/schemas/dataset_uuid"
+                  upload_status:
+                    type: string
+                    enum: [WAITING, UPLOADING, UPLOADED, FAILED, CANCEL PENDING, CANCELED, NA]
+                  upload_message:
+                    type: string
+                  upload_progress:
+                    type: number
+                  validation_status:
+                    type: string
+                    enum: [VALIDATING, VALID, INVALID, NA]
+                  validation_message:
+                    type: string
+                  conversion_loom_status:
+                    type: string
+                    enum: [CONVERTING, CONVERTED, FAILED, NA]
+                  conversion_anndata_status:
+                    type: string
+                    enum: [CONVERTING, CONVERTED, FAILED, NA]
+                  conversion_cxg_status:
+                    type: string
+                    enum: [CONVERTING, CONVERTED, FAILED, NA]
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
   /dp/v1/login:
     get:
       tags:
@@ -641,7 +689,7 @@ components:
             type: string
           link_type:
             type: string
-            enum: [ PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER ]
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
     collection:
       type: object
       required:
@@ -657,7 +705,7 @@ components:
       properties:
         access_type:
           type: string
-          enum: [ READ, WRITE ]
+          enum: [READ, WRITE]
         created_at:
           type: number
         updated_at:

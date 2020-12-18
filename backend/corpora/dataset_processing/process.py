@@ -3,62 +3,138 @@
 import os
 import subprocess
 import sys
-import urllib
+
+from os.path import basename, join
 
 import boto3
 import numpy
 import scanpy
+
+try:
+    from ..common.entities.dataset import Dataset
+    from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from ..common.utils import dropbox
+    from ..common.utils.db_utils import db_session
+    from .download import download
+
+except ImportError:
+    # We're in the container
+    sys.path.append("/code")
+    from common.entities.dataset import Dataset
+    from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+    from common.utils import dropbox
+    from common.utils.db_utils import db_session
+    from .download import download
+
+# This is unfortunate, but this information doesn't appear to live anywhere
+# accessible to the uploader
+DEPLOYMENT_STAGE_TO_URL = {
+    "dev": "https://cellxgene.dev.single-cell.czi.technology",
+    "staging": "https://cellxgene.staging.single-cell.czi.technology",
+    "prod": "https://cellxgene.cziscience.com",
+}
 
 
 def check_env():
     """Verify that the required environment variables are set."""
 
     missing = []
-    for env_var in ["DROPBOX_URL", "ARTIFACT_BUCKET", "CELLXGENE_BUCKET", "DATASET_ID"]:
+    for env_var in ["DROPBOX_URL", "ARTIFACT_BUCKET", "CELLXGENE_BUCKET", "DATASET_ID", "DEPLOYMENT_STAGE"]:
         if env_var not in os.environ:
             missing.append(env_var)
     if missing:
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-def fix_dropbox_url(url):
-    """Fix a dropbox url so it's a direct download. If it's not a valid dropbox url, return None."""
+def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
 
-    pr = urllib.parse.urlparse(url)
+    s3 = boto3.client("s3")
+    artifacts = []
 
-    if pr.scheme != "https":
-        return None
+    s3.upload_file(
+        h5ad_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(h5ad_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
 
-    if pr.netloc != "www.dropbox.com":
-        return None
+    artifacts.append(
+        {
+            "filename": basename(h5ad_filename),
+            "filetype": DatasetArtifactFileType.H5AD,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(h5ad_filename)),
+        }
+    )
 
-    if "dl=0" in pr.query:
-        new_query = pr.query.replace("dl=0", "dl=1")
-    elif not pr.query:
-        new_query = "dl=1"
-    elif "dl=1" in pr.query:
-        new_query = pr.query
-    else:
-        new_query = pr.query + "&dl=1"
+    s3.upload_file(
+        seurat_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(seurat_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
+    artifacts.append(
+        {
+            "filename": basename(seurat_filename),
+            "filetype": DatasetArtifactFileType.RDS,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(seurat_filename)),
+        }
+    )
 
-    pr = pr._replace(query=new_query)
+    s3.upload_file(
+        loom_filename,
+        os.environ["ARTIFACT_BUCKET"],
+        join(os.environ["DATASET_ID"], basename(loom_filename)),
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
+    )
+    artifacts.append(
+        {
+            "filename": basename(loom_filename),
+            "filetype": DatasetArtifactFileType.LOOM,
+            "type": DatasetArtifactType.REMIX,
+            "user_submitted": True,
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(loom_filename)),
+        }
+    )
 
-    return pr.geturl()
+    return artifacts
 
 
-def fetch_dropbox_url(dropbox_url, local_path):
+@db_session()
+def update_db(metadata=None, processing_status=None):
+
+    dataset = Dataset.get(os.environ["DATASET_ID"])
+
+    if metadata:
+
+        # TODO: Delete this line once mean_genes_per_cell is in the db
+        metadata.pop("mean_genes_per_cell", None)
+
+        dataset.update(**metadata)
+
+    if processing_status:
+        status = dataset.processing_status.to_dict()
+        status.pop("dataset")
+        status.pop("created_at")
+        status.pop("updated_at")
+        status.update(processing_status)
+        dataset.update(processing_status=status)
+
+
+def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
-
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = fix_dropbox_url(dropbox_url)
-
+    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    subprocess.run(["wget", "-nv", fixed_dropbox_url, "-O", local_path], check=True)
-
+    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
 
 
@@ -87,14 +163,21 @@ def extract_metadata(filename):
         numerator += numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
+    def _get_term_pairs(base_term):
+        base_term_id = base_term + "_ontology_term_id"
+        return [
+            {"label": k[0], "ontology_term_id": k[1]}
+            for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
+        ]
+
     return {
-        "organism": adata.uns["organism"],
-        "tissue": list(adata.obs.tissue.unique()),
-        "assay": list(adata.obs.assay.unique()),
-        "disease": list(adata.obs.disease.unique()),
+        "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
+        "tissue": _get_term_pairs("tissue"),
+        "assay": _get_term_pairs("assay"),
+        "disease": _get_term_pairs("disease"),
         "sex": list(adata.obs.sex.unique()),
-        "ethnicity": list(adata.obs.ethnicity.unique()),
-        "development_stage": list(adata.obs.development_stage.unique()),
+        "ethnicity": _get_term_pairs("ethnicity"),
+        "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
     }
@@ -140,7 +223,7 @@ def main():
 
     check_env()
 
-    local_filename = fetch_dropbox_url(os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
@@ -152,30 +235,12 @@ def main():
 
     metadata_dict = extract_metadata(local_filename)
     print(metadata_dict, flush=True)
+    update_db(metadata=metadata_dict)
 
     loom_filename = make_loom(local_filename)
     cxg_dir = make_cxg(local_filename)
     seurat_filename = make_seurat(local_filename)
-
-    s3 = boto3.client("s3")
-    s3.upload_file(
-        local_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], local_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    s3.upload_file(
-        seurat_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], seurat_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    s3.upload_file(
-        loom_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        os.path.join(os.environ["DATASET_ID"], loom_filename),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
+    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
 
     subprocess.run(
         [
@@ -190,6 +255,11 @@ def main():
         ],
         check=True,
     )
+    deployment_directories = [
+        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"], "")}
+    ]
+
+    update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
 
 
 if __name__ == "__main__":
