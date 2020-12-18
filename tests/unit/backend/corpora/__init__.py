@@ -25,11 +25,7 @@ class CorporaTestCaseUsingMockAWS(unittest.TestCase):
             "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
         )
         self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
-        self.bucket.create(
-            CreateBucketConfiguration={
-                'LocationConstraint': 'us-west-2'
-             },
-        )
+        self.bucket.create()
 
     def tearDown(self):
         super().tearDown()
