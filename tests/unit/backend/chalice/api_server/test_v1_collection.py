@@ -1,7 +1,5 @@
 import itertools
 import json
-import sys
-import os
 import unittest
 from datetime import datetime
 
@@ -9,34 +7,12 @@ from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
-from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
-from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
+from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
+from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 
 
-class TestCollection(BaseAPITest, unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        BaseAPITest.setUpClass()
-        cls.mock_oauth_server = MockOauthServer()
-        cls.mock_oauth_server.start()
-        assert cls.mock_oauth_server.server_okay
-
-        cls.old_path = sys.path.copy()
-        sys.path.insert(0, os.path.join(cls.corpora_api_dir, "chalicelib"))  # noqa
-        from corpora.common.corpora_config import CorporaAuthConfig
-
-        # Use the CorporaAuthConfig used by the chalice app
-        cls.auth_config = CorporaAuthConfig()
-        cls.auth_config._config["api_base_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
-        cls.auth_config._config["callback_base_url"] = "http://localhost:5000"
-        cls.auth_config.update_defaults()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.mock_oauth_server.terminate()
-        sys.path = cls.old_path
-
+class TestCollection(BaseAuthAPITest, unittest.TestCase):
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))

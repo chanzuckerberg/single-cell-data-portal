@@ -1,30 +1,18 @@
 import json
 import os
-import sys
 import unittest
 import urllib.parse
 import time
-from tests.unit.backend.chalice.api_server import BaseAPITest
+from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 
-from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, TOKEN_EXPIRES
+from tests.unit.backend.chalice.api_server.mock_auth import TOKEN_EXPIRES
 
 
 @unittest.skipIf(
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
-class TestAuth(BaseAPITest, unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        BaseAPITest.setUpClass()
-        cls.mock_oauth_server = MockOauthServer()
-        cls.mock_oauth_server.start()
-        assert cls.mock_oauth_server.server_okay
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.mock_oauth_server.terminate()
-
+class TestAuth(BaseAuthAPITest, unittest.TestCase):
     def check_user_info(self, userinfo):
         self.assertEqual(userinfo["is_authenticated"], True)
         self.assertEqual(userinfo["id"], "test_user_id")
@@ -33,29 +21,6 @@ class TestAuth(BaseAPITest, unittest.TestCase):
         self.assertEqual(userinfo["email_verified"], True)
 
     def test__auth_flow(self):
-        old_path = sys.path.copy()
-
-        def restore_path(p):
-            sys.path = p
-
-        sys.path.insert(0, os.path.join(self.corpora_api_dir, "chalicelib"))  # noqa
-        self.addCleanup(restore_path, old_path)
-        from corpora.common.corpora_config import CorporaAuthConfig
-
-        # Configure the CorporaAuthConfig used by the chalice app
-        self.auth_config = CorporaAuthConfig()
-        self.auth_config.set(
-            {
-                "api_base_url": f"http://localhost:{self.mock_oauth_server.port}",
-                "callback_base_url": "http://localhost:5000",
-                "client_id": "test_client_id",
-                "audience": "test_client_id",
-                "client_secret": "test_client_secret",
-                "redirect_to_frontend": "http://foo",
-                "cookie_name": "cxguser",
-            }
-        )
-
         headers = dict(host="localhost")
 
         with self.subTest("userinfo_not_authenticated"):

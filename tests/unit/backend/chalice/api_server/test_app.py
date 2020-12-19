@@ -1,6 +1,6 @@
 import unittest
 
-from tests.unit.backend.chalice.api_server import BaseAPITest
+from tests.unit.backend.chalice.api_server.base_api_test import BaseAPITest
 
 
 class TestAPI(BaseAPITest, unittest.TestCase):

@@ -5,7 +5,7 @@ from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
-from tests.unit.backend.chalice.api_server import BaseAPITest
+from tests.unit.backend.chalice.api_server.base_api_test import BaseAPITest
 from tests.unit.backend.utils import BogusCollectionParams
 
 
