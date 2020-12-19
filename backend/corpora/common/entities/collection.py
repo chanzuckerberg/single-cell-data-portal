@@ -77,7 +77,8 @@ class Collection(Entity):
         :return: a collection if the user is the owner of the collection else None
         """
         filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
-        return cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        collection = cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        return cls(collection) if collection else None
 
     @classmethod
     def list_collections_in_time_range(cls, *args, **kwargs):
@@ -168,5 +169,8 @@ class Collection(Entity):
         return result
 
     def publish(self):
-        self.db_object.visibility == CollectionVisibility.PUBLIC
-        self.db.commit()
+        self.db_object.visibility = CollectionVisibility.PUBLIC
+        for link in self.links:
+            link.collection_visibility = CollectionVisibility.PUBLIC
+        for dataset in self.datasets:
+            dataset.collection_visibility = CollectionVisibility.PUBLIC
