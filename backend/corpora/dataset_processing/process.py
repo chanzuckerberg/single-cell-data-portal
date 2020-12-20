@@ -128,7 +128,6 @@ def update_db(metadata=None, processing_status=None):
 
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
-
     Handles fixing the url so it downloads directly.
     """
 
