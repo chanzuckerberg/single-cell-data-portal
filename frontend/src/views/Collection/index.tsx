@@ -11,6 +11,7 @@ import {
   useCollectionUploadLinks,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
+import DatasetsGrid from "src/components/Collections/components/DatasetsGrid";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
 import EmptyDatasets from "./components/EmptyDatasets";
@@ -81,9 +82,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
       <DatasetContainer>
         {
           // eslint-disable-next-line no-constant-condition
-          collection?.datasets?.length > 0 &&
-          // eslint-disable-next-line sonarjs/no-redundant-boolean
-          false ? /* DATASETS VIEW GOES HERE */ null : (
+          collection?.datasets?.length > 0 ? (
+            <DatasetsGrid datasets={collection.datasets} />
+          ) : (
             <EmptyDatasets onSelectUploadLink={setUploadLink} />
           )
         }
