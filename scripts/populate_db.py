@@ -33,7 +33,8 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
             exit(1)
 
     if recreate_db or populate_data:
-        from tests.unit.fixtures.test_db import TestDatabase
+        os.environ["SKIP_DB_RELOAD"] = "1"
+        from tests.unit.backend.corpora.fixtures.database import TestDatabase
         testdb = TestDatabase(real_data=True)
 
     # Drop and recreate tables
