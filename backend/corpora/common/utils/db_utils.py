@@ -61,6 +61,22 @@ class DbUtils:
             self.session.close()
             self._session = None
 
+        def clone(self, model: Base, **kwargs):
+            """Clone an arbitrary sqlalchemy model object without its primary key values.
+            https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
+
+            :param model: The SQLAlchemy model to clone
+            :param kwargs: Updates the columns in the cloned model.
+            """
+            table = model.__table__
+            non_pk_columns = [key for key in table.columns.keys() if key not in table.primary_key]
+            data = {column: getattr(model, column) for column in non_pk_columns}
+            data.update(kwargs)
+
+            clone = model.__class__(**data)
+            self.session.add(clone)
+            return clone
+
     def __init__(self):
         if not DbUtils.__instance:
             DbUtils.__instance = DbUtils.__DbUtils()

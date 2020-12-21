@@ -6,10 +6,10 @@ from .....common.entities import Collection
 from .....common.utils.exceptions import ForbiddenHTTPException
 
 
-@db_session(commit=True, )
+@db_session()
 def post(collection_uuid: str, user: str):
-    collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
-    if not collection:
+    private_collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
+    if not private_collection:
         raise ForbiddenHTTPException
-    collection.publish()
-    return make_response({"collection_uuid": collection_uuid, "visibility": collection.visibility}, 202)
+    public_collection = Collection.publish(private_collection)
+    return make_response({"collection_uuid": public_collection.id, "visibility": public_collection.visibility}, 202)
