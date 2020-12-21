@@ -501,7 +501,7 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /dp/v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
+  /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset
@@ -539,7 +539,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/dataset/{dataset_uuid}/status:
+  /dp/v1/datasets/{dataset_uuid}/status:
     get:
       tags:
         - dataset
