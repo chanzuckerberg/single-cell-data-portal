@@ -48,7 +48,9 @@ def check_env():
 
 def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
 
-    s3 = boto3.client("s3")
+    s3 = boto3.client(
+        "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
+    )
     artifacts = []
 
     s3.upload_file(

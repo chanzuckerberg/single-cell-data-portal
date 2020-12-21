@@ -38,7 +38,7 @@ services:
       - /corpora-frontend/node_modules/
   backend:
     image: corpora-backend
-    build: backend
+    build: .
     restart: always
     depends_on:
       - localstack

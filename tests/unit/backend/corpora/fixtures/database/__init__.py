@@ -24,7 +24,11 @@ class TestDatabase:
 
     def __init__(self, real_data=False):
         self.real_data = real_data
+
+    def create_db(self):
         create_db()
+
+    def populate_test_data(self):
         self.db = DbUtils()
         self._populate_test_data()
         del self.db

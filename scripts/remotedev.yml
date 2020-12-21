@@ -1,0 +1,27 @@
+Description: >
+  This deploys a Coropora data portal remote-dev environment
+Parameters:
+  ImageTag:
+    Description: Please provide an image tag
+    Type: String
+  Priority:
+    Description: Listener rule priority number within the given listener
+    Type: Number
+
+Resources:
+  DevEnv:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/sc-happy-corpora-dev/dp-entrypoint.yml
+      Parameters:
+        CustomStackName: !Ref AWS::StackName
+        ImageTag: !Ref ImageTag
+        Priority: !Ref Priority
+
+Outputs:
+  FrontendUrl:
+    Description: The URL endpoint for the website service
+    Value: !GetAtt DevEnv.Outputs.FrontendUrl
+  BackendUrl:
+    Description: The URL endpoint for the website service
+    Value: !GetAtt DevEnv.Outputs.BackendUrl
