@@ -732,11 +732,13 @@ components:
         data_submission_policy_version:
           type: string
         datasets:
+          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset"
     ontology_element:
       type: object
+      nullable: true
       properties:
         ontology_term_id:
           type: string
@@ -744,26 +746,17 @@ components:
           type: string
     ontology_element_array:
       type: array
+      nullable: true
       items:
         $ref: "#/components/schemas/ontology_element"
     dataset:
       type: object
       required:
         - id
-        - assay
-        - tissue
-        - disease
-        - sex
-        - ethnicity
-        - organism
-        - development_stage
         - name
         - revision
-        - dataset_deployments
-        - dataset_assets
         - collection_id
         - collection_visibility
-        - cell_count
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -774,6 +767,7 @@ components:
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
+          nullable: true
           type: array
           items:
             type: string
@@ -788,6 +782,7 @@ components:
         revision:
           type: integer
         dataset_deployments:
+          nullable: true
           type: array
           items:
             type: object
@@ -799,6 +794,7 @@ components:
               url:
                 type: string
         dataset_assets:
+          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"

@@ -7,12 +7,13 @@ export function aggregateDatasetsMetadata(datasets: Dataset[]) {
   const result = datasetsMetadata.reduce(
     (prev, metadata) => {
       const { assay, disease, organism, tissue, cell_count } = prev;
-
       return {
         assay: [...assay, ...metadata.assay],
         cell_count: cell_count + Number(metadata.cell_count),
         disease: [...disease, ...metadata.disease],
-        organism: [...organism, metadata.organism],
+        organism: metadata.organism
+          ? organism
+          : [...organism, metadata.organism],
         tissue: [...tissue, ...metadata.tissue],
       };
     },
@@ -36,17 +37,17 @@ export function aggregateDatasetsMetadata(datasets: Dataset[]) {
 
 function extractDatasetMetadata(dataset: Dataset) {
   const { tissue, organism, assay, disease, cell_count } = dataset;
-
   return {
     assay: uniqueOntologies(assay),
     cell_count,
     disease: uniqueOntologies(disease),
-    organism: organism.label,
+    organism: organism?.label,
     tissue: uniqueOntologies(tissue),
   };
 }
 
 function uniqueOntologies(ontologies: Ontology[]) {
+  if (!ontologies) return [];
   return unique(
     ontologies
       .map((ontology) => {
@@ -57,5 +58,6 @@ function uniqueOntologies(ontologies: Ontology[]) {
 }
 
 function unique(items: string[]) {
+  if (!items) return [];
   return Array.from(new Set(items));
 }
