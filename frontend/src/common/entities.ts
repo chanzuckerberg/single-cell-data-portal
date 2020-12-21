@@ -128,3 +128,38 @@ export interface DatasetDeployment {
 export interface User {
   picture: string;
 }
+
+export enum UPLOAD_STATUS {
+  WAITING = "WAITING",
+  UPLOADING = "UPLOADING",
+  UPLOADED = "UPLOADED",
+  FAILED = "FAILED",
+  CANCEL = "CANCEL",
+  PENDING = "PENDING",
+  CANCELED = "CANCELED",
+  NA = "NA",
+}
+
+export enum VALIDATION_STATUS {
+  VALIDATING = "VALIDATING",
+  VALID = "VALID",
+  INVALID = "INVALID",
+  NA = "NA",
+}
+export enum CONVERSION_STATUS {
+  CONVERTING = "CONVERTING",
+  CONVERTED = "CONVERTED",
+  FAILED = "FAILED",
+  NA = "NA",
+}
+
+export interface DatasetUploadStatus {
+  upload_status: UPLOAD_STATUS;
+  upload_message: string;
+  upload_progress: number;
+  validation_status: VALIDATION_STATUS;
+  validation_message: string;
+  conversion_loom_status: CONVERSION_STATUS;
+  conversion_anndata_status: CONVERSION_STATUS;
+  conversion_cxg_status: CONVERSION_STATUS;
+}
