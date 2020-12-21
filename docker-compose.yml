@@ -36,6 +36,12 @@ services:
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
+  processing:
+    image: corpora-processing
+    build:
+      context: .
+      dockerfile: Dockerfile.processing_image
+    restart: never
   backend:
     image: corpora-backend
     build: .

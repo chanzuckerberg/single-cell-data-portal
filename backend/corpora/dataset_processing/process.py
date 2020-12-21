@@ -24,7 +24,7 @@ except ImportError:
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
     from common.utils.db_utils import db_session
-    from .download import download
+    from common.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -32,6 +32,7 @@ DEPLOYMENT_STAGE_TO_URL = {
     "dev": "https://cellxgene.dev.single-cell.czi.technology",
     "staging": "https://cellxgene.staging.single-cell.czi.technology",
     "prod": "https://cellxgene.cziscience.com",
+    "rdev": os.environ.get('FRONTEND_URL'),
 }
 
 

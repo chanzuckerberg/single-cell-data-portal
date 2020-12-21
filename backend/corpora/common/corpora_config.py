@@ -10,7 +10,13 @@ class CorporaConfig(SecretConfig):
         super().__init__("backend", secret_name="config", **kwargs)
 
     def get_defaults_template(self):
-        return {"upload_file_formats": ["h5ad"], "upload_max_file_size_gb": 30}
+        template = {
+            "upload_file_formats": ["h5ad"],
+            "upload_max_file_size_gb": 30
+        }
+        if os.getenv("UPLOAD_SFN_ARN"):
+            template["upload_sfn_arn"] = os.getenv("UPLOAD_SFN_ARN")
+        return template
 
 
 class CorporaDbConfig(SecretConfig):

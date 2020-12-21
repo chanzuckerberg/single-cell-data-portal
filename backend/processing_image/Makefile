@@ -12,7 +12,7 @@ build:
 	mkdir -p code/chalice/api_server
 	cp -R ../corpora/dataset_processing code/
 	cp -R ../corpora/common code/
-	cp -R ../requirements.txt code/
+	cp -R ../../requirements.txt code/
 	cp -R ../chalice/api_server/requirements.txt code/chalice/api_server/requirements.txt
 	docker build -t $(IMAGE) .
 	rm -rf code/
