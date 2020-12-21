@@ -41,7 +41,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.processing_image
-    restart: never
+    restart: "no"
+    volumes:
+      - ./backend/corpora/dataset_processing:/code/dataset_processing
+      - ./backend/corpora/common:/code/common
+    command: ["sleep", "infinity"]
   backend:
     image: corpora-backend
     build: .

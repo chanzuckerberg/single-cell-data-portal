@@ -24,7 +24,7 @@ except ImportError:
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
     from common.utils.db_utils import db_session
-    from common.dataset_processing.download import download
+    from dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
