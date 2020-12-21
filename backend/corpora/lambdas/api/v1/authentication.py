@@ -55,11 +55,18 @@ def login() -> Response:
     """API call: initiate the login process."""
     config = CorporaAuthConfig()
     redirect = request.args.get("redirect", "")
-    return_to = f"{config.redirect_to_frontend}{redirect}"
+    if os.getenv("FRONTEND_URL"):
+        return_to = f"{os.getenv('FRONTEND_URL')}{redirect}"
+    else:
+        return_to = f"{config.redirect_to_frontend}{redirect}"
     # save the return path in the session cookie, accessed in the callback function
     session["oauth_corpora_callback_redirect"] = return_to
     client = get_oauth_client(config)
-    callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
+
+    if os.getenv("API_URL"):
+        callbackurl = f"{os.getenv('API_URL')}/dp/v1/oauth2/callback"
+    else:
+        callbackurl = f"{config.callback_base_url}/dp/v1/oauth2/callback"
     response = client.authorize_redirect(redirect_uri=callbackurl)
     return response
 

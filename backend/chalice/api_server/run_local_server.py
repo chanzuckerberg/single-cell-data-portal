@@ -10,9 +10,36 @@ import logging
 import os
 import sys
 import time
+import signal
 
 from chalice.deploy.validate import validate_routes
 from chalice.cli import CLIFactory, reloader
+from chalice.local import LocalDevServer
+
+from six.moves.socketserver import ForkingMixIn
+from six.moves.BaseHTTPServer import HTTPServer
+
+
+class ForkedHTTPServer(ForkingMixIn, HTTPServer):
+    """Forking mixin to better support browsers.
+
+    When a browser sends a GET request to Chalice it keeps the connection open
+    for reuse. In the single threaded model this causes Chalice local to become
+    unresponsive to all clients other than that browser socket. Even sending a
+    header requesting that the client close the connection is not good enough,
+    the browswer will simply open another one and sit on it.
+    """
+
+    allow_reuse_address = True
+    timeout = 2
+
+    # Make sure to reap child processes.
+    def shutdown(self):
+        if self.active_children is None:
+            return
+        for child_pid in self.active_children:
+            os.kill(child_pid, signal.SIGTERM)
+        self.server_close()
 
 
 def get_args():
@@ -51,8 +78,10 @@ def run_server(args, stage):
 
     # support autoreload
     project_dir = config.project_dir
-    print(sys.argv)
-    print(os.environ)
+
+    # handle sigterm
+    signal.signal(signal.SIGTERM, lambda *args: sys.exit(0))
+
     rc = reloader.run_with_reloader(server_factory, os.environ, project_dir)
     # Click doesn't sys.exit() with the RC this function.  The
     # recommended way to do this is to use sys.exit() directly,
@@ -65,7 +94,7 @@ def create_local_server(factory, config, app, host, port, stage):
     # there is no point in testing locally.
     routes = config.chalice_app.routes
     validate_routes(routes)
-    server = factory.create_local_server(app, config, host, port)
+    server = LocalDevServer(app, config, host, port, server_cls=ForkedHTTPServer)
     return server
 
 

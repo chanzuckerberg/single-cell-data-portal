@@ -200,12 +200,17 @@ class TestDatasetProcessing(unittest.TestCase):
         fake_env.stop()
 
     def test_create_artifacts(self):
-        s3_mock = mock_s3()
-        s3_mock.start()
-        s3 = boto3.client("s3")
-        s3.create_bucket(Bucket="test_bucket")
+        # Mock S3 service if we don't have a mock api already running
+        if not os.getenv("BOTO_ENDPOINT_URL"):
+            s3_mock = mock_s3()
+            s3_mock.start()
 
-        fake_env = patch.dict(os.environ, {"DATASET_ID": "aaaa-bbbb-cccc", "ARTIFACT_BUCKET": "test_bucket"})
+        s3 = boto3.client(
+            "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
+        )
+        s3.create_bucket(Bucket="test-bucket")
+
+        fake_env = patch.dict(os.environ, {"DATASET_ID": "aaaa-bbbb-cccc", "ARTIFACT_BUCKET": "test-bucket"})
         fake_env.start()
 
         artifacts = process.create_artifacts(
@@ -215,11 +220,11 @@ class TestDatasetProcessing(unittest.TestCase):
         self.assertEqual(len(artifacts), 3)
 
         self.assertTrue(all(a["user_submitted"] for a in artifacts))
-        self.assertTrue(all(a["s3_uri"].startswith("s3://test_bucket/aaaa-bbbb-cccc/") for a in artifacts))
+        self.assertTrue(all(a["s3_uri"].startswith("s3://test-bucket/aaaa-bbbb-cccc/") for a in artifacts))
         self.assertEqual(len(set(a["filetype"] for a in artifacts)), 3)
         self.assertTrue(all(a["type"] == DatasetArtifactType.REMIX for a in artifacts))
 
-        resp = s3.list_objects_v2(Bucket="test_bucket", Prefix="aaaa-bbbb-cccc")
+        resp = s3.list_objects_v2(Bucket="test-bucket", Prefix="aaaa-bbbb-cccc")
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
         self.assertEqual(len(s3_filenames), 3)
         self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
@@ -227,4 +232,5 @@ class TestDatasetProcessing(unittest.TestCase):
         self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
         fake_env.stop()
-        s3_mock.stop()
+        if not os.getenv("BOTO_ENDPOINT_URL"):
+            s3_mock.stop()
