@@ -248,9 +248,11 @@ def main():
     seurat_filename = make_seurat(local_filename)
     artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
 
-    subprocess.run(
+    command = ["aws"]
+    if os.getenv("BOTO_ENDPOINT_URL"):
+        command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
+    command.extend(
         [
-            "aws",
             "s3",
             "cp",
             cxg_dir,
@@ -258,7 +260,10 @@ def main():
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
-        ],
+        ]
+    )
+    subprocess.run(
+        command,
         check=True,
     )
     deployment_directories = [

@@ -26,8 +26,8 @@ echo " done"
 echo "Creating secretsmanager secrets"
 local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
 ${local_aws} s3api create-bucket --bucket corpora-data-dev &> /dev/null || true
-${local_aws} s3api create-bucket --bucket artifact_bucket &> /dev/null || true
-${local_aws} s3api create-bucket --bucket cellxgene_bucket &> /dev/null || true
+${local_aws} s3api create-bucket --bucket artifact-bucket &> /dev/null || true
+${local_aws} s3api create-bucket --bucket cellxgene-bucket &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
