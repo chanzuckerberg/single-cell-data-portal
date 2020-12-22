@@ -32,7 +32,7 @@ DEPLOYMENT_STAGE_TO_URL = {
     "dev": "https://cellxgene.dev.single-cell.czi.technology",
     "staging": "https://cellxgene.staging.single-cell.czi.technology",
     "prod": "https://cellxgene.cziscience.com",
-    "rdev": os.environ.get('FRONTEND_URL'),
+    "rdev": os.environ.get("FRONTEND_URL"),
 }
 
 
@@ -205,7 +205,10 @@ def make_loom(local_filename):
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
-    seurat_proc = subprocess.run(["Rscript", "/dataset_processing/make_seurat.R", local_filename], capture_output=True)
+    seurat_proc = subprocess.run(
+        ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
+        capture_output=True,
+    )
     if seurat_proc.returncode != 0:
         raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
 

@@ -129,4 +129,5 @@ local-dbconsole: ## Connect to the local postgres database.
 
 .PHONY: local-uploadjob
 local-uploadjob: ## Run the upload task with a dataset_id and dropbox_url
+	docker-compose exec processing rm -rf /local.*
 	docker-compose exec -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing python3 /code/dataset_processing/process.py
