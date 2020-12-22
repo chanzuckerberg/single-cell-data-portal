@@ -98,7 +98,7 @@ class TestDataset(BaseAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAWS):
         self.assertEqual(403, response.status_code)
 
     def test__minimal_status__ok(self):
-        dataset = self.generate_dataset(processing_status={"upload_status": "WAITING", "upload_progress": 0})
+        dataset = self.generate_dataset(processing_status={"upload_status": "WAITING", "upload_progress": 0.0})
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
