@@ -3,6 +3,7 @@ import logging
 import typing
 from contextlib import contextmanager
 
+import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
 from .exceptions import CorporaException
@@ -55,7 +56,10 @@ class DbUtils:
             self.session.commit()
 
         def delete(self, db_object: Base):
-            self.session.delete(db_object)
+            try:
+                self.session.delete(db_object)
+            except sqlalchemy.orm.exc.ObjectDeletedError:
+                pass
 
         def close(self):
             self.session.close()

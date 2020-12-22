@@ -2,8 +2,6 @@ import logging
 import typing
 import uuid
 
-import sqlalchemy
-
 logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
@@ -121,11 +119,8 @@ class Entity:
         """
         Delete an object from the database.
         """
-        try:
-            self.db.delete(self.db_object)
-            self.db.commit()
-        except sqlalchemy.orm.exc.ObjectDeletedError:
-            pass
+        self.db.delete(self.db_object)
+        self.db.commit()
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
