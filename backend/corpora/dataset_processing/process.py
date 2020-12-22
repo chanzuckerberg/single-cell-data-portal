@@ -10,21 +10,11 @@ import boto3
 import numpy
 import scanpy
 
-try:
-    from ..common.entities.dataset import Dataset
-    from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
-    from ..common.utils import dropbox
-    from ..common.utils.db_utils import db_session
-    from .download import download
-
-except ImportError:
-    # We're in the container
-    sys.path.append("/code")
-    from common.entities.dataset import Dataset
-    from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
-    from common.utils import dropbox
-    from common.utils.db_utils import db_session
-    from dataset_processing.download import download
+from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+from backend.corpora.common.utils import dropbox
+from backend.corpora.common.utils.db_utils import db_session
+from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -208,8 +198,7 @@ def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
     seurat_proc = subprocess.run(
-        ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
-        capture_output=True,
+        ["Rscript", "/code/backend/corpora/dataset_processing/make_seurat.R", local_filename], capture_output=True
     )
     if seurat_proc.returncode != 0:
         raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
