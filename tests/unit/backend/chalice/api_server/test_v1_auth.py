@@ -5,15 +5,15 @@ import unittest
 import urllib.parse
 import time
 from tests.unit.backend.chalice.api_server import BaseAPITest
-
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, TOKEN_EXPIRES
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 @unittest.skipIf(
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
-class TestAuth(BaseAPITest, unittest.TestCase):
+class TestAuth(BaseAPITest, DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         BaseAPITest.setUpClass()

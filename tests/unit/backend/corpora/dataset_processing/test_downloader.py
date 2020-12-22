@@ -4,7 +4,6 @@ import multiprocessing
 import os
 import random
 import socketserver
-import unittest
 
 import requests
 
@@ -12,6 +11,7 @@ from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 def start_server(path, port):
@@ -21,7 +21,7 @@ def start_server(path, port):
     httpd.serve_forever()
 
 
-class TestDownload(unittest.TestCase):
+class TestDownload(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         cls.port = random.randint(10000, 20000)
