@@ -26,11 +26,18 @@ echo " done"
 echo "Creating secretsmanager secrets"
 local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
 ${local_aws} s3api create-bucket --bucket corpora-data-dev &> /dev/null || true
+${local_aws} s3api create-bucket --bucket artifact_bucket &> /dev/null || true
+${local_aws} s3api create-bucket --bucket cellxgene_bucket &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/config &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &> /dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/config &> /dev/null || true
+
+echo "Creating default state machine"
+${local_aws} iam create-role --role-name StepRole --assume-role-policy-document '{"Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Principal": { "Service": "states.amazonaws.com" }, "Action": "sts:AssumeRole" }' || true
+${local_aws} stepfunctions create-state-machine --name uploader-dev-sfn --definition '{"StartAt": "noop", "States": {"noop": {"Type": "Pass", "Result": {}, "ResultPath": "$.coords", "End": true}}}' --role-arn arn:aws:iam::000000000000:role/StepRole || true
 
 
 echo "Updating secrets"
@@ -57,6 +64,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-se
 }' || true
 
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/config --secret-string '{"upload_sfn_arn": "arn:aws:states:us-west-2:000000000000:stateMachine:uploader-dev-sfn"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "aws::::/upload"}'
 

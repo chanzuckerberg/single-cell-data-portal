@@ -16,7 +16,7 @@ services:
       - "4566:4566"
     environment:
       - HOSTNAME_EXTERNAL=localstack
-      - SERVICES=s3,secretsmanager,stepfunctions
+      - SERVICES=s3,secretsmanager,stepfunctions,iam
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
       - PORT_WEB_UI=${PORT_WEB_UI- }
@@ -46,6 +46,17 @@ services:
       - ./backend/corpora/dataset_processing:/code/dataset_processing
       - ./backend/corpora/common:/code/common
     command: ["sleep", "infinity"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=dev_access_key_id
+      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=dev
+      - ARTIFACT_BUCKET=artifact_bucket
+      - CELLXGENE_BUCKET=cellxgene_bucket
   backend:
     image: corpora-backend
     build: .
