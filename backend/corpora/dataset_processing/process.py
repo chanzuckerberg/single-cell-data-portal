@@ -54,10 +54,12 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
     )
     artifacts = []
 
+    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
+
     s3.upload_file(
         h5ad_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(h5ad_filename)),
+        join(bucket_prefix, basename(h5ad_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
@@ -67,14 +69,14 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.H5AD,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(h5ad_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(h5ad_filename)),
         }
     )
 
     s3.upload_file(
         seurat_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(seurat_filename)),
+        join(bucket_prefix, basename(seurat_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     artifacts.append(
@@ -83,14 +85,14 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.RDS,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(seurat_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(seurat_filename)),
         }
     )
 
     s3.upload_file(
         loom_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(loom_filename)),
+        join(bucket_prefix, basename(loom_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     artifacts.append(
@@ -99,7 +101,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.LOOM,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(loom_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(loom_filename)),
         }
     )
 
@@ -247,6 +249,7 @@ def main():
     cxg_dir = make_cxg(local_filename)
     seurat_filename = make_seurat(local_filename)
     artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
+    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
 
     subprocess.run(
         [
@@ -254,7 +257,7 @@ def main():
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/{os.environ['DATASET_ID']}/",
+            f"s3://{os.environ['CELLXGENE_BUCKET']}/{bucket_prefix}/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
