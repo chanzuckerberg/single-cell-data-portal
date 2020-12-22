@@ -6,13 +6,12 @@ from datetime import datetime
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Collection, Dataset
-from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
 
 
-class TestCollection(BaseAuthAPITest, unittest.TestCase):
+class TestCollection(BaseAuthAPITest, GenerateDataMixin, unittest.TestCase):
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
@@ -68,18 +67,6 @@ class TestCollection(BaseAuthAPITest, unittest.TestCase):
                 "cell_count",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
-
-    def generate_collection(self, **params) -> Collection:
-        _collection = Collection.create(**BogusCollectionParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(_collection.delete)
-        return _collection
-
-    def generate_dataset(self, **params) -> Dataset:
-        _dataset = Dataset.create(**BogusDatasetParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(_dataset.delete)
-        return _dataset
 
     def test__list_collection_options__allow(self):
         origin = "http://localhost:8000"
