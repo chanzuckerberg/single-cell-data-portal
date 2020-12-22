@@ -55,8 +55,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=dev
-      - ARTIFACT_BUCKET=artifact_bucket
-      - CELLXGENE_BUCKET=cellxgene_bucket
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
   backend:
     image: corpora-backend
     build: .
