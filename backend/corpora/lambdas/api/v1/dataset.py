@@ -6,6 +6,7 @@ from ....common.utils.db_utils import db_session
 from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException, ForbiddenHTTPException
 from ....dataset_processing.download import processing_status_updater
 
+
 @db_session()
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
@@ -52,12 +53,18 @@ def get_status(dataset_uuid: str, user: str):
 
 
 @db_session()
-def cancel_dataset_download(dataset_uuid: str):
+def cancel_dataset_download(dataset_uuid: str, user: str):
     dataset = Dataset.get(dataset_uuid)
+    if not dataset:
+        raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' not found.")
+    if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
+        raise ForbiddenHTTPException()
     status = dataset.processing_status.to_dict()
-    assert status.upload_status is not UploadStatus.UPLOADED
+    if status.upload_status is UploadStatus.UPLOADED:
+        raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' upload is complete and can not be cancelled.")
     status = {
         DbDatasetProcessingStatus.upload_progress: status.upload_progress,
         DbDatasetProcessingStatus.upload_status: UploadStatus.CANCEL_PENDING,
     }
     processing_status_updater(dataset.processing_status.id, status)
+    return make_response(jsonify(status), 202)

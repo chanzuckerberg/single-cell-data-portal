@@ -501,7 +501,23 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
+  /dp/v1/dataset/{dataset_uuid}:
+    delete:
+      tags:
+        - datasets
+      summary: Delete a dataset
+      description: >-
+        Cancels the download of a dataset to Corpora and cleans up (removes) any artifacts created in the download process
+      operationId: corpora.lambdas.api.v1.dataset.cancel_dataset_download
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+
+  /dp/v1/dataset/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - dataset

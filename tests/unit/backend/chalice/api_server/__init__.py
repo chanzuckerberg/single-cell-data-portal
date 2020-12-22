@@ -1,6 +1,8 @@
 import os
+import sys
 
 from tests.unit.backend.chalice import ChaliceTestHarness
+from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer
 
 os.environ["APP_NAME"] = "corpora-api"
 
@@ -15,6 +17,24 @@ class BaseAPITest:
         cls.corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
         cls.app = ChaliceTestHarness(cls.corpora_api_dir)
         cls.maxDiff = None  # Easier to compare json responses.
+        cls.mock_oauth_server = MockOauthServer()
+        cls.mock_oauth_server.start()
+        assert cls.mock_oauth_server.server_okay
+
+        cls.old_path = sys.path.copy()
+        sys.path.insert(0, os.path.join(cls.corpora_api_dir, "chalicelib"))  # noqa
+        from corpora.common.corpora_config import CorporaAuthConfig
+
+        # Use the CorporaAuthConfig used by the chalice app
+        cls.auth_config = CorporaAuthConfig()
+        cls.auth_config._config["api_base_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
+        cls.auth_config._config["callback_base_url"] = "http://localhost:5000"
+        cls.auth_config.update_defaults()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_oauth_server.terminate()
+        sys.path = cls.old_path
 
     @staticmethod
     def remove_timestamps(body: dict) -> dict:
