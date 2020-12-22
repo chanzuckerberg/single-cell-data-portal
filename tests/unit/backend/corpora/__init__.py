@@ -17,14 +17,15 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         self.corpora_config.set(self.__class__.CORPORA_TEST_CONFIG)
 
         # Mock S3 service if we don't have a mock api already running
-        if not os.getenv("BOTO_ENDPOINT_URL"):
+        if os.getenv("BOTO_ENDPOINT_URL"):
+            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
+        else:
             self.s3_mock = mock_s3()
             self.s3_mock.start()
+            s3_args = {}
 
         # Corpora Bucket
-        self.s3_resource = boto3.resource(
-            "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
-        )
+        self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4", **s3_args))
         self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
         self.bucket.create()
 
