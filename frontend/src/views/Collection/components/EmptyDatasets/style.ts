@@ -14,4 +14,6 @@ export const CenterAlignedDiv = styled.div`
   letter-spacing: -0.10000000149011612px;
   text-align: left;
   color: ${GRAY.A};
+  border: 1px solid #e1e8ed;
+  border-radius: 3px;
 `;

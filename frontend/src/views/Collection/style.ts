@@ -26,6 +26,4 @@ export const LinkContainer = styled.div`
 
 export const DatasetContainer = styled.div`
   grid-column: 1 / span 8;
-  border: 1px solid #e1e8ed;
-  border-radius: 3px;
 `;
