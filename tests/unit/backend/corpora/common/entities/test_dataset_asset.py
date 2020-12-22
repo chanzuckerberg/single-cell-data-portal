@@ -34,10 +34,9 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
         self.assertIn(file_name, url)
         self.assertIn("Expires=", url)
 
-    @mock.patch("backend.corpora.common.entities.dataset_asset.DatasetAsset.s3.generate_presigned_url")
-    def test__generate_file_url__ERROR(self, mock_generate_presigned_url):
-        mock_generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
-
+    @mock.patch("backend.corpora.common.entities.dataset_asset.DatasetAsset._s3")
+    def test__generate_file_url__ERROR(self, mock_s3):
+        mock_s3.generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
         # Create the Dataset Asset
         asset = self.create_dataset_asset("test__generate_file_url__ERROR.h5ad")
 
