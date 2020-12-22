@@ -209,7 +209,9 @@ class TestDatasetProcessing(DataPortalTestCase):
             s3_args = {}
         try:
             s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
-            s3.create_bucket(Bucket="test-bucket")
+            s3.create_bucket(
+                Bucket="test-bucket", CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+            )
 
             fake_env = patch.dict(os.environ, {"DATASET_ID": "aaaa-bbbb-cccc", "ARTIFACT_BUCKET": "test-bucket"})
             fake_env.start()

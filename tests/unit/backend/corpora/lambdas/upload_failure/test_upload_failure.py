@@ -33,7 +33,9 @@ class TestUploadFailureHandling(TestCase):
         h5ad_file = f"{self.uuid}/remixed.h5ad"
         rds_file = f"{self.uuid}/remixed.rds"
         loom_file = f"{self.uuid}/remixed.loom"
-        s3.create_bucket(Bucket=self.bucket_name)
+        s3.create_bucket(
+            Bucket=self.bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+        )
 
         s3.put_object(Bucket=self.bucket_name, Key=cxg_file, Body="words")
         s3.put_object(Bucket=self.bucket_name, Key=h5ad_file, Body="words")
