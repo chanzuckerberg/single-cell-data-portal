@@ -8,13 +8,12 @@ import sys
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Collection, Dataset
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
-from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
+from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
 
 
-class TestCollection(BaseAPITest, unittest.TestCase):
+class TestCollection(BaseAPITest, GenerateDataMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         BaseAPITest.setUpClass()
@@ -92,18 +91,6 @@ class TestCollection(BaseAPITest, unittest.TestCase):
                 "cell_count",
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
-
-    def generate_collection(self, **params) -> Collection:
-        _collection = Collection.create(**BogusCollectionParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(_collection.delete)
-        return _collection
-
-    def generate_dataset(self, **params) -> Dataset:
-        _dataset = Dataset.create(**BogusDatasetParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(_dataset.delete)
-        return _dataset
 
     def test__list_collection_options__allow(self):
         origin = "http://localhost:8000"
