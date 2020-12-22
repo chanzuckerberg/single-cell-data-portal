@@ -8,8 +8,8 @@ from .....common.utils.exceptions import ForbiddenHTTPException
 
 @db_session()
 def post(collection_uuid: str, user: str):
-    private_collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
-    if not private_collection:
+    collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
+    if not collection:
         raise ForbiddenHTTPException
-    public_collection = Collection.publish(private_collection)
-    return make_response({"collection_uuid": public_collection.id, "visibility": public_collection.visibility}, 202)
+    collection.publish()
+    return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)

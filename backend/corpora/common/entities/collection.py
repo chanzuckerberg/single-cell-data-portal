@@ -165,22 +165,18 @@ class Collection(Entity):
 
         return result
 
-    @classmethod
-    def publish(cls, private_collection: "Collection") -> "Collection":
+    def publish(self):
         """
-        Given a private collection, set the collection to public as well as all connected resources.
-        :param private_collection:
-        :return: A public collection
+        Given a private collection, set the collection to public.
+
         """
         # Create a public collection with the same uuid and same fields
-        public_collection = Collection.db.clone(
-            private_collection.db_object, id=private_collection.id, visibility=CollectionVisibility.PUBLIC
-        )
+        public_collection = Collection.db.clone(self.db_object, id=self.id, visibility=CollectionVisibility.PUBLIC)
         # Copy over relationships
-        for link in private_collection.links:
+        for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
-        for dataset in private_collection.datasets:
+        for dataset in self.datasets:
             dataset.collection_visibility = CollectionVisibility.PUBLIC
-        cls.db.session.commit()
-        private_collection.delete()
-        return cls(public_collection)
+        self.db.session.commit()
+        self.delete()
+        self.db_object = public_collection
