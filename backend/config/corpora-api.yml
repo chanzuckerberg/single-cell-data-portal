@@ -722,23 +722,18 @@ components:
           $ref: "#/components/schemas/links"
         obfuscated_uuid:
           type: string
-          nullable: true
         contact_name:
           type: string
-          nullable: true
         contact_email:
           type: string
-          nullable: true
         data_submission_policy_version:
           type: string
         datasets:
-          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset"
     ontology_element:
       type: object
-      nullable: true
       properties:
         ontology_term_id:
           type: string
@@ -746,7 +741,6 @@ components:
           type: string
     ontology_element_array:
       type: array
-      nullable: true
       items:
         $ref: "#/components/schemas/ontology_element"
     dataset:
@@ -767,7 +761,6 @@ components:
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
-          nullable: true
           type: array
           items:
             type: string
@@ -782,7 +775,6 @@ components:
         revision:
           type: integer
         dataset_deployments:
-          nullable: true
           type: array
           items:
             type: object
@@ -794,7 +786,6 @@ components:
               url:
                 type: string
         dataset_assets:
-          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/dataset_asset"
@@ -804,7 +795,6 @@ components:
           $ref: "#/components/schemas/visibility"
         cell_count:
           type: integer
-          nullable: true
     dataset_asset:
       type: object
       properties:
