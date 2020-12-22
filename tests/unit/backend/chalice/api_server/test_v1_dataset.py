@@ -8,9 +8,10 @@ from furl import furl
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
+from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
 
 
-class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
+class TestDataset(BaseAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         BaseAPITest.setUpClass()
@@ -95,3 +96,19 @@ class TestDataset(BaseAPITest, CorporaTestCaseUsingMockAWS):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
+
+    def test__minimal_status__ok(self):
+        dataset = self.generate_dataset(processing_status={"upload_status": "WAITING", "upload_progress": 0})
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.get(test_url.url, headers=headers)
+        response.raise_for_status()
+        actual_body = json.loads(response.body)
+        expected_body = {
+            "dataset_id": dataset.id,
+            "id": dataset.processing_status.id,
+            "upload_progress": 0.0,
+            "upload_status": "WAITING",
+        }
+        self.assertEqual(expected_body, actual_body)

@@ -47,7 +47,9 @@ def get_status(dataset_uuid: str, user: str):
     status = dataset.processing_status.to_dict()
     for remove in ["dataset", "created_at", "updated_at"]:
         status.pop(remove)
-    for key in ["validation_message", "upload_message"]:
-        if status[key] is None:
-            status.pop(key)
+    #  Remove keys that are None from the JSON response
+    rm = [key for key in status.keys() if status[key] is None]
+    for remove in rm:
+        status.pop(remove)
+
     return make_response(jsonify(status), 200)
