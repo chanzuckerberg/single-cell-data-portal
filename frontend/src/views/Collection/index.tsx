@@ -81,12 +81,11 @@ const Collection: FC<Props> = ({ id = "" }) => {
         onSuccess: (data) => {
           newFile.id = data;
           if (!newFile.id) return;
-          console.log(newFile);
           DatasetUploadToast.show({
             icon: IconNames.TICK,
-            intent: Intent.SUCCESS,
+            intent: Intent.PRIMARY,
             message:
-              "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
+              "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
           setUploadedFiles(
             new Map(
