@@ -101,9 +101,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
     );
   };
 
-  if (!collection || isError) return null;
+  if (!collection || isError) {
+    return null;
+  }
 
-  console.log(uploadedFiles);
+  const datasetPresent =
+    collection.datasets?.length > 0 || uploadedFiles.size > 0;
 
   return (
     <ViewGrid>
@@ -114,7 +117,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <DatasetContainer>
-        {collection?.datasets?.length > 0 ? (
+        {datasetPresent ? (
           <DatasetsGrid
             datasets={collection.datasets}
             uploadedFiles={uploadedFiles}
@@ -123,7 +126,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
           <EmptyDatasets onUploadFile={addNewFile} />
         )}
       </DatasetContainer>
-      {collection?.datasets?.length > 0 && (
+      {datasetPresent && (
         <StyledDiv>
           <DropboxChooser onUploadFile={addNewFile}>
             <Button intent={Intent.PRIMARY} outlined>
