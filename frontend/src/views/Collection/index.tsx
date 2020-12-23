@@ -12,6 +12,7 @@ import {
 import {
   useCollection,
   useCollectionUploadLinks,
+  USE_COLLECTION,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import DatasetsGrid from "src/components/Collections/components/DatasetsGrid";
@@ -72,7 +73,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const [mutate] = useCollectionUploadLinks(id, visibility);
 
   const addNewFile = (newFile: UploadingFile) => {
-    if (!newFile || !newFile.link || newFile.id) return;
+    if (!newFile.link || newFile.id) return;
 
     const payload = JSON.stringify({ url: newFile.link });
     mutate(
@@ -94,7 +95,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
               ])
             )
           );
-          queryCache.invalidateQueries(useCollection);
+          queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
     );
