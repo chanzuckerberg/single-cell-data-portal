@@ -44,7 +44,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   } = aggregateDatasetsMetadata([dataset]);
 
   let { name } = dataset;
-  if (!name) name = file?.name;
+  if (!name) name = file?.name ?? dataset.id;
 
   const { data: datasetStatus, isError } = useDatasetStatus(dataset.id);
   if (isError) console.error(datasetStatus);
