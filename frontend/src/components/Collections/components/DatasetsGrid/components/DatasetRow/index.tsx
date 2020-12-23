@@ -1,6 +1,7 @@
+import { Button, Checkbox, Intent, Spinner } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
-import { Dataset } from "src/common/entities";
+import { Dataset, DatasetUploadStatus } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import { LeftAlignedDetailsCell } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/style";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/utils";
@@ -9,9 +10,13 @@ import {
   StyledRow,
 } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/style";
 import { StyledCell } from "src/components/Collections/components/CollectionsGrid/components/common/style";
+import { UploadingFile } from "src/components/DropboxChooser";
+import { UploadStatusContainer } from "./style";
 
 interface Props {
   dataset: Dataset;
+  checkHandler: (id: string) => void;
+  file?: UploadingFile;
 }
 
 const AsyncPopover = loadable(
@@ -29,7 +34,7 @@ const conditionalPopover = (values: string[]) => {
   return <AsyncPopover values={values} />;
 };
 
-const DatasetRow: FC<Props> = ({ dataset }) => {
+const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const {
     tissue,
     assay,
@@ -38,31 +43,53 @@ const DatasetRow: FC<Props> = ({ dataset }) => {
     cell_count,
   } = aggregateDatasetsMetadata([dataset]);
 
-  const { name } = dataset;
+  let { name } = dataset;
+  if (!name) name = file?.name;
 
-  const datasetStatus = useDatasetStatus(dataset.id);
+  const { data: datasetStatus, isError } = useDatasetStatus(dataset.id);
+  if (isError) console.error(datasetStatus);
+  if (!datasetStatus) return null;
 
+  const isUploading = datasetStatus.upload_progress < 1;
   return (
     <StyledRow>
-      <StyledCell>{name}</StyledCell>
+      <StyledCell>
+        <Checkbox
+          onChange={() => checkHandler(dataset.id)}
+          style={{ marginBottom: "none" }}
+        />
+        {name}
+      </StyledCell>
       {conditionalPopover(tissue)}
       {conditionalPopover(assay)}
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       <RightAlignedDetailsCell>
-        {/* {uploading ? uploadingStatus() : exploreButton()} */}
+        {isUploading ? (
+          renderUploadStatus(datasetStatus)
+        ) : (
+          <Button intent={Intent.PRIMARY} outlined text="Explore" />
+        )}
       </RightAlignedDetailsCell>
     </StyledRow>
   );
 };
 
-const uploadStatus = () => {
-  return null;
-};
+const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
+  return (
+    <UploadStatusContainer>
+      <Spinner
+        intent={Intent.PRIMARY}
+        value={datasetStatus.upload_progress}
+        size={16}
+      />
 
-const exploreButton = () => {
-  return null;
+      {`${datasetStatus.upload_status} (${Math.round(
+        datasetStatus.upload_progress * 100
+      )}%)`}
+    </UploadStatusContainer>
+  );
 };
 
 export default DatasetRow;
