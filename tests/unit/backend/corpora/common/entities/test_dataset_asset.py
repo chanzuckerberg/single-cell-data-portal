@@ -8,7 +8,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
-from tests.unit.backend.corpora import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.utils import BogusDatasetParams
 
 
