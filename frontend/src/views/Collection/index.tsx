@@ -18,6 +18,7 @@ import DatasetsGrid from "src/components/Collections/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
+import DatasetUploadToast from "./components/DatasetUploadToast";
 import EmptyDatasets from "./components/EmptyDatasets";
 import {
   CollectionInfo,
@@ -81,6 +82,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
           newFile.id = data;
           if (!newFile.id) return;
           console.log(newFile);
+          DatasetUploadToast.show({
+            icon: IconNames.TICK,
+            intent: Intent.SUCCESS,
+            message:
+              "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
+          });
           setUploadedFiles(
             new Map(
               Array.from(uploadedFiles.entries()).concat([
