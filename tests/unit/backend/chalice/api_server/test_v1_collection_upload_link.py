@@ -1,7 +1,6 @@
 import json
 import sys
 import os
-import unittest
 from mock import patch
 from furl import furl
 
@@ -9,9 +8,10 @@ from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
+class TestCollectionUploadLink(BaseAPITest, DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         BaseAPITest.setUpClass()
@@ -35,6 +35,7 @@ class TestCollectionUploadLink(BaseAPITest, unittest.TestCase):
         sys.path = cls.old_path
 
     def setUp(self):
+        super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 

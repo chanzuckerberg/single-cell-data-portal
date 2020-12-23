@@ -1,10 +1,9 @@
-import unittest
-
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities.dataset import Entity
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestEntity(unittest.TestCase):
+class TestEntity(DataPortalTestCase):
     def test__create_sub_object(self):
         test_params = {"row": {"upload_status": UploadStatus.WAITING}, "db_table": DbDatasetProcessingStatus}
 
