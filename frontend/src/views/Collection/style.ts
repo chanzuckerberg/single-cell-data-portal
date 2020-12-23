@@ -27,3 +27,11 @@ export const LinkContainer = styled.div`
 export const DatasetContainer = styled.div`
   grid-column: 1 / span 8;
 `;
+
+export const StyledDiv = styled.div`
+  display: flex;
+  flex-direction: row;
+  & > Button {
+    margin-left: ${PT_GRID_SIZE_PX}px;
+  }
+`;
