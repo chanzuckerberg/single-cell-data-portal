@@ -79,6 +79,7 @@ export interface Dataset {
   // revision: number;
   dataset_deployments: DatasetDeployment[];
   dataset_assets: DatasetAsset[];
+  processing_status: DatasetUploadStatus;
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
@@ -162,4 +163,5 @@ export interface DatasetUploadStatus {
   conversion_loom_status: CONVERSION_STATUS;
   conversion_anndata_status: CONVERSION_STATUS;
   conversion_cxg_status: CONVERSION_STATUS;
+  conversion_rds_status: CONVERSION_STATUS;
 }
