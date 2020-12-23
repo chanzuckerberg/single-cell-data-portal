@@ -22,6 +22,7 @@ async function fetchDatasetStatus(
 export function useDatasetStatus(dataset_uuid: string) {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_uuid],
-    fetchDatasetStatus
+    fetchDatasetStatus,
+    { refetchInterval: 10 * 1000 }
   );
 }
