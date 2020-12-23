@@ -10,10 +10,10 @@ const CLI_README_LINK =
   "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
 interface Props {
-  onSelectUploadLink: DropboxChooserProps["onSelectUploadLink"];
+  onUploadFile: DropboxChooserProps["onUploadFile"];
 }
 
-const EmptyDatasets: FC<Props> = ({ onSelectUploadLink }) => {
+const EmptyDatasets: FC<Props> = ({ onUploadFile }) => {
   return (
     <CenterAlignedDiv>
       <H4>No datasets uploaded</H4>
@@ -30,7 +30,7 @@ const EmptyDatasets: FC<Props> = ({ onSelectUploadLink }) => {
           </li>
         </UL>
       </div>
-      <DropboxChooser onSelectUploadLink={onSelectUploadLink}>
+      <DropboxChooser onUploadFile={onUploadFile}>
         <Button
           intent={Intent.PRIMARY}
           outlined
