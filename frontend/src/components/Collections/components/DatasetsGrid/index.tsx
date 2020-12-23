@@ -45,6 +45,7 @@ const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
             file={uploadedFiles.get(dataset.id)}
           />
         ))}
+        {/* There is change we'll have to render datasets which yet to have been populated in datasets, but are in uploadedFiles */}
       </tbody>
     </StyledCollectionsGrid>
   );
