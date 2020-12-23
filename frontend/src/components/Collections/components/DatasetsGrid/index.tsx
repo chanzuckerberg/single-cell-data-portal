@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Dataset } from "src/common/entities";
 import {
   CollectionHeaderCell,
@@ -6,13 +6,24 @@ import {
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
 } from "src/components/Collections/components/CollectionsGrid/style";
+import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetRow from "./components/DatasetRow";
 
 interface Props {
   datasets: Dataset[];
+  uploadedFiles: Map<Dataset["id"], UploadingFile>;
 }
 
-const DatasetsGrid: FC<Props> = ({ datasets }) => {
+const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
+  const [selected, setSelected] = useState(new Set());
+
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelected(newSelected);
+  };
+
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -27,7 +38,12 @@ const DatasetsGrid: FC<Props> = ({ datasets }) => {
       </thead>
       <tbody>
         {datasets?.map((dataset) => (
-          <DatasetRow key={dataset.id} dataset={dataset} />
+          <DatasetRow
+            key={dataset.id}
+            dataset={dataset}
+            checkHandler={handleSelect}
+            file={uploadedFiles.get(dataset.id)}
+          />
         ))}
       </tbody>
     </StyledCollectionsGrid>
