@@ -1,8 +1,11 @@
-import { Classes, H3 } from "@blueprintjs/core";
+import { Button, Classes, H3, Intent } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
+import { useQueryCache } from "react-query";
 import {
   COLLECTION_LINK_TYPE_OPTIONS,
+  Dataset,
   Link,
   VISIBILITY_TYPE,
 } from "src/common/entities";
@@ -12,6 +15,7 @@ import {
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import DatasetsGrid from "src/components/Collections/components/DatasetsGrid";
+import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
 import EmptyDatasets from "./components/EmptyDatasets";
@@ -20,6 +24,7 @@ import {
   DatasetContainer,
   Description,
   LinkContainer,
+  StyledDiv,
 } from "./style";
 
 interface RouteProps {
@@ -55,21 +60,43 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadLink, setUploadLink] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState(
+    new Map<Dataset["id"], UploadingFile>()
+  );
+
+  const queryCache = useQueryCache();
 
   const { data: collection, isError } = useCollection(id, visibility);
 
   const [mutate] = useCollectionUploadLinks(id, visibility);
 
-  useEffect(() => {
-    if (!uploadLink) return;
+  const addNewFile = (newFile: UploadingFile) => {
+    if (!newFile || !newFile.link || newFile.id) return;
 
-    const payload = JSON.stringify({ url: uploadLink });
-
-    mutate({ collectionId: id, payload });
-  }, [uploadLink, mutate, id]);
+    const payload = JSON.stringify({ url: newFile.link });
+    mutate(
+      { collectionId: id, payload },
+      {
+        onSuccess: (data) => {
+          newFile.id = data;
+          if (!newFile.id) return;
+          console.log(newFile);
+          setUploadedFiles(
+            new Map(
+              Array.from(uploadedFiles.entries()).concat([
+                [newFile.id, newFile],
+              ])
+            )
+          );
+          queryCache.invalidateQueries(useCollection);
+        },
+      }
+    );
+  };
 
   if (!collection || isError) return null;
+
+  console.log(uploadedFiles);
 
   return (
     <ViewGrid>
@@ -80,15 +107,28 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <DatasetContainer>
-        {
-          // eslint-disable-next-line no-constant-condition
-          collection?.datasets?.length > 0 ? (
-            <DatasetsGrid datasets={collection.datasets} />
-          ) : (
-            <EmptyDatasets onSelectUploadLink={setUploadLink} />
-          )
-        }
+        {collection?.datasets?.length > 0 ? (
+          <DatasetsGrid
+            datasets={collection.datasets}
+            uploadedFiles={uploadedFiles}
+          />
+        ) : (
+          <EmptyDatasets onUploadFile={addNewFile} />
+        )}
       </DatasetContainer>
+      {collection?.datasets?.length > 0 && (
+        <StyledDiv>
+          <DropboxChooser onUploadFile={addNewFile}>
+            <Button intent={Intent.PRIMARY} outlined>
+              Add
+            </Button>
+          </DropboxChooser>
+          <Button intent={Intent.PRIMARY} outlined>
+            Download
+          </Button>
+          <Button icon={IconNames.TRASH} minimal></Button>
+        </StyledDiv>
+      )}
     </ViewGrid>
   );
 };
