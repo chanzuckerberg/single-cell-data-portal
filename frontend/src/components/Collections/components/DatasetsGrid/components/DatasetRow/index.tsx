@@ -3,15 +3,17 @@ import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { Dataset, DatasetUploadStatus } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
-import { LeftAlignedDetailsCell } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/style";
+import {
+  DetailsCell,
+  LeftAlignedDetailsCell,
+} from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/style";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/utils";
 import {
   RightAlignedDetailsCell,
   StyledRow,
 } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/style";
-import { StyledCell } from "src/components/Collections/components/CollectionsGrid/components/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
-import { UploadStatusContainer } from "./style";
+import { TitleContainer, UploadStatusContainer } from "./style";
 
 interface Props {
   dataset: Dataset;
@@ -53,13 +55,12 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const isUploading = datasetStatus.upload_progress < 1;
   return (
     <StyledRow>
-      <StyledCell>
-        <Checkbox
-          onChange={() => checkHandler(dataset.id)}
-          style={{ marginBottom: "none" }}
-        />
-        {name}
-      </StyledCell>
+      <DetailsCell>
+        <TitleContainer>
+          <Checkbox onChange={() => checkHandler(dataset.id)} />
+          <div>{name}</div>
+        </TitleContainer>
+      </DetailsCell>
       {conditionalPopover(tissue)}
       {conditionalPopover(assay)}
       {conditionalPopover(disease)}
