@@ -15,6 +15,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.utils.db_utils import DbUtils
 from backend.scripts.create_db import create_db
+from tests.unit.backend.fixtures import config
 
 
 class TestDatabaseManager:
@@ -31,7 +32,7 @@ class TestDatabaseManager:
 
 
 class TestDatabase:
-    fake_s3_file = "s3://bogus-bucket/test_s3_uri.h5ad"
+    fake_s3_file = f"s3://{config.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
     real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
 
     def __init__(self, real_data=False):

@@ -5,16 +5,17 @@ from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.fixtures import config
 
 
 class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
-    CORPORA_TEST_CONFIG = {"bucket_name": "bogus-bucket"}
+    CORPORA_TEST_CONFIG = config.CORPORA_TEST_CONFIG
 
     def setUp(self):
         super().setUp()
         # Setup configuration
         self.corpora_config = CorporaConfig()
-        self.corpora_config.set(self.__class__.CORPORA_TEST_CONFIG)
+        self.corpora_config.set(config.CORPORA_TEST_CONFIG)
 
         # Mock S3 service if we don't have a mock api already running
         if os.getenv("BOTO_ENDPOINT_URL"):
