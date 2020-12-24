@@ -1,4 +1,3 @@
-import unittest
 from datetime import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,10 +7,12 @@ from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.utils.db_utils import DbUtils
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestCollection(unittest.TestCase):
+class TestCollection(DataPortalTestCase):
     def setUp(self):
+        super().setUp()
         self.uuid = "test_collection_id"
         self.visibility = CollectionVisibility.PUBLIC.name
         self.db = DbUtils()

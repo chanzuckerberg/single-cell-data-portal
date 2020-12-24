@@ -14,9 +14,16 @@ logger = logging.getLogger(__name__)
 
 class DatasetAsset(Entity):
     table = DbDatasetArtifact
-    s3 = boto3.client(
-        "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
-    )
+
+    _s3 = None
+
+    @classmethod
+    def s3_client(cls):
+        if not cls._s3:
+            cls._s3 = boto3.client(
+                "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
+            )
+        return cls._s3
 
     def __init__(self, db_object: DbDatasetArtifact):
         super().__init__(db_object)
@@ -32,7 +39,7 @@ class DatasetAsset(Entity):
         :return: Presigned URL to download the requested file
         """
         try:
-            response = self.s3.generate_presigned_url(
+            response = self.s3_client().generate_presigned_url(
                 "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
@@ -48,7 +55,7 @@ class DatasetAsset(Entity):
         """
 
         try:
-            response = self.s3.head_object(Bucket=self.bucket_name, Key=self.key_name)
+            response = self.s3_client().head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None

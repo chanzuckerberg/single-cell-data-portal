@@ -1,9 +1,8 @@
-import unittest
-
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestAPI(BaseAPITest, unittest.TestCase):
+class TestAPI(BaseAPITest, DataPortalTestCase):
     def test_smoke(self):
         """ If this fails then the server does not work """
         response = self.app.get("/")
