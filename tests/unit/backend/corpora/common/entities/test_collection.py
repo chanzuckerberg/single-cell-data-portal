@@ -12,7 +12,6 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 class TestCollection(DataPortalTestCase):
     def setUp(self):
-        super().setUp()
         self.uuid = "test_collection_id"
         self.visibility = CollectionVisibility.PUBLIC.name
         self.db = DbUtils()

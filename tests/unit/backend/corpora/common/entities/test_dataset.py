@@ -23,7 +23,6 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 class TestDataset(DataPortalTestCase):
     def setUp(self):
-        super().setUp()
         self.uuid = "test_dataset_id"
 
     def test__get__ok(self):

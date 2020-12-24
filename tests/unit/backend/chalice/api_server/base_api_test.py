@@ -4,19 +4,25 @@ import sys
 from tests.unit.backend.chalice import ChaliceTestHarness
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class BaseAPITest:
+class BaseAPITest(DataPortalTestCase):
     """
     Provide access to the a Chalice app hosting the Corpora API. All test for the Corpora API should inherit this class.
     """
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
             cls.corpora_api_dir = os.path.join(os.environ["CORPORA_HOME"], "backend", "chalice", "api_server")
             cls.app = ChaliceTestHarness(cls.corpora_api_dir)
             cls.maxDiff = None  # Easier to compare json responses.
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
 
     @staticmethod
     def remove_timestamps(body: dict) -> dict:
@@ -45,7 +51,7 @@ class BaseAPITest:
 class BaseAuthAPITest(BaseAPITest):
     @classmethod
     def setUpClass(cls):
-        BaseAPITest.setUpClass()
+        super().setUpClass()
         cls.mock_oauth_server = MockOauthServer()
         cls.mock_oauth_server.start()
         assert cls.mock_oauth_server.server_okay
@@ -62,5 +68,6 @@ class BaseAuthAPITest(BaseAPITest):
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.mock_oauth_server.terminate()
         sys.path = cls.old_path

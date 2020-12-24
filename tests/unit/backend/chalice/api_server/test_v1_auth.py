@@ -3,7 +3,6 @@ import os
 import unittest
 import urllib.parse
 import time
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 
 from tests.unit.backend.chalice.api_server.mock_auth import TOKEN_EXPIRES
@@ -13,7 +12,7 @@ from tests.unit.backend.chalice.api_server.mock_auth import TOKEN_EXPIRES
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
 )
-class TestAuth(BaseAuthAPITest, DataPortalTestCase):
+class TestAuth(BaseAuthAPITest):
     def check_user_info(self, userinfo):
         self.assertEqual(userinfo["is_authenticated"], True)
         self.assertEqual(userinfo["id"], "test_user_id")

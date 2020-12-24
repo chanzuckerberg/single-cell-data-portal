@@ -8,10 +8,9 @@ from backend.corpora.common.corpora_orm import CollectionVisibility
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestCollection(BaseAuthAPITest, GenerateDataMixin, DataPortalTestCase):
+class TestCollection(BaseAuthAPITest, GenerateDataMixin):
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
