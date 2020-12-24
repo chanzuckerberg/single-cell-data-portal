@@ -12,7 +12,7 @@ _stepfunctions_client = None
 def get_stepfunctions_client():
     global _stepfunctions_client
     if not _stepfunctions_client:
-        _stepfunctions_client = boto3.client("cloudfront", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        _stepfunctions_client = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
     return _stepfunctions_client
 
 
