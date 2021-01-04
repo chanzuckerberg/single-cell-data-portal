@@ -23,7 +23,7 @@ Both the data portal frontend and backend services will automatically reload whe
 To update the dev env to reflect changes to [frontend/package.json](frontend/package.json) or [backend/chalice/api_server/requirements.txt](backend/chalice/api_server/requirements.txt), run `make local-sync`
 
 ### Update Dev Data
-The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setup_dev_data.sh](scripts/setup_dev_data.sh) script, as well as DB data from [tests/unit/backend/corpora/fixtures/database/__init__.py](tests/unit/backend/corpora/fixtures/database/__init__.py). To add more data, modify these scripts and run `make local-init` to reload the dev environment's data stores.
+The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setup_dev_data.sh](scripts/setup_dev_data.sh) script, as well as DB data from [tests/unit/backend/fixtures/test_db.py](tests/unit/backend/fixtures/test_db.py). To add more data, modify these scripts and run `make local-init` to reload the dev environment's data stores.
 
 ### Make targets for managing dev:
 

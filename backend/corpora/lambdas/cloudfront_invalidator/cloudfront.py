@@ -3,11 +3,19 @@ from typing import List
 
 import boto3
 
-cloudfront_client = boto3.client("cloudfront")
+
+_cloudfront_client = None
+
+
+def get_cloudfront_client():
+    global _cloudfront_client
+    if not _cloudfront_client:
+        _cloudfront_client = boto3.client("cloudfront")
+    return _cloudfront_client
 
 
 def get_cloudfront_distribution(bucket_name: str) -> List[str]:
-    cf_distributions = cloudfront_client.list_distributions()["DistributionList"]["Items"]
+    cf_distributions = get_cloudfront_client().list_distributions()["DistributionList"]["Items"]
     distributions = []
     for distr in cf_distributions:
         for origin in distr["Origins"]["Items"]:
@@ -33,7 +41,7 @@ def invalidate_distributions(distributions: List[str]) -> List[dict]:
         # Produce a unique CallReference
 
         responses.append(
-            cloudfront_client.create_invalidation(
+            get_cloudfront_client().create_invalidation(
                 DistributionId=distr,
                 InvalidationBatch={"Paths": {"Quantity": 1, "Items": ["/*"]}, "CallerReference": timestamp},
             )

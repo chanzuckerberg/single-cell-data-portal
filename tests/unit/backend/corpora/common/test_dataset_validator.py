@@ -9,7 +9,7 @@ from scipy.sparse.csr import csr_matrix
 
 from backend.corpora.common.dataset_validator import DatasetValidator
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from .. import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestDatasetValidator(CorporaTestCaseUsingMockAWS):

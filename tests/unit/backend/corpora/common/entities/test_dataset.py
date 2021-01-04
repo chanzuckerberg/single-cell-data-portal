@@ -1,5 +1,4 @@
 import typing
-import unittest
 
 from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
@@ -19,10 +18,12 @@ from backend.corpora.common.utils.db_utils import DbUtils
 from backend.corpora.dataset_processing.download import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestDataset(unittest.TestCase):
+class TestDataset(DataPortalTestCase):
     def setUp(self):
+        super().setUp()
         self.uuid = "test_dataset_id"
 
     def test__get__ok(self):

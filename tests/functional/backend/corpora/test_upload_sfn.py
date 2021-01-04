@@ -6,8 +6,6 @@ import boto3
 
 from backend.corpora.common.upload_sfn import start_upload_sfn
 
-client_sfn = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-
 if os.getenv("DEPLOYMENT_STAGE") == "test":
     step_definition = json.loads(
         """{
@@ -22,6 +20,7 @@ if os.getenv("DEPLOYMENT_STAGE") == "test":
     }
     """
     )
+    client_sfn = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
     client_ssm = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
     secret_id = "corpora/backend/test/config"
     old_secret = client_ssm.get_secret_value(SecretId=secret_id)["SecretString"]
@@ -47,6 +46,7 @@ class Test_Uploader_SFN(unittest.TestCase):
         Invokes the step functions and verified the correct parameters have been passed.
         :return:
         """
+        client_sfn = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         input_params = {"collection_uuid": "test_collection_id", "url": "test_url", "dataset_uuid": "test_dataset_uuid"}
         response = start_upload_sfn(**input_params)
         response = client_sfn.describe_execution(executionArn=response["executionArn"])
