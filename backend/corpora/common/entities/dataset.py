@@ -63,9 +63,9 @@ class Dataset(Entity):
             **kwargs,
         )
 
-        cls.db.session.add(new_db_object)
-        cls.db.session.flush()
-        cls.db.commit()
+        cls.session.add(new_db_object)
+        cls.session.flush()
+        cls.session.commit()
 
         return cls(new_db_object)
 
@@ -85,37 +85,37 @@ class Dataset(Entity):
         if artifacts or deployment_directories or processing_status:
             if artifacts:
                 for af in self.artifacts:
-                    self.db.delete(af)
+                    self.session.delete(af)
                 new_db_objects = self._create_sub_objects(
                     artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
                 )
-                self.db.session.add_all(new_db_objects)
+                self.session.add_all(new_db_objects)
                 kwargs["artifacts"] = new_db_objects
             if deployment_directories:
                 for dd in self.deployment_directories:
-                    self.db.delete(dd)
+                    self.session.delete(dd)
                 new_db_objects = self._create_sub_objects(
                     deployment_directories,
                     DbDeploymentDirectory,
                     add_columns=dict(dataset_id=self.id),
                 )
-                self.db.session.add_all(new_db_objects)
+                self.session.add_all(new_db_objects)
                 kwargs["deployment_directories"] = new_db_objects
             if processing_status:
                 if self.processing_status:
-                    self.db.delete(self.processing_status)
+                    self.session.delete(self.processing_status)
                 new_db_object = self._create_sub_object(
                     processing_status,
                     DbDatasetProcessingStatus,
                     add_columns=dict(dataset_id=self.id),
                 )
-                self.db.session.add(new_db_object)
+                self.session.add(new_db_object)
                 kwargs["processing_status"] = new_db_object
 
-            self.db.session.flush()
+            self.session.flush()
 
         super().update(**kwargs)
-        self.db.commit()
+        self.session.commit()
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -125,12 +125,6 @@ class Dataset(Entity):
         """
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
-
-    def delete(self):
-        """
-        Delete the Dataset and all child objects.
-        """
-        super().delete()
 
     @staticmethod
     def new_processing_status():

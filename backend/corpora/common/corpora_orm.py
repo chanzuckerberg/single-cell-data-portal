@@ -1,6 +1,4 @@
 import enum
-import os
-import sys
 from datetime import datetime
 
 from sqlalchemy import (
@@ -19,11 +17,15 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, sessionmaker
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
-
 from .corpora_config import CorporaDbConfig
 from .utils.exceptions import CorporaException
+from .utils.singleton import Singleton
+
+
+class DBSessionMaker(metaclass=Singleton):
+    def __init__(self):
+        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
+        self.session_maker = sessionmaker(bind=self.engine)
 
 
 class TransformingBase(object):
@@ -63,15 +65,6 @@ class TransformingBase(object):
 
 
 Base = declarative_base(cls=TransformingBase)
-
-
-class DBSessionMaker:
-    def __init__(self):
-        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
-        self.session_maker = sessionmaker(bind=self.engine)
-
-    def session(self, **kwargs):
-        return self.session_maker(**kwargs)
 
 
 class CollectionVisibility(enum.Enum):

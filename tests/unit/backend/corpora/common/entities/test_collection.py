@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.utils.db_utils import DbUtils
+from backend.corpora.common.utils.db_session import DbSession
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -15,11 +15,11 @@ class TestCollection(DataPortalTestCase):
         super().setUp()
         self.uuid = "test_collection_id"
         self.visibility = CollectionVisibility.PUBLIC.name
-        self.db = DbUtils()
+        self.db_session = DbSession()
 
     def tearDown(self):
-        self.db.session.rollback()
-        self.db.close()
+        self.db_session.rollback()
+        self.db_session.close()
 
     def test__get__ok(self):
         key = (self.uuid, self.visibility)
@@ -67,7 +67,7 @@ class TestCollection(DataPortalTestCase):
                 expected_links = collection.links
 
                 # Expire all local object and retrieve them from the DB to make sure the transactions went through.
-                Collection.db.session.expire_all()
+                Collection.session.expire_all()
 
                 actual_collection = Collection.get(collection_key)
                 self.assertEqual(collection_key, (actual_collection.id, actual_collection.visibility))
@@ -144,28 +144,28 @@ class TestCollection(DataPortalTestCase):
 
     def test__cascade_delete_collection__ok(self):
         test_collection = Collection.create(**BogusCollectionParams.get(links=[{}]))
-        db = DbUtils()
+        session = DbSession()
         test_collection_id = test_collection.id
         test_link_id = test_collection.links[0].id
 
         # Check if the link exists.
         expected_id = test_link_id
-        actual_id = db.query([DbCollectionLink], [DbCollectionLink.id == test_link_id])[0].id
+        actual_id = session.query([DbCollectionLink], [DbCollectionLink.id == test_link_id])[0].id
         self.assertEqual(expected_id, actual_id)
 
         # The Collection is deleted
-        db.session.delete(test_collection.db_object)
+        session.delete(test_collection.db_object)
         expected_results = None
         actual_results = Collection.get_collection(test_collection_id)
         self.assertEqual(expected_results, actual_results)
 
         # The link should also be deleted.
         expected_results = []
-        actual_results = db.query([DbCollectionLink], [DbCollectionLink.id == test_link_id])
+        actual_results = session.query([DbCollectionLink], [DbCollectionLink.id == test_link_id])
         self.assertEqual(expected_results, actual_results)
 
     def test__cascade_delete_collection_with_dataset__ok(self):
-        db = DbUtils()
+        session = DbSession()
         test_collection = Collection.create(**BogusCollectionParams.get())
         expected_collection_id = test_collection.id
         test_dataset = Dataset.create(
@@ -174,8 +174,8 @@ class TestCollection(DataPortalTestCase):
         expected_dataset_id = test_dataset.id
 
         # The Collection is deleted
-        db.session.delete(test_collection.db_object)
-        db.session.expire_all()
+        session.delete(test_collection.db_object)
+        session.expire_all()
         expected_results = None
         actual_results = Collection.get_collection(expected_collection_id)
         self.assertEqual(expected_results, actual_results)

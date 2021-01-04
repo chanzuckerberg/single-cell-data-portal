@@ -2,7 +2,7 @@ from flask import make_response, jsonify
 from typing import Optional
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
-from ....common.utils.db_utils import db_session
+from ....common.utils.db_session import db_session
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
 

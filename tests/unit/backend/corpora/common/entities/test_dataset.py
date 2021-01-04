@@ -14,7 +14,7 @@ from backend.corpora.common.corpora_orm import (
     Base,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.db_utils import DbUtils
+from backend.corpora.common.utils.db_session import DbSession
 from backend.corpora.dataset_processing.download import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
@@ -78,7 +78,7 @@ class TestDataset(DataPortalTestCase):
                 expected_deployment_directories = [dep.to_dict() for dep in dataset.deployment_directories]
 
                 # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-                Dataset.db.session.expire_all()
+                Dataset.session.expire_all()
 
                 actual_dataset = Dataset.get(expected_dataset_id)
                 actual_artifacts = [art.to_dict() for art in actual_dataset.artifacts]
@@ -121,7 +121,7 @@ class TestDataset(DataPortalTestCase):
             processing_status=new_processing_status,
             sex=["other"],
         )
-        Dataset.db.session.expire_all()
+        Dataset.session.expire_all()
         actual_dataset = Dataset.get(dataset.id)
         self.assertEqual(actual_dataset.artifacts[0].filename, "a_different_filename")
         self.assertEqual(actual_dataset.sex, ["other"])
@@ -151,7 +151,7 @@ class TestDataset(DataPortalTestCase):
         expected_dataset_id = dataset.id
 
         # Expire all local objects and retrieve them from the DB to make sure the transactions went through.
-        Dataset.db.session.expire_all()
+        Dataset.session.expire_all()
 
         actual_dataset = Dataset.get(expected_dataset_id)
         self.assertAlmostEqual(actual_dataset.processing_status.upload_progress, 9 / 13)
@@ -221,8 +221,8 @@ class TestDataset(DataPortalTestCase):
         Verify if rows have been deleted from the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        db = DbUtils()
-        db.session.expire_all()
+        db = DbSession()
+        session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for collections with a composite primary key
@@ -236,8 +236,8 @@ class TestDataset(DataPortalTestCase):
         Verify if rows exist in the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        db = DbUtils()
-        db.session.expire_all()
+        db = DbSession()
+        session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for collections with a composite primary key

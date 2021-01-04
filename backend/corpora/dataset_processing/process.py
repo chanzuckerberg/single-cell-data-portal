@@ -14,7 +14,7 @@ try:
     from ..common.entities.dataset import Dataset
     from ..common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from ..common.utils import dropbox
-    from ..common.utils.db_utils import db_session
+    from ..common.utils.db_session import db_session
     from .download import download
 
 except ImportError:
@@ -23,7 +23,7 @@ except ImportError:
     from common.entities.dataset import Dataset
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
-    from common.utils.db_utils import db_session
+    from common.utils.db_session import db_session
     from .download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere

@@ -4,7 +4,7 @@ from flask import make_response
 from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
-from .....common.utils.db_utils import db_session
+from .....common.utils.db_session import db_session
 from .....common.entities import Collection, Dataset
 from .....common.utils import dropbox
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, TooLargeHTTPException

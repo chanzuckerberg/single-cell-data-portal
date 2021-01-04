@@ -7,7 +7,7 @@ import sys
 try:
     from ..common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
     from ..common.entities import Dataset
-    from ..common.utils.db_utils import db_session_manager
+    from ..common.utils.db_session import db_session_manager
     from ..common.utils.math_utils import MB
 # This is necessary for importing within the upload-failures lambda
 except ValueError:
@@ -15,7 +15,7 @@ except ValueError:
     sys.path.insert(0, pkg_root)  # noqa
     from common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
     from common.entities import Dataset
-    from common.utils.db_utils import db_session_manager
+    from common.utils.db_session import db_session_manager
     from common.utils.math_utils import MB
 
 logger = logging.getLogger(__name__)

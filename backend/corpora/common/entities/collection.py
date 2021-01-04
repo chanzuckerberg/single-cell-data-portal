@@ -52,8 +52,8 @@ class Collection(Entity):
             **kwargs,
         )
 
-        cls.db.session.add(new_db_object)
-        cls.db.commit()
+        cls.session.add(new_db_object)
+        cls.session.commit()
         return cls(new_db_object)
 
     @classmethod
@@ -77,7 +77,7 @@ class Collection(Entity):
         :return: a collection if the user is the owner of the collection else None
         """
         filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
-        return cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        return cls.session.query(cls.table).filter(*filters).one_or_none()
 
     @classmethod
     def list_collections_in_time_range(cls, *args, **kwargs):
@@ -119,7 +119,7 @@ class Collection(Entity):
 
         results = [
             to_dict(result)
-            for result in cls.db.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
+            for result in cls.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
         ]
 
         return results
