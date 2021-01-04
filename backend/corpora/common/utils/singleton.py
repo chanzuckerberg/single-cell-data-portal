@@ -6,6 +6,7 @@ class Singleton(type):
     https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Singleton.html
     https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
     """
+
     __instances = {}
 
     def __call__(cls, *args, **kwargs):

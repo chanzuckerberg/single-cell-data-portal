@@ -221,14 +221,14 @@ class TestDataset(DataPortalTestCase):
         Verify if rows have been deleted from the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        db = DbSession()
+        session = DbSession()
         session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for collections with a composite primary key
-                actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
+                actual = session.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
-                actual = db.query([table], [table.id == p_key])
+                actual = session.query([table], [table.id == p_key])
             self.assertFalse(actual, f"Row not deleted {table.__name__}:{p_key}")
 
     def assertRowsExist(self, tests):
@@ -236,12 +236,12 @@ class TestDataset(DataPortalTestCase):
         Verify if rows exist in the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        db = DbSession()
+        session = DbSession()
         session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
                 # handle the special case for collections with a composite primary key
-                actual = db.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
+                actual = session.query([table], [table.id == p_key[0], table.visibility == p_key[1]])
             else:
-                actual = db.query([table], [table.id == p_key])
+                actual = session.query([table], [table.id == p_key])
             self.assertTrue(actual, f"Row does not exist {table.__name__}:{p_key}")
