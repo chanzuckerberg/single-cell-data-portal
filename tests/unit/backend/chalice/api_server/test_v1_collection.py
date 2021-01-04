@@ -1,6 +1,5 @@
 import json
 import os
-import unittest
 from datetime import datetime
 
 import itertools
@@ -11,9 +10,10 @@ from backend.corpora.common.corpora_orm import CollectionVisibility
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
 from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestCollection(BaseAPITest, GenerateDataMixin, unittest.TestCase):
+class TestCollection(BaseAPITest, GenerateDataMixin, DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         BaseAPITest.setUpClass()

@@ -1,4 +1,3 @@
-import unittest
 import uuid
 import os
 
@@ -11,6 +10,7 @@ import boto3
 
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 from backend.corpora.common.utils.secret_config import SecretConfig
 from backend.corpora.common.utils.aws_secret import AwsSecret
@@ -21,7 +21,7 @@ class BogoComponentConfig(SecretConfig):
         super(BogoComponentConfig, self).__init__("bogo_component", **kwargs)
 
 
-class TestSecretConfig(unittest.TestCase):
+class TestSecretConfig(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         # AwsSecret.debug_logging = True
@@ -37,12 +37,10 @@ class TestSecretConfig(unittest.TestCase):
         cls.patcher.stop()
 
     def setUp(self):
+        super().setUp()
         self.deployment_env = "bogo_env_{}".format(uuid.uuid4())
         self.secret_name = f"corpora/bogo_component/{self.deployment_env}/secrets"
         BogoComponentConfig.reset()
-
-    def tearDown(self):
-        pass
 
     def test_from_file(self):
         with EnvironmentSetup({"CONFIG_SOURCE": fixture_file_path("bogo_config.js")}):
