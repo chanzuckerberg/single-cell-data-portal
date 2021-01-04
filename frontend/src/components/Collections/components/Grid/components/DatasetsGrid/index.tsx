@@ -5,9 +5,9 @@ import {
   LeftAlignedHeaderCell,
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
-} from "src/components/Collections/components/CollectionsGrid/style";
+} from "src/components/Collections/components/Grid/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
-import DatasetRow from "./components/DatasetRow";
+import DatasetRow from "../Row/DatasetRow";
 
 interface Props {
   datasets: Dataset[];

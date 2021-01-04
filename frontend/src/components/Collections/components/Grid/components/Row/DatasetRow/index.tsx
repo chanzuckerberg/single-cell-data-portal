@@ -7,15 +7,13 @@ import {
   UPLOAD_STATUS,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
+import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
   DetailsCell,
   LeftAlignedDetailsCell,
-} from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/style";
-import { aggregateDatasetsMetadata } from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/common/utils";
-import {
   RightAlignedDetailsCell,
   StyledRow,
-} from "src/components/Collections/components/CollectionsGrid/components/CollectionRow/style";
+} from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { TitleContainer, UploadStatusContainer } from "./style";
 
@@ -28,7 +26,7 @@ interface Props {
 const AsyncPopover = loadable(
   () =>
     /*webpackChunkName: 'CollectionRow/components/Popover' */ import(
-      "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/Popover"
+      "src/components/Collections/components/Grid/components/Popover"
     )
 );
 

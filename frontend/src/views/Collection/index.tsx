@@ -15,7 +15,7 @@ import {
   USE_COLLECTION,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
-import DatasetsGrid from "src/components/Collections/components/DatasetsGrid";
+import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
