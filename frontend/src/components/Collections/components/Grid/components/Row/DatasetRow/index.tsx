@@ -32,8 +32,8 @@ const AsyncPopover = loadable(
 
 const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
 
-const conditionalPopover = (values: string[], datasetStatus: UPLOAD_STATUS) => {
-  if (datasetStatus !== UPLOAD_STATUS.UPLOADED) return <td>{skeletonDiv}</td>;
+const conditionalPopover = (values: string[], loading: boolean) => {
+  if (loading) return <td>{skeletonDiv}</td>;
   if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
@@ -57,6 +57,8 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   if (!datasetStatus) return null;
 
   const isUploading = datasetStatus.upload_progress < 1;
+  const isPopulated = dataset.name !== "";
+  const loading = !isPopulated || isUploading;
   return (
     <StyledRow>
       <DetailsCell>
@@ -65,17 +67,17 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           <div>{name}</div>
         </TitleContainer>
       </DetailsCell>
-      {conditionalPopover(tissue, datasetStatus.upload_status)}
-      {conditionalPopover(assay, datasetStatus.upload_status)}
-      {conditionalPopover(disease, datasetStatus.upload_status)}
-      {conditionalPopover(organism, datasetStatus.upload_status)}
+      {conditionalPopover(tissue, loading)}
+      {conditionalPopover(assay, loading)}
+      {conditionalPopover(disease, loading)}
+      {conditionalPopover(organism, loading)}
       <RightAlignedDetailsCell>
         {datasetStatus.upload_status !== UPLOAD_STATUS.UPLOADED
           ? skeletonDiv
           : cell_count}
       </RightAlignedDetailsCell>
       <RightAlignedDetailsCell>
-        {isUploading ? (
+        {isUploading || !isPopulated ? (
           renderUploadStatus(datasetStatus)
         ) : (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
@@ -86,6 +88,13 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
 };
 
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
+  if (datasetStatus.upload_progress === 1.0)
+    return (
+      <UploadStatusContainer>
+        <Spinner intent={Intent.PRIMARY} size={16} />
+      </UploadStatusContainer>
+    );
+
   return (
     <UploadStatusContainer>
       <Spinner
