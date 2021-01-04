@@ -19,9 +19,9 @@ from backend.corpora.dataset_processing.download import download
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
 DEPLOYMENT_STAGE_TO_URL = {
-    "dev": "https://cellxgene.dev.single-cell.czi.technology",
-    "staging": "https://cellxgene.staging.single-cell.czi.technology",
-    "prod": "https://cellxgene.cziscience.com",
+    "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
+    "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
+    "prod": "https://cellxgene.cziscience.com/e",
     "rdev": os.environ.get("FRONTEND_URL"),
 }
 
@@ -155,7 +155,7 @@ def extract_metadata(filename):
     numerator, denominator = 0, 0
     for bounds in zip(range(0, raw_layer.shape[0], stride), range(stride, raw_layer.shape[0] + stride, stride)):
         chunk = raw_layer[bounds[0] : bounds[1], :]
-        numerator += numpy.count_nonzero(chunk)
+        numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
     def _get_term_pairs(base_term):
@@ -166,6 +166,7 @@ def extract_metadata(filename):
         ]
 
     return {
+        "name": adata.uns["title"],
         "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
         "tissue": _get_term_pairs("tissue"),
         "assay": _get_term_pairs("assay"),
@@ -248,7 +249,7 @@ def main():
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/{bucket_prefix}/",
+            f"s3://{os.environ['CELLXGENE_BUCKET']}/{bucket_prefix}.cxg/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
@@ -259,7 +260,7 @@ def main():
         check=True,
     )
     deployment_directories = [
-        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"], "")}
+        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"] + ".cxg", "")}
     ]
 
     update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
