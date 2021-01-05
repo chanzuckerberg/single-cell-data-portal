@@ -126,3 +126,8 @@ local-smoke-test: ## Run frontend/e2e tests in the dev environment
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
 	psql "postgresql://corpora:test_pw@localhost:5432"
+
+.PHONY: local-uploadjob
+local-uploadjob: ## Run the upload task with a dataset_id and dropbox_url
+	docker-compose exec processing sh -c "rm -rf /local.*"
+	docker-compose exec -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing python3 /code/dataset_processing/process.py
