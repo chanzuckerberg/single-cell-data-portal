@@ -46,7 +46,7 @@ const AsyncPopover = loadable(
 
 const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
 
-const conditionalPopover = (values: string[], loading: boolean) => {
+const conditionalPopover = (values: string[], loading?: boolean) => {
   if (loading) return <td>{skeletonDiv}</td>;
   if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
@@ -68,30 +68,35 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   let { name } = dataset;
   let datasetStatus = {} as DatasetUploadStatus;
   const queryResult = useDatasetStatus(dataset.id);
+  let statusFailed, isLoading;
+
+  // If there is no name on the dataset the conversion and upload process hasn't completed
+  // Assign a temp name and begin polling the status endpoint
+  // This should be replaced with a signifier from the backend instead of relying on name population
   if (!name) {
     name = file?.name ?? dataset.id;
     const { isError } = queryResult;
     if (isError) console.error(datasetStatus);
     if (!queryResult.data) return null;
     datasetStatus = queryResult.data;
-  }
 
-  const isUploading =
-    datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
-    datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING;
-  const statusFailed =
-    datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
-    datasetStatus.validation_status === VALIDATION_STATUS.INVALID;
-  const isPopulated = dataset.name !== "";
-  const isLoading = !isPopulated || isUploading;
+    const isUploading =
+      datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
+      datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING;
+    const isPopulated = dataset.name !== "";
+    statusFailed =
+      datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
+      datasetStatus.validation_status === VALIDATION_STATUS.INVALID;
+    isLoading = !isPopulated || isUploading;
 
-  if (statusFailed) {
-    queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
-    if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
-      DatasetUploadToast.show({
-        intent: Intent.DANGER,
-        message: "There was a problem uploading your file. Please try again.",
-      });
+    if (statusFailed) {
+      queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
+      if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+        DatasetUploadToast.show({
+          intent: Intent.DANGER,
+          message: "There was a problem uploading your file. Please try again.",
+        });
+    }
   }
   return (
     <StyledRow>
