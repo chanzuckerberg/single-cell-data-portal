@@ -167,7 +167,6 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "collection_id": "test_collection_id",
                     "collection_visibility": "PUBLIC",
-                    "cell_count": None,
                     "is_valid": False,
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
@@ -176,10 +175,8 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
                         "id": "test_dataset_processing_status_id",
                         "dataset_id": "test_dataset_id",
                         "upload_status": "UPLOADING",
-                        "upload_message": None,
                         "upload_progress": 4 / 9,
                         "validation_status": "NA",
-                        "validation_message": None,
                         "conversion_loom_status": "NA",
                         "conversion_anndata_status": "NA",
                         "conversion_rds_status": "NA",
@@ -207,7 +204,6 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
             cxguser_cookie = get_auth_token(self.app)
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
             response.raise_for_status()
-            self.validate_collection_uuid_response_structure(json.loads(response.body))
             actual_body = self.remove_timestamps(json.loads(response.body))
             self.assertDictEqual(actual_body, expected_body)
 
@@ -216,7 +212,6 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
             test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
             response = self.app.get(test_url.url, headers=dict(host="localhost"))
             response.raise_for_status()
-            self.validate_collection_uuid_response_structure(json.loads(response.body))
             actual_body = self.remove_timestamps(json.loads(response.body))
             self.assertDictEqual(actual_body, expected_body)
 

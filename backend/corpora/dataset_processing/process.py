@@ -24,7 +24,7 @@ except ImportError:
     from common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
     from common.utils import dropbox
     from common.utils.db_utils import db_session
-    from .download import download
+    from dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -32,6 +32,7 @@ DEPLOYMENT_STAGE_TO_URL = {
     "dev": "https://cellxgene.dev.single-cell.czi.technology",
     "staging": "https://cellxgene.staging.single-cell.czi.technology",
     "prod": "https://cellxgene.cziscience.com",
+    "rdev": os.environ.get("FRONTEND_URL"),
 }
 
 
@@ -53,10 +54,12 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
     )
     artifacts = []
 
+    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
+
     s3.upload_file(
         h5ad_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(h5ad_filename)),
+        join(bucket_prefix, basename(h5ad_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
@@ -66,14 +69,14 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.H5AD,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(h5ad_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(h5ad_filename)),
         }
     )
 
     s3.upload_file(
         seurat_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(seurat_filename)),
+        join(bucket_prefix, basename(seurat_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     artifacts.append(
@@ -82,14 +85,14 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.RDS,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(seurat_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(seurat_filename)),
         }
     )
 
     s3.upload_file(
         loom_filename,
         os.environ["ARTIFACT_BUCKET"],
-        join(os.environ["DATASET_ID"], basename(loom_filename)),
+        join(bucket_prefix, basename(loom_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
     artifacts.append(
@@ -98,7 +101,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.LOOM,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], os.environ["DATASET_ID"], basename(loom_filename)),
+            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(loom_filename)),
         }
     )
 
@@ -204,7 +207,10 @@ def make_loom(local_filename):
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
-    seurat_proc = subprocess.run(["Rscript", "/dataset_processing/make_seurat.R", local_filename], capture_output=True)
+    seurat_proc = subprocess.run(
+        ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
+        capture_output=True,
+    )
     if seurat_proc.returncode != 0:
         raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
 
@@ -243,18 +249,24 @@ def main():
     cxg_dir = make_cxg(local_filename)
     seurat_filename = make_seurat(local_filename)
     artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
+    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
 
-    subprocess.run(
+    command = ["aws"]
+    if os.getenv("BOTO_ENDPOINT_URL"):
+        command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
+    command.extend(
         [
-            "aws",
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/{os.environ['DATASET_ID']}/",
+            f"s3://{os.environ['CELLXGENE_BUCKET']}/{bucket_prefix}/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
-        ],
+        ]
+    )
+    subprocess.run(
+        command,
         check=True,
     )
     deployment_directories = [

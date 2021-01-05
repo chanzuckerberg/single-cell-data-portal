@@ -40,6 +40,7 @@ The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setu
 | `make local-sync`         | Re-sync the local-environment state after modifying library deps or docker configs    |                                                          |
 | `make local-smoke-test`   | Run e2e-smoke tests in local dev                                                      |                                                          |
 | `make local-unit-test`    | Run backend unit tests in local dev                                                   |                                                          |
+| `make local-uploadjob`    | Run dropbox upload task                                                    | ex: `make local-uploadjob DATASET_ID=xxxxxx DROPBOX_URL="https://www.dropbox.com/asdfasdf?dl=0"`                                                         |
 
 ### Make targets for running tests in dev
 | Command                 | Description                                                                          | Notes                                                                                                |

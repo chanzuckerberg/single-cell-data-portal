@@ -1,8 +1,8 @@
 import enum
 import os
-import sys
 from datetime import datetime
 
+import sys
 from sqlalchemy import (
     Boolean,
     Column,
@@ -34,16 +34,24 @@ class TransformingBase(object):
     def __iter__(self):
         return iter(self.to_dict().items())
 
-    def to_dict(self, backref: "Base" = None) -> dict:
+    def to_dict(self, backref: "Base" = None, remove_none=False) -> dict:
         """
         Converts the columns and relationships of a SQLAlchemy Base object into a python dictionary.
 
         :param backref: used to avoid recursively looping between two tables.
+        :param remove_none: If true, removes keys that are none from the result.
         :return: a dictionary representation of the database object.
         """
 
         # Populate result with columns.
-        result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
+        if remove_none:
+            result = {
+                column.key: getattr(self, attr)
+                for attr, column in self.__mapper__.c.items()
+                if getattr(self, attr) is not None
+            }
+        else:
+            result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
 
         # Populate result with relationships.
         for attr, relation in self.__mapper__.relationships.items():
@@ -51,12 +59,12 @@ class TransformingBase(object):
             if backref == relation.target:
                 continue
             value = getattr(self, attr)
-            if value is None:
+            if value is None and remove_none:
                 result[relation.key] = None
             elif isinstance(value.__class__, DeclarativeMeta):
-                result[relation.key] = value.to_dict(backref=self.__table__)
+                result[relation.key] = value.to_dict(self.__table__, remove_none)
             elif isinstance(value, list):
-                result[relation.key] = [i.to_dict(backref=self.__table__) for i in value]
+                result[relation.key] = [i.to_dict(self.__table__, remove_none) for i in value]
             else:
                 raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
         return result
