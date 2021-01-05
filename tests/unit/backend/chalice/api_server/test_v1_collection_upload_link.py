@@ -4,9 +4,8 @@ import os
 from mock import patch
 from furl import furl
 
-from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus, CollectionVisibility
+from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import GB
-from backend.corpora.dataset_processing.download import processing_status_updater
 from tests.unit.backend.chalice.api_server import BaseAPITest
 from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.chalice.api_server.mock_auth import MockOauthServer, get_auth_token
@@ -152,7 +151,7 @@ class TestCollectionUploadLink(BaseAPITest, DataPortalTestCase, GenerateDataMixi
         self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
 
     def test__cancel_dataset_download__dataset_not_found(self):
-        test_url = f"/dp/v1/datasets/missing_dataset_id"
+        test_url = "/dp/v1/datasets/missing_dataset_id"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 404)
@@ -165,8 +164,8 @@ class TestCollectionUploadLink(BaseAPITest, DataPortalTestCase, GenerateDataMixi
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 405)
         self.assertEqual(
-            json.loads(response.body)['detail'],
-            f"'dataset/{dataset.id}' upload is complete and can not be cancelled.")
+            json.loads(response.body)["detail"], f"'dataset/{dataset.id}' upload is complete and can not be cancelled."
+        )
 
     def test__cancel_dataset_download__user_not_collection_owner(self):
         collection = self.generate_collection(owner="someone_else")

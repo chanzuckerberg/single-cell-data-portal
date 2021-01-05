@@ -53,6 +53,7 @@ def cancel_upload():
     # exit
     sys.exit(1)
 
+
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
     """
     Download the file pointed at by the URL to the local path.
