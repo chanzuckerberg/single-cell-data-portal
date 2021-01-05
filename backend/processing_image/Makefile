@@ -9,13 +9,7 @@ bump_version:
 	expr `cat VERSION` + 1 > VERSION
 
 build:
-	mkdir -p code/chalice/api_server
-	cp -R ../corpora/dataset_processing code/
-	cp -R ../corpora/common code/
-	cp -R ../../requirements.txt code/
-	cp -R ../chalice/api_server/requirements.txt code/chalice/api_server/requirements.txt
-	docker build -t $(IMAGE) .
-	rm -rf code/
+	docker build -t $(IMAGE) -f ../../Dockerfile.processing_image ../..
 
 login:
 	$(eval REPOSITORY_URI = $(shell aws ecr describe-repositories --repository-name $(IMAGE) | jq -r '.repositories[].repositoryUri'))
