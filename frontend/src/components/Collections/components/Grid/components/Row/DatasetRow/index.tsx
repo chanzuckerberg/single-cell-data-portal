@@ -1,11 +1,7 @@
 import { Button, Checkbox, Classes, Intent, Spinner } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
-import {
-  Dataset,
-  DatasetUploadStatus,
-  UPLOAD_STATUS,
-} from "src/common/entities";
+import { Dataset, DatasetUploadStatus } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
@@ -58,7 +54,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
 
   const isUploading = datasetStatus.upload_progress < 1;
   const isPopulated = dataset.name !== "";
-  const loading = !isPopulated || isUploading;
+  const isLoading = !isPopulated || isUploading;
   return (
     <StyledRow>
       <DetailsCell>
@@ -67,17 +63,15 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           <div>{name}</div>
         </TitleContainer>
       </DetailsCell>
-      {conditionalPopover(tissue, loading)}
-      {conditionalPopover(assay, loading)}
-      {conditionalPopover(disease, loading)}
-      {conditionalPopover(organism, loading)}
+      {conditionalPopover(tissue, isLoading)}
+      {conditionalPopover(assay, isLoading)}
+      {conditionalPopover(disease, isLoading)}
+      {conditionalPopover(organism, isLoading)}
       <RightAlignedDetailsCell>
-        {datasetStatus.upload_status !== UPLOAD_STATUS.UPLOADED
-          ? skeletonDiv
-          : cell_count}
+        {isLoading ? skeletonDiv : cell_count}
       </RightAlignedDetailsCell>
       <RightAlignedDetailsCell>
-        {isUploading || !isPopulated ? (
+        {isLoading ? (
           renderUploadStatus(datasetStatus)
         ) : (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
