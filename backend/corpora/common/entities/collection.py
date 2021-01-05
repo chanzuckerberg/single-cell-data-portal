@@ -150,7 +150,7 @@ class Collection(Entity):
         Reshape the collection to match the expected api output.
         :return: A dictionary that can be converted into JSON matching the expected api response.
         """
-        result = self.to_dict()
+        result = self.to_dict(remove_none=True)
         # Reshape the data to match.
         result.pop("user", None)
         result.pop("owner", None)
