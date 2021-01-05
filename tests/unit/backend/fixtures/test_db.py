@@ -13,7 +13,7 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ConversionStatus,
 )
-from backend.corpora.common.utils.db_session import DbSession
+from backend.corpora.common.utils.database_session import DatabaseSession
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
 
@@ -42,7 +42,7 @@ class TestDatabase:
         create_db()
 
     def populate_test_data(self):
-        self.db_session = DbSession()
+        self.db_session = DatabaseSession()
         self._populate_test_data()
         del self.db_session
 

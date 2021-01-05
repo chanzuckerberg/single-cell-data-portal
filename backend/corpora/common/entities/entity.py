@@ -5,7 +5,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
-from ..utils.db_session import DbSession
+from ..utils.database_session import DatabaseSession
 
 
 class Entity:
@@ -23,7 +23,7 @@ class Entity:
 
     table: Base = None  # The DbTable represented by this entity.
     list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
-    session = DbSession()
+    session = DatabaseSession()
 
     def __init__(self, db_object: Base):
         self.db_object = db_object

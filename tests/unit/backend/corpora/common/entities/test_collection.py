@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.utils.db_session import DbSession
+from backend.corpora.common.utils.database_session import DatabaseSession
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -15,7 +15,7 @@ class TestCollection(DataPortalTestCase):
         super().setUp()
         self.uuid = "test_collection_id"
         self.visibility = CollectionVisibility.PUBLIC.name
-        self.db_session = DbSession()
+        self.db_session = DatabaseSession()
 
     def tearDown(self):
         self.db_session.rollback()
@@ -144,7 +144,7 @@ class TestCollection(DataPortalTestCase):
 
     def test__cascade_delete_collection__ok(self):
         test_collection = Collection.create(**BogusCollectionParams.get(links=[{}]))
-        session = DbSession()
+        session = DatabaseSession()
         test_collection_id = test_collection.id
         test_link_id = test_collection.links[0].id
 
@@ -165,7 +165,7 @@ class TestCollection(DataPortalTestCase):
         self.assertEqual(expected_results, actual_results)
 
     def test__cascade_delete_collection_with_dataset__ok(self):
-        session = DbSession()
+        session = DatabaseSession()
         test_collection = Collection.create(**BogusCollectionParams.get())
         expected_collection_id = test_collection.id
         test_dataset = Dataset.create(

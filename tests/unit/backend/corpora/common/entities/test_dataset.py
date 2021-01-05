@@ -14,7 +14,7 @@ from backend.corpora.common.corpora_orm import (
     Base,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.db_session import DbSession
+from backend.corpora.common.utils.database_session import DatabaseSession
 from backend.corpora.dataset_processing.download import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
@@ -221,7 +221,7 @@ class TestDataset(DataPortalTestCase):
         Verify if rows have been deleted from the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        session = DbSession()
+        session = DatabaseSession()
         session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:
@@ -236,7 +236,7 @@ class TestDataset(DataPortalTestCase):
         Verify if rows exist in the database.
         :param tests: a list of tuples with (primary_key, table)
         """
-        session = DbSession()
+        session = DatabaseSession()
         session.expire_all()
         for p_key, table in tests:
             if len(p_key) == 2:

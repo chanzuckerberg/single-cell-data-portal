@@ -12,7 +12,7 @@ from ..corpora_orm import DBSessionMaker
 logger = logging.getLogger(__name__)
 
 
-class DbSession(metaclass=Singleton):
+class DatabaseSession(metaclass=Singleton):
     """DbUtils as a singleton to avoid creating excess sessions."""
 
     def __init__(self):
@@ -36,7 +36,7 @@ def db_session_manager(commit=False):
     :param commit: Changes will be committed when context ends.
     """
     try:
-        session = DbSession()
+        session = DatabaseSession()
         yield session
         if commit:
             session.commit()

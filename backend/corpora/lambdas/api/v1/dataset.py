@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from ....common.entities import Dataset, Collection
-from ....common.utils.db_session import db_session
+from ....common.utils.database_session import db_session
 from ....common.utils.exceptions import NotFoundHTTPException, ServerErrorHTTPException, ForbiddenHTTPException
 
 
