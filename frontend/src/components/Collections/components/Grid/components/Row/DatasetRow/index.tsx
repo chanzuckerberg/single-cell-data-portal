@@ -8,7 +8,7 @@ import {
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
 import {
   Dataset,
@@ -55,6 +55,8 @@ const conditionalPopover = (values: string[], loading?: boolean) => {
   return <AsyncPopover values={values} />;
 };
 
+const INITIAL_UPLOAD_PROGRESS = -1;
+
 const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const {
     tissue,
@@ -68,6 +70,9 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   let { name } = dataset;
   let datasetStatus = {} as DatasetUploadStatus;
   const queryResult = useDatasetStatus(dataset.id);
+  const [lastUploadProgress, setLastUploadProgress] = useState(
+    INITIAL_UPLOAD_PROGRESS
+  );
   let statusFailed, isLoading;
 
   // If there is no name on the dataset the conversion and upload process hasn't completed
@@ -96,6 +101,20 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           intent: Intent.DANGER,
           message: "There was a problem uploading your file. Please try again.",
         });
+    }
+    if (lastUploadProgress !== datasetStatus.upload_progress) {
+      if (
+        datasetStatus.upload_progress === 1.0 &&
+        lastUploadProgress !== INITIAL_UPLOAD_PROGRESS
+      ) {
+        DatasetUploadToast.show({
+          icon: IconNames.TICK,
+          intent: Intent.SUCCESS,
+          message:
+            "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
+        });
+      }
+      setLastUploadProgress(datasetStatus.upload_progress);
     }
   }
   return (
