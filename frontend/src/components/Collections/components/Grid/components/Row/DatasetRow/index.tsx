@@ -9,13 +9,17 @@ import {
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
+import { useQueryCache } from "react-query";
 import {
   Dataset,
   DatasetUploadStatus,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
-import { useDatasetStatus } from "src/common/queries/datasets";
+import {
+  useDatasetStatus,
+  USE_DATASET_STATUS,
+} from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
   DetailsCell,
@@ -24,6 +28,7 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
+import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import { DatasetStatusTag, TitleContainer } from "./style";
 
 interface Props {
@@ -58,10 +63,12 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     organism,
     cell_count,
   } = aggregateDatasetsMetadata([dataset]);
+  const queryCache = useQueryCache();
 
   let { name } = dataset;
   if (!name) name = file?.name ?? dataset.id;
   const { data: datasetStatus, isError } = useDatasetStatus(dataset.id);
+
   if (isError) console.error(datasetStatus);
   if (!datasetStatus) return null;
 
@@ -73,6 +80,15 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     datasetStatus.validation_status === VALIDATION_STATUS.INVALID;
   const isPopulated = dataset.name !== "";
   const isLoading = !isPopulated || isUploading;
+
+  if (statusFailed) {
+    queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
+    if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+      DatasetUploadToast.show({
+        intent: Intent.DANGER,
+        message: "There was a problem uploading your file. Please try again.",
+      });
+  }
   return (
     <StyledRow>
       <DetailsCell>
