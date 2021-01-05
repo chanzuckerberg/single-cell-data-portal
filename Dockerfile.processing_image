@@ -25,9 +25,13 @@ RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudi
 RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 \
                  git+https://github.com/chanzuckerberg/cellxgene.git#egg=cellxgene \
                  awscli
-ADD code /code/
-RUN pip3 install -r /code/requirements.txt
 
+ADD requirements.txt code/requirements.txt
+ADD backend/chalice/api_server/requirements.txt code/backend/chalice/api_server/requirements.txt
+RUN pip3 install -r code/requirements.txt
+
+ADD backend/corpora/dataset_processing code/dataset_processing
+ADD backend/corpora/common code/common
 
 RUN chmod a+x /code/dataset_processing/process.py
 
