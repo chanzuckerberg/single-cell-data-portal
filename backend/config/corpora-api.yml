@@ -509,6 +509,8 @@ paths:
       description: >-
         Cancels the download of a dataset to Corpora and cleans up (removes) any artifacts created in the download process
       operationId: corpora.lambdas.api.v1.dataset.cancel_dataset_download
+      security:
+        - cxguserCookie: [ ]
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
@@ -516,7 +518,12 @@ paths:
           $ref: "#/components/responses/202"
         "401":
           $ref: "#/components/responses/401"
-
+        "403":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
@@ -901,6 +908,12 @@ components:
             $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
       content:
         application/problem+json:
           schema:
