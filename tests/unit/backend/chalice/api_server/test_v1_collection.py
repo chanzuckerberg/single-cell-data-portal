@@ -37,7 +37,7 @@ class TestCollection(BaseAPITest, GenerateDataMixin, DataPortalTestCase):
         sys.path = cls.old_path
 
 
-def validate_collections_response_structure(self, body):
+    def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
 
