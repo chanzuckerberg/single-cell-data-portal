@@ -75,6 +75,8 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   );
   let statusFailed, isLoading;
 
+  // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
+
   // If there is no name on the dataset the conversion and upload process hasn't completed
   // Assign a temp name and begin polling the status endpoint
   // This should be replaced with a signifier from the backend instead of relying on name population
