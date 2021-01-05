@@ -66,11 +66,15 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const queryCache = useQueryCache();
 
   let { name } = dataset;
-  if (!name) name = file?.name ?? dataset.id;
-  const { data: datasetStatus, isError } = useDatasetStatus(dataset.id);
-
-  if (isError) console.error(datasetStatus);
-  if (!datasetStatus) return null;
+  let datasetStatus = {} as DatasetUploadStatus;
+  const queryResult = useDatasetStatus(dataset.id);
+  if (!name) {
+    name = file?.name ?? dataset.id;
+    const { isError } = queryResult;
+    if (isError) console.error(datasetStatus);
+    if (!queryResult.data) return null;
+    datasetStatus = queryResult.data;
+  }
 
   const isUploading =
     datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
