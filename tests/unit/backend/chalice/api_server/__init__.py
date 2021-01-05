@@ -16,7 +16,6 @@ class BaseAPITest:
         cls.app = ChaliceTestHarness(cls.corpora_api_dir)
         cls.maxDiff = None  # Easier to compare json responses.
 
-
     @staticmethod
     def remove_timestamps(body: dict) -> dict:
         """
