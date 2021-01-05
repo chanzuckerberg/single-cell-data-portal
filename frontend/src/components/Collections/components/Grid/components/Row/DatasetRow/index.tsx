@@ -1,7 +1,20 @@
-import { Button, Checkbox, Classes, Intent, Spinner } from "@blueprintjs/core";
+import {
+  Button,
+  Checkbox,
+  Classes,
+  Icon,
+  Intent,
+  Spinner,
+} from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
-import { Dataset, DatasetUploadStatus } from "src/common/entities";
+import {
+  Dataset,
+  DatasetUploadStatus,
+  UPLOAD_STATUS,
+  VALIDATION_STATUS,
+} from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
@@ -11,7 +24,7 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
-import { TitleContainer, UploadStatusContainer } from "./style";
+import { DatasetStatusTag, TitleContainer } from "./style";
 
 interface Props {
   dataset: Dataset;
@@ -52,7 +65,12 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   if (isError) console.error(datasetStatus);
   if (!datasetStatus) return null;
 
-  const isUploading = datasetStatus.upload_progress < 1;
+  const isUploading =
+    datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
+    datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING;
+  const statusFailed =
+    datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
+    datasetStatus.validation_status === VALIDATION_STATUS.INVALID;
   const isPopulated = dataset.name !== "";
   const isLoading = !isPopulated || isUploading;
   return (
@@ -62,6 +80,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
         </TitleContainer>
+        {(isLoading || statusFailed) && renderUploadStatus(datasetStatus)}
       </DetailsCell>
       {conditionalPopover(tissue, isLoading)}
       {conditionalPopover(assay, isLoading)}
@@ -71,9 +90,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
         {isLoading ? skeletonDiv : cell_count}
       </RightAlignedDetailsCell>
       <RightAlignedDetailsCell>
-        {isLoading ? (
-          renderUploadStatus(datasetStatus)
-        ) : (
+        {!isLoading && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
         )}
       </RightAlignedDetailsCell>
@@ -82,15 +99,22 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
 };
 
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
+  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+    return (
+      <DatasetStatusTag intent={Intent.DANGER}>
+        <Icon iconSize={16} icon={IconNames.ISSUE} />
+        Upload Error
+      </DatasetStatusTag>
+    );
   if (datasetStatus.upload_progress === 1.0)
     return (
-      <UploadStatusContainer>
+      <DatasetStatusTag>
         <Spinner intent={Intent.PRIMARY} size={16} />
-      </UploadStatusContainer>
+      </DatasetStatusTag>
     );
 
   return (
-    <UploadStatusContainer>
+    <DatasetStatusTag>
       <Spinner
         intent={Intent.PRIMARY}
         value={datasetStatus.upload_progress}
@@ -100,7 +124,7 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
       {`${datasetStatus.upload_status} (${Math.round(
         datasetStatus.upload_progress * 100
       )}%)`}
-    </UploadStatusContainer>
+    </DatasetStatusTag>
   );
 };
 
