@@ -102,9 +102,11 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
       {conditionalPopover(assay, isLoading)}
       {conditionalPopover(disease, isLoading)}
       {conditionalPopover(organism, isLoading)}
-      <RightAlignedDetailsCell>
-        {isLoading ? skeletonDiv : cell_count}
-      </RightAlignedDetailsCell>
+      {isLoading ? (
+        <td>skeletonDiv</td>
+      ) : (
+        <RightAlignedDetailsCell>{cell_count}</RightAlignedDetailsCell>
+      )}
       <RightAlignedDetailsCell>
         {!isLoading && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
