@@ -169,9 +169,7 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
         size={16}
       />
 
-      {`${datasetStatus.upload_status} (${Math.round(
-        datasetStatus.upload_progress * 100
-      )}%)`}
+      {`Uploading (${Math.round(datasetStatus.upload_progress * 100)}%)`}
     </DatasetStatusTag>
   );
 };
