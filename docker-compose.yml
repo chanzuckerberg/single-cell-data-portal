@@ -16,7 +16,7 @@ services:
       - "4566:4566"
     environment:
       - HOSTNAME_EXTERNAL=localstack
-      - SERVICES=s3,secretsmanager,stepfunctions,iam
+      - SERVICES=s3,secretsmanager,stepfunctions,iam,lambda
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
       - PORT_WEB_UI=${PORT_WEB_UI- }
@@ -36,6 +36,29 @@ services:
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
+  upload_failures:
+    image: corpora-upload-failures
+    build:
+      context: .
+      dockerfile: Dockerfile.upload_failures
+    restart: "no"
+    volumes:
+      - ./backend/chalice/upload_failures:/backend/upload_failures
+      - ./backend/corpora/lambdas/upload_failures:/backend/chalicelib/upload_failures
+      - ./backend/corpora/common:/backend/chalicelib/common
+      - ./backend/corpora/dataset_processing:/backend/chalicelib/dataset_processing
+    command: ["backend.upload_failures/app.handle_failure"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=dev_access_key_id
+      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=dev
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
   processing:
     image: corpora-processing
     build:

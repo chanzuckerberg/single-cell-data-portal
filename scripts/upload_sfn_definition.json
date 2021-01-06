@@ -22,7 +22,31 @@
         }
       },
       "End": true,
-      "TimeoutSeconds": 10800
+      "TimeoutSeconds": 10800,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "IntervalSeconds": 1,
+          "BackoffRate": 2,
+          "MaxAttempts": 2        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "HandleErrors": {
+      "Type": "Task",
+      "InputPath": "$",
+      "Resource": "${LAMBDA_ERROR_HANDLER}",
+      "End": true
     }
   }
 }
