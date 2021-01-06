@@ -155,6 +155,7 @@ export enum CONVERSION_STATUS {
 }
 
 export interface DatasetUploadStatus {
+  dataset_id: string;
   upload_status: UPLOAD_STATUS;
   upload_message: string;
   upload_progress: number;

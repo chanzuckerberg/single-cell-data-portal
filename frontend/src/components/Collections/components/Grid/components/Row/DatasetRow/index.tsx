@@ -9,7 +9,7 @@ import {
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC, useState } from "react";
-import { useQueryCache } from "react-query";
+import { QueryCache, useQueryCache } from "react-query";
 import {
   Dataset,
   DatasetUploadStatus,
@@ -57,6 +57,58 @@ const conditionalPopover = (values: string[], loading?: boolean) => {
 
 const INITIAL_UPLOAD_PROGRESS = -1;
 
+const updateUploadProgress = (
+  uploadProgress: DatasetUploadStatus["upload_progress"],
+  lastUploadProgress: DatasetUploadStatus["upload_progress"],
+  setLastUploadProgress: React.Dispatch<React.SetStateAction<number>>
+) => {
+  if (lastUploadProgress !== uploadProgress) {
+    if (
+      uploadProgress === 1.0 &&
+      lastUploadProgress !== INITIAL_UPLOAD_PROGRESS
+    ) {
+      DatasetUploadToast.show({
+        icon: IconNames.TICK,
+        intent: Intent.SUCCESS,
+        message:
+          "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
+      });
+    }
+    setLastUploadProgress(uploadProgress);
+  }
+};
+
+const handleFail = (
+  datasetStatus: DatasetUploadStatus,
+  fileName: string | undefined,
+  hasFailed: boolean,
+  setHasFailed: React.Dispatch<React.SetStateAction<boolean>>,
+  queryCache: QueryCache
+) => {
+  if (!hasFailed) {
+    queryCache.cancelQueries([USE_DATASET_STATUS, datasetStatus.dataset_id]);
+    // If there is no filename present, we know there's been a refresh
+    if (fileName)
+      DatasetUploadToast.show({
+        action:
+          datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+            ? {
+                href:
+                  "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md",
+                target: "_blank",
+                text: "Learn More",
+              }
+            : {},
+        intent: Intent.DANGER,
+        message:
+          datasetStatus.upload_status === UPLOAD_STATUS.FAILED
+            ? "There was a problem uploading your file. Please try again."
+            : "You must validate your dataset locally before uploading. We provide a local CLI script to do this.",
+      });
+    setHasFailed(true);
+  }
+};
+
 const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const {
     tissue,
@@ -73,7 +125,9 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const [lastUploadProgress, setLastUploadProgress] = useState(
     INITIAL_UPLOAD_PROGRESS
   );
-  let statusFailed, isLoading;
+  const [hasFailed, setHasFailed] = useState(false);
+
+  let isLoading;
 
   // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
 
@@ -83,7 +137,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   if (!name) {
     name = file?.name ?? dataset.id;
     const { isError } = queryResult;
-    if (isError) console.error(datasetStatus);
+    if (isError) console.error(queryResult.data);
     if (!queryResult.data) return null;
     datasetStatus = queryResult.data;
 
@@ -91,33 +145,24 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
       datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
       datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING;
     const isPopulated = dataset.name !== "";
-    statusFailed =
+    if (
       datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
-      datasetStatus.validation_status === VALIDATION_STATUS.INVALID;
+      datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+    )
+      handleFail(
+        datasetStatus,
+        file?.name,
+        hasFailed,
+        setHasFailed,
+        queryCache
+      );
     isLoading = !isPopulated || isUploading;
 
-    if (statusFailed) {
-      queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
-      if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
-        DatasetUploadToast.show({
-          intent: Intent.DANGER,
-          message: "There was a problem uploading your file. Please try again.",
-        });
-    }
-    if (lastUploadProgress !== datasetStatus.upload_progress) {
-      if (
-        datasetStatus.upload_progress === 1.0 &&
-        lastUploadProgress !== INITIAL_UPLOAD_PROGRESS
-      ) {
-        DatasetUploadToast.show({
-          icon: IconNames.TICK,
-          intent: Intent.SUCCESS,
-          message:
-            "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
-        });
-      }
-      setLastUploadProgress(datasetStatus.upload_progress);
-    }
+    updateUploadProgress(
+      datasetStatus.upload_progress,
+      lastUploadProgress,
+      setLastUploadProgress
+    );
   }
   return (
     <StyledRow>
@@ -126,7 +171,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
         </TitleContainer>
-        {(isLoading || statusFailed) && renderUploadStatus(datasetStatus)}
+        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
       </DetailsCell>
       {conditionalPopover(tissue, isLoading)}
       {conditionalPopover(assay, isLoading)}
@@ -154,10 +199,19 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
         Upload Error
       </DatasetStatusTag>
     );
+  if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
+    return (
+      <DatasetStatusTag intent={Intent.DANGER}>
+        <Icon iconSize={16} icon={IconNames.ISSUE} />
+        Validation Error
+      </DatasetStatusTag>
+    );
   if (datasetStatus.upload_progress === 1.0)
     return (
       <DatasetStatusTag>
         <Spinner intent={Intent.PRIMARY} size={16} />
+        {datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING &&
+          "Validating..."}
       </DatasetStatusTag>
     );
 
