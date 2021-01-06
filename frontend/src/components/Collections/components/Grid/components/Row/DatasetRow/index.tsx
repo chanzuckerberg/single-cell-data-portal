@@ -99,26 +99,26 @@ const handleFail = (
           : {},
       intent: Intent.DANGER,
       message:
-        datasetStatus.upload_status === UPLOAD_STATUS.FAILED
-          ? "There was a problem uploading your file. Please try again."
-          : "You must validate your dataset locally before uploading. We provide a local CLI script to do this.",
+        datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+          ? "You must validate your dataset locally before uploading. We provide a local CLI script to do this."
+          : "There was a problem uploading your file. Please try again.",
     });
   setHasFailed(true);
 };
 
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
-  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
-    return (
-      <DatasetStatusTag intent={Intent.DANGER}>
-        <Icon iconSize={16} icon={IconNames.ISSUE} />
-        Upload Error
-      </DatasetStatusTag>
-    );
   if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
     return (
       <DatasetStatusTag intent={Intent.DANGER}>
         <Icon iconSize={16} icon={IconNames.ISSUE} />
         Validation Error
+      </DatasetStatusTag>
+    );
+  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+    return (
+      <DatasetStatusTag intent={Intent.DANGER}>
+        <Icon iconSize={16} icon={IconNames.ISSUE} />
+        Upload Error
       </DatasetStatusTag>
     );
   if (datasetStatus.upload_progress === 1.0)
