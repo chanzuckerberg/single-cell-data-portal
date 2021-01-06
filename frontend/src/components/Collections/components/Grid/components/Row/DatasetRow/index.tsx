@@ -109,88 +109,6 @@ const handleFail = (
   }
 };
 
-const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
-  const {
-    tissue,
-    assay,
-    disease,
-    organism,
-    cell_count,
-  } = aggregateDatasetsMetadata([dataset]);
-  const queryCache = useQueryCache();
-
-  let { name } = dataset;
-  let datasetStatus = {} as DatasetUploadStatus;
-  const queryResult = useDatasetStatus(dataset.id);
-  const [lastUploadProgress, setLastUploadProgress] = useState(
-    INITIAL_UPLOAD_PROGRESS
-  );
-  const [hasFailed, setHasFailed] = useState(false);
-
-  let isLoading;
-
-  // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
-
-  // If there is no name on the dataset the conversion and upload process hasn't completed
-  // Assign a temp name and begin polling the status endpoint
-  // This should be replaced with a signifier from the backend instead of relying on name population
-  if (!name) {
-    name = file?.name ?? dataset.id;
-    const { isError } = queryResult;
-    if (isError) console.error(queryResult.data);
-    if (!queryResult.data) return null;
-    datasetStatus = queryResult.data;
-
-    const isUploading =
-      datasetStatus.upload_status === UPLOAD_STATUS.WAITING ||
-      datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING;
-    const isPopulated = dataset.name !== "";
-    if (
-      datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
-      datasetStatus.validation_status === VALIDATION_STATUS.INVALID
-    )
-      handleFail(
-        datasetStatus,
-        file?.name,
-        hasFailed,
-        setHasFailed,
-        queryCache
-      );
-    isLoading = !isPopulated || isUploading;
-
-    updateUploadProgress(
-      datasetStatus.upload_progress,
-      lastUploadProgress,
-      setLastUploadProgress
-    );
-  }
-  return (
-    <StyledRow>
-      <DetailsCell>
-        <TitleContainer>
-          <Checkbox onChange={() => checkHandler(dataset.id)} />
-          <div>{name}</div>
-        </TitleContainer>
-        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
-      </DetailsCell>
-      {conditionalPopover(tissue, isLoading)}
-      {conditionalPopover(assay, isLoading)}
-      {conditionalPopover(disease, isLoading)}
-      {conditionalPopover(organism, isLoading)}
-      {isLoading ? (
-        <td>skeletonDiv</td>
-      ) : (
-        <RightAlignedDetailsCell>{cell_count}</RightAlignedDetailsCell>
-      )}
-      <RightAlignedDetailsCell>
-        {!isLoading && (
-          <Button intent={Intent.PRIMARY} outlined text="Explore" />
-        )}
-      </RightAlignedDetailsCell>
-    </StyledRow>
-  );
-};
-
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
   if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
     return (
@@ -225,6 +143,84 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
 
       {`Uploading (${Math.round(datasetStatus.upload_progress * 100)}%)`}
     </DatasetStatusTag>
+  );
+};
+
+const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
+  const {
+    tissue,
+    assay,
+    disease,
+    organism,
+    cell_count,
+  } = aggregateDatasetsMetadata([dataset]);
+  const queryCache = useQueryCache();
+
+  let { name } = dataset;
+  let datasetStatus = {} as DatasetUploadStatus;
+  const queryResult = useDatasetStatus(dataset.id);
+  const [lastUploadProgress, setLastUploadProgress] = useState(
+    INITIAL_UPLOAD_PROGRESS
+  );
+  const [hasFailed, setHasFailed] = useState(false);
+
+  let isLoading = false;
+
+  // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
+
+  // If there is no name on the dataset the conversion and upload process hasn't completed
+  // Assign a temp name and begin polling the status endpoint
+  // This should be replaced with a signifier from the backend instead of relying on name population
+  if (!name) {
+    isLoading = true;
+    name = file?.name ?? dataset.id;
+    const { isError } = queryResult;
+    if (isError) console.error(queryResult.data);
+    if (!queryResult.data) return null;
+    datasetStatus = queryResult.data;
+
+    if (
+      datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
+      datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+    )
+      handleFail(
+        datasetStatus,
+        file?.name,
+        hasFailed,
+        setHasFailed,
+        queryCache
+      );
+
+    updateUploadProgress(
+      datasetStatus.upload_progress,
+      lastUploadProgress,
+      setLastUploadProgress
+    );
+  }
+  return (
+    <StyledRow>
+      <DetailsCell>
+        <TitleContainer>
+          <Checkbox onChange={() => checkHandler(dataset.id)} />
+          <div>{name}</div>
+        </TitleContainer>
+        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
+      </DetailsCell>
+      {conditionalPopover(tissue, isLoading)}
+      {conditionalPopover(assay, isLoading)}
+      {conditionalPopover(disease, isLoading)}
+      {conditionalPopover(organism, isLoading)}
+      {isLoading ? (
+        <td>skeletonDiv</td>
+      ) : (
+        <RightAlignedDetailsCell>{cell_count}</RightAlignedDetailsCell>
+      )}
+      <RightAlignedDetailsCell>
+        {!isLoading && (
+          <Button intent={Intent.PRIMARY} outlined text="Explore" />
+        )}
+      </RightAlignedDetailsCell>
+    </StyledRow>
   );
 };
 
