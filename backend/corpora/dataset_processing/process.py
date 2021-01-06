@@ -199,7 +199,8 @@ def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
     seurat_proc = subprocess.run(
-        ["Rscript", "/code/backend/corpora/dataset_processing/make_seurat.R", local_filename], capture_output=True
+        ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
+        capture_output=True,
     )
     if seurat_proc.returncode != 0:
         raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
