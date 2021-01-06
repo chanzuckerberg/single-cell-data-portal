@@ -16,6 +16,7 @@ export const TitleContainer = styled.div`
   & > .${Classes.CHECKBOX} {
     margin: 0 ${PT_GRID_SIZE_PX}px 0 0;
   }
+  white-space: normal;
 `;
 
 const intentColorSwitch = (intent: Intent, border?: boolean) => {

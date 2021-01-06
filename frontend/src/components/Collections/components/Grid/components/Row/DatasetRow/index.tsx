@@ -172,6 +172,12 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     name = file?.name ?? dataset.id;
   }
 
+  if (
+    (!hasFailed && datasetStatus.upload_status === UPLOAD_STATUS.FAILED) ||
+    datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+  )
+    handleFail(datasetStatus, file?.name, setHasFailed, queryCache);
+
   // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
 
   // If there is no name on the dataset the conversion and upload process hasn't completed
@@ -183,12 +189,6 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     if (isError) console.error(queryResult.data);
     if (!queryResult.data) return null;
     datasetStatus = queryResult.data;
-
-    if (
-      datasetStatus.upload_status === UPLOAD_STATUS.FAILED ||
-      datasetStatus.validation_status === VALIDATION_STATUS.INVALID
-    )
-      handleFail(datasetStatus, file?.name, setHasFailed, queryCache);
 
     updateUploadProgress(
       datasetStatus.upload_progress,
