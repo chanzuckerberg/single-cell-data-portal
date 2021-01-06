@@ -568,6 +568,9 @@ paths:
                   conversion_cxg_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
+                  conversion_rds_status:
+                    type: string
+                    enum: [ CONVERTING, CONVERTED, FAILED, NA ]
         "400":
           $ref: "#/components/responses/400"
         "401":

@@ -43,8 +43,8 @@ services:
       dockerfile: Dockerfile.processing_image
     restart: "no"
     volumes:
-      - ./backend/corpora/dataset_processing:/code/dataset_processing
-      - ./backend/corpora/common:/code/common
+      - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
+      - ./backend/corpora/common:/backend/corpora/common
     command: ["sleep", "infinity"]
     environment:
       - PYTHONUNBUFFERED=1

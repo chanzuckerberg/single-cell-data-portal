@@ -26,13 +26,11 @@ RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0
                  git+https://github.com/chanzuckerberg/cellxgene.git#egg=cellxgene \
                  awscli
 
-ADD requirements.txt code/requirements.txt
-ADD backend/chalice/api_server/requirements.txt code/backend/chalice/api_server/requirements.txt
-RUN pip3 install -r code/requirements.txt
+ADD requirements.txt requirements.txt
+ADD backend/chalice/api_server/requirements.txt backend/chalice/api_server/requirements.txt
+RUN pip3 install -r requirements.txt
 
-ADD backend/corpora/dataset_processing code/dataset_processing
-ADD backend/corpora/common code/common
+ADD backend/corpora/dataset_processing backend/corpora/dataset_processing
+ADD backend/corpora/common backend/corpora/common
 
-RUN chmod a+x /code/dataset_processing/process.py
-
-CMD ["/code/dataset_processing/process.py"]
+CMD ["python3", "-m", "backend.corpora.dataset_processing.process"]
