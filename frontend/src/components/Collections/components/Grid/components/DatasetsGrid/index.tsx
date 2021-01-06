@@ -6,12 +6,11 @@ import {
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
 } from "src/components/Collections/components/Grid/common/style";
-import { UploadingFile } from "src/components/DropboxChooser";
+import { UploadedFiles } from "src/views/Collection";
 import DatasetRow from "../Row/DatasetRow";
-
 interface Props {
   datasets: Dataset[];
-  uploadedFiles: Map<Dataset["id"], UploadingFile>;
+  uploadedFiles: UploadedFiles;
 }
 
 const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
@@ -42,7 +41,7 @@ const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
             key={dataset.id}
             dataset={dataset}
             checkHandler={handleSelect}
-            file={uploadedFiles.get(dataset.id)}
+            file={uploadedFiles[dataset.id]}
           />
         ))}
       </tbody>

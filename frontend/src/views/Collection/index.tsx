@@ -55,6 +55,9 @@ const renderLinks = (links: Link[]) => {
     );
   });
 };
+export interface UploadedFiles {
+  [datasetID: string]: UploadingFile;
+}
 
 const Collection: FC<Props> = ({ id = "" }) => {
   const isPrivate = window.location.pathname.includes("/private");
@@ -62,9 +65,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadedFiles, setUploadedFiles] = useState(
-    new Map<Dataset["id"], UploadingFile>()
-  );
+  const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
   const queryCache = useQueryCache();
 
@@ -87,13 +88,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
             message:
               "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
-          setUploadedFiles(
-            new Map(
-              Array.from(uploadedFiles.entries()).concat([
-                [newFile.id, newFile],
-              ])
-            )
-          );
+          setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
           queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
@@ -105,7 +100,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
   }
 
   const datasetPresent =
-    collection.datasets?.length > 0 || uploadedFiles.size > 0;
+    collection.datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
   return (
     <ViewGrid>
