@@ -73,15 +73,14 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const [mutate] = useCollectionUploadLinks(id, visibility);
 
   const addNewFile = (newFile: UploadingFile) => {
-    if (!newFile.link || newFile.id) return;
+    if (!newFile.link) return;
 
     const payload = JSON.stringify({ url: newFile.link });
     mutate(
       { collectionId: id, payload },
       {
-        onSuccess: (data) => {
-          newFile.id = data;
-          if (!newFile.id) return;
+        onSuccess: (datasetID: Dataset["id"]) => {
+          newFile.id = datasetID;
           DatasetUploadToast.show({
             icon: IconNames.TICK,
             intent: Intent.PRIMARY,
