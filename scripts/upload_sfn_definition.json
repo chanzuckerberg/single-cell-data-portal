@@ -45,7 +45,7 @@
     "HandleErrors": {
       "Type": "Task",
       "InputPath": "$",
-      "Resource": "${LAMBDA_ERROR_HANDLER}",
+      "Resource": "${LambdaErrorHandler}",
       "End": true
     }
   }
