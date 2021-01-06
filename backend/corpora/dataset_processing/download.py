@@ -33,15 +33,14 @@ class ProgressTracker:
         self.stop_updater.set()
 
 
-def cancel_upload():
-    dataset_uuid = os.environ["DATASET_ID"]
+def cancel_upload(dataset_uuid: str):
     print(f"cancelling the upload for {dataset_uuid}")
 
     # set db to cancelled
     status = {
         DbDatasetProcessingStatus.upload_progress: 0,
         DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
-        DbDatasetProcessingStatus.upload_message: "Cancelled by user",
+        DbDatasetProcessingStatus.upload_message: "Canceled by user",
     }
 
     dataset = Dataset.get(dataset_uuid)
@@ -50,8 +49,6 @@ def cancel_upload():
     delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], dataset_uuid)
     delete_many_from_s3(os.environ["CELLXGENE_BUCKET"], dataset_uuid)
 
-    # exit
-    sys.exit(1)
 
 
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
@@ -103,7 +100,7 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
         with db_session_manager(commit=True) as db:
             curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid)
             if curr_status.upload_status is UploadStatus.CANCEL_PENDING:
-                cancel_upload()
+                cancel_upload(curr_status.dataset.id)
                 tracker.cancel()
         progress = tracker.progress()
         if progress > 1:
