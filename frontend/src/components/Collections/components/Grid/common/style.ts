@@ -1,4 +1,5 @@
 import { HTMLTable } from "@blueprintjs/core";
+import { GRAY } from "src/components/common/theme";
 import styled, { css } from "styled-components";
 
 export const textClippingCSS = css`
@@ -37,4 +38,25 @@ export const RightAlignedHeaderCell = styled.th`
   width: calc(1 / 8 * 100%);
   text-align: right !important;
   margin-left: 16px;
+`;
+
+// ROW
+
+export const DetailsCell = styled(StyledCell)`
+  color: ${GRAY.A};
+  ${textClippingCSS}
+  ${detailsColWidthCSS}
+`;
+
+export const LeftAlignedDetailsCell = styled(DetailsCell)`
+  text-align: left !important;
+`;
+
+export const StyledRow = styled.tr`
+  align-content: center;
+  vertical-align: middle;
+`;
+
+export const RightAlignedDetailsCell = styled(DetailsCell)`
+  text-align: right !important;
 `;

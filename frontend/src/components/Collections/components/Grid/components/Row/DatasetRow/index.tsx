@@ -20,13 +20,13 @@ import {
   useDatasetStatus,
   USE_DATASET_STATUS,
 } from "src/common/queries/datasets";
-import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
   DetailsCell,
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledRow,
-} from "src/components/Collections/components/Grid/components/Row/common/style";
+} from "src/components/Collections/components/Grid/common/style";
+import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import { DatasetStatusTag, TitleContainer } from "./style";
@@ -46,7 +46,11 @@ const AsyncPopover = loadable(
 
 const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
 
-const conditionalPopover = (values: string[], loading?: boolean, hasFailed) => {
+const conditionalPopover = (
+  values: string[],
+  loading: boolean,
+  hasFailed: boolean
+) => {
   if (loading) return <td>{skeletonDiv}</td>;
   if (hasFailed || !values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
@@ -64,7 +68,7 @@ const updateUploadProgress = (
 ) => {
   if (lastUploadProgress !== uploadProgress) {
     if (
-      uploadProgress === 1.0 &&
+      uploadProgress === 1 &&
       lastUploadProgress !== INITIAL_UPLOAD_PROGRESS
     ) {
       DatasetUploadToast.show({
@@ -121,7 +125,8 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
         Upload Error
       </DatasetStatusTag>
     );
-  if (datasetStatus.upload_progress === 1.0)
+  // if(datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
+  if (datasetStatus.upload_progress === 1)
     return (
       <DatasetStatusTag>
         <Spinner intent={Intent.PRIMARY} size={16} />
@@ -195,6 +200,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     <StyledRow>
       <DetailsCell>
         <TitleContainer>
+          {/* Probably will be a radio button, not checkbox */}
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
         </TitleContainer>
@@ -205,13 +211,14 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
       {conditionalPopover(disease, isLoading, hasFailed)}
       {conditionalPopover(organism, isLoading, hasFailed)}
       {isLoading ? (
-        <td>skeletonDiv</td>
+        <td>{skeletonDiv}</td>
       ) : (
         <RightAlignedDetailsCell>
           {hasFailed ? "-" : cell_count}
         </RightAlignedDetailsCell>
       )}
       <RightAlignedDetailsCell>
+        {/* datasetStatus.conversion_cxg_status */}
         {!isLoading && !hasFailed && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
         )}
