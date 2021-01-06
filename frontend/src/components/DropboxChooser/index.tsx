@@ -27,7 +27,7 @@ export type UploadingFile = DropboxFile & Partial<Dataset>;
 
 const DROPBOX_OPTIONS = {
   extensions: [".h5ad"],
-  sizeLimit: 30 * 10 ** 30, // 30GB
+  sizeLimit: 30 * 2 ** 30, // 30GB
 };
 
 export interface Props {
