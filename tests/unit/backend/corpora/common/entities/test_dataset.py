@@ -198,6 +198,7 @@ class TestDataset(DataPortalTestCase):
         dataset = Dataset.get(self.uuid)
         self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING)
         update_dataset_processing_status_to_failed(self.uuid)
+        Dataset.db.session.expire_all()
 
         dataset = Dataset.get(self.uuid)
         self.assertEqual(dataset.processing_status.upload_status, UploadStatus.FAILED)
