@@ -597,7 +597,7 @@ def push(ctx, tag):
     subprocess.check_call(["docker", "tag", "corpora-frontend:latest", f"{frontend_ecr}:{tag}"])
     subprocess.check_call(["docker", "tag", "corpora-backend:latest", f"{backend_ecr}:{tag}"])
     subprocess.check_call(["docker", "tag", "corpora-processing:latest", f"{upload_ecr}:{tag}"])
-    subprocess.check_call(["docker", "tag", "corpora-upload-failures:latest", f"{upload_failures_ecr}:{tag}"])   
+    subprocess.check_call(["docker", "tag", "corpora-upload-failures:latest", f"{upload_failures_ecr}:{tag}"])
     print("Pushing images...")
     subprocess.check_call(["docker", "push", f"{frontend_ecr}:{tag}"])
     subprocess.check_call(["docker", "push", f"{backend_ecr}:{tag}"])
