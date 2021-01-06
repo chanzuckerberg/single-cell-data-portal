@@ -1,13 +1,13 @@
-#FROM ubuntu:focal
 FROM public.ecr.aws/lambda/python:3.8
 
-ADD backend/chalice/upload_failures /backend/upload_failures
-ADD backend/corpora/lambdas/upload_failures backend/chalicelib/upload_failures
+ADD backend/chalice/upload_failures/requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
 
-#RUN pip3 install awslambdaric --target /backend/upload_failures
-RUN pip3 install -r /backend/upload_failures/requirements.txt
+ADD backend/chalice/upload_failures .
+ADD backend/corpora/lambdas/upload_failures ./chalicelib/upload_failures
 
-ADD backend/corpora/common backend/chalicelib/common
-ADD backend/corpora/dataset_processing backend/chalicelib/dataset_processing
+ADD backend/corpora/common ./chalicelib/common
+ADD backend/corpora/dataset_processing ./chalicelib/dataset_processing
+RUN mkdir -p ./.chalice
 
-CMD ["backend.upload_failures.app.handle_failure"]
+CMD ["app.handle_failure"]

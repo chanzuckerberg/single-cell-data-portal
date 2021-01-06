@@ -42,12 +42,13 @@ services:
       context: .
       dockerfile: Dockerfile.upload_failures
     restart: "no"
+    ports:
+      - "9000:8080"
     volumes:
-      - ./backend/chalice/upload_failures:/backend/upload_failures
-      - ./backend/corpora/lambdas/upload_failures:/backend/chalicelib/upload_failures
-      - ./backend/corpora/common:/backend/chalicelib/common
-      - ./backend/corpora/dataset_processing:/backend/chalicelib/dataset_processing
-    command: ["backend.upload_failures/app.handle_failure"]
+      - ./backend/chalice/upload_failures:/var/task
+      - ./backend/corpora/lambdas/upload_failures:/var/task/chalicelib/upload_failures
+      - ./backend/corpora/common:/var/task/chalicelib/common
+      - ./backend/corpora/dataset_processing:/var/task/chalicelib/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
