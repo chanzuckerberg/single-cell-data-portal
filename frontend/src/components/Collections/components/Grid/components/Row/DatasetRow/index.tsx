@@ -170,13 +170,11 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
         Upload Error
       </DatasetStatusTag>
     );
-  // if(datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
-  if (datasetStatus.upload_progress === 1)
+  if (datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
     return (
       <DatasetStatusTag>
         <Spinner intent={Intent.PRIMARY} size={16} />
-        {datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING &&
-          "Validating..."}
+        Validating...
       </DatasetStatusTag>
     );
 
@@ -214,6 +212,8 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   if (queryResult.isError) console.error(queryResult.error);
 
   const datasetStatus = queryResult.data ?? dataset.processing_status;
+  const failed = checkIfFailed(datasetStatus);
+  const isLoading = checkIfLoading(datasetStatus);
 
   let name = dataset.name;
   if (!name) {
@@ -221,31 +221,35 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   }
 
   useEffect(() => {
-    const didFail = checkIfFailed(datasetStatus);
-    if (didFail.isFailed)
+    if (failed.isFailed) {
       handleFail(
         dataset.id,
-        didFail.error,
+        failed.error,
         file?.name,
         setHasFailed,
         queryCache
       );
-  }, [datasetStatus, hasFailed, file, queryCache, dataset.id]);
-
-  useEffect(() => {
+      return;
+    }
     // If there is no name on the dataset the conversion and upload process hasn't completed
     // Assign a temp name and begin polling the status endpoint
     // This should be replaced with a signifier from the backend instead of relying on name population
-    if (!hasFailed && !dataset.name) {
-      if (queryResult) return;
-
+    if (isLoading) {
       updateUploadProgress(
         datasetStatus.upload_progress,
         lastUploadProgress,
         setLastUploadProgress
       );
     }
-  }, [hasFailed, dataset]);
+  }, [
+    dataset.id,
+    datasetStatus,
+    failed,
+    file,
+    isLoading,
+    lastUploadProgress,
+    queryCache,
+  ]);
 
   return (
     <StyledRow>
@@ -254,22 +258,22 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
         </TitleContainer>
-        {(isLoading.current || hasFailed) && renderUploadStatus(datasetStatus)}
+        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
       </DetailsCell>
-      {conditionalPopover(tissue, isLoading.current, hasFailed)}
-      {conditionalPopover(assay, isLoading.current, hasFailed)}
-      {conditionalPopover(disease, isLoading.current, hasFailed)}
-      {conditionalPopover(organism, isLoading.current, hasFailed)}
+      {conditionalPopover(tissue, isLoading, hasFailed)}
+      {conditionalPopover(assay, isLoading, hasFailed)}
+      {conditionalPopover(disease, isLoading, hasFailed)}
+      {conditionalPopover(organism, isLoading, hasFailed)}
       {isLoading ? (
         <td>{skeletonDiv}</td>
       ) : (
         <RightAlignedDetailsCell>
-          {hasFailed ? "-" : cell_count}
+          {hasFailed || !cell_count ? "-" : cell_count}
         </RightAlignedDetailsCell>
       )}
       <RightAlignedDetailsCell>
         {/* datasetStatus.conversion_cxg_status */}
-        {!isLoading && !hasFailed && (
+        {!(isLoading || hasFailed) && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
         )}
       </RightAlignedDetailsCell>
