@@ -19,10 +19,10 @@ async function fetchDatasetStatus(
   return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 }
 
-export function useDatasetStatus(dataset_uuid: string) {
+export function useDatasetStatus(dataset_uuid: string, shouldFetch: boolean) {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_uuid],
     fetchDatasetStatus,
-    { refetchInterval: 10 * 1000 }
+    { enabled: shouldFetch, refetchInterval: 10 * 1000 }
   );
 }

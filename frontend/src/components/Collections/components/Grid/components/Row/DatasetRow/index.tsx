@@ -8,9 +8,10 @@ import {
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { QueryCache, useQueryCache } from "react-query";
 import {
+  CONVERSION_STATUS,
   Dataset,
   DatasetUploadStatus,
   UPLOAD_STATUS,
@@ -82,18 +83,62 @@ const updateUploadProgress = (
   }
 };
 
+type FailReturn =
+  | {
+      isFailed: boolean;
+      error: VALIDATION_STATUS | UPLOAD_STATUS;
+    }
+  | {
+      isFailed: false;
+    };
+
+const checkIfFailed = (datasetStatus: DatasetUploadStatus): FailReturn => {
+  if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
+    return { error: VALIDATION_STATUS.INVALID, isFailed: true };
+  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+    return { error: UPLOAD_STATUS.FAILED, isFailed: true };
+  // TODO: check if conversion failed
+  return { isFailed: false };
+};
+const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
+  if (checkIfFailed(datasetStatus).isFailed) return false;
+  // TODO: There should be an "all done" value on datasetStatus to simplify this check
+  if (
+    datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING ||
+    datasetStatus.upload_status === UPLOAD_STATUS.WAITING
+  )
+    return true;
+  if (datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
+    return true;
+  // TODO: There should be an all encompassing conversion to simplify this part
+  if (
+    datasetStatus.conversion_anndata_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_cxg_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_rds_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_loom_status === CONVERSION_STATUS.CONVERTING
+  )
+    return true;
+
+  return false;
+};
+
+const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
+  return !checkIfFailed(datasetStatus) && !checkIfLoading(datasetStatus);
+};
+
 const handleFail = (
-  datasetStatus: DatasetUploadStatus,
+  datasetID: Dataset["id"],
+  error: VALIDATION_STATUS | UPLOAD_STATUS,
   fileName: string | undefined,
   setHasFailed: React.Dispatch<React.SetStateAction<boolean>>,
   queryCache: QueryCache
 ) => {
-  queryCache.cancelQueries([USE_DATASET_STATUS, datasetStatus.dataset_id]);
+  queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
   // If there is no filename present, we know there's been a refresh
   if (fileName)
     DatasetUploadToast.show({
       action:
-        datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+        error === VALIDATION_STATUS.INVALID
           ? {
               href:
                 "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md",
@@ -103,7 +148,7 @@ const handleFail = (
           : {},
       intent: Intent.DANGER,
       message:
-        datasetStatus.validation_status === VALIDATION_STATUS.INVALID
+        error === VALIDATION_STATUS.INVALID
           ? "You must validate your dataset locally before uploading. We provide a local CLI script to do this."
           : "There was a problem uploading your file. Please try again.",
     });
@@ -157,59 +202,64 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
     cell_count,
   } = aggregateDatasetsMetadata([dataset]);
   const queryCache = useQueryCache();
-
-  let datasetStatus = dataset.processing_status;
-  const queryResult = useDatasetStatus(dataset.id);
+  const queryResult = useDatasetStatus(
+    dataset.id,
+    checkIfLoading(dataset.processing_status)
+  );
   const [lastUploadProgress, setLastUploadProgress] = useState(
     INITIAL_UPLOAD_PROGRESS
   );
   const [hasFailed, setHasFailed] = useState(false);
 
-  let isLoading = false;
+  if (queryResult.isError) console.error(queryResult.error);
+
+  const datasetStatus = queryResult.data ?? dataset.processing_status;
 
   let name = dataset.name;
   if (!name) {
     name = file?.name ?? dataset.id;
   }
 
-  if (
-    (!hasFailed && datasetStatus.upload_status === UPLOAD_STATUS.FAILED) ||
-    datasetStatus.validation_status === VALIDATION_STATUS.INVALID
-  )
-    handleFail(datasetStatus, file?.name, setHasFailed, queryCache);
+  useEffect(() => {
+    const didFail = checkIfFailed(datasetStatus);
+    if (didFail.isFailed)
+      handleFail(
+        dataset.id,
+        didFail.error,
+        file?.name,
+        setHasFailed,
+        queryCache
+      );
+  }, [datasetStatus, hasFailed, file, queryCache, dataset.id]);
 
-  // TODO: When checking for conversion, will have to stop polling when conversion is done and there is no need for anymore checks
+  useEffect(() => {
+    // If there is no name on the dataset the conversion and upload process hasn't completed
+    // Assign a temp name and begin polling the status endpoint
+    // This should be replaced with a signifier from the backend instead of relying on name population
+    if (!hasFailed && !dataset.name) {
+      if (queryResult) return;
 
-  // If there is no name on the dataset the conversion and upload process hasn't completed
-  // Assign a temp name and begin polling the status endpoint
-  // This should be replaced with a signifier from the backend instead of relying on name population
-  if (!hasFailed && !dataset.name) {
-    isLoading = true;
-    const { isError } = queryResult;
-    if (isError) console.error(queryResult.data);
-    if (!queryResult.data) return null;
-    datasetStatus = queryResult.data;
+      updateUploadProgress(
+        datasetStatus.upload_progress,
+        lastUploadProgress,
+        setLastUploadProgress
+      );
+    }
+  }, [hasFailed, dataset]);
 
-    updateUploadProgress(
-      datasetStatus.upload_progress,
-      lastUploadProgress,
-      setLastUploadProgress
-    );
-  }
   return (
     <StyledRow>
       <DetailsCell>
         <TitleContainer>
-          {/* Probably will be a radio button, not checkbox */}
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
         </TitleContainer>
-        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
+        {(isLoading.current || hasFailed) && renderUploadStatus(datasetStatus)}
       </DetailsCell>
-      {conditionalPopover(tissue, isLoading, hasFailed)}
-      {conditionalPopover(assay, isLoading, hasFailed)}
-      {conditionalPopover(disease, isLoading, hasFailed)}
-      {conditionalPopover(organism, isLoading, hasFailed)}
+      {conditionalPopover(tissue, isLoading.current, hasFailed)}
+      {conditionalPopover(assay, isLoading.current, hasFailed)}
+      {conditionalPopover(disease, isLoading.current, hasFailed)}
+      {conditionalPopover(organism, isLoading.current, hasFailed)}
       {isLoading ? (
         <td>{skeletonDiv}</td>
       ) : (
