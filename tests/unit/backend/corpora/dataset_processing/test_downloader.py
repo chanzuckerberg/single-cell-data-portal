@@ -3,15 +3,13 @@ import logging
 import multiprocessing
 import os
 import random
-import socketserver
-
 import requests
+import socketserver
 
 from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
-from backend.corpora.dataset_processing.download import cancel_upload
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -46,7 +44,16 @@ class TestDownload(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
-        status = download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
+        status = download.download(
+            "test_dataset_id",
+            url,
+            local_file,
+            file_size,
+            "artifact_bucket",
+            "cellxgene_bucket",
+            chunk_size=1024,
+            update_frequency=1,
+        )
         print(status)
         self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
         self.assertEqual(1, status["upload_progress"])
@@ -61,12 +68,30 @@ class TestDownload(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 
         with self.subTest("Bigger"):
-            download.download("test_dataset_id", url, local_file, 1, chunk_size=1024, update_frequency=1)
+            download.download(
+                "test_dataset_id",
+                url,
+                local_file,
+                1,
+                "artifact_bucket",
+                "cellxgene_bucket",
+                chunk_size=1024,
+                update_frequency=1,
+            )
             processing_status = Dataset.get("test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
         with self.subTest("Smaller"):
-            download.download("test_dataset_id", url, local_file, 10 * MB, chunk_size=1024, update_frequency=1)
+            download.download(
+                "test_dataset_id",
+                url,
+                local_file,
+                10 * MB,
+                "artifact_bucket",
+                "cellxgene_bucket",
+                chunk_size=1024,
+                update_frequency=1,
+            )
             processing_status = Dataset.get("test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
@@ -75,7 +100,11 @@ class TestDownload(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 
-        progress_tracker = download.ProgressTracker(1)
+        progress_tracker = download.ProgressTracker(
+            1,
+            "artifact_bucket",
+            "cellxgene_bucket",
+        )
         progress_tracker.stop_downloader.set()
         with self.assertLogs(download.logger, logging.INFO) as logs:
             download.downloader(url=url, local_path=local_file, chunk_size=1024, tracker=progress_tracker)
@@ -85,7 +114,16 @@ class TestDownload(DataPortalTestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/fake.txt"
-        download.download("test_dataset_id", url, local_file, 100, chunk_size=1024, update_frequency=1)
+        download.download(
+            "test_dataset_id",
+            url,
+            local_file,
+            100,
+            "artifact_bucket",
+            "cellxgene_bucket",
+            chunk_size=1024,
+            update_frequency=1,
+        )
         processing_status = Dataset.get("test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
@@ -95,17 +133,13 @@ class TestDownload(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(AttributeError):
-            download.download("test_dataset_id_fake", url, local_file, file_size, chunk_size=1024, update_frequency=1)
-
-    def test__download_cancelled_by_user(self):
-        local_file = "local.h5ad"
-        self.addCleanup(self.cleanup_local_file, local_file)
-        url = f"http://localhost:{self.port}/upload_test_file.txt"
-        file_size = int(requests.head(url).headers["content-length"])
-        download.download("test_dataset_id", url, local_file, file_size, chunk_size=1024, update_frequency=1)
-        os.environ["ARTIFACT_BUCKET"] = "madison-tmp"
-        os.environ["CELLXGENE_BUCKET"] = "madison-tmp"
-        cancel_upload("test_dataset_id")
-        processing_status = Dataset.get("test_dataset_id").processing_status
-        self.assertEqual(UploadStatus.CANCELED, processing_status.upload_status)
-
+            download.download(
+                "test_dataset_id_fake",
+                url,
+                local_file,
+                file_size,
+                "artifact_bucket",
+                "cellxgene_bucket",
+                chunk_size=1024,
+                update_frequency=1,
+            )

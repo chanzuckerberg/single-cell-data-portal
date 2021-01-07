@@ -6,7 +6,7 @@ import tempfile
 import boto3
 from moto import mock_s3
 
-from backend.corpora.lambdas.upload_failures.upload import delete_many_from_s3
+from backend.corpora.common.utils.aws import delete_many_from_s3
 
 
 class TestUploadFailureHandling(TestCase):

@@ -2,14 +2,13 @@ from flask import make_response, jsonify
 
 from ....common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from ....common.entities import Dataset, Collection
-from ....common.utils.db_utils import db_session
+from ....common.utils.db_utils import db_session, processing_status_updater
 from ....common.utils.exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
     MethodNotAllowedException,
 )
-from ....dataset_processing.download import processing_status_updater
 
 
 @db_session()
@@ -58,7 +57,10 @@ def get_status(dataset_uuid: str, user: str):
 
 
 @db_session()
-def cancel_dataset_download(dataset_uuid: str, user: str):
+def delete_dataset(dataset_uuid: str, user: str):
+    """
+    Cancels an inprogress upload.
+    """
     dataset = Dataset.get(dataset_uuid)
     if not dataset:
         raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' not found.")

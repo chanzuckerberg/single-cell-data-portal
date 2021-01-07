@@ -14,8 +14,7 @@ from backend.corpora.common.corpora_orm import (
     Base,
 )
 from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.db_utils import DbUtils
-from backend.corpora.dataset_processing.download import processing_status_updater
+from backend.corpora.common.utils.db_utils import DbUtils, processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase

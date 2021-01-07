@@ -4,17 +4,19 @@ import requests
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.aws import delete_many_from_s3
+from backend.corpora.common.utils.db_utils import db_session_manager, processing_status_updater
 from backend.corpora.common.utils.math_utils import MB
-
 
 logger = logging.getLogger(__name__)
 
 
 class ProgressTracker:
-    def __init__(self, file_size: int):
+    def __init__(self, file_size: int, artifact_bucket: str, cellxgene_bucket: str):
         self.file_size: int = file_size
         self._progress: int = 0
+        self.artifact_bucket = artifact_bucket
+        self.cellxgene_bucket = cellxgene_bucket
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
@@ -31,24 +33,6 @@ class ProgressTracker:
     def cancel(self):
         self.stop_downloader.set()
         self.stop_updater.set()
-
-
-def cancel_upload(dataset_uuid: str):
-    print(f"cancelling the upload for {dataset_uuid}")
-
-    # set db to cancelled
-    status = {
-        DbDatasetProcessingStatus.upload_progress: 0,
-        DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
-        DbDatasetProcessingStatus.upload_message: "Canceled by user",
-    }
-
-    dataset = Dataset.get(dataset_uuid)
-    processing_status_updater(dataset.processing_status.id, status)
-    # delete from s3
-    delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], dataset_uuid)
-    delete_many_from_s3(os.environ["CELLXGENE_BUCKET"], dataset_uuid)
-
 
 
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
@@ -81,11 +65,6 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
         tracker.stop_updater.set()
 
 
-def processing_status_updater(uuid: str, updates: dict):
-    with db_session_manager(commit=True) as manager:
-        manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
-
-
 def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: float):
     """
     Update the progress of an upload to the database using the tracker.
@@ -98,10 +77,27 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
 
     def _update():
         with db_session_manager(commit=True) as db:
-            curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid)
-            if curr_status.upload_status is UploadStatus.CANCEL_PENDING:
-                cancel_upload(curr_status.dataset.id)
-                tracker.cancel()
+            try:
+                curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid).upload_status
+                if curr_status is UploadStatus.CANCEL_PENDING:
+                    logger.info(f"cancelling the upload for {curr_status.dataset.id}")
+                    # set db to cancelled
+                    status = {
+                        DbDatasetProcessingStatus.upload_progress: 0,
+                        DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
+                        DbDatasetProcessingStatus.upload_message: "Canceled by user",
+                    }
+
+                    dataset = Dataset.get(curr_status.dataset.id)
+                    processing_status_updater(dataset.processing_status.id, status)
+                    # delete from s3
+                    delete_many_from_s3(tracker.artifact_bucket, dataset.id)
+                    delete_many_from_s3(tracker.cellxgene_bucket, dataset.id)
+                    tracker.cancel()
+                elif curr_status is UploadStatus.Canceled:
+                    return
+            except AttributeError:
+                pass
         progress = tracker.progress()
         if progress > 1:
             tracker.stop_downloader.set()
@@ -136,7 +132,14 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
 
 
 def download(
-    dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3
+    dataset_uuid: str,
+    url: str,
+    local_path: str,
+    file_size: int,
+    artifact_bucket: str,
+    cellxgene_bucket: str,
+    chunk_size: int = 10 * MB,
+    update_frequency=3,
 ) -> dict:
     """
     Download a file from a url and update the processing_status upload fields in the database
@@ -155,7 +158,7 @@ def download(
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         status_uuid = processing_status.id
-    progress_tracker = ProgressTracker(file_size)
+    progress_tracker = ProgressTracker(file_size, artifact_bucket, cellxgene_bucket)
     progress_thread = threading.Thread(
         target=updater,
         kwargs=dict(processing_status_uuid=status_uuid, tracker=progress_tracker, frequency=update_frequency),
