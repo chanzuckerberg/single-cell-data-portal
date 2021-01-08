@@ -35,13 +35,6 @@ import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import { DatasetStatusTag, StyledAnchor, TitleContainer } from "./style";
 
-interface Props {
-  dataset: Dataset;
-  checkHandler: (id: string) => void;
-  file?: UploadingFile;
-  invalidateCollectionQuery: () => void;
-}
-
 const AsyncPopover = loadable(
   () =>
     /*webpackChunkName: 'CollectionRow/components/Popover' */ import(
@@ -49,19 +42,58 @@ const AsyncPopover = loadable(
     )
 );
 
-const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
+type FailReturn =
+  | {
+      isFailed: boolean;
+      error: VALIDATION_STATUS | UPLOAD_STATUS;
+    }
+  | {
+      isFailed: false;
+    };
 
-const conditionalPopover = (
-  values: string[],
-  loading: boolean,
-  hasFailed: boolean
+const checkIfFailed = (datasetStatus: DatasetUploadStatus): FailReturn => {
+  if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
+    return { error: VALIDATION_STATUS.INVALID, isFailed: true };
+  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
+    return { error: UPLOAD_STATUS.FAILED, isFailed: true };
+  // TODO: check if conversion failed
+  return { isFailed: false };
+};
+
+const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
+  if (checkIfFailed(datasetStatus).isFailed) return false;
+  if (
+    datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING ||
+    datasetStatus.upload_status === UPLOAD_STATUS.WAITING
+  )
+    return true;
+  if (datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
+    return true;
+  // TODO: There should be an all encompassing conversion to simplify this part
+  if (
+    datasetStatus.conversion_anndata_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_cxg_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_rds_status === CONVERSION_STATUS.CONVERTING ||
+    datasetStatus.conversion_loom_status === CONVERSION_STATUS.CONVERTING
+  )
+    return true;
+
+  return false;
+};
+
+const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
+  // There should be an "all done" indicator on the status to tell us whether it is still loading or all done
+  return !checkIfFailed(datasetStatus) && !checkIfLoading(datasetStatus);
+};
+
+const handleFail = (
+  datasetID: Dataset["id"],
+  fail: FailReturn,
+  setHasFailed: React.Dispatch<React.SetStateAction<FailReturn>>,
+  queryCache: QueryCache
 ) => {
-  if (loading) return <td>{skeletonDiv}</td>;
-  if (hasFailed || !values || values.length === 0) {
-    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
-  }
-
-  return <AsyncPopover values={values} />;
+  queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
+  setHasFailed(fail);
 };
 
 const INITIAL_UPLOAD_PROGRESS = -1;
@@ -84,59 +116,6 @@ const updateUploadProgress = (
     }
     setLastUploadProgress(uploadProgress);
   }
-};
-
-type FailReturn =
-  | {
-      isFailed: boolean;
-      error: VALIDATION_STATUS | UPLOAD_STATUS;
-    }
-  | {
-      isFailed: false;
-    };
-
-const checkIfFailed = (datasetStatus: DatasetUploadStatus): FailReturn => {
-  if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
-    return { error: VALIDATION_STATUS.INVALID, isFailed: true };
-  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
-    return { error: UPLOAD_STATUS.FAILED, isFailed: true };
-  // TODO: check if conversion failed
-  return { isFailed: false };
-};
-const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
-  if (checkIfFailed(datasetStatus).isFailed) return false;
-  // TODO: There should be an "all done" value on datasetStatus to simplify this check
-  if (
-    datasetStatus.upload_status === UPLOAD_STATUS.UPLOADING ||
-    datasetStatus.upload_status === UPLOAD_STATUS.WAITING
-  )
-    return true;
-  if (datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
-    return true;
-  // TODO: There should be an all encompassing conversion to simplify this part
-  if (
-    datasetStatus.conversion_anndata_status === CONVERSION_STATUS.CONVERTING ||
-    datasetStatus.conversion_cxg_status === CONVERSION_STATUS.CONVERTING ||
-    datasetStatus.conversion_rds_status === CONVERSION_STATUS.CONVERTING ||
-    datasetStatus.conversion_loom_status === CONVERSION_STATUS.CONVERTING
-  )
-    return true;
-
-  return false;
-};
-
-const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
-  return !checkIfFailed(datasetStatus) && !checkIfLoading(datasetStatus);
-};
-
-const handleFail = (
-  datasetID: Dataset["id"],
-  fail: FailReturn,
-  setHasFailed: React.Dispatch<React.SetStateAction<FailReturn>>,
-  queryCache: QueryCache
-) => {
-  queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
-  setHasFailed(fail);
 };
 
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
@@ -178,6 +157,28 @@ const tooltipContent = (error: VALIDATION_STATUS | UPLOAD_STATUS) => {
     <span>There was a problem uploading your file. Please try again.</span>
   );
 };
+
+const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
+
+const conditionalPopover = (
+  values: string[],
+  loading: boolean,
+  hasFailed: boolean
+) => {
+  if (loading) return <td>{skeletonDiv}</td>;
+  if (hasFailed || !values || values.length === 0) {
+    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
+  }
+
+  return <AsyncPopover values={values} />;
+};
+
+interface Props {
+  dataset: Dataset;
+  checkHandler: (id: string) => void;
+  file?: UploadingFile;
+  invalidateCollectionQuery: () => void;
+}
 
 const DatasetRow: FC<Props> = ({
   dataset,
@@ -221,9 +222,6 @@ const DatasetRow: FC<Props> = ({
       return;
     }
 
-    // If there is no name on the dataset the conversion and upload process hasn't completed
-    // Assign a temp name and begin polling the status endpoint
-    // This should be replaced with a signifier from the backend instead of relying on name population
     updateUploadProgress(
       datasetStatus.upload_progress,
       lastUploadProgress,
