@@ -103,6 +103,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             index=(str(i) for i in range(50001)),
         )
         uns = {
+            "title": "my test dataset",
             "organism": "Homo sapiens",
             "organism_ontology_term_id": "NCBITaxon:8505",
             "layer_descriptions": {"X": "raw"},
