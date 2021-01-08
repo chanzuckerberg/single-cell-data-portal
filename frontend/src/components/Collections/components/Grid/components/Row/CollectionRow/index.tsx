@@ -7,13 +7,13 @@ import {
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
-import { StyledCell } from "../../../common/style";
-import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
+  StyledCell,
   StyledRow,
-} from "../common/style";
+} from "../../../common/style";
+import { aggregateDatasetsMetadata } from "../../../common/utils";
 import { CollectionTitleText } from "./style";
 
 interface Props {
