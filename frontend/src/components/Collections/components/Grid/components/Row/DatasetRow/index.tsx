@@ -2,9 +2,12 @@ import {
   Button,
   Checkbox,
   Classes,
+  Colors,
   Icon,
   Intent,
+  PopoverInteractionKind,
   Spinner,
+  Tooltip,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
@@ -30,7 +33,7 @@ import {
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
-import { DatasetStatusTag, TitleContainer } from "./style";
+import { DatasetStatusTag, StyledAnchor, TitleContainer } from "./style";
 
 interface Props {
   dataset: Dataset;
@@ -128,48 +131,15 @@ const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
 
 const handleFail = (
   datasetID: Dataset["id"],
-  error: VALIDATION_STATUS | UPLOAD_STATUS,
-  fileName: string | undefined,
-  setHasFailed: React.Dispatch<React.SetStateAction<boolean>>,
+  fail: FailReturn,
+  setHasFailed: React.Dispatch<React.SetStateAction<FailReturn>>,
   queryCache: QueryCache
 ) => {
   queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
-  // If there is no filename present, we know there's been a refresh
-  if (fileName)
-    DatasetUploadToast.show({
-      action:
-        error === VALIDATION_STATUS.INVALID
-          ? {
-              href:
-                "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md",
-              target: "_blank",
-              text: "Learn More",
-            }
-          : {},
-      intent: Intent.DANGER,
-      message:
-        error === VALIDATION_STATUS.INVALID
-          ? "You must validate your dataset locally before uploading. We provide a local CLI script to do this."
-          : "There was a problem uploading your file. Please try again.",
-    });
-  setHasFailed(true);
+  setHasFailed(fail);
 };
 
 const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
-  if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID)
-    return (
-      <DatasetStatusTag intent={Intent.DANGER}>
-        <Icon iconSize={16} icon={IconNames.ISSUE} />
-        Validation Error
-      </DatasetStatusTag>
-    );
-  if (datasetStatus.upload_status === UPLOAD_STATUS.FAILED)
-    return (
-      <DatasetStatusTag intent={Intent.DANGER}>
-        <Icon iconSize={16} icon={IconNames.ISSUE} />
-        Upload Error
-      </DatasetStatusTag>
-    );
   if (datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING)
     return (
       <DatasetStatusTag>
@@ -185,7 +155,6 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
         value={datasetStatus.upload_progress}
         size={16}
       />
-
       {`Uploading (${Math.round(datasetStatus.upload_progress * 100)}%)`}
     </DatasetStatusTag>
   );
@@ -207,12 +176,13 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   const [lastUploadProgress, setLastUploadProgress] = useState(
     INITIAL_UPLOAD_PROGRESS
   );
-  const [hasFailed, setHasFailed] = useState(false);
+  const [hasFailed, setHasFailed] = useState({
+    isFailed: false,
+  } as FailReturn);
 
   if (queryResult.isError) console.error(queryResult.error);
 
   const datasetStatus = queryResult.data ?? dataset.processing_status;
-  const failed = checkIfFailed(datasetStatus);
   const isLoading = checkIfLoading(datasetStatus);
 
   let name = dataset.name;
@@ -221,16 +191,12 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
   }
 
   useEffect(() => {
+    const failed = checkIfFailed(datasetStatus);
     if (failed.isFailed) {
-      handleFail(
-        dataset.id,
-        failed.error,
-        file?.name,
-        setHasFailed,
-        queryCache
-      );
+      handleFail(dataset.id, failed, setHasFailed, queryCache);
       return;
     }
+
     // If there is no name on the dataset the conversion and upload process hasn't completed
     // Assign a temp name and begin polling the status endpoint
     // This should be replaced with a signifier from the backend instead of relying on name population
@@ -241,15 +207,7 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
         setLastUploadProgress
       );
     }
-  }, [
-    dataset.id,
-    datasetStatus,
-    failed,
-    file,
-    isLoading,
-    lastUploadProgress,
-    queryCache,
-  ]);
+  }, [dataset.id, datasetStatus, isLoading, lastUploadProgress, queryCache]);
 
   return (
     <StyledRow>
@@ -257,23 +215,52 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
         <TitleContainer>
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
+          {hasFailed.isFailed ? (
+            <Tooltip
+              intent={Intent.DANGER}
+              interactionKind={PopoverInteractionKind.HOVER}
+              hoverCloseDelay={500}
+              content={
+                hasFailed.error === VALIDATION_STATUS.INVALID ? (
+                  <span>
+                    You must validate your dataset locally before uploading. We
+                    provide a local CLI script to do this.{" "}
+                    <b>
+                      <StyledAnchor
+                        href="https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md"
+                        target="_blank"
+                      >
+                        Learn More
+                      </StyledAnchor>
+                    </b>
+                  </span>
+                ) : (
+                  <span>
+                    There was a problem uploading your file. Please try again.
+                  </span>
+                )
+              }
+            >
+              <Icon icon={IconNames.ISSUE} iconSize={16} color={Colors.RED3} />
+            </Tooltip>
+          ) : null}
         </TitleContainer>
-        {(isLoading || hasFailed) && renderUploadStatus(datasetStatus)}
+        {isLoading && renderUploadStatus(datasetStatus)}
       </DetailsCell>
-      {conditionalPopover(tissue, isLoading, hasFailed)}
-      {conditionalPopover(assay, isLoading, hasFailed)}
-      {conditionalPopover(disease, isLoading, hasFailed)}
-      {conditionalPopover(organism, isLoading, hasFailed)}
+      {conditionalPopover(tissue, isLoading, hasFailed.isFailed)}
+      {conditionalPopover(assay, isLoading, hasFailed.isFailed)}
+      {conditionalPopover(disease, isLoading, hasFailed.isFailed)}
+      {conditionalPopover(organism, isLoading, hasFailed.isFailed)}
       {isLoading ? (
         <td>{skeletonDiv}</td>
       ) : (
         <RightAlignedDetailsCell>
-          {hasFailed || !cell_count ? "-" : cell_count}
+          {hasFailed.isFailed || !cell_count ? "-" : cell_count}
         </RightAlignedDetailsCell>
       )}
       <RightAlignedDetailsCell>
         {/* datasetStatus.conversion_cxg_status */}
-        {!(isLoading || hasFailed) && (
+        {!(isLoading || hasFailed.isFailed) && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
         )}
       </RightAlignedDetailsCell>

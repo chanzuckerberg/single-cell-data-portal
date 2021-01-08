@@ -1,5 +1,5 @@
 import { Classes, Colors, Intent } from "@blueprintjs/core";
-import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { fontStyle, GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const UploadStatusContainer = styled.div`
@@ -17,6 +17,10 @@ export const TitleContainer = styled.div`
     margin: 0 ${PT_GRID_SIZE_PX}px 0 0;
   }
   white-space: normal;
+  align-items: center;
+  & > .${Classes.POPOVER_WRAPPER} {
+    margin-left: ${PT_GRID_SIZE_PX}px;
+  }
 `;
 
 const intentColorSwitch = (intent: Intent, border?: boolean) => {
@@ -48,5 +52,17 @@ export const DatasetStatusTag = styled.div`
   & > .${Classes.SPINNER}, .${Classes.ICON} {
     margin: auto ${PT_GRID_SIZE_PX}px auto 0;
     height: 100%;
+  }
+`;
+
+export const StyledAnchor = styled.a`
+  ${fontStyle}
+  text-decoration: none;
+  color: ${Colors.WHITE};
+  display: contents;
+
+  &:hover {
+    color: ${Colors.WHITE};
+    text-decoration: underline;
   }
 `;
