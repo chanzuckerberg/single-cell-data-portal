@@ -12,7 +12,7 @@ import {
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC, useEffect, useState } from "react";
-import { QueryCache, useQueryCache } from "react-query";
+import { useQueryCache } from "react-query";
 import {
   CONVERSION_STATUS,
   Dataset,
@@ -83,17 +83,9 @@ const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
 
 const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
   // There should be an "all done" indicator on the status to tell us whether it is still loading or all done
-  return !checkIfFailed(datasetStatus) && !checkIfLoading(datasetStatus);
-};
-
-const handleFail = (
-  datasetID: Dataset["id"],
-  fail: FailReturn,
-  setHasFailed: React.Dispatch<React.SetStateAction<FailReturn>>,
-  queryCache: QueryCache
-) => {
-  queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
-  setHasFailed(fail);
+  return (
+    !checkIfFailed(datasetStatus).isFailed && !checkIfLoading(datasetStatus)
+  );
 };
 
 const INITIAL_UPLOAD_PROGRESS = -1;
@@ -158,6 +150,35 @@ const tooltipContent = (error: VALIDATION_STATUS | UPLOAD_STATUS) => {
   );
 };
 
+const errorTooltip = (hasFailed: FailReturn) => {
+  return (
+    hasFailed.isFailed && (
+      <Tooltip
+        intent={Intent.DANGER}
+        interactionKind={PopoverInteractionKind.HOVER}
+        hoverCloseDelay={500}
+        content={tooltipContent(hasFailed.error)}
+      >
+        <Icon icon={IconNames.ISSUE} iconSize={16} color={Colors.RED3} />
+      </Tooltip>
+    )
+  );
+};
+
+const cellCount = (
+  cell_count: number,
+  hasFailed: boolean,
+  isLoading: boolean
+) => {
+  return isLoading ? (
+    <td>{skeletonDiv}</td>
+  ) : (
+    <RightAlignedDetailsCell>
+      {hasFailed || !cell_count ? "-" : cell_count}
+    </RightAlignedDetailsCell>
+  );
+};
+
 const skeletonDiv = <div className={Classes.SKELETON}>PLACEHOLDER_TEXT</div>;
 
 const conditionalPopover = (
@@ -201,45 +222,40 @@ const DatasetRow: FC<Props> = ({
   const [lastUploadProgress, setLastUploadProgress] = useState(
     INITIAL_UPLOAD_PROGRESS
   );
-  const [hasFailed, setHasFailed] = useState({
-    isFailed: false,
-  } as FailReturn);
 
   if (queryResult.isError) console.error(queryResult.error);
 
   const datasetStatus = queryResult.data ?? dataset.processing_status;
   const isLoading = checkIfLoading(datasetStatus);
+  const hasFailed = checkIfFailed(datasetStatus);
 
-  let name = dataset.name;
-  if (name === undefined || name === "") {
-    name = file?.name ?? dataset.id;
-  }
+  // `nameIsPopulated` is a temp-workaround for no "complete status"
+  // const isComplete = checkIfComplete(datasetStatus);
+  const nameIsPopulated = dataset.name === undefined || dataset.name === "";
+
+  const name = nameIsPopulated ? dataset.name : file?.name ?? dataset.id;
 
   useEffect(() => {
-    const failed = checkIfFailed(datasetStatus);
-    if (failed.isFailed) {
-      handleFail(dataset.id, failed, setHasFailed, queryCache);
-      return;
-    }
+    if (isLoading)
+      updateUploadProgress(
+        datasetStatus.upload_progress,
+        lastUploadProgress,
+        setLastUploadProgress,
+        invalidateCollectionQuery
+      );
 
-    updateUploadProgress(
-      datasetStatus.upload_progress,
-      lastUploadProgress,
-      setLastUploadProgress,
-      invalidateCollectionQuery
-    );
-    // This check doesn't work yet since only upload status is being sent
-    // if (checkIfComplete(datasetStatus)) {
-    if (dataset.name !== undefined && dataset.name !== "") {
+    if (hasFailed.isFailed || nameIsPopulated) {
       invalidateCollectionQuery();
       queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
     }
   }, [
     dataset.id,
-    dataset.name,
-    datasetStatus,
+    datasetStatus.upload_progress,
+    hasFailed.isFailed,
     invalidateCollectionQuery,
+    isLoading,
     lastUploadProgress,
+    nameIsPopulated,
     queryCache,
   ]);
 
@@ -249,16 +265,7 @@ const DatasetRow: FC<Props> = ({
         <TitleContainer>
           <Checkbox onChange={() => checkHandler(dataset.id)} />
           <div>{name}</div>
-          {hasFailed.isFailed ? (
-            <Tooltip
-              intent={Intent.DANGER}
-              interactionKind={PopoverInteractionKind.HOVER}
-              hoverCloseDelay={500}
-              content={tooltipContent(hasFailed.error)}
-            >
-              <Icon icon={IconNames.ISSUE} iconSize={16} color={Colors.RED3} />
-            </Tooltip>
-          ) : null}
+          {errorTooltip(hasFailed)}
         </TitleContainer>
         {isLoading && renderUploadStatus(datasetStatus)}
       </DetailsCell>
@@ -266,16 +273,9 @@ const DatasetRow: FC<Props> = ({
       {conditionalPopover(assay, isLoading, hasFailed.isFailed)}
       {conditionalPopover(disease, isLoading, hasFailed.isFailed)}
       {conditionalPopover(organism, isLoading, hasFailed.isFailed)}
-      {isLoading ? (
-        <td>{skeletonDiv}</td>
-      ) : (
-        <RightAlignedDetailsCell>
-          {hasFailed.isFailed || !cell_count ? "-" : cell_count}
-        </RightAlignedDetailsCell>
-      )}
+      {cellCount(cell_count, hasFailed.isFailed, isLoading)}
       <RightAlignedDetailsCell>
-        {/* datasetStatus.conversion_cxg_status */}
-        {!(isLoading || hasFailed.isFailed) && (
+        {nameIsPopulated && (
           <Button intent={Intent.PRIMARY} outlined text="Explore" />
         )}
       </RightAlignedDetailsCell>
