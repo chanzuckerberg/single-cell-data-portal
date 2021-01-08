@@ -230,11 +230,17 @@ const DatasetRow: FC<Props> = ({
       setLastUploadProgress,
       invalidateCollectionQuery
     );
+    // This check doesn't work yet since only upload status is being sent
+    // if (checkIfComplete(datasetStatus)) {
+    if (dataset.name !== undefined && dataset.name !== "") {
+      invalidateCollectionQuery();
+      queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
+    }
   }, [
     dataset.id,
+    dataset.name,
     datasetStatus,
     invalidateCollectionQuery,
-    isLoading,
     lastUploadProgress,
     queryCache,
   ]);
