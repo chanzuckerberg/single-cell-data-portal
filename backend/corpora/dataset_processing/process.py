@@ -120,8 +120,7 @@ def update_db(metadata=None, processing_status=None):
 
 
 def download_from_dropbox_url(
-    dataset_uuid: str, dropbox_url: str, local_path: str, artifact_bucket: str, cellxgene_bucket: str
-) -> str:
+    dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
     """Given a dropbox url, download it to local_path.
     Handles fixing the url so it downloads directly.
     """
@@ -131,7 +130,7 @@ def download_from_dropbox_url(
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
-    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"], artifact_bucket, cellxgene_bucket)
+    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     return local_path
 
 

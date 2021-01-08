@@ -11,11 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class ProgressTracker:
-    def __init__(self, file_size: int, artifact_bucket: str, cellxgene_bucket: str):
+    def __init__(self, file_size: int):
         self.file_size: int = file_size
         self._progress: int = 0
-        self.artifact_bucket = artifact_bucket
-        self.cellxgene_bucket = cellxgene_bucket
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
@@ -76,28 +74,21 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
 
     def _update():
         with db_session_manager(commit=True) as db:
-            try:
-                curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid).upload_status
-                if curr_status is UploadStatus.CANCEL_PENDING:
-                    logger.info(f"cancelling the upload for {curr_status.dataset.id}")
-                    # set db to cancelled
-                    status = {
-                        DbDatasetProcessingStatus.upload_progress: 0,
-                        DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
-                        DbDatasetProcessingStatus.upload_message: "Canceled by user",
-                    }
-
-                    dataset = Dataset.get(curr_status.dataset.id)
-                    processing_status_updater(dataset.processing_status.id, status)
-                    tracker.cancel()
-                elif curr_status is UploadStatus.Canceled:
-                    return
-            # if _update is run before the downloader has committed the status to the db accessing the upload status
-            # will raise an attribute error
-            except AttributeError:
-                pass
+            curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid).upload_status
         progress = tracker.progress()
-        if progress > 1:
+
+        if curr_status is UploadStatus.CANCEL_PENDING:
+            logger.info(f"cancelling the upload for {curr_status.dataset.id}")
+            # set db to cancelled
+            status = {
+                DbDatasetProcessingStatus.upload_progress: 0,
+                DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
+                DbDatasetProcessingStatus.upload_message: "Canceled by user",
+            }
+            tracker.cancel()
+        elif curr_status is UploadStatus.CANCELED:
+            return
+        elif progress > 1:
             tracker.stop_downloader.set()
             message = "The expected file size is smaller than the actual file size."
             status = {
@@ -134,8 +125,6 @@ def download(
     url: str,
     local_path: str,
     file_size: int,
-    artifact_bucket: str,
-    cellxgene_bucket: str,
     chunk_size: int = 10 * MB,
     update_frequency=3,
 ) -> dict:
@@ -156,7 +145,7 @@ def download(
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         status_uuid = processing_status.id
-    progress_tracker = ProgressTracker(file_size, artifact_bucket, cellxgene_bucket)
+    progress_tracker = ProgressTracker(file_size)
     progress_thread = threading.Thread(
         target=updater,
         kwargs=dict(processing_status_uuid=status_uuid, tracker=progress_tracker, frequency=update_frequency),

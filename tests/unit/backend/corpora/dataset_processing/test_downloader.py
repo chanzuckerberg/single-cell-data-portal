@@ -49,8 +49,6 @@ class TestDownload(DataPortalTestCase):
             url,
             local_file,
             file_size,
-            "artifact_bucket",
-            "cellxgene_bucket",
             chunk_size=1024,
             update_frequency=1,
         )
@@ -73,8 +71,6 @@ class TestDownload(DataPortalTestCase):
                 url,
                 local_file,
                 1,
-                "artifact_bucket",
-                "cellxgene_bucket",
                 chunk_size=1024,
                 update_frequency=1,
             )
@@ -87,8 +83,6 @@ class TestDownload(DataPortalTestCase):
                 url,
                 local_file,
                 10 * MB,
-                "artifact_bucket",
-                "cellxgene_bucket",
                 chunk_size=1024,
                 update_frequency=1,
             )
@@ -102,8 +96,6 @@ class TestDownload(DataPortalTestCase):
 
         progress_tracker = download.ProgressTracker(
             1,
-            "artifact_bucket",
-            "cellxgene_bucket",
         )
         progress_tracker.stop_downloader.set()
         with self.assertLogs(download.logger, logging.INFO) as logs:
@@ -119,8 +111,6 @@ class TestDownload(DataPortalTestCase):
             url,
             local_file,
             100,
-            "artifact_bucket",
-            "cellxgene_bucket",
             chunk_size=1024,
             update_frequency=1,
         )
@@ -138,8 +128,6 @@ class TestDownload(DataPortalTestCase):
                 url,
                 local_file,
                 file_size,
-                "artifact_bucket",
-                "cellxgene_bucket",
                 chunk_size=1024,
                 update_frequency=1,
             )
