@@ -81,12 +81,12 @@ const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
   return false;
 };
 
-const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
-  // There should be an "all done" indicator on the status to tell us whether it is still loading or all done
-  return (
-    !checkIfFailed(datasetStatus).isFailed && !checkIfLoading(datasetStatus)
-  );
-};
+// const checkIfComplete = (datasetStatus: DatasetUploadStatus): boolean => {
+//   // There should be an "all done" indicator on the status to tell us whether it is still loading or all done
+//   return (
+//     !checkIfFailed(datasetStatus).isFailed && !checkIfLoading(datasetStatus)
+//   );
+// };
 
 const INITIAL_UPLOAD_PROGRESS = -1;
 
