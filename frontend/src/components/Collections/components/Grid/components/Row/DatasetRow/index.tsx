@@ -69,21 +69,23 @@ const INITIAL_UPLOAD_PROGRESS = -1;
 const updateUploadProgress = (
   uploadProgress: DatasetUploadStatus["upload_progress"],
   lastUploadProgress: DatasetUploadStatus["upload_progress"],
+  datasetID: DatasetUploadStatus["dataset_id"],
+  queryCache: QueryCache,
   setLastUploadProgress: React.Dispatch<React.SetStateAction<number>>,
   invalidateCollectionQuery: () => void
 ) => {
   if (lastUploadProgress !== uploadProgress) {
-    if (
-      uploadProgress === 1 &&
-      lastUploadProgress !== INITIAL_UPLOAD_PROGRESS
-    ) {
-      DatasetUploadToast.show({
-        icon: IconNames.TICK,
-        intent: Intent.SUCCESS,
-        message:
-          "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
-      });
-      invalidateCollectionQuery();
+    if (uploadProgress === 1) {
+      if (lastUploadProgress !== INITIAL_UPLOAD_PROGRESS) {
+        DatasetUploadToast.show({
+          icon: IconNames.TICK,
+          intent: Intent.SUCCESS,
+          message:
+            "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
+        });
+        invalidateCollectionQuery();
+      }
+      queryCache.cancelQueries([USE_DATASET_STATUS, datasetID]);
     }
     setLastUploadProgress(uploadProgress);
   }
@@ -208,14 +210,14 @@ const DatasetRow: FC<Props> = ({
     // If there is no name on the dataset the conversion and upload process hasn't completed
     // Assign a temp name and begin polling the status endpoint
     // This should be replaced with a signifier from the backend instead of relying on name population
-    if (isLoading) {
-      updateUploadProgress(
-        datasetStatus.upload_progress,
-        lastUploadProgress,
-        setLastUploadProgress,
-        invalidateCollectionQuery
-      );
-    }
+    updateUploadProgress(
+      datasetStatus.upload_progress,
+      lastUploadProgress,
+      dataset.id,
+      queryCache,
+      setLastUploadProgress,
+      invalidateCollectionQuery
+    );
   }, [
     dataset.id,
     datasetStatus,
