@@ -165,6 +165,25 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
   );
 };
 
+const tooltipContent = (error: VALIDATION_STATUS | UPLOAD_STATUS) => {
+  return error === VALIDATION_STATUS.INVALID ? (
+    <span>
+      You must validate your dataset locally before uploading. We provide a
+      local CLI script to do this.{" "}
+      <b>
+        <StyledAnchor
+          href="https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md"
+          target="_blank"
+        >
+          Learn More
+        </StyledAnchor>
+      </b>
+    </span>
+  ) : (
+    <span>There was a problem uploading your file. Please try again.</span>
+  );
+};
+
 const DatasetRow: FC<Props> = ({
   dataset,
   checkHandler,
@@ -196,7 +215,7 @@ const DatasetRow: FC<Props> = ({
   const isLoading = checkIfLoading(datasetStatus);
 
   let name = dataset.name;
-  if (!name) {
+  if (name === undefined || name === "") {
     name = file?.name ?? dataset.id;
   }
 
@@ -238,26 +257,7 @@ const DatasetRow: FC<Props> = ({
               intent={Intent.DANGER}
               interactionKind={PopoverInteractionKind.HOVER}
               hoverCloseDelay={500}
-              content={
-                hasFailed.error === VALIDATION_STATUS.INVALID ? (
-                  <span>
-                    You must validate your dataset locally before uploading. We
-                    provide a local CLI script to do this.{" "}
-                    <b>
-                      <StyledAnchor
-                        href="https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md"
-                        target="_blank"
-                      >
-                        Learn More
-                      </StyledAnchor>
-                    </b>
-                  </span>
-                ) : (
-                  <span>
-                    There was a problem uploading your file. Please try again.
-                  </span>
-                )
-              }
+              content={tooltipContent(hasFailed.error)}
             >
               <Icon icon={IconNames.ISSUE} iconSize={16} color={Colors.RED3} />
             </Tooltip>
