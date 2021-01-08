@@ -11,9 +11,14 @@ import DatasetRow from "../Row/DatasetRow";
 interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
+  invalidateCollectionQuery: () => void;
 }
 
-const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
+const DatasetsGrid: FC<Props> = ({
+  datasets,
+  uploadedFiles,
+  invalidateCollectionQuery,
+}) => {
   const [selected, setSelected] = useState(new Set());
 
   const handleSelect = (id: string) => {
@@ -42,6 +47,7 @@ const DatasetsGrid: FC<Props> = ({ datasets, uploadedFiles }) => {
             dataset={dataset}
             checkHandler={handleSelect}
             file={uploadedFiles[dataset.id]}
+            invalidateCollectionQuery={invalidateCollectionQuery}
           />
         ))}
       </tbody>

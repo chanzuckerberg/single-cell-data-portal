@@ -39,6 +39,7 @@ interface Props {
   dataset: Dataset;
   checkHandler: (id: string) => void;
   file?: UploadingFile;
+  invalidateCollectionQuery: () => void;
 }
 
 const AsyncPopover = loadable(
@@ -68,7 +69,8 @@ const INITIAL_UPLOAD_PROGRESS = -1;
 const updateUploadProgress = (
   uploadProgress: DatasetUploadStatus["upload_progress"],
   lastUploadProgress: DatasetUploadStatus["upload_progress"],
-  setLastUploadProgress: React.Dispatch<React.SetStateAction<number>>
+  setLastUploadProgress: React.Dispatch<React.SetStateAction<number>>,
+  invalidateCollectionQuery: () => void
 ) => {
   if (lastUploadProgress !== uploadProgress) {
     if (
@@ -81,6 +83,7 @@ const updateUploadProgress = (
         message:
           "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
       });
+      invalidateCollectionQuery();
     }
     setLastUploadProgress(uploadProgress);
   }
@@ -160,7 +163,12 @@ const renderUploadStatus = (datasetStatus: DatasetUploadStatus) => {
   );
 };
 
-const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
+const DatasetRow: FC<Props> = ({
+  dataset,
+  checkHandler,
+  file,
+  invalidateCollectionQuery,
+}) => {
   const {
     tissue,
     assay,
@@ -204,10 +212,18 @@ const DatasetRow: FC<Props> = ({ dataset, checkHandler, file }) => {
       updateUploadProgress(
         datasetStatus.upload_progress,
         lastUploadProgress,
-        setLastUploadProgress
+        setLastUploadProgress,
+        invalidateCollectionQuery
       );
     }
-  }, [dataset.id, datasetStatus, isLoading, lastUploadProgress, queryCache]);
+  }, [
+    dataset.id,
+    datasetStatus,
+    invalidateCollectionQuery,
+    isLoading,
+    lastUploadProgress,
+    queryCache,
+  ]);
 
   return (
     <StyledRow>

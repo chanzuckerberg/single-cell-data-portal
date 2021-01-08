@@ -115,6 +115,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
           <DatasetsGrid
             datasets={collection.datasets}
             uploadedFiles={uploadedFiles}
+            invalidateCollectionQuery={() => {
+              queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+            }}
           />
         ) : (
           <EmptyDatasets onUploadFile={addNewFile} />
