@@ -90,9 +90,6 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
 
                     dataset = Dataset.get(curr_status.dataset.id)
                     processing_status_updater(dataset.processing_status.id, status)
-                    # delete from s3
-                    delete_many_from_s3(tracker.artifact_bucket, dataset.id)
-                    delete_many_from_s3(tracker.cellxgene_bucket, dataset.id)
                     tracker.cancel()
                 elif curr_status is UploadStatus.Canceled:
                     return
