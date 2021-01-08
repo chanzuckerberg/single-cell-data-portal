@@ -91,11 +91,12 @@ class AwsSecret:
             print(message)
 
 
-def delete_many_from_s3(bucket_name, dataset_uuid) -> None:
+def delete_many_from_s3(bucket_name: str, dataset_uuid: str) -> None:
     """
     This deletes everything with a specific prefix from the given bucket
 
     """
+    assert dataset_uuid
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
     bucket.objects.filter(Prefix=f"{dataset_uuid}/").delete()

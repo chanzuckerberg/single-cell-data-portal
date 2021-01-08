@@ -507,7 +507,7 @@ paths:
         - datasets
       summary: Delete a dataset
       description: >-
-        Cancels the download of a dataset to Corpora and cleans up (removes) any artifacts created in the download process
+        Cancels the download of a dataset to the data portal and cleans up (removes) any artifacts created in the download process
       operationId: corpora.lambdas.api.v1.dataset.delete_dataset
       security:
         - cxguserCookie: [ ]
@@ -520,8 +520,6 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
         "405":
           $ref: "#/components/responses/405"
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:

@@ -150,11 +150,11 @@ class TestCollectionUploadLink(BaseAPITest, DataPortalTestCase, GenerateDataMixi
         self.assertEqual(response.status_code, 202)
         self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
 
-    def test__cancel_dataset_download__dataset_not_found(self):
+    def test__cancel_dataset_download__dataset_does_not_exist(self):
         test_url = "/dp/v1/datasets/missing_dataset_id"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test__cancel_dataset_download__already_uploaded(self):
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}

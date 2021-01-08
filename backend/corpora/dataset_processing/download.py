@@ -93,6 +93,7 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
                     tracker.cancel()
                 elif curr_status is UploadStatus.Canceled:
                     return
+            # if _update is run before the downloader has committed the status to the db accessing the upload status will raise an attribute error
             except AttributeError:
                 pass
         progress = tracker.progress()

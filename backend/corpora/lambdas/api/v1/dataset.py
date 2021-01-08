@@ -63,7 +63,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     """
     dataset = Dataset.get(dataset_uuid)
     if not dataset:
-        raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' not found.")
+        raise ForbiddenHTTPException()
     if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
     curr_status = dataset.processing_status
