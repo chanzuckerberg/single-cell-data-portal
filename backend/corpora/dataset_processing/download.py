@@ -4,7 +4,6 @@ import requests
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.aws import delete_many_from_s3
 from backend.corpora.common.utils.db_utils import db_session_manager, processing_status_updater
 from backend.corpora.common.utils.math_utils import MB
 
@@ -93,7 +92,8 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
                     tracker.cancel()
                 elif curr_status is UploadStatus.Canceled:
                     return
-            # if _update is run before the downloader has committed the status to the db accessing the upload status will raise an attribute error
+            # if _update is run before the downloader has committed the status to the db accessing the upload status
+            # will raise an attribute error
             except AttributeError:
                 pass
         progress = tracker.progress()
