@@ -11,7 +11,7 @@ interface Props {
   isLoading: boolean;
 }
 
-const MEGA_BYTES = 2 * 20;
+const MEGA_BYTES = 2 ** 20;
 
 const Details: FC<Props> = ({
   selected = false,
