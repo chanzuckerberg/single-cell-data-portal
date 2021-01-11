@@ -10,6 +10,6 @@ from .....common.utils.exceptions import ForbiddenHTTPException
 def post(collection_uuid: str, user: str):
     collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
     if not collection:
-        raise ForbiddenHTTPException
+        raise ForbiddenHTTPException()
     collection.publish()
     return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)
