@@ -5,7 +5,8 @@ import sys
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.upload_failures.upload import delete_many_from_s3, update_dataset_processing_status_to_failed
+from backend.corpora.common.utils.aws import delete_many_from_s3
+from backend.corpora.upload_failures.upload import update_dataset_processing_status_to_failed
 
 
 app = Chalice(app_name="upload_failures")
