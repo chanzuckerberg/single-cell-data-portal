@@ -104,7 +104,6 @@ const updateUploadProgress = (
         message:
           "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
       });
-      console.log("invalidate 107");
       invalidateCollectionQuery();
     }
     setLastUploadProgress(uploadProgress);
@@ -247,9 +246,6 @@ const DatasetRow: FC<Props> = ({
 
     if (hasFailed.isFailed || nameIsPopulated) {
       queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
-      if (hasFailed.isFailed) {
-        invalidateCollectionQuery();
-      }
     }
   }, [
     dataset.id,
