@@ -11,7 +11,7 @@ interface Props {
   isLoading: boolean;
 }
 
-const MEGA_BYTES = 1000 * 1000;
+const MEGA_BYTES = 2 ** 20;
 
 const Details: FC<Props> = ({
   selected = false,
@@ -27,7 +27,7 @@ const Details: FC<Props> = ({
       return PROMPT_TEXT;
     }
 
-    return `${Math.floor(fileSize / MEGA_BYTES)}MB`;
+    return `${Math.round(fileSize / MEGA_BYTES)}MB`;
   }
 
   return (

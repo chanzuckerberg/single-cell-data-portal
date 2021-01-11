@@ -31,10 +31,10 @@ destroy:
 
 .PHONY: package
 package: build-chalice-config
-	mkdir -p chalicelib/code
-	cp -R ../../corpora/common chalicelib
-	cp -R ../../corpora/dataset_processing chalicelib
-	cp -R ../../corpora/lambdas/upload_failures chalicelib
+	mkdir -p chalicelib/backend/corpora
+	cp -R ../../corpora/common chalicelib/backend/corpora
+	cp -R ../../corpora/dataset_processing chalicelib/backend/corpora
+	cp -R ../../corpora/lambdas/upload_failures chalicelib/backend/corpora
 	rm -rf vendor dist/deployment
 	mkdir vendor
 	find vendor -name '*.pyc' -delete

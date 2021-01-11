@@ -1,17 +1,9 @@
 import boto3
-import os
-import sys
 
-try:
-    from backend.corpora.common.entities import Dataset
-    from backend.corpora.common.corpora_orm import UploadStatus, DbDatasetProcessingStatus
-    from backend.corpora.dataset_processing.download import processing_status_updater
-except ImportError:
-    pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
-    sys.path.insert(0, pkg_root)  # noqa
-    from common.entities import Dataset
-    from common.corpora_orm import UploadStatus, DbDatasetProcessingStatus
-    from dataset_processing.download import processing_status_updater
+
+from backend.corpora.common.entities import Dataset
+from backend.corpora.common.corpora_orm import UploadStatus, DbDatasetProcessingStatus
+from backend.corpora.dataset_processing.download import processing_status_updater
 
 
 def delete_many_from_s3(bucket_name, dataset_uuid) -> None:
