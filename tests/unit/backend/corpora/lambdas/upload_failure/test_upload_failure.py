@@ -6,7 +6,7 @@ import tempfile
 import boto3
 from moto import mock_s3
 
-from backend.corpora.lambdas.upload_failures.upload import delete_many_from_s3
+from backend.corpora.common.utils.aws import delete_many_from_s3
 
 
 class TestUploadFailureHandling(TestCase):
@@ -65,3 +65,7 @@ class TestUploadFailureHandling(TestCase):
         self.assertNotIn("Contents", resp)
         # this should not raise any errors
         delete_many_from_s3(self.bucket_name, self.uuid)
+
+    def test_delete_from_s3_raises_error_for_missing_dataset_uuid(self):
+        with self.assertRaises(ValueError):
+            delete_many_from_s3(self.bucket_name, "")
