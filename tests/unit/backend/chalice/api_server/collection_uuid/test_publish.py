@@ -9,8 +9,9 @@ from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 
 
 class TestPublish(GenerateDataMixin, BaseAuthAPITest):
-    def verify_publish_collection(self, collection_id: str, dataset_ids: typing.List[str] = None,
-                                  link_names: typing.List[str] = None):
+    def verify_publish_collection(
+        self, collection_id: str, dataset_ids: typing.List[str] = None, link_names: typing.List[str] = None
+    ):
         path = f"/dp/v1/collections/{collection_id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post(path, headers)
@@ -43,7 +44,7 @@ class TestPublish(GenerateDataMixin, BaseAuthAPITest):
             actual_datasets = [d["id"] for d in actual["datasets"]]
             self.assertListEqual(dataset_ids, actual_datasets)
         if link_names:
-            actual_links = [l["link_name"] for l in actual["links"]]
+            actual_links = [link["link_name"] for link in actual["links"]]
             self.assertListEqual(link_names, actual_links)
 
     def test__OK(self):
@@ -60,9 +61,11 @@ class TestPublish(GenerateDataMixin, BaseAuthAPITest):
         self.verify_publish_collection(collection_id, dataset_ids)
 
     def test__with_links__OK(self):
-        collection = self.generate_collection(links=[{"link_name": "test_link",
-                                                      "link_type": CollectionLinkType.PROTOCOL,
-                                                      "link_url": "https://link.link"}])
+        collection = self.generate_collection(
+            links=[
+                {"link_name": "test_link", "link_type": CollectionLinkType.PROTOCOL, "link_url": "https://link.link"}
+            ]
+        )
         link_names = [link.link_name for link in collection.links]
         dataset_ids = [
             self.generate_dataset(
