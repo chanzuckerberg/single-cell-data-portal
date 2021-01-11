@@ -246,8 +246,10 @@ const DatasetRow: FC<Props> = ({
       );
 
     if (hasFailed.isFailed || nameIsPopulated) {
-      invalidateCollectionQuery();
       queryCache.cancelQueries([USE_DATASET_STATUS, dataset.id]);
+      if (hasFailed.isFailed) {
+        invalidateCollectionQuery();
+      }
     }
   }, [
     dataset.id,
