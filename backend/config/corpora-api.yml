@@ -84,6 +84,8 @@ paths:
                 properties:
                   collection_uuid:
                     $ref: "#/components/schemas/collection_uuid"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -478,14 +480,34 @@ paths:
                     $ref: "#/components/schemas/collection_uuid"
                   visibility:
                     $ref: "#/components/schemas/visibility"
-        "400":
-          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+
+  /dp/v1/datasets/{dataset_uuid}:
+    delete:
+      tags:
+        - datasets
+      summary: Delete a dataset
+      description: >-
+        Cancels the download of a dataset to the data portal and cleans up (removes) any artifacts created in the download process
+      operationId: corpora.lambdas.api.v1.dataset.delete_dataset
+      security:
+        - cxguserCookie: [ ]
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
 
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
@@ -874,6 +896,12 @@ components:
             $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
       content:
         application/problem+json:
           schema:

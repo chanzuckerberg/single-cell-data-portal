@@ -222,7 +222,13 @@ def main():
 
     check_env()
 
-    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = download_from_dropbox_url(
+        os.environ["DATASET_ID"],
+        os.environ["DROPBOX_URL"],
+        "local.h5ad",
+        os.environ["ARTIFACT_BUCKET"],
+        os.environ["CELLXGENE_BUCKET"],
+    )
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:

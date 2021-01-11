@@ -7,7 +7,7 @@ import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
 from .exceptions import CorporaException
-from ..corpora_orm import Base, DBSessionMaker
+from ..corpora_orm import Base, DBSessionMaker, DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -126,3 +126,8 @@ def db_session(commit=False):
         return wrapper
 
     return decorator
+
+
+def processing_status_updater(uuid: str, updates: dict):
+    with db_session_manager(commit=True) as manager:
+        manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
