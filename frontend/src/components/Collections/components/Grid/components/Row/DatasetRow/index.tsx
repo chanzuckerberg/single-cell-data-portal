@@ -104,6 +104,7 @@ const updateUploadProgress = (
         message:
           "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
       });
+      console.log("invalidate 107");
       invalidateCollectionQuery();
     }
     setLastUploadProgress(uploadProgress);
@@ -231,7 +232,7 @@ const DatasetRow: FC<Props> = ({
 
   // `nameIsPopulated` is a temp-workaround for no "complete status"
   // const isComplete = checkIfComplete(datasetStatus);
-  const nameIsPopulated = dataset.name === undefined || dataset.name === "";
+  const nameIsPopulated = dataset.name !== undefined && dataset.name !== "";
 
   const name = nameIsPopulated ? dataset.name : file?.name ?? dataset.id;
 
