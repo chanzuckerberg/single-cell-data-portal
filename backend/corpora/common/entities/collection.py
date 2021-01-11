@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
+from ..utils.db_utils import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 
@@ -171,7 +172,8 @@ class Collection(Entity):
 
         """
         # Create a public collection with the same uuid and same fields
-        public_collection = Collection.db.clone(self.db_object, id=self.id, visibility=CollectionVisibility.PUBLIC)
+        public_collection = clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
+        self.db.session.add(public_collection)
         # Copy over relationships
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC

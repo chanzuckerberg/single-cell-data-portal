@@ -80,3 +80,10 @@ class TestPublish(GenerateDataMixin, BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post(path, headers)
         self.assertEqual(403, response.status_code)
+
+    def test__bad_uuid__403(self):
+        collection_id = "bad_uuid"
+        path = f"/dp/v1/collections/{collection_id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(path, headers)
+        self.assertEqual(403, response.status_code)
