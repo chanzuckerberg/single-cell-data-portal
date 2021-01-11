@@ -375,7 +375,7 @@ paths:
               properties:
                 name:
                   type: string
-                  description: name of the collecton
+                  description: name of the collection
                 description:
                   type: string
                   description: description of the collection
@@ -465,7 +465,7 @@ paths:
         If a new link is provided, the new link will be used. If the collection is not in an error state, this endpoint
         will return an error.
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       operationId: corpora.lambdas.api.v1.collection_uuid.upload.link
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -546,7 +546,7 @@ paths:
       summary: Get the status of a dataset upload.
       operationId: corpora.lambdas.api.v1.dataset.get_status
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
@@ -561,7 +561,16 @@ paths:
                     $ref: "#/components/schemas/dataset_uuid"
                   upload_status:
                     type: string
-                    enum: [WAITING, UPLOADING, UPLOADED, FAILED, CANCEL PENDING, CANCELED, NA]
+                    enum:
+                      [
+                        WAITING,
+                        UPLOADING,
+                        UPLOADED,
+                        FAILED,
+                        CANCEL PENDING,
+                        CANCELED,
+                        NA,
+                      ]
                   upload_message:
                     type: string
                   upload_progress:
@@ -582,7 +591,7 @@ paths:
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
                   conversion_rds_status:
                     type: string
-                    enum: [ CONVERTING, CONVERTED, FAILED, NA ]
+                    enum: [CONVERTING, CONVERTED, FAILED, NA]
         "400":
           $ref: "#/components/responses/400"
         "401":

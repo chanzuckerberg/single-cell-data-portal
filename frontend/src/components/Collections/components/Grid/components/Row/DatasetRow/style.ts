@@ -1,5 +1,5 @@
-import { Classes, Colors, Intent } from "@blueprintjs/core";
-import { fontStyle, GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { Classes } from "@blueprintjs/core";
+import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const UploadStatusContainer = styled.div`
@@ -20,49 +20,5 @@ export const TitleContainer = styled.div`
   align-items: center;
   & > .${Classes.POPOVER_WRAPPER} {
     margin-left: ${PT_GRID_SIZE_PX}px;
-  }
-`;
-
-const intentColorSwitch = (intent: Intent, border?: boolean) => {
-  switch (intent) {
-    case Intent.DANGER:
-      return Colors.RED3;
-    case Intent.NONE:
-      if (border) return Colors.LIGHT_GRAY3;
-      return Colors.GRAY1;
-  }
-};
-
-interface Props {
-  intent?: Intent;
-}
-
-export const DatasetStatusTag = styled.div`
-  color: ${(props: Props) => intentColorSwitch(props.intent ?? Intent.NONE)};
-  border: 1px solid
-    ${(props: Props) => intentColorSwitch(props.intent ?? Intent.NONE, true)};
-  border-radius: 3px;
-  align-self: flex-start;
-  width: fit-content;
-  padding: ${PT_GRID_SIZE_PX}px;
-  margin-top: ${2 * PT_GRID_SIZE_PX}px;
-  display: flex;
-  flex-direction: row;
-  vertical-align: middle;
-  & > .${Classes.SPINNER}, .${Classes.ICON} {
-    margin: auto ${PT_GRID_SIZE_PX}px auto 0;
-    height: 100%;
-  }
-`;
-
-export const StyledAnchor = styled.a`
-  ${fontStyle}
-  text-decoration: none;
-  color: ${Colors.WHITE};
-  display: contents;
-
-  &:hover {
-    color: ${Colors.WHITE};
-    text-decoration: underline;
   }
 `;

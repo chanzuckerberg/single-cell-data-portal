@@ -5,7 +5,7 @@ import {
   Tag,
 } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { LeftAlignedDetailsCell } from "../../common/style";
+import { LeftAlignedDetailsCell } from "../Row/common/style";
 import { ContentWrapper, FieldValues } from "./style";
 
 interface Props {
