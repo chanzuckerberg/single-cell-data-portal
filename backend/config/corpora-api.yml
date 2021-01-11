@@ -460,11 +460,11 @@ paths:
       security:
         - cxguserCookie: [ ]
       description: >-
-        Publish a collection to Corpora as public. The visibility of the collection will make it
+        Update status of specified collection to PUBLIC.  This will make it
         visible on the public sites.
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
-        published collection. The old collection will not longer be accessible.
+        published collection. The old collection will no longer be accessible.
       operationId: corpora.lambdas.api.v1.collection_uuid.publish.post
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
