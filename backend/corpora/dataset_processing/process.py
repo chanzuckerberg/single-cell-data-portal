@@ -261,7 +261,6 @@ def create_files_ignore_exceptions(local_filename):
 
 
 def main():
-
     check_env()
     local_filename = download_from_dropbox_url(
         os.environ["DATASET_ID"],
