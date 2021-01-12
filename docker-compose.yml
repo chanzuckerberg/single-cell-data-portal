@@ -46,9 +46,9 @@ services:
       - "9000:8080"
     volumes:
       - ./backend/chalice/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/chalicelib/upload_failures
-      - ./backend/corpora/common:/var/task/chalicelib/common
-      - ./backend/corpora/dataset_processing:/var/task/chalicelib/dataset_processing
+      - ./backend/corpora/lambdas/upload_failures:/var/task/chalicelib/backend/corpora/upload_failures
+      - ./backend/corpora/common:/var/task/chalicelib/backend/corpora/common
+      - ./backend/corpora/dataset_processing:/var/task/chalicelib/backend/corpora/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
