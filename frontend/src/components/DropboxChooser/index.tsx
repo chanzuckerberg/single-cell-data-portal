@@ -25,9 +25,11 @@ export interface DropboxFile {
 
 export type UploadingFile = DropboxFile & Partial<Dataset>;
 
+const UPLOAD_SIZE_LIMIT_BYTES = 30 * 2 ** 30; // 30GB
+
 const DROPBOX_OPTIONS = {
   extensions: [".h5ad"],
-  sizeLimit: 30 * 2 ** 30, // 30GB
+  sizeLimit: UPLOAD_SIZE_LIMIT_BYTES,
 };
 
 export interface Props {
