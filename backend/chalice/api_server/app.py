@@ -19,7 +19,7 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
-from corpora.common.utils.aws_secret import AwsSecret
+from corpora.common.utils.aws import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
 
 

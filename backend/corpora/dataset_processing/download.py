@@ -4,7 +4,7 @@ import requests
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.db_utils import db_session_manager, processing_status_updater
 from backend.corpora.common.utils.math_utils import MB
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,10 @@ class ProgressTracker:
     def update(self, progress):
         with self.progress_lock:
             self._progress += progress
+
+    def cancel(self):
+        self.stop_downloader.set()
+        self.stop_updater.set()
 
 
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
@@ -58,11 +62,6 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
         tracker.stop_updater.set()
 
 
-def processing_status_updater(uuid: str, updates: dict):
-    with db_session_manager(commit=True) as manager:
-        manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
-
-
 def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: float):
     """
     Update the progress of an upload to the database using the tracker.
@@ -74,8 +73,22 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
     """
 
     def _update():
+        with db_session_manager(commit=True) as db:
+            curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid).upload_status
         progress = tracker.progress()
-        if progress > 1:
+
+        if curr_status is UploadStatus.CANCEL_PENDING:
+            logger.info(f"cancelling the upload for {curr_status.dataset.id}")
+            # set db to cancelled
+            status = {
+                DbDatasetProcessingStatus.upload_progress: 0,
+                DbDatasetProcessingStatus.upload_status: UploadStatus.CANCELED,
+                DbDatasetProcessingStatus.upload_message: "Canceled by user",
+            }
+            tracker.cancel()
+        elif curr_status is UploadStatus.CANCELED:
+            return
+        elif progress > 1:
             tracker.stop_downloader.set()
             message = "The expected file size is smaller than the actual file size."
             status = {
@@ -108,7 +121,12 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
 
 
 def download(
-    dataset_uuid: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3
+    dataset_uuid: str,
+    url: str,
+    local_path: str,
+    file_size: int,
+    chunk_size: int = 10 * MB,
+    update_frequency=3,
 ) -> dict:
     """
     Download a file from a url and update the processing_status upload fields in the database

@@ -1,7 +1,7 @@
 import json
 import os
 
-from .aws_secret import AwsSecret
+from .aws import AwsSecret
 
 
 class SecretConfig:

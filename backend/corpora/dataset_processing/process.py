@@ -222,7 +222,13 @@ def main():
 
     check_env()
 
-    local_filename = download_from_dropbox_url(os.environ["DATASET_ID"], os.environ["DROPBOX_URL"], "local.h5ad")
+    local_filename = download_from_dropbox_url(
+        os.environ["DATASET_ID"],
+        os.environ["DROPBOX_URL"],
+        "local.h5ad",
+        os.environ["ARTIFACT_BUCKET"],
+        os.environ["CELLXGENE_BUCKET"],
+    )
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
@@ -266,6 +272,11 @@ def main():
 
     update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
 
+    # REMOVE, forcing error at the end.
+    print("Forcing Validation failed at the end!")
+    print(f"stdout: {val_proc.stdout}")
+    print(f"stderr: {val_proc.stderr}")
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

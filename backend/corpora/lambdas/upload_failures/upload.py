@@ -1,19 +1,6 @@
-import boto3
-
-
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.corpora_orm import UploadStatus, DbDatasetProcessingStatus
 from backend.corpora.dataset_processing.download import processing_status_updater
-
-
-def delete_many_from_s3(bucket_name, dataset_uuid) -> None:
-    """
-    This deletes everything with a specific prefix from the given bucket
-
-    """
-    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-    bucket = s3.Bucket(bucket_name)
-    bucket.objects.filter(Prefix=f"{dataset_uuid}/").delete()
 
 
 def update_dataset_processing_status_to_failed(dataset_uuid, error=None) -> None:
