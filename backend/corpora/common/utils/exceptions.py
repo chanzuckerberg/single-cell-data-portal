@@ -34,3 +34,8 @@ class ForbiddenHTTPException(ProblemException):
 class NotFoundHTTPException(ProblemException):
     def __init__(self, detail: str = "Resource not found.", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.not_found, title="Not Found", detail=detail, *args, **kwargs)
+
+
+class MethodNotAllowedException(ProblemException):
+    def __init__(self, detail: str = "Method not allowed.", *args, **kwargs) -> None:
+        super().__init__(status=requests.codes.not_allowed, title="Not Allowed", detail=detail, *args, **kwargs)

@@ -4,8 +4,10 @@ from tests.unit.backend.fixtures.test_db import TestDatabaseManager
 
 
 class DataPortalTestCase(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         TestDatabaseManager.initialize_db()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         pass

@@ -3,10 +3,11 @@ import logging
 import typing
 from contextlib import contextmanager
 
+import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 
 from .exceptions import CorporaException
-from ..corpora_orm import Base, DBSessionMaker
+from ..corpora_orm import Base, DBSessionMaker, DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,10 @@ class DbUtils:
             self.session.commit()
 
         def delete(self, db_object: Base):
-            self.session.delete(db_object)
+            try:
+                self.session.delete(db_object)
+            except sqlalchemy.orm.exc.ObjectDeletedError:
+                pass
 
         def close(self):
             self.session.close()
@@ -67,6 +71,23 @@ class DbUtils:
 
     def __getattr__(self, name):
         return getattr(self.__instance, name)
+
+
+def clone(model: Base, primary_key: dict, **kwargs) -> Base:
+    """Clone an arbitrary sqlalchemy model object with new primary keys.
+    https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
+
+    :param model: The SQLAlchemy model to clone
+    :param primary_key: The new primary key values.
+    :param kwargs: Updates the columns in the cloned model.
+    :return: a clone of the original model with any kwargs passed in and the new primary key.
+    """
+    table = model.__table__
+    non_pk_columns = [key for key in table.columns.keys() if key not in table.primary_key]
+    data = {column: getattr(model, column) for column in non_pk_columns}
+    data.update(kwargs)
+    data.update(primary_key)
+    return model.__class__(**data)
 
 
 @contextmanager
@@ -105,3 +126,8 @@ def db_session(commit=False):
         return wrapper
 
     return decorator
+
+
+def processing_status_updater(uuid: str, updates: dict):
+    with db_session_manager(commit=True) as manager:
+        manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)

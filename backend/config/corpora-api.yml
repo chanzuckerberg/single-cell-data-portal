@@ -252,55 +252,6 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/submission/{collection_uuid}/publish:
-    post:
-      tags:
-        - submissions
-      summary: Publish a collection
-      description: >-
-        Publish a collection to Corpora as either public or private. The visibility of the collection will either make it
-        visible on the public sites or only viewable through obfuscated URLs. If the visibility is set
-        to public, the successful execution of this operation will move the Submission to a CLOSED state.
-
-        If publishing modification to a previously published collection, this will replace the old collection with the new
-        published collection. The old collection will not longer be accessible.
-      operationId: corpora.lambdas.api.v1.submission.publish_submission
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              description: >-
-                A schema that contains a field dictating the visibility of the deployments.
-              type: object
-              properties:
-                visibility:
-                  description: >-
-                    Determines the visibility of the collection, that will either make the collection visible on the public
-                    sites or only viewable through obfuscated URLs.
-                  $ref: "#/components/schemas/visibility"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
-                  visibility:
-                    $ref: "#/components/schemas/visibility"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
   /dp/v1/collections:
     get:
       tags:
@@ -501,6 +452,63 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
+  /dp/v1/collections/{collection_uuid}/publish:
+    post:
+      tags:
+        - collection
+      summary: Publish a collection
+      security:
+        - cxguserCookie: [ ]
+      description: >-
+        Update status of specified collection to PUBLIC.  This will make it
+        visible on the public sites.
+
+        If publishing modification to a previously published collection, this will replace the old collection with the new
+        published collection. The old collection will no longer be accessible.
+      operationId: corpora.lambdas.api.v1.collection_uuid.publish.post
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      responses:
+        "202":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
+                  visibility:
+                    $ref: "#/components/schemas/visibility"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /dp/v1/datasets/{dataset_uuid}:
+    delete:
+      tags:
+        - datasets
+      summary: Delete a dataset
+      description: >-
+        Cancels the download of a dataset to the data portal and cleans up (removes) any artifacts created in the download process
+      operationId: corpora.lambdas.api.v1.dataset.delete_dataset
+      security:
+        - cxguserCookie: [ ]
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
+
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
@@ -685,6 +693,9 @@ components:
       description: A unique identifier of a Dataset.
       type: string
     visibility:
+      description: >-
+        Determines the visibility of the collection, that will either make the collection visible on the public
+        sites or only viewable through obfuscated URLs.
       type: string
       enum: [PUBLIC, PRIVATE]
     links:
@@ -894,6 +905,12 @@ components:
             $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
       content:
         application/problem+json:
           schema:
