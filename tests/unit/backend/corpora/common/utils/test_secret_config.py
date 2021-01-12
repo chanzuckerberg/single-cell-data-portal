@@ -37,7 +37,6 @@ class TestSecretConfig(DataPortalTestCase):
         cls.patcher.stop()
 
     def setUp(self):
-        super().setUp()
         self.deployment_env = "bogo_env_{}".format(uuid.uuid4())
         self.secret_name = f"corpora/bogo_component/{self.deployment_env}/secrets"
         BogoComponentConfig.reset()

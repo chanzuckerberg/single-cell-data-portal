@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
+from ..utils.db_utils import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 
@@ -77,7 +78,8 @@ class Collection(Entity):
         :return: a collection if the user is the owner of the collection else None
         """
         filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
-        return cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        collection = cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        return cls(collection) if collection else None
 
     @classmethod
     def list_collections_in_time_range(cls, *args, **kwargs):
@@ -163,3 +165,20 @@ class Collection(Entity):
             dataset["dataset_assets"] = dataset.pop("artifacts")
 
         return result
+
+    def publish(self):
+        """
+        Given a private collection, set the collection to public.
+
+        """
+        # Create a public collection with the same uuid and same fields
+        public_collection = clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
+        self.db.session.add(public_collection)
+        # Copy over relationships
+        for link in self.links:
+            link.collection_visibility = CollectionVisibility.PUBLIC
+        for dataset in self.datasets:
+            dataset.collection_visibility = CollectionVisibility.PUBLIC
+        self.db.session.commit()
+        self.delete()
+        self.db_object = public_collection

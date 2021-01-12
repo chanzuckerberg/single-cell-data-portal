@@ -12,7 +12,6 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
     CORPORA_TEST_CONFIG = config.CORPORA_TEST_CONFIG
 
     def setUp(self):
-        super().setUp()
         # Setup configuration
         self.corpora_config = CorporaConfig()
         self.corpora_config.set(config.CORPORA_TEST_CONFIG)
@@ -33,7 +32,6 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
     def tearDown(self):
         if not os.getenv("BOTO_ENDPOINT_URL"):
             self.s3_mock.stop()
-        super().tearDown()
 
     def create_s3_object(
         self, object_key, bucket_name=None, content_type="application/octet-stream", content="file_content"
