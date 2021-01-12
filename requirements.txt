@@ -20,3 +20,4 @@ s3fs==0.4.2
 scanpy
 click==7.1.2
 -r ./backend/chalice/api_server/requirements.txt
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
