@@ -1,6 +1,7 @@
 import { Button, Classes, H3, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
+import { memoize } from "lodash-es";
 import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
 import {
@@ -102,6 +103,13 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const datasetPresent =
     collection.datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
+  const invalidateCollectionQuery = memoize(
+    () => {
+      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+    },
+    () => id + visibility
+  );
+
   return (
     <ViewGrid>
       <CollectionInfo>
@@ -115,9 +123,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
           <DatasetsGrid
             datasets={collection.datasets}
             uploadedFiles={uploadedFiles}
-            invalidateCollectionQuery={() => {
-              queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
-            }}
+            invalidateCollectionQuery={invalidateCollectionQuery}
           />
         ) : (
           <EmptyDatasets onUploadFile={addNewFile} />
