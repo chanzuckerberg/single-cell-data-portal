@@ -41,7 +41,7 @@ const DatasetsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {datasets?.map((dataset) => (
+        {sortByCreatedAtAscending(datasets).map((dataset) => (
           <DatasetRow
             key={dataset.id}
             dataset={dataset}
@@ -54,5 +54,9 @@ const DatasetsGrid: FC<Props> = ({
     </StyledCollectionsGrid>
   );
 };
+
+function sortByCreatedAtAscending(datasets: Dataset[]): Dataset[] {
+  return datasets?.sort((a, b) => a.created_at - b.created_at) || [];
+}
 
 export default DatasetsGrid;

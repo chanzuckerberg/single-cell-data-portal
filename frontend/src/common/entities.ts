@@ -83,6 +83,7 @@ export interface Dataset {
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
+  created_at: number;
 }
 
 export enum DATASET_ASSET_FORMAT {
