@@ -270,5 +270,6 @@ def main():
 
     update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
 
+
 if __name__ == "__main__":
     main()
