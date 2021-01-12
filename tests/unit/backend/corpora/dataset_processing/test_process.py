@@ -23,7 +23,7 @@ from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 
 from backend.corpora.dataset_processing import process
-from backend.corpora.dataset_processing.process import create_files_ignore_exceptions
+from backend.corpora.dataset_processing.process import convert_files_ignore_exceptions
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -260,7 +260,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_loom.side_effect = RuntimeError("Loom conversion failed")
         mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
         mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
-        cxg_dir, loom_filename, seurat_filename, exceptions = create_files_ignore_exceptions(self.h5ad_filename)
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
         self.assertIsNone(loom_filename)
         self.assertEqual(len(exceptions), 1)
         self.assertIsNotNone(seurat_filename)
@@ -273,7 +273,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_loom.return_value = str(self.h5ad_filename).replace(".h5ad", ".loom")
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
         mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
-        cxg_dir, loom_filename, seurat_filename, exceptions = create_files_ignore_exceptions(self.h5ad_filename)
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
         self.assertIsNone(cxg_dir)
         self.assertEqual(len(exceptions), 1)
         self.assertIsNotNone(seurat_filename)
@@ -286,7 +286,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_loom.side_effect = str(self.h5ad_filename).replace(".h5ad", ".loom")
         mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
-        cxg_dir, loom_filename, seurat_filename, exceptions = create_files_ignore_exceptions(self.h5ad_filename)
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
         self.assertIsNone(seurat_filename)
         self.assertEqual(len(exceptions), 1)
         self.assertIsNotNone(cxg_dir)

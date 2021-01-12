@@ -237,7 +237,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix):
     )
 
 
-def create_files_ignore_exceptions(local_filename):
+def convert_files_ignore_exceptions(local_filename):
     exceptions = []
     try:
         cxg_dir = make_cxg(local_filename)
@@ -283,7 +283,7 @@ def main():
     update_db(metadata=metadata_dict)
 
     bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
-    cxg_dir, loom_filename, seurat_filename, exceptions = create_files_ignore_exceptions(local_filename)
+    cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(local_filename)
     if cxg_dir:
         copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix)
 
