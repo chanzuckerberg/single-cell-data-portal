@@ -37,17 +37,16 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
+def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefix):
+    ARTIFACT_BUCKET = os.environ["ARTIFACT_BUCKET"]
     s3 = boto3.client(
         "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
     )
     artifacts = []
 
-    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
-
     s3.upload_file(
         h5ad_filename,
-        os.environ["ARTIFACT_BUCKET"],
+        ARTIFACT_BUCKET,
         join(bucket_prefix, basename(h5ad_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
@@ -58,13 +57,13 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.H5AD,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(h5ad_filename)),
+            "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(h5ad_filename)),
         }
     )
     if seurat_filename:
         s3.upload_file(
             seurat_filename,
-            os.environ["ARTIFACT_BUCKET"],
+            ARTIFACT_BUCKET,
             join(bucket_prefix, basename(seurat_filename)),
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
@@ -74,13 +73,13 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
                 "filetype": DatasetArtifactFileType.RDS,
                 "type": DatasetArtifactType.REMIX,
                 "user_submitted": True,
-                "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(seurat_filename)),
+                "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(seurat_filename)),
             }
         )
     if loom_filename:
         s3.upload_file(
             loom_filename,
-            os.environ["ARTIFACT_BUCKET"],
+            ARTIFACT_BUCKET,
             join(bucket_prefix, basename(loom_filename)),
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
@@ -90,7 +89,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
                 "filetype": DatasetArtifactFileType.LOOM,
                 "type": DatasetArtifactType.REMIX,
                 "user_submitted": True,
-                "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(loom_filename)),
+                "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(loom_filename)),
             }
         )
 
@@ -289,7 +288,7 @@ def main():
     if cxg_dir:
         copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix)
 
-    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
+    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename, bucket_prefix)
     deployment_directories = [
         {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"] + ".cxg", "")}
     ]

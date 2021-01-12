@@ -240,3 +240,13 @@ class TestDatasetProcessing(DataPortalTestCase):
         finally:
             if not os.getenv("BOTO_ENDPOINT_URL"):
                 s3_mock.stop()
+
+
+    def test_create_artifacts_with_failures(self):
+        # test with loom failed
+        # test with seurat failed
+
+    def test_process_continues_with_conversion_failures(self):
+        # test w/ loom failure
+        # test w/ cxg failure
+        # test with seurat failure
