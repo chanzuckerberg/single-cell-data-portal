@@ -7,14 +7,14 @@ import {
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
-import { StyledCell } from "../common/style";
-import { LeftAlignedDetailsCell } from "./components/common/style";
-import { aggregateDatasetsMetadata } from "./components/common/utils";
+import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
-  CollectionTitleText,
+  LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
+  StyledCell,
   StyledRow,
-} from "./style";
+} from "../common/style";
+import { CollectionTitleText } from "./style";
 
 interface Props {
   id: string;
@@ -25,7 +25,7 @@ interface Props {
 const AsyncPopover = loadable(
   () =>
     /*webpackChunkName: 'CollectionRow/components/Popover' */ import(
-      "src/components/Collections/components/CollectionsGrid/components/CollectionRow/components/Popover"
+      "src/components/Collections/components/Grid/components/Popover"
     )
 );
 

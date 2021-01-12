@@ -2,7 +2,7 @@ import { H1, Text } from "@blueprintjs/core";
 import React, { FC } from "react";
 import { ACCESS_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
-import CollectionsGrid from "src/components/Collections/components/CollectionsGrid";
+import CollectionsGrid from "src/components/Collections/components/Grid/components/CollectionsGrid";
 import { ViewGrid } from "../globalStyle";
 import { StyledCreateCollection, TitleAndDescription } from "./style";
 

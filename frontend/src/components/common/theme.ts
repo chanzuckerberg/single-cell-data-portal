@@ -50,3 +50,11 @@ export enum BLUE {
   E = "#73B7FF",
   F = "#DFEFFF",
 }
+
+export enum RED {
+  A = "#A82A2A",
+  B = "#C23030",
+  C = "#DB3737",
+  D = "#F55656",
+  E = "#FF7373",
+}

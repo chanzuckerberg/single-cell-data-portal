@@ -1,5 +1,6 @@
 import loadable from "@loadable/component";
 import React, { FC, useState } from "react";
+import { Dataset } from "src/common/entities";
 
 declare global {
   interface Window {
@@ -17,20 +18,25 @@ const AsyncContent = loadable(
     )
 );
 
-type DropboxFile = {
+export interface DropboxFile {
   link: string;
-};
+  name: string;
+}
+
+export type UploadingFile = DropboxFile & Partial<Dataset>;
+
+const UPLOAD_SIZE_LIMIT_BYTES = 30 * 2 ** 30; // 30GB
 
 const DROPBOX_OPTIONS = {
   extensions: [".h5ad"],
-  sizeLimit: 30 * 10 ** 30, // 30GB
+  sizeLimit: UPLOAD_SIZE_LIMIT_BYTES,
 };
 
 export interface Props {
-  onSelectUploadLink: React.Dispatch<React.SetStateAction<DropboxFile["link"]>>;
+  onUploadFile: (newFile: UploadingFile) => void;
 }
 
-const DropboxChooser: FC<Props> = ({ children, onSelectUploadLink }) => {
+const DropboxChooser: FC<Props> = ({ children, onUploadFile }) => {
   const [isContentShown, setIsContentShown] = useState(false);
 
   const handleMouseOver = () => {
@@ -45,7 +51,7 @@ const DropboxChooser: FC<Props> = ({ children, onSelectUploadLink }) => {
     const options = {
       ...DROPBOX_OPTIONS,
       success(files: DropboxFile[] = []) {
-        onSelectUploadLink(files[0].link);
+        onUploadFile({ id: "", link: files[0].link, name: files[0].name });
       },
     };
 

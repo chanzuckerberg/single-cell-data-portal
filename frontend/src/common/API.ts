@@ -1,5 +1,6 @@
 export enum API {
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}",
+  DATASET_STATUS = "/dp/v1/datasets/{dataset_uuid}/status",
   COLLECTIONS = "/dp/v1/collections",
   COLLECTION = "/dp/v1/collections/{id}",
   COLLECTION_UPLOAD_LINKS = "/dp/v1/collections/{id}/upload-links",
