@@ -252,9 +252,9 @@ class TestDatasetProcessing(DataPortalTestCase):
             if not os.getenv("BOTO_ENDPOINT_URL"):
                 s3_mock.stop()
 
-    @patch('backend.corpora.dataset_processing.process.make_cxg')
-    @patch('backend.corpora.dataset_processing.process.make_loom')
-    @patch('backend.corpora.dataset_processing.process.make_seurat')
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
         mock_loom.side_effect = RuntimeError("Loom conversion failed")
         mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
@@ -265,9 +265,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertIsNotNone(seurat_filename)
         self.assertIsNotNone(cxg_dir)
 
-    @patch('backend.corpora.dataset_processing.process.make_cxg')
-    @patch('backend.corpora.dataset_processing.process.make_loom')
-    @patch('backend.corpora.dataset_processing.process.make_seurat')
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_cxg_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
         mock_loom.return_value = str(self.h5ad_filename).replace(".h5ad", ".loom")
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
@@ -278,9 +278,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertIsNotNone(seurat_filename)
         self.assertIsNotNone(loom_filename)
 
-    @patch('backend.corpora.dataset_processing.process.make_cxg')
-    @patch('backend.corpora.dataset_processing.process.make_loom')
-    @patch('backend.corpora.dataset_processing.process.make_seurat')
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
         mock_loom.side_effect = str(self.h5ad_filename).replace(".h5ad", ".loom")
         mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
