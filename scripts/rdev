@@ -249,9 +249,12 @@ def print_outputs(ctx, stack_name=None, stack=None):
         print(f"{k}: {v}")
 
 
-def get_migration_taskdef(ctx, stack_name):
+def get_taskdef(ctx, stack_name, taskdef_type="migration"):
     """Find the migration task definition in our CF stack"""
-    path = ["DevEnv", "DevEnv", "MigrateDB", "TaskDefinition"]
+    if taskdef_type == "migration":
+        path = ["DevEnv", "DevEnv", "MigrateDB", "TaskDefinition"]
+    else:
+        path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
     arn = stack_name
     path_length = len(path)
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
@@ -272,16 +275,13 @@ def get_migration_taskdef(ctx, stack_name):
         arn = resource["arn"]
     return resource
 
-@cli.command()
-@click.argument("stack_name")
-@click.pass_context
-def migrate(ctx, stack_name):
-    """Run DB migration task for given stack"""
+def run_task(ctx, stack_name, taskdef_type, wait=False, show_logs=True):
+    """Run a one-off task and optionally wait"""
     secrets = get_secrets(ctx)
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
-    taskdef_arn = get_migration_taskdef(ctx, stack_name)["arn"]
+    taskdef_arn = get_taskdef(ctx, stack_name, taskdef_type)["arn"]
     print(f"Using task definition {taskdef_arn}")
     ecs_client = boto3.client("ecs", config=ctx.obj["aws_conf"])
     output = ecs_client.run_task(
@@ -297,13 +297,15 @@ def migrate(ctx, stack_name):
     )
     task_info = output["tasks"][0]
     print(f"Task {task_info['taskArn']} started")
+    if not wait:
+        return
 
     # Wait for the task to start.
     waiter = ecs_client.get_waiter("tasks_running")
     waiter.wait(
         cluster=cluster_arn,
         tasks=[
-          task_info["taskArn"]
+            task_info["taskArn"]
         ]
     )
     result = ecs_client.describe_tasks(
@@ -327,7 +329,7 @@ def migrate(ctx, stack_name):
     waiter.wait(
         cluster=cluster_arn,
         tasks=[
-          task_info["taskArn"]
+            task_info["taskArn"]
         ]
     )
     print(f"Task {task_info['taskArn']} stopped")
@@ -363,6 +365,17 @@ def migrate(ctx, stack_name):
         print(log)
     print("done!")
 
+@cli.command()
+@click.argument("stack_name")
+@click.option("--reset", is_flag=True, default=False, help="Drop and recreate the dev db from the latest snapshot")
+@click.pass_context
+def migrate(ctx, stack_name, reset):
+    """Run DB migration task for given stack"""
+    if reset:
+        print("Dropping database")
+        run_task(ctx, stack_name, "delete", wait=True, show_logs=True)
+    print("Running migrations")
+    run_task(ctx, stack_name, "migration", wait=True, show_logs=True)
 
 def invoke_wait(ctx, stack_name):
     last_status = ""
@@ -397,7 +410,7 @@ def logs(ctx, stack_name, service, since):
 
 def wait_for_migration_update(ctx, stack_name):
     """Wait for the migration task update to complete"""
-    migration_stack_arn = get_migration_taskdef(ctx, stack_name)["stack_name"]
+    migration_stack_arn = get_taskdef(ctx, stack_name, "migration")["stack_name"]
     # TODO, how do we make sure the migration stack's status isn't from the *last* update????
     print(f"Waiting for migration stack to be updated: {migration_stack_arn}")
     invoke_wait(ctx, migration_stack_arn)
@@ -465,7 +478,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
         Tags=env_meta.generate_tag_args()
     )
     if not skip_migrations:
-        migration_taskdef = get_migration_taskdef(ctx, stack_name)["arn"]
+        migration_taskdef = get_taskdef(ctx, stack_name, "migration")["arn"]
         # invoke migrations
         wait_for_migration_update(ctx, stack_name)
         ctx.invoke(migrate, stack_name=stack_name)
@@ -490,30 +503,6 @@ def cancelupdate(ctx, stack_name, wait):
         invoke_wait(ctx, stack_name)
 
 
-def get_delete_taskdef(ctx, stack_name):
-    """Find the deletion task definition in our CF stack"""
-    path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
-    arn = stack_name
-    path_length = len(path)
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
-    for i in range(path_length):
-        result = cf_client.describe_stack_resources(
-            StackName=arn
-        )
-        resources = result["StackResources"]
-        # Convert to a map of CloudFormation object name => AWS resource ARN
-        resource_map = {
-            item["LogicalResourceId"]: {
-                "arn": item["PhysicalResourceId"],
-                "status": item["ResourceStatus"],
-                "stack_name": item["StackName"],
-            }
-            for item in resources
-        }
-        resource = resource_map[path[i]]
-        arn = resource["arn"]
-    return resource
-
 @cli.command()
 @click.argument("stack_name")
 @click.pass_context
@@ -525,26 +514,12 @@ def delete(ctx, stack_name):
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
+    print(f"Dropping database")
     try:
-        taskdef_arn = get_delete_taskdef(ctx, stack_name)["arn"]
+        run_task(ctx, stack_name, "delete", wait=False, show_logs=False)
     except KeyError:
-        taskdef_arn = None
-    if taskdef_arn:
-        print(f"Using task definition {taskdef_arn}")
-        print(f"Dropping database")
-        ecs_client = boto3.client("ecs", config=ctx.obj["aws_conf"])
-        ecs_client.run_task(
-            cluster=cluster_arn,
-            taskDefinition=taskdef_arn,
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": subnets.split(","),
-                    "securityGroups": security_groups.split(","),
-                    "assignPublicIp": "DISABLED"
-                }
-            }
-        )
-        print(f"Database dropped")
+        print("DB job is missing")
+    print(f"Database dropped")
 
     envmgr = DevEnvMgr(ctx)
     try:
