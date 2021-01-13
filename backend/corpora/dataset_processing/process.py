@@ -226,8 +226,6 @@ def main():
         os.environ["DATASET_ID"],
         os.environ["DROPBOX_URL"],
         "local.h5ad",
-        os.environ["ARTIFACT_BUCKET"],
-        os.environ["CELLXGENE_BUCKET"],
     )
     print("Download complete", flush=True)
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
