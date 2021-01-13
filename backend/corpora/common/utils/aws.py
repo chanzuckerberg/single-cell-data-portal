@@ -98,6 +98,6 @@ def delete_many_from_s3(bucket_name: str, dataset_uuid: str) -> None:
     """
     if not dataset_uuid:
         raise ValueError
-    s3 = boto3.resource("s3")
+    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
     bucket = s3.Bucket(bucket_name)
     bucket.objects.filter(Prefix=f"{dataset_uuid}/").delete()

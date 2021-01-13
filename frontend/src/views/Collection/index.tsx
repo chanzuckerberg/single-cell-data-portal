@@ -1,24 +1,33 @@
-import { Classes, H3 } from "@blueprintjs/core";
+import { Button, Classes, H3, Intent } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
-import React, { FC, useEffect, useState } from "react";
+import { memoize } from "lodash-es";
+import React, { FC, useState } from "react";
+import { useQueryCache } from "react-query";
 import {
   COLLECTION_LINK_TYPE_OPTIONS,
+  Dataset,
   Link,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import {
   useCollection,
   useCollectionUploadLinks,
+  USE_COLLECTION,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
+import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
+import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
+import DatasetUploadToast from "./components/DatasetUploadToast";
 import EmptyDatasets from "./components/EmptyDatasets";
 import {
   CollectionInfo,
   DatasetContainer,
   Description,
   LinkContainer,
+  StyledDiv,
 } from "./style";
 
 interface RouteProps {
@@ -47,6 +56,9 @@ const renderLinks = (links: Link[]) => {
     );
   });
 };
+export interface UploadedFiles {
+  [datasetID: string]: UploadingFile;
+}
 
 const Collection: FC<Props> = ({ id = "" }) => {
   const isPrivate = window.location.pathname.includes("/private");
@@ -54,21 +66,49 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadLink, setUploadLink] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
+
+  const queryCache = useQueryCache();
 
   const { data: collection, isError } = useCollection(id, visibility);
 
   const [mutate] = useCollectionUploadLinks(id, visibility);
 
-  useEffect(() => {
-    if (!uploadLink) return;
+  const addNewFile = (newFile: UploadingFile) => {
+    if (!newFile.link) return;
 
-    const payload = JSON.stringify({ url: uploadLink });
+    const payload = JSON.stringify({ url: newFile.link });
+    mutate(
+      { collectionId: id, payload },
+      {
+        onSuccess: (datasetID: Dataset["id"]) => {
+          newFile.id = datasetID;
+          DatasetUploadToast.show({
+            icon: IconNames.TICK,
+            intent: Intent.PRIMARY,
+            message:
+              "Your file is being uploaded which will continue in the background, even if you close this window.",
+          });
+          setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
+          queryCache.invalidateQueries(USE_COLLECTION);
+        },
+      }
+    );
+  };
 
-    mutate({ collectionId: id, payload });
-  }, [uploadLink, mutate, id]);
+  if (!collection || isError) {
+    return null;
+  }
 
-  if (!collection || isError) return null;
+  const datasetPresent =
+    collection.datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
+
+  const invalidateCollectionQuery = memoize(
+    () => {
+      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+    },
+    () => id + visibility
+  );
 
   return (
     <ViewGrid>
@@ -79,15 +119,29 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <DatasetContainer>
-        {
-          // eslint-disable-next-line no-constant-condition
-          collection?.datasets?.length > 0 &&
-          // eslint-disable-next-line sonarjs/no-redundant-boolean
-          false ? /* DATASETS VIEW GOES HERE */ null : (
-            <EmptyDatasets onSelectUploadLink={setUploadLink} />
-          )
-        }
+        {datasetPresent ? (
+          <DatasetsGrid
+            datasets={collection.datasets}
+            uploadedFiles={uploadedFiles}
+            invalidateCollectionQuery={invalidateCollectionQuery}
+          />
+        ) : (
+          <EmptyDatasets onUploadFile={addNewFile} />
+        )}
       </DatasetContainer>
+      {datasetPresent && (
+        <StyledDiv>
+          <DropboxChooser onUploadFile={addNewFile}>
+            <Button intent={Intent.PRIMARY} outlined>
+              Add
+            </Button>
+          </DropboxChooser>
+          <Button intent={Intent.PRIMARY} outlined>
+            Download
+          </Button>
+          <Button icon={IconNames.TRASH} minimal></Button>
+        </StyledDiv>
+      )}
     </ViewGrid>
   );
 };

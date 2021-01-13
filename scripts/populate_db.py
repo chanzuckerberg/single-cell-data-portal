@@ -12,6 +12,7 @@ sys.path.insert(0, pkg_root)  # noqa
 
 env = os.environ.get("DEPLOYMENT_STAGE")
 from backend.corpora.common.corpora_config import CorporaDbConfig
+from tests.unit.backend.fixtures.test_db import TestDatabase
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
 os.environ["DEPLOYMENT_STAGE"] = env
@@ -33,7 +34,6 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
             exit(1)
 
     if recreate_db or populate_data:
-        from tests.unit.backend.fixtures.test_db import TestDatabase
         testdb = TestDatabase(real_data=True)
 
     # Drop and recreate tables

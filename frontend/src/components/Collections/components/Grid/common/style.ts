@@ -1,6 +1,13 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled, { css } from "styled-components";
-import { detailsColWidthCSS } from "./components/common/style";
+
+export const textClippingCSS = css`
+  white-space: nowrap;
+`;
+
+export const detailsColWidthCSS = css`
+  width: calc(1 / 8 * 100%);
+`;
 
 const titleColWidthCSS = css`
   width: calc(3 / 8 * 100%);

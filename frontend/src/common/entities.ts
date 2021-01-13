@@ -79,9 +79,11 @@ export interface Dataset {
   // revision: number;
   dataset_deployments: DatasetDeployment[];
   dataset_assets: DatasetAsset[];
+  processing_status: DatasetUploadStatus;
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
+  created_at: number;
 }
 
 export enum DATASET_ASSET_FORMAT {
@@ -127,4 +129,41 @@ export interface DatasetDeployment {
 
 export interface User {
   picture: string;
+}
+
+export enum UPLOAD_STATUS {
+  WAITING = "WAITING",
+  UPLOADING = "UPLOADING",
+  UPLOADED = "UPLOADED",
+  FAILED = "FAILED",
+  CANCEL = "CANCEL",
+  PENDING = "PENDING",
+  CANCELED = "CANCELED",
+  NA = "NA",
+}
+
+export enum VALIDATION_STATUS {
+  VALIDATING = "VALIDATING",
+  VALID = "VALID",
+  INVALID = "INVALID",
+  NA = "NA",
+}
+export enum CONVERSION_STATUS {
+  CONVERTING = "CONVERTING",
+  CONVERTED = "CONVERTED",
+  FAILED = "FAILED",
+  NA = "NA",
+}
+
+export interface DatasetUploadStatus {
+  dataset_id: string;
+  upload_status: UPLOAD_STATUS;
+  upload_message: string;
+  upload_progress: number;
+  validation_status: VALIDATION_STATUS;
+  validation_message: string;
+  conversion_loom_status: CONVERSION_STATUS;
+  conversion_anndata_status: CONVERSION_STATUS;
+  conversion_cxg_status: CONVERSION_STATUS;
+  conversion_rds_status: CONVERSION_STATUS;
 }
