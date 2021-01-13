@@ -1,4 +1,4 @@
-import { Button, Checkbox, Intent } from "@blueprintjs/core";
+import { Button, Intent, Radio } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC, useEffect, useState } from "react";
@@ -42,6 +42,7 @@ interface Props {
   checkHandler: (id: string) => void;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
+  checked: boolean;
 }
 
 const DatasetRow: FC<Props> = ({
@@ -49,6 +50,7 @@ const DatasetRow: FC<Props> = ({
   checkHandler,
   file,
   invalidateCollectionQuery,
+  checked,
 }) => {
   const queryCache = useQueryCache();
 
@@ -107,7 +109,7 @@ const DatasetRow: FC<Props> = ({
     <StyledRow>
       <DetailsCell>
         <TitleContainer>
-          <Checkbox onChange={() => checkHandler(dataset.id)} />
+          <Radio onChange={() => checkHandler(dataset.id)} checked={checked} />
           <div>{name}</div>
           <ErrorTooltip isFailed={isFailed} error={error} />
         </TitleContainer>

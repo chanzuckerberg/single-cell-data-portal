@@ -19,13 +19,10 @@ const DatasetsGrid: FC<Props> = ({
   uploadedFiles,
   invalidateCollectionQuery,
 }) => {
-  const [selected, setSelected] = useState(new Set());
+  const [selected, setSelected] = useState("");
 
   const handleSelect = (id: string) => {
-    const newSelected = new Set(selected);
-    if (newSelected.has(id)) newSelected.delete(id);
-    else newSelected.add(id);
-    setSelected(newSelected);
+    setSelected(id);
   };
 
   return (
@@ -48,6 +45,7 @@ const DatasetsGrid: FC<Props> = ({
             checkHandler={handleSelect}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
+            checked={selected === dataset.id}
           />
         ))}
       </tbody>
