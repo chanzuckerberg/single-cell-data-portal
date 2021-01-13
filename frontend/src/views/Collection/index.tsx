@@ -2,7 +2,7 @@ import { Button, Classes, H3, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
-import React, { FC, useState } from "react";
+import React, { createContext, FC, useState } from "react";
 import { useQueryCache } from "react-query";
 import {
   COLLECTION_LINK_TYPE_OPTIONS,
@@ -36,6 +36,13 @@ interface RouteProps {
 
 export type Props = RouteComponentProps<RouteProps>;
 
+export interface Context {
+  selected: Dataset["id"];
+  handleCheck: (id: string) => void;
+}
+
+export const SelectedContext = createContext({} as Context);
+
 const renderLinks = (links: Link[]) => {
   return links?.map(({ link_url: url, link_type: type }) => {
     const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
@@ -65,6 +72,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const visibility = isPrivate
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
+
+  const [selected, setSelected] = useState("" as Context["selected"]);
+
+  const handleCheck: Context["handleCheck"] = (id: string) => {
+    setSelected(id);
+  };
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
@@ -120,11 +133,15 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
       <DatasetContainer>
         {datasetPresent ? (
-          <DatasetsGrid
-            datasets={collection.datasets}
-            uploadedFiles={uploadedFiles}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-          />
+          <SelectedContext.Provider
+            value={{ handleSelect: handleCheck, selected }}
+          >
+            <DatasetsGrid
+              datasets={collection.datasets}
+              uploadedFiles={uploadedFiles}
+              invalidateCollectionQuery={invalidateCollectionQuery}
+            />
+          </SelectedContext.Provider>
         ) : (
           <EmptyDatasets onUploadFile={addNewFile} />
         )}

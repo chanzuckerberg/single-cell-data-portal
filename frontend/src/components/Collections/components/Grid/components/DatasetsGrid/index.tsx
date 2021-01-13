@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { Dataset } from "src/common/entities";
 import {
   CollectionHeaderCell,
@@ -19,12 +19,6 @@ const DatasetsGrid: FC<Props> = ({
   uploadedFiles,
   invalidateCollectionQuery,
 }) => {
-  const [selected, setSelected] = useState("");
-
-  const handleSelect = (id: string) => {
-    setSelected(id);
-  };
-
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -42,10 +36,8 @@ const DatasetsGrid: FC<Props> = ({
           <DatasetRow
             key={dataset.id}
             dataset={dataset}
-            checkHandler={handleSelect}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
-            checked={selected === dataset.id}
           />
         ))}
       </tbody>
