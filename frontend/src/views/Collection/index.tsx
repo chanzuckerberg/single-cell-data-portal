@@ -1,4 +1,4 @@
-import { Button, Classes, H3, Intent } from "@blueprintjs/core";
+import { Button, Classes, H3, Intent, Popover } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
@@ -133,9 +133,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
       <DatasetContainer>
         {datasetPresent ? (
-          <SelectedContext.Provider
-            value={{ handleSelect: handleCheck, selected }}
-          >
+          <SelectedContext.Provider value={{ handleCheck, selected }}>
             <DatasetsGrid
               datasets={collection.datasets}
               uploadedFiles={uploadedFiles}
@@ -153,9 +151,11 @@ const Collection: FC<Props> = ({ id = "" }) => {
               Add
             </Button>
           </DropboxChooser>
-          <Button intent={Intent.PRIMARY} outlined>
-            Download
-          </Button>
+          <Popover>
+            <Button intent={Intent.PRIMARY} outlined>
+              Download
+            </Button>
+          </Popover>
           <Button icon={IconNames.TRASH} minimal></Button>
         </StyledDiv>
       )}
