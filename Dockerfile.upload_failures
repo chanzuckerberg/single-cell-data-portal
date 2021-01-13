@@ -1,0 +1,13 @@
+FROM public.ecr.aws/lambda/python:3.8
+
+ADD backend/chalice/upload_failures/requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+ADD backend/chalice/upload_failures .
+ADD backend/corpora/lambdas/upload_failures ./chalicelib/backend/corpora/upload_failures
+
+COPY backend/corpora/common ./chalicelib/backend/corpora/common
+COPY backend/corpora/dataset_processing ./chalicelib/backend/corpora/dataset_processing
+RUN mkdir -p ./.chalice
+
+CMD ["app.handle_failure"]

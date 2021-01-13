@@ -4,3 +4,4 @@ requests>=2.22.0
 connexion[swagger-ui]==2.7.0
 pyrsistent
 boto3
+chalice==1.12.0
