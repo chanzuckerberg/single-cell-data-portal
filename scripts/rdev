@@ -90,27 +90,20 @@ class EnvMeta:
     def generate_tag_args(self):
         args = []
         for k, v in self.tag_map.items():
-            args.append({
-                "Key": v,
-                "Value": str(self.meta[k])
-            })
+            args.append({"Key": v, "Value": str(self.meta[k])})
         return args
 
     def generate_parameter_args(self, statemachine_bucket, statemachine_key):
         args = []
         for k, v in self.parameter_map.items():
-            args.append({
-                "ParameterKey": v,
-                "ParameterValue": str(self.meta[k]),
-            })
-        args.append({
-            "ParameterKey": "StateMachineKey",
-            "ParameterValue": statemachine_key
-        })
-        args.append({
-            "ParameterKey": "StateMachineBucket",
-            "ParameterValue": statemachine_bucket
-        })
+            args.append(
+                {
+                    "ParameterKey": v,
+                    "ParameterValue": str(self.meta[k]),
+                }
+            )
+        args.append({"ParameterKey": "StateMachineKey", "ParameterValue": statemachine_key})
+        args.append({"ParameterKey": "StateMachineBucket", "ParameterValue": statemachine_bucket})
         return args
 
     def update(self, tag, env_mgr):
@@ -196,9 +189,7 @@ def upload_statemachine(ctx, stack_name):
 
 def get_secrets(ctx):
     secrets_client = boto3.client("secretsmanager", config=ctx.obj["aws_conf"])
-    secrets = secrets_client.get_secret_value(
-        SecretId="happy/dp-rdev-config"
-    )["SecretString"]
+    secrets = secrets_client.get_secret_value(SecretId="happy/dp-rdev-config")["SecretString"]
     return json.loads(secrets)
 
 
@@ -217,9 +208,7 @@ def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
 
 def get_stack(ctx, stack_name):
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
-    stack = cf_client.describe_stacks(
-        StackName=stack_name
-    )["Stacks"][0]
+    stack = cf_client.describe_stacks(StackName=stack_name)["Stacks"][0]
     return stack
 
 
@@ -249,16 +238,17 @@ def print_outputs(ctx, stack_name=None, stack=None):
         print(f"{k}: {v}")
 
 
-def get_migration_taskdef(ctx, stack_name):
+def get_taskdef(ctx, stack_name, taskdef_type="migration"):
     """Find the migration task definition in our CF stack"""
-    path = ["DevEnv", "DevEnv", "MigrateDB", "TaskDefinition"]
+    if taskdef_type == "migration":
+        path = ["DevEnv", "DevEnv", "MigrateDB", "TaskDefinition"]
+    else:
+        path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
     arn = stack_name
     path_length = len(path)
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
     for i in range(path_length):
-        resources = cf_client.describe_stack_resources(
-            StackName=arn
-        )["StackResources"]
+        resources = cf_client.describe_stack_resources(StackName=arn)["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
         resource_map = {
             item["LogicalResourceId"]: {
@@ -272,16 +262,14 @@ def get_migration_taskdef(ctx, stack_name):
         arn = resource["arn"]
     return resource
 
-@cli.command()
-@click.argument("stack_name")
-@click.pass_context
-def migrate(ctx, stack_name):
-    """Run DB migration task for given stack"""
+
+def run_task(ctx, stack_name, taskdef_type, wait=False, show_logs=True):
+    """Run a one-off task and optionally wait"""
     secrets = get_secrets(ctx)
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
-    taskdef_arn = get_migration_taskdef(ctx, stack_name)["arn"]
+    taskdef_arn = get_taskdef(ctx, stack_name, taskdef_type)["arn"]
     print(f"Using task definition {taskdef_arn}")
     ecs_client = boto3.client("ecs", config=ctx.obj["aws_conf"])
     output = ecs_client.run_task(
@@ -291,27 +279,19 @@ def migrate(ctx, stack_name):
             "awsvpcConfiguration": {
                 "subnets": subnets.split(","),
                 "securityGroups": security_groups.split(","),
-                "assignPublicIp": "DISABLED"
+                "assignPublicIp": "DISABLED",
             }
-        }
+        },
     )
     task_info = output["tasks"][0]
     print(f"Task {task_info['taskArn']} started")
+    if not wait:
+        return
 
     # Wait for the task to start.
     waiter = ecs_client.get_waiter("tasks_running")
-    waiter.wait(
-        cluster=cluster_arn,
-        tasks=[
-          task_info["taskArn"]
-        ]
-    )
-    result = ecs_client.describe_tasks(
-        cluster=cluster_arn,
-        tasks=[
-            task_info["taskArn"]
-        ]
-    )
+    waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+    result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
     container = result["tasks"][0]["containers"][0]
     status = container["lastStatus"]
     if status != "RUNNING":
@@ -324,19 +304,9 @@ def migrate(ctx, stack_name):
 
     # Wait for the task to exit.
     waiter = ecs_client.get_waiter("tasks_stopped")
-    waiter.wait(
-        cluster=cluster_arn,
-        tasks=[
-          task_info["taskArn"]
-        ]
-    )
+    waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
     print(f"Task {task_info['taskArn']} stopped")
-    result = ecs_client.describe_tasks(
-        cluster=cluster_arn,
-        tasks=[
-            task_info["taskArn"]
-        ]
-    )
+    result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
     container = result["tasks"][0]["containers"][0]
     log_stream = container["runtimeId"]
     if "reason" in container:
@@ -346,22 +316,30 @@ def migrate(ctx, stack_name):
 
     # Get logs
     print("getting taskdef info")
-    result = ecs_client.describe_task_definition(
-        taskDefinition=taskdef_arn
-    )
+    result = ecs_client.describe_task_definition(taskDefinition=taskdef_arn)
     taskdef = result["taskDefinition"]
     container = taskdef["containerDefinitions"][0]
     log_group = container["logConfiguration"]["options"]["awslogs-group"]
     print("Log Events:")
     logs_client = boto3.client("logs", config=ctx.obj["aws_conf"])
-    result = logs_client.get_log_events(
-        logGroupName=log_group,
-        logStreamName=log_stream
-    )
+    result = logs_client.get_log_events(logGroupName=log_group, logStreamName=log_stream)
     logs = result["events"]
     for log in logs:
         print(log)
     print("done!")
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.option("--reset", is_flag=True, default=False, help="Drop and recreate the dev db from the latest snapshot")
+@click.pass_context
+def migrate(ctx, stack_name, reset):
+    """Run DB migration task for given stack"""
+    if reset:
+        print("Dropping database")
+        run_task(ctx, stack_name, "delete", wait=True, show_logs=True)
+    print("Running migrations")
+    run_task(ctx, stack_name, "migration", wait=True, show_logs=True)
 
 
 def invoke_wait(ctx, stack_name):
@@ -397,7 +375,7 @@ def logs(ctx, stack_name, service, since):
 
 def wait_for_migration_update(ctx, stack_name):
     """Wait for the migration task update to complete"""
-    migration_stack_arn = get_migration_taskdef(ctx, stack_name)["stack_name"]
+    migration_stack_arn = get_taskdef(ctx, stack_name, "migration")["stack_name"]
     # TODO, how do we make sure the migration stack's status isn't from the *last* update????
     print(f"Waiting for migration stack to be updated: {migration_stack_arn}")
     invoke_wait(ctx, migration_stack_arn)
@@ -423,10 +401,10 @@ def create(ctx, stack_name, tag, wait):
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
     cf_client.create_stack(
         StackName=stack_name,
-        TemplateBody=open("scripts/remotedev.yml").read(), # FIXME
+        TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
         Parameters=env_meta.generate_parameter_args(statemachine_bucket, statemachine_key),
         OnFailure="DO_NOTHING",
-        Tags=env_meta.generate_tag_args()
+        Tags=env_meta.generate_tag_args(),
     )
     while True:
         try:
@@ -460,12 +438,12 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
     cf_client.update_stack(
         StackName=stack_name,
-        TemplateBody=open("scripts/remotedev.yml").read(), # FIXME
+        TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
         Parameters=env_meta.generate_parameter_args(statemachine_bucket, statemachine_key),
-        Tags=env_meta.generate_tag_args()
+        Tags=env_meta.generate_tag_args(),
     )
     if not skip_migrations:
-        migration_taskdef = get_migration_taskdef(ctx, stack_name)["arn"]
+        migration_taskdef = get_taskdef(ctx, stack_name, "migration")["arn"]
         # invoke migrations
         wait_for_migration_update(ctx, stack_name)
         ctx.invoke(migrate, stack_name=stack_name)
@@ -483,36 +461,10 @@ def cancelupdate(ctx, stack_name, wait):
     """Cancel a dev stack update"""
     print(f"Canceling update of {stack_name}")
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
-    cf_client.cancel_update_stack(
-        StackName=stack_name
-    )
+    cf_client.cancel_update_stack(StackName=stack_name)
     if wait:
         invoke_wait(ctx, stack_name)
 
-
-def get_delete_taskdef(ctx, stack_name):
-    """Find the deletion task definition in our CF stack"""
-    path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
-    arn = stack_name
-    path_length = len(path)
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
-    for i in range(path_length):
-        result = cf_client.describe_stack_resources(
-            StackName=arn
-        )
-        resources = result["StackResources"]
-        # Convert to a map of CloudFormation object name => AWS resource ARN
-        resource_map = {
-            item["LogicalResourceId"]: {
-                "arn": item["PhysicalResourceId"],
-                "status": item["ResourceStatus"],
-                "stack_name": item["StackName"],
-            }
-            for item in resources
-        }
-        resource = resource_map[path[i]]
-        arn = resource["arn"]
-    return resource
 
 @cli.command()
 @click.argument("stack_name")
@@ -525,26 +477,12 @@ def delete(ctx, stack_name):
     cluster_arn = secrets["cluster_arn"]
     subnets = secrets["subnets"]
     security_groups = secrets["security_groups"]
+    print(f"Dropping database")
     try:
-        taskdef_arn = get_delete_taskdef(ctx, stack_name)["arn"]
+        run_task(ctx, stack_name, "delete", wait=False, show_logs=False)
     except KeyError:
-        taskdef_arn = None
-    if taskdef_arn:
-        print(f"Using task definition {taskdef_arn}")
-        print(f"Dropping database")
-        ecs_client = boto3.client("ecs", config=ctx.obj["aws_conf"])
-        ecs_client.run_task(
-            cluster=cluster_arn,
-            taskDefinition=taskdef_arn,
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": subnets.split(","),
-                    "securityGroups": security_groups.split(","),
-                    "assignPublicIp": "DISABLED"
-                }
-            }
-        )
-        print(f"Database dropped")
+        print("DB job is missing")
+    print(f"Database dropped")
 
     envmgr = DevEnvMgr(ctx)
     try:
@@ -552,9 +490,7 @@ def delete(ctx, stack_name):
     except:
         print("rdev env doesn't exist in our list")
     cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
-    cf_client.delete_stack(
-        StackName=stack_name
-    )
+    cf_client.delete_stack(StackName=stack_name)
     print(f"Delete done")
 
 
@@ -631,9 +567,7 @@ def status(ctx, stack_name):
             continue
         print(f"Stack: {stack['StackName']} / Status: {stack['StackStatus']} / Reason: {reason}")
         if reason:
-            events = cf_client.describe_stack_events(
-                StackName=stack["StackName"]
-            )
+            events = cf_client.describe_stack_events(StackName=stack["StackName"])
             eventdata = events["StackEvents"]
             # Print most recent 3 events
             show_events = 3
