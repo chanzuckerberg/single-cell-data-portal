@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
 
+import logging
 import os
 import subprocess
-import sys
-
+import typing
 from os.path import basename, join
 
 import boto3
 import numpy
 import scanpy
+import sys
 
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType
+logger = logging.getLogger(__name__)
+logging.basicConfig()
+
+from backend.corpora.common.corpora_orm import (
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    ConversionStatus,
+    ValidationStatus,
+)
+from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils import dropbox
-from backend.corpora.common.utils.db_utils import db_session
+from backend.corpora.common.utils.db_utils import db_session, processing_status_updater
 from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
@@ -24,6 +33,10 @@ DEPLOYMENT_STAGE_TO_URL = {
     "prod": "https://cellxgene.cziscience.com/e",
     "rdev": os.environ.get("FRONTEND_URL"),
 }
+
+s3_client = boto3.client(
+    "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
+)
 
 
 def check_env():
@@ -37,84 +50,69 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefix):
-    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-    s3 = boto3.client(
-        "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
-    )
-    artifacts = []
-
-    s3.upload_file(
-        h5ad_filename,
+@db_session()
+def create_artifact(
+    file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
+) -> DatasetAsset:
+    file_base = basename(file_name)
+    s3_client.upload_file(
+        file_name,
         artifact_bucket,
-        join(bucket_prefix, basename(h5ad_filename)),
+        join(bucket_prefix, file_base),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
-    artifacts.append(
-        {
-            "filename": basename(h5ad_filename),
-            "filetype": DatasetArtifactFileType.H5AD,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(h5ad_filename)),
-        }
+    DatasetAsset.create(
+        dataset_id=dataset_id,
+        filename=file_base,
+        filetype=artifact_type,
+        type_enum=DatasetArtifactType.REMIX,
+        user_submitted=True,
+        s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
     )
-    if seurat_filename:
-        s3.upload_file(
-            seurat_filename,
-            artifact_bucket,
-            join(bucket_prefix, basename(seurat_filename)),
-            ExtraArgs={"ACL": "bucket-owner-full-control"},
-        )
-        artifacts.append(
-            {
-                "filename": basename(seurat_filename),
-                "filetype": DatasetArtifactFileType.RDS,
-                "type": DatasetArtifactType.REMIX,
-                "user_submitted": True,
-                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(seurat_filename)),
-            }
-        )
-    if loom_filename:
-        s3.upload_file(
-            loom_filename,
-            artifact_bucket,
-            join(bucket_prefix, basename(loom_filename)),
-            ExtraArgs={"ACL": "bucket-owner-full-control"},
-        )
-        artifacts.append(
-            {
-                "filename": basename(loom_filename),
-                "filetype": DatasetArtifactFileType.LOOM,
-                "type": DatasetArtifactType.REMIX,
-                "user_submitted": True,
-                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(loom_filename)),
-            }
-        )
 
-    return artifacts
+
+def create_artifacts(local_filename, dataset_id, artifact_bucket):
+    bucket_prefix = get_bucket_prefix(dataset_id)
+
+    # upload AnnData
+    update_db(dataset_id, processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTING))
+    create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
+    update_db(
+        dataset_id,
+        processing_status=dict(
+            conversion_anndata_status=ConversionStatus.CONVERTED, conversion_loom_status=ConversionStatus.CONVERTING
+        ),
+    )
+
+    # Process loom
+    loom_filename, status = convert_file_ignore_exceptions(make_loom, local_filename, "Issue creating loom.")
+    if loom_filename:
+        create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
+    update_db(
+        dataset_id,
+        processing_status=dict(conversion_loom_status=status, conversion_rds_status=ConversionStatus.CONVERTING),
+    )
+
+    # Process seurat
+    seurat_filename, status = convert_file_ignore_exceptions(make_seurat, local_filename, "Issue creating seurat.")
+    if seurat_filename:
+        create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket)
+    update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
 
 
 @db_session()
-def update_db(metadata=None, processing_status=None):
-
-    dataset = Dataset.get(os.environ["DATASET_ID"])
+def update_db(dataset_id, metadata=None, processing_status=None):
+    dataset = Dataset.get(dataset_id)
 
     if metadata:
-
         # TODO: Delete this line once mean_genes_per_cell is in the db
         metadata.pop("mean_genes_per_cell", None)
 
         dataset.update(**metadata)
 
     if processing_status:
-        status = dataset.processing_status.to_dict()
-        status.pop("dataset")
-        status.pop("created_at")
-        status.pop("updated_at")
-        status.update(processing_status)
-        dataset.update(processing_status=status)
+        processing_status_updater(dataset.processing_status.id, processing_status)
 
 
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
@@ -140,6 +138,7 @@ def extract_metadata(filename):
         raw_layer_name = [k for k, v in adata.uns["layer_descriptions"].items() if v == "raw"][0]
     except (KeyError, IndexError):
         raise RuntimeError("Raw layer not found in layer descriptions!")
+
     if raw_layer_name == "X":
         raw_layer = adata.X
     elif raw_layer_name == "raw.X":
@@ -216,7 +215,7 @@ def make_cxg(local_filename):
     return cxg_dir
 
 
-def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix):
+def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket):
     command = ["aws"]
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
@@ -225,7 +224,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix):
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{os.environ['CELLXGENE_BUCKET']}/{bucket_prefix}.cxg/",
+            f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/",
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
@@ -237,60 +236,83 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix):
     )
 
 
-def convert_files_ignore_exceptions(local_filename):
-    exceptions = []
+def convert_file_ignore_exceptions(
+    converter: typing.Callable, local_filename: str, error_message: str
+) -> typing.Tuple[str, ConversionStatus]:
     try:
-        cxg_dir = make_cxg(local_filename)
-    except Exception as e:
-        cxg_dir = None
-        print(f"Issue creating cxg: {e}")
-        exceptions.append(e)
-    try:
-        loom_filename = make_loom(local_filename)
-    except Exception as e:
-        loom_filename = None
-        print(f"Issue creating loom: {e}")
-        exceptions.append(e)
-    try:
-        seurat_filename = make_seurat(local_filename)
-    except Exception as e:
-        seurat_filename = None
-        print(f"Issue creating seurat: {e}")
-        exceptions.append(e)
-    return cxg_dir, loom_filename, seurat_filename, exceptions
+        file_dir = converter(local_filename)
+        status = ConversionStatus.CONVERTED
+    except Exception:
+        file_dir = None
+        status = ConversionStatus.FAILED
+        logger.exception(error_message)
+    return file_dir, status
+
+
+def get_bucket_prefix(dataset_id):
+    remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
+    if remote_dev_prefix:
+        return join(remote_dev_prefix, dataset_id).strip("/")
+    else:
+        return dataset_id
+
+
+def process_cxg(local_filename, dataset_id, cellxgene_bucket):
+    bucket_prefix = get_bucket_prefix(dataset_id)
+    cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
+    if cxg_dir:
+        copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
+    update_db(
+        dataset_id,
+        processing_status=dict(conversion_cxg_status=status, conversion_anndata_status=ConversionStatus.CONVERTING),
+    )
 
 
 def main():
     check_env()
+    dataset_id = os.environ["DATASET_ID"]
     local_filename = download_from_dropbox_url(
-        os.environ["DATASET_ID"],
+        dataset_id,
         os.environ["DROPBOX_URL"],
         "local.h5ad",
     )
-    print("Download complete", flush=True)
+    logger.info("Download complete", flush=True)
+
+    # Validate the H5AD file
+    update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if False and val_proc.returncode != 0:
-        print("Validation failed!")
-        print(f"stdout: {val_proc.stdout}")
-        print(f"stderr: {val_proc.stderr}")
+        logger.error("Validation failed!")
+        logger.error(f"stdout: {val_proc.stdout}")
+        logger.error(f"stderr: {val_proc.stderr}")
+        status = dict(validation_status=ValidationStatus.INVALID, validation_message=val_proc.stdout)
+        update_db(dataset_id, processing_status=status)
         sys.exit(1)
-    print("Validation complete", flush=True)
+    else:
+        logger.info("Validation complete", flush=True)
+        status = dict(conversion_anndata_status=ConversionStatus.CONVERTING, validation_status=ValidationStatus.VALID)
+        update_db(dataset_id, processing_status=status)
 
-    metadata_dict = extract_metadata(local_filename)
-    print(metadata_dict, flush=True)
-    update_db(metadata=metadata_dict)
+    # Process metadata
+    metadata = extract_metadata(local_filename)
+    logger.info(metadata, flush=True)
+    update_db(dataset_id, metadata)
 
-    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
-    cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(local_filename)
-    if cxg_dir:
-        copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix)
+    # Process cxg
+    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
-    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename, bucket_prefix)
+    # create artifacts
+    create_artifacts(
+        local_filename,
+        dataset_id,
+        os.environ["ARTIFACT_BUCKET"],
+    )
+
     deployment_directories = [
-        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"] + ".cxg", "")}
+        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")}
     ]
 
-    update_db(metadata={"artifacts": artifacts, "deployment_directories": deployment_directories})
+    update_db(dataset_id, metadata={"deployment_directories": deployment_directories})
 
 
 if __name__ == "__main__":

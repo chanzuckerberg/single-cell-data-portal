@@ -59,7 +59,7 @@ class TransformingBase(object):
             if backref == relation.target:
                 continue
             value = getattr(self, attr)
-            if value is None and remove_none:
+            if value is None and not remove_none:
                 result[relation.key] = None
             elif isinstance(value.__class__, DeclarativeMeta):
                 result[relation.key] = value.to_dict(self.__table__, remove_none)

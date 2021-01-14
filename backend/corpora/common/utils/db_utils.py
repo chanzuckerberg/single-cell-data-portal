@@ -131,3 +131,4 @@ def db_session(commit=False):
 def processing_status_updater(uuid: str, updates: dict):
     with db_session_manager(commit=True) as manager:
         manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
+    logger.debug("updating status", updates)

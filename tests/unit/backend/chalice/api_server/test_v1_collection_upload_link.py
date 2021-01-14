@@ -5,7 +5,7 @@ from furl import furl
 from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
-from tests.unit.backend.chalice.api_server.generate_data_mixin import GenerateDataMixin
+from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 

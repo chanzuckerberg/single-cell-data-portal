@@ -1,6 +1,7 @@
 import logging
 import typing
-import uuid
+
+from ..utils.uuid import generate_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class Entity:
         new_row = dict(**row)
         new_row.update(**add_columns)
 
-        new_row["id"] = str(uuid.uuid4())
+        new_row["id"] = generate_uuid()
         new_row = db_table(**new_row)
         return new_row
 
