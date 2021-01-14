@@ -15,7 +15,6 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style.ts";
 import { UploadingFile } from "src/components/DropboxChooser";
-import { SelectedContext } from "src/views/Collection";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
@@ -42,12 +41,16 @@ interface Props {
   dataset: Dataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
+  onSelect: (id: Dataset["id"]) => void;
+  selected: Dataset["id"] | null;
 }
 
 const DatasetRow: FC<Props> = ({
   dataset,
   file,
   invalidateCollectionQuery,
+  onSelect,
+  selected,
 }) => {
   const queryCache = useQueryCache();
 
@@ -103,45 +106,36 @@ const DatasetRow: FC<Props> = ({
   } = aggregateDatasetsMetadata([dataset]);
 
   return (
-    <SelectedContext.Consumer>
-      {({ handleCheck, selected }) => (
-        <StyledRow>
-          <DetailsCell>
-            <TitleContainer>
-              <Radio
-                onChange={() => handleCheck(dataset.id)}
-                checked={selected === dataset.id}
-              />
-              <div>{name}</div>
-              <ErrorTooltip isFailed={isFailed} error={error} />
-            </TitleContainer>
-            {isLoading && (
-              <UploadStatus
-                isValidating={
-                  datasetStatus.validation_status ===
-                  VALIDATION_STATUS.VALIDATING
-                }
-                progress={datasetStatus.upload_progress}
-              />
-            )}
-          </DetailsCell>
-          <Popover values={tissue} isLoading={isLoading} isFailed={isFailed} />
-          <Popover values={assay} isLoading={isLoading} isFailed={isFailed} />
-          <Popover values={disease} isLoading={isLoading} isFailed={isFailed} />
-          <Popover
-            values={organism}
-            isLoading={isLoading}
-            isFailed={isFailed}
+    <StyledRow>
+      <DetailsCell>
+        <TitleContainer>
+          <Radio
+            onChange={() => onSelect(dataset.id)}
+            checked={selected === dataset.id}
           />
-          <CellCount cellCount={cell_count} isLoading={isLoading} />
-          <RightAlignedDetailsCell>
-            {isNamePopulated && (
-              <Button intent={Intent.PRIMARY} outlined text="Explore" />
-            )}
-          </RightAlignedDetailsCell>
-        </StyledRow>
-      )}
-    </SelectedContext.Consumer>
+          <div>{name}</div>
+          <ErrorTooltip isFailed={isFailed} error={error} />
+        </TitleContainer>
+        {isLoading && (
+          <UploadStatus
+            isValidating={
+              datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
+            }
+            progress={datasetStatus.upload_progress}
+          />
+        )}
+      </DetailsCell>
+      <Popover values={tissue} isLoading={isLoading} isFailed={isFailed} />
+      <Popover values={assay} isLoading={isLoading} isFailed={isFailed} />
+      <Popover values={disease} isLoading={isLoading} isFailed={isFailed} />
+      <Popover values={organism} isLoading={isLoading} isFailed={isFailed} />
+      <CellCount cellCount={cell_count} isLoading={isLoading} />
+      <RightAlignedDetailsCell>
+        {isNamePopulated && (
+          <Button intent={Intent.PRIMARY} outlined text="Explore" />
+        )}
+      </RightAlignedDetailsCell>
+    </StyledRow>
   );
 };
 
