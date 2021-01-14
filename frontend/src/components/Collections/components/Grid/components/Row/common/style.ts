@@ -4,6 +4,7 @@ import { detailsColWidthCSS, textClippingCSS } from "../../../common/style";
 
 export const StyledCell = styled.td`
   vertical-align: middle !important;
+  padding: 0 !important;
 `;
 
 export const DetailsCell = styled(StyledCell)`

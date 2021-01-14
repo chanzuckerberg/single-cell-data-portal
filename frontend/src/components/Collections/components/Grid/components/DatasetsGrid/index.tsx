@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Dataset } from "src/common/entities";
 import {
-  CollectionHeaderCell,
+  DatasetHeaderCell,
   LeftAlignedHeaderCell,
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
@@ -23,12 +23,13 @@ const DatasetsGrid: FC<Props> = ({
     <StyledCollectionsGrid bordered>
       <thead>
         <tr>
-          <CollectionHeaderCell>Dataset</CollectionHeaderCell>
+          <DatasetHeaderCell>Dataset</DatasetHeaderCell>
           <LeftAlignedHeaderCell>Tissue</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Assay</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Disease</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Organism</LeftAlignedHeaderCell>
           <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
+          <RightAlignedHeaderCell />
         </tr>
       </thead>
       <tbody>
