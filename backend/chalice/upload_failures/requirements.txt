@@ -5,3 +5,4 @@ connexion[swagger-ui]==2.7.0
 pyrsistent
 boto3
 chalice==1.12.0
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
