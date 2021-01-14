@@ -2,7 +2,7 @@ import { Button, Classes, H3, Intent, Popover } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
-import React, { createContext, FC, useState } from "react";
+import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
 import {
   COLLECTION_LINK_TYPE_OPTIONS,
@@ -36,13 +36,6 @@ interface RouteProps {
 
 export type Props = RouteComponentProps<RouteProps>;
 
-export interface Context {
-  selected: Dataset["id"];
-  handleCheck: (id: string) => void;
-}
-
-export const SelectedContext = createContext({} as Context);
-
 const renderLinks = (links: Link[]) => {
   return links?.map(({ link_url: url, link_type: type }) => {
     const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
@@ -73,11 +66,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [selected, setSelected] = useState("" as Context["selected"]);
-
-  const handleCheck: Context["handleCheck"] = (id: string) => {
-    setSelected(id);
-  };
+  const [selected, setSelected] = useState<Dataset["id"] | null>(null);
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
@@ -133,13 +122,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
       <DatasetContainer>
         {datasetPresent ? (
-          <SelectedContext.Provider value={{ handleCheck, selected }}>
-            <DatasetsGrid
-              datasets={collection.datasets}
-              uploadedFiles={uploadedFiles}
-              invalidateCollectionQuery={invalidateCollectionQuery}
-            />
-          </SelectedContext.Provider>
+          <DatasetsGrid
+            datasets={collection.datasets}
+            uploadedFiles={uploadedFiles}
+            invalidateCollectionQuery={invalidateCollectionQuery}
+            onSelect={setSelected}
+          />
         ) : (
           <EmptyDatasets onUploadFile={addNewFile} />
         )}
@@ -156,7 +144,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
               Download
             </Button>
           </Popover>
-          <Button icon={IconNames.TRASH} minimal></Button>
+          <Button icon={IconNames.TRASH} minimal>
+            {/* TEMP: To show selected file */}
+            {/* TEMP: To show selected file */}
+            {/* TEMP: To show selected file */}
+            {selected}
+          </Button>
         </StyledDiv>
       )}
     </ViewGrid>
