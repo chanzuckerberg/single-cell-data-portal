@@ -1,4 +1,5 @@
 import { HTMLTable } from "@blueprintjs/core";
+import { PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled, { css } from "styled-components";
 
 export const textClippingCSS = css`
@@ -19,27 +20,32 @@ const datasetTitleColWidthCSS = css`
 
 export const StyledCollectionsGrid = styled(HTMLTable)`
   grid-column: 1/9;
-  margin-top: 16px;
+  margin-top: ${PT_GRID_SIZE_PX * 2}px;
 `;
 
 export const CollectionHeaderCell = styled.th`
   ${titleColWidthCSS}
   text-align: left !important;
+  padding: 0 !important;
 `;
 
 export const DatasetHeaderCell = styled.th`
   ${datasetTitleColWidthCSS}
   text-align: left !important;
+  padding: 0 !important;
+  padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
 export const LeftAlignedHeaderCell = styled.th`
   ${detailsColWidthCSS}
   text-align: left !important;
-  margin-left: 16px;
+  padding: 0 !important;
+  padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
 export const RightAlignedHeaderCell = styled.th`
-  width: calc(1 / 8 * 100%);
+  ${datasetTitleColWidthCSS}
   text-align: right !important;
-  margin-left: 16px;
+  padding: 0 !important;
+  padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
