@@ -38,7 +38,7 @@ def check_env():
 
 
 def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefix):
-    ARTIFACT_BUCKET = os.environ["ARTIFACT_BUCKET"]
+    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
     s3 = boto3.client(
         "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
     )
@@ -46,7 +46,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefi
 
     s3.upload_file(
         h5ad_filename,
-        ARTIFACT_BUCKET,
+        artifact_bucket,
         join(bucket_prefix, basename(h5ad_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
@@ -57,13 +57,13 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefi
             "filetype": DatasetArtifactFileType.H5AD,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(h5ad_filename)),
+            "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(h5ad_filename)),
         }
     )
     if seurat_filename:
         s3.upload_file(
             seurat_filename,
-            ARTIFACT_BUCKET,
+            artifact_bucket,
             join(bucket_prefix, basename(seurat_filename)),
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
@@ -73,13 +73,13 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefi
                 "filetype": DatasetArtifactFileType.RDS,
                 "type": DatasetArtifactType.REMIX,
                 "user_submitted": True,
-                "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(seurat_filename)),
+                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(seurat_filename)),
             }
         )
     if loom_filename:
         s3.upload_file(
             loom_filename,
-            ARTIFACT_BUCKET,
+            artifact_bucket,
             join(bucket_prefix, basename(loom_filename)),
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
@@ -89,7 +89,7 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefi
                 "filetype": DatasetArtifactFileType.LOOM,
                 "type": DatasetArtifactType.REMIX,
                 "user_submitted": True,
-                "s3_uri": join("s3://", ARTIFACT_BUCKET, bucket_prefix, basename(loom_filename)),
+                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(loom_filename)),
             }
         )
 
