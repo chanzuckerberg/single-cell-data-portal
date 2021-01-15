@@ -9,7 +9,9 @@ class GenerateDataMixin:
 
     def generate_collection(self, **params) -> Collection:
         def delete(uuid, visibility):
-            Collection.get((uuid, visibility)).delete()
+            col = Collection.get((uuid, visibility))
+            if col:
+                col.delete()
 
         _collection = Collection.create(**BogusCollectionParams.get(**params))
         # Cleanup collection after test
@@ -18,7 +20,9 @@ class GenerateDataMixin:
 
     def generate_dataset(self, **params) -> Dataset:
         def delete(uuid):
-            Dataset.get(uuid).delete()
+            dat = Dataset.get(uuid)
+            if dat:
+                dat.delete()
 
         _dataset = Dataset.create(**BogusDatasetParams.get(**params))
         # Cleanup collection after test
