@@ -1,5 +1,4 @@
 import typing
-import uuid
 from datetime import datetime
 
 from sqlalchemy import and_
@@ -33,13 +32,11 @@ class Collection(Entity):
         Create a new Collection and related objects and store in the database. UUIDs are generated for all new table
         entries.
         """
-        primary_key = str(uuid.uuid4())
 
         # Setting Defaults
         links = links if links else []
 
         new_db_object = DbCollection(
-            id=primary_key,
             visibility=visibility,
             name=name,
             description=description,
@@ -47,12 +44,10 @@ class Collection(Entity):
             contact_name=contact_name,
             contact_email=contact_email,
             data_submission_policy_version=data_submission_policy_version,
-            links=cls._create_sub_objects(
-                links, DbCollectionLink, add_columns=dict(collection_id=primary_key, collection_visibility=visibility)
-            ),
             **kwargs,
         )
 
+        new_db_object.links = [DbCollectionLink(collection_id=new_db_object.id, collection_visibility=visibility, **link) for link in links]
         cls.db.session.add(new_db_object)
         cls.db.commit()
         return cls(new_db_object)

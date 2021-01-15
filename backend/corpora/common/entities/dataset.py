@@ -1,5 +1,4 @@
 import typing
-import uuid
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
@@ -33,15 +32,7 @@ class Dataset(Entity):
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
         entries.
         """
-        primary_key = str(uuid.uuid4())
-
-        # Setting Defaults
-        artifacts = artifacts if artifacts else []
-        deployment_directories = deployment_directories if deployment_directories else []
-        processing_status = processing_status or {}
-
-        new_db_object = DbDataset(
-            id=primary_key,
+        dataset = DbDataset(
             revision=revision,
             name=name,
             organism=organism,
@@ -51,23 +42,19 @@ class Dataset(Entity):
             sex=sex,
             ethnicity=ethnicity,
             development_stage=development_stage,
-            artifacts=cls._create_sub_objects(artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=primary_key)),
-            deployment_directories=cls._create_sub_objects(
-                deployment_directories,
-                DbDeploymentDirectory,
-                add_columns=dict(dataset_id=primary_key),
-            ),
-            processing_status=cls._create_sub_object(
-                processing_status, DbDatasetProcessingStatus, add_columns=dict(dataset_id=primary_key)
-            ),
             **kwargs,
         )
-
-        cls.db.session.add(new_db_object)
-        cls.db.session.flush()
+        if artifacts:
+            dataset.artifacts = [DbDatasetArtifact(dataset_id=dataset.id, **art) for art in artifacts]
+        if deployment_directories:
+            dataset.deployment_directories = [DbDeploymentDirectory(dataset_id=dataset.id, **dd) for dd in
+                                              deployment_directories]
+        processing_status = processing_status if processing_status else {}
+        dataset.processing_status = DbDatasetProcessingStatus(dataset_id=dataset.id, **processing_status)
+        cls.db.session.add(dataset)
         cls.db.commit()
 
-        return cls(new_db_object)
+        return cls(dataset)
 
     def update(
         self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
@@ -86,31 +73,21 @@ class Dataset(Entity):
             if artifacts:
                 for af in self.artifacts:
                     self.db.delete(af)
-                new_db_objects = self._create_sub_objects(
-                    artifacts, DbDatasetArtifact, add_columns=dict(dataset_id=self.id)
-                )
-                self.db.session.add_all(new_db_objects)
-                kwargs["artifacts"] = new_db_objects
+                new_objs = [DbDatasetArtifact(dataset_id=self.id, **art) for art in artifacts]
+                self.db.session.add_all(new_objs)
+                kwargs["artifacts"] = new_objs
             if deployment_directories:
                 for dd in self.deployment_directories:
                     self.db.delete(dd)
-                new_db_objects = self._create_sub_objects(
-                    deployment_directories,
-                    DbDeploymentDirectory,
-                    add_columns=dict(dataset_id=self.id),
-                )
-                self.db.session.add_all(new_db_objects)
-                kwargs["deployment_directories"] = new_db_objects
+                new_objs = [DbDeploymentDirectory(dataset_id=self.id, **dd) for dd in deployment_directories]
+                self.db.session.add_all(new_objs)
+                kwargs["deployment_directories"] = new_objs
             if processing_status:
                 if self.processing_status:
                     self.db.delete(self.processing_status)
-                new_db_object = self._create_sub_object(
-                    processing_status,
-                    DbDatasetProcessingStatus,
-                    add_columns=dict(dataset_id=self.id),
-                )
-                self.db.session.add(new_db_object)
-                kwargs["processing_status"] = new_db_object
+                new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
+                self.db.session.add(new_obj)
+                kwargs["processing_status"] = new_obj
 
             self.db.session.flush()
 
