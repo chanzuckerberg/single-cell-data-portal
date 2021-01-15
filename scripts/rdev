@@ -364,7 +364,7 @@ def invoke_wait(ctx, stack_name):
 @click.option("--since", default="10m", help="Output logs since <number>s|m|h|d")
 @click.pass_context
 def logs(ctx, stack_name, service, since):
-    """Tail the logs of a service (frontend or backend)"""
+    """Tail the logs of a service (frontend, backend, upload, migrations)"""
     run_aws_cmd(
         ctx,
         ["logs", "tail", "--since", since, "--follow", f"{stack_name}/{service}"],
