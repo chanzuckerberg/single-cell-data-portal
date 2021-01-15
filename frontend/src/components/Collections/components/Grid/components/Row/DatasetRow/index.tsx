@@ -2,7 +2,7 @@ import { Button, Intent, Radio } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import React, { FC, useEffect, useState } from "react";
-import { QueryCache, useQueryCache } from "react-query";
+import { CancelledError, QueryCache, useQueryCache } from "react-query";
 import { Dataset, VALIDATION_STATUS } from "src/common/entities";
 import {
   useDatasetStatus,
@@ -22,7 +22,12 @@ import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
 import UploadStatus from "./components/UploadStatus";
 import { TitleContainer } from "./style";
-import { checkIfFailed, checkIfLoading, FailReturn } from "./utils";
+import {
+  checkIfCancelled,
+  checkIfFailed,
+  checkIfLoading,
+  FailReturn,
+} from "./utils";
 
 const FETCH_COLLECTION_INTERVAL_MS = 5 * 1000;
 
@@ -59,11 +64,14 @@ const DatasetRow: FC<Props> = ({
 
   const datasetStatus = queryResult.data || dataset.processing_status;
 
+  if (checkIfCancelled(datasetStatus)) return null;
+
   const { upload_progress } = datasetStatus;
 
   const [uploadProgress, setUploadProgress] = useState(upload_progress);
 
-  if (queryResult.isError) console.error(queryResult.error);
+  if (queryResult.isError && !(queryResult.error instanceof CancelledError))
+    console.error(queryResult.error);
 
   const isNamePopulated = Boolean(dataset.name);
 
