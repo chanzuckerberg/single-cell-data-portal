@@ -37,18 +37,16 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
-
+def create_artifacts(h5ad_filename, seurat_filename, loom_filename, bucket_prefix):
+    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
     s3 = boto3.client(
         "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
     )
     artifacts = []
 
-    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
-
     s3.upload_file(
         h5ad_filename,
-        os.environ["ARTIFACT_BUCKET"],
+        artifact_bucket,
         join(bucket_prefix, basename(h5ad_filename)),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
@@ -59,41 +57,41 @@ def create_artifacts(h5ad_filename, seurat_filename, loom_filename):
             "filetype": DatasetArtifactFileType.H5AD,
             "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(h5ad_filename)),
+            "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(h5ad_filename)),
         }
     )
-
-    s3.upload_file(
-        seurat_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        join(bucket_prefix, basename(seurat_filename)),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    artifacts.append(
-        {
-            "filename": basename(seurat_filename),
-            "filetype": DatasetArtifactFileType.RDS,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(seurat_filename)),
-        }
-    )
-
-    s3.upload_file(
-        loom_filename,
-        os.environ["ARTIFACT_BUCKET"],
-        join(bucket_prefix, basename(loom_filename)),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    artifacts.append(
-        {
-            "filename": basename(loom_filename),
-            "filetype": DatasetArtifactFileType.LOOM,
-            "type": DatasetArtifactType.REMIX,
-            "user_submitted": True,
-            "s3_uri": join("s3://", os.environ["ARTIFACT_BUCKET"], bucket_prefix, basename(loom_filename)),
-        }
-    )
+    if seurat_filename:
+        s3.upload_file(
+            seurat_filename,
+            artifact_bucket,
+            join(bucket_prefix, basename(seurat_filename)),
+            ExtraArgs={"ACL": "bucket-owner-full-control"},
+        )
+        artifacts.append(
+            {
+                "filename": basename(seurat_filename),
+                "filetype": DatasetArtifactFileType.RDS,
+                "type": DatasetArtifactType.REMIX,
+                "user_submitted": True,
+                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(seurat_filename)),
+            }
+        )
+    if loom_filename:
+        s3.upload_file(
+            loom_filename,
+            artifact_bucket,
+            join(bucket_prefix, basename(loom_filename)),
+            ExtraArgs={"ACL": "bucket-owner-full-control"},
+        )
+        artifacts.append(
+            {
+                "filename": basename(loom_filename),
+                "filetype": DatasetArtifactFileType.LOOM,
+                "type": DatasetArtifactType.REMIX,
+                "user_submitted": True,
+                "s3_uri": join("s3://", artifact_bucket, bucket_prefix, basename(loom_filename)),
+            }
+        )
 
     return artifacts
 
@@ -218,34 +216,7 @@ def make_cxg(local_filename):
     return cxg_dir
 
 
-def main():
-
-    check_env()
-
-    local_filename = download_from_dropbox_url(
-        os.environ["DATASET_ID"],
-        os.environ["DROPBOX_URL"],
-        "local.h5ad",
-    )
-    print("Download complete", flush=True)
-    val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
-    if False and val_proc.returncode != 0:
-        print("Validation failed!")
-        print(f"stdout: {val_proc.stdout}")
-        print(f"stderr: {val_proc.stderr}")
-        sys.exit(1)
-    print("Validation complete", flush=True)
-
-    metadata_dict = extract_metadata(local_filename)
-    print(metadata_dict, flush=True)
-    update_db(metadata=metadata_dict)
-
-    loom_filename = make_loom(local_filename)
-    cxg_dir = make_cxg(local_filename)
-    seurat_filename = make_seurat(local_filename)
-    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename)
-    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
-
+def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix):
     command = ["aws"]
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
@@ -264,6 +235,57 @@ def main():
         command,
         check=True,
     )
+
+
+def convert_files_ignore_exceptions(local_filename):
+    exceptions = []
+    try:
+        cxg_dir = make_cxg(local_filename)
+    except Exception as e:
+        cxg_dir = None
+        print(f"Issue creating cxg: {e}")
+        exceptions.append(e)
+    try:
+        loom_filename = make_loom(local_filename)
+    except Exception as e:
+        loom_filename = None
+        print(f"Issue creating loom: {e}")
+        exceptions.append(e)
+    try:
+        seurat_filename = make_seurat(local_filename)
+    except Exception as e:
+        seurat_filename = None
+        print(f"Issue creating seurat: {e}")
+        exceptions.append(e)
+    return cxg_dir, loom_filename, seurat_filename, exceptions
+
+
+def main():
+    check_env()
+    local_filename = download_from_dropbox_url(
+        os.environ["DATASET_ID"],
+        os.environ["DROPBOX_URL"],
+        "local.h5ad",
+    )
+    print("Download complete", flush=True)
+    val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
+    if False and val_proc.returncode != 0:
+        print("Validation failed!")
+        print(f"stdout: {val_proc.stdout}")
+        print(f"stderr: {val_proc.stderr}")
+        sys.exit(1)
+    print("Validation complete", flush=True)
+
+    metadata_dict = extract_metadata(local_filename)
+    print(metadata_dict, flush=True)
+    update_db(metadata=metadata_dict)
+
+    bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
+    cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(local_filename)
+    if cxg_dir:
+        copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix)
+
+    artifacts = create_artifacts(local_filename, seurat_filename, loom_filename, bucket_prefix)
     deployment_directories = [
         {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], os.environ["DATASET_ID"] + ".cxg", "")}
     ]

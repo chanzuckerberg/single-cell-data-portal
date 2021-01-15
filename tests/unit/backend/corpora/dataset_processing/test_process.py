@@ -2,6 +2,7 @@ import os
 import pathlib
 import shutil
 import tempfile
+from os.path import join
 from unittest.mock import patch
 
 import anndata
@@ -22,6 +23,7 @@ from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 
 from backend.corpora.dataset_processing import process
+from backend.corpora.dataset_processing.process import convert_files_ignore_exceptions
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -218,8 +220,9 @@ class TestDatasetProcessing(DataPortalTestCase):
             fake_env.start()
 
             try:
+                bucket_prefix = join(os.environ.get("REMOTE_DEV_PREFIX", ""), os.environ["DATASET_ID"]).strip("/")
                 artifacts = process.create_artifacts(
-                    str(self.h5ad_filename), str(self.seurat_filename), str(self.loom_filename)
+                    str(self.h5ad_filename), str(self.seurat_filename), str(self.loom_filename), bucket_prefix
                 )
 
                 self.assertEqual(len(artifacts), 3)
@@ -235,8 +238,55 @@ class TestDatasetProcessing(DataPortalTestCase):
                 self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
                 self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
                 self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
+
+                # test with failures
+                artifacts = process.create_artifacts(
+                    str(self.h5ad_filename), None, str(self.loom_filename), bucket_prefix
+                )
+                # this shouldnt throw an error even though one of the file names is None
+                self.assertEqual(len(artifacts), 2)
+
             finally:
                 fake_env.stop()
         finally:
             if not os.getenv("BOTO_ENDPOINT_URL"):
                 s3_mock.stop()
+
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
+        mock_loom.side_effect = RuntimeError("Loom conversion failed")
+        mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
+        mock_seurat.return_value = str(self.seurat_filename)
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
+        self.assertIsNone(loom_filename)
+        self.assertEqual(len(exceptions), 1)
+        self.assertIsNotNone(seurat_filename)
+        self.assertIsNotNone(cxg_dir)
+
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_process_continues_with_cxg_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
+        mock_loom.return_value = str(self.loom_filename)
+        mock_cxg.side_effect = RuntimeError("cxg conversion failed")
+        mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
+        self.assertIsNone(cxg_dir)
+        self.assertEqual(len(exceptions), 1)
+        self.assertIsNotNone(seurat_filename)
+        self.assertIsNotNone(loom_filename)
+
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom, mock_cxg):
+        mock_loom.return_value = str(self.loom_filename)
+        mock_cxg.return_value = str(self.h5ad_filename).replace(".h5ad", ".cxg")
+        mock_seurat.side_effect = RuntimeError("seurat conversion failed")
+        cxg_dir, loom_filename, seurat_filename, exceptions = convert_files_ignore_exceptions(self.h5ad_filename)
+        self.assertIsNone(seurat_filename)
+        self.assertEqual(len(exceptions), 1)
+        self.assertIsNotNone(cxg_dir)
+        self.assertIsNotNone(loom_filename)
