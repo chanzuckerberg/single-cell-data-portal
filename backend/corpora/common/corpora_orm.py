@@ -158,9 +158,7 @@ class DbCollection(Base):
     __tablename__ = "project"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    visibility = Column(
-        Enum(CollectionVisibility), primary_key=True, nullable=False
-    )
+    visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
     owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
