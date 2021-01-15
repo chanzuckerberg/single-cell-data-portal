@@ -35,9 +35,13 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_uuid: string): Promise<boolean> {
+async function deleteDataset(
+  dataset_uuid: string
+): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
-  return await (await fetch(url, DELETE_FETCH_OPTIONS)).json();
+  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+  if (response.ok) return await response.json();
+  return Promise.reject(response.statusText);
 }
 
 export function useDeleteDataset(
@@ -47,13 +51,17 @@ export function useDeleteDataset(
   const queryCache = useQueryCache();
 
   return useMutation(deleteDataset, {
-    onSuccess: () => {
+    onSuccess: (data: DatasetUploadStatus | Response) => {
+      if (data instanceof Response) {
+        console.log("response", data);
+      } else console.log("status", data);
       queryCache.invalidateQueries([
         USE_COLLECTION,
         collection_uuid,
         VISIBILITY_TYPE.PRIVATE,
       ]);
       queryCache.cancelQueries([USE_DATASET_STATUS, dataset_uuid]);
+      queryCache.setQueryData([USE_DATASET_STATUS, dataset_uuid], data);
     },
   });
 }
