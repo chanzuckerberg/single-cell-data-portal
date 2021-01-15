@@ -48,3 +48,10 @@ export const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
 
   return false;
 };
+
+export function checkIfCancelled(datasetStatus: DatasetUploadStatus): boolean {
+  return (
+    datasetStatus.upload_status === UPLOAD_STATUS.CANCEL_PENDING ||
+    datasetStatus.upload_status === UPLOAD_STATUS.CANCELED
+  );
+}
