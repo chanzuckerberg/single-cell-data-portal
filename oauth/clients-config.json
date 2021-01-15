@@ -15,6 +15,7 @@
            "openid", "profile", "email", "offline_access"
         ],
 	"AllowAccessTokensViaBrowser": true,
+	"AlwaysIncludeUserClaimsInIdToken": true,
 	"AllowOfflineAccess": true,
 	"IdentityTokenLifetime": 3600,
         "AccessTokenLifetime": 3600,
