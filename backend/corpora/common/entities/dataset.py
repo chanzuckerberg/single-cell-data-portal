@@ -47,8 +47,9 @@ class Dataset(Entity):
         if artifacts:
             dataset.artifacts = [DbDatasetArtifact(dataset_id=dataset.id, **art) for art in artifacts]
         if deployment_directories:
-            dataset.deployment_directories = [DbDeploymentDirectory(dataset_id=dataset.id, **dd) for dd in
-                                              deployment_directories]
+            dataset.deployment_directories = [
+                DbDeploymentDirectory(dataset_id=dataset.id, **dd) for dd in deployment_directories
+            ]
         processing_status = processing_status if processing_status else {}
         dataset.processing_status = DbDatasetProcessingStatus(dataset_id=dataset.id, **processing_status)
         cls.db.session.add(dataset)

@@ -47,7 +47,9 @@ class Collection(Entity):
             **kwargs,
         )
 
-        new_db_object.links = [DbCollectionLink(collection_id=new_db_object.id, collection_visibility=visibility, **link) for link in links]
+        new_db_object.links = [
+            DbCollectionLink(collection_id=new_db_object.id, collection_visibility=visibility, **link) for link in links
+        ]
         cls.db.session.add(new_db_object)
         cls.db.commit()
         return cls(new_db_object)
