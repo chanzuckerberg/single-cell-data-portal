@@ -1,4 +1,10 @@
-import React, { FC } from "react";
+import React, {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { Dataset } from "src/common/entities";
 import {
   DatasetHeaderCell,
@@ -12,13 +18,27 @@ interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
+  onSelect: Dispatch<SetStateAction<string | null>>;
 }
 
 const DatasetsGrid: FC<Props> = ({
   datasets,
   uploadedFiles,
   invalidateCollectionQuery,
+  onSelect,
 }) => {
+  const [selected, setSelected] = useState<Dataset["id"] | null>(null);
+
+  useEffect(() => {
+    onSelect(selected);
+  }, [selected, onSelect]);
+
+  const handleSelect = (id: Dataset["id"]) => {
+    if (id !== selected) {
+      setSelected(id);
+    }
+  };
+
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -39,6 +59,8 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
+            onSelect={handleSelect}
+            selected={selected}
           />
         ))}
       </tbody>
