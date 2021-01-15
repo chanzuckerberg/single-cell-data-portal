@@ -54,3 +54,19 @@ jobs:
         run: npm install -g gatsby
       - name: Deploy Frontend
         run: make deploy -C frontend
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node.js
+        uses: actions/setup-node@v1
+      - name: Install Dependencies
+        run: |
+          cd frontend
+          cp src/configs/dev.js src/configs/configs.js
+          npm install
+      - name: Run Smoke Tests
+        run: |
+          make smoke-test-prod-build
