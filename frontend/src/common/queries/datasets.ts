@@ -35,7 +35,7 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_uuid: string) {
+async function deleteDataset(dataset_uuid: string): Promise<boolean> {
   const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
   return await (await fetch(url, DELETE_FETCH_OPTIONS)).json();
 }

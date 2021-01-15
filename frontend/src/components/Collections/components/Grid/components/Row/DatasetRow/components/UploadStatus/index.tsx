@@ -5,9 +5,12 @@ import { CancelButton, DatasetStatusTag, StatusContainer } from "./style";
 interface Props {
   isValidating: boolean;
   progress: number;
+  cancelUpload: () => void;
 }
 
-const UploadStatus: FC<Props> = ({ isValidating, progress }) => {
+const UploadStatus: FC<Props> = ({ isValidating, progress, cancelUpload }) => {
+  const cancel = <CancelButton onClick={cancelUpload}>Cancel</CancelButton>;
+
   if (isValidating) {
     return (
       <StatusContainer>
@@ -15,7 +18,7 @@ const UploadStatus: FC<Props> = ({ isValidating, progress }) => {
           <Spinner intent={Intent.PRIMARY} size={16} />
           Validating...
         </DatasetStatusTag>
-        <CancelButton>Cancel</CancelButton>
+        {cancel}
       </StatusContainer>
     );
   }
@@ -26,7 +29,7 @@ const UploadStatus: FC<Props> = ({ isValidating, progress }) => {
         <Spinner intent={Intent.PRIMARY} value={progress} size={16} />
         {`Uploading (${Math.round(progress * 100)}%)`}
       </DatasetStatusTag>
-      <CancelButton>Cancel</CancelButton>
+      {cancel}
     </StatusContainer>
   );
 };

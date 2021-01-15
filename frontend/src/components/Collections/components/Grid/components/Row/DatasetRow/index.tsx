@@ -6,6 +6,7 @@ import { QueryCache, useQueryCache } from "react-query";
 import { Dataset, VALIDATION_STATUS } from "src/common/entities";
 import {
   useDatasetStatus,
+  useDeleteDataset,
   USE_DATASET_STATUS,
 } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
@@ -92,6 +93,8 @@ const DatasetRow: FC<Props> = ({
     uploadProgress,
   });
 
+  const [deleteDataset] = useDeleteDataset(dataset.id, dataset.collection_id);
+
   const isLoading = checkIfLoading(datasetStatus);
 
   const {
@@ -122,6 +125,9 @@ const DatasetRow: FC<Props> = ({
                   VALIDATION_STATUS.VALIDATING
                 }
                 progress={datasetStatus.upload_progress}
+                cancelUpload={() => {
+                  deleteDataset(dataset.id);
+                }}
               />
             )}
           </DetailsCell>

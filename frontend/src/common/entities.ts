@@ -80,6 +80,7 @@ export interface Dataset {
   dataset_deployments: DatasetDeployment[];
   dataset_assets: DatasetAsset[];
   processing_status: DatasetUploadStatus;
+  collection_id: Collection["id"];
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
