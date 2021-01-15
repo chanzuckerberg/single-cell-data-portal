@@ -262,10 +262,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
     if cxg_dir:
         copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_cxg_status=status, conversion_anndata_status=ConversionStatus.CONVERTING),
-    )
+    update_db(dataset_id, processing_status=dict(conversion_cxg_status=status))
 
 
 def main():

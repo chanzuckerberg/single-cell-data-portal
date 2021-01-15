@@ -366,23 +366,11 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
         test_dataset_id = self.generate_dataset().id
-        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
-        s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
         dataset = Dataset.get(test_dataset_id)
-        artifacts = dataset.artifacts
         processing_status = dataset.processing_status
-
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
-
-        self.assertEqual(len(artifacts), 2)
-        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
-        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 2)
-        self.assertNotIn(str(self.cxg_filename.parts[-1]), s3_filenames)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_cxg_status)
 
     def test__convert_file_ignore_exceptions__fail(self):
         def converter(_file):
