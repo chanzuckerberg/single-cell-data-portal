@@ -1,8 +1,6 @@
 import logging
 import typing
 
-from ..utils.uuid import generate_uuid
-
 logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
@@ -112,7 +110,6 @@ class Entity:
         new_row = dict(**row)
         new_row.update(**add_columns)
 
-        new_row["id"] = generate_uuid()
         new_row = db_table(**new_row)
         return new_row
 
