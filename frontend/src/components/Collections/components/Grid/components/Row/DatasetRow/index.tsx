@@ -67,8 +67,6 @@ const DatasetRow: FC<Props> = ({
 
   const datasetStatus = queryResult.data || dataset.processing_status;
 
-  if (checkIfCancelled(datasetStatus)) return null;
-
   const { upload_progress } = datasetStatus;
 
   const [uploadProgress, setUploadProgress] = useState(upload_progress);
@@ -104,7 +102,9 @@ const DatasetRow: FC<Props> = ({
     uploadProgress,
   });
 
-  const [deleteDataset] = useDeleteDataset(dataset.id, dataset.collection_id);
+  const [deleteDataset] = useDeleteDataset(dataset.collection_id);
+
+  if (checkIfCancelled(datasetStatus)) return null;
 
   const isLoading = checkIfLoading(datasetStatus);
 

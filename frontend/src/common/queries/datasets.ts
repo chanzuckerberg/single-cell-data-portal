@@ -49,9 +49,6 @@ export function useDeleteDataset(collection_uuid: string) {
 
   return useMutation(deleteDataset, {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      if (uploadStatus instanceof Response) {
-        console.log("response", uploadStatus);
-      } else console.log("status", uploadStatus);
       queryCache.invalidateQueries([
         USE_COLLECTION,
         collection_uuid,
