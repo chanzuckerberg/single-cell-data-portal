@@ -97,6 +97,3 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
             processing_status_updater(processing_status_id, processing_status)
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(json.loads(response.body)["upload_status"], status.name)
-
-
-
