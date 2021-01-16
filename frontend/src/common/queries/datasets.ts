@@ -44,24 +44,24 @@ async function deleteDataset(
   return Promise.reject(response.statusText);
 }
 
-export function useDeleteDataset(
-  dataset_uuid: string,
-  collection_uuid: string
-) {
+export function useDeleteDataset(collection_uuid: string) {
   const queryCache = useQueryCache();
 
   return useMutation(deleteDataset, {
-    onSuccess: (data: DatasetUploadStatus | Response) => {
-      if (data instanceof Response) {
-        console.log("response", data);
-      } else console.log("status", data);
+    onSuccess: (uploadStatus: DatasetUploadStatus) => {
+      if (uploadStatus instanceof Response) {
+        console.log("response", uploadStatus);
+      } else console.log("status", uploadStatus);
       queryCache.invalidateQueries([
         USE_COLLECTION,
         collection_uuid,
         VISIBILITY_TYPE.PRIVATE,
       ]);
-      queryCache.cancelQueries([USE_DATASET_STATUS, dataset_uuid]);
-      queryCache.setQueryData([USE_DATASET_STATUS, dataset_uuid], data);
+      queryCache.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
+      queryCache.setQueryData(
+        [USE_DATASET_STATUS, uploadStatus.dataset_id],
+        uploadStatus
+      );
     },
   });
 }
