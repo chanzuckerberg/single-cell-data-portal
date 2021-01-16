@@ -4,6 +4,8 @@ import unittest
 
 from furl import furl
 
+from backend.corpora.common.corpora_orm import UploadStatus
+from backend.corpora.common.utils.db_utils import processing_status_updater
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
@@ -76,7 +78,7 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
 
     def test__minimal_status__ok(self):
         dataset = self.generate_dataset(processing_status={"upload_status": "WAITING", "upload_progress": 0.0})
-
+        processing_status_id = dataset.processing_status.id
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
@@ -84,8 +86,17 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         actual_body = json.loads(response.body)
         expected_body = {
             "dataset_id": dataset.id,
-            "id": dataset.processing_status.id,
+            "id": processing_status_id,
             "upload_progress": 0.0,
             "upload_status": "WAITING",
         }
         self.assertEqual(expected_body, actual_body)
+
+        for status in UploadStatus:
+            processing_status = {"upload_status": status, "upload_progress": 0.0}
+            processing_status_updater(processing_status_id, processing_status)
+            response = self.app.get(test_url.url, headers=headers)
+            self.assertEqual(json.loads(response.body)["upload_status"], status.name)
+
+
+
