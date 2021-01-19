@@ -76,19 +76,16 @@ class Dataset(Entity):
                     self.db.delete(af)
                 new_objs = [DbDatasetArtifact(dataset_id=self.id, **art) for art in artifacts]
                 self.db.session.add_all(new_objs)
-                kwargs["artifacts"] = new_objs
             if deployment_directories:
                 for dd in self.deployment_directories:
                     self.db.delete(dd)
                 new_objs = [DbDeploymentDirectory(dataset_id=self.id, **dd) for dd in deployment_directories]
                 self.db.session.add_all(new_objs)
-                kwargs["deployment_directories"] = new_objs
             if processing_status:
                 if self.processing_status:
                     self.db.delete(self.processing_status)
                 new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
                 self.db.session.add(new_obj)
-                kwargs["processing_status"] = new_obj
 
             self.db.session.flush()
 
