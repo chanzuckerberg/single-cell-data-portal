@@ -1,4 +1,4 @@
-import { Button, Classes, H3, Intent, Popover } from "@blueprintjs/core";
+import { Button, Classes, H3, H6, Intent, Popover } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
@@ -15,6 +15,7 @@ import {
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
+import { useDeleteDataset } from "src/common/queries/datasets";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
@@ -27,6 +28,7 @@ import {
   DatasetContainer,
   Description,
   LinkContainer,
+  StyledAlert,
   StyledDiv,
 } from "./style";
 
@@ -66,7 +68,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [selected, setSelected] = useState<Dataset["id"] | null>(null);
+  const [selected, setSelected] = useState<Dataset["id"]>();
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
@@ -75,6 +77,10 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const { data: collection, isError } = useCollection(id, visibility);
 
   const [mutate] = useCollectionUploadLinks(id, visibility);
+
+  const [isAlertOpen, openAlert] = useState(false);
+
+  const [deleteDataset] = useDeleteDataset(collection?.id);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -119,7 +125,6 @@ const Collection: FC<Props> = ({ id = "" }) => {
         <Description>{collection.description}</Description>
         <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
       </CollectionInfo>
-
       <DatasetContainer>
         {datasetPresent ? (
           <DatasetsGrid
@@ -144,14 +149,31 @@ const Collection: FC<Props> = ({ id = "" }) => {
               Download
             </Button>
           </Popover>
-          <Button icon={IconNames.TRASH} minimal>
-            {/* TEMP: To show selected file */}
-            {/* TEMP: To show selected file */}
-            {/* TEMP: To show selected file */}
-            {selected}
-          </Button>
+          <Button
+            icon={IconNames.TRASH}
+            minimal
+            onClick={() => {
+              if (selected) openAlert(!isAlertOpen);
+            }}
+          ></Button>
         </StyledDiv>
       )}
+      <StyledAlert
+        cancelButtonText={"Cancel"}
+        confirmButtonText={"Delete Dataset"}
+        intent={Intent.DANGER}
+        isOpen={isAlertOpen}
+        onCancel={() => {
+          openAlert(!isAlertOpen);
+        }}
+        onConfirm={() => {
+          deleteDataset(selected);
+          openAlert(!isAlertOpen);
+        }}
+      >
+        <H6>Are you sure you want to delete this dataset?</H6>
+        <p>You cannot undo this action</p>
+      </StyledAlert>
     </ViewGrid>
   );
 };

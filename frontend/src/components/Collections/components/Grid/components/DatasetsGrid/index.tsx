@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Dataset } from "src/common/entities";
 import {
-  CollectionHeaderCell,
+  DatasetHeaderCell,
   LeftAlignedHeaderCell,
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
@@ -18,7 +18,7 @@ interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
-  onSelect: Dispatch<SetStateAction<string | null>>;
+  onSelect: Dispatch<SetStateAction<string | undefined>>;
 }
 
 const DatasetsGrid: FC<Props> = ({
@@ -27,7 +27,7 @@ const DatasetsGrid: FC<Props> = ({
   invalidateCollectionQuery,
   onSelect,
 }) => {
-  const [selected, setSelected] = useState<Dataset["id"] | null>(null);
+  const [selected, setSelected] = useState<Dataset["id"]>();
 
   useEffect(() => {
     onSelect(selected);
@@ -43,12 +43,13 @@ const DatasetsGrid: FC<Props> = ({
     <StyledCollectionsGrid bordered>
       <thead>
         <tr>
-          <CollectionHeaderCell>Dataset</CollectionHeaderCell>
+          <DatasetHeaderCell>Dataset</DatasetHeaderCell>
           <LeftAlignedHeaderCell>Tissue</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Assay</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Disease</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Organism</LeftAlignedHeaderCell>
           <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
+          <RightAlignedHeaderCell />
         </tr>
       </thead>
       <tbody>

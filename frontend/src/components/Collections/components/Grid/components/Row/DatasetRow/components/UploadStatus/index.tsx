@@ -1,27 +1,36 @@
 import { Intent, Spinner } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { DatasetStatusTag } from "./style";
+import { CancelButton, DatasetStatusTag, StatusContainer } from "./style";
 
 interface Props {
   isValidating: boolean;
   progress: number;
+  cancelUpload: () => void;
 }
 
-const UploadStatus: FC<Props> = ({ isValidating, progress }) => {
+const UploadStatus: FC<Props> = ({ isValidating, progress, cancelUpload }) => {
+  const cancel = <CancelButton onClick={cancelUpload}>Cancel</CancelButton>;
+
   if (isValidating) {
     return (
-      <DatasetStatusTag>
-        <Spinner intent={Intent.PRIMARY} size={16} />
-        Validating...
-      </DatasetStatusTag>
+      <StatusContainer>
+        <DatasetStatusTag>
+          <Spinner intent={Intent.PRIMARY} size={16} />
+          Validating...
+        </DatasetStatusTag>
+        {cancel}
+      </StatusContainer>
     );
   }
 
   return (
-    <DatasetStatusTag>
-      <Spinner intent={Intent.PRIMARY} value={progress} size={16} />
-      {`Uploading (${Math.round(progress * 100)}%)`}
-    </DatasetStatusTag>
+    <StatusContainer>
+      <DatasetStatusTag>
+        <Spinner intent={Intent.PRIMARY} value={progress} size={16} />
+        {`Uploading (${Math.round(progress * 100)}%)`}
+      </DatasetStatusTag>
+      {cancel}
+    </StatusContainer>
   );
 };
 

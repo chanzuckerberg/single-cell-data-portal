@@ -21,4 +21,5 @@ export const TitleContainer = styled.div`
   & > .${Classes.POPOVER_WRAPPER} {
     margin-left: ${PT_GRID_SIZE_PX}px;
   }
+  margin: ${2 * PT_GRID_SIZE_PX}px 0;
 `;
