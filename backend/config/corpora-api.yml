@@ -575,7 +575,7 @@ paths:
                         UPLOADING,
                         UPLOADED,
                         FAILED,
-                        CANCEL PENDING,
+                        CANCEL_PENDING,
                         CANCELED,
                         NA,
                       ]
