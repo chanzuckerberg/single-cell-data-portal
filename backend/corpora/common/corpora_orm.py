@@ -1,7 +1,7 @@
 import enum
 import os
 from datetime import datetime
-
+from uuid import uuid4
 import sys
 from sqlalchemy import (
     Boolean,
@@ -24,6 +24,10 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from .corpora_config import CorporaDbConfig
 from .utils.exceptions import CorporaException
+
+
+def generate_uuid():
+    return str(uuid4())
 
 
 class TransformingBase(object):
@@ -153,10 +157,8 @@ class DbCollection(Base):
     # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
-    id = Column(String, primary_key=True)
-    visibility = Column(
-        Enum(CollectionVisibility), primary_key=True, nullable=False
-    )  # Enum(CollectionVisibility). Enum type unsupported for composite FKs.
+    id = Column(String, primary_key=True, default=generate_uuid)
+    visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
     owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
@@ -180,7 +182,7 @@ class DbProjectLink(Base):
     # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(String)
@@ -212,7 +214,7 @@ class DbDataset(Base):
 
     __tablename__ = "dataset"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     revision = Column(Integer)
     name = Column(String)
     organism = Column(JSONB)
@@ -254,7 +256,7 @@ class DbDatasetArtifact(Base):
 
     __tablename__ = "dataset_artifact"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
     filetype = Column(Enum(DatasetArtifactFileType))
@@ -276,7 +278,7 @@ class DbDeploymentDirectory(Base):
 
     __tablename__ = "deployment_directory"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -348,7 +350,7 @@ class DbDatasetProcessingStatus(Base):
 
     __tablename__ = "dataset_processing_status"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     upload_status = Column(Enum(UploadStatus))
     upload_progress = Column(Float)
