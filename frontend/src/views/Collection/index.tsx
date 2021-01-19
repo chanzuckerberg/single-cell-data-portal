@@ -80,7 +80,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const [isAlertOpen, openAlert] = useState(false);
 
-  const [deleteDataset] = useDeleteDataset(collection?.id ?? "");
+  const [deleteDataset] = useDeleteDataset(collection?.id);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -167,7 +167,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
           openAlert(!isAlertOpen);
         }}
         onConfirm={() => {
-          deleteDataset(selected ?? "");
+          deleteDataset(selected);
           openAlert(!isAlertOpen);
         }}
       >
