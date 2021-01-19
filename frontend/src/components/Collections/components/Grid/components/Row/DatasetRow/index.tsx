@@ -48,7 +48,7 @@ interface Props {
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   onSelect: (id: Dataset["id"]) => void;
-  selected: Dataset["id"] | null;
+  selected: Dataset["id"] | undefined;
 }
 
 const DatasetRow: FC<Props> = ({

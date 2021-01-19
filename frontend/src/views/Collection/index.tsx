@@ -68,7 +68,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [selected, setSelected] = useState<Dataset["id"] | null>(null);
+  const [selected, setSelected] = useState<Dataset["id"]>();
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
