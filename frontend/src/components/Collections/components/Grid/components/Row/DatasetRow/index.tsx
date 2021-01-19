@@ -71,9 +71,9 @@ const DatasetRow: FC<Props> = ({
 
   const [uploadProgress, setUploadProgress] = useState(upload_progress);
 
-  if (queryResult.isError && !(queryResult.error instanceof CancelledError))
+  if (queryResult.isError && !(queryResult.error instanceof CancelledError)) {
     console.error(queryResult.error);
-
+  }
   const isNamePopulated = Boolean(dataset.name);
 
   const name = dataset.name || file?.name || dataset.id;
