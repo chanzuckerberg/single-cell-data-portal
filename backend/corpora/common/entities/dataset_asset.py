@@ -8,7 +8,6 @@ from botocore.exceptions import ClientError
 
 from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
-from ..utils.uuid import generate_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,6 @@ class DatasetAsset(Entity):
         s3_uri: str,
     ):
         db_object = cls.table(
-            id=generate_uuid(),
             dataset_id=dataset_id,
             filename=filename,
             filetype=filetype,
