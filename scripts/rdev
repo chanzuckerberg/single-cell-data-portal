@@ -142,7 +142,7 @@ class DevEnvMgr:
     def get_envs(self):
         if self.envs_loaded:
             return self.envs
-        envs = self.ctx.obj["client"].describe_stacks()
+        envs = self.ctx.obj["cf_client"].describe_stacks()
         for env in envs["Stacks"]:
             if env.get("ParentId"):
                 continue
@@ -171,7 +171,7 @@ def cli(ctx, profile):
     aws_conf = Config(region_name="us-west-2", retries={"max_attempts": 2, "mode": "standard"})
     client = session.client("cloudformation", config=aws_conf)
     ctx.obj["session"] = session
-    ctx.obj["client"] = client
+    ctx.obj["cf_client"] = client
     ctx.obj["aws_conf"] = aws_conf
 
 
@@ -204,7 +204,7 @@ def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
 
 
 def get_stack(ctx, stack_name):
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     stack = cf_client.describe_stacks(StackName=stack_name)["Stacks"][0]
     return stack
 
@@ -243,7 +243,7 @@ def get_taskdef(ctx, stack_name, taskdef_type="migration"):
         path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
     arn = stack_name
     path_length = len(path)
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     for i in range(path_length):
         resources = cf_client.describe_stack_resources(StackName=arn)["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
@@ -395,7 +395,7 @@ def create(ctx, stack_name, tag, wait):
     print(f"creating {stack_name}")
 
     statemachine_bucket, statemachine_key = upload_statemachine(ctx, stack_name)
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     cf_client.create_stack(
         StackName=stack_name,
         TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
@@ -432,7 +432,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     env_meta.update(tag, envmgr)
 
     statemachine_bucket, statemachine_key = upload_statemachine(ctx, stack_name)
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     cf_client.update_stack(
         StackName=stack_name,
         TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
@@ -457,7 +457,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
 def cancelupdate(ctx, stack_name, wait):
     """Cancel a dev stack update"""
     print(f"Canceling update of {stack_name}")
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     cf_client.cancel_update_stack(StackName=stack_name)
     if wait:
         invoke_wait(ctx, stack_name)
@@ -486,7 +486,7 @@ def delete(ctx, stack_name):
         is_env = envmgr.get_env(stack_name)
     except:
         print("rdev env doesn't exist in our list")
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     cf_client.delete_stack(StackName=stack_name)
     print(f"Delete done")
 
@@ -553,7 +553,7 @@ def watch(ctx, stack_name):
 def status(ctx, stack_name):
     """Get detailed status info for a dev stack"""
     print(f"checking status for {stack_name}")
-    cf_client = ctx.obj["client"]
+    cf_client = ctx.obj["cf_client"]
     data = cf_client.describe_stacks()
     outputs = {}
     for stack in data["Stacks"]:
