@@ -93,15 +93,16 @@ export function checkIfCancelled(datasetStatus: DatasetUploadStatus): boolean {
 export function useCheckCollectionPopulated({
   invalidateCollectionQuery,
   isNamePopulated,
-  upload_progress,
+  validationStatus,
 }: {
   invalidateCollectionQuery: () => void;
   isNamePopulated: boolean;
-  upload_progress: number;
+  validationStatus: VALIDATION_STATUS;
 }) {
   useCheckCollection({
     invalidateCollectionQuery,
-    shouldFetch: upload_progress === 1 && !isNamePopulated,
+    shouldFetch:
+      validationStatus === VALIDATION_STATUS.VALID && !isNamePopulated,
   });
 }
 

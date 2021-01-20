@@ -99,7 +99,7 @@ const DatasetRow: FC<Props> = ({
   useCheckCollectionPopulated({
     invalidateCollectionQuery,
     isNamePopulated,
-    upload_progress,
+    validationStatus: datasetStatus.validation_status,
   });
 
   const hasFailed = checkIfFailed(datasetStatus);
