@@ -36,20 +36,16 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(
-  dataset_uuid?: string
-): Promise<DatasetUploadStatus> {
-  if (!dataset_uuid) throw new Error("No dataset id provided");
-
+async function deleteDataset(dataset_uuid = ""): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
 
   if (response.ok) return await response.json();
 
-  return Promise.reject(response.statusText);
+  throw Error(response.statusText);
 }
 
-export function useDeleteDataset(collection_uuid?: string) {
+export function useDeleteDataset(collection_uuid = "") {
   const queryCache = useQueryCache();
 
   return useMutation(deleteDataset, {
