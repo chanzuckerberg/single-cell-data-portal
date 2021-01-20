@@ -13,10 +13,9 @@ const AsyncPopover = loadable(
 interface Props {
   values: string[];
   isLoading: boolean;
-  isFailed: boolean;
 }
 
-const Popover: FC<Props> = ({ values, isLoading, isFailed }) => {
+const Popover: FC<Props> = ({ values, isLoading }) => {
   if (isLoading) {
     return (
       <td>
@@ -25,7 +24,7 @@ const Popover: FC<Props> = ({ values, isLoading, isFailed }) => {
     );
   }
 
-  if (isFailed || !values || values.length === 0) {
+  if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 

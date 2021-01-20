@@ -1,4 +1,4 @@
-import { Button, Classes, H3, H6, Intent, Popover } from "@blueprintjs/core";
+import { Button, Classes, H3, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
@@ -15,9 +15,10 @@ import {
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
-import { useDeleteDataset } from "src/common/queries/datasets";
 import { getUrlHost } from "src/common/utils/getUrlHost";
+import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
+import DeleteDataset from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
@@ -28,7 +29,6 @@ import {
   DatasetContainer,
   Description,
   LinkContainer,
-  StyledAlert,
   StyledDiv,
 } from "./style";
 
@@ -68,7 +68,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [selected, setSelected] = useState<Dataset["id"]>();
+  const [selected, setSelected] = useState<Dataset["id"]>("");
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
@@ -77,10 +77,6 @@ const Collection: FC<Props> = ({ id = "" }) => {
   const { data: collection, isError } = useCollection(id, visibility);
 
   const [mutate] = useCollectionUploadLinks(id, visibility);
-
-  const [isAlertOpen, openAlert] = useState(false);
-
-  const [deleteDataset] = useDeleteDataset(collection?.id);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -108,7 +104,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
     return null;
   }
 
-  const datasetPresent =
+  const isDatasetPresent =
     collection.datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
   const invalidateCollectionQuery = memoize(
@@ -118,6 +114,11 @@ const Collection: FC<Props> = ({ id = "" }) => {
     () => id + visibility
   );
 
+  const selectedDataset = getSelectedDataset({
+    datasets: collection.datasets,
+    selectedId: selected,
+  });
+
   return (
     <ViewGrid>
       <CollectionInfo>
@@ -126,7 +127,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
         <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
       </CollectionInfo>
       <DatasetContainer>
-        {datasetPresent ? (
+        {isDatasetPresent ? (
           <DatasetsGrid
             datasets={collection.datasets}
             uploadedFiles={uploadedFiles}
@@ -137,45 +138,42 @@ const Collection: FC<Props> = ({ id = "" }) => {
           <EmptyDatasets onUploadFile={addNewFile} />
         )}
       </DatasetContainer>
-      {datasetPresent && (
+      {isDatasetPresent && (
         <StyledDiv>
           <DropboxChooser onUploadFile={addNewFile}>
             <Button intent={Intent.PRIMARY} outlined>
               Add
             </Button>
           </DropboxChooser>
-          <Popover>
-            <Button intent={Intent.PRIMARY} outlined>
-              Download
-            </Button>
-          </Popover>
-          <Button
-            icon={IconNames.TRASH}
-            minimal
-            onClick={() => {
-              if (selected) openAlert(!isAlertOpen);
-            }}
-          ></Button>
+          <DownloadDataset
+            isDisabled={!selectedDataset}
+            name={selectedDataset?.name || ""}
+            dataAssets={selectedDataset?.dataset_assets || []}
+            Button={DownloadButton}
+          />
+          <DeleteDataset id={selected} collectionId={collection?.id} />
         </StyledDiv>
       )}
-      <StyledAlert
-        cancelButtonText={"Cancel"}
-        confirmButtonText={"Delete Dataset"}
-        intent={Intent.DANGER}
-        isOpen={isAlertOpen}
-        onCancel={() => {
-          openAlert(!isAlertOpen);
-        }}
-        onConfirm={() => {
-          deleteDataset(selected);
-          openAlert(!isAlertOpen);
-        }}
-      >
-        <H6>Are you sure you want to delete this dataset?</H6>
-        <p>You cannot undo this action</p>
-      </StyledAlert>
     </ViewGrid>
   );
 };
+
+function DownloadButton({ ...props }) {
+  return (
+    <Button intent={Intent.PRIMARY} outlined {...props}>
+      Download
+    </Button>
+  );
+}
+
+function getSelectedDataset({
+  selectedId,
+  datasets,
+}: {
+  selectedId: string;
+  datasets: Dataset[];
+}) {
+  return datasets.find((dataset) => dataset.id === selectedId);
+}
 
 export default Collection;

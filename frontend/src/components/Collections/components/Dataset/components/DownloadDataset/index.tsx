@@ -8,18 +8,29 @@ import { StyledButton } from "./style";
 interface Props {
   name: string;
   dataAssets: Dataset["dataset_assets"];
+  isDisabled?: boolean;
+  Button?: React.ElementType;
 }
 
-const DownloadDataset: FC<Props> = ({ name, dataAssets }) => {
+const DownloadDataset: FC<Props> = ({
+  name,
+  dataAssets,
+  isDisabled = false,
+  Button = StyledButton,
+}) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
   return (
     <SmallColumn>
-      <StyledButton onClick={toggleOpen} data-test-id="dataset-download-button">
+      <Button
+        disabled={isDisabled}
+        onClick={toggleOpen}
+        data-test-id="dataset-download-button"
+      >
         Download
-      </StyledButton>
+      </Button>
       <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
         <Content name={name} dataAssets={dataAssets} onClose={toggleOpen} />
       </Modal>

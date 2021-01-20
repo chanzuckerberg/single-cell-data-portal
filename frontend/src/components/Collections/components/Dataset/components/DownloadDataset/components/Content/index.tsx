@@ -64,6 +64,8 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     );
   };
 
+  const availableFormats = dataAssets.map((dataAsset) => dataAsset.filetype);
+
   return (
     <>
       <div className={Classes.DIALOG_BODY}>
@@ -73,6 +75,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
             handleChange={handleChange}
             isDisabled={isLoading}
             format={format}
+            availableFormats={availableFormats}
           />
           <Details
             isLoading={isLoading}

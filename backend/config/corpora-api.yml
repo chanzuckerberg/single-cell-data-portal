@@ -458,7 +458,7 @@ paths:
         - collection
       summary: Publish a collection
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Update status of specified collection to PUBLIC.  This will make it
         visible on the public sites.
@@ -496,7 +496,7 @@ paths:
         Cancels the download of a dataset to the data portal and cleans up (removes) any artifacts created in the download process
       operationId: corpora.lambdas.api.v1.dataset.delete_dataset
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_dataset_uuid"
       responses:
