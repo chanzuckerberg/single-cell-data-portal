@@ -25,6 +25,14 @@ export type FailReturn = {
 };
 
 export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
+  if (getConversionStatus(datasetStatus) === CONVERSION_STATUS.FAILED) {
+    return {
+      error: CONVERSION_STATUS.FAILED,
+      isFailed: true,
+      type: FAILED_RETURN_TYPE.CONVERSION,
+    };
+  }
+
   if (datasetStatus.validation_status === VALIDATION_STATUS.INVALID) {
     return {
       error: VALIDATION_STATUS.INVALID,
@@ -38,14 +46,6 @@ export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
       error: UPLOAD_STATUS.FAILED,
       isFailed: true,
       type: FAILED_RETURN_TYPE.UPLOAD,
-    };
-  }
-
-  if (getConversionStatus(datasetStatus) === CONVERSION_STATUS.FAILED) {
-    return {
-      error: CONVERSION_STATUS.FAILED,
-      isFailed: true,
-      type: FAILED_RETURN_TYPE.CONVERSION,
     };
   }
 
