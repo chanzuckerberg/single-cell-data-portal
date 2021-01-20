@@ -294,16 +294,16 @@ def main():
         sys.exit(1)
     else:
         logger.info("Validation complete", flush=True)
-        status = dict(conversion_anndata_status=ConversionStatus.CONVERTING, validation_status=ValidationStatus.VALID)
+        status = dict(conversion_cxg_status=ConversionStatus.CONVERTING, validation_status=ValidationStatus.VALID)
         update_db(dataset_id, processing_status=status)
+
+    # Process cxg
+    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
     # Process metadata
     metadata = extract_metadata(local_filename)
     logger.info(metadata, flush=True)
     update_db(dataset_id, metadata)
-
-    # Process cxg
-    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
     # create artifacts
     create_artifacts(
