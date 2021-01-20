@@ -76,13 +76,10 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
 
     # upload AnnData
-    update_db(dataset_id, processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTING))
     create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
         dataset_id,
-        processing_status=dict(
-            conversion_anndata_status=ConversionStatus.CONVERTED, conversion_loom_status=ConversionStatus.CONVERTING
-        ),
+        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
     )
 
     # Process loom
@@ -91,7 +88,7 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
         create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
         dataset_id,
-        processing_status=dict(conversion_loom_status=status, conversion_rds_status=ConversionStatus.CONVERTING),
+        processing_status=dict(conversion_loom_status=status),
     )
 
     # Process seurat
@@ -294,7 +291,13 @@ def main():
         sys.exit(1)
     else:
         logger.info("Validation complete", flush=True)
-        status = dict(conversion_cxg_status=ConversionStatus.CONVERTING, validation_status=ValidationStatus.VALID)
+        status = dict(
+            conversion_cxg_status=ConversionStatus.CONVERTING,
+            conversion_loom_status=ConversionStatus.CONVERTING,
+            conversion_rds_status=ConversionStatus.CONVERTING,
+            conversion_anndata_status=ConversionStatus.CONVERTING,
+            validation_status=ValidationStatus.VALID,
+        )
         update_db(dataset_id, processing_status=status)
 
     # Process cxg
