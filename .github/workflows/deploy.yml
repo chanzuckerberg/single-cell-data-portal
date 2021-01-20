@@ -69,4 +69,4 @@ jobs:
           npm install
       - name: Run Smoke Tests
         run: |
-          make e2e-prod
+          make e2e-dev
