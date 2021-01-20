@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - bmccandless/github_smoke
 
 env:
   DEPLOYMENT_STAGE: "dev"
