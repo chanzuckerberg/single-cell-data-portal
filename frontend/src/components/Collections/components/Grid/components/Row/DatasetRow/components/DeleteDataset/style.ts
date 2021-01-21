@@ -1,15 +1,17 @@
 import { Alert, Classes } from "@blueprintjs/core";
-import { BLUE, RED } from "src/components/common/theme";
+import { DARK_GRAY } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const StyledAlert = styled(Alert)`
   .${Classes.BUTTON} {
-    background: ${RED.C};
-    box-shadow: none !important;
-
     :not(.${Classes.INTENT_DANGER}) {
-      color: ${BLUE.C};
       background: none;
+      box-shadow: none !important;
+      color: ${DARK_GRAY.A};
+
+      &:hover {
+        background: rgba(167, 182, 194, 0.3);
+      }
     }
   }
 `;
