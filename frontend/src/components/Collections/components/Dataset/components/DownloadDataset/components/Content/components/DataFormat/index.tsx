@@ -7,12 +7,14 @@ interface Props {
   handleChange: (format: DATASET_ASSET_FORMAT) => void;
   isDisabled: boolean;
   format: DATASET_ASSET_FORMAT | "";
+  availableFormats: DATASET_ASSET_FORMAT[];
 }
 
 const DataFormat: FC<Props> = ({
   handleChange: handleChangeRaw,
   isDisabled = false,
   format,
+  availableFormats,
 }) => {
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
@@ -31,9 +33,21 @@ const DataFormat: FC<Props> = ({
         onChange={handleChange}
         selectedValue={format}
       >
-        <Radio label=".h5ad (AnnData v0.7)" value={DATASET_ASSET_FORMAT.H5AD} />
-        <Radio label=".loom" value={DATASET_ASSET_FORMAT.LOOM} />
-        <Radio label=".rds (Seurat v3)" value={DATASET_ASSET_FORMAT.RDS} />
+        <Radio
+          disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.H5AD)}
+          label=".h5ad (AnnData v0.7)"
+          value={DATASET_ASSET_FORMAT.H5AD}
+        />
+        <Radio
+          disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.LOOM)}
+          label=".loom"
+          value={DATASET_ASSET_FORMAT.LOOM}
+        />
+        <Radio
+          disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
+          label=".rds (Seurat v3)"
+          value={DATASET_ASSET_FORMAT.RDS}
+        />
       </RadioGroup>
     </Section>
   );

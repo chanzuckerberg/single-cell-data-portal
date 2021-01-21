@@ -80,6 +80,7 @@ export interface Dataset {
   dataset_deployments: DatasetDeployment[];
   dataset_assets: DatasetAsset[];
   processing_status: DatasetUploadStatus;
+  collection_id: Collection["id"];
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
@@ -136,7 +137,7 @@ export enum UPLOAD_STATUS {
   UPLOADING = "UPLOADING",
   UPLOADED = "UPLOADED",
   FAILED = "FAILED",
-  CANCEL = "CANCEL",
+  CANCEL_PENDING = "CANCEL_PENDING",
   PENDING = "PENDING",
   CANCELED = "CANCELED",
   NA = "NA",

@@ -58,3 +58,11 @@ export enum RED {
   D = "#F55656",
   E = "#FF7373",
 }
+
+export enum ORANGE {
+  A = "#A66321",
+  B = "#BF7326",
+  C = "#D9822B",
+  D = "#F29D49",
+  E = "#FFB366",
+}

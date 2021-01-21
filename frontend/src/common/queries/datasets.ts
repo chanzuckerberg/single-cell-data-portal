@@ -1,9 +1,10 @@
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryCache } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DatasetUploadStatus } from "../entities";
+import { DatasetUploadStatus, VISIBILITY_TYPE } from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
-import { DEFAULT_FETCH_OPTIONS } from "./common";
+import { USE_COLLECTION } from "./collections";
+import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
 export const USE_DATASET_STATUS = {
@@ -16,6 +17,7 @@ async function fetchDatasetStatus(
   dataset_uuid: string
 ): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_uuid });
+
   return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 }
 
@@ -27,4 +29,45 @@ export function useDatasetStatus(dataset_uuid: string, shouldFetch: boolean) {
     fetchDatasetStatus,
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
+}
+
+export const USE_DELETE_DATASET = {
+  entities: [ENTITIES.DATASET],
+  id: "dataset",
+};
+
+async function deleteDataset(dataset_uuid = ""): Promise<DatasetUploadStatus> {
+  if (!dataset_uuid) throw new Error("No dataset id provided");
+
+  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
+  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+
+  if (response.ok) return await response.json();
+
+  throw Error(response.statusText);
+}
+
+export function useDeleteDataset(collection_uuid = "") {
+  if (!collection_uuid) {
+    throw new Error("No collection id given");
+  }
+
+  const queryCache = useQueryCache();
+
+  return useMutation(deleteDataset, {
+    onSuccess: (uploadStatus: DatasetUploadStatus) => {
+      queryCache.invalidateQueries([
+        USE_COLLECTION,
+        collection_uuid,
+        VISIBILITY_TYPE.PRIVATE,
+      ]);
+
+      queryCache.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
+
+      queryCache.setQueryData(
+        [USE_DATASET_STATUS, uploadStatus.dataset_id],
+        uploadStatus
+      );
+    },
+  });
 }
