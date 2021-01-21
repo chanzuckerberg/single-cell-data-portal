@@ -13,15 +13,17 @@ sys.path.insert(0, pkg_root)  # noqa
 env = os.environ.get("DEPLOYMENT_STAGE")
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from tests.unit.backend.fixtures.test_db import TestDatabase
+
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
 os.environ["DEPLOYMENT_STAGE"] = env
 
+
 @click.command()
-@click.option('--create-schema/--skip-create-schema', default=False, help="Create schema if it doesn't exist")
-@click.option('--recreate-db/--skip-recreate-db', default=True, help='Drop and recreate DB tables.')
-@click.option('--populate-data/--skip-populate', default=True, help='Add test data to db.')
-@click.option('--drop-db/--skip-drop-db', default=False, help='Drop Database.')
+@click.option("--create-schema/--skip-create-schema", default=False, help="Create schema if it doesn't exist")
+@click.option("--recreate-db/--skip-recreate-db", default=True, help="Drop and recreate DB tables.")
+@click.option("--populate-data/--skip-populate", default=True, help="Add test data to db.")
+@click.option("--drop-db/--skip-drop-db", default=False, help="Drop Database.")
 def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
     # Create schema.
     if create_schema:
@@ -53,6 +55,7 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
         else:
             print("Database does not exists")
             exit(1)
+
 
 if __name__ == "__main__":
     run_db_stuff()

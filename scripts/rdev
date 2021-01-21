@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
 import json
-import os
 import time
 from datetime import datetime
 
@@ -55,8 +54,9 @@ class EnvMeta:
         "imagetag": "ImageTag",
     }
 
-    def __init__(self, env_name):
+    def __init__(self, ctx, env_name):
         self.env_name = env_name
+        self.ctx = ctx
         self.meta = {
             "app": "data-portal",
             "env": "rdev",
@@ -83,7 +83,7 @@ class EnvMeta:
 
     def resolve_owner(self):
         # Figure out what our current identity is
-        sts_client = boto3.client("sts")
+        sts_client = self.ctx.obj["session"].client("sts")
         identity = sts_client.get_caller_identity()["Arn"]
         return identity.split("/")[-1].split("@")[0]
 
@@ -136,16 +136,13 @@ class EnvMeta:
 class DevEnvMgr:
     def __init__(self, ctx):
         self.ctx = ctx
-        self.secret_id = "happy/rdev-tracker"
-        self.aws_conf = ctx.obj["aws_conf"]
-        self.cf_client = boto3.client("cloudformation", config=self.aws_conf)
         self.envs = {}
         self.envs_loaded = False
 
     def get_envs(self):
         if self.envs_loaded:
             return self.envs
-        envs = self.cf_client.describe_stacks()
+        envs = self.ctx.obj["cf_client"].describe_stacks()
         for env in envs["Stacks"]:
             if env.get("ParentId"):
                 continue
@@ -153,7 +150,7 @@ class DevEnvMgr:
             if not tags.get("happy/app"):
                 continue
             status = env.get("StackStatus")
-            meta = EnvMeta(env["StackName"])
+            meta = EnvMeta(self.ctx, env["StackName"])
             meta.load(tags)
             outputs = {op["OutputKey"]: op["OutputValue"] for op in env.get("Outputs", {})}
             self.envs[env["StackName"]] = {"meta": meta, "outputs": outputs, "status": status}
@@ -170,17 +167,17 @@ class DevEnvMgr:
 @click.pass_context
 def cli(ctx, profile):
     ctx.ensure_object(dict)
-    ctx.obj["aws_profile"] = profile
-    os.environ["AWS_PROFILE"] = profile  # Lame hack. Need to make this smarter.
+    session = boto3.session.Session(profile_name=profile)
     aws_conf = Config(region_name="us-west-2", retries={"max_attempts": 2, "mode": "standard"})
-    client = boto3.client("cloudformation", config=aws_conf)
-    ctx.obj["client"] = client
+    client = session.client("cloudformation", config=aws_conf)
+    ctx.obj["session"] = session
+    ctx.obj["cf_client"] = client
     ctx.obj["aws_conf"] = aws_conf
 
 
 def upload_statemachine(ctx, stack_name):
     s3_bucket = "sc-happy-corpora-dev"
-    s3_client = boto3.resource("s3", config=ctx.obj["aws_conf"])
+    s3_client = ctx.obj["session"].resource("s3", config=ctx.obj["aws_conf"])
     s3_key = f"statemachineTmp/{stack_name}.json"
     s3_client.Bucket(s3_bucket).upload_file("scripts/upload_sfn_definition.json", s3_key)
     print(f"{s3_bucket}/{s3_key}")
@@ -188,13 +185,13 @@ def upload_statemachine(ctx, stack_name):
 
 
 def get_secrets(ctx):
-    secrets_client = boto3.client("secretsmanager", config=ctx.obj["aws_conf"])
+    secrets_client = ctx.obj["session"].client("secretsmanager", config=ctx.obj["aws_conf"])
     secrets = secrets_client.get_secret_value(SecretId="happy/dp-rdev-config")["SecretString"]
     return json.loads(secrets)
 
 
 def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
-    command = ["aws", "--profile", ctx.obj["aws_profile"], "--region", "us-west-2"]
+    command = ["aws", "--profile", ctx.obj["session"].profile_name, "--region", "us-west-2"]
     command.extend(cmd)
     if return_output:
         output = subprocess.check_output(command)
@@ -207,14 +204,14 @@ def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
 
 
 def get_stack(ctx, stack_name):
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     stack = cf_client.describe_stacks(StackName=stack_name)["Stacks"][0]
     return stack
 
 
-def generate_tag():
+def generate_tag(ctx):
     now = datetime.now().strftime("%m%d-%H%M%S")
-    envdata = EnvMeta("")
+    envdata = EnvMeta(ctx, "")
     owner = envdata.resolve_owner()
     return f"{owner}-{now}"
 
@@ -246,7 +243,7 @@ def get_taskdef(ctx, stack_name, taskdef_type="migration"):
         path = ["DevEnv", "DevEnv", "DeleteDB", "TaskDefinition"]
     arn = stack_name
     path_length = len(path)
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     for i in range(path_length):
         resources = cf_client.describe_stack_resources(StackName=arn)["StackResources"]
         # Convert to a map of CloudFormation object name => AWS resource ARN
@@ -271,7 +268,7 @@ def run_task(ctx, stack_name, taskdef_type, wait=False, show_logs=True):
     security_groups = secrets["security_groups"]
     taskdef_arn = get_taskdef(ctx, stack_name, taskdef_type)["arn"]
     print(f"Using task definition {taskdef_arn}")
-    ecs_client = boto3.client("ecs", config=ctx.obj["aws_conf"])
+    ecs_client = ctx.obj["session"].client("ecs", config=ctx.obj["aws_conf"])
     output = ecs_client.run_task(
         cluster=cluster_arn,
         taskDefinition=taskdef_arn,
@@ -321,7 +318,7 @@ def run_task(ctx, stack_name, taskdef_type, wait=False, show_logs=True):
     container = taskdef["containerDefinitions"][0]
     log_group = container["logConfiguration"]["options"]["awslogs-group"]
     print("Log Events:")
-    logs_client = boto3.client("logs", config=ctx.obj["aws_conf"])
+    logs_client = ctx.obj["session"].client("logs", config=ctx.obj["aws_conf"])
     result = logs_client.get_log_events(logGroupName=log_group, logStreamName=log_stream)
     logs = result["events"]
     for log in logs:
@@ -364,7 +361,7 @@ def invoke_wait(ctx, stack_name):
 @click.option("--since", default="10m", help="Output logs since <number>s|m|h|d")
 @click.pass_context
 def logs(ctx, stack_name, service, since):
-    """Tail the logs of a service (frontend or backend)"""
+    """Tail the logs of a service (frontend, backend, upload, migrations)"""
     run_aws_cmd(
         ctx,
         ["logs", "tail", "--since", since, "--follow", f"{stack_name}/{service}"],
@@ -392,13 +389,13 @@ def create(ctx, stack_name, tag, wait):
     env_meta = EnvMeta(stack_name)
     env_meta.load({})
     if not tag:
-        tag = generate_tag()
+        tag = generate_tag(ctx)
         ctx.invoke(push, tag=tag)
     env_meta.update(tag, DevEnvMgr(ctx))
     print(f"creating {stack_name}")
 
     statemachine_bucket, statemachine_key = upload_statemachine(ctx, stack_name)
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     cf_client.create_stack(
         StackName=stack_name,
         TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
@@ -427,7 +424,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     """Update a dev stack tag version"""
     print(f"updating {stack_name}")
     if not tag:
-        tag = generate_tag()
+        tag = generate_tag(ctx)
         ctx.invoke(push, tag=tag)
     envmgr = DevEnvMgr(ctx)
     env = envmgr.get_env(stack_name)
@@ -435,7 +432,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     env_meta.update(tag, envmgr)
 
     statemachine_bucket, statemachine_key = upload_statemachine(ctx, stack_name)
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     cf_client.update_stack(
         StackName=stack_name,
         TemplateBody=open("scripts/remotedev.yml").read(),  # FIXME
@@ -460,7 +457,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
 def cancelupdate(ctx, stack_name, wait):
     """Cancel a dev stack update"""
     print(f"Canceling update of {stack_name}")
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     cf_client.cancel_update_stack(StackName=stack_name)
     if wait:
         invoke_wait(ctx, stack_name)
@@ -489,7 +486,7 @@ def delete(ctx, stack_name):
         is_env = envmgr.get_env(stack_name)
     except:
         print("rdev env doesn't exist in our list")
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     cf_client.delete_stack(StackName=stack_name)
     print(f"Delete done")
 
@@ -517,7 +514,7 @@ def list(ctx):
 def push(ctx, tag):
     """Build and push docker images to ECR"""
     if not tag:
-        tag = generate_tag()
+        tag = generate_tag(ctx)
     print("Building images...")
     subprocess.check_call(["docker-compose", "build"])
     secrets = get_secrets(ctx)
@@ -556,7 +553,7 @@ def watch(ctx, stack_name):
 def status(ctx, stack_name):
     """Get detailed status info for a dev stack"""
     print(f"checking status for {stack_name}")
-    cf_client = boto3.client("cloudformation", config=ctx.obj["aws_conf"])
+    cf_client = ctx.obj["cf_client"]
     data = cf_client.describe_stacks()
     outputs = {}
     for stack in data["Stacks"]:

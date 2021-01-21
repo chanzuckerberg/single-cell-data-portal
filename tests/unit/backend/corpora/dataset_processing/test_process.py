@@ -1,3 +1,5 @@
+import enum
+import logging
 import os
 import pathlib
 import shutil
@@ -8,7 +10,6 @@ import anndata
 import boto3
 import numpy
 import pandas
-
 from moto import mock_s3
 
 from backend.corpora.common.corpora_orm import (
@@ -17,29 +18,51 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     UploadStatus,
     ValidationStatus,
+    ConversionStatus,
 )
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
-
+from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_processing import process
+from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
 
-class TestDatasetProcessing(DataPortalTestCase):
+class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.tmp_dir = tempfile.mkdtemp()
         cls.h5ad_filename = pathlib.Path(cls.tmp_dir, "test.h5ad")
         cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
         cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
+        cls.cxg_filename = pathlib.Path(cls.tmp_dir, "test.cxg")
 
         cls.h5ad_filename.touch()
         cls.seurat_filename.touch()
         cls.loom_filename.touch()
+        cls.cxg_filename.touch()
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         shutil.rmtree(cls.tmp_dir)
+
+    def setup_s3_bucket(self, bucket_name):
+        # Mock S3 service if we don't have a mock api already running
+        if os.getenv("BOTO_ENDPOINT_URL"):
+            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
+        else:
+            s3_mock = mock_s3()
+            s3_mock.start()
+            s3_args = {}
+            self.addCleanup(s3_mock.stop)
+        s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+        s3.create_bucket(
+            Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+        )
+        return s3
 
     @patch.dict(
         os.environ,
@@ -164,7 +187,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
         fake_env.start()
 
-        process.update_db(metadata={"sex": ["male", "female"]})
+        process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
 
         self.assertListEqual(Dataset.get(dataset_id).sex, ["male", "female"])
 
@@ -176,23 +199,26 @@ class TestDatasetProcessing(DataPortalTestCase):
             "s3_uri": "s3://test_uri",
         }
         dep_dir = {"url": "https://cellxgene.com/data"}
-        process.update_db(metadata={"artifacts": [artifact], "deployment_directories": [dep_dir]})
+        process.update_db(dataset_id, metadata={"artifacts": [artifact], "deployment_directories": [dep_dir]})
 
         self.assertEqual(len(Dataset.get(dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(dataset_id).artifacts[0].filename, "test_filename")
         self.assertEqual(Dataset.get(dataset_id).deployment_directories[0].url, "https://cellxgene.com/data")
 
-        process.update_db(processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5})
+        process.update_db(
+            dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5}
+        )
         self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADING)
         self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 0.5)
         self.assertIsNone(Dataset.get(dataset_id).processing_status.validation_status)
 
         process.update_db(
+            dataset_id,
             processing_status={
                 "upload_status": UploadStatus.UPLOADED,
                 "upload_progress": 1,
                 "validation_status": ValidationStatus.VALIDATING,
-            }
+            },
         )
         self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
         self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 1)
@@ -200,43 +226,157 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         fake_env.stop()
 
-    def test_create_artifacts(self):
-        # Mock S3 service if we don't have a mock api already running
-        if os.getenv("BOTO_ENDPOINT_URL"):
-            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
-        else:
-            s3_mock = mock_s3()
-            s3_mock.start()
-            s3_args = {}
-        try:
-            s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
-            s3.create_bucket(
-                Bucket="test-bucket", CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_create_artifacts(self, make_seurat, make_loom):
+        make_loom.return_value = str(self.loom_filename)
+        make_seurat.return_value = str(self.seurat_filename)
+        artifact_bucket = "test-artifact-bucket"
+        test_dataset_id = self.generate_dataset().id
+
+        s3 = self.setup_s3_bucket(artifact_bucket)
+
+        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        dataset = Dataset.get(test_dataset_id)
+        artifacts = dataset.artifacts
+        processing_status = dataset.processing_status
+
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+
+        self.assertEqual(len(artifacts), 3)
+
+        self.assertTrue(all(a.user_submitted for a in artifacts))
+        self.assertTrue(all(a.s3_uri.startswith(f"s3://{artifact_bucket}/{bucket_prefix}/") for a in artifacts))
+        self.assertEqual(len(set(a.filetype for a in artifacts)), 3)
+        self.assertTrue(all(a.type == DatasetArtifactType.REMIX for a in artifacts))
+
+        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
+        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
+        self.assertEqual(len(s3_filenames), 3)
+        self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
+        self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+        self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
+
+    def test__create_artifact__negative(self):
+        artifact_bucket = "test-artifact-bucket"
+        test_dataset = self.generate_dataset()
+        bucket_prefix = process.get_bucket_prefix(test_dataset.id)
+        self.setup_s3_bucket(artifact_bucket)
+
+        with self.subTest("file does not exist"):
+            self.assertRaises(
+                TypeError,
+                process.create_artifact,
+                None,
+                DatasetArtifactFileType.H5AD,
+                bucket_prefix,
+                test_dataset.id,
+                artifact_bucket,
             )
 
-            fake_env = patch.dict(os.environ, {"DATASET_ID": "aaaa-bbbb-cccc", "ARTIFACT_BUCKET": "test-bucket"})
-            fake_env.start()
+        with self.subTest("invalid artifact type"):
 
-            try:
-                artifacts = process.create_artifacts(
-                    str(self.h5ad_filename), str(self.seurat_filename), str(self.loom_filename)
-                )
+            class BadEnum(enum.Enum):
+                fake = "fake"
 
-                self.assertEqual(len(artifacts), 3)
+            self.assertRaises(
+                CorporaException,
+                process.create_artifact,
+                str(self.h5ad_filename),
+                BadEnum.fake,
+                bucket_prefix,
+                test_dataset.id,
+                artifact_bucket,
+            )
 
-                self.assertTrue(all(a["user_submitted"] for a in artifacts))
-                self.assertTrue(all(a["s3_uri"].startswith("s3://test-bucket/aaaa-bbbb-cccc/") for a in artifacts))
-                self.assertEqual(len(set(a["filetype"] for a in artifacts)), 3)
-                self.assertTrue(all(a["type"] == DatasetArtifactType.REMIX for a in artifacts))
+        with self.subTest("dataset does not exist"):
+            self.assertRaises(
+                CorporaException,
+                process.create_artifact,
+                str(self.h5ad_filename),
+                DatasetArtifactFileType.H5AD,
+                process.get_bucket_prefix("1234"),
+                "1234",
+                artifact_bucket,
+            )
 
-                resp = s3.list_objects_v2(Bucket="test-bucket", Prefix="aaaa-bbbb-cccc")
-                s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-                self.assertEqual(len(s3_filenames), 3)
-                self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
-                self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
-                self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
-            finally:
-                fake_env.stop()
-        finally:
-            if not os.getenv("BOTO_ENDPOINT_URL"):
-                s3_mock.stop()
+        with self.subTest("bucket does not exist"):
+            self.assertRaises(
+                boto3.exceptions.S3UploadFailedError,
+                process.create_artifact,
+                str(self.h5ad_filename),
+                DatasetArtifactFileType.H5AD,
+                bucket_prefix,
+                test_dataset.id,
+                "fake-bucket",
+            )
+
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
+        mock_loom.side_effect = RuntimeError("Loom conversion failed")
+        mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
+        test_dataset_id = self.generate_dataset().id
+        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
+        artifact_bucket = "test-artifact-bucket"
+        s3 = self.setup_s3_bucket(artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        dataset = Dataset.get(test_dataset_id)
+        artifacts = dataset.artifacts
+        processing_status = dataset.processing_status
+
+        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_loom_status)
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+
+        self.assertEqual(len(artifacts), 2)
+        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
+        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
+        self.assertEqual(len(s3_filenames), 2)
+        self.assertNotIn(str(self.loom_filename.parts[-1]), s3_filenames)
+
+    @patch("backend.corpora.dataset_processing.process.make_loom")
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
+        mock_loom.return_value = str(self.loom_filename)
+        mock_seurat.side_effect = RuntimeError("seurat conversion failed")
+        test_dataset_id = self.generate_dataset().id
+        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
+        artifact_bucket = "test-artifact-bucket"
+        s3 = self.setup_s3_bucket(artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        dataset = Dataset.get(test_dataset_id)
+        artifacts = dataset.artifacts
+        processing_status = dataset.processing_status
+
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_rds_status)
+        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+
+        self.assertEqual(len(artifacts), 2)
+        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
+        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
+        self.assertEqual(len(s3_filenames), 2)
+        self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
+        mock_cxg.side_effect = RuntimeError("cxg conversion failed")
+        test_dataset_id = self.generate_dataset().id
+        artifact_bucket = "test-artifact-bucket"
+        process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        dataset = Dataset.get(test_dataset_id)
+        processing_status = dataset.processing_status
+        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_cxg_status)
+
+    def test__convert_file_ignore_exceptions__fail(self):
+        def converter(_file):
+            raise RuntimeError("conversion_failed")
+
+        with self.assertLogs(process.logger, logging.ERROR):
+            filename, status = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error")
+        self.assertIsNone(filename)
+        self.assertEqual(ConversionStatus.FAILED, status)

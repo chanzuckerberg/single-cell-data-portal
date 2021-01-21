@@ -1,13 +1,13 @@
 import logging
-import typing
 import os
+import typing
+from urllib.parse import urlparse
 
 import boto3
 from botocore.exceptions import ClientError
 
 from .entity import Entity
-from ..corpora_orm import DbDatasetArtifact
-from urllib.parse import urlparse
+from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
 
 logger = logging.getLogger(__name__)
 
@@ -61,3 +61,25 @@ class DatasetAsset(Entity):
             return None
         else:
             return response["ContentLength"]
+
+    @classmethod
+    def create(
+        cls,
+        dataset_id: str,
+        filename: str,
+        filetype: DatasetArtifactFileType,
+        type_enum: DatasetArtifactType,
+        user_submitted: bool,
+        s3_uri: str,
+    ):
+        db_object = cls.table(
+            dataset_id=dataset_id,
+            filename=filename,
+            filetype=filetype,
+            type=type_enum,
+            user_submitted=user_submitted,
+            s3_uri=s3_uri,
+        )
+        cls.db.session.add(db_object)
+        cls.db.commit()
+        return cls(db_object)
