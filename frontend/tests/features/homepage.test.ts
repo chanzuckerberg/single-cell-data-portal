@@ -45,7 +45,7 @@ describe("Homepage", () => {
       await expect(page).toHaveSelector(getText(PROMPT_TEXT));
     });
 
-    it.only("downloads a file", async () => {
+    it("downloads a file", async () => {
       await goToPage(TEST_URL);
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
