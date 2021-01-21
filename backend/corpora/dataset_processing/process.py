@@ -141,7 +141,7 @@ def extract_metadata(filename):
     elif raw_layer_name == "raw.X":
         raw_layer = adata.raw.X
     else:
-        raw_layer = adata.layers["raw_layer_name"]
+        raw_layer = adata.layers[raw_layer_name]
 
     # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
     # into memory, so we need to chunk it to be safe.
