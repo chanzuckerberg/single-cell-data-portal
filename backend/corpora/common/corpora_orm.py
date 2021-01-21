@@ -74,6 +74,13 @@ class TransformingBase(object):
                 raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
         return result
 
+    id = Column(String, primary_key=True, default=generate_uuid)
+
+
+class AuditMixin(object):
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
+
 
 Base = declarative_base(cls=TransformingBase)
 
@@ -148,7 +155,7 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbCollection(Base):
+class DbCollection(Base, AuditMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
     DbCollections are associated with one or more single-cell datasets and links to external repositories.
@@ -157,13 +164,10 @@ class DbCollection(Base):
     # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
     owner = Column(String, nullable=False)
     name = Column(String)
     description = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
     obfuscated_uuid = Column(String, default="")
     contact_name = Column(String, default="")
     contact_email = Column(String, default="")
@@ -174,7 +178,7 @@ class DbCollection(Base):
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
 
 
-class DbProjectLink(Base):
+class DbProjectLink(Base, AuditMixin):
     """
     Represents an external web link for DbCollections such as protocols and supplementary data repositories.
     """
@@ -182,14 +186,11 @@ class DbProjectLink(Base):
     # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(String)
     link_url = Column(String)
     link_type = Column(Enum(CollectionLinkType))
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="links")
@@ -205,7 +206,7 @@ class DbProjectLink(Base):
 DbCollectionLink = DbProjectLink
 
 
-class DbDataset(Base):
+class DbDataset(Base, AuditMixin):
     """
     Models a single experiment uploaded and processed by Corpora.
     Describes experiment metadata such as specimen and assay data.
@@ -214,7 +215,6 @@ class DbDataset(Base):
 
     __tablename__ = "dataset"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     revision = Column(Integer)
     name = Column(String)
     organism = Column(JSONB)
@@ -228,8 +228,6 @@ class DbDataset(Base):
     is_valid = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
@@ -248,7 +246,7 @@ class DbDataset(Base):
     )
 
 
-class DbDatasetArtifact(Base):
+class DbDatasetArtifact(Base, AuditMixin):
     """
     Represents a user uploaded or Corpora generated file linked to a DbDataset.
     All matrices and cellxgene objects are examples of a DbDatasetArtifact.
@@ -256,21 +254,18 @@ class DbDatasetArtifact(Base):
 
     __tablename__ = "dataset_artifact"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
     filetype = Column(Enum(DatasetArtifactFileType))
     type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="artifacts")
 
 
-class DbDeploymentDirectory(Base):
+class DbDeploymentDirectory(Base, AuditMixin):
     """
     Represents the deployment of a dataset to a Corpora application.
     This entity only supports cellxgene deployments.
@@ -278,11 +273,8 @@ class DbDeploymentDirectory(Base):
 
     __tablename__ = "deployment_directory"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     url = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
@@ -343,14 +335,13 @@ class ConversionStatus(enum.Enum):
     FAILED = "Failed"
 
 
-class DbDatasetProcessingStatus(Base):
+class DbDatasetProcessingStatus(Base, AuditMixin):
     """
     Represents progress and status of user-initiated upload, validation, and conversion.
     """
 
     __tablename__ = "dataset_processing_status"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     upload_status = Column(Enum(UploadStatus))
     upload_progress = Column(Float)
@@ -361,8 +352,6 @@ class DbDatasetProcessingStatus(Base):
     conversion_rds_status = Column(Enum(ConversionStatus))
     conversion_cxg_status = Column(Enum(ConversionStatus))
     conversion_anndata_status = Column(Enum(ConversionStatus))
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")
