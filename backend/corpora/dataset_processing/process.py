@@ -1,5 +1,106 @@
 #!/usr/bin/env python3
 
+
+"""
+# Processing Status
+## Initial
+The initial processing_status when the container first runs is:
+{
+    upload_status = UploadStatus.WAITING
+    upload_progress = 0
+    upload_message = ""
+    validation_status = ValidationStatus
+    validation_message = ""
+    conversion_loom_status = ConversionStatus
+    conversion_rds_status = ConversionStatus
+    conversion_cxg_status = ConversionStatus
+    conversion_anndata_status = ConversionStatus
+}
+
+## Upload
+
+While uploading, upload_status changes UploadStatus.UPLOADING and upload_progress is updated regularly.
+The processing_status should look like this:
+{
+    upload_status = UploadStatus.UPLOADING
+    upload_progress = 0.25
+}
+
+If upload succeeds the processing_status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+}
+
+
+If upload fails the processing_status changes to:
+{
+    upload_status = UploadStatus.FAILED
+    upload_progress = 0.25
+    upload_message = "Some message"
+}
+
+## Validation
+After upload, validation starts and processing status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.VALIDATING
+}
+
+If validation succeeds the process_status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.VALID
+    conversion_loom_status = ConversionStatus.CONVERTING
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTING
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+If validation fails the processing_status change to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.FAILED
+}
+
+## Conversion
+After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.CONVERTING
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+If a conversion fails the processing_status will indicated it as follow:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.FAILED
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.FAILED
+    conversion_rds_status = ConversionStatus.CONVERTED
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.FAILED
+}
+"""
+
 import logging
 import os
 import subprocess
