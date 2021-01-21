@@ -1,5 +1,5 @@
 import { PROMPT_TEXT } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/Details";
-import { goToPage } from "tests/utils/helpers";
+import { goToPage, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestTag, getText } from "../utils/selectors";
 
@@ -45,19 +45,21 @@ describe("Homepage", () => {
       await expect(page).toHaveSelector(getText(PROMPT_TEXT));
     });
 
-    it("downloads a file", async () => {
+    it.only("downloads a file", async () => {
       await goToPage(TEST_URL);
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
 
       await page.click(getText(".h5ad (AnnData v0.7)"));
 
-      const downloadLink = await page.getAttribute(
-        getTestTag("download-asset-download-button"),
-        "href"
-      );
+      await tryUntil(async () => {
+        const downloadLink = await page.getAttribute(
+          getTestTag("download-asset-download-button"),
+          "href"
+        );
 
-      expect(downloadLink).toBeTruthy();
+        expect(downloadLink).toBeTruthy();
+      });
     });
   });
 });
