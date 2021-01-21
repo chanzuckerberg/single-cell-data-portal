@@ -17,6 +17,7 @@ async function fetchDatasetStatus(
   dataset_uuid: string
 ): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_uuid });
+
   return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 }
 
@@ -35,20 +36,22 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(
-  dataset_uuid?: string
-): Promise<DatasetUploadStatus> {
+async function deleteDataset(dataset_uuid = ""): Promise<DatasetUploadStatus> {
   if (!dataset_uuid) throw new Error("No dataset id provided");
+
   const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
+
   if (response.ok) return await response.json();
-  return Promise.reject(response.statusText);
+
+  throw Error(response.statusText);
 }
 
-export function useDeleteDataset(collection_uuid?: string) {
+export function useDeleteDataset(collection_uuid = "") {
   if (!collection_uuid) {
     throw new Error("No collection id given");
   }
+
   const queryCache = useQueryCache();
 
   return useMutation(deleteDataset, {
@@ -58,7 +61,9 @@ export function useDeleteDataset(collection_uuid?: string) {
         collection_uuid,
         VISIBILITY_TYPE.PRIVATE,
       ]);
+
       queryCache.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
+
       queryCache.setQueryData(
         [USE_DATASET_STATUS, uploadStatus.dataset_id],
         uploadStatus

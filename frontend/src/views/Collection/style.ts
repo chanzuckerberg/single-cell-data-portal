@@ -1,5 +1,4 @@
-import { Alert, Classes } from "@blueprintjs/core";
-import { BLUE, PT_GRID_SIZE_PX, RED } from "src/components/common/theme";
+import { PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const CollectionInfo = styled.div`
@@ -34,16 +33,5 @@ export const StyledDiv = styled.div`
   flex-direction: row;
   & > :not(:last-child) {
     margin-right: ${PT_GRID_SIZE_PX}px;
-  }
-`;
-
-export const StyledAlert = styled(Alert)`
-  .${Classes.BUTTON} {
-    background: ${RED.C};
-    box-shadow: none !important;
-    :not(.${Classes.INTENT_DANGER}) {
-      color: ${BLUE.C};
-      background: none;
-    }
   }
 `;

@@ -1,4 +1,4 @@
-import { Classes } from "@blueprintjs/core";
+import { Classes, Intent } from "@blueprintjs/core";
 import React, { FC, useEffect, useState } from "react";
 import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
@@ -8,7 +8,7 @@ import CurlLink from "./components/CurlLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
-import { Cancel, DisabledDownload, Download, Wrapper } from "./style";
+import { CancelButton, DownloadButton, Wrapper } from "./style";
 
 interface Props {
   onClose: () => void;
@@ -20,7 +20,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   const [format, setFormat] = useState<DATASET_ASSET_FORMAT | "">("");
   const [fileSize, setFileSize] = useState<number>(0);
   const [fileName, setFileName] = useState<string>("");
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
+  const [downloadLink, setDownloadLink] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -50,19 +50,19 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   };
 
   const renderDownload = () => {
-    if (!downloadLink || isLoading) {
-      return <DisabledDownload>Download</DisabledDownload>;
-    }
-
     return (
-      <Download
+      <DownloadButton
+        disabled={!downloadLink || isLoading}
         data-test-id="download-asset-download-button"
         href={downloadLink}
+        intent={Intent.PRIMARY}
       >
         Download
-      </Download>
+      </DownloadButton>
     );
   };
+
+  const availableFormats = dataAssets.map((dataAsset) => dataAsset.filetype);
 
   return (
     <>
@@ -73,6 +73,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
             handleChange={handleChange}
             isDisabled={isLoading}
             format={format}
+            availableFormats={availableFormats}
           />
           <Details
             isLoading={isLoading}
@@ -85,7 +86,9 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
         </Wrapper>
       </div>
       <div className={Classes.DIALOG_FOOTER}>
-        <Cancel onClick={onClose}>Cancel</Cancel>
+        <CancelButton onClick={onClose} minimal>
+          Cancel
+        </CancelButton>
         {renderDownload()}
       </div>
     </>

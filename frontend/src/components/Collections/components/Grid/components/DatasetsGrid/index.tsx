@@ -18,7 +18,7 @@ interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
-  onSelect: Dispatch<SetStateAction<string | undefined>>;
+  onSelect: Dispatch<SetStateAction<string>>;
 }
 
 const DatasetsGrid: FC<Props> = ({
@@ -27,7 +27,7 @@ const DatasetsGrid: FC<Props> = ({
   invalidateCollectionQuery,
   onSelect,
 }) => {
-  const [selected, setSelected] = useState<Dataset["id"]>();
+  const [selected, setSelected] = useState<Dataset["id"]>("");
 
   useEffect(() => {
     onSelect(selected);

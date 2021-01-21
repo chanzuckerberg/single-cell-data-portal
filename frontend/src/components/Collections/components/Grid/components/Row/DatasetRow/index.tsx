@@ -1,14 +1,13 @@
-import { Button, Intent, Radio } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { AnchorButton, Intent, Radio } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import React, { FC, useEffect, useState } from "react";
-import { CancelledError, QueryCache, useQueryCache } from "react-query";
-import { Dataset, VALIDATION_STATUS } from "src/common/entities";
+import React, { FC } from "react";
+import { CancelledError, useQueryCache } from "react-query";
 import {
-  useDatasetStatus,
-  useDeleteDataset,
-  USE_DATASET_STATUS,
-} from "src/common/queries/datasets";
+  CONVERSION_STATUS,
+  Dataset,
+  VALIDATION_STATUS,
+} from "src/common/entities";
+import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
   DetailsCell,
@@ -16,7 +15,6 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style.ts";
 import { UploadingFile } from "src/components/DropboxChooser";
-import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
 import UploadStatus from "./components/UploadStatus";
@@ -25,10 +23,16 @@ import {
   checkIfCancelled,
   checkIfFailed,
   checkIfLoading,
+  checkIfMetadataLoading,
   FailReturn,
+  getConversionStatus,
+  hasCXGFile,
+  useCancelDatasetStatusQuery,
+  useCheckCollectionFormatsPopulated,
+  useCheckCollectionPopulated,
+  useConversionProgress,
+  useUploadProgress,
 } from "./utils";
-
-const FETCH_COLLECTION_INTERVAL_MS = 5 * 1000;
 
 const AsyncTooltip = loadable(
   () =>
@@ -37,10 +41,10 @@ const AsyncTooltip = loadable(
     )
 );
 
-const ErrorTooltip = ({ isFailed, error }: FailReturn) => {
+const ErrorTooltip = ({ isFailed, error, type }: FailReturn) => {
   if (!isFailed) return null;
 
-  return <AsyncTooltip error={error} />;
+  return <AsyncTooltip error={error} type={type} />;
 };
 
 interface Props {
@@ -48,7 +52,7 @@ interface Props {
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   onSelect: (id: Dataset["id"]) => void;
-  selected: Dataset["id"] | undefined;
+  selected?: Dataset["id"];
 }
 
 const DatasetRow: FC<Props> = ({
@@ -60,53 +64,69 @@ const DatasetRow: FC<Props> = ({
 }) => {
   const queryCache = useQueryCache();
 
-  const queryResult = useDatasetStatus(
+  const datasetStatusResult = useDatasetStatus(
     dataset.id,
     checkIfLoading(dataset.processing_status)
   );
 
-  const datasetStatus = queryResult.data || dataset.processing_status;
+  const datasetStatus = datasetStatusResult.data || dataset.processing_status;
+
+  const initProgress = dataset?.processing_status?.upload_progress;
 
   const { upload_progress } = datasetStatus;
 
-  const [uploadProgress, setUploadProgress] = useState(upload_progress);
-
-  if (queryResult.isError && !(queryResult.error instanceof CancelledError)) {
-    console.error(queryResult.error);
+  if (
+    datasetStatusResult.isError &&
+    !(datasetStatusResult.error instanceof CancelledError)
+  ) {
+    console.error(datasetStatusResult.error);
   }
+
   const isNamePopulated = Boolean(dataset.name);
 
   const name = dataset.name || file?.name || dataset.id;
+
+  // (thuang): We need to poll the collection until all the converted files
+  // become available
+  useCheckCollectionFormatsPopulated({
+    dataset,
+    datasetUploadStatus: datasetStatus,
+    invalidateCollectionQuery,
+  });
 
   // (thuang): We need to poll the collection until the name is populated,
   // which indicates other metadata are populated too
   useCheckCollectionPopulated({
     invalidateCollectionQuery,
     isNamePopulated,
-    upload_progress,
+    validationStatus: datasetStatus.validation_status,
   });
 
   const hasFailed = checkIfFailed(datasetStatus);
-  const { isFailed, error } = hasFailed;
+  const { isFailed, error, type } = hasFailed;
+
+  const isLoading = checkIfLoading(datasetStatus);
+
+  const isMetadataLoading = checkIfMetadataLoading(dataset, datasetStatus);
 
   useCancelDatasetStatusQuery({
     datasetId: dataset.id,
     isFailed,
-    isNamePopulated,
+    isLoading,
     queryCache,
   });
 
   useUploadProgress({
-    newUploadProgress: upload_progress,
-    setUploadProgress,
-    uploadProgress,
+    initProgress: initProgress,
+    progress: upload_progress,
   });
 
-  const [deleteDataset] = useDeleteDataset(dataset.collection_id);
+  useConversionProgress({
+    datasetStatus: datasetStatusResult.data,
+    initDatasetStatus: dataset.processing_status,
+  });
 
   if (checkIfCancelled(datasetStatus)) return null;
-
-  const isLoading = checkIfLoading(datasetStatus);
 
   const {
     tissue,
@@ -125,99 +145,45 @@ const DatasetRow: FC<Props> = ({
             checked={selected === dataset.id}
           />
           <div>{name}</div>
-          <ErrorTooltip isFailed={isFailed} error={error} />
+          {!isLoading && (
+            <ErrorTooltip isFailed={isFailed} error={error} type={type} />
+          )}
         </TitleContainer>
         {isLoading && (
           <UploadStatus
+            isConverting={
+              getConversionStatus(datasetStatus) ===
+              CONVERSION_STATUS.CONVERTING
+            }
             isValidating={
               datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
             }
             progress={datasetStatus.upload_progress}
-            cancelUpload={() => {
-              deleteDataset(dataset.id);
-            }}
+            datasetId={dataset.id}
+            collectionId={dataset.collection_id}
           />
         )}
       </DetailsCell>
-      <Popover values={tissue} isLoading={isLoading} isFailed={isFailed} />
-      <Popover values={assay} isLoading={isLoading} isFailed={isFailed} />
-      <Popover values={disease} isLoading={isLoading} isFailed={isFailed} />
-      <Popover values={organism} isLoading={isLoading} isFailed={isFailed} />
-      <CellCount cellCount={cell_count} isLoading={isLoading} />
+      <Popover values={tissue} isLoading={isMetadataLoading} />
+      <Popover values={assay} isLoading={isMetadataLoading} />
+      <Popover values={disease} isLoading={isMetadataLoading} />
+      <Popover values={organism} isLoading={isMetadataLoading} />
+      <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
       <RightAlignedDetailsCell>
-        {isNamePopulated && (
-          <Button intent={Intent.PRIMARY} outlined text="Explore" />
+        {hasCXGFile(dataset) && (
+          <AnchorButton
+            intent={Intent.PRIMARY}
+            outlined
+            text="Explore"
+            href={dataset?.dataset_deployments[0]?.url}
+            target="_blank"
+            rel="noopener"
+            data-test-id="view-dataset-link"
+          />
         )}
       </RightAlignedDetailsCell>
     </StyledRow>
   );
 };
-
-function useCheckCollectionPopulated({
-  invalidateCollectionQuery,
-  isNamePopulated,
-  upload_progress,
-}: {
-  invalidateCollectionQuery: () => void;
-  isNamePopulated: boolean;
-  upload_progress: number;
-}) {
-  useEffect(() => {
-    let intervalId: number | undefined = undefined;
-
-    if (!intervalId && upload_progress === 1 && !isNamePopulated) {
-      intervalId = window?.setInterval(() => {
-        if (upload_progress === 1 && !isNamePopulated) {
-          invalidateCollectionQuery();
-        }
-      }, FETCH_COLLECTION_INTERVAL_MS);
-    }
-
-    return () => clearInterval(intervalId);
-  }, [invalidateCollectionQuery, isNamePopulated, upload_progress]);
-}
-
-function useCancelDatasetStatusQuery({
-  datasetId,
-  isFailed,
-  isNamePopulated,
-  queryCache,
-}: {
-  datasetId: string;
-  isFailed: boolean;
-  isNamePopulated: boolean;
-  queryCache: QueryCache;
-}) {
-  useEffect(() => {
-    if (isFailed || isNamePopulated) {
-      queryCache.cancelQueries([USE_DATASET_STATUS, datasetId]);
-    }
-  }, [datasetId, isFailed, isNamePopulated, queryCache]);
-}
-
-function useUploadProgress({
-  newUploadProgress,
-  setUploadProgress,
-  uploadProgress,
-}: {
-  newUploadProgress: number;
-  setUploadProgress: React.Dispatch<React.SetStateAction<number>>;
-  uploadProgress: number;
-}) {
-  useEffect(() => {
-    if (uploadProgress === newUploadProgress) return;
-
-    setUploadProgress(newUploadProgress);
-
-    if (newUploadProgress === 1) {
-      DatasetUploadToast.show({
-        icon: IconNames.TICK,
-        intent: Intent.SUCCESS,
-        message:
-          "Upload was successful. Your file is being processed which will continue in the background, even if you close this window.",
-      });
-    }
-  }, [newUploadProgress, setUploadProgress, uploadProgress]);
-}
 
 export default DatasetRow;

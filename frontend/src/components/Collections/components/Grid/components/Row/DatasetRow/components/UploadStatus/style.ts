@@ -1,4 +1,4 @@
-import { Classes, Intent } from "@blueprintjs/core";
+import { Intent, Spinner } from "@blueprintjs/core";
 import {
   GRAY,
   LIGHT_GRAY,
@@ -20,7 +20,8 @@ const intentColorSwitch = (intent: Intent, border?: boolean) => {
 export const StatusContainer = styled.div`
   display: flex;
   flex-direction: row;
-  vertical-align: middle;
+  align-items: center;
+  margin-bottom: ${PT_GRID_SIZE_PX}px;
 `;
 
 interface Props {
@@ -35,23 +36,12 @@ export const DatasetStatusTag = styled.div`
   align-self: flex-start;
   width: fit-content;
   padding: ${PT_GRID_SIZE_PX}px;
-  margin: 0 auto;
   display: flex;
   flex-direction: row;
   vertical-align: middle;
-  & > .${Classes.SPINNER}, .${Classes.ICON} {
-    margin: auto ${PT_GRID_SIZE_PX}px auto 0;
-    height: 100%;
-  }
+  margin-right: ${PT_GRID_SIZE_PX}px;
 `;
 
-export const CancelButton = styled.button`
-  :hover {
-    color: ${RED.C};
-  }
-
-  outline: none;
-  border: 0;
-  color: ${GRAY.A};
-  background: none;
+export const StyledSpinner = styled(Spinner)`
+  margin-right: ${PT_GRID_SIZE_PX}px;
 `;
