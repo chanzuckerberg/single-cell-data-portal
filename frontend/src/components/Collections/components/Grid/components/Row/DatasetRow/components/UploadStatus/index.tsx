@@ -1,28 +1,65 @@
-import { Intent, Spinner } from "@blueprintjs/core";
+import { Button, Intent } from "@blueprintjs/core";
 import React, { FC } from "react";
-import { DatasetStatusTag } from "./style";
+import DeleteDataset from "../DeleteDataset";
+import { DatasetStatusTag, StatusContainer, StyledSpinner } from "./style";
 
 interface Props {
+  isConverting: boolean;
   isValidating: boolean;
   progress: number;
+  datasetId: string;
+  collectionId: string;
 }
 
-const UploadStatus: FC<Props> = ({ isValidating, progress }) => {
+const UploadStatus: FC<Props> = ({
+  isConverting,
+  isValidating,
+  progress,
+  datasetId,
+  collectionId,
+}) => {
+  let content: { progress?: number; text: string } = {
+    progress,
+    text: `Uploading (${Math.round(progress * 100)}%)`,
+  };
+
+  if (isConverting) {
+    content = {
+      text: "Processing...",
+    };
+  }
+
   if (isValidating) {
-    return (
-      <DatasetStatusTag>
-        <Spinner intent={Intent.PRIMARY} size={16} />
-        Validating...
-      </DatasetStatusTag>
-    );
+    content = {
+      text: "Validating...",
+    };
   }
 
   return (
-    <DatasetStatusTag>
-      <Spinner intent={Intent.PRIMARY} value={progress} size={16} />
-      {`Uploading (${Math.round(progress * 100)}%)`}
-    </DatasetStatusTag>
+    <StatusContainer>
+      <DatasetStatusTag>
+        <StyledSpinner
+          intent={Intent.PRIMARY}
+          value={content.progress}
+          size={16}
+        />
+        {content.text}
+      </DatasetStatusTag>
+      <DeleteDataset
+        id={datasetId}
+        collectionId={collectionId}
+        Button={CancelButton}
+      />
+    </StatusContainer>
   );
 };
+
+function CancelButton({ ...props }) {
+  return (
+    <Button minimal {...props}>
+      Cancel
+    </Button>
+  );
+}
 
 export default UploadStatus;

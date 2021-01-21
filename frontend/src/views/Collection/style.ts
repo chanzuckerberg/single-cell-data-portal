@@ -31,7 +31,7 @@ export const DatasetContainer = styled.div`
 export const StyledDiv = styled.div`
   display: flex;
   flex-direction: row;
-  & > Button {
-    margin-left: ${PT_GRID_SIZE_PX}px;
+  & > :not(:last-child) {
+    margin-right: ${PT_GRID_SIZE_PX}px;
   }
 `;

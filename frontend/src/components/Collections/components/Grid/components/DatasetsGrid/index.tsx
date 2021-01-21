@@ -1,7 +1,13 @@
-import React, { FC, useState } from "react";
+import React, {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { Dataset } from "src/common/entities";
 import {
-  CollectionHeaderCell,
+  DatasetHeaderCell,
   LeftAlignedHeaderCell,
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
@@ -12,32 +18,38 @@ interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
+  onSelect: Dispatch<SetStateAction<string>>;
 }
 
 const DatasetsGrid: FC<Props> = ({
   datasets,
   uploadedFiles,
   invalidateCollectionQuery,
+  onSelect,
 }) => {
-  const [selected, setSelected] = useState(new Set());
+  const [selected, setSelected] = useState<Dataset["id"]>("");
 
-  const handleSelect = (id: string) => {
-    const newSelected = new Set(selected);
-    if (newSelected.has(id)) newSelected.delete(id);
-    else newSelected.add(id);
-    setSelected(newSelected);
+  useEffect(() => {
+    onSelect(selected);
+  }, [selected, onSelect]);
+
+  const handleSelect = (id: Dataset["id"]) => {
+    if (id !== selected) {
+      setSelected(id);
+    }
   };
 
   return (
     <StyledCollectionsGrid bordered>
       <thead>
         <tr>
-          <CollectionHeaderCell>Dataset</CollectionHeaderCell>
+          <DatasetHeaderCell>Dataset</DatasetHeaderCell>
           <LeftAlignedHeaderCell>Tissue</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Assay</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Disease</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Organism</LeftAlignedHeaderCell>
           <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
+          <RightAlignedHeaderCell />
         </tr>
       </thead>
       <tbody>
@@ -45,9 +57,10 @@ const DatasetsGrid: FC<Props> = ({
           <DatasetRow
             key={dataset.id}
             dataset={dataset}
-            checkHandler={handleSelect}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
+            onSelect={handleSelect}
+            selected={selected}
           />
         ))}
       </tbody>
