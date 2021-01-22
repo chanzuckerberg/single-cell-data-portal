@@ -17,10 +17,13 @@ describeIfCalledByDevEnv("CRUD Collection", async () => {
     await page.fill("#contact-name", "TEST");
     await page.fill("#contact-email", "TEST@example.coms");
     await page.click("input[type=checkbox]");
-    const [response] = await Promise.all([
+    const [request, response] = await Promise.all([
+      page.waitForEvent("request"),
       page.waitForEvent("response"),
       await page.click(getText("Create")),
     ]);
+
+    const cookie = request.headers().cookie;
 
     const collectionID = (await response.json()) as object;
 
@@ -29,7 +32,7 @@ describeIfCalledByDevEnv("CRUD Collection", async () => {
     // TEMP: FETCH ENDPOINT TO DELETE COLLECTION
     const deleteResponse = await fetch(
       `https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/collections/${collectionID}`,
-      { method: "DELETE" }
+      { headers: { cookie }, method: "DELETE" }
     );
 
     expect(deleteResponse.status).toBe(202);
