@@ -10,27 +10,13 @@ from ..corpora_orm import Base, DBSessionMaker, DbDatasetProcessingStatus
 logger = logging.getLogger(__name__)
 
 
-class DbUtils:
-    """DbUtils as a singleton to avoid creating excess sessions."""
+class DBSession:
+    """DBSession as a singleton to avoid creating excess sessions."""
 
-    __instance = None
-
-    class __DbUtils:
-        def __init__(self):
-            self._session = None
-
-        @property
-        def session(self):
-            if not self._session:
-                self._session = DBSessionMaker().session()
-            return self._session
-
-    def __init__(self):
-        if not DbUtils.__instance:
-            DbUtils.__instance = DbUtils.__DbUtils()
+    __instance = DBSessionMaker().session()
 
     def __getattr__(self, name):
-        return getattr(self.__instance, name, None) or getattr(self.__instance.session, name)
+        return getattr(self.__instance, name)
 
 
 def clone(model: Base, primary_key: dict, **kwargs) -> Base:
