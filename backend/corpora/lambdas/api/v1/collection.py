@@ -67,7 +67,7 @@ def create_collection(body: object, user: str):
 
 @db_session()
 def delete_collection(collection_uuid: str):
-    raise NotImplementedError
+    return make_response(202)
 
 
 @db_session()
