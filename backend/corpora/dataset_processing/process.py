@@ -1,5 +1,106 @@
 #!/usr/bin/env python3
 
+
+"""
+# Processing Status
+## Initial
+The initial processing_status when the container first runs is:
+{
+    upload_status = UploadStatus.WAITING
+    upload_progress = 0
+    upload_message = ""
+    validation_status = ValidationStatus
+    validation_message = ""
+    conversion_loom_status = ConversionStatus
+    conversion_rds_status = ConversionStatus
+    conversion_cxg_status = ConversionStatus
+    conversion_anndata_status = ConversionStatus
+}
+
+## Upload
+
+While uploading, upload_status changes UploadStatus.UPLOADING and upload_progress is updated regularly.
+The processing_status should look like this:
+{
+    upload_status = UploadStatus.UPLOADING
+    upload_progress = 0.25
+}
+
+If upload succeeds the processing_status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+}
+
+
+If upload fails the processing_status changes to:
+{
+    upload_status = UploadStatus.FAILED
+    upload_progress = 0.25
+    upload_message = "Some message"
+}
+
+## Validation
+After upload, validation starts and processing status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.VALIDATING
+}
+
+If validation succeeds the process_status changes to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.VALID
+    conversion_loom_status = ConversionStatus.CONVERTING
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTING
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+If validation fails the processing_status change to:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.FAILED
+}
+
+## Conversion
+After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.CONVERTING
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+If a conversion fails the processing_status will indicated it as follow:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.FAILED
+    conversion_rds_status = ConversionStatus.CONVERTING
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.CONVERTING
+}
+
+Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
+{
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus
+    conversion_loom_status = ConversionStatus.FAILED
+    conversion_rds_status = ConversionStatus.CONVERTED
+    conversion_cxg_status = ConversionStatus.CONVERTED
+    conversion_anndata_status = ConversionStatus.FAILED
+}
+"""
+
 import logging
 import os
 import subprocess
@@ -76,13 +177,10 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
 
     # upload AnnData
-    update_db(dataset_id, processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTING))
     create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
         dataset_id,
-        processing_status=dict(
-            conversion_anndata_status=ConversionStatus.CONVERTED, conversion_loom_status=ConversionStatus.CONVERTING
-        ),
+        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
     )
 
     # Process loom
@@ -91,7 +189,7 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
         create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
         dataset_id,
-        processing_status=dict(conversion_loom_status=status, conversion_rds_status=ConversionStatus.CONVERTING),
+        processing_status=dict(conversion_loom_status=status),
     )
 
     # Process seurat
@@ -144,7 +242,7 @@ def extract_metadata(filename):
     elif raw_layer_name == "raw.X":
         raw_layer = adata.raw.X
     else:
-        raw_layer = adata.layers[raw_layer]
+        raw_layer = adata.layers[raw_layer_name]
 
     # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
     # into memory, so we need to chunk it to be safe.
@@ -262,7 +360,14 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
     if cxg_dir:
         copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
-    update_db(dataset_id, processing_status=dict(conversion_cxg_status=status))
+        metadata = {
+            "deployment_directories": [
+                {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")}
+            ]
+        }
+    else:
+        metadata = None
+    update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
 def main():
@@ -278,7 +383,7 @@ def main():
     # Validate the H5AD file
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
-    if False and val_proc.returncode != 0:
+    if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
         logger.error(f"stderr: {val_proc.stderr}")
@@ -287,16 +392,22 @@ def main():
         sys.exit(1)
     else:
         logger.info("Validation complete", flush=True)
-        status = dict(conversion_anndata_status=ConversionStatus.CONVERTING, validation_status=ValidationStatus.VALID)
+        status = dict(
+            conversion_cxg_status=ConversionStatus.CONVERTING,
+            conversion_loom_status=ConversionStatus.CONVERTING,
+            conversion_rds_status=ConversionStatus.CONVERTING,
+            conversion_anndata_status=ConversionStatus.CONVERTING,
+            validation_status=ValidationStatus.VALID,
+        )
         update_db(dataset_id, processing_status=status)
+
+    # Process cxg
+    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
     # Process metadata
     metadata = extract_metadata(local_filename)
     logger.info(metadata, flush=True)
     update_db(dataset_id, metadata)
-
-    # Process cxg
-    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
     # create artifacts
     create_artifacts(
@@ -304,12 +415,6 @@ def main():
         dataset_id,
         os.environ["ARTIFACT_BUCKET"],
     )
-
-    deployment_directories = [
-        {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")}
-    ]
-
-    update_db(dataset_id, metadata={"deployment_directories": deployment_directories})
 
 
 if __name__ == "__main__":
