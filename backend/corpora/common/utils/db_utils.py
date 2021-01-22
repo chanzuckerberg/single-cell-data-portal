@@ -1,9 +1,7 @@
-import functools
 import logging
-import typing
 from contextlib import contextmanager
 
-import sqlalchemy
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from .exceptions import CorporaException
@@ -27,50 +25,12 @@ class DbUtils:
                 self._session = DBSessionMaker().session()
             return self._session
 
-        def get(self, table: Base, entity_id: typing.Union[str, typing.Tuple[str]]) -> typing.Union[Base, None]:
-            """
-            Query a table row by its primary key
-            :param table: SQLAlchemy Table to query
-            :param entity_id: Primary key of desired row
-            :return: SQLAlchemy Table object, None if not found
-            """
-            return self.session.query(table).get(entity_id)
-
-        def query(self, table_args: typing.List[Base], filter_args: typing.List[bool] = None) -> typing.List[Base]:
-            """
-            Query the database using the current DB session
-            :param table_args: List of SQLAlchemy Tables to query/join
-            :param filter_args: List of SQLAlchemy filter conditions
-            :return: List of SQLAlchemy query response objects
-            """
-            return (
-                self.session.query(*table_args).filter(*filter_args).all()
-                if filter_args
-                else self.session.query(*table_args).all()
-            )
-
-        def commit(self):
-            """
-            Commit changes to the database and roll back if error.
-            """
-            self.session.commit()
-
-        def delete(self, db_object: Base):
-            try:
-                self.session.delete(db_object)
-            except sqlalchemy.orm.exc.ObjectDeletedError:
-                pass
-
-        def close(self):
-            self.session.close()
-            self._session = None
-
     def __init__(self):
         if not DbUtils.__instance:
             DbUtils.__instance = DbUtils.__DbUtils()
 
     def __getattr__(self, name):
-        return getattr(self.__instance, name)
+        return getattr(self.__instance, name, None) or getattr(self.__instance.session, name)
 
 
 def clone(model: Base, primary_key: dict, **kwargs) -> Base:
@@ -91,44 +51,26 @@ def clone(model: Base, primary_key: dict, **kwargs) -> Base:
 
 
 @contextmanager
-def db_session_manager(commit=False):
+def db_session_manager(commit=False, **kwargs):
     """
 
     :param commit: Changes will be committed when context ends.
     """
     try:
-        db = DbUtils()
-        yield db
+        session = DBSessionMaker().session(**kwargs)
+        yield session
         if commit:
-            db.commit()
+            session.commit()
     except SQLAlchemyError:
-        db.session.rollback()
+        session.rollback()
         msg = "Failed to commit."
         logger.exception(msg)
         raise CorporaException(msg)
     finally:
-        db.close()
+        session.close()
 
 
-def db_session(commit=False):
-    """
-
-    :param commit: passed to db_session_manager
-    """
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with db_session_manager(commit):
-                rv = func(*args, **kwargs)
-            return rv
-
-        return wrapper
-
-    return decorator
-
-
-def processing_status_updater(uuid: str, updates: dict):
-    with db_session_manager(commit=True) as manager:
-        manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
+def processing_status_updater(session, uuid: str, updates: dict):
+    session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
+    session.commit()
     logger.debug("updating status", updates)

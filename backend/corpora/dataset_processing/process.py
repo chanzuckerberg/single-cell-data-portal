@@ -123,7 +123,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils import dropbox
-from backend.corpora.common.utils.db_utils import db_session, processing_status_updater
+from backend.corpora.common.utils.db_utils import processing_status_updater, db_session_manager
 from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
@@ -151,7 +151,6 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-@db_session()
 def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ) -> DatasetAsset:
@@ -162,15 +161,16 @@ def create_artifact(
         join(bucket_prefix, file_base),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
-
-    DatasetAsset.create(
-        dataset_id=dataset_id,
-        filename=file_base,
-        filetype=artifact_type,
-        type_enum=DatasetArtifactType.REMIX,
-        user_submitted=True,
-        s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
-    )
+    with db_session_manager() as session:
+        DatasetAsset.create(
+            session,
+            dataset_id=dataset_id,
+            filename=file_base,
+            filetype=artifact_type,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
+        )
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
@@ -199,18 +199,18 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
 
 
-@db_session()
 def update_db(dataset_id, metadata=None, processing_status=None):
-    dataset = Dataset.get(dataset_id)
+    with db_session_manager() as session:
+        dataset = Dataset.get(session, dataset_id)
 
-    if metadata:
-        # TODO: Delete this line once mean_genes_per_cell is in the db
-        metadata.pop("mean_genes_per_cell", None)
+        if metadata:
+            # TODO: Delete this line once mean_genes_per_cell is in the db
+            metadata.pop("mean_genes_per_cell", None)
 
-        dataset.update(**metadata)
+            dataset.update(**metadata)
 
-    if processing_status:
-        processing_status_updater(dataset.processing_status.id, processing_status)
+        if processing_status:
+            processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:

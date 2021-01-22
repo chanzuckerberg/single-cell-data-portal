@@ -4,14 +4,15 @@ import boto3
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.fixtures import config
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
     CORPORA_TEST_CONFIG = config.CORPORA_TEST_CONFIG
 
     def setUp(self):
+        super().setUp()
         # Setup configuration
         self.corpora_config = CorporaConfig()
         self.corpora_config.set(config.CORPORA_TEST_CONFIG)
@@ -30,6 +31,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
 
     def tearDown(self):
+        super().tearDown()
         if not os.getenv("BOTO_ENDPOINT_URL"):
             self.s3_mock.stop()
 

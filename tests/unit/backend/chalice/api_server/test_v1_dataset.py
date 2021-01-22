@@ -8,11 +8,16 @@ from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.db_utils import processing_status_updater
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
-class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAWS):
+class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
+    def setUp(self):
+        CorporaTestCaseUsingMockAWS.setUp(self)
+
+    def tearDown(self):
+        CorporaTestCaseUsingMockAWS.tearDown(self)
+
     def test__post_dataset_asset__OK(self):
         bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
         s3_file_name = "test_s3_uri.h5ad"
@@ -77,7 +82,9 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         self.assertEqual(403, response.status_code)
 
     def test__minimal_status__ok(self):
-        dataset = self.generate_dataset(processing_status={"upload_status": "WAITING", "upload_progress": 0.0})
+        dataset = self.generate_dataset(
+            self.session, processing_status={"upload_status": "WAITING", "upload_progress": 0.0}
+        )
         processing_status_id = dataset.processing_status.id
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -94,6 +101,6 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
 
         for status in UploadStatus:
             processing_status = {"upload_status": status, "upload_progress": 0.0}
-            processing_status_updater(processing_status_id, processing_status)
+            processing_status_updater(self.session, processing_status_id, processing_status)
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(json.loads(response.body)["upload_status"], status.name)

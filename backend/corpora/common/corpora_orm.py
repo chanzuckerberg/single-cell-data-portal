@@ -86,12 +86,15 @@ Base = declarative_base(cls=TransformingBase)
 
 
 class DBSessionMaker:
+    engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
+    _session_make = None
+
     def __init__(self):
-        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
-        self.session_maker = sessionmaker(bind=self.engine)
+        if not self._session_make:
+            self._session_make = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):
-        return self.session_maker(**kwargs)
+        return self._session_make(**kwargs)
 
 
 class CollectionVisibility(enum.Enum):
@@ -176,6 +179,25 @@ class DbCollection(Base, AuditMixin):
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
+
+    def reshape_for_api(self) -> dict:
+        """
+        Reshape the collection to match the expected api output.
+        :return: A dictionary that can be converted into JSON matching the expected api response.
+        """
+        result = self.to_dict(remove_none=True)
+        # Reshape the data to match.
+        result.pop("user", None)
+        result.pop("owner", None)
+        result["links"] = [
+            dict(link_url=link["link_url"], link_name=link["link_name"] or "", link_type=link["link_type"])
+            for link in result["links"]
+        ]
+        for dataset in result["datasets"]:
+            dataset["dataset_deployments"] = dataset.pop("deployment_directories")
+            dataset["dataset_assets"] = dataset.pop("artifacts")
+
+        return result
 
 
 class DbProjectLink(Base, AuditMixin):

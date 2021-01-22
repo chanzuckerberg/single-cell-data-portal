@@ -65,6 +65,7 @@ class DatasetAsset(Entity):
     @classmethod
     def create(
         cls,
+        session,
         dataset_id: str,
         filename: str,
         filetype: DatasetArtifactFileType,
@@ -80,6 +81,6 @@ class DatasetAsset(Entity):
             user_submitted=user_submitted,
             s3_uri=s3_uri,
         )
-        cls.db.session.add(db_object)
-        cls.db.commit()
+        session.add(db_object)
+        session.commit()
         return cls(db_object)

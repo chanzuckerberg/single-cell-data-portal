@@ -73,8 +73,8 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
     """
 
     def _update():
-        with db_session_manager(commit=True) as db:
-            curr_status = db.get(DbDatasetProcessingStatus, processing_status_uuid).upload_status
+        with db_session_manager(commit=True) as session:
+            curr_status = session.query(DbDatasetProcessingStatus).get(processing_status_uuid).upload_status
         progress = tracker.progress()
 
         if curr_status is UploadStatus.CANCEL_PENDING:
@@ -110,7 +110,8 @@ def updater(processing_status_uuid: str, tracker: ProgressTracker, frequency: fl
             }
         else:
             status = {DbDatasetProcessingStatus.upload_progress: progress}
-        processing_status_updater(processing_status_uuid, status)
+        with db_session_manager() as session:
+            processing_status_updater(session, processing_status_uuid, status)
 
     try:
         while not tracker.stop_updater.wait(frequency):
@@ -140,8 +141,8 @@ def download(
 
     :return: The current dataset processing status.
     """
-    with db_session_manager(commit=True):
-        processing_status = Dataset.get(dataset_uuid).processing_status
+    with db_session_manager(commit=True) as session:
+        processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         status_uuid = processing_status.id
@@ -158,14 +159,13 @@ def download(
     download_thread.join()  # Wait for the download thread to complete
     progress_thread.join()  # Wait for the progress thread to complete
 
-    if progress_tracker.error:
-        processing_status = {
-            DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
-            DbDatasetProcessingStatus.upload_message: str(progress_tracker.error),
-        }
-        processing_status_updater(status_uuid, processing_status)
-    with db_session_manager() as manager:
-        status = (
-            manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
-        )
+    with db_session_manager(commit=True) as session:
+        if progress_tracker.error:
+            processing_status = {
+                DbDatasetProcessingStatus.upload_status: UploadStatus.FAILED,
+                DbDatasetProcessingStatus.upload_message: str(progress_tracker.error),
+            }
+            processing_status_updater(session, status_uuid, processing_status)
+
+        status = session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
         return status.to_dict()

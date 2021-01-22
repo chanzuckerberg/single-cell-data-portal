@@ -26,10 +26,9 @@ from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
 
-class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
+class TestDatasetProcessing(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -180,8 +179,10 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
 
     def test_update_db(self):
 
-        collection = Collection.create(visibility=CollectionVisibility.PRIVATE)
-        dataset = Dataset.create(collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE)
+        collection = Collection.create(self.session, visibility=CollectionVisibility.PRIVATE)
+        dataset = Dataset.create(
+            self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE
+        )
         dataset_id = dataset.id
 
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
@@ -189,7 +190,7 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
 
         process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
 
-        self.assertListEqual(Dataset.get(dataset_id).sex, ["male", "female"])
+        self.assertListEqual(Dataset.get(self.session, dataset_id).sex, ["male", "female"])
 
         artifact = {
             "filename": "test_filename",
@@ -201,16 +202,18 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         dep_dir = {"url": "https://cellxgene.com/data"}
         process.update_db(dataset_id, metadata={"artifacts": [artifact], "deployment_directories": [dep_dir]})
 
-        self.assertEqual(len(Dataset.get(dataset_id).artifacts), 1)
-        self.assertEqual(Dataset.get(dataset_id).artifacts[0].filename, "test_filename")
-        self.assertEqual(Dataset.get(dataset_id).deployment_directories[0].url, "https://cellxgene.com/data")
+        self.assertEqual(len(Dataset.get(self.session, dataset_id).artifacts), 1)
+        self.assertEqual(Dataset.get(self.session, dataset_id).artifacts[0].filename, "test_filename")
+        self.assertEqual(
+            Dataset.get(self.session, dataset_id).deployment_directories[0].url, "https://cellxgene.com/data"
+        )
 
         process.update_db(
             dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5}
         )
-        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADING)
-        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 0.5)
-        self.assertIsNone(Dataset.get(dataset_id).processing_status.validation_status)
+        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADING)
+        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 0.5)
+        self.assertIsNone(Dataset.get(self.session, dataset_id).processing_status.validation_status)
 
         process.update_db(
             dataset_id,
@@ -220,9 +223,11 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
                 "validation_status": ValidationStatus.VALIDATING,
             },
         )
-        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
-        self.assertEqual(Dataset.get(dataset_id).processing_status.upload_progress, 1)
-        self.assertEqual(Dataset.get(dataset_id).processing_status.validation_status, ValidationStatus.VALIDATING)
+        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
+        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 1)
+        self.assertEqual(
+            Dataset.get(self.session, dataset_id).processing_status.validation_status, ValidationStatus.VALIDATING
+        )
 
         fake_env.stop()
 
@@ -232,13 +237,15 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         make_loom.return_value = str(self.loom_filename)
         make_seurat.return_value = str(self.seurat_filename)
         artifact_bucket = "test-artifact-bucket"
-        test_dataset_id = self.generate_dataset().id
+        test_dataset_id = self.generate_dataset(
+            self.session,
+        ).id
 
         s3 = self.setup_s3_bucket(artifact_bucket)
 
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(test_dataset_id)
+        dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
@@ -262,7 +269,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
 
     def test__create_artifact__negative(self):
         artifact_bucket = "test-artifact-bucket"
-        test_dataset = self.generate_dataset()
+        test_dataset = self.generate_dataset(
+            self.session,
+        )
         bucket_prefix = process.get_bucket_prefix(test_dataset.id)
         self.setup_s3_bucket(artifact_bucket)
 
@@ -319,12 +328,14 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
         mock_loom.side_effect = RuntimeError("Loom conversion failed")
         mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
-        test_dataset_id = self.generate_dataset().id
+        test_dataset_id = self.generate_dataset(
+            self.session,
+        ).id
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
         s3 = self.setup_s3_bucket(artifact_bucket)
         process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(test_dataset_id)
+        dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
@@ -343,12 +354,14 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
         mock_loom.return_value = str(self.loom_filename)
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
-        test_dataset_id = self.generate_dataset().id
+        test_dataset_id = self.generate_dataset(
+            self.session,
+        ).id
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
         s3 = self.setup_s3_bucket(artifact_bucket)
         process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(test_dataset_id)
+        dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
@@ -365,10 +378,12 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
-        test_dataset_id = self.generate_dataset().id
+        test_dataset_id = self.generate_dataset(
+            self.session,
+        ).id
         artifact_bucket = "test-artifact-bucket"
         process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(test_dataset_id)
+        dataset = Dataset.get(self.session, test_dataset_id)
         processing_status = dataset.processing_status
         self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_cxg_status)
 

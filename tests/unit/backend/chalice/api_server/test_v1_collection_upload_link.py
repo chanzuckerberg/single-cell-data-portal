@@ -1,17 +1,18 @@
 import json
-from mock import patch
+
 from furl import furl
+from mock import patch
 
 from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 
 
-class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
+class TestCollectionUploadLink(BaseAuthAPITest):
     def setUp(self):
+        super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
@@ -107,7 +108,7 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
         processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
-        dataset = self.generate_dataset(processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
@@ -116,7 +117,7 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
 
         # Test while uploading
         processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
-        dataset = self.generate_dataset(processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}"
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -132,7 +133,7 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
 
     def test__cancel_dataset_download__already_uploaded(self):
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
-        dataset = self.generate_dataset(processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
@@ -142,9 +143,9 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
         )
 
     def test__cancel_dataset_download__user_not_collection_owner(self):
-        collection = self.generate_collection(owner="someone_else")
+        collection = self.generate_collection(self.session, owner="someone_else")
         processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
-        dataset = self.generate_dataset(collection=collection, processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
@@ -152,7 +153,7 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
 
     def test__cancel_dataset_download__user_not_logged_in(self):
         processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
-        dataset = self.generate_dataset(processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.delete(test_url, headers=headers)

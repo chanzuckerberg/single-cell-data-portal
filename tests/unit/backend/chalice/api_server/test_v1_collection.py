@@ -7,10 +7,9 @@ from furl import furl
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
 
-class TestCollection(BaseAuthAPITest, GenerateDataMixin):
+class TestCollection(BaseAuthAPITest):
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
@@ -87,7 +86,7 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
         to_date = int(datetime.fromtimestamp(80).timestamp())
 
         expected_id = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, created_at=datetime.fromtimestamp(creation_time)
+            self.session, visibility=CollectionVisibility.PUBLIC.name, created_at=datetime.fromtimestamp(creation_time)
         ).id
 
         with self.subTest("No Parameters"):
@@ -217,7 +216,7 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
 
     def test_get_collection_minimal__ok(self):
         with self.subTest("No Datasets"):
-            collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name)
+            collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
             resp = self.app.get(test_url.url)
             actual_body = self.remove_timestamps(json.loads(resp.body))
@@ -226,8 +225,9 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
             self.assertEqual(expected_body, actual_body)
 
         with self.subTest("With a minimal dataset"):
-            collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name)
+            collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
             self.generate_dataset(
+                self.session,
                 collection_id=collection.id,
                 organism=None,
                 tissue=None,
@@ -261,14 +261,16 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
         # Generate test collection
         test_collections = dict(
             public_not_owner=self.generate_collection(
-                visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+                self.session, visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
             ).id,
-            public_owned=self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id").id,
+            public_owned=self.generate_collection(
+                self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+            ).id,
             private_not_owner=self.generate_collection(
-                visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+                self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
             ).id,
             private_owned=self.generate_collection(
-                visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+                self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
             ).id,
         )
 
@@ -376,13 +378,17 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
     def test__list_collection__check_owner(self):
 
         # Generate test collection
-        public_owned = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id").id
-        private_owned = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id").id
+        public_owned = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        ).id
+        private_owned = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        ).id
         public_not_owned = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
         ).id
         private_not_owned = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
         ).id
 
         path = "/dp/v1/collections"
