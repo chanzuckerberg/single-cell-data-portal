@@ -10,6 +10,7 @@ import {
   Link,
   VISIBILITY_TYPE,
 } from "src/common/entities";
+import { hasAssets } from "src/common/modules/datasets/selectors";
 import {
   useCollection,
   useCollectionUploadLinks,
@@ -146,7 +147,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
             </Button>
           </DropboxChooser>
           <DownloadDataset
-            isDisabled={!hasDatasetAssets(selectedDataset)}
+            isDisabled={!hasAssets(selectedDataset)}
             name={selectedDataset?.name || ""}
             dataAssets={selectedDataset?.dataset_assets || []}
             Button={DownloadButton}
@@ -174,12 +175,6 @@ function getSelectedDataset({
   datasets: Dataset[];
 }) {
   return datasets.find((dataset) => dataset.id === selectedId);
-}
-
-function hasDatasetAssets(dataset?: Dataset) {
-  if (!dataset) return false;
-
-  return Boolean(dataset?.dataset_assets?.length);
 }
 
 export default Collection;
