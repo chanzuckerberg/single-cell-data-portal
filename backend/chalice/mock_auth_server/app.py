@@ -14,7 +14,7 @@ def api_authorize():
     return Response(headers={"Location": f"{callback}?code=fakecode&state={state}"}, status_code=302)
 
 
-@app.route("/oauth/token")
+@app.route("/oauth/token", methods=['POST'], content_types=['application/x-www-form-urlencoded'])
 def api_oauth_token():
     expires_at = time.time()
     headers = dict(alg="RS256", kid="fake_kid")
