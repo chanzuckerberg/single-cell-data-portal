@@ -146,7 +146,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
             </Button>
           </DropboxChooser>
           <DownloadDataset
-            isDisabled={!selectedDataset}
+            isDisabled={!hasDatasetAssets(selectedDataset)}
             name={selectedDataset?.name || ""}
             dataAssets={selectedDataset?.dataset_assets || []}
             Button={DownloadButton}
@@ -174,6 +174,12 @@ function getSelectedDataset({
   datasets: Dataset[];
 }) {
   return datasets.find((dataset) => dataset.id === selectedId);
+}
+
+function hasDatasetAssets(dataset?: Dataset) {
+  if (!dataset) return false;
+
+  return Boolean(dataset?.dataset_assets?.length);
 }
 
 export default Collection;
