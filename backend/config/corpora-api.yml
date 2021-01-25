@@ -13,244 +13,6 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-  /dp/v1/submission:
-    get:
-      summary: List open submissions in Corpora
-      tags:
-        - submissions
-      description: >-
-        Lists all submissions by their UUIDs that currently exist in Corpora. If a parameter is specified as a filter,
-        then only submissions that meet the given criteria will be outputted.
-      operationId: corpora.lambdas.api.v1.submission.get_submissions_list
-      parameters:
-        - $ref: "#/components/parameters/query_user_uuid"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  submissions:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          $ref: "#/components/schemas/collection_uuid"
-                        name:
-                          type: string
-                        owner_id:
-                          type: string
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-    post:
-      summary: Create a new collection submission
-      tags:
-        - submissions
-      description: >-
-        Opens a new submission. If a collection UUID is not provided, then a collection UUID will be generated and a blank
-        submission will be created. If a collection UUID is provided, a submission is opened to modify the existing
-        collection. At most, one submission can be open for a collection. The collection UUID will be used to pre-populate the
-        newly created submission. On success, a message will be returned with the collection UUID.
-      operationId: corpora.lambdas.api.v1.submission.create_new_submission
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                collection_uuid:
-                  type: string
-                  description: >-
-                    If the submission is created in order to update an existing publicly published collection, then a
-                    Collection UUID must be provided in order to backfill the new submission entity with the existing
-                    collection details for modification.
-      responses:
-        "201":
-          description: A new submissions has been created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-  /dp/v1/submission/{collection_uuid}:
-    get:
-      summary: Get a collection's submission details by UUID
-      tags:
-        - submissions
-      description: >-
-        Returns all available metadata information about a collection submission, including URIs of datasets that are
-        attached to the collection.
-      operationId: corpora.lambdas.api.v1.submission.get_submission_details
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      responses:
-        "200":
-          description: Return the submission metadata.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/collection"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-    delete:
-      summary: Delete a submission
-      tags:
-        - submissions
-      description: >-
-        Deletes the submission associated with the given collection UUID. This does not delete the collection if the collection
-        associated with the submission has been previously publicly published.
-      operationId: corpora.lambdas.api.v1.submission.delete_submission
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      responses:
-        "202":
-          $ref: "#/components/responses/202"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-  /dp/v1/submission/{collection_uuid}/dataset/{dataset_uuid}:
-    delete:
-      summary: Delete a collection's dataset file
-      tags:
-        - submissions
-      description: >-
-        Deletes a file from the collection’s S3 bucket if the file exists. If no such file exists, then a warning will be
-        outputted.
-      operationId: corpora.lambdas.api.v1.submission.delete_dataset_from_submission
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/path_dataset_uuid"
-      responses:
-        "202":
-          description: Accepted
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-  /dp/v1/submission/{collection_uuid}/validate:
-    post:
-      tags:
-        - submissions
-      summary: Validate a collection
-      description: >-
-        Validates the collection to ensure that the attestation requirement is fulfilled (if appropriate) and ensures that
-        there is no PII in the matrix data files uploaded and outputs the result, specifying all errors. The result of
-        the validation is also stored in the backend database.
-      operationId: corpora.lambdas.api.v1.submission.validate_submission
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
-                  result:
-                    type: string
-                  message:
-                    type: string
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
-  /dp/v1/submission/{collection_uuid}/save:
-    post:
-      tags:
-        - submissions
-      summary: Save a collection
-      description: >-
-        If needed (i.e. collection level metadata was not inputted via a form and instead embedded in the matrix file),
-        extracts the collection-level metadata from the datasets or uses the given collection-level metadata add via the
-        body parameter and saves it to the database. The new collection metadata state will be returned in the response on
-        success.
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      operationId: corpora.lambdas.api.v1.submission.save_submission
-      requestBody:
-        content:
-          application/json:
-            schema:
-              description: A schema that has fields for all available collection-level metadata.
-              type: object
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                raw_data_link:
-                  type: array
-                  items:
-                    type: string
-                protocol_link:
-                  type: array
-                  items:
-                    type: string
-                other_information_link:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
 
   /dp/v1/collections:
     get:
@@ -455,7 +217,7 @@ paths:
   /dp/v1/collections/{collection_uuid}/publish:
     post:
       tags:
-        - collection
+        - collections
       summary: Publish a collection
       security:
         - cxguserCookie: []
@@ -512,7 +274,7 @@ paths:
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
-        - dataset
+        - datasets
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
@@ -550,7 +312,7 @@ paths:
   /dp/v1/datasets/{dataset_uuid}/status:
     get:
       tags:
-        - dataset
+        - datasets
       summary: Get the status of a dataset upload.
       operationId: corpora.lambdas.api.v1.dataset.get_status
       security:

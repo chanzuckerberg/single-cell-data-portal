@@ -123,27 +123,6 @@ class Collection(Entity):
 
         return results
 
-    @classmethod
-    def get_submission(cls, collection_uuid):
-        """
-        Given the collection_uuid, retrieve a live collection.
-        :param collection_uuid:
-        """
-        return cls.get((collection_uuid, CollectionVisibility.PRIVATE.name))
-
-    @classmethod
-    def list_submissions(cls, *args, **kwargs):
-        return cls.list_attributes_in_time_range(
-            *args,
-            filters=[DbCollection.visibility == CollectionVisibility.PRIVATE.name],
-            list_attributes=[
-                DbCollection.id,
-                DbCollection.name,
-                DbCollection.owner,
-            ],
-            **kwargs,
-        )
-
     def reshape_for_api(self) -> dict:
         """
         Reshape the collection to match the expected api output.
