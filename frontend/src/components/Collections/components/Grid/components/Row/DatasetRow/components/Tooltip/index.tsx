@@ -67,8 +67,8 @@ const DEFAULT_CONTENT: Content = {
 };
 
 interface Props {
-  error?: VALIDATION_STATUS | UPLOAD_STATUS | CONVERSION_STATUS;
-  type?: FailReturn["type"];
+  error: FailReturn["error"];
+  type: FailReturn["type"];
 }
 
 const Tooltip: FC<Props> = ({ error, type }) => {
