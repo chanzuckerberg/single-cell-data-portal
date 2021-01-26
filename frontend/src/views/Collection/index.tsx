@@ -1,4 +1,4 @@
-import { Button, Classes, H3, Intent } from "@blueprintjs/core";
+import { Button, Classes, H3, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
@@ -14,12 +14,14 @@ import { hasAssets } from "src/common/modules/datasets/selectors";
 import {
   useCollection,
   useCollectionUploadLinks,
+  useDeleteCollection,
   USE_COLLECTION,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DeleteDataset from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset";
+import { StyledAlert } from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset/style";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
 import { StyledLink } from "./common/style";
@@ -78,13 +80,13 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const { data: collection, isError } = useCollection(id, visibility);
 
-  const [mutate] = useCollectionUploadLinks(id, visibility);
+  const [uploadLink] = useCollectionUploadLinks(id, visibility);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
 
     const payload = JSON.stringify({ url: newFile.link });
-    mutate(
+    uploadLink(
       { collectionId: id, payload },
       {
         onSuccess: (datasetID: Dataset["id"]) => {
@@ -100,6 +102,18 @@ const Collection: FC<Props> = ({ id = "" }) => {
         },
       }
     );
+  };
+
+  const [deleteMutation] = useDeleteCollection(id);
+
+  const handleDelete = () => {
+    deleteMutation(id);
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleAlert = () => {
+    setIsOpen(!isOpen);
   };
 
   if (!collection || isError) {
@@ -135,7 +149,27 @@ const Collection: FC<Props> = ({ id = "" }) => {
           minimal
           text="Delete"
           icon={IconNames.TRASH}
+          onClick={toggleAlert}
         />
+
+        <StyledAlert
+          cancelButtonText={"Cancel"}
+          confirmButtonText={"Delete Collection"}
+          intent={Intent.DANGER}
+          isOpen={isOpen}
+          onCancel={toggleAlert}
+          onConfirm={() => {
+            handleDelete();
+            toggleAlert();
+          }}
+        >
+          <H6>Are you sure you want to delete this collection?</H6>
+          <p>
+            Deleting this collection will also delete any uploaded datasets. If
+            you’ve shared this collection or its datasets with anyone, they will
+            also lose access. You cannot undo this action.
+          </p>
+        </StyledAlert>
         <Button
           intent={Intent.PRIMARY}
           minimal
