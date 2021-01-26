@@ -16,7 +16,7 @@
    ```
 
 ### Overview
-The remote development environment uses a `DEPLOYMENT_STAGE` called `happy`, but each engineer can run as many remote development *stacks* as they like. Each stack can represent a feature branch, experiment, or whatever's useful to you. Stacks are managed using the remote dev cli utility called `happy`.
+The remote development environment uses a `DEPLOYMENT_STAGE` called `rdev`, but each engineer can run as many remote development *stacks* as they like. Each stack can represent a feature branch, experiment, or whatever's useful to you. Stacks are managed using the remote dev cli utility called `happy`.
 
 The general remote dev workflow is:
 
