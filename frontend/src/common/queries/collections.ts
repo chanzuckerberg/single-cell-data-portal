@@ -3,7 +3,7 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DEFAULT_FETCH_OPTIONS } from "./common";
+import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
 export const USE_COLLECTIONS = {
@@ -154,6 +154,32 @@ export function useCollectionUploadLinks(
   return useMutation(collectionUploadLinks, {
     onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+    },
+  });
+}
+
+async function deleteCollection(collectionID: Collection["id"]) {
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id: collectionID });
+
+  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+}
+
+export function useDeleteCollection(id = "") {
+  if (!id) {
+    throw new Error("No collection id given");
+  }
+
+  const queryCache = useQueryCache();
+
+  return useMutation(deleteCollection, {
+    onSuccess: () => {
+      queryCache.invalidateQueries([USE_COLLECTIONS]);
     },
   });
 }
