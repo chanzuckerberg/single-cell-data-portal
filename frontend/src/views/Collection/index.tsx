@@ -26,6 +26,7 @@ import { StyledLink } from "./common/style";
 import DatasetUploadToast from "./components/DatasetUploadToast";
 import EmptyDatasets from "./components/EmptyDatasets";
 import {
+  CollectionButtons,
   CollectionInfo,
   DatasetContainer,
   Description,
@@ -127,6 +128,23 @@ const Collection: FC<Props> = ({ id = "" }) => {
         <Description>{collection.description}</Description>
         <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
       </CollectionInfo>
+
+      <CollectionButtons>
+        <Button
+          intent={Intent.DANGER}
+          minimal
+          text="Delete"
+          icon={IconNames.TRASH}
+        />
+        <Button
+          intent={Intent.PRIMARY}
+          minimal
+          outlined
+          disabled
+          text="Share"
+        />
+        <Button intent={Intent.PRIMARY} disabled text="Publish" />
+      </CollectionButtons>
       <DatasetContainer>
         {isDatasetPresent ? (
           <DatasetsGrid
