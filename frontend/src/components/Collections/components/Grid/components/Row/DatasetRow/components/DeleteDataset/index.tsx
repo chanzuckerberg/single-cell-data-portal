@@ -2,7 +2,7 @@ import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import React, { FC, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
-import { StyledAlert } from "./style";
+import StyledAlert from "../../../../../../../common/StyledAlert";
 
 interface Props {
   id?: string;

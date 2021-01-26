@@ -3,7 +3,7 @@ import { IconNames } from "@blueprintjs/icons";
 import React, { FC, useState } from "react";
 import { Collection } from "src/common/entities";
 import { useDeleteCollection } from "src/common/queries/collections";
-import { StyledAlert } from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset/style";
+import StyledAlert from "src/components/Collections/common/StyledAlert";
 
 interface Props {
   id: Collection["id"];
