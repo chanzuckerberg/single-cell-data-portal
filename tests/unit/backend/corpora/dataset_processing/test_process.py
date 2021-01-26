@@ -64,6 +64,21 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         )
         return s3
 
+    def delete_s3_bucket(self, bucket_name):
+        # Mock S3 service if we don't have a mock api already running
+        if os.getenv("BOTO_ENDPOINT_URL"):
+            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
+        else:
+            s3_mock = mock_s3()
+            s3_mock.start()
+            s3_args = {}
+            self.addCleanup(s3_mock.stop)
+        s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+        response = s3.list_objects_v2(Bucket=bucket_name)
+        for object in response['Contents']:
+            s3.delete_object(Bucket=bucket_name, Key=object['Key'])
+        s3.delete_bucket(Bucket=bucket_name)
+
     @patch.dict(
         os.environ,
         {
@@ -260,6 +275,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
         self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     def test__create_artifact__negative(self):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset()
@@ -314,6 +332,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
                 "fake-bucket",
             )
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
@@ -338,6 +359,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.assertEqual(len(s3_filenames), 2)
         self.assertNotIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
@@ -361,6 +385,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
         self.assertEqual(len(s3_filenames), 2)
         self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
