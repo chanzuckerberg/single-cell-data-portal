@@ -31,13 +31,11 @@ describeIfCalledByDevEnv("Collection", async () => {
     await page.click(
       getText("I agree to cellxgene's data submission policies.")
     );
-    const [request, response] = await Promise.all([
+    const [, response] = await Promise.all([
       page.waitForEvent("request"),
       page.waitForEvent("response"),
       await page.click(getText("Create")),
     ]);
-
-    const cookie = request.headers().cookie;
 
     const { collectionID } = (await response.json()) as {
       collectionID: string;
