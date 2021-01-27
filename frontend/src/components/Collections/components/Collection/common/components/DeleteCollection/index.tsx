@@ -1,6 +1,8 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import { navigate } from "@reach/router";
 import React, { FC, useState } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { useDeleteCollection } from "src/common/queries/collections";
 import StyledAlert from "src/components/Collections/common/StyledAlert";
@@ -14,6 +16,7 @@ const DeleteCollection: FC<Props> = ({ id }) => {
 
   const handleDelete = () => {
     deleteMutation(id);
+    navigate(ROUTES.MY_COLLECTIONS);
   };
 
   const [isOpen, setIsOpen] = useState(false);
