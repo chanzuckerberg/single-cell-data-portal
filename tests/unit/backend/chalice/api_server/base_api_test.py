@@ -62,7 +62,12 @@ class BaseAuthAPITest(BaseAPITest):
 
         # Use the CorporaAuthConfig used by the chalice app
         cls.auth_config = CorporaAuthConfig()
+
+        os.environ["API_BASE_URL"] = f"http://localhost:{cls.mock_oauth_server.port}"
         cls.auth_config._config["api_base_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
+        cls.auth_config._config["api_token_url"] = f"http://localhost:{cls.mock_oauth_server.port}/oauth/token"
+        cls.auth_config._config["api_authorize_url"] = f"http://localhost:{cls.mock_oauth_server.port}/authorize"
+        cls.auth_config._config["internal_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
         cls.auth_config._config["callback_base_url"] = "http://localhost:5000"
         cls.auth_config.update_defaults()
 
