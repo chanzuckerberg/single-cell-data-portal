@@ -64,12 +64,18 @@ class BaseAuthAPITest(BaseAPITest):
         cls.auth_config = CorporaAuthConfig()
 
         os.environ["API_BASE_URL"] = f"http://localhost:{cls.mock_oauth_server.port}"
-        cls.auth_config._config["api_base_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
-        cls.auth_config._config["api_token_url"] = f"http://localhost:{cls.mock_oauth_server.port}/oauth/token"
-        cls.auth_config._config["api_authorize_url"] = f"http://localhost:{cls.mock_oauth_server.port}/authorize"
-        cls.auth_config._config["internal_url"] = f"http://localhost:{cls.mock_oauth_server.port}"
-        cls.auth_config._config["callback_base_url"] = "http://localhost:5000"
-        cls.auth_config.update_defaults()
+        # Overwrite the environment's auth config with our oidc server's config.
+        authconfig = {
+                "api_base_url": f"http://localhost:{cls.mock_oauth_server.port}",
+                "callback_base_url": cls.auth_config.callback_base_url,
+                "redirect_to_frontend": cls.auth_config.redirect_to_frontend,
+                "client_id": cls.auth_config.client_id,
+                "client_secret": cls.auth_config.client_secret,
+                "audience": cls.auth_config.audience,
+                "code_challenge_method": cls.auth_config.code_challenge_method,
+                "cookie_name": cls.auth_config.cookie_name,
+        }
+        cls.auth_config.set(authconfig)
 
     @classmethod
     def tearDownClass(cls):
