@@ -14,8 +14,8 @@ interface Props {
 const DeleteCollection: FC<Props> = ({ id }) => {
   const [deleteMutation] = useDeleteCollection(id);
 
-  const handleDelete = () => {
-    deleteMutation(id);
+  const handleDelete = async () => {
+    await deleteMutation(id);
     navigate(ROUTES.MY_COLLECTIONS);
   };
 
