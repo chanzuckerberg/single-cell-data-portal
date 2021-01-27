@@ -138,7 +138,6 @@ def decode_token(tokenstr: str) -> dict:
     token = json.loads(value)
     return token
 
-
 def get_token(cookie_name: str) -> dict:
     """Return the token.
 

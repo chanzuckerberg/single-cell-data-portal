@@ -22,6 +22,10 @@ def assert_authorized_token(token: str) -> dict:
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
     audience = auth_config.audience
+    try:
+        api_signin_url = auth_config.api_signin_url
+    except Exception as e:
+        print(e)
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
@@ -36,8 +40,8 @@ def assert_authorized_token(token: str) -> dict:
             if not auth0_domain.endswith("/"):
                 auth0_domain += "/"
             payload = jwt.decode(
-                token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain, options=options
-            )
+                token, public_key, algorithms=algorithms, audience=audience, issuer=[auth0_domain, api_signin_url],
+                options=options)
         except ExpiredSignatureError:
             raise
         except JWTClaimsError:
