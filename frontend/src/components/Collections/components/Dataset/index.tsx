@@ -3,6 +3,7 @@ import {
   Collection as ICollection,
   Dataset as IDataset,
 } from "src/common/entities";
+import { hasAssets } from "src/common/modules/datasets/selectors";
 import DownloadDataset from "./components/DownloadDataset";
 import MoreInformation from "./components/MoreInformation";
 import ViewDataset from "./components/ViewDataset";
@@ -21,6 +22,7 @@ const Dataset: FC<Props> = ({ dataset, links }) => {
       </Name>
       <ViewDataset deployments={dataset.dataset_deployments} />
       <DownloadDataset
+        isDisabled={!hasAssets(dataset)}
         name={dataset.name}
         dataAssets={dataset.dataset_assets}
       />
