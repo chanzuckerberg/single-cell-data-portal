@@ -75,8 +75,8 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
             self.addCleanup(s3_mock.stop)
         s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         response = s3.list_objects_v2(Bucket=bucket_name)
-        for object in response['Contents']:
-            s3.delete_object(Bucket=bucket_name, Key=object['Key'])
+        for object in response["Contents"]:
+            s3.delete_object(Bucket=bucket_name, Key=object["Key"])
         s3.delete_bucket(Bucket=bucket_name)
 
     @patch.dict(

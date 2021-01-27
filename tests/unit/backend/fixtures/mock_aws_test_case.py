@@ -30,11 +30,11 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
 
     def tearDown(self):
-        if not os.getenv("BOTO_ENDPOINT_URL"):
-            self.s3_mock.stop()
-
         self.bucket.objects.all().delete()
         self.bucket.delete()
+
+        if not os.getenv("BOTO_ENDPOINT_URL"):
+            self.s3_mock.stop()
 
     def create_s3_object(
         self, object_key, bucket_name=None, content_type="application/octet-stream", content="file_content"

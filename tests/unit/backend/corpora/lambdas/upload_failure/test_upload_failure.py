@@ -53,12 +53,9 @@ class TestUploadFailureHandling(TestCase):
         assert resp["Contents"][0]["Key"].split("/")[0] == self.uuid
 
     def tearDown(self) -> None:
+        self.s3.delete_bucket(Bucket=self.bucket_name)
         if not os.getenv("BOTO_ENDPOINT_URL"):
             self.mock.stop()
-
-        self.s3.delete_bucket(
-            Bucket=self.bucket_name
-        )
         shutil.rmtree(self.tmp_dir)
 
     def test_delete_from_s3_deletes_all_files(self):
@@ -84,5 +81,5 @@ class TestUploadFailureHandling(TestCase):
 
         response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
 
-        for object in response['Contents']:
-            self.s3.delete_object(Bucket=self.bucket_name, Key=object['Key'])
+        for object in response["Contents"]:
+            self.s3.delete_object(Bucket=self.bucket_name, Key=object["Key"])
