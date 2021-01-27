@@ -7,14 +7,12 @@ import { getText } from "tests/utils/selectors";
 
 const describeIfCalledByDevEnv = TEST_ENV === "dev" ? describe : describe.skip;
 
-/*  eslint-disable sort-keys */
 const TEST_COLLECTION = {
-  name: "TEST COLLECTION",
-  description: "TEST DESCRIPTION",
-  contactName: "TEST NAME",
   contactEmail: "TEST@example.com",
+  contactName: "TEST NAME",
+  description: "TEST DESCRIPTION",
+  name: "TEST COLLECTION",
 };
-/* eslint-enable sort-keys */
 
 describeIfCalledByDevEnv("Collection", async () => {
   it("creates and deletes a collection", async () => {
