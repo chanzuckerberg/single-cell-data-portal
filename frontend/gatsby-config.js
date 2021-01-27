@@ -23,9 +23,10 @@ module.exports = {
     `gatsby-plugin-sharp`,
     {
       options: {
-        display: `minimal-ui`, // icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
         crossOrigin: `use-credentials`,
-        name: `gatsby-starter-default`,
+        display: `minimal-ui`,
+        icon: `src/common/images/cellxgene.png`, // This path is relative to the root of the site.
+        name: `cellxgene`,
         short_name: `starter`,
         start_url: `/`,
       },
