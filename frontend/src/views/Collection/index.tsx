@@ -17,8 +17,8 @@ import {
   USE_COLLECTION,
 } from "src/common/queries/collections";
 import { getUrlHost } from "src/common/utils/getUrlHost";
-import DeleteCollection from "src/components/Collections/components/Collection/common/components/DeleteCollection";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
+import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DeleteDataset from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";

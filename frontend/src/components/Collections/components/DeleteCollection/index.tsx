@@ -5,7 +5,7 @@ import React, { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { useDeleteCollection } from "src/common/queries/collections";
-import StyledAlert from "src/components/Collections/common/StyledAlert";
+import Alert from "src/components/Alert";
 
 interface Props {
   id: Collection["id"];
@@ -35,7 +35,7 @@ const DeleteCollection: FC<Props> = ({ id }) => {
         onClick={toggleAlert}
       />
 
-      <StyledAlert
+      <Alert
         cancelButtonText={"Cancel"}
         confirmButtonText={"Delete Collection"}
         intent={Intent.DANGER}
@@ -52,7 +52,7 @@ const DeleteCollection: FC<Props> = ({ id }) => {
           you’ve shared this collection or its datasets with anyone, they will
           also lose access. You cannot undo this action.
         </p>
-      </StyledAlert>
+      </Alert>
     </>
   );
 };
