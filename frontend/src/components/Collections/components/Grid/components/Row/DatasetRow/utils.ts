@@ -31,14 +31,6 @@ export type FailReturn = {
 };
 
 export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
-  if (datasetStatus.processing_status === PROCESSING_STATUS.FAILURE) {
-    return {
-      error: PROCESSING_STATUS.FAILURE,
-      isFailed: true,
-      type: FAILED_RETURN_TYPE.PROCESS,
-    };
-  }
-
   if (getConversionStatus(datasetStatus) === CONVERSION_STATUS.FAILED) {
     return {
       error: CONVERSION_STATUS.FAILED,
@@ -60,6 +52,16 @@ export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
       error: UPLOAD_STATUS.FAILED,
       isFailed: true,
       type: FAILED_RETURN_TYPE.UPLOAD,
+    };
+  }
+
+  // (thuang): Only show the catch all error state if we don't have better
+  // error message to show
+  if (datasetStatus.processing_status === PROCESSING_STATUS.FAILURE) {
+    return {
+      error: PROCESSING_STATUS.FAILURE,
+      isFailed: true,
+      type: FAILED_RETURN_TYPE.PROCESS,
     };
   }
 
