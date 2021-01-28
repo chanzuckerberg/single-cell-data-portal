@@ -28,17 +28,20 @@ class TestApi(unittest.TestCase):
         config = CorporaAuthConfig()
 
         response = requests.post(
-            'https://czi-cellxgene-dev.us.auth0.com/oauth/token',
-            headers={'content-type': 'application/x-www-form-urlencoded'},
-            data=dict(grant_type="password",
-                      username="user@example.com",
-                      password=config.test_account_password,
-                      audience="cellxgene.dev.single-cell.czi.technology/",
-                      scope="openid profile email offline",
-                      client_id=config.client_id,
-                      client_secret=config.client_secret))
+            "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
+            headers={"content-type": "application/x-www-form-urlencoded"},
+            data=dict(
+                grant_type="password",
+                username="user@example.com",
+                password=config.test_account_password,
+                audience="cellxgene.dev.single-cell.czi.technology/",
+                scope="openid profile email offline",
+                client_id=config.client_id,
+                client_secret=config.client_secret,
+            ),
+        )
 
-        id_token = response.json()['id_token']
+        id_token = response.json()["id_token"]
         token = {"id_token": id_token}
         cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
@@ -48,8 +51,8 @@ class TestApi(unittest.TestCase):
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
-        self.assertEqual(data['email'], "user@example.com")
-        self.assertTrue(data['is_authenticated'])
+        self.assertEqual(data["email"], "user@example.com")
+        self.assertTrue(data["is_authenticated"])
 
     def test_root_route(self):
         res = requests.get(f"{self.api}/")
@@ -74,14 +77,8 @@ class TestApi(unittest.TestCase):
             "contact_name": "Madrid Sparkle",
             "data_submission_policy_version": "1",
             "description": "Well here are some words",
-            "links": [
-                {
-                    "link_name": "a link to somewhere",
-                    "link_type": "PROTOCOL",
-                    "link_url": "protocol.com"
-                }
-            ],
-            "name": "my2collection"
+            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+            "name": "my2collection",
         }
 
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
@@ -91,14 +88,14 @@ class TestApi(unittest.TestCase):
         data = json.loads(res.content)
         self.assertIn("collection_uuid", data)
 
-        collection_uuid = data['collection_uuid']
+        collection_uuid = data["collection_uuid"]
         # check created collection returns as private
         res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
         private_collection_uuids = []
-        for collection in data['collections']:
-            if collection['visibility'] == "PRIVATE":
-                private_collection_uuids.append(collection['id'])
+        for collection in data["collections"]:
+            if collection["visibility"] == "PRIVATE":
+                private_collection_uuids.append(collection["id"])
 
         self.assertIn(collection_uuid, private_collection_uuids)
 
@@ -111,9 +108,9 @@ class TestApi(unittest.TestCase):
         res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
         public_collection_uuids = []
-        for collection in data['collections']:
-            if collection['visibility'] == "PUBLIC":
-                public_collection_uuids.append(collection['id'])
+        for collection in data["collections"]:
+            if collection["visibility"] == "PUBLIC":
+                public_collection_uuids.append(collection["id"])
 
         self.assertIn(collection_uuid, public_collection_uuids)
 
@@ -121,9 +118,8 @@ class TestApi(unittest.TestCase):
         no_auth_headers = {"Content-Type": "application/json"}
         res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
         data = json.loads(res.content)
-        collection_uuids = [x['id'] for x in data['collections']]
+        collection_uuids = [x["id"] for x in data["collections"]]
         self.assertIn(collection_uuid, collection_uuids)
-
 
         # TODO @madison -- this fails figure out why
         # delete collection
@@ -137,21 +133,14 @@ class TestApi(unittest.TestCase):
         # collection_uuids = [x['id'] for x in data['collections']]
         # self.assertNotIn(collection_uuid, collection_uuids)
 
-
     def test_dataset_upload_flow(self):
         body = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
             "data_submission_policy_version": "1",
             "description": "Well here are some words",
-            "links": [
-                {
-                    "link_name": "a link to somewhere",
-                    "link_type": "PROTOCOL",
-                    "link_url": "protocol.com"
-                }
-            ],
-            "name": "my2collection"
+            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+            "name": "my2collection",
         }
 
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
@@ -161,25 +150,23 @@ class TestApi(unittest.TestCase):
         data = json.loads(res.content)
         self.assertIn("collection_uuid", data)
 
-        collection_uuid = data['collection_uuid']
+        collection_uuid = data["collection_uuid"]
 
         body = {"url": "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0"}
 
         res = requests.post(
-            f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links",
-            data=json.dumps(body),
-            headers=headers
+            f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
         )
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.accepted)
 
-        dataset_uuid = json.loads(res.content)['dataset_uuid']
+        dataset_uuid = json.loads(res.content)["dataset_uuid"]
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
         # TODO @madison update if we speed up backend
-        self.assertEqual(data['upload_status'], "WAITING")
+        self.assertEqual(data["upload_status"], "WAITING")
 
         # Check non_auth user cant check status
         no_auth_headers = {"Content-Type": "application/json"}

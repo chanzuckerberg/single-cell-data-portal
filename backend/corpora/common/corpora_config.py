@@ -62,8 +62,15 @@ class CorporaAuthConfig(SecretConfig):
                 self.load()
 
     def get_defaults_template(self):
-        return {
+        template = {
             "api_authorize_url": "{api_base_url}/authorize",
             "api_token_url": "{api_base_url}/oauth/token",
             "internal_url": "{api_base_url}",
+            "issuer": [],
         }
+        template["issuer"].append(self.api_base_url + "/" if not self.api_base_url.endswith("/") else self.api_base_url)
+        if self.config.get("api_signin_url") and os.environ["DEPLOYMENT_STAGE"] == "dev":
+            # For automating token generations for tests requiring Auth
+            template["issuer"].append(self.api_signin_url)
+
+        return template
