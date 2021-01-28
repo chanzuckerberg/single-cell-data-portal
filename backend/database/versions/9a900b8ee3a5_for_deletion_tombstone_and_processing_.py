@@ -7,7 +7,6 @@ Create Date: 2021-01-25 15:44:47.054499
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import ENUM
 
 
@@ -29,7 +28,7 @@ def upgrade():
     processing_status_enum = create_enum("processingstatus", ["PENDING", "SUCCESS", "FAILURE"])
 
     # add processing_status_enum to processing_status column in dataset_process_status table
-    op.add_column("dataset_processing_status", sa.Column("processing_status", processing_status_enum, default=processing_status_enum.NA))
+    op.add_column("dataset_processing_status", sa.Column("processing_status", processing_status_enum))
 
     # Add tombstone column to dataset with default false
     op.add_column("dataset", sa.Column("tombstone", processing_status_enum, default=False))
@@ -41,11 +40,13 @@ def downgrade():
     # Remove processing_status from dataset_processing_status table
     op.drop_column("dataset_processing_status", "processing_status")
 
-    # Remove processing_status_enum
-    sa.Enum(name="processingstatus").drop(op.get_bind(), checkfirst=False)
-
     # Remove tombstone column from dataset
     op.drop_column("dataset", "tombstone")
 
     # remove tombstone column from collection
     op.drop_column("project", "tombstone")
+
+    # Remove processing_status_enum
+    sa.Enum(name="processingstatus").drop(op.get_bind(), checkfirst=False)
+
+
