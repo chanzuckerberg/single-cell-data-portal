@@ -33,3 +33,13 @@ export const buttonStyle = css`
     cursor: pointer;
   }
 `;
+
+export const disabledButtonStyle = css`
+  color: rgb(0, 118, 220, 0.5);
+  border: 1px solid rgb(0, 118, 220, 0.2);
+
+  &:hover {
+    cursor: not-allowed;
+    background-color: white;
+  }
+`;

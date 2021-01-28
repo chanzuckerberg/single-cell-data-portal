@@ -6,6 +6,7 @@ from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, Upload
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_utils import db_session_manager, processing_status_updater
 from backend.corpora.common.utils.math_utils import MB
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed
 
 logger = logging.getLogger(__name__)
 
@@ -168,4 +169,10 @@ def download(
         status = (
             manager.session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == status_uuid).one()
         )
-        return status.to_dict()
+        status_dict = status.to_dict()
+        if status.upload_status == UploadStatus.CANCELED:
+            raise ProcessingCancelled(status_dict)
+        elif status.upload_status == UploadStatus.FAILED:
+            raise ProcessingFailed(status_dict)
+        else:
+            return status_dict
