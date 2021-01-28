@@ -329,6 +329,10 @@ paths:
                 properties:
                   dataset_uuid:
                     $ref: "#/components/schemas/dataset_uuid"
+                  processing_status:
+                    type: string
+                    enum:
+                      [ PENDING, SUCCESS,FAILURE]
                   upload_status:
                     type: string
                     enum:

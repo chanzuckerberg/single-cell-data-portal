@@ -337,7 +337,6 @@ class ConversionStatus(enum.Enum):
     FAILED = "Failed"
 
 
-
 class ProcessingStatus(enum.Enum):
     """
     Enumerates the status of processing a dataset.
@@ -369,7 +368,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     conversion_rds_status = Column(Enum(ConversionStatus))
     conversion_cxg_status = Column(Enum(ConversionStatus))
     conversion_anndata_status = Column(Enum(ConversionStatus))
-    status = Column(Enum(ProcessingStatus), default=ProcessingStatus.PENDING)
+    processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")

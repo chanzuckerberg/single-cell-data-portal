@@ -11,8 +11,8 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 
 # revision identifiers, used by Alembic.
-revision = '9a900b8ee3a5'
-down_revision = '7794b1ea430f'
+revision = "9a900b8ee3a5"
+down_revision = "7794b1ea430f"
 branch_labels = None
 depends_on = None
 
@@ -22,6 +22,7 @@ def create_enum(name: str, values: list):
     _enum = ENUM(*values, name=name.lower(), create_type=False)
     _enum.create(op.get_bind(), checkfirst=True)
     return _enum
+
 
 def upgrade():
     # Create processing_status enum
@@ -36,6 +37,7 @@ def upgrade():
     # Add tombstone column to collection with default false
     op.add_column("project", sa.Column("tombstone", processing_status_enum, default=False))
 
+
 def downgrade():
     # Remove processing_status from dataset_processing_status table
     op.drop_column("dataset_processing_status", "processing_status")
@@ -48,5 +50,3 @@ def downgrade():
 
     # Remove processing_status_enum
     sa.Enum(name="processingstatus").drop(op.get_bind(), checkfirst=False)
-
-
