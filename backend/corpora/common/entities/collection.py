@@ -140,7 +140,7 @@ class Collection(Entity):
             for link in result["links"]
         ]
 
-        result["datasets"] = [ds for ds in result["datasets"] if ds.get("tombtone") != True]
+        result["datasets"] = [ds for ds in result["datasets"] if ds.get("tombtone") is not True]
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")

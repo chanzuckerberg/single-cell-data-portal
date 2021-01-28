@@ -27,9 +27,6 @@ cd ./data-poral/backend
 make db/tunnel
 ```
 
-db_local postgresql://corpora_dev:a3fe75HgtKdS804G2g@corpora-dev-corpora-api.cluster-c81u9imopfwl.us-west-2.rds.amazonaws.com/corpora_dev
-db postgresql://corpora_dev:a3fe75HgtKdS804G2g@localhost:5432
-
 This command opens an SSH tunnel from `localhost:5432` to the RDS connection endpoint via the `bastion` server.
 The local port `5432` is fixed and encoded in the DB connection string stored in the AWS Secret at
 `corpora/backend/<DEPLOYMENT_STAGE>/database_local`.
