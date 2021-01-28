@@ -181,9 +181,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
         # Setup anndata to be read
-        X_df = pandas.DataFrame(numpy.full((11, 3), 2), columns=list("ABCDE"), index=(str(i) for i in range(11)))
+        X_df = pandas.DataFrame(numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11)))
         awesome_layer_df = pandas.DataFrame(
-            numpy.full((11, 3), 3), columns=list("ABCDE"), index=(str(i) for i in range(11))
+            numpy.full((11, 3), 3), columns=list("ABC"), index=(str(i) for i in range(11))
         )
 
         obs = pandas.DataFrame(
