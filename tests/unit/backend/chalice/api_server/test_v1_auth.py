@@ -48,9 +48,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
             cxguser_cookie = response.headers["Set-Cookie"]
-            print(f"HEYYYYYYY MADISON: {cxguser_cookie}")
-            import pdb
-            pdb.set_trace()
+
             # check userinfo
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)

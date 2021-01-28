@@ -22,15 +22,17 @@ def assert_authorized_token(token: str) -> dict:
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
     audience = auth_config.audience
-    try:
-        api_signin_url = auth_config.api_signin_url
-    except Exception as e:
-        print(e)
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
         algorithms = ["RS256"]
         options = {}
+        issuer = [auth0_domain]
+        # in some test situations get a second issuer
+        if os.environ.get("DEPLOYMENT_STAGE") == "dev":
+            api_signin_url = auth_config.api_signin_url
+            issuer.append(api_signin_url)
+
         # in some test situations ignore verifying the signature and issuer
         if os.environ.get("IS_DOCKER_DEV") or (
             os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
@@ -40,7 +42,7 @@ def assert_authorized_token(token: str) -> dict:
             if not auth0_domain.endswith("/"):
                 auth0_domain += "/"
             payload = jwt.decode(
-                token, public_key, algorithms=algorithms, audience=audience, issuer=[auth0_domain, api_signin_url],
+                token, public_key, algorithms=algorithms, audience=audience, issuer=issuer,
                 options=options)
         except ExpiredSignatureError:
             raise
