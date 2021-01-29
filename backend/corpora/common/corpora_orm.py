@@ -346,9 +346,9 @@ class ProcessingStatus(enum.Enum):
     FAILURE - Processing failed
     """
 
-    PENDING = "pending"
-    SUCCESS = "success"
-    FAILURE = "failure"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
 
 
 class DbDatasetProcessingStatus(Base, AuditMixin):

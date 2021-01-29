@@ -28,7 +28,7 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
     # Create schema.
     if create_schema:
         engine = create_engine(CorporaDbConfig().database_uri)
-        if not database_exists(engine.url):  # This never works because the url does not include the database name
+        if not database_exists(engine.url):
             print("Database does not exist, creating database")
             create_database(engine.url)
         else:

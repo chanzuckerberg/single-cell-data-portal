@@ -23,7 +23,7 @@ General information about Alembic migrations can be found [here](https://alembic
 Enable local connection to the private RDS instance:
 
 ```Shell
-cd ./data-poral/backend
+cd ./corpora-data-poral/backend
 make db/tunnel
 ```
 
