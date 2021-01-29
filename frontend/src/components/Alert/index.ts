@@ -6,7 +6,7 @@ export default styled(Alert)`
   width: ${PT_GRID_SIZE_PX * 55}px;
   line-height: 18px;
   .${Classes.BUTTON} {
-    :not(.${Classes.INTENT_DANGER}) {
+    :not(.${Classes.INTENT_DANGER}):not(.${Classes.INTENT_PRIMARY}) {
       background: none;
       box-shadow: none !important;
       color: ${DARK_GRAY.A};

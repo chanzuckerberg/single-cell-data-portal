@@ -183,3 +183,34 @@ export function useDeleteCollection(id = "") {
     },
   });
 }
+
+async function publishCollection(id: Collection["id"]) {
+  if (!id) {
+    throw Error("No id given");
+  }
+
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    method: "POST",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw result;
+  }
+}
+
+export function usePublishCollection() {
+  const queryCache = useQueryCache();
+
+  return useMutation(publishCollection, {
+    onSuccess: () => {
+      // (thuang): We don't need to invalidate `[USE_COLLECTION, id, visibility]`
+      // because `visibility` has changed from PRIVATE to PUBLIC
+      queryCache.invalidateQueries([USE_COLLECTIONS]);
+    },
+  });
+}
