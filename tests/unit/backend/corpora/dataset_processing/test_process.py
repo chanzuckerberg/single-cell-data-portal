@@ -181,10 +181,10 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
         # Setup anndata to be read
-        non_zeros_X_layer_df = pandas.DataFrame(numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11)))
-        zeros_layer_df = pandas.DataFrame(
-            numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11))
+        non_zeros_X_layer_df = pandas.DataFrame(
+            numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11))
         )
+        zeros_layer_df = pandas.DataFrame(numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
 
         obs = pandas.DataFrame(
             numpy.hstack(
@@ -237,7 +237,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
             "organism_ontology_term_id": "NCBITaxon:8505",
             "layer_descriptions": {"my_awesome_wonky_layer": "raw"},
         }
-        adata = anndata.AnnData(X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df})
+        adata = anndata.AnnData(
+            X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
+        )
         mock_read_h5ad.return_value = adata
 
         # Run the extraction method
