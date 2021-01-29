@@ -1,6 +1,6 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { navigate } from "@reach/router";
+import { useNavigate } from "@reach/router";
 import React, { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
@@ -12,11 +12,13 @@ interface Props {
 }
 
 const DeleteCollection: FC<Props> = ({ id }) => {
-  const [deleteMutation] = useDeleteCollection(id);
+  const [deleteMutation, { isSuccess }] = useDeleteCollection(id);
+  const navigate = useNavigate();
 
-  const handleDelete = async () => {
-    await deleteMutation(id);
-    navigate(ROUTES.MY_COLLECTIONS);
+  if (isSuccess) navigate(ROUTES.MY_COLLECTIONS);
+
+  const handleDelete = () => {
+    deleteMutation(id);
   };
 
   const [isOpen, setIsOpen] = useState(false);
