@@ -181,9 +181,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
         # Setup anndata to be read
-        X_df = pandas.DataFrame(numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11)))
-        awesome_layer_df = pandas.DataFrame(
-            numpy.full((11, 3), 3), columns=list("ABC"), index=(str(i) for i in range(11))
+        non_zeros_X_layer_df = pandas.DataFrame(numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11)))
+        zeros_layer_df = pandas.DataFrame(
+            numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11))
         )
 
         obs = pandas.DataFrame(
@@ -237,14 +237,15 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
             "organism_ontology_term_id": "NCBITaxon:8505",
             "layer_descriptions": {"my_awesome_wonky_layer": "raw"},
         }
-        adata = anndata.AnnData(X=X_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": awesome_layer_df})
+        adata = anndata.AnnData(X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df})
         mock_read_h5ad.return_value = adata
 
         # Run the extraction method
         extracted_metadata = process.extract_metadata("dummy")
 
-        # Verify that the "my_awesome_wonky_layer" was read and not the default X layer.
-        self.assertEqual(extracted_metadata["mean_genes_per_cell"], 3)
+        # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
+        # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
+        self.assertEqual(extracted_metadata["mean_genes_per_cell"], 0)
 
     def test_update_db(self):
 
