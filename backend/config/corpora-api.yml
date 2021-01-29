@@ -13,7 +13,6 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-
   /dp/v1/collections:
     get:
       tags:
@@ -331,8 +330,7 @@ paths:
                     $ref: "#/components/schemas/dataset_uuid"
                   processing_status:
                     type: string
-                    enum:
-                      [ PENDING, SUCCESS,FAILURE]
+                    enum: [PENDING, SUCCESS, FAILURE]
                   upload_status:
                     type: string
                     enum:
