@@ -59,23 +59,14 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
             s3_args = {}
             self.addCleanup(s3_mock.stop)
         s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+        self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         s3.create_bucket(
             Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
         )
         return s3
 
     def delete_s3_bucket(self, bucket_name):
-        # Mock S3 service if we don't have a mock api already running
-        if os.getenv("BOTO_ENDPOINT_URL"):
-            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
-        else:
-            s3_mock = mock_s3()
-            s3_mock.start()
-            s3_args = {}
-            self.addCleanup(s3_mock.stop)
-        s3 = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
-
-        bucket = s3.Bucket(bucket_name)
+        bucket = self.s3_resource.Bucket(bucket_name)
         if bucket.creation_date is not None:
             bucket.objects.all().delete()
             bucket.delete()
