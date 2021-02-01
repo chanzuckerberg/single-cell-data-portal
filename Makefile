@@ -117,7 +117,13 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 
 .PHONY: local-unit-test
 local-unit-test: ## Run backend tests in the dev environment
-	docker-compose exec backend bash -c "cd /corpora-data-portal && make unittest"
+	@if [ -z "$(path)" ]; then \
+        echo "Running all tests"; \
+		docker-compose exec backend bash -c "cd /corpora-data-portal && make unittest"; \
+	else \
+		echo "Running test(s): $(path)"; \
+		docker-compose exec backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+    fi
 
 .PHONY: local-functional-test
 local-functional-test: ## Run functional tests in the dev environment
