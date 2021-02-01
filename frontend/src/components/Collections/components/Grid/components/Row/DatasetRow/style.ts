@@ -1,4 +1,4 @@
-import { Classes } from "@blueprintjs/core";
+import { Classes, Radio } from "@blueprintjs/core";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
@@ -22,4 +22,8 @@ export const TitleContainer = styled.div`
     margin-left: ${PT_GRID_SIZE_PX}px;
   }
   margin: ${2 * PT_GRID_SIZE_PX}px 0;
+`;
+
+export const StyledRadio = styled(Radio)`
+  margin: 0;
 `;
