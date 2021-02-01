@@ -166,12 +166,6 @@ def download(
         download_thread.start()
         download_thread.join()  # Wait for the download thread to complete
         progress_thread.join()  # Wait for the progress thread to complete
-
-        # There could be race condition here if the DB isn't update with cancel or failed status by the time we read again.
-        # We could have an active ORM object so any changes we make will be in this process will be reflected in the ORM and
-        # database.
-        # However I don't know how to periodically  check for cancel pending in this situation.
-
         if progress_tracker.error:
             status = {
                 "upload_status": UploadStatus.FAILED,
