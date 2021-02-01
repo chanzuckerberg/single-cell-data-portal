@@ -22,16 +22,23 @@ class TestUploadFailureHandling(TestCase):
         self.seurat_filename.touch()
         self.loom_filename.touch()
 
-        self.mock = mock_s3()
-        self.mock.start()
-        self.s3 = boto3.client("s3")
+        # Mock S3 service if we don't have a mock api already running
+        if os.getenv("BOTO_ENDPOINT_URL"):
+            s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
+        else:
+            self.mock = mock_s3()
+            self.mock.start()
+            s3_args = {}
+        self.s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+
         self.uuid = "88aba04c-2d7e-4f76-8b67-071825e8bf46"
-        self.bucket_name = "some_Bucket"
+        self.bucket_name = "some-test-bucket"
         os.environ["ARTIFACT_BUCKET"] = self.bucket_name
         cxg_file = f"{self.uuid}/remixed.cxg"
         h5ad_file = f"{self.uuid}/remixed.h5ad"
         rds_file = f"{self.uuid}/remixed.rds"
         loom_file = f"{self.uuid}/remixed.loom"
+
         self.s3.create_bucket(
             Bucket=self.bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
         )
@@ -46,7 +53,9 @@ class TestUploadFailureHandling(TestCase):
         assert resp["Contents"][0]["Key"].split("/")[0] == self.uuid
 
     def tearDown(self) -> None:
-        self.mock.stop()
+        self.s3.delete_bucket(Bucket=self.bucket_name)
+        if not os.getenv("BOTO_ENDPOINT_URL"):
+            self.mock.stop()
         shutil.rmtree(self.tmp_dir)
 
     def test_delete_from_s3_deletes_all_files(self):
@@ -69,3 +78,8 @@ class TestUploadFailureHandling(TestCase):
     def test_delete_from_s3_raises_error_for_missing_dataset_uuid(self):
         with self.assertRaises(ValueError):
             delete_many_from_s3(self.bucket_name, "")
+
+        response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
+
+        for object in response["Contents"]:
+            self.s3.delete_object(Bucket=self.bucket_name, Key=object["Key"])
