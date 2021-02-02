@@ -3,9 +3,9 @@ name: Push Tests
 on:
   push:
     branches:
-     - main
- pull_request:
-   branches: "*"
+      - main
+  pull_request:
+    branches: "*"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
