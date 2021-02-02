@@ -1,7 +1,7 @@
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.corpora_orm import UploadStatus, DbDatasetProcessingStatus
+from backend.corpora.common.utils.db_utils import processing_status_updater
 from backend.corpora.common.utils.db_utils import db_session_manager
-from backend.corpora.dataset_processing.download import processing_status_updater
 
 
 def update_dataset_processing_status_to_failed(dataset_uuid, error=None) -> None:

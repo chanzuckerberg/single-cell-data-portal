@@ -2,7 +2,14 @@ import typing
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
-from ..corpora_orm import DbDataset, DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus, UploadStatus
+from ..corpora_orm import (
+    DbDataset,
+    DbDatasetArtifact,
+    DbDeploymentDirectory,
+    DbDatasetProcessingStatus,
+    UploadStatus,
+    ProcessingStatus,
+)
 
 
 class Dataset(Entity):
@@ -113,4 +120,5 @@ class Dataset(Entity):
         return {
             "upload_status": UploadStatus.WAITING,
             "upload_progress": 0,
+            "processing_status": ProcessingStatus.PENDING,
         }

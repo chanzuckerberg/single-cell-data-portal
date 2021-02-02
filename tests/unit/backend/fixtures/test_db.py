@@ -12,6 +12,7 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     ValidationStatus,
     ConversionStatus,
+    ProcessingStatus,
     DBSessionMaker,
 )
 from backend.scripts.create_db import create_db
@@ -179,6 +180,7 @@ class TestDatabase:
         dataset_processing_status = DbDatasetProcessingStatus(
             id="test_dataset_processing_status_id",
             dataset_id="test_dataset_id",
+            processing_status=ProcessingStatus.PENDING,
             upload_status=UploadStatus.UPLOADING,
             upload_progress=4 / 9,
             validation_status=ValidationStatus.NA,

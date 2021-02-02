@@ -173,6 +173,7 @@ class TestCollection(BaseAuthAPITest):
                     "processing_status": {
                         "id": "test_dataset_processing_status_id",
                         "dataset_id": "test_dataset_id",
+                        "processing_status": "PENDING",
                         "upload_status": "UPLOADING",
                         "upload_progress": 4 / 9,
                         "validation_status": "NA",

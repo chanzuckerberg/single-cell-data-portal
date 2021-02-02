@@ -10,6 +10,7 @@ from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -68,26 +69,28 @@ class TestDownload(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 
         with self.subTest("Bigger"):
-            download.download(
-                "test_dataset_id",
-                url,
-                local_file,
-                1,
-                chunk_size=1024,
-                update_frequency=1,
-            )
+            with self.assertRaises(ProcessingFailed):
+                download.download(
+                    "test_dataset_id",
+                    url,
+                    local_file,
+                    1,
+                    chunk_size=1024,
+                    update_frequency=1,
+                )
             processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
         with self.subTest("Smaller"):
-            download.download(
-                "test_dataset_id",
-                url,
-                local_file,
-                10 * MB,
-                chunk_size=1024,
-                update_frequency=1,
-            )
+            with self.assertRaises(ProcessingFailed):
+                download.download(
+                    "test_dataset_id",
+                    url,
+                    local_file,
+                    10 * MB,
+                    chunk_size=1024,
+                    update_frequency=1,
+                )
             processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
@@ -108,14 +111,15 @@ class TestDownload(DataPortalTestCase):
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/fake.txt"
-        download.download(
-            "test_dataset_id",
-            url,
-            local_file,
-            100,
-            chunk_size=1024,
-            update_frequency=1,
-        )
+        with self.assertRaises(ProcessingFailed):
+            download.download(
+                "test_dataset_id",
+                url,
+                local_file,
+                100,
+                chunk_size=1024,
+                update_frequency=1,
+            )
         processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 

@@ -27,16 +27,16 @@ def assert_authorized_token(token: str) -> dict:
     if public_key:
         algorithms = ["RS256"]
         options = {}
+        issuer = auth_config.issuer
+
         # in some test situations ignore verifying the signature and issuer
         if os.environ.get("IS_DOCKER_DEV") or (
             os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
         ):
             options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
         try:
-            if not auth0_domain.endswith("/"):
-                auth0_domain += "/"
             payload = jwt.decode(
-                token, public_key, algorithms=algorithms, audience=audience, issuer=auth0_domain, options=options
+                token, public_key, algorithms=algorithms, audience=audience, issuer=issuer, options=options
             )
         except ExpiredSignatureError:
             raise
