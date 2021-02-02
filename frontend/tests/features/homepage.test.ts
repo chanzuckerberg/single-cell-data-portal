@@ -1,13 +1,12 @@
 import { PROMPT_TEXT } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/Details";
 import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
 import { getTestTag, getText } from "../utils/selectors";
 
 const DATASET_ROW_DOWNLOAD_BUTTON_ID = "dataset-download-button";
 
 describe("Homepage", () => {
   it("renders the expected elements", async () => {
-    await goToPage(TEST_URL);
+    await goToPage();
 
     await expect(page).toHaveSelector(getText("cellxgene@chanzuckerberg.com"));
     await expect(page).toHaveSelector(getTestTag("logo"));
@@ -25,7 +24,7 @@ describe("Homepage", () => {
 
   describe("renders the download dataset modal", () => {
     it("renders the default content", async () => {
-      await goToPage(TEST_URL);
+      await goToPage();
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
 
@@ -46,7 +45,7 @@ describe("Homepage", () => {
     });
 
     it("downloads a file", async () => {
-      await goToPage(TEST_URL);
+      await goToPage();
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
 

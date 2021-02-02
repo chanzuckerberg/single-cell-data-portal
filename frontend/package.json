@@ -5,8 +5,8 @@
   "version": "0.1.0",
   "author": "Kyle Mathews <mathews.kyle@gmail.com>",
   "dependencies": {
-    "@blueprintjs/core": "^3.34.1",
-    "@blueprintjs/icons": "^3.22.0",
+    "@blueprintjs/core": "^3.38.1",
+    "@blueprintjs/icons": "^3.24.0",
     "@loadable/component": "^5.14.0",
     "babel-plugin-styled-components": "^1.11.1",
     "bl": "^4.0.3",
