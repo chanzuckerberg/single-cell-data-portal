@@ -145,3 +145,7 @@ local-uploadjob: ## Run the upload task with a dataset_id and dropbox_url
 .PHONY: local-uploadfailure
 local-uploadfailure: ## Run the upload failure lambda with a dataset id and cause
 	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_uuid": "$(DATASET_UUID)", "error": {"Cause": "$(CAUSE)"}}'
+
+.PHONY: local-oidc-token
+local-oidc-token: ## Get oidc access token
+	docker-compose exec backend bash -c "cd /corpora-data-portal && python oidc_token.py"
