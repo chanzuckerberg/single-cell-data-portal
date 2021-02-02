@@ -28,6 +28,7 @@ token_payload = {
     'password': password
 }
 
+# Retrieve access token using password grant_type
 response = requests.post(OIDC_TOKEN_URL, data=token_payload)
 json_data = json.loads(response.text)
 print("access_token:", json_data["access_token"])
