@@ -17,7 +17,6 @@ import {
 import { UploadingFile } from "src/components/DropboxChooser";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
-import UploadStatus from "./components/UploadStatus";
 import { StyledRadio, TitleContainer } from "./style";
 import {
   checkIfCancelled,
@@ -38,6 +37,13 @@ const AsyncTooltip = loadable(
   () =>
     /*webpackChunkName: 'Grid/Row/DatasetRow/Tooltip' */ import(
       "./components/Tooltip"
+    )
+);
+
+const AsyncUploadStatus = loadable(
+  () =>
+    /*webpackChunkName: 'Grid/Row/DatasetRow/UploadStatus' */ import(
+      "./components/UploadStatus"
     )
 );
 
@@ -150,7 +156,7 @@ const DatasetRow: FC<Props> = ({
           )}
         </TitleContainer>
         {isLoading && (
-          <UploadStatus
+          <AsyncUploadStatus
             isConverting={
               getConversionStatus(datasetStatus) ===
               CONVERSION_STATUS.CONVERTING
