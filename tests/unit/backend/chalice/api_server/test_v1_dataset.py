@@ -62,6 +62,7 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
             "conversion_cxg_status": "NA",
             "conversion_loom_status": "NA",
             "conversion_rds_status": "NA",
+            "processing_status": "PENDING",
             "dataset_id": "test_dataset_id",
             "id": "test_dataset_processing_status_id",
             "upload_progress": 0.4444444444444444,
