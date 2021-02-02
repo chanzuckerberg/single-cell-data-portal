@@ -1,5 +1,5 @@
 # Chalice dockerfile
-FROM ubuntu:focal
+FROM ubuntu:focal-20210119
 
 ENV APP_NAME=corpora-api
 ENV DEPLOYMENT_STAGE=dev
