@@ -2,7 +2,7 @@ import base64
 import requests
 import json
 
-OIDC_TOKEN_URL="http://localhost:4011/connect/token"
+OIDC_TOKEN_URL="http://oidc/connect/token"
 USERS_CONFIGURATION_PATH="oauth/users.json"
 CLIENTS_CONFIGURATION_PATH="oauth/clients-config.json"
 
