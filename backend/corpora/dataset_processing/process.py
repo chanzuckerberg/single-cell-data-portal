@@ -112,7 +112,7 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -382,7 +382,7 @@ def main():
             os.environ["DROPBOX_URL"],
             "local.h5ad",
         )
-    except ProcessingCancelled as ex:
+    except ProcessingCanceled as ex:
         logging.info(ex.status)
         sys.exit(0)
     except ProcessingFailed as ex:

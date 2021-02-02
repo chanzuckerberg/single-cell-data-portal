@@ -1,4 +1,4 @@
-class ProcessingCancelled(Exception):
+class ProcessingCanceled(Exception):
     pass
 
 
