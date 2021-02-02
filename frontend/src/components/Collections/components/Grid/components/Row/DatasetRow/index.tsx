@@ -5,6 +5,7 @@ import { CancelledError, useQueryCache } from "react-query";
 import {
   CONVERSION_STATUS,
   Dataset,
+  UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
@@ -151,6 +152,7 @@ const DatasetRow: FC<Props> = ({
         </TitleContainer>
         {isLoading && (
           <UploadStatus
+            isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
             isConverting={
               getConversionStatus(datasetStatus) ===
               CONVERSION_STATUS.CONVERTING

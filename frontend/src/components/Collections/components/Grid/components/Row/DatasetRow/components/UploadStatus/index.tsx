@@ -6,6 +6,7 @@ import { DatasetStatusTag, StatusContainer, StyledSpinner } from "./style";
 interface Props {
   isConverting: boolean;
   isValidating: boolean;
+  isWaiting: boolean;
   progress: number;
   datasetId: string;
   collectionId: string;
@@ -14,6 +15,7 @@ interface Props {
 const UploadStatus: FC<Props> = ({
   isConverting,
   isValidating,
+  isWaiting,
   progress,
   datasetId,
   collectionId,
@@ -22,6 +24,12 @@ const UploadStatus: FC<Props> = ({
     progress,
     text: `Uploading (${Math.round(progress * 100)}%)`,
   };
+
+  if (isWaiting) {
+    content = {
+      text: "Queued...",
+    };
+  }
 
   if (isConverting) {
     content = {
