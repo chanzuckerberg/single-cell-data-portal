@@ -140,3 +140,6 @@ dmypy.json
 
 # Data files
 **/data/
+
+.terraform
+.envrc

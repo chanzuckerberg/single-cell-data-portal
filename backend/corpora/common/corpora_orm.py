@@ -172,6 +172,7 @@ class DbCollection(Base, AuditMixin):
     contact_name = Column(String, default="")
     contact_email = Column(String, default="")
     data_submission_policy_version = Column(String, nullable=False)
+    tombstone = Column(Boolean, default=False)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
@@ -228,6 +229,7 @@ class DbDataset(Base, AuditMixin):
     is_valid = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
+    tombstone = Column(Boolean, default=False)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
@@ -335,6 +337,20 @@ class ConversionStatus(enum.Enum):
     FAILED = "Failed"
 
 
+class ProcessingStatus(enum.Enum):
+    """
+    Enumerates the status of processing a dataset.
+
+    PENDING = Processing has not started
+    SUCCESS - Processing succeeded
+    FAILURE - Processing failed
+    """
+
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+
 class DbDatasetProcessingStatus(Base, AuditMixin):
     """
     Represents progress and status of user-initiated upload, validation, and conversion.
@@ -352,6 +368,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     conversion_rds_status = Column(Enum(ConversionStatus))
     conversion_cxg_status = Column(Enum(ConversionStatus))
     conversion_anndata_status = Column(Enum(ConversionStatus))
+    processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")

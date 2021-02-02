@@ -32,3 +32,9 @@ Outputs:
   BackendUrl:
     Description: The URL endpoint for the website service
     Value: !GetAtt DevEnv.Outputs.BackendUrl
+  DeleteDBTaskDefinitionArn:
+    Description: ARN of the Deletion ECS Task Definition
+    Value: !GetAtt DevEnv.Outputs.DeleteDBTaskDefinitionArn
+  MigrateDBTaskDefinitionArn:
+    Description: ARN of the Migration ECS Task Definition
+    Value: !GetAtt DevEnv.Outputs.MigrateDBTaskDefinitionArn
