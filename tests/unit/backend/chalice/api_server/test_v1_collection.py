@@ -415,5 +415,5 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
     def test__delete_collection__OK(self):
         path = furl(path="/dp/v1/collections/test_collection_id")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.delete(path, headers)
+        response = self.app.delete(path.url, headers)
         response.raise_for_status()

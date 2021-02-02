@@ -154,8 +154,8 @@ paths:
         - cxguserCookie: [ ]
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
-        deployments. If no such collection exists, then a warning will be outputted.
-      operationId: corpora.lambdas.api.v1.collection.delete_collection
+        deployments.
+      operationId: corpora.lambdas.api.v1.collection_uuid.delete
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
