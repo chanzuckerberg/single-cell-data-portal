@@ -134,7 +134,7 @@ class Collection(Entity):
         for hidden in ["user", "owner", "tombstone"]:
             result.pop(hidden, None)
         result["links"] = [
-            dict(link_url=link["link_url"], link_name=link["link_name"] or "", link_type=link["link_type"])
+            dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
             for link in result["links"]
         ]
 
