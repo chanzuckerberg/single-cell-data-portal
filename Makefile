@@ -85,10 +85,13 @@ local-init: oauth/pkcs12/certificate.pfx .env.ecr ## Launch a new local dev env 
 local-status: ## Show the status of the containers in the dev environment.
 	docker ps -a | grep --color=no -e 'CONTAINER\|corpora-data-portal'
 
-.PHONY: local-sync
-local-sync: local-init .env.ecr ## Re-sync the local-environment state after modifying library deps or docker configs
-	docker-compose $(COMPOSE_OPTS) build --build-arg frontend backend
+.PHONY: local-rebuild
+local-rebuild: .env.ecr ## Rebuild local dev without re-importing data
+	docker-compose $(COMPOSE_OPTS) build frontend backend
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
+
+.PHONY: local-sync
+local-sync: local-rebuild local-init ## Re-sync the local-environment state after modifying library deps or docker configs
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
@@ -147,10 +150,12 @@ local-dbconsole: ## Connect to the local postgres database.
 	psql "postgresql://corpora:test_pw@localhost:5432"
 
 .PHONY: local-uploadjob
-local-uploadjob: ## Run the upload task with a dataset_id and dropbox_url
+local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_url
+	docker-compose $(COMPOSE_OPTS) up -d processing
 	docker-compose exec -T processing sh -c "rm -rf /local.*"
 	docker-compose exec -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing python3 -m backend.corpora.dataset_processing.process
 
 .PHONY: local-uploadfailure
-local-uploadfailure: ## Run the upload failure lambda with a dataset id and cause
+local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
+	docker-compose $(COMPOSE_OPTS) up -d upload_failures
 	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_uuid": "$(DATASET_UUID)", "error": {"Cause": "$(CAUSE)"}}'
