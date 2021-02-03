@@ -2,7 +2,6 @@ import json
 from mock import patch
 from furl import furl
 
-from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
@@ -103,4 +102,3 @@ class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
         test_url = furl(path=path)
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
-

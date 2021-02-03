@@ -49,7 +49,7 @@ class TestDataset(DataPortalTestCase):
 
     def create_dataset_with_artifacts(self, artifact_count=1, deployment_dir_count=1, artifact_params=None):
         """
-            Create a dataset with a variable number of artifacts, and deployment_directories
+        Create a dataset with a variable number of artifacts, and deployment_directories
         """
         if not artifact_params:
             artifact_params = dict(
@@ -71,7 +71,7 @@ class TestDataset(DataPortalTestCase):
                 "upload_progress": 9 / 13,
                 "upload_status": UploadStatus.UPLOADING,
                 "validation_status": ValidationStatus.NA,
-            }
+            },
         )
         return dataset
 
@@ -90,7 +90,8 @@ class TestDataset(DataPortalTestCase):
         for i in range(3):
             with self.subTest(i):
                 dataset = self.create_dataset_with_artifacts(
-                    artifact_count=i, deployment_dir_count=i, artifact_params=artifact_params)
+                    artifact_count=i, deployment_dir_count=i, artifact_params=artifact_params
+                )
 
                 expected_dataset_id = dataset.id
                 expected_artifacts = [art.to_dict() for art in dataset.artifacts]
