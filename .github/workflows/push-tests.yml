@@ -38,7 +38,7 @@ jobs:
           docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
       - name: Lint frontend
         run: |
-          docker-compose run --no-deps --rm frontend make local-lint
+          docker-compose run --no-deps --rm frontend make lint
 
   smoke-test:
     runs-on: ubuntu-20.04

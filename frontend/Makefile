@@ -19,11 +19,6 @@ lint:
 	npm run prettier-check
 	npm run lint
 
-local-lint:
-	npm run prettier-check
-	npm run lint
-
-
 .PHONY: clean
 clean:
 	npm run clean
