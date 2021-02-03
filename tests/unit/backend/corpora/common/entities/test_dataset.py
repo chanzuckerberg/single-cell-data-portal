@@ -16,11 +16,12 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_utils import DbUtils, processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
+from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestDataset(DataPortalTestCase):
+class TestDataset(DataPortalTestCase, GenerateDataMixin):
     def setUp(self):
         self.uuid = "test_dataset_id"
 
@@ -63,7 +64,7 @@ class TestDataset(DataPortalTestCase):
         deployment_directory_params = dict(url="test_url")
 
         dataset_params = BogusDatasetParams.get()
-        dataset = Dataset.create(
+        dataset = self.generate_dataset(
             **dataset_params,
             artifacts=[artifact_params] * artifact_count,
             deployment_directories=[deployment_directory_params] * deployment_dir_count,
