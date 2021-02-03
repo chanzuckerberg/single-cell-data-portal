@@ -37,19 +37,19 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
 
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     with db_session_manager() as session:
-        collection = session.query(DbCollection).get((collection_uuid, visibility))
-        if collection:
-            if user == collection.owner:
-                access_type = "WRITE"
-            elif visibility != "PUBLIC":
-                raise ForbiddenHTTPException()
-            else:
-                access_type = "READ"
-            result = collection.reshape_for_api()
-            result["access_type"] = access_type
-            return make_response(jsonify(result), 200)
-        else:
+        collection = Collection.get_collection(session, collection_uuid, visibility)
+        if not collection:
             raise ForbiddenHTTPException()
+
+        if user == collection.owner:
+            access_type = "WRITE"
+        elif visibility != "PUBLIC":
+            raise ForbiddenHTTPException()
+        else:
+            access_type = "READ"
+        result = collection.reshape_for_api()
+        result["access_type"] = access_type
+        return make_response(jsonify(result), 200)
 
 
 def create_collection(body: object, user: str):

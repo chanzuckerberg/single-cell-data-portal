@@ -267,7 +267,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         fake_env.start()
 
         process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
-
+        self.session.expire(dataset)
         self.assertListEqual(Dataset.get(self.session, dataset_id).sex, ["male", "female"])
 
         artifact = {
@@ -279,7 +279,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         }
         dep_dir = {"url": "https://cellxgene.com/data"}
         process.update_db(dataset_id, metadata={"artifacts": [artifact], "deployment_directories": [dep_dir]})
-
+        self.session.expire(dataset)
         self.assertEqual(len(Dataset.get(self.session, dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(self.session, dataset_id).artifacts[0].filename, "test_filename")
         self.assertEqual(
@@ -289,6 +289,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         process.update_db(
             dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5}
         )
+        self.session.expire(dataset)
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADING)
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 0.5)
         self.assertIsNone(Dataset.get(self.session, dataset_id).processing_status.validation_status)
@@ -301,6 +302,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "validation_status": ValidationStatus.VALIDATING,
             },
         )
+        self.session.expire(dataset)
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 1)
         self.assertEqual(

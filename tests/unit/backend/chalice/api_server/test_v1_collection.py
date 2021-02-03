@@ -302,7 +302,7 @@ class TestCollection(BaseAuthAPITest):
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
     def test_collection_with_tombstoned_dataset(self):
-        dataset_id = self.generate_dataset(tombstone=True).id
+        dataset_id = self.generate_dataset(self.session, tombstone=True).id
         test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
