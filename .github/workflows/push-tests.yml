@@ -170,7 +170,7 @@ jobs:
         shell: bash
         run: |
           docker pull ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8}
-          for tag in branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g') sha-${GITHUB_SHA:0:8}; do
+          for tag in active branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g') sha-${GITHUB_SHA:0:8}; do
               docker tag ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8} ${UPLOAD_ECR}/corpora-upload-dev:${tag}
               docker push ${UPLOAD_ECR}/corpora-upload-dev:${tag}
           done
