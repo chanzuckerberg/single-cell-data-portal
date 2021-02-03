@@ -44,10 +44,10 @@ jobs:
 
       - name: slack notify
         if: job.status == 'failure'
-        with:
-          github_workflow_url: https://github.com/${{ GITHUB_REPOSITORY }}/actions/runs/${{ GITHUB_RUN_ID}}
+        env:
+          GITHUB_WORKFLOW_URL: https://github.com/${{ GITHUB_REPOSITORY }}/actions/runs/${{ GITHUB_RUN_ID}}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{'text':'${{GITHUB_WORKFLOW}} failure in ${{GITHUB_REPOSITORY}}:${{GITHUB_REF}}, ${{github_workflow_url}}'}" ${{secrets.SLACK_WEBHOOK}}
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'${{GITHUB_WORKFLOW}} failure in ${{GITHUB_REPOSITORY}}:${{GITHUB_REF}}, ${{GITHUB_WORKFLOW_URL}}'}" ${{secrets.SLACK_WEBHOOK}}
 
   smoke-test:
     runs-on: ubuntu-latest
