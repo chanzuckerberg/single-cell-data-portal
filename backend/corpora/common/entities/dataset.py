@@ -123,9 +123,11 @@ class Dataset(Entity):
             self.db.delete(af)
         self.db.session.commit()
 
-        ## Do I need to commit?
-
-
+    def dataset_and_asset_deletion(self):
+        for artifact in self.artifacts:
+            asset = DatasetAsset.get(artifact.uuid)
+            asset.delete_from_s3()
+        self.tombstone_dataset_and_delete_child_objects()
 
     @staticmethod
     def new_processing_status():

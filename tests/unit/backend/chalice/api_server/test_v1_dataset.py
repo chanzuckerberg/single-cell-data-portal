@@ -98,3 +98,77 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
             processing_status_updater(processing_status_id, processing_status)
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(json.loads(response.body)["upload_status"], status.name)
+
+    def test__cancel_dataset_download__ok(self):
+        # Test pre upload
+        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        dataset = self.generate_dataset(processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
+
+        # Test while uploading
+        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
+        dataset = self.generate_dataset(processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
+
+    def test__cancel_dataset_download__dataset_does_not_exist(self):
+        test_url = "/dp/v1/datasets/missing_dataset_id"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+
+    def test__delete_uploaded_dataset(self):
+        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
+        dataset = self.generate_dataset(processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 202)
+
+    def test__get_deleted_dataset_returns_403(self):
+        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
+        dataset = self.generate_dataset(processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.get(test_url, headers=headers)
+        response.raise_for_status()
+        actual_body = json.loads(response.body)
+        expected_body = {
+            "dataset_id": dataset.id,
+            "id": dataset.processing_status.id,
+            "upload_progress": 0.0,
+            "upload_status": "WAITING",
+        }
+        self.assertEqual(expected_body, actual_body)
+
+        # delete the dataset
+        self.app.delete(test_url, headers=headers)
+
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+
+
+    def test__cancel_dataset_download__user_not_collection_owner(self):
+        collection = self.generate_collection(owner="someone_else")
+        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        dataset = self.generate_dataset(collection=collection, processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+
+    def test__cancel_dataset_download__user_not_logged_in(self):
+        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        dataset = self.generate_dataset(processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 401)

@@ -69,6 +69,8 @@ class DatasetAsset(Entity):
             logger.exception(f"Failed to delete artifact '{self.url}'.")
             return None
 
+
+
     @classmethod
     def create(
         cls,

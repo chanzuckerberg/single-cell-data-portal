@@ -68,10 +68,7 @@ def delete_dataset(dataset_uuid: str, user: str):
         raise ForbiddenHTTPException()
     curr_status = dataset.processing_status
     if curr_status.upload_status is UploadStatus.UPLOADED:
-        for artifact in dataset.artifacts:
-            asset = DatasetAsset.get(artifact.uuid)
-            asset.delete_from_s3()
-        dataset.tombstone_dataset_and_delete_child_objects()
+        dataset.dataset_and_asset_deletion()
     elif curr_status.upload_status in [UploadStatus.UPLOADING, UploadStatus.WAITING]:
         status = {
             DbDatasetProcessingStatus.upload_progress: curr_status.upload_progress,
@@ -82,4 +79,4 @@ def delete_dataset(dataset_uuid: str, user: str):
         for remove in ["dataset", "created_at", "updated_at"]:
             updated_status.pop(remove)
         return make_response(jsonify(updated_status), 202)
-    return make_response(202)
+    return "", 202
