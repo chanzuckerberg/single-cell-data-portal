@@ -123,8 +123,6 @@ class Collection(Entity):
 
         return results
 
-    _hide = ["user", "owner", "tombstone"]
-
     def reshape_for_api(self) -> dict:
         """
         Reshape the collection to match the expected api output.
@@ -133,14 +131,14 @@ class Collection(Entity):
 
         result = self.to_dict(remove_none=True)
         # Reshape the data to match.
-        for hidden in self._hide:
+        for hidden in ["user", "owner", "tombstone"]:
             result.pop(hidden, None)
         result["links"] = [
-            dict(link_url=link["link_url"], link_name=link["link_name"] or "", link_type=link["link_type"])
+            dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
             for link in result["links"]
         ]
 
-        result["datasets"] = [ds for ds in result["datasets"] if ds.get("tombtone") is not True]
+        result["datasets"] = [ds for ds in result["datasets"] if not ds.get("tombtone")]
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")

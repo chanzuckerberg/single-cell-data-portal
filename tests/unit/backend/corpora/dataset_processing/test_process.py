@@ -59,10 +59,17 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
             s3_args = {}
             self.addCleanup(s3_mock.stop)
         s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+        self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         s3.create_bucket(
             Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
         )
         return s3
+
+    def delete_s3_bucket(self, bucket_name):
+        bucket = self.s3_resource.Bucket(bucket_name)
+        if bucket.creation_date is not None:
+            bucket.objects.all().delete()
+            bucket.delete()
 
     @patch.dict(
         os.environ,
@@ -178,6 +185,77 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.assertEqual(extracted_metadata["cell_count"], 50001)
         self.assertAlmostEqual(extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(df) / 50001)
 
+    @patch("scanpy.read_h5ad")
+    def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
+        # Setup anndata to be read
+        non_zeros_X_layer_df = pandas.DataFrame(
+            numpy.full((11, 3), 2), columns=list("ABC"), index=(str(i) for i in range(11))
+        )
+        zeros_layer_df = pandas.DataFrame(numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
+
+        obs = pandas.DataFrame(
+            numpy.hstack(
+                [
+                    numpy.array([["lung", "liver"][i] for i in numpy.random.choice([0, 1], size=(11))]).reshape(11, 1),
+                    numpy.array(
+                        [["UBERON:01", "UBERON:10"][i] for i in numpy.random.choice([0, 1], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["10x", "smartseq", "cite-seq"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["EFO:001", "EFO:010", "EFO:011"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.random.choice(["healthy"], size=(11, 1)),
+                    numpy.random.choice(["MONDO:123"], size=(11, 1)),
+                    numpy.random.choice(["male", "female"], size=(11, 1)),
+                    numpy.array(
+                        [["solomon islander", "orcadian"][i] for i in numpy.random.choice([0, 1], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["HANCESTRO:321", "HANCESTRO:456"][i] for i in numpy.random.choice([0, 1], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["adult", "baby", "tween"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
+                ]
+            ),
+            columns=[
+                "tissue",
+                "tissue_ontology_term_id",
+                "assay",
+                "assay_ontology_term_id",
+                "disease",
+                "disease_ontology_term_id",
+                "sex",
+                "ethnicity",
+                "ethnicity_ontology_term_id",
+                "development_stage",
+                "development_stage_ontology_term_id",
+            ],
+            index=(str(i) for i in range(11)),
+        )
+        uns = {
+            "title": "my test dataset",
+            "organism": "Homo sapiens",
+            "organism_ontology_term_id": "NCBITaxon:8505",
+            "layer_descriptions": {"my_awesome_wonky_layer": "raw"},
+        }
+        adata = anndata.AnnData(
+            X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
+        )
+        mock_read_h5ad.return_value = adata
+
+        # Run the extraction method
+        extracted_metadata = process.extract_metadata("dummy")
+
+        # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
+        # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
+        self.assertEqual(extracted_metadata["mean_genes_per_cell"], 0)
+
     def test_update_db(self):
 
         collection = Collection.create(visibility=CollectionVisibility.PRIVATE)
@@ -260,6 +338,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
         self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     def test__create_artifact__negative(self):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset()
@@ -314,6 +395,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
                 "fake-bucket",
             )
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
@@ -338,6 +422,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.assertEqual(len(s3_filenames), 2)
         self.assertNotIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
@@ -361,6 +448,9 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
         self.assertEqual(len(s3_filenames), 2)
         self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):

@@ -32,10 +32,10 @@ def upgrade():
     op.add_column("dataset_processing_status", sa.Column("processing_status", processing_status_enum))
 
     # Add tombstone column to dataset with default false
-    op.add_column("dataset", sa.Column("tombstone", processing_status_enum, default=False))
+    op.add_column("dataset", sa.Column("tombstone", sa.Boolean, default=False))
 
     # Add tombstone column to collection with default false
-    op.add_column("project", sa.Column("tombstone", processing_status_enum, default=False))
+    op.add_column("project", sa.Column("tombstone", sa.Boolean, default=False))
 
 
 def downgrade():

@@ -1,10 +1,11 @@
-import { AnchorButton, Intent, Radio } from "@blueprintjs/core";
+import { AnchorButton, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
   CONVERSION_STATUS,
   Dataset,
+  UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
@@ -18,7 +19,7 @@ import { UploadingFile } from "src/components/DropboxChooser";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
 import UploadStatus from "./components/UploadStatus";
-import { TitleContainer } from "./style";
+import { StyledRadio, TitleContainer } from "./style";
 import {
   checkIfCancelled,
   checkIfFailed,
@@ -140,7 +141,7 @@ const DatasetRow: FC<Props> = ({
     <StyledRow>
       <DetailsCell>
         <TitleContainer>
-          <Radio
+          <StyledRadio
             onChange={() => onSelect(dataset.id)}
             checked={selected === dataset.id}
           />
@@ -151,6 +152,7 @@ const DatasetRow: FC<Props> = ({
         </TitleContainer>
         {isLoading && (
           <UploadStatus
+            isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
             isConverting={
               getConversionStatus(datasetStatus) ===
               CONVERSION_STATUS.CONVERTING
