@@ -31,7 +31,7 @@ resource aws_ecs_task_definition task_definition {
     "name": "web",
     "essential": true,
     "image": "${var.image}",
-    "memory": 512,
+    "memory": 768,
     "environment": [
       {
         "name": "REMOTE_DEV_PREFIX",

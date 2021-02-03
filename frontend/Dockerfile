@@ -14,7 +14,7 @@ WORKDIR /opt/node_app
 # -- TODO, we should try turning this back on later.
 # USER node
 COPY package.json package-lock.json* ./
-RUN npm install --verbose --no-optional && npm cache clean --force
+RUN npm ci --verbose --no-optional && npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 RUN apt-get update && apt-get install -y \
@@ -26,4 +26,4 @@ RUN apt-get update && apt-get install -y \
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
 
-CMD ["./container_init.sh"]
+ENTRYPOINT ["./container_init.sh"]
