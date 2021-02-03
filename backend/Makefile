@@ -82,3 +82,7 @@ db/test_migration:
 	$(MAKE) db/rollback
 	$(MAKE) db/dump_schema > /tmp/after
 	diff /tmp/{before,after} # No news is good news.
+
+db/tunnel:
+	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
+	ssh -L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology

@@ -112,6 +112,8 @@ import numpy
 import scanpy
 import sys
 
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
+
 logger = logging.getLogger(__name__)
 logging.basicConfig()
 
@@ -223,7 +225,8 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
     file_info = dropbox.get_file_info(fixed_dropbox_url)
-    download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    logger.info(status)
     return local_path
 
 
@@ -373,12 +376,20 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def main():
     check_env()
     dataset_id = os.environ["DATASET_ID"]
-    local_filename = download_from_dropbox_url(
-        dataset_id,
-        os.environ["DROPBOX_URL"],
-        "local.h5ad",
-    )
-    logger.info("Download complete", flush=True)
+    try:
+        local_filename = download_from_dropbox_url(
+            dataset_id,
+            os.environ["DROPBOX_URL"],
+            "local.h5ad",
+        )
+    except ProcessingCanceled as ex:
+        logging.info(ex.status)
+        sys.exit(0)
+    except ProcessingFailed as ex:
+        logging.error(ex.status)
+        sys.exit(1)
+    else:
+        logger.info("Download complete", flush=True)
 
     # Validate the H5AD file
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
