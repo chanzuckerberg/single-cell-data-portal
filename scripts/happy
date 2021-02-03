@@ -793,10 +793,16 @@ class ArtifactBuilder:
     def __init__(self, config={}):
         self.config = {**self.DEFAULT_CONFIG, **config}  # Replace defaults with the input
 
-    def build(self, artifacts=None):
+    def get_env(self):
         env = dict(os.environ)  # Make a copy of the current environment
         env["DOCKER_BUILDKIT"] = "1"
+        env["BUILDKIT_INLINE_CACHE"] = "1"
         env["COMPOSE_DOCKER_CLI_BUILD"] = "1"
+        env["DOCKER_REPO"] = f"{self.config['ecr_repo']}/"
+        return env
+
+    def build(self, artifacts=None):
+        env = self.get_env()
         compose_args = ["--file", self.config["compose_file"]]
         if self.config["env"]:
             compose_args += ["--env", self.config["env"]]
@@ -806,7 +812,7 @@ class ArtifactBuilder:
         subprocess.check_call(cmd, env=env)
 
         cmd = ["docker-compose"] + compose_args + ["config"]
-        config_file = subprocess.check_output(cmd)
+        config_file = subprocess.check_output(cmd, env=env)
         result = yaml.load(config_file, Loader=yaml.Loader)
         images = {}
         for service_name, service in result["services"].items():
@@ -815,6 +821,22 @@ class ArtifactBuilder:
                     continue
                 images[service_name] = service["image"]
         return images
+
+    def push(self, artifact_map, images, tags):
+        print("Tagging images...")
+        env = self.get_env()
+        for artifact_id, registry in artifact_map.items():
+            if images and artifact_id not in images:
+                continue
+            image = images[artifact_id]
+            for current_tag in tags:
+                subprocess.check_call(["docker", "tag", f"{image}:latest", f"{registry}:{current_tag}"], env=env)
+        print(f"Pushing images...{images}")
+        for artifact_id, registry in artifact_map.items():
+            if images and artifact_id not in images:
+                continue
+            for current_tag in tags:
+                subprocess.check_call(["docker", "push", f"{registry}:{current_tag}"], env=env)
 
 
 def run_tasks(ctx, stack, task_type, wait=False, show_logs=True):
@@ -863,7 +885,7 @@ def shell(ctx, stack_name, service, instanceid):
 def logs(ctx, stack_name, service, since):
     """Tail the logs of a service (frontend, backend, upload, migrations)"""
     orchestrator = ctx.obj["orchestrator"]
-    orchestrator.logs(stack_name, service, logs)
+    orchestrator.logs(stack_name, service, since)
 
 
 @cli.command()
@@ -1033,6 +1055,17 @@ def addtags(ctx, images, source_tag, dest_tag):
             except ecr_client.exceptions.ImageAlreadyExistsException:
                 print(f"tag {tag} already exists, skipping.")
 
+def get_ecr_repo(config):
+    # Assumption: All the ECR registries are within the same AWS account as the one configured
+    # for the profile, and in the same region as the default one.
+    # TODO(mbarrien): Ensure this is true, print an error if not.
+    # TODO(mbarrien): If correct account and wrong region, create an ecr_client with config
+    # for the correct region, and login to that.
+    artifact_map = config.artifact_map
+    first_repo = next(iter(artifact_map.values()))
+    first_registry = first_repo.split("/")[0]
+    return first_registry
+
 
 @cli.command()
 @click.argument("images", nargs=-1, default=None)
@@ -1048,45 +1081,32 @@ def push(ctx, images, tag, extra_tag, compose_env):
     artifact_map = config.artifact_map
     ecr_client = AwsSession.get_client(ctx, "ecr")
 
+    # Equivalent to aws get-login-password
+    # We need to do this *before* a build now for buildkit's build cache to work.
+    print("logging in to ECR...")
+    first_registry = get_ecr_repo(config)
+    auth = ecr_client.get_authorization_token()["authorizationData"][0]
+    auth_token = b64decode(auth["authorizationToken"]).decode()
+    pwd = auth_token.split(":")[1].encode()
+    cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", first_registry], input=pwd)
+    print("login done!")
+
     if not tag:
         tag = generate_tag(ctx)
     print("Building images...")
     builder_config = {}
     if compose_env:
         builder_config["env"] = compose_env
+    builder_config["ecr_repo"] = first_registry  # TODO this is a leak in our abstraction, need to fix.
     builder = ArtifactBuilder(builder_config)
     artifacts = builder.build(images)
-
-    print("logging in to ECR...")
-    # Assumption: All the ECR registries are within the same AWS account as the one configured
-    # for the profile, and in the same region as the default one.
-    # TODO(mbarrien): Ensure this is true, print an error if not.
-    # TODO(mbarrien): If correct account and wrong region, create an ecr_client with config
-    # for the correct region, and login to that.
-    first_repo = next(iter(artifact_map.values()))
-    first_registry = first_repo.split("/")[0]
-
-    # Equivalent to aws get-login-password
-    auth = ecr_client.get_authorization_token()["authorizationData"][0]
-    auth_token = b64decode(auth["authorizationToken"]).decode()
-    pwd = auth_token.split(":")[1].encode()
-    cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", first_registry], input=pwd)
+    print("Build complete")
 
     # extra_tag is a tuple
     all_tags = [tag] + (list(extra_tag) or [])
-    print("Tagging images...")
-    for artifact_id, registry in artifact_map.items():
-        if images and artifact_id not in images:
-            continue
-        image = artifacts[artifact_id]
-        for current_tag in all_tags:
-            subprocess.check_call(["docker", "tag", f"{image}:latest", f"{registry}:{current_tag}"])
-    print(f"Pushing images...{images}")
-    for artifact_id, registry in artifact_map.items():
-        if images and artifact_id not in images:
-            continue
-        for current_tag in all_tags:
-            subprocess.check_call(["docker", "push", f"{registry}:{current_tag}"])
+    print("Pushing images...")
+    all_tags = [tag] + (list(extra_tag) or [])
+    builder.push(artifact_map, artifacts, all_tags)
     print(f"Built and pushed docker images with tags: {all_tags}")
 
 
