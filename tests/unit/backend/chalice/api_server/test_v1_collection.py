@@ -304,7 +304,7 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
         test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         response.raise_for_status()
-        actual_dataset_ids = [d_id['id'] for d_id in json.loads(response.body)['datasets']]
+        actual_dataset_ids = [d_id["id"] for d_id in json.loads(response.body)["datasets"]]
         self.assertNotIn(dataset_id, actual_dataset_ids)
 
     def test__get_collection_uuid__403_not_found(self):
