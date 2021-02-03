@@ -114,6 +114,19 @@ class Dataset(Entity):
         """
         super().delete()
 
+    def tombstone_dataset_and_delete_child_objects(self):
+        self.update(tombstone=True)
+        self.db.delete(self.processing_status)
+        for dd in self.deployment_directories:
+            self.db.delete(dd)
+        for af in self.artifacts:
+            self.db.delete(af)
+        self.db.session.commit()
+
+        ## Do I need to commit?
+
+
+
     @staticmethod
     def new_processing_status():
         return {
