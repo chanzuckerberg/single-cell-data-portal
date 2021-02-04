@@ -66,10 +66,5 @@ def create_collection(body: object, user: str):
 
 
 @db_session()
-def delete_collection(collection_uuid: str):
-    raise NotImplementedError
-
-
-@db_session()
 def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
