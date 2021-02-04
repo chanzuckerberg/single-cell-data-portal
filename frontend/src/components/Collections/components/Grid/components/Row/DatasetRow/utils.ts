@@ -6,6 +6,7 @@ import {
   CONVERSION_STATUS,
   Dataset,
   DatasetUploadStatus,
+  PROCESSING_STATUS,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
@@ -16,11 +17,16 @@ export enum FAILED_RETURN_TYPE {
   UPLOAD = "UPLOAD",
   VALIDATION = "VALIDATION",
   CONVERSION = "CONVERSIOn",
+  PROCESS = "PROCESS",
 }
 
 export type FailReturn = {
   isFailed: boolean;
-  error?: VALIDATION_STATUS | UPLOAD_STATUS | CONVERSION_STATUS;
+  error?:
+    | VALIDATION_STATUS
+    | UPLOAD_STATUS
+    | CONVERSION_STATUS
+    | PROCESSING_STATUS;
   type?: FAILED_RETURN_TYPE;
 };
 
@@ -46,6 +52,16 @@ export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
       error: UPLOAD_STATUS.FAILED,
       isFailed: true,
       type: FAILED_RETURN_TYPE.UPLOAD,
+    };
+  }
+
+  // (thuang): Only show the catch all error state if we don't have better
+  // error message to show
+  if (datasetStatus.processing_status === PROCESSING_STATUS.FAILURE) {
+    return {
+      error: PROCESSING_STATUS.FAILURE,
+      isFailed: true,
+      type: FAILED_RETURN_TYPE.PROCESS,
     };
   }
 
@@ -92,17 +108,21 @@ export function checkIfCancelled(datasetStatus: DatasetUploadStatus): boolean {
 
 export function useCheckCollectionPopulated({
   invalidateCollectionQuery,
+  isFailed,
   isNamePopulated,
   validationStatus,
 }: {
   invalidateCollectionQuery: () => void;
+  isFailed: boolean;
   isNamePopulated: boolean;
   validationStatus: VALIDATION_STATUS;
 }) {
   useCheckCollection({
     invalidateCollectionQuery,
     shouldFetch:
-      validationStatus === VALIDATION_STATUS.VALID && !isNamePopulated,
+      !isFailed &&
+      validationStatus === VALIDATION_STATUS.VALID &&
+      !isNamePopulated,
   });
 }
 
