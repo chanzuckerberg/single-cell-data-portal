@@ -101,16 +101,18 @@ const DatasetRow: FC<Props> = ({
     invalidateCollectionQuery,
   });
 
+  const hasFailed = checkIfFailed(datasetStatus);
+
+  const { isFailed, error, type } = hasFailed;
+
   // (thuang): We need to poll the collection until the name is populated,
   // which indicates other metadata are populated too
   useCheckCollectionPopulated({
     invalidateCollectionQuery,
+    isFailed,
     isNamePopulated,
     validationStatus: datasetStatus.validation_status,
   });
-
-  const hasFailed = checkIfFailed(datasetStatus);
-  const { isFailed, error, type } = hasFailed;
 
   const isLoading = checkIfLoading(datasetStatus);
 
