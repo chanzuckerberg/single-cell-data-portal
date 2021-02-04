@@ -10,40 +10,38 @@ on:
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   DEPLOYMENT_STAGE: test
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Node cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install dependencies
+      - name: Lint Python
         run: |
-          pip install flake8-black
-          cd frontend
-          cp src/configs/local.js src/configs/configs.js
-          npm install
-      - name: Lint with flake8-black
+          docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
+      - name: Lint frontend
         run: |
-          make lint
-      - name: Lint src with eslint
-        working-directory: ./frontend
-        run: |
-          npm run prettier-check
-          npm run lint
+          docker-compose run --no-deps --rm frontend make lint
 
   smoke-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -53,40 +51,47 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Python cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Node cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install dependencies
+      - name: Run tests in docker-compose
         run: |
-          pip install -r requirements.txt
-          brew install moreutils
-          make package -C ./backend/chalice/api_server
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-sync
+          make local-smoke-test
+      - name: Push images
+        if: github.ref == 'refs/heads/main'
+        run: |
+          pip install -r .happy/requirements.txt
+          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
 
-          cd frontend
-          cp src/configs/local.js src/configs/configs.js
-          npm install
-      - name: smoke test prod build with local BE server
+  build-extra-images:
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Docker build, push, and tag
+        shell: bash
         run: |
-          make smoke-test-with-local-backend-ci
+          pip install -r .happy/requirements.txt
+          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures processing
 
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -96,24 +101,76 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Python cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install dependencies
+      - name: Run tests in docker-compose
         run: |
-          pip install -r requirements.txt
-          brew install moreutils
-          make package -C ./backend/chalice/api_server
-      - name: Run unit tests
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-sync
+          make local-unit-test
+
+  push-image:
+    needs:
+      - unit-test
+      - smoke-test
+      - lint
+      - build-extra-images
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Docker build, push, and tag
+        shell: bash
         run: |
-          make unit-test
-          bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest
+          pip install -r .happy/requirements.txt
+          scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+
+  push-upload-image:
+    needs:
+      - unit-test
+      - smoke-test
+      - lint
+      - build-extra-images
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      # TODO - eventually we'll need to log into multiple ECR's
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Docker pull, tag, and push
+        env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          UPLOAD_ECR: ${{ secrets.ECR_REPO }}
+        shell: bash
+        run: |
+          docker pull ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8}
+          for tag in active branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g') sha-${GITHUB_SHA:0:8}; do
+              docker tag ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8} ${UPLOAD_ECR}/corpora-upload-dev:${tag}
+              docker push ${UPLOAD_ECR}/corpora-upload-dev:${tag}
+          done

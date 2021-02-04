@@ -110,7 +110,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -143,3 +142,4 @@ dmypy.json
 
 .terraform
 .envrc
+.env.ecr

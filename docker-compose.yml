@@ -25,8 +25,13 @@ services:
     volumes:
       - localstack:/tmp/localstack
   frontend:
-    image: corpora-frontend
-    build: frontend
+    image: "${DOCKER_REPO}corpora-frontend"
+    build:
+      context: frontend
+      cache_from:
+        - "${DOCKER_REPO}corpora-frontend:branch-main"
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     restart: always
     depends_on:
       - backend
@@ -37,10 +42,14 @@ services:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
   upload_failures:
-    image: corpora-upload-failures
+    image: "${DOCKER_REPO}corpora-upload-failures"
     build:
       context: .
+      cache_from:
+        - "${DOCKER_REPO}corpora-upload-failures:branch-main"
       dockerfile: Dockerfile.upload_failures
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     restart: "no"
     ports:
       - "9000:8080"
@@ -61,10 +70,14 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
   processing:
-    image: corpora-processing
+    image: "${DOCKER_REPO}corpora-upload"
     build:
       context: .
+      cache_from:
+        - "${DOCKER_REPO}corpora-upload:branch-main"
       dockerfile: Dockerfile.processing_image
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     restart: "no"
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
@@ -82,8 +95,13 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
   backend:
-    image: corpora-backend
-    build: .
+    image: "${DOCKER_REPO}corpora-backend"
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}corpora-backend:branch-main"
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     restart: always
     depends_on:
       - localstack
