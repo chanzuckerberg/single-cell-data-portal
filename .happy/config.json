@@ -1,5 +1,5 @@
 {
-    "config_version": "v0",
+    "config_version": "v1",
     "terraform_version": "0.13.3",
     "terraform_directory": ".happy/terraform/modules/ecs-service",
     "default_env": "rdev",
@@ -10,11 +10,11 @@
             "secret_arn": "happy/dp-rdev-config"
         }
     },
-    "container_registries": {
-        "corpora-frontend": "${frontend_ecr}",
-        "corpora-backend": "${backend_ecr}",
-        "corpora-processing": "${upload_ecr}",
-        "corpora-upload-failures": "${upload_failures_ecr}"
+    "artifact_map": {
+        "frontend": "${frontend_ecr}",
+        "backend": "${backend_ecr}",
+        "processing": "${upload_ecr}",
+        "upload_failures": "${upload_failures_ecr}"
     },
     "tasks": {
         "migrate": ["migrate_db_task_definition_arn"],

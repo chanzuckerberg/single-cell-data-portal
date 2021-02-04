@@ -299,6 +299,14 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
                     actual_body = json.loads(response.body)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
+    def test_collection_with_tombstoned_dataset(self):
+        dataset_id = self.generate_dataset(tombstone=True).id
+        test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        response.raise_for_status()
+        actual_dataset_ids = [d_id["id"] for d_id in json.loads(response.body)["datasets"]]
+        self.assertNotIn(dataset_id, actual_dataset_ids)
+
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
         test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
@@ -348,7 +356,7 @@ class TestCollection(BaseAuthAPITest, GenerateDataMixin):
             "contact_email": "person@human.com",
             "data_submission_policy_version": "0.0.1",
             "links": [
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_url": "http://doi.org/10.1016", "link_type": "OTHER"},
                 {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
             ],
         }

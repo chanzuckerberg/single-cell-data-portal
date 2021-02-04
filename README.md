@@ -58,6 +58,5 @@ See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 ### Running local functional tests
 
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. Run `make local-database` to setup and populate a locally hosted database.
-1. Run `make local-backend` to setup the api on a locally.
-1. In another terminal run `make functional-test`
+1. Run `make local-init` to launch a local dev environment
+1. Run `make functional-test`
