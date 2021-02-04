@@ -49,6 +49,11 @@ smoke-test-with-local-backend:
 smoke-test-with-local-backend-ci:
 	$(MAKE) smoke-test-with-local-backend-ci -C ./frontend
 
+.PHONY: e2e-dev
+e2e-dev:
+	$(MAKE) e2e-dev -C ./frontend
+
+
 help: ## display help for this makefile
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
