@@ -1,4 +1,3 @@
-import botocore
 import os
 
 import boto3
