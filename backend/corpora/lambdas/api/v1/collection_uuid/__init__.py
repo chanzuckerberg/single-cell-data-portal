@@ -1,8 +1,8 @@
 from flask import make_response
 
-from .....common.utils.db_utils import db_session
+from .....common.utils.db_utils import db_session_manager
 
 
-@db_session()
 def delete(collection_uuid: str):
-    return make_response({}, 202)
+    with db_session_manager() as session:
+        return make_response({}, 202)
