@@ -122,6 +122,7 @@ import numpy
 import scanpy
 import sys
 
+from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
 
 logger = logging.getLogger(__name__)
@@ -176,7 +177,7 @@ def create_artifact(
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
-    DatasetAsset.create(
+    artifact = DatasetAsset.create(
         dataset_id=dataset_id,
         filename=file_base,
         filetype=artifact_type,
@@ -184,6 +185,8 @@ def create_artifact(
         user_submitted=True,
         s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
     )
+    if not artifact:
+        raise CorporaException
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):

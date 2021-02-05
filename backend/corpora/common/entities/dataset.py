@@ -99,6 +99,14 @@ class Dataset(Entity):
         super().update(**kwargs)
         self.db.commit()
 
+    @classmethod
+    def get(cls, dataset_uuid, include_tombstones=False):
+        dataset = super().get(dataset_uuid)
+        if not include_tombstones:
+            if dataset and dataset.tombstone is True:
+                return None
+        return dataset
+
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.

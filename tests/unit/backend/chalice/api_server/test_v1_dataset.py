@@ -107,6 +107,7 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
+
         self.assertEqual(response.status_code, 202)
         self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
 

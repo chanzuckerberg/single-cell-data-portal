@@ -87,6 +87,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
                 "upload_status": UploadStatus.CANCELED,
                 "upload_message": "Canceled by user",
             }
+            processing_status.dataset.tombstone_dataset_and_delete_child_objects()
             tracker.cancel()
         elif curr_status is UploadStatus.CANCELED:
             return

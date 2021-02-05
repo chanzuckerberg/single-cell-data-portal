@@ -47,10 +47,10 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 @db_session()
 def get_status(dataset_uuid: str, user: str):
     dataset = Dataset.get(dataset_uuid)
+    if not dataset:
+        return "", 403
     if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
-    if dataset.tombstone:
-        return "", 403
     status = dataset.processing_status.to_dict(remove_none=True)
     for remove in ["dataset", "created_at", "updated_at"]:
         status.pop(remove)
@@ -62,24 +62,27 @@ def delete_dataset(dataset_uuid: str, user: str):
     """
     Deletes an existing dataset or cancels an in progress upload.
     """
-    dataset = Dataset.get(dataset_uuid)
+    dataset = Dataset.get(dataset_uuid, include_tombstones=True)
     if not dataset:
         raise ForbiddenHTTPException()
     if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
     if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
+
     curr_status = dataset.processing_status
-    if curr_status.upload_status is UploadStatus.UPLOADED:
-        dataset.dataset_and_asset_deletion()
-    elif curr_status.upload_status in [UploadStatus.UPLOADING, UploadStatus.WAITING]:
+    if curr_status.upload_status in [UploadStatus.UPLOADING, UploadStatus.WAITING]:
         status = {
             DbDatasetProcessingStatus.upload_progress: curr_status.upload_progress,
             DbDatasetProcessingStatus.upload_status: UploadStatus.CANCEL_PENDING,
         }
+        dataset.update(tombstone=True)
         processing_status_updater(dataset.processing_status.id, status)
-        updated_status = Dataset.get(dataset_uuid).processing_status.to_dict()
+        updated_status = Dataset.get(dataset_uuid, include_tombstones=True).processing_status.to_dict()
+
         for remove in ["dataset", "created_at", "updated_at"]:
             updated_status.pop(remove)
         return make_response(jsonify(updated_status), 202)
+
+    dataset.dataset_and_asset_deletion()
     return "", 202
