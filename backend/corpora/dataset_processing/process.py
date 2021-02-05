@@ -6,6 +6,7 @@
 ## Initial
 The initial processing_status when the container first runs is:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.WAITING
     upload_progress = 0
     upload_message = ""
@@ -22,12 +23,14 @@ The initial processing_status when the container first runs is:
 While uploading, upload_status changes UploadStatus.UPLOADING and upload_progress is updated regularly.
 The processing_status should look like this:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADING
     upload_progress = 0.25
 }
 
 If upload succeeds the processing_status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
 }
@@ -35,6 +38,7 @@ If upload succeeds the processing_status changes to:
 
 If upload fails the processing_status changes to:
 {
+    processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.FAILED
     upload_progress = 0.25
     upload_message = "Some message"
@@ -43,6 +47,7 @@ If upload fails the processing_status changes to:
 ## Validation
 After upload, validation starts and processing status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALIDATING
@@ -50,6 +55,7 @@ After upload, validation starts and processing status changes to:
 
 If validation succeeds the process_status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
@@ -61,6 +67,7 @@ If validation succeeds the process_status changes to:
 
 If validation fails the processing_status change to:
 {
+    processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.FAILED
@@ -69,6 +76,7 @@ If validation fails the processing_status change to:
 ## Conversion
 After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -80,6 +88,7 @@ After each conversion the processing_status change from CONVERTING to CONVERTED.
 
 If a conversion fails the processing_status will indicated it as follow:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -91,6 +100,7 @@ If a conversion fails the processing_status will indicated it as follow:
 
 Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
 {
+    processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -122,6 +132,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     ConversionStatus,
     ValidationStatus,
+    ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils import dropbox
@@ -376,6 +387,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def main():
     check_env()
     dataset_id = os.environ["DATASET_ID"]
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
     try:
         local_filename = download_from_dropbox_url(
             dataset_id,
@@ -384,9 +396,11 @@ def main():
         )
     except ProcessingCanceled as ex:
         logging.info(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
         sys.exit(0)
     except ProcessingFailed as ex:
         logging.error(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
         sys.exit(1)
     else:
         logger.info("Download complete", flush=True)
@@ -398,7 +412,11 @@ def main():
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
         logger.error(f"stderr: {val_proc.stderr}")
-        status = dict(validation_status=ValidationStatus.INVALID, validation_message=val_proc.stdout)
+        status = dict(
+            validation_status=ValidationStatus.INVALID,
+            validation_message=val_proc.stdout,
+            processing_status=ProcessingStatus.FAILURE,
+        )
         update_db(dataset_id, processing_status=status)
         sys.exit(1)
     else:
@@ -426,6 +444,7 @@ def main():
         dataset_id,
         os.environ["ARTIFACT_BUCKET"],
     )
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
 if __name__ == "__main__":

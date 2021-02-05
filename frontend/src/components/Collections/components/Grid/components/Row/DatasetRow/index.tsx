@@ -18,7 +18,6 @@ import {
 import { UploadingFile } from "src/components/DropboxChooser";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
-import UploadStatus from "./components/UploadStatus";
 import { StyledRadio, TitleContainer } from "./style";
 import {
   checkIfCancelled,
@@ -39,6 +38,13 @@ const AsyncTooltip = loadable(
   () =>
     /*webpackChunkName: 'Grid/Row/DatasetRow/Tooltip' */ import(
       "./components/Tooltip"
+    )
+);
+
+const AsyncUploadStatus = loadable(
+  () =>
+    /*webpackChunkName: 'Grid/Row/DatasetRow/UploadStatus' */ import(
+      "./components/UploadStatus"
     )
 );
 
@@ -95,16 +101,18 @@ const DatasetRow: FC<Props> = ({
     invalidateCollectionQuery,
   });
 
+  const hasFailed = checkIfFailed(datasetStatus);
+
+  const { isFailed, error, type } = hasFailed;
+
   // (thuang): We need to poll the collection until the name is populated,
   // which indicates other metadata are populated too
   useCheckCollectionPopulated({
     invalidateCollectionQuery,
+    isFailed,
     isNamePopulated,
     validationStatus: datasetStatus.validation_status,
   });
-
-  const hasFailed = checkIfFailed(datasetStatus);
-  const { isFailed, error, type } = hasFailed;
 
   const isLoading = checkIfLoading(datasetStatus);
 
@@ -151,7 +159,7 @@ const DatasetRow: FC<Props> = ({
           )}
         </TitleContainer>
         {isLoading && (
-          <UploadStatus
+          <AsyncUploadStatus
             isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
             isConverting={
               getConversionStatus(datasetStatus) ===

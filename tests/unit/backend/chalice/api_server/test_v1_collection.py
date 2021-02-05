@@ -426,3 +426,9 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(public_not_owned, ids)
             self.assertIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
+
+    def test__delete_collection__OK(self):
+        path = furl(path="/dp/v1/collections/test_collection_id")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(path.url, headers)
+        response.raise_for_status()

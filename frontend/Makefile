@@ -14,6 +14,11 @@ deploy: init retrieve-vars
 init:
 	npm install
 
+.PHONY: lint
+lint:
+	npm run prettier-check
+	npm run lint
+
 .PHONY: clean
 clean:
 	npm run clean

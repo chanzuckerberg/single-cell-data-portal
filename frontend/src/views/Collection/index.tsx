@@ -1,37 +1,39 @@
-import { Button, Classes, H3, Intent } from "@blueprintjs/core";
+import { Button, H3, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
 import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
-import {
-  COLLECTION_LINK_TYPE_OPTIONS,
-  Dataset,
-  Link,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
+import { Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { hasAssets } from "src/common/modules/datasets/selectors";
 import {
   useCollection,
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
-import { getUrlHost } from "src/common/utils/getUrlHost";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
+import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DeleteDataset from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset";
+import PublishCollection from "src/components/Collections/components/PublishCollection";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
-import { StyledLink } from "./common/style";
 import DatasetUploadToast from "./components/DatasetUploadToast";
 import EmptyDatasets from "./components/EmptyDatasets";
 import {
+  CollectionButtons,
   CollectionInfo,
   DatasetContainer,
   Description,
   LinkContainer,
   StyledDiv,
 } from "./style";
+import {
+  DownloadButton,
+  getIsPublishable,
+  getSelectedDataset,
+  renderLinks,
+} from "./utils";
 
 interface RouteProps {
   id?: string;
@@ -39,32 +41,13 @@ interface RouteProps {
 
 export type Props = RouteComponentProps<RouteProps>;
 
-const renderLinks = (links: Link[]) => {
-  return links?.map(({ link_url: url, link_type: type }) => {
-    const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
-
-    if (!linkTypeOption) return null;
-
-    const urlHost = getUrlHost(url);
-
-    const { text } = linkTypeOption;
-
-    if (!urlHost) return null;
-
-    return (
-      <React.Fragment key={`${type}+${url}`}>
-        <span className={Classes.TEXT_MUTED}>{text}</span>
-        <StyledLink href={url}>{urlHost}</StyledLink>
-      </React.Fragment>
-    );
-  });
-};
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;
 }
 
 const Collection: FC<Props> = ({ id = "" }) => {
   const isPrivate = window.location.pathname.includes("/private");
+
   const visibility = isPrivate
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
@@ -77,13 +60,13 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const { data: collection, isError } = useCollection(id, visibility);
 
-  const [mutate] = useCollectionUploadLinks(id, visibility);
+  const [uploadLink] = useCollectionUploadLinks(id, visibility);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
 
     const payload = JSON.stringify({ url: newFile.link });
-    mutate(
+    uploadLink(
       { collectionId: id, payload },
       {
         onSuccess: (datasetID: Dataset["id"]) => {
@@ -105,8 +88,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
     return null;
   }
 
+  const datasets = collection.datasets;
+
   const isDatasetPresent =
-    collection.datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
+    datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
+
+  const isPublishable = getIsPublishable(datasets);
 
   const invalidateCollectionQuery = memoize(
     () => {
@@ -116,7 +103,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
   );
 
   const selectedDataset = getSelectedDataset({
-    datasets: collection.datasets,
+    datasets,
     selectedId: selected,
   });
 
@@ -127,10 +114,24 @@ const Collection: FC<Props> = ({ id = "" }) => {
         <Description>{collection.description}</Description>
         <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
       </CollectionInfo>
+
+      <CollectionButtons>
+        <DeleteCollection id={id} />
+        <Button
+          intent={Intent.PRIMARY}
+          minimal
+          outlined
+          disabled
+          text="Share"
+        />
+        {isPrivate && (
+          <PublishCollection isPublishable={isPublishable} id={id} />
+        )}
+      </CollectionButtons>
       <DatasetContainer>
         {isDatasetPresent ? (
           <DatasetsGrid
-            datasets={collection.datasets}
+            datasets={datasets}
             uploadedFiles={uploadedFiles}
             invalidateCollectionQuery={invalidateCollectionQuery}
             onSelect={setSelected}
@@ -158,23 +159,5 @@ const Collection: FC<Props> = ({ id = "" }) => {
     </ViewGrid>
   );
 };
-
-function DownloadButton({ ...props }) {
-  return (
-    <Button intent={Intent.PRIMARY} outlined {...props}>
-      Download
-    </Button>
-  );
-}
-
-function getSelectedDataset({
-  selectedId,
-  datasets,
-}: {
-  selectedId: string;
-  datasets: Dataset[];
-}) {
-  return datasets.find((dataset) => dataset.id === selectedId);
-}
 
 export default Collection;
