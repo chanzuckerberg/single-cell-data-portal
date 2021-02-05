@@ -6,20 +6,24 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
+from backend.corpora.common.utils.db_utils import DBSession
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from tests.unit.backend.utils import BogusDatasetParams
+from unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
 
-class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
+class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def setUp(self):
         super().setUp()
         self.uuid = "test_dataset_artifact_id"
         self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
+        self.session = DBSession()
+
+    def tearDown(self):
+        self.session.close()
 
     def test__get__ok(self):
-        asset = DatasetAsset.get(self.uuid)
+        asset = DatasetAsset.get(self.session, self.uuid)
         self.assertEqual(self.uuid, asset.id)
         self.assertEqual(self.CORPORA_TEST_CONFIG["bucket_name"], asset.bucket_name)
         self.assertEqual("test_s3_uri.h5ad", asset.key_name)
@@ -78,9 +82,5 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
             user_submitted=True,
             s3_uri=f"s3://{self.bucket_name}/{file_name}",
         )
-        dataset_params = BogusDatasetParams.get()
-        dataset = Dataset.create(
-            **dataset_params,
-            artifacts=[artifact_params],
-        )
+        dataset = self.generate_dataset(self.session, artifacts=[artifact_params])
         return dataset.get_asset(dataset.artifacts[0].id)

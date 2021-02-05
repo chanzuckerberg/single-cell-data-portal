@@ -13,7 +13,7 @@ class TestCollection(DataPortalTestCase):
     def setUp(self):
         self.uuid = "test_collection_id"
         self.visibility = CollectionVisibility.PUBLIC.name
-        super.setUp()
+        super().setUp()
 
     def test__get__ok(self):
         key = (self.uuid, self.visibility)
