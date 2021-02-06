@@ -136,7 +136,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils import dropbox
-from backend.corpora.common.utils.db_utils import processing_status_updater, db_session_manager
+from backend.corpora.common.utils.db_session import processing_status_updater, db_session_manager
 from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere

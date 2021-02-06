@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
-from ..utils.db_utils import clone
+from ..utils.db_session import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 

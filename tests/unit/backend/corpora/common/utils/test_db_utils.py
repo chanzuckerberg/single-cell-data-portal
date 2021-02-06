@@ -1,5 +1,5 @@
 from backend.corpora.common.corpora_orm import DbDataset
-from backend.corpora.common.utils.db_utils import db_session_manager, clone
+from backend.corpora.common.utils.db_session import db_session_manager, clone
 from backend.corpora.common.utils.exceptions import CorporaException
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 

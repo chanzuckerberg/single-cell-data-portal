@@ -7,7 +7,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
-from backend.corpora.common.utils.db_utils import DBSession
+from backend.corpora.common.utils.db_session import DBSessionMaker
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
@@ -17,7 +17,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().setUp()
         self.uuid = "test_dataset_artifact_id"
         self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
-        self.session = DBSession()
+        self.session = DBSessionMaker().session()
 
     def tearDown(self):
         self.session.close()

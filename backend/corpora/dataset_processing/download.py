@@ -6,7 +6,7 @@ from sqlalchemy import inspect
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing.exceptions import ProcessingCanceled, ProcessingFailed
 

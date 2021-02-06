@@ -1,5 +1,5 @@
 from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
 

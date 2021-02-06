@@ -1,18 +1,19 @@
+from collections import defaultdict
+
+import chalice
+import connexion
 import json
 import logging
 import os
 import re
 import sys
-from collections import defaultdict
-from functools import wraps
-
-import chalice
-import connexion
 from chalice import Chalice
 from connexion import FlaskApi, ProblemException, problem
+from flask import g
 from flask_cors import CORS
+from functools import wraps
+from sqlalchemy.exc import SQLAlchemyError
 from urllib.parse import urlparse
-
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -21,6 +22,8 @@ from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
+from corpora.common.utils.exceptions import CorporaException
+from corpora.common.utils.db_session import DBSessionMaker
 
 
 def requires_auth():
@@ -155,6 +158,19 @@ def get_chalice_app(flask_app):
         )
         response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
         return FlaskApi.get_response(response)
+
+    @flask_app.errorhandler(SQLAlchemyError)
+    def handle_sqlalchemy_error(exception):
+        g.db.rollback()
+        msg = "Failed to commit."
+        app.log.exception(msg)
+        raise CorporaException(msg)
+
+    @flask_app.teardown_appcontext
+    def close_db(e=None):
+        db = g.pop("db", None)
+        if db is not None:
+            db.close()
 
     return app
 

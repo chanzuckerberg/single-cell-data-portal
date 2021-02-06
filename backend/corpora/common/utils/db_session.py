@@ -1,22 +1,27 @@
 import logging
 from contextlib import contextmanager
-
+from sqlalchemy import create_engine
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker, session
 
 from .exceptions import CorporaException
-from ..corpora_orm import Base, DBSessionMaker, DbDatasetProcessingStatus
+from ..corpora_config import CorporaDbConfig
+from ..corpora_orm import Base, DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 
 
-class DBSession:
-    """DBSession as a singleton to avoid creating excess sessions."""
+class DBSessionMaker:
+    engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
+    _session_make = None
 
-    __instance = DBSessionMaker().session()
+    def __init__(self):
+        if not self._session_make:
+            self._session_make = sessionmaker(bind=self.engine)
 
-    def __getattr__(self, name):
-        return getattr(self.__instance, name)
+    def session(self, **kwargs) -> session.Session:
+        return self._session_make(**kwargs)
 
 
 def clone(model: Base, primary_key: dict, **kwargs) -> Base:
@@ -37,16 +42,14 @@ def clone(model: Base, primary_key: dict, **kwargs) -> Base:
 
 
 @contextmanager
-def db_session_manager(commit=False, **kwargs):
+def db_session_manager(**kwargs):
     """
 
-    :param commit: Changes will be committed when context ends.
+    :param kwargs: passed to Session
     """
     try:
         session = DBSessionMaker().session(**kwargs)
         yield session
-        if commit:
-            session.commit()
     except SQLAlchemyError:
         session.rollback()
         msg = "Failed to commit."
