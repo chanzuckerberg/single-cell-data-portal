@@ -51,6 +51,8 @@ def db_session_manager(**kwargs):
         yield session
         if session.transaction:
             session.commit()
+        else:
+            session.expire_all()
     except SQLAlchemyError:
         session.rollback()
         msg = "Failed to commit."
