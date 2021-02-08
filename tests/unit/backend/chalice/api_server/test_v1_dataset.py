@@ -127,7 +127,7 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    def test__delete_uploaded_dataset(self):
+    def test__delete_uploaded_dataset__ok(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
         dataset = self.generate_dataset(collection=collection, processing_status=processing_status)
