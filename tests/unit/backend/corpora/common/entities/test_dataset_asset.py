@@ -69,7 +69,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS):
         self.assertIn("Failed to retrieve meta data", logger.output[0])
         self.assertIsNone(file_size)
 
-    def test_delete_dataset_asset__ok(self):
+    def test__delete_dataset_asset__ok(self):
         file_name = "test_head_file.txt"
         content = "This is test_head_file."
 
