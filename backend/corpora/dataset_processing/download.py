@@ -148,7 +148,7 @@ def download(
 
     :return: The current dataset processing status.
     """
-    with db_session_manager(commit=True) as session:
+    with db_session_manager() as session:
         processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
