@@ -12,7 +12,6 @@ from connexion import FlaskApi, ProblemException, problem
 from flask import g
 from flask_cors import CORS
 from functools import wraps
-from sqlalchemy.exc import SQLAlchemyError
 from urllib.parse import urlparse
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
@@ -23,7 +22,6 @@ from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
 from corpora.common.utils.db_session import db_session_manager
-from corpora.common.utils.exceptions import CorporaException
 
 
 def requires_auth():
