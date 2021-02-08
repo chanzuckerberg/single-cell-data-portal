@@ -170,7 +170,7 @@ def get_chalice_app(flask_app):
 
     @flask_app.teardown_appcontext
     def close_db(e=None):
-        db = g.pop("db", None)
+        g.pop("db", None)
 
     return app
 
