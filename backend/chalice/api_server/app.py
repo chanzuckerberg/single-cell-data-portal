@@ -161,13 +161,6 @@ def get_chalice_app(flask_app):
         response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
         return FlaskApi.get_response(response)
 
-    @flask_app.errorhandler(SQLAlchemyError)
-    def handle_sqlalchemy_error(exception):
-        g.db.rollback()
-        msg = "Failed to commit."
-        app.log.exception(msg)
-        raise CorporaException(msg)
-
     @flask_app.teardown_appcontext
     def close_db(e=None):
         g.pop("db", None)
