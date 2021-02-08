@@ -1,7 +1,6 @@
 import logging
 from contextlib import contextmanager
 from sqlalchemy import create_engine
-
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, session
 
@@ -50,6 +49,8 @@ def db_session_manager(**kwargs):
     try:
         session = DBSessionMaker().session(**kwargs)
         yield session
+        if session.transaction:
+            session.commit()
     except SQLAlchemyError:
         session.rollback()
         msg = "Failed to commit."

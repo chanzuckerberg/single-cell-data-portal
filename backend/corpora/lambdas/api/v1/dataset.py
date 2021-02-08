@@ -1,6 +1,5 @@
 from flask import make_response, jsonify, g
 
-from ..db import get_db
 from ....common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from ....common.entities import Dataset, Collection
 from ....common.utils.db_session import processing_status_updater
@@ -13,7 +12,7 @@ from ....common.utils.exceptions import (
 
 
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
-    session = get_db()
+    session = g.db
     # retrieve the dataset
     dataset = Dataset.get(session, dataset_uuid)
     if not dataset:
@@ -46,7 +45,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
 
 def get_status(dataset_uuid: str, user: str):
-    session = get_db()
+    session = g.db
     dataset = Dataset.get(session, dataset_uuid)
     if not Collection.if_owner(session, dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
@@ -60,7 +59,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     """
     Cancels an inprogress upload.
     """
-    session = get_db()
+    session = g.db
     dataset = Dataset.get(session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()

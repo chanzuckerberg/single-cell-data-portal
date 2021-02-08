@@ -8,7 +8,7 @@ class TestDBSessionManager(DataPortalTestCase):
     def test_positive(self):
         with self.assertRaises(CorporaException):
             with db_session_manager() as session:
-                session.query(DbDataset).filter([DbDataset.id == "test_dataset_id"]).update({DbDataset.id: None})
+                session.query(DbDataset).filter([DbDataset.id == "test_dataset_id"])[0].update({DbDataset.id: None})
 
 
 class TestClone(DataPortalTestCase):

@@ -1,7 +1,6 @@
 import requests
-from flask import make_response
+from flask import make_response, g
 
-from ...db import get_db
 from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
@@ -12,7 +11,7 @@ from .....common.utils.math_utils import GB
 
 
 def link(collection_uuid: str, body: dict, user: str):
-    session = get_db()
+    session = g.db
     # Verify Dropbox URL
     url = dropbox.get_download_url_from_shared_link(body["url"])
     if not url:

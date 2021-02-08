@@ -1,15 +1,14 @@
 from typing import Optional
 
-from flask import make_response, jsonify
+from flask import make_response, jsonify, g
 
-from ..db import get_db
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
-    session = get_db()
+    session = g.db
     all_collections = Collection.list_attributes_in_time_range(
         session,
         from_date=from_date,
@@ -34,7 +33,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
 
 
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
-    session = get_db()
+    session = g.db
     collection = Collection.get_collection(session, collection_uuid, visibility)
     if not collection:
         raise ForbiddenHTTPException()
@@ -51,7 +50,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 
 
 def create_collection(body: object, user: str):
-    session = get_db()
+    session = g.db
     collection = Collection.create(
         session,
         visibility=CollectionVisibility.PRIVATE,

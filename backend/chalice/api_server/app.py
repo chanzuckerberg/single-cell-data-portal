@@ -22,8 +22,8 @@ from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
+from corpora.common.utils.db_session import db_session_manager
 from corpora.common.utils.exceptions import CorporaException
-from corpora.common.utils.db_session import DBSessionMaker
 
 
 def requires_auth():
@@ -111,7 +111,9 @@ def get_chalice_app(flask_app):
             data=req_body,
             environ_base=app.current_request.stage_vars,
         ):
-            flask_res = flask_app.full_dispatch_request()
+            with db_session_manager() as session:
+                g.db = session
+                flask_res = flask_app.full_dispatch_request()
 
         response_headers = dict(flask_res.headers)
         response_headers.update({"X-AWS-REQUEST-ID": app.lambda_context.aws_request_id})
@@ -169,8 +171,6 @@ def get_chalice_app(flask_app):
     @flask_app.teardown_appcontext
     def close_db(e=None):
         db = g.pop("db", None)
-        if db is not None:
-            db.close()
 
     return app
 
