@@ -1,12 +1,13 @@
 import { ROUTES } from "src/common/constants/routes";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
+import { TEST_ENV } from "tests/common/constants";
 import { goToPage, login } from "tests/utils/helpers";
 import { getTestTag, getText } from "tests/utils/selectors";
 
-// (thuang): TEMP
-// Use `TEST_ENV.includes("local")` later
-const describeIfDeployed = describe.skip;
+const describeIfDeployed = TEST_ENV.includes("local")
+  ? describe.skip
+  : describe;
 
 const TEST_COLLECTION = {
   contactEmail: "TEST@example.com",
