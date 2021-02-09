@@ -7,8 +7,9 @@ from sqlalchemy import inspect
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.exceptions import CorporaTombstoneException
 from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing.exceptions import ProcessingCanceled, ProcessingFailed
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed
 
 logger = logging.getLogger(__name__)
 
@@ -76,21 +77,11 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
     """
 
     def _update():
-        curr_status = processing_status.upload_status
         progress = tracker.progress()
+        dataset = Dataset.get(processing_status.dataset_id, include_tombstones=True)
+        if dataset.tombstone:
+            raise CorporaTombstoneException
 
-        if curr_status is UploadStatus.CANCEL_PENDING:
-            logger.info(f"cancelling the upload for {processing_status.dataset.id}")
-            # set db to cancelled
-            status = {
-                "upload_progress": 0,
-                "upload_status": UploadStatus.CANCELED,
-                "upload_message": "Canceled by user",
-            }
-            processing_status.dataset.tombstone_dataset_and_delete_child_objects()
-            tracker.cancel()
-        elif curr_status is UploadStatus.CANCELED:
-            return
         elif progress > 1:
             tracker.stop_downloader.set()
             message = "The expected file size is smaller than the actual file size."
@@ -175,9 +166,7 @@ def download(
             _processing_status_updater(processing_status, status)
 
         status_dict = processing_status.to_dict()
-        if processing_status.upload_status == UploadStatus.CANCELED:
-            raise ProcessingCanceled(status_dict)
-        elif processing_status.upload_status == UploadStatus.FAILED:
+        if processing_status.upload_status == UploadStatus.FAILED:
             raise ProcessingFailed(status_dict)
         else:
             return status_dict

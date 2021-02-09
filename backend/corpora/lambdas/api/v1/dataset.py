@@ -1,8 +1,8 @@
 from flask import make_response, jsonify
 
-from ....common.corpora_orm import DbDatasetProcessingStatus, UploadStatus, CollectionVisibility
+from ....common.corpora_orm import CollectionVisibility
 from ....common.entities import Dataset, Collection
-from ....common.utils.db_utils import db_session, processing_status_updater
+from ....common.utils.db_utils import db_session
 from ....common.utils.exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
@@ -69,20 +69,5 @@ def delete_dataset(dataset_uuid: str, user: str):
         raise ForbiddenHTTPException()
     if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
-
-    curr_status = dataset.processing_status
-    if curr_status.upload_status in [UploadStatus.UPLOADING, UploadStatus.WAITING]:
-        status = {
-            DbDatasetProcessingStatus.upload_progress: curr_status.upload_progress,
-            DbDatasetProcessingStatus.upload_status: UploadStatus.CANCEL_PENDING,
-        }
-        dataset.update(tombstone=True)
-        processing_status_updater(dataset.processing_status.id, status)
-        updated_status = Dataset.get(dataset_uuid, include_tombstones=True).processing_status.to_dict()
-
-        for remove in ["dataset", "created_at", "updated_at"]:
-            updated_status.pop(remove)
-        return make_response(jsonify(updated_status), 202)
-
     dataset.dataset_and_asset_deletion()
     return "", 202

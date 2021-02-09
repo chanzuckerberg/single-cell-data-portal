@@ -79,7 +79,6 @@ class DatasetAsset(Entity):
         user_submitted: bool,
         s3_uri: str,
     ):
-        from . import Dataset
 
         db_object = cls.table(
             dataset_id=dataset_id,
@@ -89,10 +88,6 @@ class DatasetAsset(Entity):
             user_submitted=user_submitted,
             s3_uri=s3_uri,
         )
-        dataset = Dataset.get(dataset_id)
-        if not dataset:
-            cls(db_object).delete_from_s3()
-            return None
         cls.db.session.add(db_object)
         cls.db.commit()
         return cls(db_object)

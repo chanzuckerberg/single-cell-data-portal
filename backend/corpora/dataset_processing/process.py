@@ -122,8 +122,8 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
+from backend.corpora.common.utils.exceptions import CorporaTombstoneException
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -177,7 +177,7 @@ def create_artifact(
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
 
-    artifact = DatasetAsset.create(
+    DatasetAsset.create(
         dataset_id=dataset_id,
         filename=file_base,
         filetype=artifact_type,
@@ -185,8 +185,6 @@ def create_artifact(
         user_submitted=True,
         s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
     )
-    if not artifact:
-        raise CorporaException
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
@@ -217,7 +215,9 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
 
 @db_session()
 def update_db(dataset_id, metadata=None, processing_status=None):
-    dataset = Dataset.get(dataset_id)
+    dataset = Dataset.get(dataset_id, include_tombstones=True)
+    if dataset.tombstone:
+        raise CorporaTombstoneException
 
     if metadata:
         # TODO: Delete this line once mean_genes_per_cell is in the db
@@ -387,28 +387,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
-def main():
-    check_env()
-    dataset_id = os.environ["DATASET_ID"]
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
-    try:
-        local_filename = download_from_dropbox_url(
-            dataset_id,
-            os.environ["DROPBOX_URL"],
-            "local.h5ad",
-        )
-    except ProcessingCanceled as ex:
-        logging.info(ex.status)
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
-        sys.exit(0)
-    except ProcessingFailed as ex:
-        logging.error(ex.status)
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
-        sys.exit(1)
-    else:
-        logger.info("Download complete", flush=True)
-
-    # Validate the H5AD file
+def validate_h5ad_file(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if val_proc.returncode != 0:
@@ -421,7 +400,7 @@ def main():
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
-        sys.exit(1)
+        raise ValidationFailed
     else:
         logger.info("Validation complete", flush=True)
         status = dict(
@@ -433,21 +412,50 @@ def main():
         )
         update_db(dataset_id, processing_status=status)
 
-    # Process cxg
-    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
-    # Process metadata
-    metadata = extract_metadata(local_filename)
-    logger.info(metadata, flush=True)
-    update_db(dataset_id, metadata)
+def main():
+    check_env()
+    dataset_id = os.environ["DATASET_ID"]
+    try:
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+        local_filename = download_from_dropbox_url(
+            dataset_id,
+            os.environ["DROPBOX_URL"],
+            "local.h5ad",
+        )
+    except CorporaTombstoneException:
+        dataset = Dataset.get(dataset_id, include_tombstones=True)
+        dataset.dataset_and_asset_deletion()
+        sys.exit(1)
+    except ProcessingFailed as ex:
+        logging.error(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
+        sys.exit(1)
+    else:
+        logger.info("Download complete", flush=True)
 
-    # create artifacts
-    create_artifacts(
-        local_filename,
-        dataset_id,
-        os.environ["ARTIFACT_BUCKET"],
-    )
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    try:
+        validate_h5ad_file(dataset_id, local_filename)
+        process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
+
+        # Process metadata
+        metadata = extract_metadata(local_filename)
+        logger.info(metadata, flush=True)
+        update_db(dataset_id, metadata)
+
+        # create artifacts
+        create_artifacts(
+            local_filename,
+            dataset_id,
+            os.environ["ARTIFACT_BUCKET"],
+        )
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    except CorporaTombstoneException:
+        dataset = Dataset.get(dataset_id, include_tombstones=True)
+        dataset.dataset_and_asset_deletion()
+        sys.exit(1)
+    except ValidationFailed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

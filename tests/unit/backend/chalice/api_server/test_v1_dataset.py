@@ -109,7 +109,6 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         response = self.app.delete(test_url, headers=headers)
 
         self.assertEqual(response.status_code, 202)
-        self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
 
         # Test while uploading
         processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
@@ -119,7 +118,6 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
-        self.assertEqual(json.loads(response.body)["upload_status"], "CANCEL_PENDING")
 
     def test__cancel_dataset_download__dataset_does_not_exist(self):
         test_url = "/dp/v1/datasets/missing_dataset_id"

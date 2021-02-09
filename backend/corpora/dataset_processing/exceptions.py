@@ -1,4 +1,4 @@
-class ProcessingCanceled(Exception):
+class ValidationFailed(Exception):
     pass
 
 
