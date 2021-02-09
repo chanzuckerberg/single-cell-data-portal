@@ -5,8 +5,7 @@
         ],
         "Description": "Client for client credentials flow",
         "AllowedGrantTypes": [
-            "authorization_code",
-            "password"
+            "authorization_code"
         ],
         "RedirectUris": [
             "https://localhost:5000/dp/v1/oauth2/callback",
