@@ -5,6 +5,7 @@ export enum API {
   COLLECTIONS = "/dp/v1/collections",
   COLLECTION = "/dp/v1/collections/{id}",
   COLLECTION_UPLOAD_LINKS = "/dp/v1/collections/{id}/upload-links",
+  COLLECTION_PUBLISH = "/dp/v1/collections/{id}/publish",
   CREATE_COLLECTION = "/dp/v1/collections",
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
