@@ -8,7 +8,7 @@ from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, Upload
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_utils import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, CorporaTombstoneException
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ def download(
         download_thread.join()  # Wait for the download thread to complete
         progress_thread.join()  # Wait for the progress thread to complete
         if progress_tracker.tombstoned:
-            raise CorporaTombstoneException
+            raise ProcessingCancelled
         if progress_tracker.error:
             status = {
                 "upload_status": UploadStatus.FAILED,

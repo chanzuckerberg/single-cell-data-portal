@@ -123,7 +123,7 @@ import scanpy
 import sys
 
 from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, CorporaTombstoneException
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -216,7 +216,7 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
 def update_db(dataset_id, metadata=None, processing_status=None):
     dataset = Dataset.get(dataset_id, include_tombstones=True)
     if dataset.tombstone:
-        raise CorporaTombstoneException
+        raise ProcessingCancelled
 
     if metadata:
         # TODO: Delete this line once mean_genes_per_cell is in the db
@@ -422,7 +422,7 @@ def main():
             os.environ["DROPBOX_URL"],
             "local.h5ad",
         )
-    except CorporaTombstoneException:
+    except ProcessingCancelled:
         dataset = Dataset.get(dataset_id, include_tombstones=True)
         dataset.dataset_and_asset_deletion()
         sys.exit(0)
@@ -449,7 +449,7 @@ def main():
             os.environ["ARTIFACT_BUCKET"],
         )
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
-    except CorporaTombstoneException:
+    except ProcessingCancelled:
         dataset = Dataset.get(dataset_id, include_tombstones=True)
         dataset.dataset_and_asset_deletion()
         sys.exit(0)

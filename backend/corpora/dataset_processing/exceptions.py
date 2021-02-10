@@ -6,5 +6,5 @@ class ProcessingFailed(Exception):
     pass
 
 
-class CorporaTombstoneException(Exception):
+class ProcessingCancelled(Exception):
     pass
