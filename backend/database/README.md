@@ -9,6 +9,7 @@
 1. Run `make db/new_migration MESSAGE="purpose_of_migration"` where `purpose_of_migration` is a short phrase describing why the database migration is occurring.
 1. Head over to the file that was just created. The path will be something like `backend/database/versions/xxxxxxxxxxxx_purpose_of_migration.py`. Edit the `upgrade()` and `downgrade()` functions such that `upgrade()` contains the commands to perform the migration you would like and `downgrade()` contains the commands to undo it.
 1. [Test your migration](#test-a-migration)
+1. Check that [corpora.orm](../corpora/common/corpora_orm.py) matches up with your changes.
 1. Once you've completed the changes, create a PR to get the functions reviewed. 
 1. Once the PR is merged, you can run the migration.
 1. [Connect to Remote RDS](#connect-to-remote-rds)
