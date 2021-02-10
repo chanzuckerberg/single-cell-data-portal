@@ -11,7 +11,7 @@ from .....common.utils.math_utils import GB
 
 
 def link(collection_uuid: str, body: dict, user: str):
-    db_session = g.db
+    db_session = g.db_session
     # Verify Dropbox URL
     url = dropbox.get_download_url_from_shared_link(body["url"])
     if not url:

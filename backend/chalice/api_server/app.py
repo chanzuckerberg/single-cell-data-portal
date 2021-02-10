@@ -109,8 +109,8 @@ def get_chalice_app(flask_app):
             data=req_body,
             environ_base=app.current_request.stage_vars,
         ):
-            with db_session_manager() as session:
-                g.db = session
+            with db_session_manager() as db_session:
+                g.db_session = db_session
                 flask_res = flask_app.full_dispatch_request()
 
         response_headers = dict(flask_res.headers)
@@ -161,7 +161,7 @@ def get_chalice_app(flask_app):
 
     @flask_app.teardown_appcontext
     def close_db(e=None):
-        g.pop("db", None)
+        g.pop("db_session", None)
 
     return app
 

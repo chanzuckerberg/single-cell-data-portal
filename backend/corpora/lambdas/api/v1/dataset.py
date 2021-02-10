@@ -12,7 +12,7 @@ from ....common.utils.exceptions import (
 
 
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
-    db_session = g.db
+    db_session = g.db_session
     # retrieve the dataset
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
@@ -45,7 +45,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
 
 def get_status(dataset_uuid: str, user: str):
-    db_session = g.db
+    db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
@@ -59,7 +59,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     """
     Cancels an inprogress upload.
     """
-    db_session = g.db
+    db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
