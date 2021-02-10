@@ -1,4 +1,5 @@
 module.exports = {
+  globalSetup: "./jest/playwright-globalSetup.js",
   moduleDirectories: ["node_modules", "."],
   preset: "jest-playwright-preset",
   rootDir: "../",

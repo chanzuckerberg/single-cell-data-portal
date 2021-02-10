@@ -19,6 +19,11 @@ const TEST_COLLECTION = {
 describe("Collection", async () => {
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
+      // DEBUG
+      console.log(await context.storageState());
+      console.log((await context.storageState()).origins[0].localStorage);
+
+      await goToPage();
       await login();
 
       const collectionId = await createCollection();
