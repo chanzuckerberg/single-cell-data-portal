@@ -40,7 +40,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 
     if user == collection.owner:
         access_type = "WRITE"
-    elif visibility != CollectionVisibility.PUBLIC:
+    elif visibility != CollectionVisibility.PUBLIC.name:
         raise ForbiddenHTTPException()
     else:
         access_type = "READ"
