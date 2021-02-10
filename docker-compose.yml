@@ -10,6 +10,7 @@ services:
       - POSTGRES_PASSWORD=test_pw
     volumes:
       - database:/var/lib/postgresql/data
+      - ./backend/database:/import
   localstack:
     image: localstack/localstack@sha256:7c6635493185d25165979995fb073fd789c72b6d8b17ef3a70b798d55576732f
     ports:
