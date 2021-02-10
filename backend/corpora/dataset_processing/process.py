@@ -166,8 +166,7 @@ def check_env():
 
 @db_session()
 def create_artifact(
-        file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str,
-        artifact_bucket: str
+    file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ) -> DatasetAsset:
     file_base = basename(file_name)
     s3_client.upload_file(
@@ -272,7 +271,7 @@ def extract_metadata(filename):
     stride = 50000
     numerator, denominator = 0, 0
     for bounds in zip(range(0, raw_layer.shape[0], stride), range(stride, raw_layer.shape[0] + stride, stride)):
-        chunk = raw_layer[bounds[0]: bounds[1], :]
+        chunk = raw_layer[bounds[0] : bounds[1], :]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
@@ -358,7 +357,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket):
 
 
 def convert_file_ignore_exceptions(
-        converter: typing.Callable, local_filename: str, error_message: str
+    converter: typing.Callable, local_filename: str, error_message: str
 ) -> typing.Tuple[str, ConversionStatus]:
     try:
         file_dir = converter(local_filename)
