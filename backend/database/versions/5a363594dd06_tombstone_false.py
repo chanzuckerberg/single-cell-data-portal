@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5a363594dd06'
-down_revision = '9a900b8ee3a5'
+revision = "5a363594dd06"
+down_revision = "9a900b8ee3a5"
 branch_labels = None
 depends_on = None
 
@@ -21,10 +21,10 @@ def upgrade():
         op.execute(f"UPDATE {table} SET {column} = {default}")
         op.alter_column(table, column, nullable=False)
 
-    tombstone_false('dataset', 'tombstone', False)
-    tombstone_false('project', 'tombstone', False)
+    tombstone_false("dataset", "tombstone", False)
+    tombstone_false("project", "tombstone", False)
 
 
 def downgrade():
-    op.alter_column('dataset', 'tombstone', nullable=True)
-    op.alter_column('project', 'tombstone', nullable=True)
+    op.alter_column("dataset", "tombstone", nullable=True)
+    op.alter_column("project", "tombstone", nullable=True)
