@@ -122,8 +122,8 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.common.utils.exceptions import CorporaTombstoneException
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed
+from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, CorporaTombstoneException
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -136,7 +136,6 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils import dropbox
 from backend.corpora.common.utils.db_utils import db_session, processing_status_updater
 from backend.corpora.dataset_processing.download import download
 
@@ -234,11 +233,11 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
+    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    file_info = get_file_info(fixed_dropbox_url)
     status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     logger.info(status)
     return local_path
@@ -426,7 +425,7 @@ def main():
     except CorporaTombstoneException:
         dataset = Dataset.get(dataset_id, include_tombstones=True)
         dataset.dataset_and_asset_deletion()
-        sys.exit(1)
+        sys.exit(0)
     except ProcessingFailed as ex:
         logging.error(ex.status)
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))

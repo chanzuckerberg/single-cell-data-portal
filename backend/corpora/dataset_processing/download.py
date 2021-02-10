@@ -7,9 +7,8 @@ from sqlalchemy import inspect
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_utils import db_session_manager
-from backend.corpora.common.utils.exceptions import CorporaTombstoneException
 from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, CorporaTombstoneException
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ class ProgressTracker:
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
         self.error: Exception = None  # Track errors
+        self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):
         with self.progress_lock:
@@ -80,7 +80,9 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         progress = tracker.progress()
         dataset = Dataset.get(processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
-            raise CorporaTombstoneException
+            tracker.tombstoned = True
+            tracker.cancel()
+            return
 
         elif progress > 1:
             tracker.stop_downloader.set()
@@ -158,6 +160,8 @@ def download(
         download_thread.start()
         download_thread.join()  # Wait for the download thread to complete
         progress_thread.join()  # Wait for the progress thread to complete
+        if progress_tracker.tombstoned:
+            raise CorporaTombstoneException
         if progress_tracker.error:
             status = {
                 "upload_status": UploadStatus.FAILED,
