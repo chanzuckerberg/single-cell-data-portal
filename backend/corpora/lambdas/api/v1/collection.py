@@ -66,9 +66,5 @@ def create_collection(body: object, user: str):
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
-def delete_collection(collection_uuid: str):
-    raise NotImplementedError
-
-
 def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
