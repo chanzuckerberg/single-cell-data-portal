@@ -48,7 +48,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 def get_status(dataset_uuid: str, user: str):
     dataset = Dataset.get(dataset_uuid)
     if not dataset:
-        return "", 403
+        raise ForbiddenHTTPException()
     if not Collection.if_owner(dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
     status = dataset.processing_status.to_dict(remove_none=True)
