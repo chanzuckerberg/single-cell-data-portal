@@ -45,6 +45,9 @@ See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
 
+### Database Procedures
+see [Data Portal Database Procedures](backend/database/README.md)
+
 ### Running unittests
 
 1. Set `AWS_PROFILE`
