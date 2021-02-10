@@ -12,9 +12,9 @@ from ....common.utils.exceptions import (
 
 
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
-    session = g.db
+    db_session = g.db
     # retrieve the dataset
-    dataset = Dataset.get(session, dataset_uuid)
+    dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' not found.")
 
@@ -45,9 +45,9 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
 
 def get_status(dataset_uuid: str, user: str):
-    session = g.db
-    dataset = Dataset.get(session, dataset_uuid)
-    if not Collection.if_owner(session, dataset.collection.id, dataset.collection.visibility, user):
+    db_session = g.db
+    dataset = Dataset.get(db_session, dataset_uuid)
+    if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
     status = dataset.processing_status.to_dict(remove_none=True)
     for remove in ["dataset", "created_at", "updated_at"]:
@@ -59,11 +59,11 @@ def delete_dataset(dataset_uuid: str, user: str):
     """
     Cancels an inprogress upload.
     """
-    session = g.db
-    dataset = Dataset.get(session, dataset_uuid)
+    db_session = g.db
+    dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
-    if not Collection.if_owner(session, dataset.collection.id, dataset.collection.visibility, user):
+    if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):
         raise ForbiddenHTTPException()
     curr_status = dataset.processing_status
     if curr_status.upload_status is UploadStatus.UPLOADED:
@@ -72,9 +72,9 @@ def delete_dataset(dataset_uuid: str, user: str):
         DbDatasetProcessingStatus.upload_progress: curr_status.upload_progress,
         DbDatasetProcessingStatus.upload_status: UploadStatus.CANCEL_PENDING,
     }
-    processing_status_updater(session, dataset.processing_status.id, status)
-    session.refresh(dataset.db_object)
-    updated_status = Dataset.get(session, dataset_uuid).processing_status.to_dict()
+    processing_status_updater(db_session, dataset.processing_status.id, status)
+    db_session.refresh(dataset.db_object)
+    updated_status = Dataset.get(db_session, dataset_uuid).processing_status.to_dict()
     for remove in ["dataset", "created_at", "updated_at"]:
         updated_status.pop(remove)
     return make_response(jsonify(updated_status), 202)

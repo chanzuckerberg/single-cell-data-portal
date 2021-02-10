@@ -8,9 +8,9 @@ from ....common.utils.exceptions import ForbiddenHTTPException
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
-    session = g.db
+    db_session = g.db
     all_collections = Collection.list_attributes_in_time_range(
-        session,
+        db_session,
         from_date=from_date,
         to_date=to_date,
         list_attributes=[DbCollection.id, DbCollection.visibility, DbCollection.owner, DbCollection.created_at],
@@ -33,8 +33,8 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
 
 
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
-    session = g.db
-    collection = Collection.get_collection(session, collection_uuid, visibility)
+    db_session = g.db
+    collection = Collection.get_collection(db_session, collection_uuid, visibility)
     if not collection:
         raise ForbiddenHTTPException()
 
@@ -50,9 +50,9 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 
 
 def create_collection(body: object, user: str):
-    session = g.db
+    db_session = g.db
     collection = Collection.create(
-        session,
+        db_session,
         visibility=CollectionVisibility.PRIVATE,
         name=body["name"],
         description=body["description"],

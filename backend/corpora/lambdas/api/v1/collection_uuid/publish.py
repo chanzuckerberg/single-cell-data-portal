@@ -6,8 +6,8 @@ from .....common.utils.exceptions import ForbiddenHTTPException
 
 
 def post(collection_uuid: str, user: str):
-    session = g.db
-    collection = Collection.if_owner(session, collection_uuid, CollectionVisibility.PRIVATE, user)
+    db_session = g.db
+    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE, user)
     if not collection:
         raise ForbiddenHTTPException()
     collection.publish()
