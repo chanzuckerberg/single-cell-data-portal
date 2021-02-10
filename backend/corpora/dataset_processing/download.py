@@ -32,6 +32,7 @@ class ProgressTracker:
             self._progress += progress
 
     def cancel(self):
+        self.tombstoned = True
         self.stop_downloader.set()
         self.stop_updater.set()
 
@@ -80,7 +81,6 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         progress = tracker.progress()
         dataset = Dataset.get(processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
-            tracker.tombstoned = True
             tracker.cancel()
             return
 

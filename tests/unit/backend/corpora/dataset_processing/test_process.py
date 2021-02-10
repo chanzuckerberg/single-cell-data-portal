@@ -306,6 +306,16 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
 
         fake_env.stop()
 
+    def test_update_db__tombstoned_dataset(self):
+        dataset = self.generate_dataset(tombstone=True)
+        dataset_id = dataset.id
+
+        fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
+        fake_env.start()
+
+        with self.assertRaises(ProcessingCancelled):
+            process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_create_artifacts(self, make_seurat, make_loom):
@@ -479,10 +489,8 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         dataset.update(tombstone=True)
         for x in range(10):
             if tracker.stop_downloader.is_set():
-                print("ending early")
                 return
             time.sleep(3)
-        print("dpwnload complete")
 
     @patch("backend.corpora.dataset_processing.download.downloader")
     @patch("backend.corpora.dataset_processing.process.get_file_info")

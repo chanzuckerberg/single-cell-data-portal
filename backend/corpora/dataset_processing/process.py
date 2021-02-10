@@ -166,7 +166,8 @@ def check_env():
 
 @db_session()
 def create_artifact(
-    file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
+        file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str,
+        artifact_bucket: str
 ) -> DatasetAsset:
     file_base = basename(file_name)
     s3_client.upload_file(
@@ -210,6 +211,12 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     if seurat_filename:
         create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket)
     update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
+
+
+@db_session
+def cancel_dataset(dataset_id):
+    dataset = Dataset.get(dataset_id, include_tombstones=True)
+    dataset.dataset_and_asset_deletion()
 
 
 @db_session()
@@ -265,7 +272,7 @@ def extract_metadata(filename):
     stride = 50000
     numerator, denominator = 0, 0
     for bounds in zip(range(0, raw_layer.shape[0], stride), range(stride, raw_layer.shape[0] + stride, stride)):
-        chunk = raw_layer[bounds[0] : bounds[1], :]
+        chunk = raw_layer[bounds[0]: bounds[1], :]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
@@ -351,7 +358,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket):
 
 
 def convert_file_ignore_exceptions(
-    converter: typing.Callable, local_filename: str, error_message: str
+        converter: typing.Callable, local_filename: str, error_message: str
 ) -> typing.Tuple[str, ConversionStatus]:
     try:
         file_dir = converter(local_filename)
@@ -422,18 +429,8 @@ def main():
             os.environ["DROPBOX_URL"],
             "local.h5ad",
         )
-    except ProcessingCancelled:
-        dataset = Dataset.get(dataset_id, include_tombstones=True)
-        dataset.dataset_and_asset_deletion()
-        sys.exit(0)
-    except ProcessingFailed as ex:
-        logging.error(ex.status)
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
-        sys.exit(1)
-    else:
         logger.info("Download complete", flush=True)
 
-    try:
         validate_h5ad_file(dataset_id, local_filename)
         process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
@@ -450,9 +447,12 @@ def main():
         )
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
     except ProcessingCancelled:
-        dataset = Dataset.get(dataset_id, include_tombstones=True)
-        dataset.dataset_and_asset_deletion()
+        cancel_dataset(dataset_id)
         sys.exit(0)
+    except ProcessingFailed as ex:
+        logging.error(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
+        sys.exit(1)
     except ValidationFailed:
         sys.exit(1)
 
