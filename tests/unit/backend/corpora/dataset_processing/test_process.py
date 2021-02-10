@@ -24,7 +24,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import CorporaTombstoneException
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions, download_from_dropbox_url
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -494,7 +494,7 @@ class TestDatasetProcessing(DataPortalTestCase, GenerateDataMixin):
         self.dataset_id = self.generate_dataset().id
         start = time.time()
         # check that changing the db status leads to an exception being raised
-        with self.assertRaises(CorporaTombstoneException):
+        with self.assertRaises(ProcessingCancelled):
             download_from_dropbox_url(
                 self.dataset_id,
                 "dropbox.com",
