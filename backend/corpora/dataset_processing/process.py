@@ -452,7 +452,7 @@ def main():
     except CorporaTombstoneException:
         dataset = Dataset.get(dataset_id, include_tombstones=True)
         dataset.dataset_and_asset_deletion()
-        sys.exit(1)
+        sys.exit(0)
     except ValidationFailed:
         sys.exit(1)
 
