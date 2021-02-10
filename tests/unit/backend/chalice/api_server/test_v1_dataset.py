@@ -153,6 +153,21 @@ class TestDataset(BaseAuthAPITest, GenerateDataMixin, CorporaTestCaseUsingMockAW
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.id, dataset_ids)
 
+    def test__delete_dataset_can_safetly_be_called_twice(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
+        dataset = self.generate_dataset(collection=collection, processing_status=processing_status)
+        test_url = f"/dp/v1/datasets/{dataset.id}"
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete(test_url, headers=headers)
+
+        self.assertEqual(response.status_code, 202)
+
+        # delete again
+        response = self.app.delete(test_url, headers=headers)
+        self.assertEqual(response.status_code, 202)
+
     def test__get_deleted_dataset_status__returns_403(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}

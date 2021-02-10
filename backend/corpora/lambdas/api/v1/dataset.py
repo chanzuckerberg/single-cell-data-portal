@@ -69,5 +69,6 @@ def delete_dataset(dataset_uuid: str, user: str):
         raise ForbiddenHTTPException()
     if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
-    dataset.dataset_and_asset_deletion()
+    if dataset.tombstone is False:
+        dataset.dataset_and_asset_deletion()
     return "", 202
