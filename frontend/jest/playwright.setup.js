@@ -16,8 +16,6 @@ jest.retryTimes(2);
 
 beforeEach(async () => {
   const client = await page.context().newCDPSession(page);
-  const storageState = JSON.parse(process.env.STORAGE);
-  context = await browser.newContext({ storageState });
 
   await client.send("Animation.setPlaybackRate", {
     // (thuang): Max speed to "disable" animation
