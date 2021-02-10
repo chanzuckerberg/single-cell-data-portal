@@ -99,6 +99,14 @@ class Dataset(Entity):
         super().update(**kwargs)
         self.db.commit()
 
+    @classmethod
+    def get(cls, dataset_uuid, include_tombstones=False):
+        dataset = super().get(dataset_uuid)
+        if not include_tombstones:
+            if dataset and dataset.tombstone is True:
+                return None
+        return dataset
+
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.
@@ -113,6 +121,21 @@ class Dataset(Entity):
         Delete the Dataset and all child objects.
         """
         super().delete()
+
+    def tombstone_dataset_and_delete_child_objects(self):
+        self.update(tombstone=True)
+        self.db.delete(self.processing_status)
+        for dd in self.deployment_directories:
+            self.db.delete(dd)
+        for af in self.artifacts:
+            self.db.delete(af)
+        self.db.session.commit()
+
+    def dataset_and_asset_deletion(self):
+        for artifact in self.artifacts:
+            asset = DatasetAsset.get(artifact.uuid)
+            asset.delete_from_s3()
+        self.tombstone_dataset_and_delete_child_objects()
 
     @staticmethod
     def new_processing_status():
