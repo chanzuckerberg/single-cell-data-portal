@@ -53,12 +53,12 @@ db/download:
     # Download the database to corpora_dev-<date>.sqlc
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
 	$(eval OUTFILE = $(shell date +corpora_${DEPLOYMENT_STAGE}-%Y%m%d%H%M.sqlc))
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
 db/import:
     # Imports corpora_dev.sqlc into the corpora_test database
 	# Usage: make db/import FROM=dev
-	pg_restore --clean --no-owner --dbname corpora_test corpora_$(FROM).sqlc
+	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora /import/$(FROM).sqlc
 
 db/import/schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
@@ -68,13 +68,12 @@ db/import/schema:
 	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
 
 db/dump_schema:
-ifeq ($(DEPLOYMENT_STAGE),"test")
-	pg_dump --schema-only --dbname=corpora_test
+ifeq ($(DEPLOYMENT_STAGE),test)
+	docker-compose exec database pg_dump --schema-only --dbname=corpora --username corpora
 else
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
 	PGPASSWORD=${DB_PW} pg_dump --schema-only --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0
 endif
-
 
 db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/before
