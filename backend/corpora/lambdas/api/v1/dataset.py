@@ -60,7 +60,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     Deletes an existing dataset or cancels an in progress upload.
     """
     db_session = g.db_session
-    dataset = Dataset.get(dataset_uuid, include_tombstones=True)
+    dataset = Dataset.get(db_session, dataset_uuid, include_tombstones=True)
     if not dataset:
         raise ForbiddenHTTPException()
     if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):

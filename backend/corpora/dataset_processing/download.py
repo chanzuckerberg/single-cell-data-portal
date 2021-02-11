@@ -71,15 +71,16 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
     """
     Update the progress of an upload to the database using the tracker.
 
-    :param processing_status_uuid: The uuid of the processing_status row.
+    :param processing_status: the SQLAlchemy ProcessingStatus object
     :param tracker: Tracks information about the progress of the upload.
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
+    db_session = inspect(processing_status).session
 
     def _update():
         progress = tracker.progress()
-        dataset = Dataset.get(processing_status.dataset_id, include_tombstones=True)
+        dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
             tracker.cancel()
             return
@@ -107,7 +108,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         else:
             status = {"upload_progress": progress}
         _processing_status_updater(processing_status, status)
-        inspect(processing_status).session.commit()
+        db_session.commit()
 
     try:
         while not tracker.stop_updater.wait(frequency):

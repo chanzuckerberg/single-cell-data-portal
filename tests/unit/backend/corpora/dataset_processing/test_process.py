@@ -317,7 +317,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         fake_env.stop()
 
     def test_update_db__tombstoned_dataset(self):
-        dataset = self.generate_dataset(tombstone=True)
+        dataset = self.generate_dataset(self.session, tombstone=True)
         dataset_id = dataset.id
 
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
@@ -505,7 +505,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):
         time.sleep(1)
-        dataset = Dataset.get(self.dataset_id)
+        dataset = Dataset.get(self.session, self.dataset_id)
         dataset.update(tombstone=True)
         for x in range(10):
             if tracker.stop_downloader.is_set():
@@ -519,7 +519,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_downloader.side_effect = self.mock_downloader_function
         mock_get_link.return_value = "url.com"
         mock_get_size.return_value = {"size": 12}
-        self.dataset_id = self.generate_dataset().id
+        self.dataset_id = self.generate_dataset(self.session).id
         start = time.time()
         # check that changing the db status leads to an exception being raised
         with self.assertRaises(ProcessingCancelled):

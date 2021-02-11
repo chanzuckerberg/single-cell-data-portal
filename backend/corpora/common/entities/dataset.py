@@ -101,8 +101,8 @@ class Dataset(Entity):
         self.session.commit()
 
     @classmethod
-    def get(cls, dataset_uuid, include_tombstones=False):
-        dataset = super().get(dataset_uuid)
+    def get(cls, session, dataset_uuid, include_tombstones=False):
+        dataset = super().get(session, dataset_uuid)
         if not include_tombstones:
             if dataset and dataset.tombstone is True:
                 return None
@@ -125,16 +125,16 @@ class Dataset(Entity):
 
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
-        self.db.delete(self.processing_status)
+        self.session.delete(self.processing_status)
         for dd in self.deployment_directories:
-            self.db.delete(dd)
+            self.session.delete(dd)
         for af in self.artifacts:
-            self.db.delete(af)
-        self.db.session.commit()
+            self.session.delete(af)
+        self.session.commit()
 
     def dataset_and_asset_deletion(self):
         for artifact in self.artifacts:
-            asset = DatasetAsset.get(artifact.uuid)
+            asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
         self.tombstone_dataset_and_delete_child_objects()
 

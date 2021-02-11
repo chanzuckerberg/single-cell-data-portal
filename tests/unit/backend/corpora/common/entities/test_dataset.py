@@ -65,6 +65,7 @@ class TestDataset(DataPortalTestCase):
 
         dataset_params = BogusDatasetParams.get()
         dataset = self.generate_dataset(
+            self.session,
             **dataset_params,
             artifacts=[artifact_params] * artifact_count,
             deployment_directories=[deployment_directory_params] * deployment_dir_count,
