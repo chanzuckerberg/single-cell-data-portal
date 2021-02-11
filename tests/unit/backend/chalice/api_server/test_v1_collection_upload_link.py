@@ -1,16 +1,17 @@
 import json
-from mock import patch
+
 from furl import furl
+from mock import patch
 
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 
 
-class TestCollectionUploadLink(BaseAuthAPITest, GenerateDataMixin):
+class TestCollectionUploadLink(BaseAuthAPITest):
     def setUp(self):
+        super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 

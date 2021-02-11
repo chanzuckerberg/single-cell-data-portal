@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
-from ..utils.db_utils import clone
+from ..utils.db_session import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 
@@ -18,6 +18,7 @@ class Collection(Entity):
     @classmethod
     def create(
         cls,
+        session,
         visibility: CollectionVisibility,
         name: str = "",
         description: str = "",
@@ -50,21 +51,21 @@ class Collection(Entity):
         new_db_object.links = [
             DbCollectionLink(collection_id=new_db_object.id, collection_visibility=visibility, **link) for link in links
         ]
-        cls.db.session.add(new_db_object)
-        cls.db.commit()
+        session.add(new_db_object)
+        session.commit()
         return cls(new_db_object)
 
     @classmethod
-    def get_collection(cls, collection_uuid, visibility=CollectionVisibility.PUBLIC.name):
+    def get_collection(cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name):
         """
         Given the collection_uuid, retrieve a live collection.
         :param collection_uuid:
         """
-        return cls.get((collection_uuid, visibility))
+        return cls.get(session, (collection_uuid, visibility))
 
     @classmethod
     def if_owner(
-        cls, collection_uuid: str, visibility: CollectionVisibility, user: str
+        cls, session, collection_uuid: str, visibility: CollectionVisibility, user: str
     ) -> typing.Union[DbCollection, None]:
         """
         Return a collection if the user is the owner of a collection.
@@ -75,18 +76,18 @@ class Collection(Entity):
         :return: a collection if the user is the owner of the collection else None
         """
         filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
-        collection = cls.db.session.query(cls.table).filter(*filters).one_or_none()
+        collection = session.query(cls.table).filter(*filters).one_or_none()
         return cls(collection) if collection else None
 
     @classmethod
-    def list_collections_in_time_range(cls, *args, **kwargs):
+    def list_collections_in_time_range(cls, session, *args, **kwargs):
         return cls.list_attributes_in_time_range(
-            *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
+            session, *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
         )
 
     @classmethod
     def list_attributes_in_time_range(
-        cls, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+        cls, session, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
     ) -> typing.List[typing.Dict]:
         """
         Queries the database for Entities that have been created within the specified time range. Return only the
@@ -118,7 +119,7 @@ class Collection(Entity):
 
         results = [
             to_dict(result)
-            for result in cls.db.session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
+            for result in session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
         ]
 
         return results
@@ -153,12 +154,12 @@ class Collection(Entity):
         """
         # Create a public collection with the same uuid and same fields
         public_collection = clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
-        self.db.session.add(public_collection)
+        self.session.add(public_collection)
         # Copy over relationships
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
             dataset.collection_visibility = CollectionVisibility.PUBLIC
-        self.db.session.commit()
+        self.session.commit()
         self.delete()
         self.db_object = public_collection

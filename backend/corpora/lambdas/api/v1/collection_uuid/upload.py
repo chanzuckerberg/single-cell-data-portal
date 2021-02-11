@@ -1,19 +1,17 @@
 import requests
-from flask import make_response
+from flask import make_response, g
 
 from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
-from .....common.utils.db_utils import db_session
 from .....common.entities import Collection, Dataset
 from .....common.utils import dropbox
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, TooLargeHTTPException
 from .....common.utils.math_utils import GB
 
 
-@db_session()
 def link(collection_uuid: str, body: dict, user: str):
-
+    db_session = g.db_session
     # Verify Dropbox URL
     url = dropbox.get_download_url_from_shared_link(body["url"])
     if not url:
@@ -32,10 +30,10 @@ def link(collection_uuid: str, body: dict, user: str):
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
 
     # Create dataset
-    collection = Collection.if_owner(collection_uuid, CollectionVisibility.PRIVATE, user)
+    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE, user)
     if not collection:
         raise ForbiddenHTTPException
-    dataset = Dataset.create(processing_status=Dataset.new_processing_status(), collection=collection)
+    dataset = Dataset.create(db_session, processing_status=Dataset.new_processing_status(), collection=collection)
 
     # Start processing link
     upload_sfn.start_upload_sfn(collection_uuid, dataset.id, url)

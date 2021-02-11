@@ -6,7 +6,7 @@ from sqlalchemy import inspect
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
 
@@ -71,15 +71,16 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
     """
     Update the progress of an upload to the database using the tracker.
 
-    :param processing_status_uuid: The uuid of the processing_status row.
+    :param processing_status: the SQLAlchemy ProcessingStatus object
     :param tracker: Tracks information about the progress of the upload.
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
+    db_session = inspect(processing_status).session
 
     def _update():
         progress = tracker.progress()
-        dataset = Dataset.get(processing_status.dataset_id, include_tombstones=True)
+        dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
             tracker.cancel()
             return
@@ -107,7 +108,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         else:
             status = {"upload_progress": progress}
         _processing_status_updater(processing_status, status)
-        inspect(processing_status).session.commit()
+        db_session.commit()
 
     try:
         while not tracker.stop_updater.wait(frequency):
@@ -142,8 +143,8 @@ def download(
 
     :return: The current dataset processing status.
     """
-    with db_session_manager(commit=True):
-        processing_status = Dataset.get(dataset_uuid).processing_status
+    with db_session_manager() as session:
+        processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         progress_tracker = ProgressTracker(file_size)
