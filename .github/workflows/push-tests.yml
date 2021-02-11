@@ -47,7 +47,7 @@ jobs:
           GITHUB_WORKFLOW_URL: https://github.com/${GITHUB_REPOSITORY }/actions/runs/${GITHUB_RUN_ID}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{'text':'$GITHUB_WORKFLOW failure in $GITHUB_REPOSITORY:$GITHUB_REF, $GITHUB_WORKFLOW_URL'}" $SLACK_WEBHOOK
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'$GITHUB_WORKFLOW failure in $GITHUB_REPOSITORY:$GITHUB_HEAD_REF, https://github.com/$GITHUB_REPOSITORY /actions/runs/$GITHUB_RUN_ID'}" $SLACK_WEBHOOK
 
   smoke-test:
     runs-on: ubuntu-20.04
