@@ -6,6 +6,7 @@
 ## Initial
 The initial processing_status when the container first runs is:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.WAITING
     upload_progress = 0
     upload_message = ""
@@ -22,12 +23,14 @@ The initial processing_status when the container first runs is:
 While uploading, upload_status changes UploadStatus.UPLOADING and upload_progress is updated regularly.
 The processing_status should look like this:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADING
     upload_progress = 0.25
 }
 
 If upload succeeds the processing_status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
 }
@@ -35,6 +38,7 @@ If upload succeeds the processing_status changes to:
 
 If upload fails the processing_status changes to:
 {
+    processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.FAILED
     upload_progress = 0.25
     upload_message = "Some message"
@@ -43,6 +47,7 @@ If upload fails the processing_status changes to:
 ## Validation
 After upload, validation starts and processing status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALIDATING
@@ -50,6 +55,7 @@ After upload, validation starts and processing status changes to:
 
 If validation succeeds the process_status changes to:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
@@ -61,6 +67,7 @@ If validation succeeds the process_status changes to:
 
 If validation fails the processing_status change to:
 {
+    processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.FAILED
@@ -69,6 +76,7 @@ If validation fails the processing_status change to:
 ## Conversion
 After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -80,6 +88,7 @@ After each conversion the processing_status change from CONVERTING to CONVERTED.
 
 If a conversion fails the processing_status will indicated it as follow:
 {
+    processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -91,6 +100,7 @@ If a conversion fails the processing_status will indicated it as follow:
 
 Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
 {
+    processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
@@ -112,7 +122,8 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
+from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -122,10 +133,10 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactType,
     ConversionStatus,
     ValidationStatus,
+    ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils import dropbox
-from backend.corpora.common.utils.db_utils import db_session, processing_status_updater
+from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
 from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
@@ -153,7 +164,6 @@ def check_env():
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
 
-@db_session()
 def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ) -> DatasetAsset:
@@ -164,15 +174,16 @@ def create_artifact(
         join(bucket_prefix, file_base),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
-
-    DatasetAsset.create(
-        dataset_id=dataset_id,
-        filename=file_base,
-        filetype=artifact_type,
-        type_enum=DatasetArtifactType.REMIX,
-        user_submitted=True,
-        s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
-    )
+    with db_session_manager() as session:
+        DatasetAsset.create(
+            session,
+            dataset_id=dataset_id,
+            filename=file_base,
+            filetype=artifact_type,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
+        )
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
@@ -201,18 +212,26 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
 
 
-@db_session()
+def cancel_dataset(dataset_id):
+    with db_session_manager() as session:
+        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+        dataset.dataset_and_asset_deletion()
+
+
 def update_db(dataset_id, metadata=None, processing_status=None):
-    dataset = Dataset.get(dataset_id)
+    with db_session_manager() as session:
+        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+        if dataset.tombstone:
+            raise ProcessingCancelled
 
-    if metadata:
-        # TODO: Delete this line once mean_genes_per_cell is in the db
-        metadata.pop("mean_genes_per_cell", None)
+        if metadata:
+            # TODO: Delete this line once mean_genes_per_cell is in the db
+            metadata.pop("mean_genes_per_cell", None)
 
-        dataset.update(**metadata)
+            dataset.update(**metadata)
 
-    if processing_status:
-        processing_status_updater(dataset.processing_status.id, processing_status)
+        if processing_status:
+            processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
 def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
@@ -220,11 +239,11 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
+    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    file_info = get_file_info(fixed_dropbox_url)
     status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     logger.info(status)
     return local_path
@@ -373,34 +392,20 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
-def main():
-    check_env()
-    dataset_id = os.environ["DATASET_ID"]
-    try:
-        local_filename = download_from_dropbox_url(
-            dataset_id,
-            os.environ["DROPBOX_URL"],
-            "local.h5ad",
-        )
-    except ProcessingCanceled as ex:
-        logging.info(ex.status)
-        sys.exit(0)
-    except ProcessingFailed as ex:
-        logging.error(ex.status)
-        sys.exit(1)
-    else:
-        logger.info("Download complete", flush=True)
-
-    # Validate the H5AD file
+def validate_h5ad_file(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
         logger.error(f"stderr: {val_proc.stderr}")
-        status = dict(validation_status=ValidationStatus.INVALID, validation_message=val_proc.stdout)
+        status = dict(
+            validation_status=ValidationStatus.INVALID,
+            validation_message=val_proc.stdout,
+            processing_status=ProcessingStatus.FAILURE,
+        )
         update_db(dataset_id, processing_status=status)
-        sys.exit(1)
+        raise ValidationFailed
     else:
         logger.info("Validation complete", flush=True)
         status = dict(
@@ -412,20 +417,43 @@ def main():
         )
         update_db(dataset_id, processing_status=status)
 
-    # Process cxg
-    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
-    # Process metadata
-    metadata = extract_metadata(local_filename)
-    logger.info(metadata, flush=True)
-    update_db(dataset_id, metadata)
+def main():
+    check_env()
+    dataset_id = os.environ["DATASET_ID"]
+    try:
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+        local_filename = download_from_dropbox_url(
+            dataset_id,
+            os.environ["DROPBOX_URL"],
+            "local.h5ad",
+        )
+        logger.info("Download complete", flush=True)
 
-    # create artifacts
-    create_artifacts(
-        local_filename,
-        dataset_id,
-        os.environ["ARTIFACT_BUCKET"],
-    )
+        validate_h5ad_file(dataset_id, local_filename)
+        process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
+
+        # Process metadata
+        metadata = extract_metadata(local_filename)
+        logger.info(metadata, flush=True)
+        update_db(dataset_id, metadata)
+
+        # create artifacts
+        create_artifacts(
+            local_filename,
+            dataset_id,
+            os.environ["ARTIFACT_BUCKET"],
+        )
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    except ProcessingCancelled:
+        cancel_dataset(dataset_id)
+        sys.exit(0)
+    except ProcessingFailed as ex:
+        logging.error(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
+        sys.exit(1)
+    except ValidationFailed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

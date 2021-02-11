@@ -16,6 +16,8 @@ well-labeled repository of interoperable datasets.
 ### Development quickstart
 See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 
+See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
+
 ### Pre-requisites
 
 1. [Install and configure awscli](docs/awscli.md)
@@ -45,6 +47,9 @@ See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
 
+### Database Procedures
+see [Data Portal Database Procedures](backend/database/README.md)
+
 ### Running unittests
 
 1. Set `AWS_PROFILE`
@@ -58,6 +63,5 @@ See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 ### Running local functional tests
 
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. Run `make local-database` to setup and populate a locally hosted database.
-1. Run `make local-backend` to setup the api on a locally.
-1. In another terminal run `make functional-test`
+1. Run `make local-init` to launch a local dev environment
+1. Run `make functional-test`

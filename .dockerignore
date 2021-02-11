@@ -1,2 +1,8 @@
-frontend
-venv
+# Ignore everything
+**
+
+# Allow files and directories
+!/requirements.txt
+!/backend/**
+!/tests/**
+!/scripts/**

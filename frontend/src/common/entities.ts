@@ -149,6 +149,7 @@ export enum VALIDATION_STATUS {
   INVALID = "INVALID",
   NA = "NA",
 }
+
 export enum CONVERSION_STATUS {
   CONVERTING = "CONVERTING",
   CONVERTED = "CONVERTED",
@@ -156,9 +157,16 @@ export enum CONVERSION_STATUS {
   NA = "NA",
 }
 
+export enum PROCESSING_STATUS {
+  PENDING = "PENDING",
+  SUCCESS = "SUCCESS",
+  FAILURE = "FAILURE",
+}
+
 export interface DatasetUploadStatus {
   dataset_id: string;
   upload_status: UPLOAD_STATUS;
+  processing_status: PROCESSING_STATUS;
   upload_message: string;
   upload_progress: number;
   validation_status: VALIDATION_STATUS;
