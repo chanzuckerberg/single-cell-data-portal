@@ -176,7 +176,9 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 202)
 
     def test__get_deleted_dataset_status__returns_403(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
         dataset = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset.id}/status"
