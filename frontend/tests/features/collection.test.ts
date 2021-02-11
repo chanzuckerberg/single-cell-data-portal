@@ -48,7 +48,7 @@ describe("Collection", async () => {
             getTestTag("publish-collection-button")
           );
 
-          expect(publishButton?.getAttribute("disabled")).toBe("");
+          expect(await publishButton?.getAttribute("disabled")).toBe("");
         });
       });
     });
@@ -66,7 +66,7 @@ async function createCollection(): Promise<string> {
   await page.click(getText("I agree to cellxgene's data submission policies."));
   const [response] = await Promise.all([
     page.waitForEvent("response"),
-    page.click(getText("Create")),
+    page.click(getTestTag("create button")),
   ]);
 
   const { collectionId } = (await response.json()) as {
