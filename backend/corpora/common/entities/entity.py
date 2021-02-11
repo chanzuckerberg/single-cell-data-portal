@@ -1,10 +1,11 @@
 import logging
 import typing
 
+from sqlalchemy import inspect
+
 logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
-from ..utils.db_utils import DbUtils
 
 
 class Entity:
@@ -22,19 +23,19 @@ class Entity:
 
     table: Base = None  # The DbTable represented by this entity.
     list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
-    db = DbUtils()
 
     def __init__(self, db_object: Base):
         self.db_object = db_object
+        self.session = inspect(db_object).session
 
     @classmethod
-    def get(cls, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
+    def get(cls, session, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
         """
         Retrieves an entity from the database given its primary key if found.
         :param key: Simple or composite primary key
         :return: Entity or None
         """
-        result = cls.db.get(cls.table, key)
+        result = session.query(cls.table).get(key)
         if result:
             return cls(result)
         else:
@@ -42,12 +43,12 @@ class Entity:
             return None
 
     @classmethod
-    def list(cls) -> "Entity":
+    def list(cls, session) -> "Entity":
         """
         Retrieves a list of entities from the database
         :return: list of Entity
         """
-        return [cls(obj) for obj in cls.db.query([cls.table])]
+        return [cls(obj) for obj in session.query(cls.table)]
 
     def save(self):
         """
@@ -67,11 +68,11 @@ class Entity:
         """
         Delete an object from the database.
         """
-        self.db.delete(self.db_object)
-        self.db.commit()
+        self.session.delete(self.db_object)
+        self.session.commit()
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
             if hasattr(self.db_object, key):
                 setattr(self.db_object, key, value)
-        self.db.commit()
+        self.session.commit()

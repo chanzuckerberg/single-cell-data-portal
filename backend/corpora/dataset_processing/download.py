@@ -6,9 +6,9 @@ from sqlalchemy import inspect
 
 from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_utils import db_session_manager
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing.exceptions import ProcessingCanceled, ProcessingFailed
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class ProgressTracker:
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
         self.error: Exception = None  # Track errors
+        self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):
         with self.progress_lock:
@@ -31,6 +32,7 @@ class ProgressTracker:
             self._progress += progress
 
     def cancel(self):
+        self.tombstoned = True
         self.stop_downloader.set()
         self.stop_updater.set()
 
@@ -69,27 +71,20 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
     """
     Update the progress of an upload to the database using the tracker.
 
-    :param processing_status_uuid: The uuid of the processing_status row.
+    :param processing_status: the SQLAlchemy ProcessingStatus object
     :param tracker: Tracks information about the progress of the upload.
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
+    db_session = inspect(processing_status).session
 
     def _update():
-        curr_status = processing_status.upload_status
         progress = tracker.progress()
-
-        if curr_status is UploadStatus.CANCEL_PENDING:
-            logger.info(f"cancelling the upload for {processing_status.dataset.id}")
-            # set db to cancelled
-            status = {
-                "upload_progress": 0,
-                "upload_status": UploadStatus.CANCELED,
-                "upload_message": "Canceled by user",
-            }
+        dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
+        if dataset.tombstone:
             tracker.cancel()
-        elif curr_status is UploadStatus.CANCELED:
             return
+
         elif progress > 1:
             tracker.stop_downloader.set()
             message = "The expected file size is smaller than the actual file size."
@@ -113,7 +108,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         else:
             status = {"upload_progress": progress}
         _processing_status_updater(processing_status, status)
-        inspect(processing_status).session.commit()
+        db_session.commit()
 
     try:
         while not tracker.stop_updater.wait(frequency):
@@ -148,8 +143,8 @@ def download(
 
     :return: The current dataset processing status.
     """
-    with db_session_manager(commit=True):
-        processing_status = Dataset.get(dataset_uuid).processing_status
+    with db_session_manager() as session:
+        processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         progress_tracker = ProgressTracker(file_size)
@@ -166,6 +161,8 @@ def download(
         download_thread.start()
         download_thread.join()  # Wait for the download thread to complete
         progress_thread.join()  # Wait for the progress thread to complete
+        if progress_tracker.tombstoned:
+            raise ProcessingCancelled
         if progress_tracker.error:
             status = {
                 "upload_status": UploadStatus.FAILED,
@@ -174,9 +171,7 @@ def download(
             _processing_status_updater(processing_status, status)
 
         status_dict = processing_status.to_dict()
-        if processing_status.upload_status == UploadStatus.CANCELED:
-            raise ProcessingCanceled(status_dict)
-        elif processing_status.upload_status == UploadStatus.FAILED:
+        if processing_status.upload_status == UploadStatus.FAILED:
             raise ProcessingFailed(status_dict)
         else:
             return status_dict

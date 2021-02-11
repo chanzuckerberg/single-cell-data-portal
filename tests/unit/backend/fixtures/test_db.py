@@ -14,7 +14,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     ProcessingStatus,
 )
-from backend.corpora.common.utils.db_utils import DbUtils
+from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
 
@@ -43,9 +43,10 @@ class TestDatabase:
         create_db()
 
     def populate_test_data(self):
-        self.db = DbUtils()
+        self.session = DBSessionMaker().session()
         self._populate_test_data()
-        del self.db
+        self.session.close()
+        del self.session
 
     def _populate_test_data(self):
         self._create_test_collections()
@@ -63,7 +64,7 @@ class TestDatabase:
             description="test_description",
             data_submission_policy_version="0",
         )
-        self.db.session.add(collection)
+        self.session.add(collection)
         collection = DbCollection(
             id="test_collection_id",
             visibility=CollectionVisibility.PRIVATE.name,
@@ -72,7 +73,7 @@ class TestDatabase:
             description="test_description",
             data_submission_policy_version="0",
         )
-        self.db.session.add(collection)
+        self.session.add(collection)
         collection = DbCollection(
             id="test_collection_id_public",
             visibility=CollectionVisibility.PUBLIC.name,
@@ -81,7 +82,7 @@ class TestDatabase:
             description="test_description",
             data_submission_policy_version="0",
         )
-        self.db.session.add(collection)
+        self.session.add(collection)
         collection = DbCollection(
             id="test_collection_id_not_owner",
             visibility=CollectionVisibility.PRIVATE.name,
@@ -90,8 +91,8 @@ class TestDatabase:
             description="test_description",
             data_submission_policy_version="0",
         )
-        self.db.session.add(collection)
-        self.db.session.commit()
+        self.session.add(collection)
+        self.session.commit()
 
     def _create_test_collection_links(self):
         collection_link = DbCollectionLink(
@@ -102,7 +103,7 @@ class TestDatabase:
             link_url="test_url",
             link_type=CollectionLinkType.RAW_DATA.name,
         )
-        self.db.session.add(collection_link)
+        self.session.add(collection_link)
         collection_summary_link = DbCollectionLink(
             id="test_collection_summary_link_id",
             collection_id="test_collection_id",
@@ -111,8 +112,8 @@ class TestDatabase:
             link_url="test_summary_url",
             link_type=CollectionLinkType.OTHER.name,
         )
-        self.db.session.add(collection_summary_link)
-        self.db.session.commit()
+        self.session.add(collection_summary_link)
+        self.session.commit()
 
     def _create_test_datasets(self):
         test_dataset_id = "test_dataset_id"
@@ -134,7 +135,7 @@ class TestDatabase:
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
-        self.db.session.add(dataset)
+        self.session.add(dataset)
         dataset = DbDataset(
             id="test_dataset_id_not_owner",
             revision=0,
@@ -153,14 +154,14 @@ class TestDatabase:
             collection_id="test_collection_id_not_owner",
             collection_visibility=CollectionVisibility.PRIVATE.name,
         )
-        self.db.session.add(dataset)
-        self.db.session.commit()
+        self.session.add(dataset)
+        self.session.commit()
 
         deployment_directory = DbDeploymentDirectory(
             id="test_deployment_directory_id", dataset_id=test_dataset_id, url="test_url"
         )
-        self.db.session.add(deployment_directory)
-        self.db.session.commit()
+        self.session.add(deployment_directory)
+        self.session.commit()
 
     def _create_test_dataset_artifacts(self):
         dataset_artifact = DbDatasetArtifact(
@@ -172,8 +173,8 @@ class TestDatabase:
             user_submitted=True,
             s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
         )
-        self.db.session.add(dataset_artifact)
-        self.db.session.commit()
+        self.session.add(dataset_artifact)
+        self.session.commit()
 
     def _create_test_dataset_processing_status(self):
         dataset_processing_status = DbDatasetProcessingStatus(
@@ -188,5 +189,5 @@ class TestDatabase:
             conversion_cxg_status=ConversionStatus.NA,
             conversion_anndata_status=ConversionStatus.NA,
         )
-        self.db.session.add(dataset_processing_status)
-        self.db.session.commit()
+        self.session.add(dataset_processing_status)
+        self.session.commit()
