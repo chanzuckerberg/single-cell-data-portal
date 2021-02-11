@@ -122,7 +122,8 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCanceled
+from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -135,8 +136,7 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils import dropbox
-from backend.corpora.common.utils.db_session import processing_status_updater, db_session_manager
+from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
 from backend.corpora.dataset_processing.download import download
 
 # This is unfortunate, but this information doesn't appear to live anywhere
@@ -212,9 +212,17 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
 
 
+def cancel_dataset(dataset_id):
+    with db_session_manager() as session:
+        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+        dataset.dataset_and_asset_deletion()
+
+
 def update_db(dataset_id, metadata=None, processing_status=None):
     with db_session_manager() as session:
-        dataset = Dataset.get(session, dataset_id)
+        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+        if dataset.tombstone:
+            raise ProcessingCancelled
 
         if metadata:
             # TODO: Delete this line once mean_genes_per_cell is in the db
@@ -231,11 +239,11 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = dropbox.get_download_url_from_shared_link(dropbox_url)
+    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
     if not fixed_dropbox_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    file_info = dropbox.get_file_info(fixed_dropbox_url)
+    file_info = get_file_info(fixed_dropbox_url)
     status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     logger.info(status)
     return local_path
@@ -384,28 +392,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
-def main():
-    check_env()
-    dataset_id = os.environ["DATASET_ID"]
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
-    try:
-        local_filename = download_from_dropbox_url(
-            dataset_id,
-            os.environ["DROPBOX_URL"],
-            "local.h5ad",
-        )
-    except ProcessingCanceled as ex:
-        logging.info(ex.status)
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
-        sys.exit(0)
-    except ProcessingFailed as ex:
-        logging.error(ex.status)
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
-        sys.exit(1)
-    else:
-        logger.info("Download complete", flush=True)
-
-    # Validate the H5AD file
+def validate_h5ad_file(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene", "schema", "validate", local_filename], capture_output=True)
     if val_proc.returncode != 0:
@@ -418,7 +405,7 @@ def main():
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
-        sys.exit(1)
+        raise ValidationFailed
     else:
         logger.info("Validation complete", flush=True)
         status = dict(
@@ -430,21 +417,43 @@ def main():
         )
         update_db(dataset_id, processing_status=status)
 
-    # Process cxg
-    process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
-    # Process metadata
-    metadata = extract_metadata(local_filename)
-    logger.info(metadata, flush=True)
-    update_db(dataset_id, metadata)
+def main():
+    check_env()
+    dataset_id = os.environ["DATASET_ID"]
+    try:
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+        local_filename = download_from_dropbox_url(
+            dataset_id,
+            os.environ["DROPBOX_URL"],
+            "local.h5ad",
+        )
+        logger.info("Download complete", flush=True)
 
-    # create artifacts
-    create_artifacts(
-        local_filename,
-        dataset_id,
-        os.environ["ARTIFACT_BUCKET"],
-    )
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        validate_h5ad_file(dataset_id, local_filename)
+        process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
+
+        # Process metadata
+        metadata = extract_metadata(local_filename)
+        logger.info(metadata, flush=True)
+        update_db(dataset_id, metadata)
+
+        # create artifacts
+        create_artifacts(
+            local_filename,
+            dataset_id,
+            os.environ["ARTIFACT_BUCKET"],
+        )
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    except ProcessingCancelled:
+        cancel_dataset(dataset_id)
+        sys.exit(0)
+    except ProcessingFailed as ex:
+        logging.error(ex.status)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
+        sys.exit(1)
+    except ValidationFailed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

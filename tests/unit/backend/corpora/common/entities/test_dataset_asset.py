@@ -73,6 +73,53 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         self.assertIn("Failed to retrieve meta data", logger.output[0])
         self.assertIsNone(file_size)
 
+    def test__delete_dataset_asset__ok(self):
+        file_name = "test_head_file.txt"
+        content = "This is test_head_file."
+
+        # Create S3 object
+        self.create_s3_object(file_name, self.bucket_name, content=content)
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset(file_name)
+
+        # Check file exists in s3 by getting the file size
+        file_size = asset.get_file_size()
+        self.assertEqual(len(content), file_size)
+
+        # Delete the asset
+        asset.delete_from_s3()
+
+        # Check file is no longer in s3
+        with self.assertLogs(level="ERROR") as logger:
+            file_size = asset.get_file_size()
+        self.assertIn("Failed to retrieve meta data", logger.output[0])
+
+    def test__delete_dataset_asset__not_found(self):
+        file_name = "test_head_file.txt"
+        content = "This is test_head_file."
+
+        # Create S3 object
+        self.create_s3_object(file_name, self.bucket_name, content=content)
+
+        # Create the Dataset Asset
+        asset = self.create_dataset_asset(file_name)
+
+        # Check file exists in s3 by getting the file size
+        file_size = asset.get_file_size()
+        self.assertEqual(len(content), file_size)
+
+        # Delete the asset
+        asset.delete_from_s3()
+
+        # Check file is no longer in s3
+        with self.assertLogs(level="ERROR") as logger:
+            file_size = asset.get_file_size()
+        self.assertIn("Failed to retrieve meta data", logger.output[0])
+
+        # Delete an asset that no longer exists - this should not raise an error
+        asset.delete_from_s3()
+
     def create_dataset_asset(self, file_name):
         # Create the Dataset Asset
         artifact_params = dict(

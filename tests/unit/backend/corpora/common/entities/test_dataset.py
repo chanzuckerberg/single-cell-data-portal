@@ -16,8 +16,8 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 class TestDataset(DataPortalTestCase):
@@ -48,6 +48,34 @@ class TestDataset(DataPortalTestCase):
         non_existent_key = "non_existent_id"
         self.assertEqual(Dataset.get(self.session, non_existent_key), None)
 
+    def create_dataset_with_artifacts(self, artifact_count=1, deployment_dir_count=1, artifact_params=None):
+        """
+        Create a dataset with a variable number of artifacts, and deployment_directories
+        """
+        if not artifact_params:
+            artifact_params = dict(
+                filename="filename_x",
+                filetype=DatasetArtifactFileType.H5AD,
+                type=DatasetArtifactType.ORIGINAL,
+                user_submitted=True,
+                s3_uri="some_uri",
+            )
+
+        deployment_directory_params = dict(url="test_url")
+
+        dataset_params = BogusDatasetParams.get()
+        dataset = self.generate_dataset(
+            **dataset_params,
+            artifacts=[artifact_params] * artifact_count,
+            deployment_directories=[deployment_directory_params] * deployment_dir_count,
+            processing_status={
+                "upload_progress": 9 / 13,
+                "upload_status": UploadStatus.UPLOADING,
+                "validation_status": ValidationStatus.NA,
+            },
+        )
+        return dataset
+
     def test__create__ok(self):
         """
         Create a dataset with a variable number of artifacts, and deployment_directories
@@ -60,17 +88,10 @@ class TestDataset(DataPortalTestCase):
             s3_uri="some_uri",
         )
 
-        deployment_directory_params = dict(url="test_url")
-
-        dataset_params = BogusDatasetParams.get()
-
         for i in range(3):
             with self.subTest(i):
-                dataset = Dataset.create(
-                    self.session,
-                    **dataset_params,
-                    artifacts=[artifact_params] * i,
-                    deployment_directories=[deployment_directory_params] * i,
+                dataset = self.create_dataset_with_artifacts(
+                    artifact_count=i, deployment_dir_count=i, artifact_params=artifact_params
                 )
 
                 expected_dataset_id = dataset.id
@@ -219,6 +240,19 @@ class TestDataset(DataPortalTestCase):
         dataset = Dataset.get(self.session, self.uuid)
         asset = dataset.get_asset("fake_asset")
         self.assertIsNone(asset)
+
+    def test__tombstone_dataset_and_delete_child_objects(self):
+        dataset = self.create_dataset_with_artifacts(artifact_count=3, deployment_dir_count=2)
+        self.assertEqual(dataset.processing_status.upload_status, UploadStatus.UPLOADING)
+        self.assertEqual(len(dataset.artifacts), 3)
+        self.assertEqual(len(dataset.deployment_directories), 2)
+        self.assertFalse(dataset.tombstone)
+
+        dataset.tombstone_dataset_and_delete_child_objects()
+        self.assertEqual(len(dataset.artifacts), 0)
+        self.assertEqual(len(dataset.deployment_directories), 0)
+        self.assertTrue(dataset.tombstone)
+        self.assertIsNone(dataset.processing_status)
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """

@@ -161,7 +161,7 @@ class DbCollection(Base, AuditMixin):
     contact_name = Column(String, default="")
     contact_email = Column(String, default="")
     data_submission_policy_version = Column(String, nullable=False)
-    tombstone = Column(Boolean, default=False)
+    tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
@@ -218,7 +218,7 @@ class DbDataset(Base, AuditMixin):
     is_valid = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
-    tombstone = Column(Boolean, default=False)
+    tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")

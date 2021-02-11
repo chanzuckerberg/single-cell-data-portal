@@ -4,6 +4,7 @@ import os
 import pathlib
 import shutil
 import tempfile
+import time
 from unittest.mock import patch
 
 import anndata
@@ -23,8 +24,9 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
-from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions
+from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions, download_from_dropbox_url
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -314,6 +316,16 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         fake_env.stop()
 
+    def test_update_db__tombstoned_dataset(self):
+        dataset = self.generate_dataset(tombstone=True)
+        dataset_id = dataset.id
+
+        fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
+        fake_env.start()
+
+        with self.assertRaises(ProcessingCancelled):
+            process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_create_artifacts(self, make_seurat, make_loom):
@@ -490,3 +502,32 @@ class TestDatasetProcessing(DataPortalTestCase):
             filename, status = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error")
         self.assertIsNone(filename)
         self.assertEqual(ConversionStatus.FAILED, status)
+
+    def mock_downloader_function(self, url, local_path, tracker, chunk_size):
+        time.sleep(1)
+        dataset = Dataset.get(self.dataset_id)
+        dataset.update(tombstone=True)
+        for x in range(10):
+            if tracker.stop_downloader.is_set():
+                return
+            time.sleep(3)
+
+    @patch("backend.corpora.dataset_processing.download.downloader")
+    @patch("backend.corpora.dataset_processing.process.get_file_info")
+    @patch("backend.corpora.dataset_processing.process.get_download_url_from_shared_link")
+    def test__dataset_tombstoned_while_uploading(self, mock_get_link, mock_get_size, mock_downloader):
+        mock_downloader.side_effect = self.mock_downloader_function
+        mock_get_link.return_value = "url.com"
+        mock_get_size.return_value = {"size": 12}
+        self.dataset_id = self.generate_dataset().id
+        start = time.time()
+        # check that changing the db status leads to an exception being raised
+        with self.assertRaises(ProcessingCancelled):
+            download_from_dropbox_url(
+                self.dataset_id,
+                "dropbox.com",
+                "local.h5ad",
+            )
+        end = time.time()
+        # check that tombstoning ends the download thread early
+        self.assertLess(end - start, 11)
