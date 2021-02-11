@@ -13,6 +13,7 @@
 1. Run the following command to install prerequisites:
    ```
    pip install -r .happy/requirements.txt
+   pip install -r .happy/requirements2.txt
    ```
 
 ### Overview

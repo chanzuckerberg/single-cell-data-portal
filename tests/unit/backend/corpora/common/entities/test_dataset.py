@@ -16,14 +16,15 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestDataset(DataPortalTestCase):
+class TestDataset(CorporaTestCaseUsingMockAWS):
     def setUp(self):
-        self.uuid = "test_dataset_id"
         super().setUp()
+        self.uuid = "test_dataset_id"
+        self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
 
     def test__get__ok(self):
         dataset = Dataset.get(self.session, self.uuid)
@@ -254,6 +255,25 @@ class TestDataset(DataPortalTestCase):
         self.assertEqual(len(dataset.deployment_directories), 0)
         self.assertTrue(dataset.tombstone)
         self.assertIsNone(dataset.processing_status)
+
+    def test__tombstone_deletes_assets_from_s3(self):
+        file_name = "local.h5ad"
+        self.create_s3_object(file_name, self.bucket_name, content="hgdklgk dflgjklf")
+        artifact_params = dict(
+            filename="filename_1",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=f"s3://{self.bucket_name}/{file_name}",
+        )
+        dataset_params = BogusDatasetParams.get()
+        dataset = Dataset.create(
+            self.session,
+            **dataset_params,
+            artifacts=[artifact_params],
+        )
+        dataset.dataset_and_asset_deletion()
+        self.assertEqual(len(dataset.artifacts), 0)
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
