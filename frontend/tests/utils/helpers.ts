@@ -1,4 +1,4 @@
-import { TEST_URL } from "tests/common/constants";
+import { TEST_EMAIL, TEST_URL } from "../common/constants";
 import { getText } from "./selectors";
 
 export async function goToPage(url: string = TEST_URL) {
@@ -6,22 +6,25 @@ export async function goToPage(url: string = TEST_URL) {
 }
 
 export async function login() {
-  const email = `cellxgene-smoke-test+${process.env.DEPLOYMENT_STAGE}@chanzuckerberg.com`;
-  const password = "Test1111";
+  try {
+    await expect(page).toHaveSelector(getText("My Collections"));
+  } catch (error) {
+    const password = "Test1111";
 
-  const url = await page.url();
+    const url = page.url();
 
-  await page.click(getText("Log In"));
+    await page.click(getText("Log In"));
 
-  await page.fill('[name="email"', email);
-  await page.fill('[name="password"', password);
+    await page.fill('[name="email"]', TEST_EMAIL);
+    await page.fill('[name="password"]', password);
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "networkidle" }),
-    page.click('[name="submit"]'),
-  ]);
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      page.click('[name="submit"]'),
+    ]);
 
-  expect(page.url()).toContain(url);
+    expect(page.url()).toContain(url);
+  }
 }
 
 export async function tryUntil(assert: () => void) {
@@ -30,6 +33,8 @@ export async function tryUntil(assert: () => void) {
 
   let retry = 0;
 
+  let savedError: Error = new Error();
+
   while (retry < MAX_RETRY) {
     try {
       await assert();
@@ -37,12 +42,13 @@ export async function tryUntil(assert: () => void) {
       break;
     } catch (error) {
       retry += 1;
-
+      savedError = error;
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
   if (retry === MAX_RETRY) {
-    throw Error("tryUntil() assertion failed!");
+    savedError.message += " tryUntil() failed";
+    throw savedError;
   }
 }
