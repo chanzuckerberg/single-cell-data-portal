@@ -12,8 +12,9 @@ import {
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
 } from "src/components/Collections/components/Grid/common/style";
-import { UploadedFiles } from "src/views/Collection";
+import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import DatasetRow from "../Row/DatasetRow";
+
 interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
