@@ -432,3 +432,62 @@ class TestCollection(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(path.url, headers)
         response.raise_for_status()
+
+
+   class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
+        def test_delete_collection__ok(self):
+            # Generate test collection
+            collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
+            processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+            processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
+
+            dataset_1 = self.generate_dataset(collection=collection, processing_status=processing_status_1)
+            dataset_2 = self.generate_dataset(collection=collection, processing_status=processing_status_2)
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+            test_url = furl(path=f"/dp/v1/collections/{collection.id}")
+            test_url.add(query_params=dict(visibility="PRIVATE"))
+            response = self.app.get(test_url.url, headers=headers)
+            response.raise_for_status()
+            import pdb
+            pdb.set_trace()
+            body = json.loads(response.body)
+            dataset_ids = [dataset['id'] for dataset in body['datasets']]
+            self.assertIn(dataset_1.id, dataset_ids)
+            self.assertIn(dataset_2.id, dataset_ids)
+
+            # delete collection
+            response = self.app.delete(test_url.url, headers=headers)
+            response.raise_for_status()
+            self.assertEqual(response.status_code, 202)
+
+            # check collection and datasets tombstoned
+            d1 = Dataset.get(dataset_1.id)
+            d2 = Dataset.get(dataset_2.id)
+            collection = Collection.get(collection.id, CollectionVisibility.PRIVATE.name)
+            self.assertTrue(d1.tombstone)
+            self.assertTrue(d2.tombstone)
+            self.assertTrue(collection.tombstone)
+
+            response = self.app.get(test_url.url, headers=headers)
+            import pdb
+            pdb.set_trace()
+
+            assert 1 == 2
+
+        def test_delete_collection__already_tombstoned__ok(self):
+            collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id",
+                                                  tombstone=True)
+
+        def test_delete_collection__public(self):
+            collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+
+        def test_delete_collection__not_owner(self):
+            collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="someone_else")
+
+        def test_delete_collection__404(self):
+            fake_uuik = str(uuid.uuid4())
+
+        def test_deleted_collection_does_not_appear_in_collection_lists(self):
+            # test public and private
+            collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")

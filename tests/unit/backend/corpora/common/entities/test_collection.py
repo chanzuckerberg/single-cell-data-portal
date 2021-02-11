@@ -197,3 +197,6 @@ class TestCollection(DataPortalTestCase):
         test_collection = Collection.create(self.session, **BogusCollectionParams.get())
         response = test_collection.reshape_for_api()
         self.assertEqual([], response["datasets"])
+
+    def test_tombstone_collection_tombstones_all_datasets_in_collection(self):
+        pass

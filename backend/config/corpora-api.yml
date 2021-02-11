@@ -151,12 +151,15 @@ paths:
       summary: Delete a collection
       security:
         - cxguserCookie: [ ]
+        - dummyAuth: [ ]
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
       operationId: corpora.lambdas.api.v1.collection_uuid.delete
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/query_visibility"
+
       responses:
         "202":
           $ref: "#/components/responses/202"
