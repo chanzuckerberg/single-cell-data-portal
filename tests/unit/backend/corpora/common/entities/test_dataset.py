@@ -1,5 +1,7 @@
 import typing
 
+from moto import mock_s3
+
 from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
     DbDatasetProcessingStatus,
@@ -250,6 +252,13 @@ class TestDataset(DataPortalTestCase, GenerateDataMixin):
         self.assertEqual(len(dataset.deployment_directories), 0)
         self.assertTrue(dataset.tombstone)
         self.assertIsNone(dataset.processing_status)
+
+    @mock_s3
+    def test__tombstone_deletes_assets_from_s3(self):
+        dataset = self.create_dataset_with_artifacts(artifact_count=3)
+        dataset.dataset_and_asset_deletion()
+        self.assertEqual(len(dataset.artifacts), 0)
+
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
