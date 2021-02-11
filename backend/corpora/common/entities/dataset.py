@@ -133,7 +133,7 @@ class Dataset(Entity):
 
     def dataset_and_asset_deletion(self):
         for artifact in self.artifacts:
-            asset = DatasetAsset.get(artifact.uuid)
+            asset = DatasetAsset.get(artifact.id)
             asset.delete_from_s3()
         self.tombstone_dataset_and_delete_child_objects()
 
