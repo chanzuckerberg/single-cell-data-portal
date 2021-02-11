@@ -253,7 +253,6 @@ class TestDataset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         self.assertTrue(dataset.tombstone)
         self.assertIsNone(dataset.processing_status)
 
-
     def test__tombstone_deletes_assets_from_s3(self):
         file_name = "local.h5ad"
         self.create_s3_object(file_name, self.bucket_name, content="hgdklgk dflgjklf")
