@@ -41,13 +41,28 @@ jobs:
           npm run prettier-check
           npm run lint
           docker-compose run --no-deps --rm frontend make lint
-      - name: slack notify
+#       - uses: 8398a7/action-slack@v3
+#         with:
+#           status: ${{ job.status }}
+#           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} # required
+          
+#         if: failure() # Pick up events even if the job fails or is canceled
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
         if: failure()
         env:
-          GITHUB_WORKFLOW_URL: https://github.com/${GITHUB_REPOSITORY }/actions/runs/${GITHUB_RUN_ID}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data "{'text':'$GITHUB_WORKFLOW failure in $GITHUB_REPOSITORY:$GITHUB_HEAD_REF, https://github.com/$GITHUB_REPOSITORY /actions/runs/$GITHUB_RUN_ID'}" $SLACK_WEBHOOK
+          SLACK_CHANNEL:  test-webhooks
+          SLACK_COLOR: danger
+#       - name: slack notify
+#         if: failure()
+#         env:
+#           GITHUB_WORKFLOW_URL: https://github.com/${GITHUB_REPOSITORY }/actions/runs/${GITHUB_RUN_ID}
+#           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+#         run: |
+#           curl -X POST -H 'Content-type: application/json' --data "{'text':'$GITHUB_WORKFLOW failure in $GITHUB_REPOSITORY:$GITHUB_HEAD_REF, https://github.com/$GITHUB_REPOSITORY /actions/runs/$GITHUB_RUN_ID'}" $SLACK_WEBHOOK
 
   smoke-test:
     runs-on: ubuntu-20.04
