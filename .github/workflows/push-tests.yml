@@ -38,8 +38,6 @@ jobs:
           docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
       - name: Lint frontend
         run: |
-          npm run prettier-check
-          npm run lint
           docker-compose run --no-deps --rm frontend make lint
       - uses: 8398a7/action-slack@v3
         with:
