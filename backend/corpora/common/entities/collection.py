@@ -57,8 +57,9 @@ class Collection(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def get_collection(cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name,
-                       include_tombstones=False):
+    def get_collection(
+        cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name, include_tombstones=False
+    ):
         """
         Given the collection_uuid, retrieve a live collection.
         :param collection_uuid:
@@ -68,7 +69,6 @@ class Collection(Entity):
             if collection and collection.tombstone is True:
                 return None
         return collection
-
 
     @classmethod
     def if_owner(
@@ -178,4 +178,3 @@ class Collection(Entity):
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.dataset_and_asset_deletion()
-

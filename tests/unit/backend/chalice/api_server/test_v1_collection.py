@@ -6,7 +6,7 @@ from datetime import datetime
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus
-from backend.corpora.common.entities import Collection, Dataset
+from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
@@ -434,7 +434,9 @@ class TestCollection(BaseAuthAPITest):
 class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
     def test_delete_collection__ok(self):
         # Generate test collection
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
         processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
@@ -448,7 +450,7 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         response.raise_for_status()
 
         body = json.loads(response.body)
-        dataset_ids = [dataset['id'] for dataset in body['datasets']]
+        dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertIn(dataset_1.id, dataset_ids)
         self.assertIn(dataset_2.id, dataset_ids)
 
@@ -459,7 +461,9 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
 
         # check collection and datasets tombstoned
         self.session.expire_all()
-        collection = Collection.get_collection(self.session, collection.id, CollectionVisibility.PRIVATE.name, include_tombstones=True)
+        collection = Collection.get_collection(
+            self.session, collection.id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
 
         self.assertTrue(collection.tombstone)
         self.assertTrue(dataset_1.tombstone)
@@ -468,10 +472,32 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
+    def test_delete_collection__dataset_not_available(self):
+        # Generate test collection
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
+
+        dataset = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        dataset_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
+        response = self.app.get(dataset_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}")
+        test_url.add(query_params=dict(visibility="PRIVATE"))
+        response = self.app.delete(test_url.url, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(response.status_code, 202)
+
+        response = self.app.get(dataset_url.url, headers=headers)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__already_tombstoned__ok(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id",
-                                              tombstone=True)
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", tombstone=True
+        )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -479,7 +505,9 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         self.assertEqual(response.status_code, 202)
 
     def test_delete_collection__public(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -487,7 +515,9 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__not_owner(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
+        )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -503,15 +533,21 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         self.assertEqual(response.status_code, 403)
 
     def test_deleted_collection_does_not_appear_in_collection_lists(self):
-        collection0 = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
-        collection1 = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
-        collection_to_delete = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id")
+        private_collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        public_collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
+        collection_to_delete = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get("/dp/v1/collections/", headers=headers)
 
-        collection_ids = [collection['id'] for collection in json.loads(response.body)['collections']]
-        self.assertIn(collection0.id, collection_ids)
-        self.assertIn(collection1.id, collection_ids)
+        collection_ids = [collection["id"] for collection in json.loads(response.body)["collections"]]
+        self.assertIn(private_collection.id, collection_ids)
+        self.assertIn(public_collection.id, collection_ids)
         self.assertIn(collection_to_delete.id, collection_ids)
 
         test_url = furl(path=f"/dp/v1/collections/{collection_to_delete.id}")
@@ -519,10 +555,18 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
-        # check not returned
+        # check not returned privately
         response = self.app.get("/dp/v1/collections/", headers=headers)
-        collection_ids = [collection['id'] for collection in json.loads(response.body)['collections']]
-        self.assertIn(collection0.id, collection_ids)
-        self.assertIn(collection1.id, collection_ids)
+        collection_ids = [collection["id"] for collection in json.loads(response.body)["collections"]]
+        self.assertIn(private_collection.id, collection_ids)
+        self.assertIn(public_collection.id, collection_ids)
 
+        self.assertNotIn(collection_to_delete.id, collection_ids)
+
+        # check not returned publicly
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get("/dp/v1/collections/", headers=headers)
+        collection_ids = [collection["id"] for collection in json.loads(response.body)["collections"]]
+        self.assertIn(public_collection.id, collection_ids)
+        self.assertNotIn(private_collection.id, collection_ids)
         self.assertNotIn(collection_to_delete.id, collection_ids)
