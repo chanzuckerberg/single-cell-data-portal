@@ -1,5 +1,5 @@
-import React, { FC } from "react";
-import { ACCESS_TYPE } from "src/common/entities";
+import React, { FC, ReactChild } from "react";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { CollectionResponse } from "src/common/queries/collections";
 import {
   CollectionHeaderCell,
@@ -12,9 +12,14 @@ import CollectionRow from "../Row/CollectionRow";
 interface Props {
   collections: CollectionResponse[];
   accessType: ACCESS_TYPE;
+  displayVisibility?: VISIBILITY_TYPE;
 }
 
-const CollectionsGrid: FC<Props> = ({ collections, accessType }) => {
+const CollectionsGrid: FC<Props> = ({
+  collections,
+  accessType,
+  displayVisibility,
+}) => {
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -28,14 +33,19 @@ const CollectionsGrid: FC<Props> = ({ collections, accessType }) => {
         </tr>
       </thead>
       <tbody>
-        {collections?.map(({ id, visibility }) => (
-          <CollectionRow
-            id={id}
-            key={id + visibility}
-            visibility={visibility}
-            accessType={accessType}
-          />
-        ))}
+        {collections?.reduce((acc, { id, visibility }) => {
+          if (displayVisibility && visibility === displayVisibility) {
+            acc.push(
+              <CollectionRow
+                id={id}
+                key={id + visibility}
+                visibility={visibility}
+                accessType={accessType}
+              />
+            );
+          }
+          return acc;
+        }, [] as Array<ReactChild>)}
       </tbody>
     </StyledCollectionsGrid>
   );

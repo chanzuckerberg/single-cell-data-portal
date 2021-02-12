@@ -1,8 +1,8 @@
 import React, { FC } from "react";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
-import Collection from "./components/Collection";
-import Heading from "./components/Heading";
+import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
 import { TitleWrapper } from "./style";
 
 const Collections: FC = () => {
@@ -15,22 +15,15 @@ const Collections: FC = () => {
   return (
     <>
       <TitleWrapper>
-        <h1>Datasets</h1>
+        <h1>Collections</h1>
         <CreateCollection />
       </TitleWrapper>
-      <p>
-        The cellxgene data portal is a repository of public, explorable
-        single-cell datasets. If you have a public dataset that you would like
-        hosted on this site, please let us know at{" "}
-        <a href="mailto:cellxgene@chanzuckerberg.com">
-          cellxgene@chanzuckerberg.com
-        </a>
-        .
-      </p>
-      <Heading />
-      {collections?.map(({ id, visibility }) => (
-        <Collection id={id} visibility={visibility} key={id} />
-      ))}
+      <p>Explore public collections of datasets or create your own.</p>
+      <CollectionsGrid
+        collections={collections}
+        accessType={ACCESS_TYPE.READ}
+        displayVisibility={VISIBILITY_TYPE.PUBLIC}
+      />
     </>
   );
 };
