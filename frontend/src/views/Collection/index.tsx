@@ -99,7 +99,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <CollectionButtons>
-        <DeleteCollection id={id} />
+        {isPrivate && <DeleteCollection id={id} />}
         <Button
           intent={Intent.PRIMARY}
           minimal

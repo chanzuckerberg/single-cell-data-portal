@@ -7,6 +7,7 @@ import {
   Dataset,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
+  VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
@@ -154,25 +155,27 @@ const DatasetRow: FC<Props> = ({
             checked={selected === dataset.id}
           />
           <div>{name}</div>
-          {!isLoading && (
-            <ErrorTooltip isFailed={isFailed} error={error} type={type} />
-          )}
+          {!isLoading &&
+            dataset.collection_visibility === VISIBILITY_TYPE.PRIVATE && (
+              <ErrorTooltip isFailed={isFailed} error={error} type={type} />
+            )}
         </TitleContainer>
-        {isLoading && (
-          <AsyncUploadStatus
-            isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
-            isConverting={
-              getConversionStatus(datasetStatus) ===
-              CONVERSION_STATUS.CONVERTING
-            }
-            isValidating={
-              datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
-            }
-            progress={datasetStatus.upload_progress}
-            datasetId={dataset.id}
-            collectionId={dataset.collection_id}
-          />
-        )}
+        {isLoading &&
+          dataset.collection_visibility === VISIBILITY_TYPE.PRIVATE && (
+            <AsyncUploadStatus
+              isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
+              isConverting={
+                getConversionStatus(datasetStatus) ===
+                CONVERSION_STATUS.CONVERTING
+              }
+              isValidating={
+                datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
+              }
+              progress={datasetStatus.upload_progress}
+              datasetId={dataset.id}
+              collectionId={dataset.collection_id}
+            />
+          )}
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
       <Popover values={assay} isLoading={isMetadataLoading} />
