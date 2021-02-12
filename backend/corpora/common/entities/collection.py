@@ -110,7 +110,7 @@ class Collection(Entity):
         """
 
         filters = filters if filters else []
-        filters.append(cls.table.tombstone == False)
+        filters.append(cls.table.tombstone == False)  # noqa
         list_attributes = list_attributes if list_attributes else cls.list_attributes
         table = cls.table
 
