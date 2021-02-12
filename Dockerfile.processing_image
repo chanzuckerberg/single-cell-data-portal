@@ -22,7 +22,7 @@ RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudi
 
 
 # Install python dependencies
-RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 \
+RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 tiledb==0.7.4 \
                  git+https://github.com/chanzuckerberg/cellxgene.git#egg=cellxgene \
                  awscli
 
