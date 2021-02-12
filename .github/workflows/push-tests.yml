@@ -44,13 +44,12 @@ jobs:
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
-          mention: 'trent.smith'
-          author_name: ${{ github.job }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() # Pick up events even if the job fails or is canceled.
-    
+        if: failure() && github.ref == 'refs/heads/main'
+
   smoke-test:
     runs-on: ubuntu-20.04
     steps:
@@ -78,6 +77,14 @@ jobs:
           pip install -r .happy/requirements.txt
           pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   build-extra-images:
     runs-on: ubuntu-20.04
@@ -102,6 +109,14 @@ jobs:
           pip install -r .happy/requirements.txt
           pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures processing
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   unit-test:
     runs-on: ubuntu-20.04
@@ -124,6 +139,14 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-sync
           make local-unit-test
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   push-image:
     needs:
@@ -153,6 +176,14 @@ jobs:
           pip install -r .happy/requirements.txt
           pip install -r .happy/requirements2.txt
           scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   push-upload-image:
     needs:
@@ -188,3 +219,11 @@ jobs:
               docker tag ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8} ${UPLOAD_ECR}/corpora-upload-dev:${tag}
               docker push ${UPLOAD_ECR}/corpora-upload-dev:${tag}
           done
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: here
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
