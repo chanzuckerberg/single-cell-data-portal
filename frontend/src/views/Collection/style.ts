@@ -28,14 +28,6 @@ export const DatasetContainer = styled.div`
   grid-column: 1 / span 8;
 `;
 
-export const StyledDiv = styled.div`
-  display: flex;
-  flex-direction: row;
-  & > :not(:last-child) {
-    margin-right: ${PT_GRID_SIZE_PX}px;
-  }
-`;
-
 export const CollectionButtons = styled.div`
   grid-column: 6 / span 3;
   justify-self: end;

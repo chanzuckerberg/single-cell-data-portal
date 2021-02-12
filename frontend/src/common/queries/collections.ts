@@ -114,7 +114,7 @@ export const formDataToObject = function (formData: FormData) {
   return payload;
 };
 
-type CollectionUploadLinks = {
+export type CollectionUploadLinks = {
   collectionId: string;
   payload: string;
 };

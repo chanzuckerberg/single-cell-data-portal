@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { Dataset } from "src/common/entities";
 import Modal from "src/components/common/Modal";
-import { SmallColumn } from "../../common/style";
 import Content from "./components/Content";
 import { StyledButton } from "./style";
 
@@ -23,7 +22,7 @@ const DownloadDataset: FC<Props> = ({
   const toggleOpen = () => setIsOpen(!isOpen);
 
   return (
-    <SmallColumn>
+    <>
       <Button
         disabled={isDisabled}
         onClick={toggleOpen}
@@ -34,7 +33,7 @@ const DownloadDataset: FC<Props> = ({
       <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
         <Content name={name} dataAssets={dataAssets} onClose={toggleOpen} />
       </Modal>
-    </SmallColumn>
+    </>
   );
 };
 
