@@ -199,4 +199,21 @@ class TestCollection(DataPortalTestCase):
         self.assertEqual([], response["datasets"])
 
     def test_tombstone_collection_tombstones_all_datasets_in_collection(self):
-        pass
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        self.generate_dataset(self.session, collection=collection)
+        self.generate_dataset(self.session, collection=collection)
+
+        self.assertEqual(len(collection.datasets), 2)
+        for dataset in collection.datasets:
+            self.assertFalse(dataset.tombstone)
+        self.assertFalse(collection.tombstone)
+
+        collection.tombstone_collection()
+
+        self.assertTrue(collection.tombstone)
+
+        self.assertEqual(len(collection.datasets), 2)
+        for dataset in collection.datasets:
+            self.assertTrue(dataset.tombstone)

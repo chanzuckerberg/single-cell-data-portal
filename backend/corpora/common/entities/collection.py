@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
+from . import Dataset
 from ..utils.db_session import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
@@ -109,6 +110,7 @@ class Collection(Entity):
         """
 
         filters = filters if filters else []
+        filters.append(cls.table.tombstone == False)
         list_attributes = list_attributes if list_attributes else cls.list_attributes
         table = cls.table
 
@@ -172,5 +174,8 @@ class Collection(Entity):
 
     def tombstone_collection(self):
         self.update(tombstone=True)
+
         for dataset in self.datasets:
-            dataset.dataset_and_asset_deletion()
+            ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
+            ds.dataset_and_asset_deletion()
+

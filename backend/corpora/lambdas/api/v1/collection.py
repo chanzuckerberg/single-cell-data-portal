@@ -73,10 +73,11 @@ def get_collection_dataset(dataset_uuid: str):
 def delete_collection(collection_uuid: str, visibility: str, user: str):
     if visibility == CollectionVisibility.PUBLIC.name:
         return make_response(jsonify("Can not delete a public dataset"), 405)
-    collection = Collection.get_collection(collection_uuid, visibility)
+    db_session = g.db_session
+    collection = Collection.get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
     if not collection:
         raise ForbiddenHTTPException()
-    if not Collection.if_owner(collection.uuid, collection.visibility, user):
+    if not Collection.if_owner(db_session, collection.id, collection.visibility, user):
         raise ForbiddenHTTPException()
     if not collection.tombstone:
         collection.tombstone_collection()

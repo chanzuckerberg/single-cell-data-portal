@@ -155,7 +155,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: corpora.lambdas.api.v1.collection_uuid.delete
+      operationId: corpora.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_visibility"
