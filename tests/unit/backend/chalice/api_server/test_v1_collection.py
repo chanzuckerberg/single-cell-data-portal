@@ -1,15 +1,13 @@
 import itertools
 import json
-import uuid
 from datetime import datetime
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus
+from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus, generate_uuid
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
 
 class TestCollection(BaseAuthAPITest):
@@ -431,7 +429,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertNotIn(private_not_owned, ids)
 
 
-class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
+class TestCollectionDeletion(BaseAuthAPITest):
     def test_delete_collection__ok(self):
         # Generate test collection
         collection = self.generate_collection(
@@ -443,9 +441,9 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         dataset_1 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_1)
         dataset_2 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
+
         response = self.app.get(test_url.url, headers=headers)
         response.raise_for_status()
 
@@ -486,7 +484,6 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         self.assertEqual(response.status_code, 200)
 
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         response.raise_for_status()
         self.assertEqual(response.status_code, 202)
@@ -499,17 +496,15 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", tombstone=True
         )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
-    def test_delete_collection__public(self):
+    def test_delete_collection__public__403(self):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -519,15 +514,13 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
         )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
-        fake_uuid = str(uuid.uuid4())
+        fake_uuid = generate_uuid()
         test_url = furl(path=f"/dp/v1/collections/{fake_uuid}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -551,7 +544,6 @@ class TestCollectionDeletion(BaseAuthAPITest, GenerateDataMixin):
         self.assertIn(collection_to_delete.id, collection_ids)
 
         test_url = furl(path=f"/dp/v1/collections/{collection_to_delete.id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
