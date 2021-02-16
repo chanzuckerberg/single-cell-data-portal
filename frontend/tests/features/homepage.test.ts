@@ -8,12 +8,12 @@ describe("Homepage", () => {
   it("renders the expected elements", async () => {
     await goToPage();
 
-    await expect(page).toHaveSelector(getText("cellxgene@chanzuckerberg.com"));
+    await expect(page).toHaveText("cellxgene@chanzuckerberg.com");
     await expect(page).toHaveSelector(getTestTag("logo"));
-    await expect(page).toHaveSelector(getText("Dataset name"));
-    await expect(page).toHaveSelector(getText("View in cellxgene"));
-    await expect(page).toHaveSelector(getText("Download dataset"));
-    await expect(page).toHaveSelector(getText("More information"));
+    await expect(page).toHaveText("Dataset name");
+    await expect(page).toHaveText("View in cellxgene");
+    await expect(page).toHaveText("Download dataset");
+    await expect(page).toHaveText("More information");
 
     await expect(page).toHaveSelector(getTestTag("dataset-name"));
     await expect(page).toHaveSelector(getTestTag("view-dataset-link"));
@@ -28,20 +28,20 @@ describe("Homepage", () => {
 
       await page.click(getTestTag(DATASET_ROW_DOWNLOAD_BUTTON_ID));
 
-      await expect(page).toHaveSelector(getText("Download Dataset"));
+      await expect(page).toHaveText("Download Dataset");
 
-      await expect(page).toHaveSelector(getText("NAME"));
+      await expect(page).toHaveText("NAME");
       expect(
         await page.innerText(getTestTag("download-asset-name"))
       ).toBeTruthy();
 
-      await expect(page).toHaveSelector(getText("DATA FORMAT"));
-      await expect(page).toHaveSelector(getText(".h5ad (AnnData v0.7)"));
-      await expect(page).toHaveSelector(getText(".loom"));
-      await expect(page).toHaveSelector(getText(".rds (Seurat v3)"));
+      await expect(page).toHaveText("DATA FORMAT");
+      await expect(page).toHaveText(".h5ad (AnnData v0.7)");
+      await expect(page).toHaveText(".loom");
+      await expect(page).toHaveText(".rds (Seurat v3)");
 
-      await expect(page).toHaveSelector(getText("DOWNLOAD DETAILS"));
-      await expect(page).toHaveSelector(getText(PROMPT_TEXT));
+      await expect(page).toHaveText("DOWNLOAD DETAILS");
+      await expect(page).toHaveText(PROMPT_TEXT);
     });
 
     it("downloads a file", async () => {
