@@ -3,7 +3,6 @@ import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
-  ACCESS_TYPE,
   CONVERSION_STATUS,
   Dataset,
   UPLOAD_STATUS,
@@ -155,12 +154,11 @@ const DatasetRow: FC<Props> = ({
             checked={selected === dataset.id}
           />
           <div>{name}</div>
-          {!isLoading &&
-            dataset.collection_access_type === ACCESS_TYPE.WRITE && (
-              <ErrorTooltip isFailed={isFailed} error={error} type={type} />
-            )}
+          {!isLoading && (
+            <ErrorTooltip isFailed={isFailed} error={error} type={type} />
+          )}
         </TitleContainer>
-        {isLoading && dataset.collection_access_type === ACCESS_TYPE.WRITE && (
+        {isLoading && (
           <AsyncUploadStatus
             isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
             isConverting={
