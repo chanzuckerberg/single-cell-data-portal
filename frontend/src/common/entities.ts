@@ -81,7 +81,6 @@ export interface Dataset {
   dataset_assets: DatasetAsset[];
   processing_status: DatasetUploadStatus;
   collection_id: Collection["id"];
-  collection_access_type: Collection["access_type"];
   // contributors: Contributor[];
   // preprint_doi: DOI;
   // publication_doi: DOI;
