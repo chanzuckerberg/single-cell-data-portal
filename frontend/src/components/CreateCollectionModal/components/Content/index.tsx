@@ -144,7 +144,7 @@ const Content: FC<Props> = (props) => {
             disabled={!isValid}
             onClick={onSubmit}
             loading={isLoading}
-            data-test-id="create button"
+            data-test-id="create-button"
           >
             Create
           </Button>
