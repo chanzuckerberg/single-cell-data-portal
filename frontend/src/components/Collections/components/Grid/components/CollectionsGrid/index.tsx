@@ -34,7 +34,7 @@ const CollectionsGrid: FC<Props> = ({
       </thead>
       <tbody>
         {collections?.reduce((acc, { id, visibility }) => {
-          if (displayVisibility && visibility === displayVisibility) {
+          if (!displayVisibility || visibility === displayVisibility) {
             acc.push(
               <CollectionRow
                 id={id}
