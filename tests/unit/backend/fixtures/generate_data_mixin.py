@@ -1,4 +1,5 @@
 from backend.corpora.common.entities import Collection, Dataset
+from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
 
@@ -7,24 +8,26 @@ class GenerateDataMixin:
     Use to populate the database with test data that should be cleanup after the test
     """
 
-    def generate_collection(self, **params) -> Collection:
+    def generate_collection(self, session, **params) -> Collection:
         def delete(uuid, visibility):
-            col = Collection.get((uuid, visibility))
-            if col:
-                col.delete()
+            with db_session_manager() as session:
+                col = Collection.get(session, (uuid, visibility))
+                if col:
+                    col.delete()
 
-        _collection = Collection.create(**BogusCollectionParams.get(**params))
+        _collection = Collection.create(session, **BogusCollectionParams.get(**params))
         # Cleanup collection after test
         self.addCleanup(delete, _collection.id, _collection.visibility)
         return _collection
 
-    def generate_dataset(self, **params) -> Dataset:
+    def generate_dataset(self, session, **params) -> Dataset:
         def delete(uuid):
-            dat = Dataset.get(uuid)
-            if dat:
-                dat.delete()
+            with db_session_manager() as session:
+                dat = Dataset.get(session, uuid)
+                if dat:
+                    dat.delete()
 
-        _dataset = Dataset.create(**BogusDatasetParams.get(**params))
+        _dataset = Dataset.create(session, **BogusDatasetParams.get(**params))
         # Cleanup collection after test
         self.addCleanup(delete, _dataset.id)
         return _dataset

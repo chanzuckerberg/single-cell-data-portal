@@ -24,6 +24,7 @@ def start_server(path, port):
 class TestDownload(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
+        DataPortalTestCase.setUpClass()
         cls.port = random.randint(10000, 20000)
         cls.server_process = multiprocessing.Process(
             target=start_server, args=("tests/unit/backend/corpora/fixtures", cls.port), daemon=True
@@ -32,6 +33,7 @@ class TestDownload(DataPortalTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        DataPortalTestCase.tearDownClass()
         cls.server_process.terminate()
 
     def cleanup_local_file(self, local_file):
@@ -54,7 +56,7 @@ class TestDownload(DataPortalTestCase):
             update_frequency=1,
         )
         print(status)
-        self.assertEqual(1, Dataset.get("test_dataset_id").processing_status.upload_progress)
+        self.assertEqual(1, Dataset.get(self.session, "test_dataset_id").processing_status.upload_progress)
         self.assertEqual(1, status["upload_progress"])
         self.assertTrue(os.path.exists(local_file))
 
@@ -76,7 +78,7 @@ class TestDownload(DataPortalTestCase):
                     chunk_size=1024,
                     update_frequency=1,
                 )
-            processing_status = Dataset.get("test_dataset_id").processing_status
+            processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
         with self.subTest("Smaller"):
@@ -89,7 +91,7 @@ class TestDownload(DataPortalTestCase):
                     chunk_size=1024,
                     update_frequency=1,
                 )
-            processing_status = Dataset.get("test_dataset_id").processing_status
+            processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
             self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
     def test__stop_download(self):
@@ -118,7 +120,7 @@ class TestDownload(DataPortalTestCase):
                 chunk_size=1024,
                 update_frequency=1,
             )
-        processing_status = Dataset.get("test_dataset_id").processing_status
+        processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
         self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
     def test__dataset_does_not_exist__error(self):
