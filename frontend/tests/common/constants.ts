@@ -27,3 +27,5 @@ const TEST_ENV_TO_TEST_EMAIL = (env: TEST_ENV) => {
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
 export const TEST_EMAIL = TEST_ENV_TO_TEST_EMAIL(TEST_ENV);
+
+export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };

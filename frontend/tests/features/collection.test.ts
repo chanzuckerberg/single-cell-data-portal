@@ -1,7 +1,7 @@
 import { ROUTES } from "src/common/constants/routes";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
-import { TEST_ENV } from "tests/common/constants";
+import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { goToPage, login } from "tests/utils/helpers";
 import { getTestTag, getText } from "tests/utils/selectors";
 
@@ -57,12 +57,22 @@ describe("Collection", async () => {
 
 async function createCollection(): Promise<string> {
   await page.click(getText("Create Collection"));
-  await page.type("#name", TEST_COLLECTION.name, { delay: 50 });
-  await page.type("#description", TEST_COLLECTION.description, { delay: 50 });
-  await page.type("#contact-name", TEST_COLLECTION.contactName, { delay: 50 });
-  await page.type("#contact-email", TEST_COLLECTION.contactEmail, {
-    delay: 50,
-  });
+  await page.type("#name", TEST_COLLECTION.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  await page.type(
+    "#description",
+    TEST_COLLECTION.description,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-name",
+    TEST_COLLECTION.contactName,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-email",
+    TEST_COLLECTION.contactEmail,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
   await page.click(getText("I agree to cellxgene's data submission policies."));
   const [response] = await Promise.all([
     page.waitForEvent("response"),
