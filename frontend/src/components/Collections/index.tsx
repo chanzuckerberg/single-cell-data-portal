@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
 import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
@@ -21,7 +21,6 @@ const Collections: FC = () => {
       <p>Explore public collections of datasets or create your own.</p>
       <CollectionsGrid
         collections={collections}
-        accessType={ACCESS_TYPE.READ}
         displayVisibility={VISIBILITY_TYPE.PUBLIC}
       />
     </>

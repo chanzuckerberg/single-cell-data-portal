@@ -11,7 +11,7 @@ import CollectionRow from "../Row/CollectionRow";
 
 interface Props {
   collections: CollectionResponse[];
-  accessType: ACCESS_TYPE;
+  accessType?: ACCESS_TYPE;
   displayVisibility?: VISIBILITY_TYPE;
 }
 

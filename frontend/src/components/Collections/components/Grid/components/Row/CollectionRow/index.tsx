@@ -18,7 +18,7 @@ import { CollectionTitleText } from "./style";
 
 interface Props {
   id: string;
-  accessType: ACCESS_TYPE;
+  accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
 }
 
