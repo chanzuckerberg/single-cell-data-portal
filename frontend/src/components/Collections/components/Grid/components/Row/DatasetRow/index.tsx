@@ -3,11 +3,11 @@ import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
+  ACCESS_TYPE,
   CONVERSION_STATUS,
   Dataset,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
-  VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
@@ -156,26 +156,25 @@ const DatasetRow: FC<Props> = ({
           />
           <div>{name}</div>
           {!isLoading &&
-            dataset.collection_visibility === VISIBILITY_TYPE.PRIVATE && (
+            dataset.collection_access_type === ACCESS_TYPE.WRITE && (
               <ErrorTooltip isFailed={isFailed} error={error} type={type} />
             )}
         </TitleContainer>
-        {isLoading &&
-          dataset.collection_visibility === VISIBILITY_TYPE.PRIVATE && (
-            <AsyncUploadStatus
-              isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
-              isConverting={
-                getConversionStatus(datasetStatus) ===
-                CONVERSION_STATUS.CONVERTING
-              }
-              isValidating={
-                datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
-              }
-              progress={datasetStatus.upload_progress}
-              datasetId={dataset.id}
-              collectionId={dataset.collection_id}
-            />
-          )}
+        {isLoading && dataset.collection_access_type === ACCESS_TYPE.WRITE && (
+          <AsyncUploadStatus
+            isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
+            isConverting={
+              getConversionStatus(datasetStatus) ===
+              CONVERSION_STATUS.CONVERTING
+            }
+            isValidating={
+              datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
+            }
+            progress={datasetStatus.upload_progress}
+            datasetId={dataset.id}
+            collectionId={dataset.collection_id}
+          />
+        )}
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
       <Popover values={assay} isLoading={isMetadataLoading} />
