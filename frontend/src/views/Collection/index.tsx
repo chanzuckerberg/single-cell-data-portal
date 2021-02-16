@@ -4,7 +4,7 @@ import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
 import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
-import { Dataset, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCollectionUploadLinks,
@@ -99,7 +99,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <CollectionButtons>
-        <DeleteCollection id={id} />
+        {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
+          <DeleteCollection id={id} />
+        )}
         <Button
           intent={Intent.PRIMARY}
           minimal
