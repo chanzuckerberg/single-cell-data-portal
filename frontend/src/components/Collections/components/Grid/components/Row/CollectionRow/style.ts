@@ -5,7 +5,7 @@ import styled from "styled-components";
 export const CollectionTitleText = styled.div`
   color: ${PT_TEXT_COLOR};
   font-size: 14px;
-  font-weight: semibold;
+  font-weight: 500;
   line-height: 18px;
   letter-spacing: -0.1px;
 `;

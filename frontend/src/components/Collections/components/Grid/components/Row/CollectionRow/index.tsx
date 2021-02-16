@@ -78,7 +78,6 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledCollectionRow
       onClick={(e) => {
-        console.log(e.target);
         if ((e.target as Element).tagName !== "A")
           navigate(`/collections/${id}${isPrivate ? "/private" : ""}`);
       }}
