@@ -1,5 +1,6 @@
 import { Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
+import { navigate } from "@reach/router";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -12,7 +13,7 @@ import {
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledCell,
-  StyledRow,
+  StyledCollectionRow,
 } from "../common/style";
 import { CollectionTitleText } from "./style";
 
@@ -75,13 +76,15 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledRow>
+    <StyledCollectionRow
+      onClick={(e) => {
+        console.log(e.target);
+        if ((e.target as Element).tagName !== "A")
+          navigate(`/collections/${id}${isPrivate ? "/private" : ""}`);
+      }}
+    >
       <StyledCell>
-        <CollectionTitleText
-          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
-        >
-          {name}
-        </CollectionTitleText>
+        <CollectionTitleText>{name}</CollectionTitleText>
         <div>{contact_name}</div>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
@@ -101,7 +104,7 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-    </StyledRow>
+    </StyledCollectionRow>
   );
 };
 

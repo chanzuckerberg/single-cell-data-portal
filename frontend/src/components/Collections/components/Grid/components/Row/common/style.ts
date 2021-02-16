@@ -1,4 +1,4 @@
-import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { GRAY, LIGHT_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 import { detailsColWidthCSS, textClippingCSS } from "../../../common/style";
 
@@ -22,6 +22,12 @@ export const LeftAlignedDetailsCell = styled(DetailsCell)`
 export const StyledRow = styled.tr`
   align-content: center;
   vertical-align: middle;
+`;
+
+export const StyledCollectionRow = styled(StyledRow)`
+  :hover {
+    background-color: ${LIGHT_GRAY.E};
+  }
 `;
 
 export const RightAlignedDetailsCell = styled(DetailsCell)`
