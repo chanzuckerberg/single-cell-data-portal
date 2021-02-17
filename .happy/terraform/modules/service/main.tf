@@ -1,5 +1,5 @@
 # This is a service managed by ECS attached to the environment's load balancer
-# 
+#
 
 data aws_region current {}
 
@@ -105,11 +105,25 @@ resource aws_lb_target_group target_group {
 resource aws_lb_listener_rule listener_rule {
   listener_arn = var.listener
   priority     = var.priority
-  condition {
-    host_header {
-      values = [
-        var.host_match,
-      ]
+  # Dev stacks need to match on hostnames
+  dynamic "condition" {
+    for_each = length(var.host_match) == 0 ? [] : [var.host_match]
+    content {
+      host_header {
+        values = [
+          condition.value
+        ]
+      }
+    }
+  }
+  # Staging/prod envs are only expected to have a single stack,
+  # so let's add all requests to that stack.
+  dynamic "condition" {
+    for_each = length(var.host_match) == 0 ? ["/*"] : []
+    content {
+      path_pattern {
+        values = [condition.value]
+      }
     }
   }
   action {

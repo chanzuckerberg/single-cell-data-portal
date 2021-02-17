@@ -48,7 +48,7 @@ variable listener {
 
 variable host_match {
   type        = string
-  description = "Host header to match for target rule"
+  description = "Host header to match for target rule. Leave empty to match all requests"
 }
 
 variable security_groups {
