@@ -19,7 +19,6 @@ const TEST_COLLECTION = {
 describe("Collection", async () => {
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
-      await goToPage();
       await login();
 
       const collectionId = await createCollection();
@@ -39,7 +38,6 @@ describe("Collection", async () => {
     describe("Publish a collection", () => {
       describe("when no dataset", () => {
         it("shows disabled publish button", async () => {
-          await goToPage();
           await login();
 
           await createCollection();

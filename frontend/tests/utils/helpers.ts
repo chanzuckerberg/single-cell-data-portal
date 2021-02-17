@@ -6,13 +6,11 @@ export async function goToPage(url: string = TEST_URL) {
 }
 
 export async function login() {
+  goToPage();
   try {
     await expect(page).toHaveSelector(getText("My Collections"));
   } catch (error) {
     const password = "Test1111";
-
-    const url = page.url();
-
     await page.click(getText("Log In"));
 
     await page.fill('[name="email"]', TEST_EMAIL);
