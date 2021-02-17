@@ -23,29 +23,32 @@ export const StyledCollectionsGrid = styled(HTMLTable)`
   margin-top: ${PT_GRID_SIZE_PX * 2}px;
 `;
 
-export const CollectionHeaderCell = styled.th`
+const HeaderCell = styled.th`
+  padding: 12px 0 !important;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+`;
+
+export const CollectionHeaderCell = styled(HeaderCell)`
   ${titleColWidthCSS}
   text-align: left !important;
-  padding: 0 !important;
 `;
 
-export const DatasetHeaderCell = styled.th`
+export const DatasetHeaderCell = styled(HeaderCell)`
   ${datasetTitleColWidthCSS}
   text-align: left !important;
-  padding: 0 !important;
   padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
-export const LeftAlignedHeaderCell = styled.th`
+export const LeftAlignedHeaderCell = styled(HeaderCell)`
   ${detailsColWidthCSS}
   text-align: left !important;
-  padding: 0 !important;
   padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
-export const RightAlignedHeaderCell = styled.th`
-  ${datasetTitleColWidthCSS}
+export const RightAlignedHeaderCell = styled(HeaderCell)`
+  ${detailsColWidthCSS}
   text-align: right !important;
-  padding: 0 !important;
   padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
