@@ -21,7 +21,7 @@ class TestAuth(BaseAuthAPITest):
         self.assertEqual(userinfo["email_verified"], True)
 
     def check_set_cookie_is_secure(self, cookie):
-        actual_flags = cookie.split('; ')
+        actual_flags = cookie.split("; ")
         for expected_flag in ["HttpOnly", "Secure", "SameSite=Strict"]:
             self.assertIn(expected_flag, actual_flags)
 
