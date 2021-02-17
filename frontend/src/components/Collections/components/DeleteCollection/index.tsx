@@ -44,8 +44,6 @@ const DeleteCollection: FC<Props> = ({ id }) => {
         icon={IconNames.TRASH}
         onClick={toggleAlert}
         onMouseEnter={handleHover}
-        // (thuang): TEMP remove this after BE is done
-        disabled={true}
       />
 
       {isOpen && (

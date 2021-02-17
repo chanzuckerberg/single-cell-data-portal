@@ -68,3 +68,17 @@ def create_collection(body: object, user: str):
 
 def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
+
+
+def delete_collection(collection_uuid: str, user: str):
+    db_session = g.db_session
+    collection = Collection.get_collection(
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, include_tombstones=True
+    )
+    if not collection:
+        raise ForbiddenHTTPException()
+    if not Collection.if_owner(db_session, collection.id, collection.visibility, user):
+        raise ForbiddenHTTPException()
+    if not collection.tombstone:
+        collection.tombstone_collection()
+    return "", 202

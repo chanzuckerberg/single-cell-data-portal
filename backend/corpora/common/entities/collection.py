@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import and_
 
+from . import Dataset
 from ..utils.db_session import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
@@ -56,12 +57,18 @@ class Collection(Entity):
         return cls(new_db_object)
 
     @classmethod
-    def get_collection(cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name):
+    def get_collection(
+        cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name, include_tombstones=False
+    ):
         """
         Given the collection_uuid, retrieve a live collection.
         :param collection_uuid:
         """
-        return cls.get(session, (collection_uuid, visibility))
+        collection = cls.get(session, (collection_uuid, visibility))
+        if not include_tombstones:
+            if collection and collection.tombstone is True:
+                return None
+        return collection
 
     @classmethod
     def if_owner(
@@ -103,6 +110,7 @@ class Collection(Entity):
         """
 
         filters = filters if filters else []
+        filters.append(cls.table.tombstone == False)  # noqa
         list_attributes = list_attributes if list_attributes else cls.list_attributes
         table = cls.table
 
@@ -163,3 +171,10 @@ class Collection(Entity):
         self.session.commit()
         self.delete()
         self.db_object = public_collection
+
+    def tombstone_collection(self):
+        self.update(tombstone=True)
+
+        for dataset in self.datasets:
+            ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
+            ds.dataset_and_asset_deletion()
