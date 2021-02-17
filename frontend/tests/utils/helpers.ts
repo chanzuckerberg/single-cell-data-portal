@@ -10,6 +10,7 @@ export async function login() {
   try {
     await expect(page).toHaveSelector(getText("My Collections"));
   } catch (error) {
+    const url = page.url();
     const password = "Test1111";
     await page.click(getText("Log In"));
 
