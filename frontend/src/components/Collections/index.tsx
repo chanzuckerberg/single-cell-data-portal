@@ -3,7 +3,7 @@ import { VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
 import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
-import { TitleWrapper } from "./style";
+import { TitleAndDescription, TitleWrapper } from "./style";
 
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
@@ -15,10 +15,12 @@ const Collections: FC = () => {
   return (
     <>
       <TitleWrapper>
-        <h1>Collections</h1>
+        <TitleAndDescription>
+          <h1>Collections</h1>
+          <p>Explore public collections of datasets or create your own.</p>
+        </TitleAndDescription>
         <CreateCollection />
       </TitleWrapper>
-      <p>Explore public collections of datasets or create your own.</p>
       <CollectionsGrid
         collections={collections}
         displayVisibility={VISIBILITY_TYPE.PUBLIC}
