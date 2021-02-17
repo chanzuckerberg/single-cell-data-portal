@@ -35,7 +35,8 @@ describe("Homepage", () => {
         await page.innerText(getTestTag("download-asset-name"))
       ).toBeTruthy();
 
-      await expect(page).toHaveText("DATA FORMAT");
+      // (thuang): Testing Github e2e tests
+      await expect(page).toHaveText("DATA FORMAT ---TEMP---");
       await expect(page).toHaveText(".h5ad (AnnData v0.7)");
       await expect(page).toHaveText(".loom");
       await expect(page).toHaveText(".rds (Seurat v3)");
