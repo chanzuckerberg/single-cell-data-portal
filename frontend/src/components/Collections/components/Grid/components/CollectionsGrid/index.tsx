@@ -1,5 +1,5 @@
 import React, { FC, ReactChild } from "react";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { CollectionResponse } from "src/common/queries/collections";
 import {
   CollectionHeaderCell,
@@ -33,22 +33,29 @@ const CollectionsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {collections?.reduce((acc, { id, visibility }) => {
-          if (!displayVisibility || visibility === displayVisibility) {
-            acc.push(
-              <CollectionRow
-                id={id}
-                key={id + visibility}
-                visibility={visibility}
-                accessType={accessType}
-              />
-            );
-          }
-          return acc;
-        }, [] as Array<ReactChild>)}
+        {sortByUpdatedAtDescending(collections)?.reduce(
+          (acc, { id, visibility }) => {
+            if (!displayVisibility || visibility === displayVisibility) {
+              acc.push(
+                <CollectionRow
+                  id={id}
+                  key={id + visibility}
+                  visibility={visibility}
+                  accessType={accessType}
+                />
+              );
+            }
+            return acc;
+          },
+          [] as Array<ReactChild>
+        )}
       </tbody>
     </StyledCollectionsGrid>
   );
 };
+
+function sortByUpdatedAtDescending(collections: Collection[]): Collection[] {
+  return collections?.sort((a, b) => a.updated_at - b.updated_at) || [];
+}
 
 export default CollectionsGrid;
