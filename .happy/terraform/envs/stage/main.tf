@@ -10,7 +10,7 @@ module stack {
   deployment_stage    = "staging"
   delete_protected    = true
   require_okta        = false
-  frontend_url        = "https://cellxgene.staging.single-cell.czi.technology"
-  backend_url         = "https://api.cellxgene.staging.single-cell.czi.technology"
+  frontend_url        = "https://stage.single-cell.czi.technology"
+  backend_url         = "https://api.stage.single-cell.czi.technology"
   stack_prefix        = ""
 }
