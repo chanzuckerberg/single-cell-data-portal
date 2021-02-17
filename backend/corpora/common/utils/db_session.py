@@ -14,9 +14,11 @@ logger = logging.getLogger(__name__)
 class DBSessionMaker:
 
     _session_make = None
+    engine = None
 
     def __init__(self):
-        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
+        if not self.engine:
+            self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
         if not self._session_make:
             self._session_make = sessionmaker(bind=self.engine)
 
