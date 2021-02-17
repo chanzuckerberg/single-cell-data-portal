@@ -88,7 +88,7 @@ module frontend_service {
   service_port      = 9000
   deployment_stage  = local.deployment_stage
   step_function_arn = module.upload_sfn.step_function_arn
-  host_match        = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "*.amazonaws.com")
+  host_match        = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "*.czi.technology")
   priority          = local.priority
   api_url           = local.backend_url
   frontend_url      = local.frontend_url
