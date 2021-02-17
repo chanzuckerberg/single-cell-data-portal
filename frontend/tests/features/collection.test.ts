@@ -5,9 +5,8 @@ import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { goToPage, login } from "tests/utils/helpers";
 import { getTestTag, getText } from "tests/utils/selectors";
 
-const describeIfDeployed = TEST_ENV.includes("local")
-  ? describe.skip
-  : describe;
+const describeIfDeployed =
+  TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
 
 const TEST_COLLECTION = {
   contactEmail: "TEST@example.com",
