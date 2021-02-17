@@ -67,6 +67,11 @@ const CollectionRow: FC<Props> = (props) => {
 
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    (e.target as Element).tagName !== "A" &&
+      navigate(`/collections/${id}${isPrivate ? "/private" : ""}`);
+  };
+
   const {
     tissue,
     assay,
@@ -76,12 +81,7 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledCollectionRow
-      onClick={(e) => {
-        if ((e.target as Element).tagName !== "A")
-          navigate(`/collections/${id}${isPrivate ? "/private" : ""}`);
-      }}
-    >
+    <StyledCollectionRow onClick={handleRowClick}>
       <StyledCell>
         <CollectionTitleText>{name}</CollectionTitleText>
         <div>{contact_name}</div>
