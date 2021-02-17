@@ -29,6 +29,12 @@ variable custom_stack_name {
   description = "Please provide the stack name"
 }
 
+variable remote_dev_prefix {
+  type        = string
+  description = "S3 storage path / db schema prefix"
+  default     = ""
+}
+
 variable deployment_stage {
   type        = string
   description = "The name of the deployment stage of the Application"

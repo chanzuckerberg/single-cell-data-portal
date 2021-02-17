@@ -1,4 +1,4 @@
-# This is a service managed by ECS with an internally-facing load balancer. Public access to the load balancer needs to be managed by the multioauth proxy.
+# This is a service managed by ECS attached to the environment's load balancer
 # 
 
 data aws_region current {}
@@ -15,14 +15,14 @@ resource aws_ecs_service service {
     target_group_arn = aws_lb_target_group.target_group.id
   }
   network_configuration {
-    security_groups  = split(",", var.security_groups)
-    subnets          = split(",", var.subnets)
+    security_groups  = var.security_groups
+    subnets          = var.subnets
     assign_public_ip = false
   }
 }
 
 resource aws_ecs_task_definition task_definition {
-  family        = "${var.custom_stack_name}-${var.app_name}"
+  family        = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
   network_mode  = "awsvpc"
   task_role_arn = var.task_role_arn
   container_definitions = <<EOF
@@ -35,7 +35,7 @@ resource aws_ecs_task_definition task_definition {
     "environment": [
       {
         "name": "REMOTE_DEV_PREFIX",
-        "value": "/${var.custom_stack_name}"
+        "value": "${var.remote_dev_prefix}"
       },
       {
         "name": "DEPLOYMENT_STAGE",
@@ -74,7 +74,7 @@ resource aws_ecs_task_definition task_definition {
         "awslogs-region": "${data.aws_region.current.name}"
       }
     },
-    "command": ${jsonencode(!(var.cmd == "") ? split(",", var.cmd) : null)}
+    "command": ${jsonencode((length(var.cmd) == 0) ? null : var.cmd)}
   }
 ]
 EOF
@@ -117,5 +117,3 @@ resource aws_lb_listener_rule listener_rule {
     type             = "forward"
   }
 }
-
-

@@ -30,7 +30,7 @@ resource aws_batch_job_definition batch_job_def {
     },
     {
       "name": "REMOTE_DEV_PREFIX",
-      "value": "/${var.custom_stack_name}"
+      "value": "${var.remote_dev_prefix}"
     },
     {
       "name": "FRONTEND_URL",

@@ -9,14 +9,20 @@ variable task_role_arn {
 }
 
 variable cmd {
-  type        = string
+  type        = list(string)
   description = "Command to run"
-  default     = ""
+  default     = []
 }
 
 variable custom_stack_name {
   type        = string
   description = "Please provide the stack name"
+}
+
+variable remote_dev_prefix {
+  type        = string
+  description = "S3 storage path / db schema prefix"
+  default     = ""
 }
 
 variable deployment_stage {

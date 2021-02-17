@@ -15,6 +15,7 @@ import time
 from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import WaiterError
 from botocore.config import Config
 import click
 from terrasnek.api import TFC
@@ -31,21 +32,14 @@ class HappyConfig:
     def __init__(self, config_file=".happy/config.json", env=None, substitutions=None, ctx=None):
         self.ctx = ctx
         with open(config_file) as f:
-            self._data_text = f.read()
+            self._data = json.load(f)
         self.env = env
-        self.load_data(substitutions)
+        self.set_env()
         try:
             if self.config_version != "v1":
                 raise CliError(f'Config file {config_file} has invalid version number. Only version "v1" supported.')
         except KeyError:
             raise CliError(f"Config file {config_file} missing config_version field.")
-
-    def load_data(self, substitutions=None):
-        if substitutions:
-            self._data = json.loads(Template(self._data_text).safe_substitute(substitutions))
-        else:
-            self._data = json.loads(self._data_text)
-        self.set_env()
 
     def set_env(self):
         env_override = self.env
@@ -63,17 +57,10 @@ class HappyConfig:
             error = f'Invalid environment: "{env}". Check .happy/config for valid environments'
             raise CliError(error)
 
-    def load_artifact_map(self):
-        if self._data.get("artifact_map_loaded"):
-            return True
-        substitutions = self.ctx.obj["secret_mgr"].secrets
-        self._data["artifact_map_loaded"] = True
-        self.load_data(substitutions)
-
     def __getattr__(self, field):
+        if field == "ecrs":
+            return self.ctx.obj["secret_mgr"].secrets["ecrs"]
         if field in self._data:
-            if field == "artifact_map":
-                self.load_artifact_map()
             return self._data[field]
         return self.__dict__[field]
 
@@ -209,7 +196,10 @@ class Stack:
     def workspace(self):
         # If the corresponding workspace is missing from TFE, we will intentionally return None
         if not self._workspace:
-            self._workspace = self.stack_mgr.get_stack_workspace(self.stack_name)
+            try:
+                self._workspace = self.stack_mgr.get_stack_workspace(self.stack_name)
+            except exceptions.TFCHTTPNotFound:
+                pass
         return self._workspace
 
     @property
@@ -312,7 +302,7 @@ class StackMgr:
     def get_tfe_api(self):
         if not self.tfe_api:
             secrets = self.ctx.obj["secret_mgr"].secrets
-            self.tfe_api = TfeApi(secrets["tfe_url"], secrets["tfe_org"])
+            self.tfe_api = TfeApi(secrets["tfe"]["url"], secrets["tfe"]["org"])
         return self.tfe_api
 
     def remove(self, stack_name):
@@ -724,7 +714,7 @@ class Orchestrator:
         """Run a one-off ECS task and optionally wait"""
         secrets = self.secrets
         cluster_arn = secrets["cluster_arn"]
-        subnets = secrets["subnets"]
+        subnets = secrets["private_subnets"]
         security_groups = secrets["security_groups"]
         print(f"Using task definition {taskdef_arn}")
         ecs_client = AwsSession.get_client(self.ctx, "ecs")
@@ -733,8 +723,8 @@ class Orchestrator:
             taskDefinition=taskdef_arn,
             networkConfiguration={
                 "awsvpcConfiguration": {
-                    "subnets": subnets.split(","),
-                    "securityGroups": security_groups.split(","),
+                    "subnets": subnets,
+                    "securityGroups": security_groups,
                     "assignPublicIp": "DISABLED",
                 }
             },
@@ -746,7 +736,10 @@ class Orchestrator:
 
         # Wait for the task to start.
         waiter = ecs_client.get_waiter("tasks_running")
-        waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+        try:
+            waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+        except WaiterError:
+            print("Task failed!")
         result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
         container = result["tasks"][0]["containers"][0]
         status = container["lastStatus"]
@@ -755,13 +748,12 @@ class Orchestrator:
             if "reason" in container:
                 reason = container["reason"]
             print(f"Container did not start. Current status {status}: {reason}")
-            return
-        print(f"Task {task_info['taskArn']} running")
-
-        # Wait for the task to exit.
-        waiter = ecs_client.get_waiter("tasks_stopped")
-        waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
-        print(f"Task {task_info['taskArn']} stopped")
+        else:
+            print(f"Task {task_info['taskArn']} running")
+            # Wait for the task to exit.
+            waiter = ecs_client.get_waiter("tasks_stopped")
+            waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+            print(f"Task {task_info['taskArn']} stopped")
         result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
         container = result["tasks"][0]["containers"][0]
         log_stream = container["runtimeId"]
@@ -822,21 +814,21 @@ class ArtifactBuilder:
                 images[service_name] = service["image"]
         return images
 
-    def push(self, artifact_map, images, tags):
+    def push(self, ecrs, images, tags):
         print("Tagging images...")
         env = self.get_env()
-        for artifact_id, registry in artifact_map.items():
+        for artifact_id, registry in ecrs.items():
             if images and artifact_id not in images:
                 continue
             image = images[artifact_id]
             for current_tag in tags:
-                subprocess.check_call(["docker", "tag", f"{image}:latest", f"{registry}:{current_tag}"], env=env)
+                subprocess.check_call(["docker", "tag", f"{image}:latest", f"{registry['url']}:{current_tag}"], env=env)
         print(f"Pushing images...{images}")
-        for artifact_id, registry in artifact_map.items():
+        for artifact_id, registry in ecrs.items():
             if images and artifact_id not in images:
                 continue
             for current_tag in tags:
-                subprocess.check_call(["docker", "push", f"{registry}:{current_tag}"], env=env)
+                subprocess.check_call(["docker", "push", f"{registry['url']}:{current_tag}"], env=env)
 
 
 def run_tasks(ctx, stack, task_type, wait=False, show_logs=True):
@@ -892,12 +884,16 @@ def logs(ctx, stack_name, service, since):
 @click.argument("stack_name")
 @click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
 @click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
+@click.option("--force", is_flag=True, default=False, help="Ignore already-exists errors")
 @click.pass_context
-def create(ctx, stack_name, tag, wait):
-    """Create a dev stack with a given tag"""
+def create(ctx, stack_name, tag, wait, force):
+    """Create a new stack with a given tag"""
     stackmgr = ctx.obj["stack_mgr"]
     if stack_name in stackmgr.stacks:
-        raise CliError(f"Stack {stack_name} already exists")
+        if force:
+            print(f"Stack {stack_name} already exists")
+        else:
+            raise CliError(f"Stack {stack_name} already exists")
 
     stack_meta = StackMeta(ctx, stack_name)
     stack_meta.load({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
@@ -912,16 +908,25 @@ def create(ctx, stack_name, tag, wait):
     success = stack.apply(wait)
     if not success:
         raise CliError("Apply failed, skipping migrations")
-    ctx.invoke(migrate, stack_name=stack_name)
+    if should_auto_migrate(ctx):
+        ctx.invoke(migrate, stack_name=stack_name)
     stack.print_outputs()
 
+def should_auto_migrate(ctx):
+    # Make sure this environment allows automatically running migrations on update
+    try:
+        migrate_ok = ctx.obj["config"].auto_run_migrations
+        return migrate_ok
+    except KeyError:
+        # The default behavior is to auto-migrate on update.
+        return True
 
 @contextmanager
 def config_tarball(source_dir):
     """Create a config tarball from given source_dir, then automatically delete it once we're done."""
     targz_file = tempfile.NamedTemporaryFile(delete=False)
     try:
-        with tarfile.open(fileobj=targz_file, mode="w:gz") as tar:
+        with tarfile.open(fileobj=targz_file, mode="w:gz", dereference=True) as tar:
             tar.add(source_dir, arcname="")
         with targz_file:
             yield targz_file
@@ -955,7 +960,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     success = stack.apply(wait or not skip_migrations)
     if not success:
         raise CliError("Apply failed, skipping migrations")
-    if not skip_migrations:
+    if not skip_migrations and should_auto_migrate(ctx):
         ctx.invoke(migrate, stack_name=stack_name)
     stack.print_outputs()
 
@@ -984,8 +989,15 @@ def delete(ctx, stack_name):
     except Exception:
         raise CliError(f"Stack {stack_name} doesn't exist in our list")
 
-    print(f"deleting {stack_name}")
+    # Make sure this environment allows stack deletion.
+    try:
+        delete_protected = ctx.obj["config"].delete_protected
+        if delete_protected:
+            raise CliError("This stack cannot be deleted")
+    except KeyError:
+        pass
 
+    print(f"deleting {stack_name}")
     try:
         run_tasks(ctx, stack, "delete", wait=False, show_logs=False)
         print(f"Database dropped")
@@ -1034,14 +1046,14 @@ def list_command(ctx):
 def addtags(ctx, images, source_tag, dest_tag):
     """Add additional tags to already-pushed images in the ECR repo"""
     config = ctx.obj["config"]
-    artifact_map = config.artifact_map
+    ecrs = config.ecrs
     ecr_client = AwsSession.get_client(ctx, "ecr")
-    for image_name, repository in artifact_map.items():
+    for image_name, repository in ecrs.items():
         if images and image_name not in images:
             continue
         print(f"retagging {image_name} from {source_tag} to {', '.join(dest_tag)}")
-        registry_id = repository.split(".")[0]
-        repo_name = "/".join(repository.split("/")[1:])
+        registry_id = repository["url"].split(".")[0]
+        repo_name = "/".join(repository["url"].split("/")[1:])
 
         manifest = ecr_client.batch_get_image(
             registryId=registry_id, repositoryName=repo_name, imageIds=[{"imageTag": source_tag}]
@@ -1061,9 +1073,9 @@ def get_ecr_repo(config):
     # TODO(mbarrien): Ensure this is true, print an error if not.
     # TODO(mbarrien): If correct account and wrong region, create an ecr_client with config
     # for the correct region, and login to that.
-    artifact_map = config.artifact_map
-    first_repo = next(iter(artifact_map.values()))
-    first_registry = first_repo.split("/")[0]
+    ecrs = config.ecrs
+    first_repo = next(iter(ecrs.values()))
+    first_registry = first_repo["url"].split("/")[0]
     return first_registry
 
 
@@ -1078,7 +1090,7 @@ def get_ecr_repo(config):
 def push(ctx, images, tag, extra_tag, compose_env):
     """Build and push docker images to ECR. Optionally filter by service name"""
     config = ctx.obj["config"]
-    artifact_map = config.artifact_map
+    ecrs = config.ecrs
     ecr_client = AwsSession.get_client(ctx, "ecr")
 
     # Equivalent to aws get-login-password
@@ -1097,6 +1109,8 @@ def push(ctx, images, tag, extra_tag, compose_env):
     builder_config = {}
     if compose_env:
         builder_config["env"] = compose_env
+    elif os.path.isfile(config.default_compose_env):
+        builder_config["env"] = config.default_compose_env
     builder_config["ecr_repo"] = first_registry  # TODO this is a leak in our abstraction, need to fix.
     builder = ArtifactBuilder(builder_config)
     artifacts = builder.build(images)
@@ -1106,7 +1120,7 @@ def push(ctx, images, tag, extra_tag, compose_env):
     all_tags = [tag] + (list(extra_tag) or [])
     print("Pushing images...")
     all_tags = [tag] + (list(extra_tag) or [])
-    builder.push(artifact_map, artifacts, all_tags)
+    builder.push(ecrs, artifacts, all_tags)
     print(f"Built and pushed docker images with tags: {all_tags}")
 
 
@@ -1127,7 +1141,7 @@ if __name__ == "__main__":
         cli.main(obj=obj)
     except exceptions.TFCHTTPUnauthorized as err:
         print(
-            f"Not authorized to access TFE. Try going to {obj['secret_mgr'].secrets['tfe_url']} in your browser then rerunning your command."
+            f"Not authorized to access TFE. Try going to {obj['secret_mgr'].secrets['tfe']['url']} in your browser then rerunning your command."
         )
     except CliError as err:
         print(f"ERROR: {err}")

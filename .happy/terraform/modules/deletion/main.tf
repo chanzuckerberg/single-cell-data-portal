@@ -1,7 +1,7 @@
 data aws_region current {}
 
 resource aws_ecs_task_definition task_definition {
-  family        = "${var.custom_stack_name}-deletion"
+  family        = "dp-${var.deployment_stage}-${var.custom_stack_name}-deletion"
   network_mode  = "awsvpc"
   task_role_arn = var.task_role_arn
   container_definitions = <<EOF
@@ -22,7 +22,7 @@ resource aws_ecs_task_definition task_definition {
       },
       {
         "name": "REMOTE_DEV_PREFIX",
-        "value": "/${var.custom_stack_name}"
+        "value": "${var.remote_dev_prefix}"
       },
       {
         "name": "DEPLOYMENT_STAGE",
@@ -36,7 +36,7 @@ resource aws_ecs_task_definition task_definition {
         "awslogs-region": "${data.aws_region.current.name}"
       }
     },
-    "command": ${jsonencode(split(",", var.cmd))}
+    "command": ${jsonencode(var.cmd)}
   }
 ]
 EOF

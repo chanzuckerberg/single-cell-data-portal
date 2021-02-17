@@ -8,6 +8,12 @@ variable custom_stack_name {
   description = "Please provide the stack name"
 }
 
+variable remote_dev_prefix {
+  type        = string
+  description = "S3 storage path / db schema prefix"
+  default     = ""
+}
+
 variable app_name {
   type        = string
   description = "Please provide the ECS service name"
@@ -46,12 +52,12 @@ variable host_match {
 }
 
 variable security_groups {
-  type        = string
+  type        = list(string)
   description = "Security groups for ECS tasks"
 }
 
 variable subnets {
-  type        = string
+  type        = list(string)
   description = "Subnets for ecs tasks"
 }
 
@@ -67,9 +73,9 @@ variable path {
 }
 
 variable cmd {
-  type        = string
+  type        = list(string)
   description = "The path to register with the Application Load Balancer"
-  default     = ""
+  default     = []
 }
 
 variable api_url {

@@ -10,7 +10,7 @@ resource aws_lambda_function lambda_job_def {
       ARTIFACT_BUCKET = var.artifact_bucket,
       CELLXGENE_BUCKET = var.cellxgene_bucket,
       DEPLOYMENT_STAGE = var.deployment_stage,
-      REMOTE_DEV_PREFIX = "/${var.custom_stack_name}",
+      REMOTE_DEV_PREFIX = var.remote_dev_prefix
     }
   }
 }
