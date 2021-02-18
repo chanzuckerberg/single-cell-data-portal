@@ -17,5 +17,5 @@ resource aws_lambda_function lambda_job_def {
 
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
-  name              = "${var.custom_stack_name}/lambda-handler-error"
+  name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/lambda-handler-error"
 }

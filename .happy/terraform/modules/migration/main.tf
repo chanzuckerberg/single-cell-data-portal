@@ -50,5 +50,5 @@ EOF
 
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
-  name              = "${var.custom_stack_name}/migrations"
+  name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/migrations"
 }

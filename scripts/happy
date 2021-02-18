@@ -703,9 +703,12 @@ class Orchestrator:
             os.execvp("ssh", ["ssh", "-t", ip, "sudo", "docker", "exec", "-ti", container["container"], "/bin/bash"])
 
     def logs(self, stack_name, service, since):
+        config = self.ctx.obj["config"]
+        log_prefix = config.log_group_prefix
+        env = config.env
         run_aws_cmd(
             self.ctx,
-            ["logs", "tail", "--since", since, "--follow", f"{stack_name}/{service}"],
+            ["logs", "tail", "--since", since, "--follow", f"/{log_prefix}/{env}/{stack_name}/{service}"],
             return_output=False,
             json_output=False,
         )

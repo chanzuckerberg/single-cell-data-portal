@@ -4,6 +4,7 @@
     "default_env": "rdev",
     "app": "data-portal",
     "default_compose_env": ".env.ecr",
+    "log_group_prefix": "dp",
     "environments": {
         "rdev": {
             "aws_profile": "single-cell-dev",
