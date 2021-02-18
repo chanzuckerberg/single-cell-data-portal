@@ -73,7 +73,7 @@ async function createCollection(): Promise<string> {
   await page.click(getText("I agree to cellxgene's data submission policies."));
   const [response] = await Promise.all([
     page.waitForEvent("response"),
-    page.click(getTestTag("create-button")),
+    page.click(getTestID("create-button")),
   ]);
 
   const { collectionId } = (await response.json()) as {
