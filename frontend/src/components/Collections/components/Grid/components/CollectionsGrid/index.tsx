@@ -1,5 +1,5 @@
 import React, { FC, ReactChild } from "react";
-import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { CollectionResponse } from "src/common/queries/collections";
 import {
   CollectionHeaderCell,
@@ -54,8 +54,10 @@ const CollectionsGrid: FC<Props> = ({
   );
 };
 
-function sortByUpdatedAtDescending(collections: Collection[]): Collection[] {
-  return collections?.sort((a, b) => a.updated_at - b.updated_at) || [];
+function sortByUpdatedAtDescending(
+  collections: CollectionResponse[]
+): CollectionResponse[] {
+  return collections?.sort((a, b) => b.created_at - a.created_at) || [];
 }
 
 export default CollectionsGrid;
