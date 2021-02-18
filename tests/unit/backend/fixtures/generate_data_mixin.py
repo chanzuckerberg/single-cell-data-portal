@@ -31,3 +31,6 @@ class GenerateDataMixin:
         # Cleanup collection after test
         self.addCleanup(delete, _dataset.id)
         return _dataset
+
+    def generate_geneset(self, session, **params) -> GeneSet:
+        pass
