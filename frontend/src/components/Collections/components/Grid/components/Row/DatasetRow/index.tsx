@@ -16,7 +16,6 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style.ts";
 import { UploadingFile } from "src/components/DropboxChooser";
-import styled from "styled-components";
 import CellCount from "./components/CellCount";
 import Popover from "./components/Popover";
 import { StyledRadio, TitleContainer } from "./style";
@@ -145,10 +144,6 @@ const DatasetRow: FC<Props> = ({
     organism,
     cell_count,
   } = aggregateDatasetsMetadata([dataset]);
-
-  const ExploreButton = styled(AnchorButton)`
-    padding: 0;
-  `;
 
   return (
     <StyledRow>
