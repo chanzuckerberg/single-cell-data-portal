@@ -6,7 +6,6 @@ import sys
 from sqlalchemy import (
     Boolean,
     Column,
-    create_engine,
     DateTime,
     Enum,
     Float,
@@ -17,12 +16,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from .corpora_config import CorporaDbConfig
 from .utils.exceptions import CorporaException
 
 
@@ -83,15 +81,6 @@ class AuditMixin(object):
 
 
 Base = declarative_base(cls=TransformingBase)
-
-
-class DBSessionMaker:
-    def __init__(self):
-        self.engine = create_engine(CorporaDbConfig().database_uri, connect_args={"connect_timeout": 5})
-        self.session_maker = sessionmaker(bind=self.engine)
-
-    def session(self, **kwargs):
-        return self.session_maker(**kwargs)
 
 
 class CollectionVisibility(enum.Enum):
@@ -172,7 +161,7 @@ class DbCollection(Base, AuditMixin):
     contact_name = Column(String, default="")
     contact_email = Column(String, default="")
     data_submission_policy_version = Column(String, nullable=False)
-    tombstone = Column(Boolean, default=False)
+    tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
@@ -229,7 +218,7 @@ class DbDataset(Base, AuditMixin):
     is_valid = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
-    tombstone = Column(Boolean, default=False)
+    tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")

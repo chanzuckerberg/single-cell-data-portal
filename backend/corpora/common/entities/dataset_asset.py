@@ -62,9 +62,17 @@ class DatasetAsset(Entity):
         else:
             return response["ContentLength"]
 
+    def delete_from_s3(self):
+        try:
+            self.s3_client().delete_object(Bucket=self.bucket_name, Key=self.key_name)
+        except ClientError:
+            logger.exception(f"Failed to delete artifact '{self.url}'.")
+            return None
+
     @classmethod
     def create(
         cls,
+        session,
         dataset_id: str,
         filename: str,
         filetype: DatasetArtifactFileType,
@@ -72,6 +80,7 @@ class DatasetAsset(Entity):
         user_submitted: bool,
         s3_uri: str,
     ):
+
         db_object = cls.table(
             dataset_id=dataset_id,
             filename=filename,
@@ -80,6 +89,6 @@ class DatasetAsset(Entity):
             user_submitted=user_submitted,
             s3_uri=s3_uri,
         )
-        cls.db.session.add(db_object)
-        cls.db.commit()
+        session.add(db_object)
+        session.commit()
         return cls(db_object)

@@ -1,9 +1,8 @@
-import { Button, Classes, Intent } from "@blueprintjs/core";
+import { Classes } from "@blueprintjs/core";
 import React from "react";
 import {
   Collection,
   COLLECTION_LINK_TYPE_OPTIONS,
-  Dataset,
   DATASET_ASSET_FORMAT,
   Link,
 } from "src/common/entities";
@@ -29,24 +28,6 @@ export function renderLinks(links: Link[]) {
       </React.Fragment>
     );
   });
-}
-
-export function DownloadButton({ ...props }) {
-  return (
-    <Button intent={Intent.PRIMARY} outlined {...props}>
-      Download
-    </Button>
-  );
-}
-
-export function getSelectedDataset({
-  selectedId,
-  datasets,
-}: {
-  selectedId: string;
-  datasets: Dataset[];
-}) {
-  return datasets.find((dataset) => dataset.id === selectedId);
 }
 
 export function getIsPublishable(datasets: Collection["datasets"]) {

@@ -16,6 +16,8 @@ well-labeled repository of interoperable datasets.
 ### Development quickstart
 See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 
+See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
+
 ### Pre-requisites
 
 1. [Install and configure awscli](docs/awscli.md)

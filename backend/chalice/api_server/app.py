@@ -1,18 +1,18 @@
+from collections import defaultdict
+
+import chalice
+import connexion
 import json
 import logging
 import os
 import re
 import sys
-from collections import defaultdict
-from functools import wraps
-
-import chalice
-import connexion
 from chalice import Chalice
 from connexion import FlaskApi, ProblemException, problem
+from flask import g
 from flask_cors import CORS
+from functools import wraps
 from urllib.parse import urlparse
-
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "chalicelib"))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -21,6 +21,7 @@ from corpora.common.authorizer import assert_authorized_token
 from corpora.common.utils.json import CustomJSONEncoder
 from corpora.common.utils.aws import AwsSecret
 from corpora.common.corpora_config import CorporaAuthConfig
+from corpora.common.utils.db_session import db_session_manager
 
 
 def requires_auth():
@@ -108,7 +109,9 @@ def get_chalice_app(flask_app):
             data=req_body,
             environ_base=app.current_request.stage_vars,
         ):
-            flask_res = flask_app.full_dispatch_request()
+            with db_session_manager() as db_session:
+                g.db_session = db_session
+                flask_res = flask_app.full_dispatch_request()
 
         response_headers = dict(flask_res.headers)
         response_headers.update({"X-AWS-REQUEST-ID": app.lambda_context.aws_request_id})
@@ -155,6 +158,10 @@ def get_chalice_app(flask_app):
         )
         response.headers["X-AWS-REQUEST-ID"] = app.lambda_context.aws_request_id
         return FlaskApi.get_response(response)
+
+    @flask_app.teardown_appcontext
+    def close_db(e=None):
+        g.pop("db_session", None)
 
     return app
 

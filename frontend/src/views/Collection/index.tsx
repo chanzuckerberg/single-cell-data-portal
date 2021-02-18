@@ -4,20 +4,18 @@ import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
 import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
-import { Dataset, VISIBILITY_TYPE } from "src/common/entities";
-import { hasAssets } from "src/common/modules/datasets/selectors";
+import { ACCESS_TYPE, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
-import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
-import DeleteDataset from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/DeleteDataset";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
-import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
+import { UploadingFile } from "src/components/DropboxChooser";
 import { ViewGrid } from "../globalStyle";
+import ActionButtons, { UploadedFiles } from "./components/ActionButtons";
 import DatasetUploadToast from "./components/DatasetUploadToast";
 import EmptyDatasets from "./components/EmptyDatasets";
 import {
@@ -26,24 +24,14 @@ import {
   DatasetContainer,
   Description,
   LinkContainer,
-  StyledDiv,
 } from "./style";
-import {
-  DownloadButton,
-  getIsPublishable,
-  getSelectedDataset,
-  renderLinks,
-} from "./utils";
+import { getIsPublishable, renderLinks } from "./utils";
 
 interface RouteProps {
   id?: string;
 }
 
 export type Props = RouteComponentProps<RouteProps>;
-
-export interface UploadedFiles {
-  [datasetID: string]: UploadingFile;
-}
 
 const Collection: FC<Props> = ({ id = "" }) => {
   const isPrivate = window.location.pathname.includes("/private");
@@ -102,11 +90,6 @@ const Collection: FC<Props> = ({ id = "" }) => {
     () => id + visibility
   );
 
-  const selectedDataset = getSelectedDataset({
-    datasets,
-    selectedId: selected,
-  });
-
   return (
     <ViewGrid>
       <CollectionInfo>
@@ -116,7 +99,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
       </CollectionInfo>
 
       <CollectionButtons>
-        <DeleteCollection id={id} />
+        {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
+          <DeleteCollection id={id} />
+        )}
         <Button
           intent={Intent.PRIMARY}
           minimal
@@ -141,20 +126,12 @@ const Collection: FC<Props> = ({ id = "" }) => {
         )}
       </DatasetContainer>
       {isDatasetPresent && (
-        <StyledDiv>
-          <DropboxChooser onUploadFile={addNewFile}>
-            <Button intent={Intent.PRIMARY} outlined>
-              Add
-            </Button>
-          </DropboxChooser>
-          <DownloadDataset
-            isDisabled={!hasAssets(selectedDataset)}
-            name={selectedDataset?.name || ""}
-            dataAssets={selectedDataset?.dataset_assets || []}
-            Button={DownloadButton}
-          />
-          <DeleteDataset id={selected} collectionId={collection?.id} />
-        </StyledDiv>
+        <ActionButtons
+          collectionId={collection?.id}
+          selectedDatasetId={selected}
+          visibility={visibility}
+          addNewFile={addNewFile}
+        />
       )}
     </ViewGrid>
   );

@@ -154,7 +154,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: corpora.lambdas.api.v1.collection_uuid.delete
+      operationId: corpora.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
@@ -252,7 +252,9 @@ paths:
         - datasets
       summary: Delete a dataset
       description: >-
-        Cancels the download of a dataset to the data portal and cleans up (removes) any artifacts created in the download process
+        Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
+        in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
+        the data portal and removes associated artifacts
       operationId: corpora.lambdas.api.v1.dataset.delete_dataset
       security:
         - cxguserCookie: []
