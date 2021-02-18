@@ -3,7 +3,7 @@ import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { goToPage, login } from "tests/utils/helpers";
-import { getTestTag, getText } from "tests/utils/selectors";
+import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
   TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
@@ -42,7 +42,7 @@ describe("Collection", async () => {
           await createCollection();
 
           const publishButton = await page.$(
-            getTestTag("publish-collection-button")
+            getTestID("publish-collection-button")
           );
 
           expect(await publishButton?.getAttribute("disabled")).toBe("");
