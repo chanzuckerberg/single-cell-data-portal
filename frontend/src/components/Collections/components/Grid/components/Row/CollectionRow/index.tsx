@@ -81,13 +81,20 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledCollectionRow onClick={handleRowClick}>
+    <StyledCollectionRow
+      onClick={handleRowClick}
+      data-test-class="collection-row"
+    >
       <StyledCell>
         <CollectionTitleText>{name}</CollectionTitleText>
         <div>{contact_name}</div>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
-          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
+          <Tag
+            minimal
+            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
+            data-test-class="visibility-tag"
+          >
             {isPrivate ? "Private" : "Published"}
           </Tag>
         ) : (
