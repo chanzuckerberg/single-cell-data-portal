@@ -2,7 +2,7 @@
 # 
 resource aws_lambda_function lambda_job_def {
   role          = var.lambda_execution_role
-  function_name = "${var.custom_stack_name}-lambda"
+  function_name = "dp-${var.deployment_stage}-${var.custom_stack_name}-lambda"
   package_type  = "Image"
   image_uri     = var.image
   environment {

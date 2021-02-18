@@ -1,5 +1,5 @@
 resource "aws_sfn_state_machine" "state_machine" {
-  name     = "${var.custom_stack_name}-sfn"
+  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
   role_arn = var.role_arn
 
   definition = <<EOF

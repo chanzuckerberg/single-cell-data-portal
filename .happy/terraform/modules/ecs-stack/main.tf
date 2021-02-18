@@ -171,4 +171,5 @@ module upload_sfn {
   role_arn             = local.sfn_role_arn
   custom_stack_name    = local.custom_stack_name
   lambda_error_handler = module.upload_lambda.error_handler
+  deployment_stage     = local.deployment_stage
 }

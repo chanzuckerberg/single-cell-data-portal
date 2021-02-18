@@ -5,7 +5,7 @@ data aws_region current {}
 
 resource aws_batch_job_definition batch_job_def {
   type = "container"
-  name = "${var.custom_stack_name}-upload"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-upload"
   container_properties = <<EOF
 {
   "jobRoleArn": "${var.batch_role_arn}",

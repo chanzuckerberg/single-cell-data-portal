@@ -22,3 +22,9 @@ variable custom_stack_name {
   type        = string
   description = "Please provide the stack name"
 }
+
+variable deployment_stage {
+  type        = string
+  description = "The name of the deployment stage of the Application"
+  default     = "dev"
+}
