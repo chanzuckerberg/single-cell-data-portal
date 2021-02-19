@@ -79,7 +79,12 @@ def get_chalice_app(flask_app):
     app.log.info(f"CORS allowed_origins: {allowed_origin}")
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
-    flask_app.config.update(SECRET_KEY=flask_secret_key)
+    flask_app.config.update(
+        SECRET_KEY=flask_secret_key,
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Strict",
+    )
 
     def clean_entry_for_logging(entry):
         log = entry.to_dict()
