@@ -1,12 +1,12 @@
 import { ROUTES } from "src/common/constants/routes";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
+import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { goToPage, login } from "tests/utils/helpers";
 import { getTestTag, getText } from "tests/utils/selectors";
 
-// (thuang): TEMP
-// Use `TEST_ENV.includes("local")` later
-const describeIfDeployed = describe.skip;
+const describeIfDeployed =
+  TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
 
 const TEST_COLLECTION = {
   contactEmail: "TEST@example.com",
@@ -23,15 +23,15 @@ describe("Collection", async () => {
       const collectionId = await createCollection();
 
       // Try delete
-      await page.click("Delete");
-      await page.click("Delete Collection");
+      await page.click(getText("Delete"));
+      await page.click(getText("Delete Collection"));
 
       await goToPage(
         apiTemplateToUrl(API_URL + ROUTES.PRIVATE_COLLECTION, {
           id: collectionId,
         })
       );
-      await expect(page).not.toHaveText(TEST_COLLECTION.name);
+      await expect(page).not.toHaveSelector(getText(TEST_COLLECTION.name));
     });
 
     describe("Publish a collection", () => {
@@ -45,7 +45,7 @@ describe("Collection", async () => {
             getTestTag("publish-collection-button")
           );
 
-          expect(publishButton?.getAttribute("disabled")).toBe("");
+          expect(await publishButton?.getAttribute("disabled")).toBe("");
         });
       });
     });
@@ -54,23 +54,33 @@ describe("Collection", async () => {
 
 async function createCollection(): Promise<string> {
   await page.click(getText("Create Collection"));
-  await page.fill("#name", TEST_COLLECTION.name);
-  await page.fill("#description", TEST_COLLECTION.description);
-  await page.fill("#contact-name", TEST_COLLECTION.contactName);
-  await page.fill("#contact-email", TEST_COLLECTION.contactEmail);
+  await page.type("#name", TEST_COLLECTION.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  await page.type(
+    "#description",
+    TEST_COLLECTION.description,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-name",
+    TEST_COLLECTION.contactName,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-email",
+    TEST_COLLECTION.contactEmail,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
   await page.click(getText("I agree to cellxgene's data submission policies."));
-
-  const [, response] = await Promise.all([
-    page.waitForEvent("request"),
+  const [response] = await Promise.all([
     page.waitForEvent("response"),
-    await page.click(getText("Create")),
+    page.click(getTestTag("create-button")),
   ]);
 
   const { collectionId } = (await response.json()) as {
     collectionId: string;
   };
 
-  await expect(page).toHaveText(TEST_COLLECTION.name);
+  await expect(page).toHaveSelector(getText(TEST_COLLECTION.name));
 
   return collectionId;
 }
