@@ -1,14 +1,29 @@
-import { TEST_URL } from "tests/common/constants";
+import { TEST_EMAIL, TEST_URL } from "../common/constants";
 import { getText } from "./selectors";
 
 export async function goToPage(url: string = TEST_URL) {
   await page.goto(url);
 }
 
-export async function login(url: string = TEST_URL) {
-  await goToPage(url);
-  await page.click(getText("Log In"));
-  await page.waitForNavigation({ url, waitUntil: "networkidle" });
+export async function login() {
+  goToPage();
+  try {
+    await expect(page).toHaveSelector(getText("My Collections"));
+  } catch (error) {
+    const url = page.url();
+    const password = "Test1111";
+    await page.click(getText("Log In"));
+
+    await page.fill('[name="email"]', TEST_EMAIL);
+    await page.fill('[name="password"]', password);
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      page.click('[name="submit"]'),
+    ]);
+
+    expect(page.url()).toContain(url);
+  }
 }
 
 export async function tryUntil(assert: () => void) {
@@ -17,6 +32,8 @@ export async function tryUntil(assert: () => void) {
 
   let retry = 0;
 
+  let savedError: Error = new Error();
+
   while (retry < MAX_RETRY) {
     try {
       await assert();
@@ -24,12 +41,13 @@ export async function tryUntil(assert: () => void) {
       break;
     } catch (error) {
       retry += 1;
-
+      savedError = error;
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
   if (retry === MAX_RETRY) {
-    throw Error("tryUntil() assertion failed!");
+    savedError.message += " tryUntil() failed";
+    throw savedError;
   }
 }

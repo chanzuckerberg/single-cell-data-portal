@@ -4,6 +4,8 @@
  * and `page` objects
  */
 
+const storageState = JSON.parse(process.env.STORAGE);
+
 const isHeadful =
   process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
@@ -15,6 +17,7 @@ const DEFAULT_LAUNCH_CONFIG = {
 
 const DEFAULT_CONTEXT_CONFIG = {
   acceptDownloads: true,
+  storageState,
 };
 
 module.exports = {
