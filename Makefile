@@ -82,7 +82,9 @@ oauth/pkcs12/certificate.pfx:
 
 .PHONY: local-ecr-login
 local-ecr-login:
-	aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com
+	if PROFILE=$$(aws configure list-profiles | grep single-cell-dev); then \
+		aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com; \
+	fi
 
 .PHONY: local-init
 local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login ## Launch a new local dev env and populate it with test data.
