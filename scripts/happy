@@ -704,11 +704,11 @@ class Orchestrator:
 
     def logs(self, stack_name, service, since):
         config = self.ctx.obj["config"]
+        # TODO, we should get the logs path from ECS instead of generating it.
         log_prefix = config.log_group_prefix
-        env = config.env
         run_aws_cmd(
             self.ctx,
-            ["logs", "tail", "--since", since, "--follow", f"/{log_prefix}/{env}/{stack_name}/{service}"],
+            ["logs", "tail", "--since", since, "--follow", f"{log_prefix}/{stack_name}/{service}"],
             return_output=False,
             json_output=False,
         )

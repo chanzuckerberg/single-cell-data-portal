@@ -4,19 +4,20 @@
     "default_env": "rdev",
     "app": "data-portal",
     "default_compose_env": ".env.ecr",
-    "log_group_prefix": "dp",
     "environments": {
         "rdev": {
             "aws_profile": "single-cell-dev",
             "secret_arn": "happy/env-rdev-config",
-            "terraform_directory": ".happy/terraform/envs/rdev"
+            "terraform_directory": ".happy/terraform/envs/rdev",
+            "log_group_prefix": "/dp/rdev"
         },
         "stage": {
             "aws_profile": "single-cell-dev",
             "secret_arn": "happy/env-stage-config",
             "terraform_directory": ".happy/terraform/envs/stage",
             "delete_protected": true,
-            "auto_run_migrations": false
+            "auto_run_migrations": false,
+            "log_group_prefix": "/dp/staging"
         }
     },
     "tasks": {
