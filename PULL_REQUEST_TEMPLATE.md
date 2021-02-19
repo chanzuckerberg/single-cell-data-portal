@@ -10,6 +10,6 @@
 - remove
 - modify
 
-## DOD
+## Definition of Done (from ticket)
 
-## QA steps
+## QA steps (optional)
