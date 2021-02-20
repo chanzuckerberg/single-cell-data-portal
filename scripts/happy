@@ -561,11 +561,10 @@ class TfeApi:
         self.org = org
         self._tfc = None
 
-    @property
-    def tfc(self):
-        if self._tfc:
-            return self._tfc
-        hostname = urlparse(self.url).hostname
+    def get_token(self, hostname):
+        env_token = os.getenv("TFE_TOKEN")
+        if env_token:
+            return env_token
         error = False
         try:
             with open(os.path.expanduser("~/.terraform.d/credentials.tfrc.json")) as f:
@@ -576,8 +575,14 @@ class TfeApi:
             raise CliError(
                 f"Terraform credentials for {hostname} not found. Run 'terraform login {hostname}' and follow the instructions"
             )
-        token = credentials[hostname]["token"]
-        tfc = TFC(token, url=self.url)
+        return credentials[hostname]["token"]
+
+    @property
+    def tfc(self):
+        if self._tfc:
+            return self._tfc
+        hostname = urlparse(self.url).hostname
+        tfc = TFC(self.get_token(hostname), url=self.url)
         tfc.set_org(self.org)
         self._tfc = tfc
         return tfc
