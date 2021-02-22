@@ -25,9 +25,11 @@ export const StyledCollectionsGrid = styled(HTMLTable)`
 
 const HeaderCell = styled.th`
   padding: 12px 0 !important;
+  font-style: normal;
   font-weight: 500;
   font-size: 14px;
   line-height: 18px;
+  letter-spacing: -0.1px;
 `;
 
 export const CollectionHeaderCell = styled(HeaderCell)`

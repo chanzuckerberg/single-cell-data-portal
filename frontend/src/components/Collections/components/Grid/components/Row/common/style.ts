@@ -1,5 +1,5 @@
 import { Classes } from "@blueprintjs/core";
-import { GRAY, LIGHT_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 import { detailsColWidthCSS, textClippingCSS } from "../../../common/style";
 
@@ -16,6 +16,11 @@ export const DetailsCell = styled(StyledCell)`
   color: ${GRAY.A} !important;
   ${textClippingCSS}
   ${detailsColWidthCSS}
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.1px;
   padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
@@ -26,13 +31,6 @@ export const LeftAlignedDetailsCell = styled(DetailsCell)`
 export const StyledRow = styled.tr`
   align-content: center;
   vertical-align: top;
-`;
-
-export const StyledCollectionRow = styled(StyledRow)`
-  :hover {
-    background-color: ${LIGHT_GRAY.E};
-    cursor: pointer;
-  }
 `;
 
 export const RightAlignedDetailsCell = styled(DetailsCell)`

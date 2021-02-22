@@ -1,6 +1,5 @@
 import { Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { navigate } from "@reach/router";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -13,9 +12,9 @@ import {
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledCell,
-  StyledCollectionRow,
+  StyledRow,
 } from "../common/style";
-import { CollectionTitleText } from "./style";
+import { CollectionTitleText, DOILink } from "./style";
 
 interface Props {
   id: string;
@@ -67,11 +66,6 @@ const CollectionRow: FC<Props> = (props) => {
 
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
-  const handleRowClick = (e: React.MouseEvent) => {
-    (e.target as Element).tagName !== "A" &&
-      navigate(`/collections/${id}${isPrivate ? "/private" : ""}`);
-  };
-
   const {
     tissue,
     assay,
@@ -81,12 +75,13 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledCollectionRow
-      onClick={handleRowClick}
-      data-test-class="collection-row"
-    >
+    <StyledRow data-test-class="collection-row">
       <StyledCell>
-        <CollectionTitleText>{name}</CollectionTitleText>
+        <CollectionTitleText
+          to={`/collections/${id}${isPrivate ? "/private" : ""}`}
+        >
+          {name}
+        </CollectionTitleText>
         <div>{contact_name}</div>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
@@ -99,9 +94,9 @@ const CollectionRow: FC<Props> = (props) => {
           </Tag>
         ) : (
           dois?.map((doi) => (
-            <a key={doi.doi} href={doi.link}>
+            <DOILink key={doi.doi} href={doi.link}>
               {doi.doi}
-            </a>
+            </DOILink>
           ))
         )}
       </StyledCell>
@@ -110,7 +105,7 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-    </StyledCollectionRow>
+    </StyledRow>
   );
 };
 
