@@ -61,15 +61,17 @@ class BogusDatasetParams:
 class BogusGenesetParams:
     @classmethod
     def get(cls, **kwargs):
+        gene_symbols = []
+        for i in range(6):
+            gene_symbols.append(cls.generate_random_string(4))
         bogus_data = dict(
-            bogus_description="This is a geneset bwhahaha",
-            bogus_name=cls.generate_random_string(7),
-            gene_symbols=[],
+            description="This is a geneset bwhahaha",
+            name=cls.generate_random_string(7),
+            gene_symbols=gene_symbols,
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
-        for i in range(6):
-            bogus_data.gene_symbols.append(cls.generate_random_string(4))
+
         bogus_data.update(**kwargs)
         return bogus_data
 
