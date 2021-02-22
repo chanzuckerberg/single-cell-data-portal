@@ -75,7 +75,7 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledRow data-test-class="collection-row">
+    <StyledRow data-test-id="collection-row">
       <StyledCell>
         <CollectionTitleText
           to={`/collections/${id}${isPrivate ? "/private" : ""}`}
@@ -88,7 +88,7 @@ const CollectionRow: FC<Props> = (props) => {
           <Tag
             minimal
             intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
-            data-test-class="visibility-tag"
+            data-test-id="visibility-tag"
           >
             {isPrivate ? "Private" : "Published"}
           </Tag>
