@@ -364,6 +364,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")
 
+
 association_table = Table('geneset_dataset_link', Base.metadata,
     Column('geneset', String, ForeignKey('geneset.id')),
     Column('dataset', String, ForeignKey('dataset.id'))

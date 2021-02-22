@@ -56,6 +56,7 @@ export DEPLOYMENT_STAGE=test
 ```
 5. Import the remote database schema into your local database:  
 ```shell
+cd backend/
 make db/import FROM=${}
 ```
 where from is the name of the *.sqlc* file downloaded. For example 
