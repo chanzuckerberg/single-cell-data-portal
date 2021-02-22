@@ -58,8 +58,15 @@ export DEPLOYMENT_STAGE=test
 ```shell
 make db/import FROM=${}
 ```
-where from is the name of the *.sqlc* file downloaded. You may need to run this a few times, until there are no significant errors.
-1. Run the migration test:
+where from is the name of the *.sqlc* file downloaded. For example 
+```shell script
+make db/import FROM=corpora_dev-202102221309
+```
+- Note: The file is stored under backend/database/file_name but the make command will look in import/file_name this is due to the way [the local paths are mapped to the docker container](3.console.aws.amazon.com/s3/buckets/hosted-cellxgene-dev/?region=us-west-2&tab=overview)
+
+You may need to run this a few times, until there are no significant errors.
+ - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error
+6. Run the migration test:
 ```shell
 make db/test_migration
 ``` 
@@ -67,6 +74,10 @@ If there are no differences then the test passed. If the test didn't pass, make 
 
 ## Connect to Remote RDS
 Enable local connection to the private RDS instance:
+
+- Note: Since the default PostgreSQL port is `5432`, the above command will conflict with a local PostgreSQL instance.
+To stop it run `make local-stop` from `./corpora-data-portal`
+
 
 ```shell
 cd ./corpora-data-poral/backend
@@ -78,4 +89,3 @@ This command opens an SSH tunnel from `localhost:5432` to the RDS connection end
 The local port `5432` is fixed and encoded in the DB connection string stored in the AWS Secret at
 `corpora/backend/<DEPLOYMENT_STAGE>/database_local`.
 
-Note: Since the default PostgreSQL port is `5432`, the above command will conflict with a local PostgreSQL instance.

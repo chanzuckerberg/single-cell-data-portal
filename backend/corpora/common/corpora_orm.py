@@ -364,24 +364,18 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")
 
-association_table = Table('association', Base.metadata,
+association_table = Table('geneset_dataset_link', Base.metadata,
     Column('geneset', String, ForeignKey('geneset.id')),
     Column('dataset', String, ForeignKey('dataset.id'))
 )
 
-class Parent(Base):
-    __tablename__ = 'left'
-    id = Column(Integer, primary_key=True)
-    children = relationship("Child",
-                    secondary=association_table,
-                    backref="parents")
 
 class DbGeneset(Base, AuditMixin):
     """
     Represents a geneset linking a list of genes to collection and specific datasets within that collection
     """
 
-    __tablename__ == "geneset"
+    __tablename__ = "geneset"
 
     name = Column(String)
     description = Column(String)
