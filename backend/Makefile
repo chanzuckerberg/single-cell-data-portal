@@ -57,7 +57,7 @@ db/download:
 
 db/import:
     # Imports corpora_dev.sqlc into the corpora_test database
-	# Usage: make db/import FROM=dev
+	# Usage: make db/import FROM=corpora_dev-202102221309
 	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora /import/$(FROM).sqlc
 
 db/import/schema:
