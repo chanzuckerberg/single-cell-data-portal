@@ -1,4 +1,8 @@
+import random
+import string
+
 from backend.corpora.common.entities import Collection, Dataset
+from backend.corpora.common.entities.geneset import Geneset
 from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
@@ -32,5 +36,20 @@ class GenerateDataMixin:
         self.addCleanup(delete, _dataset.id)
         return _dataset
 
-    def generate_geneset(self, session, **params) -> GeneSet:
-        pass
+    def generate_geneset(self, session, **params) -> Geneset:
+        def delete(uuid):
+            with db_session_manager() as session:
+                geneset = Geneset.get(session, uuid)
+                if geneset:
+                    geneset.delete()
+
+        bogus_description = "This is a geneset bwhahaha"
+        bogus_name = self.generate_random_string(7)
+        gene_symbols = []
+        for i in range(6):
+            gene_symbols.append(self.generate_random_string(4))
+        _geneset = Geneset.create(session, name=bogus_name, description=bogus_description, gene_symbols=gene_symbols)
+
+    @staticmethod
+    def generate_random_string(self, length=7):
+        return ''.join(random.choice(string.ascii_letters) for i in range(length))

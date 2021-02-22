@@ -12,7 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
-    String, Table,
+    String, Table, UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -389,5 +389,5 @@ class DbGeneset(Base, AuditMixin):
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        {},
+        UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc'),
     )
