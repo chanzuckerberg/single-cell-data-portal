@@ -43,3 +43,5 @@ class GenerateDataMixin:
                 if geneset:
                     geneset.delete()
         _geneset = Geneset.create(session, **BogusGenesetParams.get(**params))
+        self.addCleanup(delete, _geneset.id)
+        return _geneset

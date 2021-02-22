@@ -4,9 +4,10 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 class TestGeneSets(DataPortalTestCase):
     def setUp(self):
         super().setUp()
+
     def test_create_and_retrieve_a_geneset(self):
         test_uuid = "test_genest_id"
-        geneset = self.generate_geneset(uuid=test_uuid)
+        geneset = self.generate_geneset(self.session, id=test_uuid)
         self.assertEqual(test_uuid, geneset.id)
 
     def test_retrieve_a_geneset_that_does_not_exist(self):
