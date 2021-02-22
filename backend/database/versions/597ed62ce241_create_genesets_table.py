@@ -1,17 +1,18 @@
-"""create_geneset_table
+"""create_genesets_table
 
-Revision ID: eaecfd687730
+Revision ID: 597ed62ce241
 Revises: 5a363594dd06
-Create Date: 2021-02-22 13:07:55.919592
+Create Date: 2021-02-22 14:44:01.654611
 
 """
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import ENUM
 
 # revision identifiers, used by Alembic.
-revision = 'eaecfd687730'
+from sqlalchemy.dialects.postgresql import ENUM
+
+revision = '597ed62ce241'
 down_revision = '5a363594dd06'
 branch_labels = None
 depends_on = None
@@ -27,9 +28,10 @@ def upgrade():
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('gene_symbols', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('collection_id', sa.String(), nullable=False),
-    sa.Column('collection_visibility', ENUM('PUBLIC', 'PRIVATE', name='collectionvisibility',  create_type=False), nullable=False),
+    sa.Column('collection_visibility', ENUM('PUBLIC', 'PRIVATE', name='collectionvisibility', create_type=False), nullable=False),
     sa.ForeignKeyConstraint(['collection_id', 'collection_visibility'], ['project.id', 'project.visibility'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc')
     )
     op.create_table('geneset_dataset_link',
     sa.Column('geneset', sa.String(), nullable=True),
