@@ -72,6 +72,7 @@ jobs:
       - name: Push images
         if: github.ref == 'refs/heads/main'
         run: |
+          # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
           pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
@@ -225,3 +226,29 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
+
+  upgrade-stage:
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - push-image
+      - push-upload-image
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - uses: actions/checkout@v2
+      - name: Install happy dependencies
+        run: |
+          pip install -r .happy/requirements.txt
+          pip install -r .happy/requirements2.txt
+      - name: Update stage
+        env:
+          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+        run: |
+          ./scripts/happy --profile="" --env stage update stagestack --tag sha-${GITHUB_SHA:0:8}
