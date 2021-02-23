@@ -77,5 +77,4 @@ class BogusGenesetParams:
 
     @staticmethod
     def generate_random_string(self, length=7):
-        return ''.join(random.choice(string.ascii_letters) for i in range(length))
-
+        return "".join(random.choice(string.ascii_letters) for i in range(length))
