@@ -14,13 +14,12 @@ export const CollectionTitleText = styled(Link)`
 export const DOILink = styled.a`
   color: ${BLUE.C};
   font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: -0.1px;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
 `;
 
-export const contactText = styled.div`
+export const ContactText = styled.div`
   color: ${PT_TEXT_COLOR};
   font-style: normal;
   font-weight: normal;

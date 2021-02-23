@@ -14,7 +14,7 @@ import {
   StyledCell,
   StyledRow,
 } from "../common/style";
-import { CollectionTitleText, DOILink } from "./style";
+import { CollectionTitleText, ContactText, DOILink } from "./style";
 
 interface Props {
   id: string;
@@ -82,7 +82,7 @@ const CollectionRow: FC<Props> = (props) => {
         >
           {name}
         </CollectionTitleText>
-        <div>{contact_name}</div>
+        <ContactText>{contact_name}</ContactText>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
           <Tag
