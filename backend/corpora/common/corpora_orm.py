@@ -368,7 +368,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
 
 class DbGeneset(Base, AuditMixin):
     """
-    Represents a geneset linking a list of genes to collection and specific datasets within that collection
+    Represents a geneset linking a list of genes to a collection and specific datasets within that collection
     """
 
     __tablename__ = "geneset"
@@ -379,10 +379,8 @@ class DbGeneset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
-    datasets = relationship("DBGenesetDatasetLink", back_populates="geneset")
+    datasets = relationship("DBGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
 
-
-    # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc'),
@@ -395,8 +393,8 @@ class DBGenesetDatasetLink(Base, AuditMixin):
     """
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey('geneset.id'), primary_key=True)
-    dataset_id = Column(String, ForeignKey('dataset.id'), primary_key=True)
+    geneset_id = Column(String, ForeignKey('geneset.id'), index=True)
+    dataset_id = Column(String, ForeignKey('dataset.id'), index=True)
     dataset = relationship("DbDataset", back_populates="genesets")
     geneset = relationship("DbGeneset", back_populates="datasets")
 
