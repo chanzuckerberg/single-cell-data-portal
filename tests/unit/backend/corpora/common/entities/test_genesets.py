@@ -9,7 +9,13 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 class TestGeneSets(DataPortalTestCase):
     def test_create_a_geneset(self):
         collection = self.generate_collection(self.session)
-        geneset = Geneset.create(self.session, name="geneset", description="words to describe it", gene_symbols=["AAA", "BBB", "CCC"], collection=collection)
+        geneset = Geneset.create(
+            self.session,
+            name="geneset",
+            description="words to describe it",
+            gene_symbols=["AAA", "BBB", "CCC"],
+            collection=collection,
+        )
         self.assertEqual(geneset.name, "geneset")
 
     def test_cant_create_genesets_with_same_name_for_a_collection(self):
@@ -70,7 +76,9 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         dataset0 = self.generate_dataset(self.session, collection=collection)
         dataset1 = self.generate_dataset(self.session, collection=collection)
         dataset2 = self.generate_dataset(self.session, collection=collection)
-        geneset = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset0.id, dataset1.id, dataset2.id])
+        geneset = self.generate_geneset(
+            self.session, collection=collection, dataset_ids=[dataset0.id, dataset1.id, dataset2.id]
+        )
         self.assertEqual(len(geneset.datasets), 3)
 
     def test_deleting_a_geneset_does_not_cascade_to_the_dataset(self):
