@@ -63,7 +63,7 @@ where from is the name of the *.sqlc* file downloaded. For example
 ```shell script
 make db/import FROM=corpora_dev-202102221309
 ```
-- Note: The file is stored under backend/database/file_name but the make command will look in import/file_name this is due to the way [the local paths are mapped to the docker container](3.console.aws.amazon.com/s3/buckets/hosted-cellxgene-dev/?region=us-west-2&tab=overview)
+- Note: The file is stored under backend/database/file_name but the make command will look in import/file_name this is due to the way [the local paths are mapped to the docker container](https://github.com/chanzuckerberg/corpora-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
 
 You may need to run this a few times, until there are no significant errors.
  - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error
