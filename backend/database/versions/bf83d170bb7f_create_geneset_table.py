@@ -1,8 +1,8 @@
-"""create_genesets_table
+"""create_geneset_table
 
-Revision ID: 597ed62ce241
+Revision ID: bf83d170bb7f
 Revises: 5a363594dd06
-Create Date: 2021-02-22 14:44:01.654611
+Create Date: 2021-02-22 20:32:01.329837
 
 """
 from alembic import op
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 # revision identifiers, used by Alembic.
 from sqlalchemy.dialects.postgresql import ENUM
 
-revision = '597ed62ce241'
+revision = 'bf83d170bb7f'
 down_revision = '5a363594dd06'
 branch_labels = None
 depends_on = None
@@ -34,10 +34,14 @@ def upgrade():
     sa.UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc')
     )
     op.create_table('geneset_dataset_link',
-    sa.Column('geneset', sa.String(), nullable=True),
-    sa.Column('dataset', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['dataset'], ['dataset.id'], ),
-    sa.ForeignKeyConstraint(['geneset'], ['geneset.id'], )
+    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('geneset_id', sa.String(), nullable=False),
+    sa.Column('dataset_id', sa.String(), nullable=False),
+    sa.ForeignKeyConstraint(['dataset_id'], ['dataset.id'], ),
+    sa.ForeignKeyConstraint(['geneset_id'], ['geneset.id'], ),
+    sa.PrimaryKeyConstraint('id', 'geneset_id', 'dataset_id')
     )
     # ### end Alembic commands ###
 
