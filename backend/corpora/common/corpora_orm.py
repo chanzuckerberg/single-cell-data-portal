@@ -12,7 +12,8 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
-    String, Table, UniqueConstraint,
+    String,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -232,7 +233,6 @@ class DbDataset(Base, AuditMixin):
     )
     genesets = relationship("DBGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
 
-
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
@@ -383,7 +383,7 @@ class DbGeneset(Base, AuditMixin):
 
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc'),
+        UniqueConstraint("name", "collection_id", "collection_visibility", name="_geneset_name__collection_uc"),
     )
 
 
@@ -391,11 +391,10 @@ class DBGenesetDatasetLink(Base, AuditMixin):
     """
     Represents a link between a geneset and a dataset supporting a many to many relationship
     """
+
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey('geneset.id'), index=True)
-    dataset_id = Column(String, ForeignKey('dataset.id'), index=True)
+    geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
+    dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
     dataset = relationship("DbDataset", back_populates="genesets")
     geneset = relationship("DbGeneset", back_populates="datasets")
-
-
