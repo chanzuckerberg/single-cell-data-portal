@@ -39,6 +39,8 @@ services:
     ports:
       - "8000:8000"
     command: ["./container_init.sh"]
+    environment:
+      - DEPLOYMENT_STAGE=dev
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
