@@ -65,6 +65,18 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         collection = self.generate_collection(self.session)
         dataset = self.generate_dataset(self.session, collection=collection)
         geneset = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        self.assertIsNotNone(dataset.genesets)
         geneset.delete()
         dataset = Dataset.get(self.session, dataset.id)
         self.assertIsNotNone(dataset)
+        self.assertEqual(len(dataset.genesets), 0)
+
+    def test_deleting_a_dataset_does_not_cascade_to_the_geneset(self):
+        collection = self.generate_collection(self.session)
+        dataset = self.generate_dataset(self.session, collection=collection)
+        geneset = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        self.assertIsNotNone(geneset.datasets)
+        dataset.delete()
+        geneset = Geneset.get(self.session, geneset.id)
+        self.assertIsNotNone(geneset)
+        self.assertEqual(len(geneset.datasets), 0)

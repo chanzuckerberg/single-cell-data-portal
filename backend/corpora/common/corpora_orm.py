@@ -230,7 +230,7 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
-    genesets = relationship("DBGenesetDatasetLink", back_populates="dataset")
+    genesets = relationship("DBGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
 
 
     # Composite FK
