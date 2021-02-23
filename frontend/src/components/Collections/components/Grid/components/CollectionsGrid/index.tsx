@@ -44,25 +44,24 @@ function renderCollections(
   displayVisibility?: VISIBILITY_TYPE,
   accessType?: ACCESS_TYPE
 ) {
-  return sortByUpdatedAtDescending(collections)?.reduce(
-    (acc, { id, visibility }) => {
-      if (!displayVisibility || visibility === displayVisibility) {
-        acc.push(
-          <CollectionRow
-            id={id}
-            key={id + visibility}
-            visibility={visibility}
-            accessType={accessType}
-          />
-        );
-      }
-      return acc;
-    },
-    [] as Array<ReactChild>
-  );
+  const collectionElements = [] as Array<ReactChild>;
+  sortByCreatedAtDescending(collections).forEach(({ id, visibility }) => {
+    if (!displayVisibility || visibility === displayVisibility) {
+      collectionElements.push(
+        <CollectionRow
+          id={id}
+          key={id + visibility}
+          visibility={visibility}
+          accessType={accessType}
+        />
+      );
+    }
+  });
+
+  return collectionElements;
 }
 
-function sortByUpdatedAtDescending(
+function sortByCreatedAtDescending(
   collections: CollectionResponse[]
 ): CollectionResponse[] {
   return collections?.sort((a, b) => b.created_at - a.created_at) || [];
