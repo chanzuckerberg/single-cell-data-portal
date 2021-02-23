@@ -20,6 +20,11 @@ class TestAuth(BaseAuthAPITest):
         self.assertEqual(userinfo["email"], "fake_user@email.com")
         self.assertEqual(userinfo["email_verified"], True)
 
+    def check_set_cookie_is_secure(self, cookie):
+        actual_flags = cookie.split("; ")
+        for expected_flag in ["HttpOnly", "Secure", "SameSite=Strict"]:
+            self.assertIn(expected_flag, actual_flags)
+
     def test__auth_flow(self):
         headers = dict(host="localhost")
 
@@ -40,6 +45,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")
             self.assertTrue("/dp/v1/oauth2/callback" in args["redirect_uri"])
+            self.check_set_cookie_is_secure(response.headers["Set-Cookie"])
 
             # follow redirect
             test_url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
@@ -47,6 +53,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
+            self.check_set_cookie_is_secure(response.headers["Set-Cookie"])
             cxguser_cookie = response.headers["Set-Cookie"]
 
             # check userinfo

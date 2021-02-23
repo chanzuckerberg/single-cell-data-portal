@@ -80,8 +80,14 @@ oauth/pkcs12/certificate.pfx:
 .env.ecr:
 	echo DOCKER_REPO=$$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com/ > .env.ecr;
 
+.PHONY: local-ecr-login
+local-ecr-login:
+	if PROFILE=$$(aws configure list-profiles | grep single-cell-dev); then \
+		aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com; \
+	fi
+
 .PHONY: local-init
-local-init: oauth/pkcs12/certificate.pfx .env.ecr ## Launch a new local dev env and populate it with test data.
+local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login ## Launch a new local dev env and populate it with test data.
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
 	docker-compose exec -T backend pip3 install awscli
 	docker-compose exec -T backend /corpora-data-portal/scripts/setup_dev_data.sh
@@ -91,7 +97,7 @@ local-status: ## Show the status of the containers in the dev environment.
 	docker ps -a | grep --color=no -e 'CONTAINER\|corpora-data-portal'
 
 .PHONY: local-rebuild
-local-rebuild: .env.ecr ## Rebuild local dev without re-importing data
+local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
 	docker-compose $(COMPOSE_OPTS) build frontend backend
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
 
