@@ -1,7 +1,9 @@
 import { memoize } from "lodash-es";
 import { Dataset, Ontology } from "src/common/entities";
 
-export const aggregateDatasetsMetadata = memoize((datasets: Dataset[]) => {
+export const aggregateDatasetsMetadata = memoize(function (
+  datasets: Dataset[]
+) {
   const datasetsMetadata = datasets.map(extractDatasetMetadata);
 
   // (thuang): Merge all datasets' metadata
@@ -35,7 +37,8 @@ export const aggregateDatasetsMetadata = memoize((datasets: Dataset[]) => {
     organism: unique(result.organism),
     tissue: unique(result.tissue),
   };
-}, hashFn);
+},
+hashFn);
 
 function hashFn(datasets: Dataset[]): string {
   return datasets.reduce((acc, dataset) => {

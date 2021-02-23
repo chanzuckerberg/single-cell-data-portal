@@ -33,26 +33,34 @@ const CollectionsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {sortByUpdatedAtDescending(collections)?.reduce(
-          (acc, { id, visibility }) => {
-            if (!displayVisibility || visibility === displayVisibility) {
-              acc.push(
-                <CollectionRow
-                  id={id}
-                  key={id + visibility}
-                  visibility={visibility}
-                  accessType={accessType}
-                />
-              );
-            }
-            return acc;
-          },
-          [] as Array<ReactChild>
-        )}
+        {renderCollections(collections, displayVisibility, accessType)}
       </tbody>
     </StyledCollectionsGrid>
   );
 };
+
+function renderCollections(
+  collections: CollectionResponse[],
+  displayVisibility?: VISIBILITY_TYPE,
+  accessType?: ACCESS_TYPE
+) {
+  return sortByUpdatedAtDescending(collections)?.reduce(
+    (acc, { id, visibility }) => {
+      if (!displayVisibility || visibility === displayVisibility) {
+        acc.push(
+          <CollectionRow
+            id={id}
+            key={id + visibility}
+            visibility={visibility}
+            accessType={accessType}
+          />
+        );
+      }
+      return acc;
+    },
+    [] as Array<ReactChild>
+  );
+}
 
 function sortByUpdatedAtDescending(
   collections: CollectionResponse[]
