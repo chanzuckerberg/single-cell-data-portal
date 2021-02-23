@@ -1,13 +1,12 @@
 import itertools
 import json
 from datetime import datetime
-
 from furl import furl
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus, generate_uuid
 from backend.corpora.common.entities import Collection
-from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 
 
 class TestCollection(BaseAuthAPITest):
@@ -187,7 +186,12 @@ class TestCollection(BaseAuthAPITest):
                 }
             ],
             "description": "test_description",
-            "genesets": [],
+            "genesets": [{'collection_id': 'test_collection_id',
+                          'collection_visibility': 'PUBLIC',
+                          'datasets': [],
+                          'description': 'this is a geneset',
+                          'id': 'test_geneset',
+                          'name': 'test_geneset'}],
             "id": "test_collection_id",
             "links": [
                 {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},

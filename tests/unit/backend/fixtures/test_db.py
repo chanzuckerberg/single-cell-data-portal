@@ -13,7 +13,7 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ConversionStatus,
     ProcessingStatus,
-    DbGeneset
+    DbGeneset, association_table
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
@@ -101,8 +101,21 @@ class TestDatabase:
             id="test_geneset",
             name="test_geneset",
             description="this is a geneset",
+            collection_id = "test_collection_id",
+            collection_visibility = CollectionVisibility.PUBLIC.name
+        )
+
+        self.session.add(geneset)
+        geneset = DbGeneset(
+            id="test_geneset_with_dataset",
+            name="test_geneset",
+            description="this is a geneset with a dataset",
+            collection_id = "test_collection_id",
+            collection_visibility = CollectionVisibility.PUBLIC.name
         )
         self.session.add(geneset)
+        self.session.add(association_table.insert(dataset="test_dataset_id",
+                                                  geneset="test_geneset_with_dataset"))
         self.session.commit()
 
 
