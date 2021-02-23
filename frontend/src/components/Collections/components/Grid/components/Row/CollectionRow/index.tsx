@@ -75,10 +75,11 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledRow data-test-id="collection-row">
+    <StyledRow>
       <StyledCell>
         <CollectionTitleText
           to={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          data-test-id="collection-link"
         >
           {name}
         </CollectionTitleText>
