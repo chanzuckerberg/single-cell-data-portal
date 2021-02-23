@@ -15,6 +15,10 @@ class Geneset(Entity):
                 GenesetDatasetLink.create(session, geneset_id=gene_set.id, dataset_id=dataset_id)
         return cls(gene_set)
 
+    @classmethod
+    def retrieve_all_genesets_for_a_collection(cls, session, collection_id):
+        genesests = session.query(cls.table).filter(cls.table.collection_id == collection_id).all()
+        return genesests
 
 class GenesetDatasetLink(Entity):
     table = DBGenesetDatasetLink
