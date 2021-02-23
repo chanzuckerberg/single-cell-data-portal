@@ -2,7 +2,7 @@ import random
 import string
 
 from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.entities.geneset import Geneset
+from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams, BogusGenesetParams
 
