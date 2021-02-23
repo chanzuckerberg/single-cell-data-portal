@@ -95,7 +95,12 @@ const CollectionRow: FC<Props> = (props) => {
           </Tag>
         ) : (
           dois?.map((doi) => (
-            <DOILink key={doi.doi} href={doi.link}>
+            <DOILink
+              key={doi.doi}
+              href={doi.link}
+              target="_blank"
+              rel="noopener"
+            >
               {doi.doi}
             </DOILink>
           ))
