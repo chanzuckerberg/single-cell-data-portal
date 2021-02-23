@@ -33,6 +33,18 @@ class TestGeneSets(DataPortalTestCase):
         geneset = Geneset.get(self.session, "not_a_uuid")
         self.assertIsNone(geneset)
 
+    def test_retrieve_all_genesets_for_a_collection(self):
+        collection = self.generate_collection(self.session)
+        geneset_0 = self.generate_geneset(self.session, collection=collection)
+        geneset_1 = self.generate_geneset(self.session, collection=collection)
+        geneset_2 = self.generate_geneset(self.session, collection=collection)
+
+        genesets = Geneset.retrieve_all_genesets_for_a_collection(session=self.session, collection_id=collection.id)
+        linked_geneset_ids = [x.id for x in genesets]
+        self.assertIn(geneset_0.id, linked_geneset_ids)
+        self.assertIn(geneset_1.id, linked_geneset_ids)
+        self.assertIn(geneset_2.id, linked_geneset_ids)
+
 
 class TestGenesetDatasetLinks(DataPortalTestCase):
     def test_link_a_geneset_and_dataset(self):
