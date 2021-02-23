@@ -1,9 +1,9 @@
 import React, { FC } from "react";
+import { VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
-import Collection from "./components/Collection";
-import Heading from "./components/Heading";
-import { TitleWrapper } from "./style";
+import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
+import { TitleAndDescription, TitleWrapper } from "./style";
 
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
@@ -15,22 +15,16 @@ const Collections: FC = () => {
   return (
     <>
       <TitleWrapper>
-        <h1>Datasets</h1>
+        <TitleAndDescription>
+          <h1 data-test-id="collections-header">Collections</h1>
+          <p>Explore public collections of datasets or create your own.</p>
+        </TitleAndDescription>
         <CreateCollection />
       </TitleWrapper>
-      <p>
-        The cellxgene data portal is a repository of public, explorable
-        single-cell datasets. If you have a public dataset that you would like
-        hosted on this site, please let us know at{" "}
-        <a href="mailto:cellxgene@chanzuckerberg.com">
-          cellxgene@chanzuckerberg.com
-        </a>
-        .
-      </p>
-      <Heading />
-      {collections?.map(({ id, visibility }) => (
-        <Collection id={id} visibility={visibility} key={id} />
-      ))}
+      <CollectionsGrid
+        collections={collections}
+        displayVisibility={VISIBILITY_TYPE.PUBLIC}
+      />
     </>
   );
 };

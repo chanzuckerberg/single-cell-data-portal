@@ -12,7 +12,7 @@ import { useDatasetStatus } from "src/common/queries/datasets";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
   DetailsCell,
-  RightAlignedDetailsCell,
+  ExploreButtonCell,
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style.ts";
 import { UploadingFile } from "src/components/DropboxChooser";
@@ -179,7 +179,7 @@ const DatasetRow: FC<Props> = ({
       <Popover values={disease} isLoading={isMetadataLoading} />
       <Popover values={organism} isLoading={isMetadataLoading} />
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
-      <RightAlignedDetailsCell>
+      <ExploreButtonCell>
         {hasCXGFile(dataset) && (
           <AnchorButton
             intent={Intent.PRIMARY}
@@ -191,7 +191,7 @@ const DatasetRow: FC<Props> = ({
             data-test-id="view-dataset-link"
           />
         )}
-      </RightAlignedDetailsCell>
+      </ExploreButtonCell>
     </StyledRow>
   );
 };
