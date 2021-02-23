@@ -230,6 +230,8 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
+    genesets = relationship("DBGenesetDatasetLink", back_populates="dataset")
+
 
     # Composite FK
     __table_args__ = (
@@ -364,12 +366,6 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     dataset = relationship("DbDataset", back_populates="processing_status")
 
 
-association_table = Table('geneset_dataset_link', Base.metadata,
-    Column('geneset', String, ForeignKey('geneset.id')),
-    Column('dataset', String, ForeignKey('dataset.id'))
-)
-
-
 class DbGeneset(Base, AuditMixin):
     """
     Represents a geneset linking a list of genes to collection and specific datasets within that collection
@@ -383,7 +379,7 @@ class DbGeneset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
-    datasets = relationship("DbDataset", secondary=association_table, backref="genesets")
+    datasets = relationship("DBGenesetDatasetLink", back_populates="geneset")
 
 
     # Composite FK
@@ -391,3 +387,17 @@ class DbGeneset(Base, AuditMixin):
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         UniqueConstraint('name', 'collection_id', 'collection_visibility', name='_geneset_name__collection_uc'),
     )
+
+
+class DBGenesetDatasetLink(Base, AuditMixin):
+    """
+    Represents a link between a geneset and a dataset supporting a many to many relationship
+    """
+    __tablename__ = "geneset_dataset_link"
+
+    geneset_id = Column(String, ForeignKey('geneset.id'), primary_key=True)
+    dataset_id = Column(String, ForeignKey('dataset.id'), primary_key=True)
+    dataset = relationship("DbDataset", back_populates="genesets")
+    geneset = relationship("DbGeneset", back_populates="datasets")
+
+
