@@ -73,7 +73,7 @@ class TransformingBase(object):
                 result[column.key] = getattr(self, attr)
 
         # Populate result with relationships.
-        if not ignore_relationships:
+        if not remove_relationships:
             for attr, relation in self.__mapper__.relationships.items():
                 if attr in remove_attr:
                     continue
@@ -261,7 +261,7 @@ class DbDataset(Base, AuditMixin):
     )
 
     def to_dict(self, *args, **kwargs):
-        kwargs["ignore_attr"] = kwargs.get("ignore_attr", []) + ["genesets"]
+        kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]
         result = super(Base, self).to_dict(*args, **kwargs)
         result["geneset_ids"] = [i for i in self.geneset_ids]
         return result
@@ -415,7 +415,7 @@ class DbGeneset(Base, AuditMixin):
     )
 
     def to_dict(self, *args, **kwargs):
-        kwargs["ignore_relationships"] = True
+        kwargs["remove_relationships"] = True
         result = super(Base, self).to_dict(*args, **kwargs)
         result["linked_datasets"] = [i for i in self.dataset_ids]
         return result
