@@ -122,28 +122,6 @@ class TestDatabase:
         self.session.add(geneset_dataset_link)
         self.session.commit()
 
-    def _create_test_geneset(self):
-        geneset = DbGeneset(
-            id="test_geneset",
-            name="test_geneset",
-            description="this is a geneset",
-            collection_id = "test_collection_id",
-            collection_visibility = CollectionVisibility.PUBLIC.name
-        )
-
-        self.session.add(geneset)
-        geneset = DbGeneset(
-            id="test_geneset_with_dataset",
-            name="test_geneset",
-            description="this is a geneset with a dataset",
-            collection_id = "test_collection_id",
-            collection_visibility = CollectionVisibility.PUBLIC.name
-        )
-        self.session.add(geneset)
-        self.session.add(association_table.insert(dataset="test_dataset_id",
-                                                  geneset="test_geneset_with_dataset"))
-        self.session.commit()
-
 
     def _create_test_collection_links(self):
         collection_link = DbCollectionLink(
