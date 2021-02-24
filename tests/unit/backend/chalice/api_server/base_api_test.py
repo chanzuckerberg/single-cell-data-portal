@@ -47,6 +47,7 @@ class BaseAPITest(DataPortalTestCase):
 
         return _remove_timestamps(body)
 
+
 class BaseAuthAPITest(BaseAPITest):
     @classmethod
     def setUpClass(cls):
