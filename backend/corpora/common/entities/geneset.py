@@ -1,4 +1,4 @@
-from backend.corpora.common.corpora_orm import DbGeneset, DBGenesetDatasetLink
+from backend.corpora.common.corpora_orm import DbGeneset, DbGenesetDatasetLink
 from backend.corpora.common.entities.entity import Entity
 
 
@@ -22,11 +22,11 @@ class Geneset(Entity):
 
 
 class GenesetDatasetLink(Entity):
-    table = DBGenesetDatasetLink
+    table = DbGenesetDatasetLink
 
     @classmethod
     def create(cls, session, geneset_id: str, dataset_id: str):
-        link = DBGenesetDatasetLink(geneset_id=geneset_id, dataset_id=dataset_id)
+        link = DbGenesetDatasetLink(geneset_id=geneset_id, dataset_id=dataset_id)
         session.add(link)
         session.commit()
         return cls(link)

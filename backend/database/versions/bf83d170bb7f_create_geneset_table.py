@@ -25,7 +25,7 @@ def upgrade():
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("gene_symbols", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("collection_id", sa.String(), nullable=False),

@@ -76,5 +76,5 @@ class BogusGenesetParams:
         return bogus_data
 
     @staticmethod
-    def generate_random_string(self, length=7):
+    def generate_random_string(length=7):
         return "".join(random.choice(string.ascii_letters) for i in range(length))
