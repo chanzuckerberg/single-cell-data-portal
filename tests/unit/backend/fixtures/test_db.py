@@ -13,11 +13,13 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ConversionStatus,
     ProcessingStatus,
-    DbGeneset, association_table
+    DbGeneset,
+    DBGenesetDatasetLink,
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
+from unit.backend.utils import BogusGenesetParams
 
 
 class TestDatabaseManager:
@@ -94,6 +96,30 @@ class TestDatabase:
             data_submission_policy_version="0",
         )
         self.session.add(collection)
+        self.session.commit()
+
+    def _create_test_geneset(self):
+        geneset = DbGeneset(
+            id="test_geneset",
+            # name=BogusGenesetParams.generate_random_string(),
+            description="this is a geneset",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+        )
+
+        self.session.add(geneset)
+        geneset = DbGeneset(
+            id="test_geneset_with_dataset",
+            # name=BogusGenesetParams.generate_random_string(),
+            description="this is a geneset with a dataset",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+        )
+        self.session.add(geneset)
+        geneset_dataset_link = DBGenesetDatasetLink(
+            dataset_id="test_dataset_id", geneset_id="test_geneset_with_dataset"
+        )
+        self.session.add(geneset_dataset_link)
         self.session.commit()
 
     def _create_test_geneset(self):

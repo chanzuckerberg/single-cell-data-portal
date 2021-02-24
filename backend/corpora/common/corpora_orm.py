@@ -1,4 +1,8 @@
 import enum
+
+from sqlalchemy.ext.associationproxy import association_proxy
+from typing import Optional, List
+
 import os
 from datetime import datetime
 from uuid import uuid4
@@ -37,40 +41,54 @@ class TransformingBase(object):
     def __iter__(self):
         return iter(self.to_dict().items())
 
-    def to_dict(self, backref: "Base" = None, remove_none=False) -> dict:
+    def to_dict(
+        self,
+        backref: "Base" = None,
+        remove_none: bool = False,
+        ignore_attr: Optional[List[str]] = None,
+        ignore_relationships: bool = False,
+    ) -> dict:
         """
         Converts the columns and relationships of a SQLAlchemy Base object into a python dictionary.
 
         :param backref: used to avoid recursively looping between two tables.
         :param remove_none: If true, removes keys that are none from the result.
+        :param ignore_attr: Attributes not to convert.
+        :param ignore_relationships: Ignore relationships
         :return: a dictionary representation of the database object.
         """
-
         # Populate result with columns.
-        if remove_none:
-            result = {
-                column.key: getattr(self, attr)
-                for attr, column in self.__mapper__.c.items()
-                if getattr(self, attr) is not None
-            }
-        else:
-            result = {column.key: getattr(self, attr) for attr, column in self.__mapper__.c.items()}
+        result = dict()
+        ignore_attr = ignore_attr if ignore_attr else []
+        for attr, column in self.__mapper__.c.items():
+            if column.key in ignore_attr:
+                continue
+            if remove_none:
+                if getattr(self, attr) is not None:
+                    result[column.key] = getattr(self, attr)
+                else:
+                    continue
+            else:
+                result[column.key] = getattr(self, attr)
 
         # Populate result with relationships.
-        for attr, relation in self.__mapper__.relationships.items():
-            # Avoid recursive loop between two tables.
-            if backref == relation.target:
-                continue
-            value = getattr(self, attr)
-            if value is None:
-                if not remove_none:
-                    result[relation.key] = None
-            elif isinstance(value.__class__, DeclarativeMeta):
-                result[relation.key] = value.to_dict(self.__table__, remove_none)
-            elif isinstance(value, list):
-                result[relation.key] = [i.to_dict(self.__table__, remove_none) for i in value]
-            else:
-                raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
+        if not ignore_relationships:
+            for attr, relation in self.__mapper__.relationships.items():
+                if attr in ignore_attr:
+                    continue
+                # Avoid recursive loop between two tables.
+                if backref == relation.target:
+                    continue
+                value = getattr(self, attr)
+                if value is None:
+                    if not remove_none:
+                        result[relation.key] = None
+                elif isinstance(value.__class__, DeclarativeMeta):
+                    result[relation.key] = value.to_dict(backref=self.__table__, remove_none=remove_none)
+                elif isinstance(value, list):
+                    result[relation.key] = [i.to_dict(backref=self.__table__, remove_none=remove_none) for i in value]
+                else:
+                    raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
         return result
 
     id = Column(String, primary_key=True, default=generate_uuid)
@@ -231,13 +249,19 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
-    genesets = relationship("DBGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
-
+    gs = relationship("DBGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
+    genesets = association_proxy("gs", "geneset_id")
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         {},
     )
+
+    def to_dict(self, *args, **kwargs):
+        kwargs["ignore_attr"] = kwargs.get("ignore_attr", []) + ["gs"]
+        result = super(Base, self).to_dict(*args, **kwargs)
+        result["genesets"] = [i for i in self.genesets]
+        return result
 
 
 class DbDatasetArtifact(Base, AuditMixin):
@@ -379,12 +403,19 @@ class DbGeneset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
-    datasets = relationship("DBGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
+    ds = relationship("DBGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
+    datasets = association_proxy("ds", "dataset_id")
 
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
         UniqueConstraint("name", "collection_id", "collection_visibility", name="_geneset_name__collection_uc"),
     )
+
+    def to_dict(self, *args, **kwargs):
+        kwargs["ignore_relationships"] = True
+        result = super(Base, self).to_dict(*args, **kwargs)
+        result["linked_datasets"] = [i for i in self.datasets]
+        return result
 
 
 class DBGenesetDatasetLink(Base, AuditMixin):
@@ -396,5 +427,5 @@ class DBGenesetDatasetLink(Base, AuditMixin):
 
     geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
     dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
-    dataset = relationship("DbDataset", back_populates="genesets")
-    geneset = relationship("DbGeneset", back_populates="datasets")
+    dataset = relationship("DbDataset", back_populates="gs")
+    geneset = relationship("DbGeneset", back_populates="ds")
