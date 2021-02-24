@@ -397,7 +397,7 @@ class DbGeneset(Base, AuditMixin):
 
     __tablename__ = "geneset"
 
-    name = Column(String)
+    name = Column(String, nullable=False)
     description = Column(String)
     gene_symbols = Column(JSONB)
     collection_id = Column(String, nullable=False)
@@ -418,7 +418,7 @@ class DbGeneset(Base, AuditMixin):
         return result
 
 
-class DBGenesetDatasetLink(Base, AuditMixin):
+class DbGenesetDatasetLink(Base, AuditMixin):
     """
     Represents a link between a geneset and a dataset supporting a many to many relationship
     """
@@ -428,4 +428,4 @@ class DBGenesetDatasetLink(Base, AuditMixin):
     geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
     dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
     dataset = relationship("DbDataset", back_populates="gs")
-    geneset = relationship("DbGeneset", back_populates="ds")
+    geneset = relationship("DbGeneset", back_populates="gs")
