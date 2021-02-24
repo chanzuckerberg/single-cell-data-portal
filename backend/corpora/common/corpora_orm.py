@@ -428,4 +428,4 @@ class DbGenesetDatasetLink(Base, AuditMixin):
     geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
     dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
     dataset = relationship("DbDataset", back_populates="gs")
-    geneset = relationship("DbGeneset", back_populates="gs")
+    geneset = relationship("DbGeneset", back_populates="ds")
