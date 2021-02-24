@@ -249,7 +249,7 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
-    gs = relationship("DBGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
+    gs = relationship("DbGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
     genesets = association_proxy("gs", "geneset_id")
     # Composite FK
     __table_args__ = (
@@ -403,7 +403,7 @@ class DbGeneset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
-    ds = relationship("DBGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
+    ds = relationship("DbGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
     datasets = association_proxy("ds", "dataset_id")
 
     __table_args__ = (
