@@ -19,6 +19,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
+from tests.unit.backend.utils import BogusGenesetParams
 
 
 class TestDatabaseManager:
@@ -100,7 +101,7 @@ class TestDatabase:
     def _create_test_geneset(self):
         geneset = DbGeneset(
             id="test_geneset",
-            # name=BogusGenesetParams.generate_random_string(),
+            name="test_geneset",
             description="this is a geneset",
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
@@ -109,7 +110,7 @@ class TestDatabase:
         self.session.add(geneset)
         geneset = DbGeneset(
             id="test_geneset_with_dataset",
-            # name=BogusGenesetParams.generate_random_string(),
+            name="test_geneset_with_dataset",
             description="this is a geneset with a dataset",
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,

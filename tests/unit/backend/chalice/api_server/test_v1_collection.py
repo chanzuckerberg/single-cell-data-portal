@@ -62,7 +62,7 @@ class TestCollection(BaseAuthAPITest):
                 "collection_id",
                 "collection_visibility",
                 "is_valid",
-                "cell_count",
+                "cell_count"
             ]
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
@@ -193,6 +193,7 @@ class TestCollection(BaseAuthAPITest):
                     "linked_datasets": [],
                     "description": "this is a geneset",
                     "id": "test_geneset",
+                    "name": "test_geneset"
                 },
                 {
                     "collection_id": "test_collection_id",
@@ -200,6 +201,7 @@ class TestCollection(BaseAuthAPITest):
                     "linked_datasets": ["test_dataset_id"],
                     "description": "this is a geneset with a dataset",
                     "id": "test_geneset_with_dataset",
+                    "name": "test_geneset_with_dataset"
                 },
             ],
             "id": "test_collection_id",
