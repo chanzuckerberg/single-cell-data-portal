@@ -162,6 +162,7 @@ class TestCollection(BaseAuthAPITest):
                         {"label": "test_disease3", "ontology_term_id": "test_obq"},
                     ],
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
+                    "genesets": [],
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
@@ -186,6 +187,7 @@ class TestCollection(BaseAuthAPITest):
                 }
             ],
             "description": "test_description",
+            "genesets": [],
             "id": "test_collection_id",
             "links": [
                 {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},

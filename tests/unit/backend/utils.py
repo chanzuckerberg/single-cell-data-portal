@@ -1,3 +1,6 @@
+import random
+import string
+
 from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus
 
 
@@ -53,3 +56,25 @@ class BogusDatasetParams:
 
         bogus_data.update(**kwargs)
         return bogus_data
+
+
+class BogusGenesetParams:
+    @classmethod
+    def get(cls, **kwargs):
+        gene_symbols = []
+        for i in range(6):
+            gene_symbols.append(cls.generate_random_string(4))
+        bogus_data = dict(
+            description="This is a geneset bwhahaha",
+            name=cls.generate_random_string(7),
+            gene_symbols=gene_symbols,
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+        )
+
+        bogus_data.update(**kwargs)
+        return bogus_data
+
+    @staticmethod
+    def generate_random_string(length=7):
+        return "".join(random.choice(string.ascii_letters) for i in range(length))

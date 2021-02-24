@@ -13,6 +13,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Integer,
     String,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -166,6 +167,7 @@ class DbCollection(Base, AuditMixin):
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
+    genesets = relationship("DbGeneset", back_populates="collection", cascade="all, delete-orphan")
 
 
 class DbProjectLink(Base, AuditMixin):
@@ -229,6 +231,7 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
+    genesets = relationship("DbGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
 
     # Composite FK
     __table_args__ = (
@@ -361,3 +364,37 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
 
     # Relationships
     dataset = relationship("DbDataset", back_populates="processing_status")
+
+
+class DbGeneset(Base, AuditMixin):
+    """
+    Represents a geneset linking a list of genes to a collection and specific datasets within that collection
+    """
+
+    __tablename__ = "geneset"
+
+    name = Column(String, nullable=False)
+    description = Column(String)
+    gene_symbols = Column(JSONB)
+    collection_id = Column(String, nullable=False)
+    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
+    collection = relationship("DbCollection", uselist=False, back_populates="genesets")
+    datasets = relationship("DbGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
+        UniqueConstraint("name", "collection_id", "collection_visibility", name="_geneset_name__collection_uc"),
+    )
+
+
+class DbGenesetDatasetLink(Base, AuditMixin):
+    """
+    Represents a link between a geneset and a dataset supporting a many to many relationship
+    """
+
+    __tablename__ = "geneset_dataset_link"
+
+    geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
+    dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
+    dataset = relationship("DbDataset", back_populates="genesets")
+    geneset = relationship("DbGeneset", back_populates="datasets")
