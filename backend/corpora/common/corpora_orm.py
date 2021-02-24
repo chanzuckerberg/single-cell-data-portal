@@ -249,8 +249,10 @@ class DbDataset(Base, AuditMixin):
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
-    gs = relationship("DbGenesetDatasetLink", back_populates="dataset", cascade="all, delete-orphan")
-    genesets = association_proxy("gs", "geneset_id")
+    genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
+    geneset_ids = association_proxy("genesets", "id")
+
+
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
@@ -258,9 +260,9 @@ class DbDataset(Base, AuditMixin):
     )
 
     def to_dict(self, *args, **kwargs):
-        kwargs["ignore_attr"] = kwargs.get("ignore_attr", []) + ["gs"]
+        kwargs["ignore_attr"] = kwargs.get("ignore_attr", []) + ["genesets"]
         result = super(Base, self).to_dict(*args, **kwargs)
-        result["genesets"] = [i for i in self.genesets]
+        result["geneset_ids"] = [i for i in self.geneset_ids]
         return result
 
 
@@ -403,8 +405,8 @@ class DbGeneset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
-    ds = relationship("DbGenesetDatasetLink", back_populates="geneset", cascade="all, delete-orphan")
-    datasets = association_proxy("ds", "dataset_id")
+    datasets = relationship("DbDataset", secondary="geneset_dataset_link", back_populates="genesets")
+    dataset_ids = association_proxy("datasets", "id")
 
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
@@ -414,7 +416,7 @@ class DbGeneset(Base, AuditMixin):
     def to_dict(self, *args, **kwargs):
         kwargs["ignore_relationships"] = True
         result = super(Base, self).to_dict(*args, **kwargs)
-        result["linked_datasets"] = [i for i in self.datasets]
+        result["linked_datasets"] = [i for i in self.dataset_ids]
         return result
 
 
@@ -427,5 +429,3 @@ class DbGenesetDatasetLink(Base, AuditMixin):
 
     geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
     dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
-    dataset = relationship("DbDataset", back_populates="gs")
-    geneset = relationship("DbGeneset", back_populates="ds")
