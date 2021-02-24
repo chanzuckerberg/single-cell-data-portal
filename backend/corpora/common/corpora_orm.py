@@ -253,7 +253,6 @@ class DbDataset(Base, AuditMixin):
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
     geneset_ids = association_proxy("genesets", "id")
 
-
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),

@@ -14,7 +14,6 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     ProcessingStatus,
     DbGeneset,
-    DbGenesetDatasetLink,
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
@@ -114,7 +113,7 @@ class TestDatabase:
             description="this is a geneset with a dataset",
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
-            datasets= [dataset]
+            datasets=[dataset],
         )
         self.session.add(geneset)
         self.session.commit()
