@@ -19,7 +19,6 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
-from tests.unit.backend.utils import BogusGenesetParams
 
 
 class TestDatabaseManager:
