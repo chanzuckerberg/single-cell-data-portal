@@ -17,11 +17,9 @@ export const TitleContainer = styled.div`
     margin: 0 ${PT_GRID_SIZE_PX}px 0 0;
   }
   white-space: normal;
-  align-items: center;
   & > .${Classes.POPOVER_WRAPPER} {
     margin-left: ${PT_GRID_SIZE_PX}px;
   }
-  margin: ${2 * PT_GRID_SIZE_PX}px 0;
 `;
 
 export const StyledRadio = styled(Radio)`

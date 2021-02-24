@@ -13,7 +13,7 @@ export const USE_COLLECTIONS = {
 
 export interface CollectionResponse {
   id: string;
-  created_at: string;
+  created_at: number;
   visibility: VISIBILITY_TYPE;
 }
 
