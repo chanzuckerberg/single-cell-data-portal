@@ -382,7 +382,7 @@ class TestCollection(BaseAuthAPITest):
         test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, no_cookie_headers)
-        self.assertEqual("READ", json.loads(response.body)['access_type'])
+        self.assertEqual("READ", json.loads(response.body)["access_type"])
 
     def test__list_collection__check_owner(self):
 
