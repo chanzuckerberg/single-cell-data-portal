@@ -576,6 +576,10 @@ components:
                 type: string
               url:
                 type: string
+        linked_genesets:
+          type: array
+          items:
+            type: string
         dataset_assets:
           type: array
           items:

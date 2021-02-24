@@ -161,7 +161,7 @@ class TestCollection(BaseAuthAPITest):
                         {"label": "test_disease3", "ontology_term_id": "test_obq"},
                     ],
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
-                    "geneset_ids": ["test_geneset_with_dataset"],
+                    "linked_genesets": ["test_geneset_with_dataset"],
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},

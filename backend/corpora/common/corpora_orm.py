@@ -1,12 +1,8 @@
 import enum
 
-from sqlalchemy.ext.associationproxy import association_proxy
-from typing import Optional, List
-
 import os
-from datetime import datetime
-from uuid import uuid4
 import sys
+from datetime import datetime
 from sqlalchemy import (
     Boolean,
     Column,
@@ -22,6 +18,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship
+from typing import Optional, List
+from uuid import uuid4
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -74,22 +72,28 @@ class TransformingBase(object):
 
         # Populate result with relationships.
         if not remove_relationships:
+            if backref:
+                backref.append(self.__table__)
+            else:
+                backref = [self.__table__]
+
             for attr, relation in self.__mapper__.relationships.items():
                 if attr in remove_attr:
                     continue
-                # Avoid recursive loop between two tables.
-                if backref == relation.target:
+                # Avoid recursive loop between multiple tables.
+                if relation.target in backref:
                     continue
                 value = getattr(self, attr)
                 if value is None:
                     if not remove_none:
                         result[relation.key] = None
                 elif isinstance(value.__class__, DeclarativeMeta):
-                    result[relation.key] = value.to_dict(backref=self.__table__, remove_none=remove_none)
+                    result[relation.key] = value.to_dict(backref=backref, remove_none=remove_none)
                 elif isinstance(value, list):
-                    result[relation.key] = [i.to_dict(backref=self.__table__, remove_none=remove_none) for i in value]
+                    result[relation.key] = [i.to_dict(backref=backref, remove_none=remove_none) for i in value]
                 else:
                     raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
+            backref.pop()
         return result
 
     id = Column(String, primary_key=True, default=generate_uuid)
@@ -251,7 +255,6 @@ class DbDataset(Base, AuditMixin):
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
-    geneset_ids = association_proxy("genesets", "id")
 
     # Composite FK
     __table_args__ = (
@@ -262,7 +265,7 @@ class DbDataset(Base, AuditMixin):
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]
         result = super(Base, self).to_dict(*args, **kwargs)
-        result["geneset_ids"] = [i for i in self.geneset_ids]
+        result["linked_genesets"] = [gs.id for gs in self.genesets]
         return result
 
 
@@ -406,7 +409,6 @@ class DbGeneset(Base, AuditMixin):
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
     datasets = relationship("DbDataset", secondary="geneset_dataset_link", back_populates="genesets")
-    dataset_ids = association_proxy("datasets", "id")
 
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
@@ -414,9 +416,9 @@ class DbGeneset(Base, AuditMixin):
     )
 
     def to_dict(self, *args, **kwargs):
-        kwargs["remove_relationships"] = True
+        kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["datasets"]
         result = super(Base, self).to_dict(*args, **kwargs)
-        result["linked_datasets"] = [i for i in self.dataset_ids]
+        result["linked_datasets"] = [ds.id for ds in self.datasets]
         return result
 
 
