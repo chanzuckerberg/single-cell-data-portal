@@ -43,25 +43,26 @@ class TransformingBase(object):
 
     def to_dict(
         self,
-        backref: "Base" = None,
+        backref: List["Base"] = None,
         remove_none: bool = False,
-        ignore_attr: Optional[List[str]] = None,
-        ignore_relationships: bool = False,
+        remove_attr: Optional[List[str]] = None,
+        remove_relationships: bool = False,
     ) -> dict:
         """
         Converts the columns and relationships of a SQLAlchemy Base object into a python dictionary.
 
         :param backref: used to avoid recursively looping between two tables.
         :param remove_none: If true, removes keys that are none from the result.
-        :param ignore_attr: Attributes not to convert.
-        :param ignore_relationships: Ignore relationships
+        :param remove_attr: Attributes not to convert.
+        :param remove_relationships: Ignore relationships.
         :return: a dictionary representation of the database object.
         """
-        # Populate result with columns.
         result = dict()
-        ignore_attr = ignore_attr if ignore_attr else []
+        remove_attr = remove_attr if remove_attr else []
+
+        # Populate result with columns.
         for attr, column in self.__mapper__.c.items():
-            if column.key in ignore_attr:
+            if column.key in remove_attr:
                 continue
             if remove_none:
                 if getattr(self, attr) is not None:
@@ -74,7 +75,7 @@ class TransformingBase(object):
         # Populate result with relationships.
         if not ignore_relationships:
             for attr, relation in self.__mapper__.relationships.items():
-                if attr in ignore_attr:
+                if attr in remove_attr:
                     continue
                 # Avoid recursive loop between two tables.
                 if backref == relation.target:
