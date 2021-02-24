@@ -19,7 +19,6 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
-from unit.backend.utils import BogusGenesetParams
 
 
 class TestDatabaseManager:
@@ -121,7 +120,6 @@ class TestDatabase:
         )
         self.session.add(geneset_dataset_link)
         self.session.commit()
-
 
     def _create_test_collection_links(self):
         collection_link = DbCollectionLink(
