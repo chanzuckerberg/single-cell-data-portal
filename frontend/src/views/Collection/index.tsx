@@ -1,4 +1,4 @@
-import { Button, H3, Intent } from "@blueprintjs/core";
+import { H3, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { RouteComponentProps } from "@reach/router";
 import { memoize } from "lodash-es";
@@ -102,13 +102,6 @@ const Collection: FC<Props> = ({ id = "" }) => {
         {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
           <DeleteCollection id={id} />
         )}
-        <Button
-          intent={Intent.PRIMARY}
-          minimal
-          outlined
-          disabled
-          text="Share"
-        />
         {isPrivate && (
           <PublishCollection isPublishable={isPublishable} id={id} />
         )}

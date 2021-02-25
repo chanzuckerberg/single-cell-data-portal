@@ -15,10 +15,7 @@ const MyCollections: FC = () => {
     <ViewGrid>
       <TitleAndDescription>
         <H1>My Collections</H1>
-        <Text>
-          A list of collections you have either created, or have been shared
-          with you
-        </Text>
+        <Text>A list of collections you have created</Text>
       </TitleAndDescription>
       <StyledCreateCollection />
       <CollectionsGrid
