@@ -7,7 +7,9 @@ export const StyledCell = styled.td`
   padding: ${PT_GRID_SIZE_PX * 2}px 0px !important;
   line-height: 15px;
   & > :not(a:first-child, div:first-child) {
-    display: block;
+    :not(.${Classes.TAG}) {
+      display: block;
+    }
     margin-top: ${PT_GRID_SIZE_PX / 2}px;
   }
 `;
