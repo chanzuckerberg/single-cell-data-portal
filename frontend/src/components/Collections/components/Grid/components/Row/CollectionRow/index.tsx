@@ -14,11 +14,11 @@ import {
   StyledCell,
   StyledRow,
 } from "../common/style";
-import { CollectionTitleText } from "./style";
+import { CollectionTitleText, ContactText, DOILink } from "./style";
 
 interface Props {
   id: string;
-  accessType: ACCESS_TYPE;
+  accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
 }
 
@@ -78,21 +78,31 @@ const CollectionRow: FC<Props> = (props) => {
     <StyledRow>
       <StyledCell>
         <CollectionTitleText
-          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          to={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          data-test-id="collection-link"
         >
           {name}
         </CollectionTitleText>
-        <div>{contact_name}</div>
+        <ContactText>{contact_name}</ContactText>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (
-          <Tag minimal intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}>
+          <Tag
+            minimal
+            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
+            data-test-id="visibility-tag"
+          >
             {isPrivate ? "Private" : "Published"}
           </Tag>
         ) : (
           dois?.map((doi) => (
-            <a key={doi.doi} href={doi.link}>
+            <DOILink
+              key={doi.doi}
+              href={doi.link}
+              target="_blank"
+              rel="noopener"
+            >
               {doi.doi}
-            </a>
+            </DOILink>
           ))
         )}
       </StyledCell>

@@ -162,6 +162,7 @@ class TestCollection(BaseAuthAPITest):
                         {"label": "test_disease3", "ontology_term_id": "test_obq"},
                     ],
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
+                    "genesets": [],
                     "id": "test_dataset_id",
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
@@ -186,6 +187,7 @@ class TestCollection(BaseAuthAPITest):
                 }
             ],
             "description": "test_description",
+            "genesets": [],
             "id": "test_collection_id",
             "links": [
                 {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},
@@ -278,10 +280,7 @@ class TestCollection(BaseAuthAPITest):
 
         # run
         for auth, owns, visi, obfu in test_cases:
-            if obfu or (visi == "private" and owns and auth) or (visi == "public"):
-                expected_response_code = 200
-            else:
-                expected_response_code = 403
+            expected_response_code = 200
 
             test_collection_id = test_collections["_".join([visi, "owned" if owns else "not_owner"])]
             expected_access_type = "WRITE" if owns and auth else "READ"
@@ -378,12 +377,12 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(body["contact_name"], body["contact_name"])
         self.assertEqual(body["contact_email"], body["contact_email"])
 
-        # test that non owners cant access
+        # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, no_cookie_headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual("READ", json.loads(response.body)["access_type"])
 
     def test__list_collection__check_owner(self):
 

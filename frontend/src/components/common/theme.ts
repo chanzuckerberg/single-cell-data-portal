@@ -2,6 +2,8 @@ import { css } from "styled-components";
 
 export const PT_GRID_SIZE_PX = 8;
 
+export const PT_TEXT_COLOR = "#10161A";
+
 export const fontStyle = css`
   font-family: "Roboto", sans-serif;
   font-style: normal;
