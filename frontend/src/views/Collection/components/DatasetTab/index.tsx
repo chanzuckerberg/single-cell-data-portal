@@ -13,7 +13,7 @@ import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
 import ActionButtons from "src/views/Collection/components/ActionButtons";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
-import EmptyModal from "./components/EmptyModal";
+import EmptyModal from "../EmptyModal";
 
 interface Props {
   collectionID: Collection["id"];
