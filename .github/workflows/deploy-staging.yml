@@ -79,7 +79,6 @@ jobs:
       - name: Install Dependencies
         run: |
           cd frontend
-          cp src/configs/dev.js src/configs/configs.js
           npm install
       - name: Run Smoke Tests
         run: |
