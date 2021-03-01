@@ -39,6 +39,9 @@ export const CollectionButtons = styled.div`
   }
 `;
 
+// microsoft/typescript-styled-plugin #110
+const hoverSelector = `.${Classes.TAB}:not([aria-disabled="true"]):hover`;
+
 export const TabWrapper = styled.div`
   grid-column: 1 / span 8;
 
@@ -57,7 +60,7 @@ export const TabWrapper = styled.div`
     letter-spacing: -0.1px;
   }
 
-  & .${Classes.TAB}[aria-selected="true"], .${Classes.TAB}:not([aria-disabled="true"]):hover {
+  & .${Classes.TAB}[aria-selected="true"], ${hoverSelector} {
     color: ${BLUE.C};
   }
 `;
