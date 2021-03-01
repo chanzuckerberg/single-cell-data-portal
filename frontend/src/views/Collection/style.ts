@@ -1,5 +1,5 @@
 import { Classes } from "@blueprintjs/core";
-import { PT_GRID_SIZE_PX } from "src/components/common/theme";
+import { BLUE, GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const CollectionInfo = styled.div`
@@ -44,5 +44,20 @@ export const TabWrapper = styled.div`
 
   & .${Classes.TABS} {
     width: 100%;
+  }
+  & .${Classes.TAB_LIST} {
+    box-shadow: inset 0px -1px 0px rgba(16, 22, 26, 0.15);
+  }
+  & .${Classes.TAB} {
+    color: ${GRAY.A};
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 18px;
+    letter-spacing: -0.1px;
+  }
+
+  & .${Classes.TAB}[aria-selected="true"], .${Classes.TAB}:not([aria-disabled="true"]):hover {
+    color: ${BLUE.C};
   }
 `;
