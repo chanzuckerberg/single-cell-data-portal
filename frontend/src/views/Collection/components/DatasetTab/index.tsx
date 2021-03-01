@@ -10,10 +10,10 @@ import {
 } from "src/common/queries/collections";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
-import { StyledLink } from "../../common/style";
-import DatasetUploadToast from "../DatasetUploadToast";
-import ActionButtons, { UploadedFiles } from "./components/ActionButtons";
-import EmptyModal from "./components/EmptyDatasets";
+import { StyledLink } from "src/views/Collection/common/style";
+import ActionButtons from "src/views/Collection/components/ActionButtons";
+import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
+import EmptyModal from "./components/EmptyModal";
 
 interface Props {
   collectionID: Collection["id"];
