@@ -11,7 +11,9 @@ import {
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
-import ActionButtons from "src/views/Collection/components/ActionButtons";
+import ActionButtons, {
+  UploadedFiles,
+} from "src/views/Collection/components/ActionButtons";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import EmptyModal from "../EmptyModal";
 
