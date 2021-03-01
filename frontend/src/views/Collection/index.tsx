@@ -2,6 +2,9 @@ import { H3, Tab, Tabs } from "@blueprintjs/core";
 import { RouteComponentProps } from "@reach/router";
 import React, { FC, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import { useCollection } from "src/common/queries/collections";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
@@ -80,7 +83,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
               />
             }
           />
-          <Tab id="geneset-tab" title="Gene Sets" panel={<GenesetTab />} />
+          {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
+            <Tab id="geneset-tab" title="Gene Sets" panel={<GenesetTab />} />
+          )}
         </Tabs>
       </TabWrapper>
     </ViewGrid>
