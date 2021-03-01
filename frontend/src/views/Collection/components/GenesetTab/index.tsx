@@ -1,6 +1,11 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
 import React, { FC } from "react";
-import EmptyModal from "../DatasetTab/components/EmptyModal";
+import { StyledLink } from "../../common/style";
+import EmptyModal from "../EmptyModal";
+
+// @seve TODO: Link needs to be replaced when we have the format
+const CLI_README_LINK =
+  "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
 const GenesetTab: FC = () => {
   return (
@@ -8,10 +13,15 @@ const GenesetTab: FC = () => {
       title="No gene sets uploaded"
       content={
         <div>
-          Eget leo, urna sed at mattis nullam tincidunt.{" "}
+          When uploading gene sets, please keep in mind
           <UL>
-            <li>Lorem ipsum dolor sit amet consectetur adipisicing elit.</li>
-            <li>Facere libero doloremque nulla ex.</li>
+            <li>
+              You must upload gene sets using{" "}
+              <StyledLink href={CLI_README_LINK}>this format.</StyledLink>
+            </li>
+            <li>
+              You may associated gene sets with datasets in the dataset tab.
+            </li>
           </UL>
         </div>
       }
