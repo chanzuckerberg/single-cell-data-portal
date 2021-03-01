@@ -145,7 +145,8 @@ local-unit-test: ## Run backend tests in the dev environment
 	fi
 	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
 		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-		docker-compose exec $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
+		docker-compose exec -T backend bash -c "apt-get update && apt-get install -y git"; \
+		docker-compose exec -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
 	fi
 
 .PHONY: local-functional-test
