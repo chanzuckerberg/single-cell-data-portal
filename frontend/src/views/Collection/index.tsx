@@ -5,8 +5,9 @@ import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { useCollection } from "src/common/queries/collections";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
+import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
-import DatasetTab from "./components/DatasetTab";
+import GenesetTab from "./components/GenesetTab";
 import {
   CollectionButtons,
   CollectionInfo,
@@ -79,7 +80,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
               />
             }
           />
-          <Tab id="geneset-tab" title="Genesets" panel={<div>HELLO</div>} />
+          <Tab id="geneset-tab" title="Gene Sets" panel={<GenesetTab />} />
         </Tabs>
       </TabWrapper>
     </ViewGrid>
