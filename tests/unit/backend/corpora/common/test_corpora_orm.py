@@ -12,10 +12,7 @@ class DbParent(Base):
     name = Column(String)
     optional = Column(String)
     children = relationship("DbChild", back_populates="parent", cascade="all, delete-orphan")
-    properties = relationship("DbProperty", secondary="associate_property_owner", back_populates="parents")
-    #
-    # many_to_many = relationship("Child", back_populates="genesets")
-    # circular = relationship()
+    properties = relationship("DbProperty", back_populates="parent")
 
 
 class DbChild(Base):
@@ -24,23 +21,26 @@ class DbChild(Base):
     name = Column(String)
     parent_id = Column(String, ForeignKey("parent.id"), index=True)
     parent = relationship("DbParent", uselist=False, back_populates="children")
+    properties = relationship("DbProperty", secondary="associate_property_owner", back_populates="children")
 
 
 class DbProperty(Base):
     __tablename__ = "property"
     name = Column(String)
-    parents = relationship("DbParent", secondary="associate_property_owner", back_populates="properties")
+    children = relationship("DbChild", secondary="associate_property_owner", back_populates="properties")
+    parent_id = Column(String, ForeignKey("parent.id"), index=True)
+    parent = relationship("DbParent", uselist=False, back_populates="properties")
 
 
 class AssociatePropertyOwner(Base):
     __tablename__ = "associate_property_owner"
-    parent_id = Column(String, ForeignKey("parent.id"), index=True)
+    child_id = Column(String, ForeignKey("child.id"), index=True)
     property_id = Column(String, ForeignKey("property.id"), index=True)
 
 
 # parent:1->N:child
-# parent:N->M:property
-# child:1->M:property
+# parent:1->M:property
+# child:N->M:property
 
 
 class testToDict(DataPortalTestCase):
@@ -103,12 +103,46 @@ class testToDict(DataPortalTestCase):
         parent = self.create_db_object(DbParent, name="bob", children=[DbChild(name="alice")])
         result = parent.to_dict(remove_none=True)
         result = self.remove_ids(result)
-        self.assertDictEqual({"name": "bob", "children": [{"name": "alice", "parent_id": parent.id}], "properties": []},
-                             result)
+        self.assertDictEqual(
+            {
+                "name": "bob",
+                "children": [{"name": "alice", "parent_id": parent.id, "properties": []}],
+                "properties": [],
+            },
+            result,
+        )
 
     def test_remove_attr(self):
         parent = self.create_db_object(DbParent, name="bob")
         result = parent.to_dict(remove_attr=["children", "properties", "optional"])
         result = self.remove_ids(result)
-        self.assertDictEqual({"name": "bob"},
-                             result)
+        self.assertDictEqual({"name": "bob"}, result)
+
+    def test_remove_relationships(self):
+        parent = self.create_db_object(DbParent, name="bob")
+        result = parent.to_dict(remove_relationships=True)
+        result = self.remove_ids(result)
+        self.assertDictEqual({"name": "bob", "optional": None}, result)
+
+    def test_circular_reference(self):
+        self.maxDiff = None
+        parent = self.create_db_object(DbParent, name="bob", children=[DbChild(name="alice")])
+        self.create_db_object(DbProperty, name="thing1", parent_id=parent.id, children=parent.children)
+        result = parent.to_dict(remove_none=True)
+        result = self.remove_ids(result)
+        self.assertDictEqual(
+            {
+                "name": "bob",
+                "children": [
+                    {
+                        "name": "alice",
+                        "parent_id": parent.id,
+                        "properties": [{"name": "thing1", "parent_id": parent.id}],
+                    }
+                ],
+                "properties": [
+                    {"name": "thing1", "parent_id": parent.id, "children": [{"name": "alice", "parent_id": parent.id}]}
+                ],
+            },
+            result,
+        )
