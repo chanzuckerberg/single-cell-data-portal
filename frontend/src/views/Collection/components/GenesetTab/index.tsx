@@ -20,7 +20,7 @@ const GenesetTab: FC = () => {
               <StyledLink href={CLI_README_LINK}>this format.</StyledLink>
             </li>
             <li>
-              You may associated gene sets with datasets in the dataset tab.
+              You may associate gene sets with datasets in the dataset tab.
             </li>
           </UL>
         </div>
