@@ -50,6 +50,7 @@ export const TabWrapper = styled.div`
   }
   & .${Classes.TAB_LIST} {
     box-shadow: inset 0px -1px 0px rgba(16, 22, 26, 0.15);
+    padding-bottom: 6px;
   }
   & .${Classes.TAB} {
     color: ${GRAY.A};
@@ -62,5 +63,9 @@ export const TabWrapper = styled.div`
 
   & .${Classes.TAB}[aria-selected="true"], ${hoverSelector} {
     color: ${BLUE.C};
+  }
+
+  & .${Classes.TAB_INDICATOR} {
+    bottom: -6px;
   }
 `;
