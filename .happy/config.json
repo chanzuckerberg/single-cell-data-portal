@@ -1,6 +1,6 @@
 {
     "config_version": "v1",
-    "terraform_version": "0.13.3",
+    "terraform_version": "0.13.5",
     "default_env": "rdev",
     "app": "data-portal",
     "default_compose_env": ".env.ecr",

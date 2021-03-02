@@ -1,8 +1,10 @@
 import { ROUTES } from "src/common/constants/routes";
-import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
-import { API_URL } from "src/configs/configs";
-import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
-import { goToPage, login } from "tests/utils/helpers";
+import {
+  BLUEPRINT_SAFE_TYPE_OPTIONS,
+  TEST_ENV,
+  TEST_URL,
+} from "tests/common/constants";
+import { goToPage, login, TIMEOUT_MS } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
@@ -15,7 +17,7 @@ const TEST_COLLECTION = {
   name: "TEST COLLECTION",
 };
 
-describe("Collection", async () => {
+describe("Collection", () => {
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
       await login();
@@ -27,11 +29,12 @@ describe("Collection", async () => {
       await page.click(getText("Delete Collection"));
 
       await goToPage(
-        apiTemplateToUrl(API_URL + ROUTES.PRIVATE_COLLECTION, {
-          id: collectionId,
-        })
+        TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
       );
-      await expect(page).not.toHaveSelector(getText(TEST_COLLECTION.name));
+
+      await expect(page).not.toHaveSelector(getText(TEST_COLLECTION.name), {
+        timeout: TIMEOUT_MS,
+      });
     });
 
     describe("Publish a collection", () => {
@@ -76,11 +79,11 @@ async function createCollection(): Promise<string> {
     page.click(getTestID("create-button")),
   ]);
 
-  const { collectionId } = (await response.json()) as {
-    collectionId: string;
+  const { collection_uuid } = (await response.json()) as {
+    collection_uuid: string;
   };
 
   await expect(page).toHaveSelector(getText(TEST_COLLECTION.name));
 
-  return collectionId;
+  return collection_uuid;
 }
