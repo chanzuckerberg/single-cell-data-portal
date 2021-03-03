@@ -17,17 +17,16 @@ class TestGenesetCreation(BaseAuthAPITest):
                 {
                     "gene_symbol": "gene1",
                     "gene_description": "describe a gene",
-                    "additional_params": {
-                        "randomProperty": "randomPropertyWords",
-                        "anotherProprerty": "moreWords"}
+                    "additional_params": {"randomProperty": "randomPropertyWords", "anotherProprerty": "moreWords"},
                 },
-                {"gene_symbol": "1", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}}
-            ]
+                {"gene_symbol": "1", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
+            ],
         }
         self.geneset2 = {
             "gene_set_name": "geneset2",
             "gene_set_description": "this is geneset 2",
-            "genes": [{"gene_symbol": "onegene"}]}
+            "genes": [{"gene_symbol": "onegene"}],
+        }
         self.geneset3 = {
             "gene_set_name": "geneset3",
             "gene_set_description": "this is geneset 3",
@@ -35,8 +34,8 @@ class TestGenesetCreation(BaseAuthAPITest):
                 {"gene_symbol": "1", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
                 {"gene_symbol": "2", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
                 {"gene_symbol": "3", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
-                {"gene_symbol": "4", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}}
-            ]
+                {"gene_symbol": "4", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
+            ],
         }
         self.collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
@@ -63,19 +62,20 @@ class TestGenesetCreation(BaseAuthAPITest):
         body = json.loads(response.body)
         genesets = {}
         for x in body:
-            genesets[x['name']] = x['id']
+            genesets[x["name"]] = x["id"]
         geneset1 = Geneset.get(self.session, genesets["geneset1"])
         geneset2 = Geneset.get(self.session, genesets["geneset2"])
         geneset3 = Geneset.get(self.session, genesets["geneset3"])
 
-        self.assertEqual(geneset1.gene_symbols, self.geneset1['genes'])
-        self.assertEqual(geneset2.gene_symbols, self.geneset2['genes'])
-        self.assertEqual(geneset3.gene_symbols, self.geneset3['genes'])
+        self.assertEqual(geneset1.gene_symbols, self.geneset1["genes"])
+        self.assertEqual(geneset2.gene_symbols, self.geneset2["genes"])
+        self.assertEqual(geneset3.gene_symbols, self.geneset3["genes"])
 
     def test_geneset_creation__geneset_already_exists(self):
         data = {"gene_sets": [self.geneset1]}
-        Geneset.create(self.session, collection=self.collection, name="geneset1", description="words",
-                       gene_symbols=["aaa"])
+        Geneset.create(
+            self.session, collection=self.collection, name="geneset1", description="words", gene_symbols=["aaa"]
+        )
         response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(400, response.status_code)
 
