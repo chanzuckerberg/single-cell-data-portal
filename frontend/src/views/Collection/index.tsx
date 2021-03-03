@@ -1,34 +1,32 @@
-import { H3, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { H3, Tab, Tabs } from "@blueprintjs/core";
 import { RouteComponentProps } from "@reach/router";
-import { memoize } from "lodash-es";
 import React, { FC, useState } from "react";
-import { useQueryCache } from "react-query";
-import { ACCESS_TYPE, Dataset, VISIBILITY_TYPE } from "src/common/entities";
-import {
-  useCollection,
-  useCollectionUploadLinks,
-  USE_COLLECTION,
-} from "src/common/queries/collections";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
+import { useCollection } from "src/common/queries/collections";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
-import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
-import { UploadingFile } from "src/components/DropboxChooser";
+import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
-import ActionButtons, { UploadedFiles } from "./components/ActionButtons";
-import DatasetUploadToast from "./components/DatasetUploadToast";
-import EmptyDatasets from "./components/EmptyDatasets";
+import GeneSetTab from "./components/GeneSetTab";
 import {
   CollectionButtons,
   CollectionInfo,
-  DatasetContainer,
   Description,
   LinkContainer,
+  TabWrapper,
 } from "./style";
 import { getIsPublishable, renderLinks } from "./utils";
 
 interface RouteProps {
   id?: string;
+}
+
+enum TABS {
+  GENE_SETS = "gene-sets-tab",
+  DATASETS = "datasets-tab",
 }
 
 export type Props = RouteComponentProps<RouteProps>;
@@ -40,37 +38,9 @@ const Collection: FC<Props> = ({ id = "" }) => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [selected, setSelected] = useState<Dataset["id"]>("");
-
-  const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
-
-  const queryCache = useQueryCache();
-
   const { data: collection, isError } = useCollection(id, visibility);
 
-  const [uploadLink] = useCollectionUploadLinks(id, visibility);
-
-  const addNewFile = (newFile: UploadingFile) => {
-    if (!newFile.link) return;
-
-    const payload = JSON.stringify({ url: newFile.link });
-    uploadLink(
-      { collectionId: id, payload },
-      {
-        onSuccess: (datasetID: Dataset["id"]) => {
-          newFile.id = datasetID;
-          DatasetUploadToast.show({
-            icon: IconNames.TICK,
-            intent: Intent.PRIMARY,
-            message:
-              "Your file is being uploaded which will continue in the background, even if you close this window.",
-          });
-          setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
-          queryCache.invalidateQueries(USE_COLLECTION);
-        },
-      }
-    );
-  };
+  const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
   if (!collection || isError) {
     return null;
@@ -78,17 +48,11 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const datasets = collection.datasets;
 
-  const isDatasetPresent =
-    datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
-
   const isPublishable = getIsPublishable(datasets);
 
-  const invalidateCollectionQuery = memoize(
-    () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
-    },
-    () => id + visibility
-  );
+  const handleOnChange = function (newTabId: TABS) {
+    setSelectedTab(newTabId);
+  };
 
   return (
     <ViewGrid>
@@ -106,26 +70,29 @@ const Collection: FC<Props> = ({ id = "" }) => {
           <PublishCollection isPublishable={isPublishable} id={id} />
         )}
       </CollectionButtons>
-      <DatasetContainer>
-        {isDatasetPresent ? (
-          <DatasetsGrid
-            datasets={datasets}
-            uploadedFiles={uploadedFiles}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-            onSelect={setSelected}
+      <TabWrapper>
+        <Tabs
+          onChange={handleOnChange}
+          selectedTabId={selectedTab}
+          id="collection-tabs"
+          defaultSelectedTabId={TABS.DATASETS}
+        >
+          <Tab
+            id={TABS.DATASETS}
+            title="Datasets"
+            panel={
+              <DatasetTab
+                collectionID={id}
+                datasets={datasets}
+                visibility={visibility}
+              />
+            }
           />
-        ) : (
-          <EmptyDatasets onUploadFile={addNewFile} />
-        )}
-      </DatasetContainer>
-      {isDatasetPresent && (
-        <ActionButtons
-          collectionId={collection?.id}
-          selectedDatasetId={selected}
-          visibility={visibility}
-          addNewFile={addNewFile}
-        />
-      )}
+          {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
+            <Tab id={TABS.GENE_SETS} title="Gene Sets" panel={<GeneSetTab />} />
+          )}
+        </Tabs>
+      </TabWrapper>
     </ViewGrid>
   );
 };
