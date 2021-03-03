@@ -1,7 +1,7 @@
 import { TEST_EMAIL, TEST_URL } from "../common/constants";
 import { getText } from "./selectors";
 
-export const TIMEOUT_MS = 5 * 1000;
+export const TIMEOUT_MS = 3 * 1000;
 
 export async function goToPage(url: string = TEST_URL) {
   await page.goto(url);
