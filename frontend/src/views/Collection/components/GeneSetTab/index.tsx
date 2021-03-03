@@ -7,7 +7,7 @@ import EmptyModal from "../EmptyModal";
 const CLI_README_LINK =
   "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
-const GenesetTab: FC = () => {
+const GeneSetTab: FC = () => {
   return (
     <EmptyModal
       title="No gene sets uploaded"
@@ -32,4 +32,4 @@ const GenesetTab: FC = () => {
   );
 };
 
-export default GenesetTab;
+export default GeneSetTab;

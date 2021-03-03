@@ -10,7 +10,7 @@ import DeleteCollection from "src/components/Collections/components/DeleteCollec
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
-import GenesetTab from "./components/GenesetTab";
+import GeneSetTab from "./components/GeneSetTab";
 import {
   CollectionButtons,
   CollectionInfo,
@@ -24,6 +24,11 @@ interface RouteProps {
   id?: string;
 }
 
+enum TABS {
+  GENE_SETS = "gene-sets-tab",
+  DATASETS = "datasets-tab",
+}
+
 export type Props = RouteComponentProps<RouteProps>;
 
 const Collection: FC<Props> = ({ id = "" }) => {
@@ -35,7 +40,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const { data: collection, isError } = useCollection(id, visibility);
 
-  const [selectedTab, setSelectedTab] = useState("datasets-tab");
+  const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
   if (!collection || isError) {
     return null;
@@ -45,7 +50,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
 
   const isPublishable = getIsPublishable(datasets);
 
-  const handleOnChange = function (newTabId: string) {
+  const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
   };
 
@@ -70,10 +75,10 @@ const Collection: FC<Props> = ({ id = "" }) => {
           onChange={handleOnChange}
           selectedTabId={selectedTab}
           id="collection-tabs"
-          defaultSelectedTabId={"datasets-tab"}
+          defaultSelectedTabId={TABS.DATASETS}
         >
           <Tab
-            id="datasets-tab"
+            id={TABS.DATASETS}
             title="Datasets"
             panel={
               <DatasetTab
@@ -84,7 +89,7 @@ const Collection: FC<Props> = ({ id = "" }) => {
             }
           />
           {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
-            <Tab id="geneset-tab" title="Gene Sets" panel={<GenesetTab />} />
+            <Tab id={TABS.GENE_SETS} title="Gene Sets" panel={<GeneSetTab />} />
           )}
         </Tabs>
       </TabWrapper>
