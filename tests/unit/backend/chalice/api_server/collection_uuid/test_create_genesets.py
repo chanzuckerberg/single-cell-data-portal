@@ -47,7 +47,7 @@ class TestGenesetCreation(BaseAuthAPITest):
 
         Geneset.create(self.session, collection=collection, name="geneset1", description="words", gene_symbols=["aaa"])
         response = self.app.post(test_url, headers=headers, data=json.dumps(data))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_geneset_creation__not_owner_403(self):
         data = {"gene_sets": [

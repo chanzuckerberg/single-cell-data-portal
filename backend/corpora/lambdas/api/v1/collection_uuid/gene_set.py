@@ -1,5 +1,5 @@
-import sqlalchemy
 from flask import make_response, g, jsonify
+from sqlalchemy.exc import IntegrityError
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
@@ -17,8 +17,9 @@ def post(collection_uuid: str, body: dict, user: str):
         try:
             Geneset.create(db_session, name=gene_set[0], description=gene_set[1], gene_symbols=gene_set[2],
                            collection=collection)
-        except sqlalchemy.exc.IntegrityError:
-            raise InvalidParametersHTTPException
+        except IntegrityError:
+            db_session.rollback()
+            raise InvalidParametersHTTPException("Duplicate geneset name")
 
     result = Geneset.retrieve_all_genesets_for_a_collection(db_session, collection_uuid)
 
