@@ -682,14 +682,11 @@ components:
             description: Gene specific information
             properties:
               gene_symbol:
-                type:
-                  string
+                type: string
               gene_description:
-                type:
-                  string
+                type: string
               additional_params:
-                type:
-                  object
+                type: object
 
   parameters:
     path_collection_uuid:
