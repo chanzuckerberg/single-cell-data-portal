@@ -19,3 +19,7 @@ class DataPortalTestCase(GenerateDataMixin, unittest.TestCase):
 
     def tearDown(self) -> None:
         self.session.close()
+
+    @staticmethod
+    def reinitialize_database():
+        TestDatabaseManager.is_initialized = False

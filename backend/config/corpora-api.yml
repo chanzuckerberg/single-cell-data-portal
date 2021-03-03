@@ -519,6 +519,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/dataset"
+        genesets:
+          type: array
+          items:
+            $ref : "#/components/schemas/geneset"
     ontology_element:
       type: object
       properties:
@@ -572,6 +576,10 @@ components:
                 type: string
               url:
                 type: string
+        linked_genesets:
+          type: array
+          items:
+            type: string
         dataset_assets:
           type: array
           items:
@@ -599,6 +607,19 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
+    geneset:
+      type: object
+      properties:
+        name:
+          type: string
+        id":
+          type: string
+        description:
+          type: string
+        linked_datasets:
+          type: array
+          items:
+            type: string
     problem:
       type: object
       description: Error message container for HTTP APIs.

@@ -13,6 +13,7 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ConversionStatus,
     ProcessingStatus,
+    DbGeneset,
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
@@ -54,6 +55,7 @@ class TestDatabase:
         self._create_test_datasets()
         self._create_test_dataset_artifacts()
         self._create_test_dataset_processing_status()
+        self._create_test_geneset()
 
     def _create_test_collections(self):
         collection = DbCollection(
@@ -92,6 +94,28 @@ class TestDatabase:
             data_submission_policy_version="0",
         )
         self.session.add(collection)
+        self.session.commit()
+
+    def _create_test_geneset(self):
+        geneset = DbGeneset(
+            id="test_geneset",
+            name="test_geneset",
+            description="this is a geneset",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+        )
+
+        self.session.add(geneset)
+        dataset = self.session.query(DbDataset).get("test_dataset_id")
+        geneset = DbGeneset(
+            id="test_geneset_with_dataset",
+            name="test_geneset_with_dataset",
+            description="this is a geneset with a dataset",
+            collection_id="test_collection_id",
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+            datasets=[dataset],
+        )
+        self.session.add(geneset)
         self.session.commit()
 
     def _create_test_collection_links(self):
