@@ -6,7 +6,7 @@ class Geneset(Entity):
     table = DbGeneset
 
     @classmethod
-    def create(cls, session, name: str, description: str, gene_symbols: list, dataset_ids: list = [], **kwargs):
+    def create(cls, session, name: str, description: str, gene_symbols: object, dataset_ids: list = [], **kwargs):
         gene_set = DbGeneset(name=name, description=description, gene_symbols=gene_symbols, **kwargs)
         session.add(gene_set)
         session.commit()
@@ -18,7 +18,11 @@ class Geneset(Entity):
     @classmethod
     def retrieve_all_genesets_for_a_collection(cls, session, collection_id):
         genesets = session.query(cls.table).filter(cls.table.collection_id == collection_id).all()
-        return genesets
+        reshaped_genesets = []
+        for geneset in genesets:
+            reshaped_genesets.append(geneset.to_dict(remove_attr="gene_symbols"))
+        return reshaped_genesets
+
 
 
 class GenesetDatasetLink(Entity):

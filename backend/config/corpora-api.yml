@@ -211,6 +211,43 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
+  /dp/v1/collections/{collection_uuid}/genesets:
+    post:
+      tags:
+        - collections
+        - genesets
+      summary: Add genesets to a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Add genesets to a private collection
+      operationId: corpora.lambdas.api.v1.collection_uuid.gene_sets.post
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#components/schema/gene_sets"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_uuid:
+                    $ref: "#/components/schemas/dataset_uuid"
+                  presigned_url:
+                    type: string
+                  file_name:
+                    type: string
+                  file_size:
+                    type: number
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
   /dp/v1/collections/{collection_uuid}/publish:
     post:
       tags:
