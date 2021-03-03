@@ -232,7 +232,7 @@ paths:
               properties:
                 genesets:
                   description: A list of genesets including their gene symbols and descriptions
-                  $ref: "#/components/schemas/gene_sets"
+                  $ref: "#/components/schemas/user_defined_gene_sets"
       responses:
         "200":
           description: OK
@@ -241,7 +241,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/geneset"
+                  $ref: "#/components/schemas/gene_set"
         "400":
           $ref: "#/components/responses/400"
         "403":
@@ -559,7 +559,7 @@ components:
         genesets:
           type: array
           items:
-            $ref : "#/components/schemas/geneset"
+            $ref : "#/components/schemas/gene_set"
     ontology_element:
       type: object
       properties:
@@ -644,7 +644,7 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
-    geneset:
+    gene_set:
       type: object
       properties:
         name:
@@ -667,7 +667,7 @@ components:
           type: string
         detail:
           type: string
-    gene_sets:
+    user_defined_gene_sets:
       type: object
       description: User created geneset information
       properties:
