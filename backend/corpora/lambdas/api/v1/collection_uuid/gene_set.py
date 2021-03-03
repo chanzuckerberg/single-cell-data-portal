@@ -15,8 +15,9 @@ def post(collection_uuid: str, body: dict, user: str):
     gene_sets = body["gene_sets"]
     for gene_set in gene_sets:
         try:
-            Geneset.create(db_session, name=gene_set[0], description=gene_set[1], gene_symbols=gene_set[2],
-                           collection=collection)
+            Geneset.create(
+                db_session, name=gene_set[0], description=gene_set[1], gene_symbols=gene_set[2], collection=collection
+            )
         except IntegrityError:
             db_session.rollback()
             raise InvalidParametersHTTPException("Duplicate geneset name")

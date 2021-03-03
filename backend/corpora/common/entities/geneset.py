@@ -20,9 +20,18 @@ class Geneset(Entity):
         genesets = session.query(cls.table).filter(cls.table.collection_id == collection_id).all()
         reshaped_genesets = []
         for geneset in genesets:
-            reshaped_genesets.append(geneset.to_dict(remove_attr=["gene_symbols", "created_at", "updated_at",
-                                                                  "collection", "collection_id",
-                                                                  "collection_visibility"]))
+            reshaped_genesets.append(
+                geneset.to_dict(
+                    remove_attr=[
+                        "gene_symbols",
+                        "created_at",
+                        "updated_at",
+                        "collection",
+                        "collection_id",
+                        "collection_visibility",
+                    ]
+                )
+            )
         return reshaped_genesets
 
 
