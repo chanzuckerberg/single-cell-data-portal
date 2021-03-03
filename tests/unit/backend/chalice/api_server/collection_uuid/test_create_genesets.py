@@ -8,39 +8,45 @@ from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 class TestGenesetCreation(BaseAuthAPITest):
     # Note for now the validation is done on the frontend so we are only testing with clean data
     # If we open up the api in the future we will need to validate and test for dirty data here as well
-
-    def test_geneset_creation__ok(self):
-        data = {
-            "gene_sets": [
-                [
-                    "geneset1",
-                    "this is geneset 1",
-                    [
-                        "gene1",
-                        "gene 1 description",
-                        {"randomProperty": "randomPropertyWords", "anotherProprerty": "moreWords"},
-                    ],
-                    ["gene2", "gene 2 description", {}],
-                    ["gene3", "gene 3 description"],
-                    ["gene4", "", {"randomProperty": "randomPropertyWords", "anotherProprerty": "moreWords"}],
-                    ["gene5"],
-                ],
-                ["geneset2", "this is geneset2", ["onegene"]],
-                [
-                    "geneset3",
-                    "this is geneset3",
-                    ["1", "words", {"a": "b", "c": "d"}],
-                    ["2", "words", {"a": "b", "c": "d"}],
-                ],
+    def setUp(self):
+        super().setUp()
+        self.geneset1 = {
+            "gene_set_name": "geneset1",
+            "gene_set_description": "this is geneset 1",
+            "genes": [
+                {
+                    "gene_symbol": "gene1",
+                    "gene_description": "describe a gene",
+                    "additional_params": {
+                        "randomProperty": "randomPropertyWords",
+                        "anotherProprerty": "moreWords"}
+                },
+                {"gene_symbol": "1", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}}
             ]
         }
-        collection = self.generate_collection(
+        self.geneset2 = {
+            "gene_set_name": "geneset2",
+            "gene_set_description": "this is geneset 2",
+            "genes": [{"gene_symbol": "onegene"}]}
+        self.geneset3 = {
+            "gene_set_name": "geneset3",
+            "gene_set_description": "this is geneset 3",
+            "genes": [
+                {"gene_symbol": "1", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
+                {"gene_symbol": "2", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
+                {"gene_symbol": "3", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}},
+                {"gene_symbol": "4", "gene_description": "words", "additional_params": {"a": "b", "c": "d"}}
+            ]
+        }
+        self.collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
-        test_url = f"/dp/v1/collections/{collection.id}/genesets"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        self.test_url = f"/dp/v1/collections/{self.collection.id}/genesets"
 
-        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+    def test_geneset_creation__ok(self):
+        data = {"gene_sets": [self.geneset1, self.geneset2, self.geneset3]}
+        response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
         response.raise_for_status()
 
         body = json.loads(response.body)
@@ -50,44 +56,52 @@ class TestGenesetCreation(BaseAuthAPITest):
         self.assertIn("geneset2", geneset_names)
         self.assertIn("geneset3", geneset_names)
 
-    def test_geneset_creation__geneset_already_exists(self):
-        data = {"gene_sets": [["geneset1", "this is geneset 1", ["gene1", "gene 1 description"]]]}
-        collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
-        )
-        test_url = f"/dp/v1/collections/{collection.id}/genesets"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+    def test_all_gene_information_correctly_stored(self):
+        data = {"gene_sets": [self.geneset1, self.geneset2, self.geneset3]}
+        response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
+        response.raise_for_status()
+        body = json.loads(response.body)
+        genesets = {}
+        for x in body:
+            genesets[x['name']] = x['id']
+        geneset1 = Geneset.get(self.session, genesets["geneset1"])
+        geneset2 = Geneset.get(self.session, genesets["geneset2"])
+        geneset3 = Geneset.get(self.session, genesets["geneset3"])
 
-        Geneset.create(self.session, collection=collection, name="geneset1", description="words", gene_symbols=["aaa"])
-        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+        self.assertEqual(geneset1.gene_symbols, self.geneset1['genes'])
+        self.assertEqual(geneset2.gene_symbols, self.geneset2['genes'])
+        self.assertEqual(geneset3.gene_symbols, self.geneset3['genes'])
+
+    def test_geneset_creation__geneset_already_exists(self):
+        data = {"gene_sets": [self.geneset1]}
+        Geneset.create(self.session, collection=self.collection, name="geneset1", description="words",
+                       gene_symbols=["aaa"])
+        response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(400, response.status_code)
 
     def test_geneset_creation__not_owner_403(self):
-        data = {"gene_sets": [["geneset1", "this is geneset 1", ["gene1", "gene 1 description"]]]}
+        data = {"gene_sets": [self.geneset1, self.geneset2]}
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
         )
         test_url = f"/dp/v1/collections/{collection.id}/genesets"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+        response = self.app.post(test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(403, response.status_code)
 
     def test_geneset_creation__not_private_403(self):
-        data = {"gene_sets": [["geneset1", "this is geneset 1", ["gene1", "gene 1 description"]]]}
+        data = {"gene_sets": [self.geneset2, self.geneset3]}
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
         test_url = f"/dp/v1/collections/{collection.id}/genesets"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+        response = self.app.post(test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(403, response.status_code)
 
     def test_geneset_creation__no_collection_403(self):
         uuid = generate_uuid()
-        data = {"gene_sets": [["geneset1", "this is geneset 1", ["gene1", "gene 1 description"]]]}
+        data = {"gene_sets": [self.geneset1]}
         test_url = f"/dp/v1/collections/{uuid}/genesets"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+        response = self.app.post(test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(403, response.status_code)

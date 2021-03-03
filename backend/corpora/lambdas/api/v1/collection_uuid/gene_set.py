@@ -16,7 +16,8 @@ def post(collection_uuid: str, body: dict, user: str):
     for gene_set in gene_sets:
         try:
             Geneset.create(
-                db_session, name=gene_set[0], description=gene_set[1], gene_symbols=gene_set[2], collection=collection
+                db_session, name=gene_set["gene_set_name"], description=gene_set["gene_set_description"],
+                gene_symbols=gene_set["genes"], collection=collection
             )
         except IntegrityError:
             db_session.rollback()

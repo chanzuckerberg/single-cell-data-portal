@@ -668,10 +668,29 @@ components:
         detail:
           type: string
     gene_sets:
-      type: array
-      items:
-        type: array
-        items: { }
+      type: object
+      description: User created geneset information
+      properties:
+        gene_set_name:
+          type: string
+        gene_set_description:
+          type: string
+        genes:
+          type: array
+          items:
+            type: object
+            description: Gene specific information
+            properties:
+              gene_symbol:
+                type:
+                  string
+              gene_description:
+                type:
+                  string
+              additional_params:
+                type:
+                  object
+
   parameters:
     path_collection_uuid:
       name: collection_uuid
