@@ -47,7 +47,6 @@ class TestGenesetCreation(BaseAuthAPITest):
         data = {"gene_sets": [self.geneset1, self.geneset2, self.geneset3]}
         response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
         response.raise_for_status()
-
         body = json.loads(response.body)
         self.assertEqual(len(body), 3)
         geneset_names = [x["name"] for x in body]

@@ -1,15 +1,15 @@
 from flask import make_response, g, jsonify
 from sqlalchemy.exc import IntegrityError
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Collection
-from backend.corpora.common.entities.geneset import Geneset
-from backend.corpora.common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from .....common.corpora_orm import CollectionVisibility
+from .....common.entities import Collection
+from .....common.entities.geneset import Geneset
+from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 
 
 def post(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE, user)
+    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, user)
     if not collection:
         raise ForbiddenHTTPException
     gene_sets = body["gene_sets"]
@@ -20,7 +20,8 @@ def post(collection_uuid: str, body: dict, user: str):
                 name=gene_set["gene_set_name"],
                 description=gene_set["gene_set_description"],
                 gene_symbols=gene_set["genes"],
-                collection=collection,
+                collection_id=collection.id,
+                collection_visibility=collection.visibility.name
             )
         except IntegrityError:
             db_session.rollback()
