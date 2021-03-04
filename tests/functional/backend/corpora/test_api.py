@@ -122,7 +122,6 @@ class TestApi(unittest.TestCase):
         collection_uuids = [x["id"] for x in data["collections"]]
         self.assertIn(collection_uuid, collection_uuids)
 
-        # TODO @madison -- Add once we can delete collections
         # delete collection
         res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
         res.raise_for_status()
