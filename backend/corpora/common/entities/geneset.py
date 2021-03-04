@@ -1,5 +1,5 @@
-from backend.corpora.common.corpora_orm import DbGeneset, DbGenesetDatasetLink
-from backend.corpora.common.entities.entity import Entity
+from ..corpora_orm import DbGeneset, DbGenesetDatasetLink
+from .entity import Entity
 
 
 class Geneset(Entity):
