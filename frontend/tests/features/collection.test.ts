@@ -1,5 +1,9 @@
 import { ROUTES } from "src/common/constants/routes";
-import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
+import {
+  BLUEPRINT_SAFE_TYPE_OPTIONS,
+  // TEST_ENV,
+  TEST_URL,
+} from "tests/common/constants";
 import { goToPage, login, TIMEOUT_MS } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 

@@ -1,4 +1,5 @@
-import { TEST_URL } from "../common/constants";
+import { TEST_EMAIL, TEST_URL } from "../common/constants";
+import { getText } from "./selectors";
 
 export const TIMEOUT_MS = 3 * 1000;
 
@@ -7,7 +8,25 @@ export async function goToPage(url: string = TEST_URL) {
 }
 
 export async function login() {
-  return;
+  goToPage();
+  try {
+    await expect(page).toHaveSelector(getText("My Collections"), {
+      timeout: TIMEOUT_MS,
+    });
+  } catch (error) {
+    const url = page.url();
+    await page.click(getText("Log In"));
+
+    await page.fill('[name="email"]', TEST_EMAIL);
+    // await page.fill('[name="password"]', password);
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      page.click('[name="submit"]'),
+    ]);
+
+    expect(page.url()).toContain(url);
+  }
 }
 
 export async function tryUntil(assert: () => void) {
