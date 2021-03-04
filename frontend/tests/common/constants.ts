@@ -12,17 +12,7 @@ const TEST_ENV_TO_TEST_URL = {
 };
 
 const TEST_ENV_TO_TEST_EMAIL = (env: TEST_ENV) => {
-  switch (env) {
-    case "dev":
-    case "rdev":
-      return "cellxgene-smoke-test+dev@chanzuckerberg.com";
-    case "staging":
-      return "cellxgene-smoke-test+staging@chanzuckerberg.com";
-    case "prod":
-      return "cellxgene-smoke-test+prod@chanzuckerberg.com";
-    default:
-      return process.env.AUTH_EMAIL || "dev";
-  }
+  return "";
 };
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];

@@ -1,14 +1,11 @@
 import { ROUTES } from "src/common/constants/routes";
-import {
-  BLUEPRINT_SAFE_TYPE_OPTIONS,
-  TEST_ENV,
-  TEST_URL,
-} from "tests/common/constants";
+import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import { goToPage, login, TIMEOUT_MS } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
-  TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
+  // TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
+  describe.skip;
 
 const TEST_COLLECTION = {
   contactEmail: "TEST@example.com",
