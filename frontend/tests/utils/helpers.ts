@@ -15,11 +15,10 @@ export async function login() {
     });
   } catch (error) {
     const url = page.url();
-    const password = "Test1111";
     await page.click(getText("Log In"));
 
     await page.fill('[name="email"]', TEST_EMAIL);
-    await page.fill('[name="password"]', password);
+    // await page.fill('[name="password"]', password);
 
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle" }),

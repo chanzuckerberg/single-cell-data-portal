@@ -11,21 +11,7 @@ const TEST_ENV_TO_TEST_URL = {
   staging: "https://cellxgene.staging.single-cell.czi.technology",
 };
 
-const TEST_ENV_TO_TEST_EMAIL = (env: TEST_ENV) => {
-  switch (env) {
-    case "dev":
-    case "rdev":
-      return "cellxgene-smoke-test+dev@chanzuckerberg.com";
-    case "staging":
-      return "cellxgene-smoke-test+staging@chanzuckerberg.com";
-    case "prod":
-      return "cellxgene-smoke-test+prod@chanzuckerberg.com";
-    default:
-      return process.env.AUTH_EMAIL || "dev";
-  }
-};
-
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
-export const TEST_EMAIL = TEST_ENV_TO_TEST_EMAIL(TEST_ENV);
+export const TEST_EMAIL = "";
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
