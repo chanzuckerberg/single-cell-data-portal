@@ -21,7 +21,7 @@ def post(collection_uuid: str, body: dict, user: str):
                 description=gene_set["gene_set_description"],
                 gene_symbols=gene_set["genes"],
                 collection_id=collection.id,
-                collection_visibility=collection.visibility.name
+                collection_visibility=collection.visibility.name,
             )
         except IntegrityError:
             db_session.rollback()
