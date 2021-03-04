@@ -84,11 +84,12 @@ class TestApi(unittest.TestCase):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.created)
         data = json.loads(res.content)
+        collection_uuid = data["collection_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
-        collection_uuid = data["collection_uuid"]
         # check created collection returns as private
         res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
@@ -123,15 +124,15 @@ class TestApi(unittest.TestCase):
 
         # TODO @madison -- Add once we can delete collections
         # delete collection
-        # res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        # res.raise_for_status()
-        # self.assertEqual(res.status_code, requests.codes.accepted)
-        #
-        # # check collection gone
-        # res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
-        # data = json.loads(res.content)
-        # collection_uuids = [x['id'] for x in data['collections']]
-        # self.assertNotIn(collection_uuid, collection_uuids)
+        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        res.raise_for_status()
+        self.assertEqual(res.status_code, requests.codes.accepted)
+
+        # check collection gone
+        res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+        data = json.loads(res.content)
+        collection_uuids = [x["id"] for x in data["collections"]]
+        self.assertNotIn(collection_uuid, collection_uuids)
 
     def test_dataset_upload_flow(self):
         body = {
