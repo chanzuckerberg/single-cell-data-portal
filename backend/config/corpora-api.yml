@@ -211,6 +211,43 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
+  /dp/v1/collections/{collection_uuid}/genesets:
+    post:
+      tags:
+        - collections
+        - genesets
+      summary: Add genesets to a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Add genesets to a private collection
+      operationId: corpora.lambdas.api.v1.collection_uuid.gene_set.post
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                genesets:
+                  description: A list of genesets including their gene symbols and descriptions
+                  $ref: "#/components/schemas/user_defined_gene_sets"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/gene_set"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+
+
   /dp/v1/collections/{collection_uuid}/publish:
     post:
       tags:
@@ -522,7 +559,7 @@ components:
         genesets:
           type: array
           items:
-            $ref : "#/components/schemas/geneset"
+            $ref : "#/components/schemas/gene_set"
     ontology_element:
       type: object
       properties:
@@ -607,7 +644,7 @@ components:
           enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
-    geneset:
+    gene_set:
       type: object
       properties:
         name:
@@ -630,6 +667,27 @@ components:
           type: string
         detail:
           type: string
+    user_defined_gene_sets:
+      type: object
+      description: User created geneset information
+      properties:
+        gene_set_name:
+          type: string
+        gene_set_description:
+          type: string
+        genes:
+          type: array
+          items:
+            type: object
+            description: Gene specific information
+            properties:
+              gene_symbol:
+                type: string
+              gene_description:
+                type: string
+              additional_params:
+                type: object
+
   parameters:
     path_collection_uuid:
       name: collection_uuid

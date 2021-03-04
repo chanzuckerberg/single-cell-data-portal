@@ -1,5 +1,5 @@
-from backend.corpora.common.corpora_orm import DbGeneset, DbGenesetDatasetLink
-from backend.corpora.common.entities.entity import Entity
+from ..corpora_orm import DbGeneset, DbGenesetDatasetLink
+from .entity import Entity
 
 
 class Geneset(Entity):
@@ -18,7 +18,21 @@ class Geneset(Entity):
     @classmethod
     def retrieve_all_genesets_for_a_collection(cls, session, collection_id):
         genesets = session.query(cls.table).filter(cls.table.collection_id == collection_id).all()
-        return genesets
+        reshaped_genesets = []
+        for geneset in genesets:
+            reshaped_genesets.append(
+                geneset.to_dict(
+                    remove_attr=[
+                        "gene_symbols",
+                        "created_at",
+                        "updated_at",
+                        "collection",
+                        "collection_id",
+                        "collection_visibility",
+                    ]
+                )
+            )
+        return reshaped_genesets
 
 
 class GenesetDatasetLink(Entity):
