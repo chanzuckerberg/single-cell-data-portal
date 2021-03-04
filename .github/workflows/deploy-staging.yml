@@ -82,7 +82,7 @@ jobs:
           npm install
       - name: Run Smoke Tests
         run: |
-          make e2e-staging
+          make e2e
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
