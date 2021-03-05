@@ -66,7 +66,7 @@ class TestDatabase:
             description="test_description",
             data_submission_policy_version="0",
             contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com"
+            contact_email="somebody@chanzuckerberg.com",
         )
         self.session.add(collection)
         collection = DbCollection(
