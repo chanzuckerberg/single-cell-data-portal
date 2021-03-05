@@ -62,9 +62,11 @@ class TestDatabase:
             id="test_collection_id",
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            name="test_collection",
+            name="test_collection_id",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com"
         )
         self.session.add(collection)
         collection = DbCollection(
@@ -80,9 +82,10 @@ class TestDatabase:
             id="test_collection_id_public",
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            name="test_collection",
+            name="test_collection_id_public",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
         )
         self.session.add(collection)
         collection = DbCollection(
