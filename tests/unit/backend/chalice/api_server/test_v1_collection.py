@@ -133,6 +133,7 @@ class TestCollection(BaseAuthAPITest):
     def test__get_collection_uuid__ok(self):
         """Verify the test collection exists and the expected fields exist."""
         expected_body = {
+
             "datasets": [
                 {
                     "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
@@ -212,8 +213,8 @@ class TestCollection(BaseAuthAPITest):
             "name": "test_collection",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
-            "contact_email": "",
-            "contact_name": "",
+            "contact_name": "Some Body",
+            "contact_email": "somebody@chanzuckerberg.com",
             "data_submission_policy_version": "0",
         }
 

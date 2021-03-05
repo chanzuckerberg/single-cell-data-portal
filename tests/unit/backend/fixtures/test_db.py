@@ -85,7 +85,6 @@ class TestDatabase:
             name="test_collection_id_public",
             description="test_description",
             data_submission_policy_version="0",
-            contact_name="Some Body",
         )
         self.session.add(collection)
         collection = DbCollection(
