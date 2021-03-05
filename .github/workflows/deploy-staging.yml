@@ -39,7 +39,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
@@ -65,13 +65,15 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   smoke:
     runs-on: ubuntu-latest
-    needs: backend
+    needs:
+      - backend
+      - frontend
     steps:
       - uses: actions/checkout@v2
       - name: Setup node.js
@@ -87,7 +89,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure()
