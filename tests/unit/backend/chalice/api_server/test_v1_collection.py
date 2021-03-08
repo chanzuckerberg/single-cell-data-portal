@@ -577,3 +577,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
         self.assertIn(public_collection.id, collection_ids)
         self.assertNotIn(private_collection.id, collection_ids)
         self.assertNotIn(collection_to_delete.id, collection_ids)
+
+class TestUpdateCollection(BaseAuthAPITest):
+    def test__update_collection__OK(self):
+        pass
