@@ -233,7 +233,7 @@ class TestCollection(BaseAuthAPITest):
                 {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
                 {"link_name": "", "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
             ],
-            "name": "test_collection_id",
+            "name": "test_collection",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
             "contact_name": "Some Body",
