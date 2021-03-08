@@ -39,7 +39,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure()
@@ -66,14 +66,16 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure()
 
   smoke:
     runs-on: ubuntu-latest
-    needs: backend
+    needs:
+      - backend
+      - frontend
     steps:
       - uses: actions/checkout@v2
       - name: Setup node.js
@@ -85,12 +87,12 @@ jobs:
           npm install
       - name: Run Smoke Tests
         run: |
-          make e2e-dev
+          make e2e
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure()

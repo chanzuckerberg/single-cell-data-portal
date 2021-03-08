@@ -43,7 +43,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -80,7 +80,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -112,7 +112,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -142,7 +142,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -179,7 +179,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -222,7 +222,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: here
+          mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
