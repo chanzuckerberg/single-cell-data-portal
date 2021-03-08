@@ -84,11 +84,12 @@ class TestApi(unittest.TestCase):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.created)
         data = json.loads(res.content)
+        collection_uuid = data["collection_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
-        collection_uuid = data["collection_uuid"]
         # check created collection returns as private
         res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
@@ -121,17 +122,16 @@ class TestApi(unittest.TestCase):
         collection_uuids = [x["id"] for x in data["collections"]]
         self.assertIn(collection_uuid, collection_uuids)
 
-        # TODO @madison -- Add once we can delete collections
         # delete collection
-        # res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        # res.raise_for_status()
-        # self.assertEqual(res.status_code, requests.codes.accepted)
-        #
-        # # check collection gone
-        # res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
-        # data = json.loads(res.content)
-        # collection_uuids = [x['id'] for x in data['collections']]
-        # self.assertNotIn(collection_uuid, collection_uuids)
+        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        res.raise_for_status()
+        self.assertEqual(res.status_code, requests.codes.accepted)
+
+        # check collection gone
+        res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+        data = json.loads(res.content)
+        collection_uuids = [x["id"] for x in data["collections"]]
+        self.assertNotIn(collection_uuid, collection_uuids)
 
     def test_dataset_upload_flow(self):
         body = {
@@ -146,11 +146,11 @@ class TestApi(unittest.TestCase):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.created)
         data = json.loads(res.content)
-        self.assertIn("collection_uuid", data)
-
         collection_uuid = data["collection_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertIn("collection_uuid", data)
 
         body = {"url": "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0"}
 
@@ -158,9 +158,11 @@ class TestApi(unittest.TestCase):
             f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
         )
         res.raise_for_status()
+        dataset_uuid = json.loads(res.content)["dataset_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
+
         self.assertEqual(res.status_code, requests.codes.accepted)
 
-        dataset_uuid = json.loads(res.content)["dataset_uuid"]
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
@@ -173,3 +175,12 @@ class TestApi(unittest.TestCase):
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
         with self.assertRaises(HTTPError):
             res.raise_for_status()
+
+        # Delete dataset
+        res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
+        res.raise_for_status()
+        self.assertEqual(res.status_code, requests.codes.accepted)
+
+        # Check that the dataset is gone
+        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+        self.assertEqual(res.status_code, requests.codes.unauthorized)
