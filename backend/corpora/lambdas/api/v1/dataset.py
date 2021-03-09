@@ -47,7 +47,7 @@ def get_status(dataset_uuid: str, user: str):
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
-    if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):
+    if not Collection.get_collection(db_session, dataset.collection.id, dataset.collection.visibility, owner=user):
         raise ForbiddenHTTPException()
     status = dataset.processing_status.to_dict(remove_none=True)
     for remove in ["dataset", "created_at", "updated_at"]:
@@ -63,7 +63,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     dataset = Dataset.get(db_session, dataset_uuid, include_tombstones=True)
     if not dataset:
         raise ForbiddenHTTPException()
-    if not Collection.if_owner(db_session, dataset.collection.id, dataset.collection.visibility, user):
+    if not Collection.get_collection(db_session, dataset.collection.id, dataset.collection.visibility, owner=user):
         raise ForbiddenHTTPException()
     if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
