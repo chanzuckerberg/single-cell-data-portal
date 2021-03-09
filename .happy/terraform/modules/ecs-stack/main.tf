@@ -43,7 +43,7 @@ locals {
   frontend_alb_dns      = try(local.secret[local.alb_key]["frontend"]["dns_name"], "")
   backend_alb_dns       = try(local.secret[local.alb_key]["backend"]["dns_name"], "")
 
-  artifact_bucket       = try(local.secret["s3_buckets"]["artifacts"]["name"], "")
+  artifact_bucket       = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket      = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
 
   ecs_role_arn          = local.secret["service_roles"]["ecs_role"]
