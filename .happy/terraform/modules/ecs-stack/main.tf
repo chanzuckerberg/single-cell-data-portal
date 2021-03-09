@@ -14,6 +14,7 @@ locals {
   priority              = var.priority
   deployment_stage      = var.deployment_stage
   remote_dev_prefix     = var.stack_prefix
+  wait_for_steady_state = var.wait_for_steady_state
 
   migration_cmd         = ["make", "-C", "/corpora-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd          = ["make", "-C", "/corpora-data-portal/backend", "db/delete_remote_dev"]
@@ -93,6 +94,8 @@ module frontend_service {
   api_url           = local.backend_url
   frontend_url      = local.frontend_url
   remote_dev_prefix = local.remote_dev_prefix
+
+  wait_for_steady_state = local.wait_for_steady_state
 }
 
 module backend_service {
@@ -116,6 +119,8 @@ module backend_service {
   api_url           = local.backend_url
   frontend_url      = local.frontend_url
   remote_dev_prefix = local.remote_dev_prefix
+
+  wait_for_steady_state = local.wait_for_steady_state
 }
 
 module migrate_db {
