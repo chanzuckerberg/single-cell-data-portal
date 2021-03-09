@@ -70,15 +70,15 @@ class Collection(Entity):
         :param collection_uuid:
         :param visibility: the visibility of the collection
         :param include_tombstones: If true, the collection is returned even if it has been tombstoned.
-        :param owner: A user id use to check if the user is the owner of the collection. If the user id matches the owner
-        then the collection is returned.
+        :param owner: A user id use to check if the user is the owner of the collection. If the user id matches the
+        owner then the collection is returned.
         :return: the collection if it matches the filter.
         """
         filters = [cls.table.id == collection_uuid, cls.table.visibility == visibility]
         if owner:
             filters.append(cls.table.owner == owner)
         if not include_tombstones:
-            filters.append(cls.table.tombstone == False)
+            filters.append(cls.table.tombstone == False)  # noqa
         collection = session.query(cls.table).filter(*filters).one_or_none()
         return cls(collection) if collection else None
 
