@@ -150,7 +150,7 @@ local-unit-test: ## Run backend tests in the dev environment
 
 .PHONY: local-functional-test
 local-functional-test: ## Run functional tests in the dev environment
-	docker-compose exec -T backend bash -c "cd /corpora-data-portal && export DEPLOYMENT_STAGE=test && make container-functionaltest"
+	AWS_PROFILE=single-cell-dev chamber -b secretsmanager exec corpora/backend/dev/auth0-secret -- docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD backend bash -c "cd /corpora-data-portal && export DEPLOYMENT_STAGE=dev && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
