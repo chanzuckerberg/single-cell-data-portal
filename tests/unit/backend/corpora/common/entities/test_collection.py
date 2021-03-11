@@ -33,7 +33,7 @@ class TestCollection(DataPortalTestCase):
 
         # Verify Link relationship
         self.assertIsInstance(collection.links[0], DbCollectionLink)
-        self.assertEqual(collection.links[0].id, "test_collection_link_id")
+        self.assertEqual(collection.links[0].id, "test_collection_doi_link_id")
 
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.visibility)
