@@ -4,6 +4,10 @@ SHELL:=/bin/bash
 export DOCKER_BUILDKIT:=1
 export COMPOSE_DOCKER_CLI_BUILD:=1
 export COMPOSE_OPTS:=--env .env.ecr
+ifeq ($(AWS_ACCESS_KEY_ID),)
+	export TEST_AWS_PROFILE ?= single-cell-dev
+endif
+export DEPLOYMENT_STAGE ?= test
 
 
 .PHONY: fmt
@@ -149,8 +153,9 @@ local-unit-test: ## Run backend tests in the dev environment
 	fi
 
 .PHONY: local-functional-test
+local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
 local-functional-test: ## Run functional tests in the dev environment
-	AWS_PROFILE=single-cell-dev chamber -b secretsmanager exec corpora/backend/dev/auth0-secret -- docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD backend bash -c "cd /corpora-data-portal && export DEPLOYMENT_STAGE=dev && make container-functionaltest"
+	chamber -b secretsmanager exec corpora/backend/dev/auth0-secret -- docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE backend bash -c "cd /corpora-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
