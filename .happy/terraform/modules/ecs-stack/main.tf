@@ -161,6 +161,7 @@ module upload_batch {
 module upload_lambda {
   source                = "../lambda"
   image                 = "${local.lambda_upload_repo}:${local.image_tag}"
+  name                  = "uploadfailures"
   custom_stack_name     = local.custom_stack_name
   remote_dev_prefix     = local.remote_dev_prefix
   deployment_stage      = local.deployment_stage

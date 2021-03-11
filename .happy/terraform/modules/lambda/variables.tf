@@ -3,6 +3,11 @@ variable image {
   description = "Image name"
 }
 
+variable name {
+  type        = string
+  description = "Lambda name"
+}
+
 variable artifact_bucket {
   type        = string
   description = "Artifact bucket name"
