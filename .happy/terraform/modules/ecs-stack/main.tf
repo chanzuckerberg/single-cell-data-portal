@@ -158,7 +158,7 @@ module upload_batch {
   frontend_url      = local.frontend_url
 }
 
-module upload_lambda {
+module upload_error_lambda {
   source                = "../lambda"
   image                 = "${local.lambda_upload_repo}:${local.image_tag}"
   name                  = "uploadfailures"
@@ -176,6 +176,6 @@ module upload_sfn {
   job_queue_arn        = local.job_queue_arn
   role_arn             = local.sfn_role_arn
   custom_stack_name    = local.custom_stack_name
-  lambda_error_handler = module.upload_lambda.error_handler
+  lambda_error_handler = module.upload_error_lambda.arn
   deployment_stage     = local.deployment_stage
 }
