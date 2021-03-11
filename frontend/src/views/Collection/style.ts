@@ -25,14 +25,6 @@ export const LinkContainer = styled.div`
   margin-top: ${PT_GRID_SIZE_PX}px;
 `;
 
-export const ContactContainer = styled.div`
-  display: grid;
-  grid-template-columns: max-content auto;
-  column-gap: ${2 * PT_GRID_SIZE_PX}px;
-  row-gap: ${PT_GRID_SIZE_PX}px;
-  margin-top: ${PT_GRID_SIZE_PX}px;
-`;
-
 export const DatasetContainer = styled.div`
   grid-column: 1 / span 8;
 `;

@@ -14,7 +14,6 @@ import GeneSetTab from "./components/GeneSetTab";
 import {
   CollectionButtons,
   CollectionInfo,
-  ContactContainer,
   Description,
   LinkContainer,
   TabWrapper,
@@ -60,10 +59,10 @@ const Collection: FC<Props> = ({ id = "" }) => {
       <CollectionInfo>
         <H3>{collection.name}</H3>
         <Description>{collection.description}</Description>
-        <ContactContainer>
+        <LinkContainer>
+          {renderLinks(collection.links)}
           {renderContact(collection.contact_name, collection.contact_email)}
-        </ContactContainer>
-        <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
+        </LinkContainer>
       </CollectionInfo>
 
       <CollectionButtons>
