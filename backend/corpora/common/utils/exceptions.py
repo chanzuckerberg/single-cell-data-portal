@@ -15,6 +15,9 @@ class ServerErrorHTTPException(ProblemException):
             status=requests.codes.server_error, title="Internal Server Error", detail=detail, *args, **kwargs
         )
 
+class UnauthorizedError(ProblemException):
+    def __init__(self, detail: str = "Invalid Authentication Credentials", *args, **kwargs) -> None:
+        super().__init__(status=401, title="Invalid Authentication Credentials", detail=detail, *args, **kwargs)
 
 class TooLargeHTTPException(ProblemException):
     def __init__(self, detail: str = "The file requested is too large to process.", *args, **kwargs) -> None:

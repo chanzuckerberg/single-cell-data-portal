@@ -7,7 +7,6 @@ from urllib.parse import urlencode
 import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
-from chalice import UnauthorizedError
 from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
 from jose.exceptions import ExpiredSignatureError
 
@@ -15,6 +14,8 @@ from ....common.authorizer import get_userinfo, assert_authorized_token
 from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
+from ....common.utils.exceptions import UnauthorizedError
+
 oauth_client = None
 
 
@@ -91,10 +92,10 @@ def oauth2_callback() -> Response:
         # write the cookie
         save_token(config.cookie_name, token)
     except Exception as e:
-        current_app.logger.warning(f"Unable to authorize access token: {str(e)}")
+        current_app.logger.exception(f"Unable to authorize access token.")
         # remove the token
         remove_token(config.cookie_name)
-        raise UnauthorizedError("response from oauth server not valid")
+        raise UnauthorizedError(detail=f"Response from oauth server not valid.")
 
     return_to = session.pop("oauth_corpora_callback_redirect", "/")
     return redirect(return_to)
@@ -181,7 +182,7 @@ def check_token(token: dict) -> dict:
             save_token(auth_config.cookie_name, token)
         except ExpiredSignatureError:
             remove_token(auth_config.cookie_name)
-            raise UnauthorizedError("token is expired")
+            raise UnauthorizedError(detail="Token is expired.")
 
     return payload
 
