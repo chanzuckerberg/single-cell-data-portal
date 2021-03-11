@@ -168,6 +168,8 @@ module upload_error_lambda {
   artifact_bucket       = local.artifact_bucket
   cellxgene_bucket      = local.cellxgene_bucket
   lambda_execution_role = local.lambda_execution_role
+  subnets               = local.subnets
+  security_groups       = local.security_groups
 }
 
 module upload_sfn {

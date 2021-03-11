@@ -14,4 +14,8 @@ resource aws_lambda_function lambda_job_def {
       REMOTE_DEV_PREFIX = var.remote_dev_prefix
     }
   }
+  vpc_config {
+    subnet_ids         = var.subnets
+    security_group_ids = var.security_groups
+  }
 }

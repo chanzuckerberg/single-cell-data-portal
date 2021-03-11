@@ -38,3 +38,13 @@ variable lambda_execution_role {
   type        = string
   description = "Role for lambda execution"
 }
+
+variable security_groups {
+  type        = list(string)
+  description = "Security groups for lambda tasks"
+}
+
+variable subnets {
+  type        = list(string)
+  description = "Subnets for lambda tasks"
+}
