@@ -14,8 +14,7 @@ class EnvironmentSetup:
 
     def enter(self):
         for k, v in self.env_vars.items():
-            if k in os.environ:
-                self.saved_vars[k] = os.environ[k]
+            self.saved_vars[k] = os.environ.get(k)
             if v:
                 os.environ[k] = v
             else:
@@ -24,7 +23,11 @@ class EnvironmentSetup:
 
     def exit(self):
         for k, v in self.saved_vars.items():
-            os.environ[k] = v
+            if v:
+                os.environ[k] = v
+            else:
+                if k in os.environ:
+                    del os.environ[k]
 
     def __enter__(self):
         self.enter()
