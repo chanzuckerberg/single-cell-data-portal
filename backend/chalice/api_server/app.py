@@ -63,7 +63,7 @@ def get_chalice_app(flask_app):
         SECRET_KEY=flask_secret_key,
         SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE="Strict",
+        SESSION_COOKIE_SAMESITE="Lax",
     )
 
     def clean_entry_for_logging(entry):
