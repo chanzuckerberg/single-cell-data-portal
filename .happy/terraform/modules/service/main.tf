@@ -19,6 +19,8 @@ resource aws_ecs_service service {
     subnets          = var.subnets
     assign_public_ip = false
   }
+
+  wait_for_steady_state = var.wait_for_steady_state
 }
 
 resource aws_ecs_task_definition task_definition {

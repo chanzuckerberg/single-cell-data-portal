@@ -69,3 +69,9 @@ variable stack_prefix {
   description = "Do bucket storage paths and db schemas need to be prefixed with the stack name? (Usually '/{stack_name}' for dev stacks, and '' for staging/prod stacks)"
   default     = ""
 }
+
+variable wait_for_steady_state {
+  type        = bool
+  description = "Should terraform block until ECS services reach a steady state?"
+  default     = false
+}
