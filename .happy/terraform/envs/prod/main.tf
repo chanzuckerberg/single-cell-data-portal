@@ -7,11 +7,11 @@ module stack {
   image_tag           = var.image_tag
   priority            = var.priority
   stack_name          = var.stack_name
-  deployment_stage    = "staging"
+  deployment_stage    = "prod"
   delete_protected    = true
   require_okta        = false
-  frontend_url        = "https://stage.single-cell.czi.technology"
-  backend_url         = "https://api.stage.single-cell.czi.technology"
+  frontend_url        = "https://production.single-cell.czi.technology"
+  backend_url         = "https://api.production.single-cell.czi.technology"
   stack_prefix        = ""
 
   wait_for_steady_state = var.wait_for_steady_state

@@ -11,4 +11,6 @@ module stack {
   delete_protected    = false
   require_okta        = true
   stack_prefix        = "/${var.stack_name}"
+
+  wait_for_steady_state = var.wait_for_steady_state
 }

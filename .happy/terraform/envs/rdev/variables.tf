@@ -34,3 +34,9 @@ variable happy_config_secret {
   type        = string
   description = "Happy Path configuration secret name"
 }
+
+variable wait_for_steady_state {
+  type        = bool
+  description = "Should terraform block until ECS reaches a steady state?"
+  default     = false
+}
