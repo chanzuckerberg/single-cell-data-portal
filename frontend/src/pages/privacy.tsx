@@ -40,7 +40,8 @@ const ToS: FC = () => {
 
             <p>
               We invite you to <a href="/previewpolicies">preview</a> our
-              updated Terms of Use, which will go into effect on April 1, 2021.
+              updated Privacy Policy, which will go into effect on April 1,
+              2021.
             </p>
 
             <p>
