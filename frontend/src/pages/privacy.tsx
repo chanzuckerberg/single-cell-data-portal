@@ -31,11 +31,17 @@ const ToS: FC = () => {
           </header>
           <main>
             <h1>Privacy Policy</h1>
+
             <p>
               April 1, 2020. There is no prior version of this privacy policy.
             </p>
 
             <h2>Introduction</h2>
+
+            <p>
+              We invite you to <a href="/previewpolicies">preview</a> our
+              updated Terms of Use, which will go into effect on April 1, 2021.
+            </p>
 
             <p>
               We are a site for biologists, computational researchers, and

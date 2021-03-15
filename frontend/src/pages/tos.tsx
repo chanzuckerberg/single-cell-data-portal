@@ -44,6 +44,11 @@ const Privacy: FC = () => {
           <h2>Introduction</h2>
 
           <p>
+            We invite you to <a href="/previewpolicies">preview</a> our updated
+            Terms of Use, which will go into effect on April 1, 2021.
+          </p>
+
+          <p>
             These Terms of Use (the “<strong>Terms</strong>”) apply to everyone
             who accesses and uses the version of cellxgene located at
             cellxgene.cziscience.com (the “<strong>Site</strong>”; those

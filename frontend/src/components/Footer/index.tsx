@@ -15,10 +15,10 @@ const Footer: FC = () => {
           Contact
         </StyledAnchor>
         <StyledAnchor href={ROUTES.TOS} target="_blank" rel="noopener">
-          Terms of Service
+          Terms of Service (updates coming)
         </StyledAnchor>
         <StyledAnchor href={ROUTES.PRIVACY} target="_blank" rel="noopener">
-          Privacy Policy
+          Privacy Policy (updates coming)
         </StyledAnchor>
       </MainWrapper>
     </Wrapper>
