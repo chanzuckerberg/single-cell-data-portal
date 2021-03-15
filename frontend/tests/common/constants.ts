@@ -12,6 +12,7 @@ const TEST_ENV_TO_TEST_URL = {
 };
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
-export const TEST_EMAIL = "";
+export const TEST_EMAIL = "user@example.com";
+export const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASS ?? "";
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };

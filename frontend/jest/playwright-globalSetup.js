@@ -9,15 +9,15 @@ const client = new SecretsManagerClient({
 });
 
 const secretValueRequest = {
-  SecretId: "corpora/backend/dev/auth0-secret['test_account_password']",
+  SecretId: "corpora/backend/dev/auth0-secret",
 };
 
 const command = new GetSecretValueCommand(secretValueRequest);
 
 module.exports = async () => {
   try {
-    const secret = await client.send(command);
-    process.env.TEST_ACCOUNT_PASS = secret;
+    const secret = JSON.parse((await client.send(command)).SecretString);
+    process.env.TEST_ACCOUNT_PASS = secret.test_account_password;
   } catch (error) {
     console.error(error);
   }
