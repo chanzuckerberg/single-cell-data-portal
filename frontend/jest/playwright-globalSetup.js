@@ -6,6 +6,7 @@ const featureFlags = require("./featureFlags");
 
 const client = new SecretsManagerClient({
   endpoint: process.env["BOTO_ENDPOINT_URL"],
+  region: "us-west-2",
 });
 
 const secretValueRequest = {
