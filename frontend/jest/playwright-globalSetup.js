@@ -4,9 +4,11 @@ const {
 } = require("@aws-sdk/client-secrets-manager");
 const featureFlags = require("./featureFlags");
 
+const endpoint = new URL(process.env["BOTO_ENDPOINT_URL"]);
+
 const client = new SecretsManagerClient({
-  endpoint: process.env["BOTO_ENDPOINT_URL"],
-  region: "us-west-2",
+  endpoint,
+  region: "us-west",
 });
 
 const secretValueRequest = {
@@ -17,6 +19,7 @@ const command = new GetSecretValueCommand(secretValueRequest);
 
 module.exports = async () => {
   try {
+    console.log(await client.send(command));
     const secret = JSON.parse((await client.send(command)).SecretString);
     process.env.TEST_ACCOUNT_PASS = secret.test_account_password;
   } catch (error) {
