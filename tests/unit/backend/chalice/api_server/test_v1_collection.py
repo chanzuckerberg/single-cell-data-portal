@@ -206,14 +206,38 @@ class TestCollection(BaseAuthAPITest):
             ],
             "id": "test_collection_id",
             "links": [
-                {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},
-                {"link_type": "OTHER", "link_name": "test_summary_link_name", "link_url": "test_summary_url"},
+                {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
+                {"link_name": "", "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                },
+                {"link_name": "", "link_type": "RAW_DATA", "link_url": "http://test_no_link_name_raw_data_url.place"},
+                {
+                    "link_name": "test_protocol_link_name",
+                    "link_type": "PROTOCOL",
+                    "link_url": "http://test_protocol_url.place",
+                },
+                {"link_name": "", "link_type": "PROTOCOL", "link_url": "http://test_no_link_name_protocol_url.place"},
+                {
+                    "link_name": "test_lab_website_link_name",
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_lab_website_url.place",
+                },
+                {
+                    "link_name": "",
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_no_link_name_lab_website_url.place",
+                },
+                {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
+                {"link_name": "", "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
             ],
-            "name": "test_collection",
+            "name": "test_collection_name",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
-            "contact_email": "",
-            "contact_name": "",
+            "contact_name": "Some Body",
+            "contact_email": "somebody@chanzuckerberg.com",
             "data_submission_policy_version": "0",
         }
 

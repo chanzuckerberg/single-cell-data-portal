@@ -21,7 +21,7 @@ class TestCollection(DataPortalTestCase):
         collection = Collection.get(self.session, key)
 
         # Verify Columns
-        self.assertEqual(collection.name, "test_collection")
+        self.assertEqual(collection.name, "test_collection_name")
         self.assertEqual(collection.owner, "test_user_id")
 
         # Verify Dataset relationship
@@ -33,7 +33,7 @@ class TestCollection(DataPortalTestCase):
 
         # Verify Link relationship
         self.assertIsInstance(collection.links[0], DbCollectionLink)
-        self.assertEqual(collection.links[0].id, "test_collection_link_id")
+        self.assertEqual(collection.links[0].id, "test_collection_doi_link_id")
 
     def test__get__does_not_exist(self):
         non_existent_key = ("non_existent_id", self.visibility)
