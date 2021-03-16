@@ -45,6 +45,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")
             self.assertTrue("/dp/v1/oauth2/callback" in args["redirect_uri"])
+            # Test session cookie
             self.check_set_cookie_is_secure(response.headers["Set-Cookie"], ["HttpOnly", "Secure", "SameSite=Lax"])
 
             # follow redirect
@@ -53,6 +54,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
+            # Test cxguser cookie
             self.check_set_cookie_is_secure(
                 response.headers["Set-Cookie"], expected_flags=["HttpOnly", "Secure", "SameSite=Strict"]
             )
