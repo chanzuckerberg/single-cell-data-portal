@@ -62,7 +62,7 @@ class TestDatabase:
             id="test_collection_id",
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            name="test_collection_id",
+            name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
             contact_name="Some Body",
@@ -73,7 +73,7 @@ class TestDatabase:
             id="test_collection_id",
             visibility=CollectionVisibility.PRIVATE.name,
             owner="test_user_id",
-            name="test_collection",
+            name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
         )
@@ -91,7 +91,7 @@ class TestDatabase:
             id="test_collection_id_not_owner",
             visibility=CollectionVisibility.PRIVATE.name,
             owner="Someone_else",
-            name="test_collection",
+            name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
         )
