@@ -209,11 +209,11 @@ class TestCollection(BaseAuthAPITest):
                 {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},
                 {"link_type": "OTHER", "link_name": "test_summary_link_name", "link_url": "test_summary_url"},
             ],
-            "name": "test_collection",
+            "name": "test_collection_name",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
-            "contact_email": "",
-            "contact_name": "",
+            "contact_name": "Some Body",
+            "contact_email": "somebody@chanzuckerberg.com",
             "data_submission_policy_version": "0",
         }
 

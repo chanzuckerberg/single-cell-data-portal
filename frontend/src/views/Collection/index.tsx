@@ -18,7 +18,7 @@ import {
   LinkContainer,
   TabWrapper,
 } from "./style";
-import { getIsPublishable, renderLinks } from "./utils";
+import { getIsPublishable, renderContact, renderLinks } from "./utils";
 
 interface RouteProps {
   id?: string;
@@ -59,7 +59,10 @@ const Collection: FC<Props> = ({ id = "" }) => {
       <CollectionInfo>
         <H3>{collection.name}</H3>
         <Description>{collection.description}</Description>
-        <LinkContainer>{renderLinks(collection.links)}</LinkContainer>
+        <LinkContainer>
+          {renderLinks(collection.links)}
+          {renderContact(collection.contact_name, collection.contact_email)}
+        </LinkContainer>
       </CollectionInfo>
 
       <CollectionButtons>
