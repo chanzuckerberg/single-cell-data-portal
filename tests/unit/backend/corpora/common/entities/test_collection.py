@@ -21,7 +21,7 @@ class TestCollection(DataPortalTestCase):
         collection = Collection.get(self.session, key)
 
         # Verify Columns
-        self.assertEqual(collection.name, "test_collection")
+        self.assertEqual(collection.name, "test_collection_name")
         self.assertEqual(collection.owner, "test_user_id")
 
         # Verify Dataset relationship
