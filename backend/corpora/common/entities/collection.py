@@ -71,7 +71,7 @@ class Collection(Entity):
         :param visibility: the visibility of the collection
         :param include_tombstones: If true, the collection is returned even if it has been tombstoned.
         :param owner: A user id use to check if the user is the owner of the collection. If the user id matches the
-        owner then the collection is returned.
+        owner then the collection is returned. If this parameters is not included then owner is not used as a filter.
         :return: the collection if it matches the filter.
         """
         filters = [cls.table.id == collection_uuid, cls.table.visibility == visibility]
