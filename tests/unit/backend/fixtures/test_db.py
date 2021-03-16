@@ -121,24 +121,26 @@ class TestDatabase:
         self.session.commit()
 
     def _create_test_collection_links(self):
-        collection_link = DbCollectionLink(
-            id="test_collection_link_id",
-            collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
-            link_name="test_link_name",
-            link_url="test_url",
-            link_type=CollectionLinkType.RAW_DATA.name,
-        )
-        self.session.add(collection_link)
-        collection_summary_link = DbCollectionLink(
-            id="test_collection_summary_link_id",
-            collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
-            link_name="test_summary_link_name",
-            link_url="test_summary_url",
-            link_type=CollectionLinkType.OTHER.name,
-        )
-        self.session.add(collection_summary_link)
+        for link_type in CollectionLinkType:
+            self.session.add(
+                DbCollectionLink(
+                    id=f"test_collection_{link_type.value}_link_id",
+                    collection_id="test_collection_id",
+                    collection_visibility=CollectionVisibility.PUBLIC.name,
+                    link_name=f"test_{link_type.value}_link_name",
+                    link_url=f"http://test_{link_type.value}_url.place",
+                    link_type=link_type.name,
+                )
+            )
+            self.session.add(
+                DbCollectionLink(
+                    id=f"test_collection_no_name_{link_type.value}_link_id",
+                    collection_id="test_collection_id",
+                    collection_visibility=CollectionVisibility.PUBLIC.name,
+                    link_url=f"http://test_no_link_name_{link_type.value}_url.place",
+                    link_type=link_type.name,
+                )
+            )
         self.session.commit()
 
     def _create_test_datasets(self):
