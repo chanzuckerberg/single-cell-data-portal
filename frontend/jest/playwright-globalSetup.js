@@ -8,7 +8,6 @@ const endpoint = new URL(process.env["BOTO_ENDPOINT_URL"]);
 
 const client = new SecretsManagerClient({
   endpoint,
-  region: "us-west",
 });
 
 const secretValueRequest = {
