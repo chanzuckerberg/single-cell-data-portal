@@ -49,6 +49,11 @@ services:
     command: ["./container_init.sh"]
     environment:
       - DEPLOYMENT_STAGE=dev
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=dev_access_key_id
+      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - BOTO_ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
