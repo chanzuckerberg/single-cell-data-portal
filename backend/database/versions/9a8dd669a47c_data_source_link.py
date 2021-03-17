@@ -10,8 +10,8 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 from alembic import op
 
-revision = '9a8dd669a47c'
-down_revision = 'bf83d170bb7f'
+revision = "9a8dd669a47c"
+down_revision = "bf83d170bb7f"
 branch_labels = None
 depends_on = None
 
@@ -21,7 +21,7 @@ enum_projectlink = "projectlink"
 tmp_enum_projectlink = "tmp_" + enum_projectlink
 
 # Options for Enum
-old_options = sorted(["DOI","RAW_DATA", "PROTOCOL","LAB_WEBSITE","OTHER"])
+old_options = sorted(["DOI", "RAW_DATA", "PROTOCOL", "LAB_WEBSITE", "OTHER"])
 new_options = sorted(["DOI", "RAW_DATA", "PROTOCOL", "LAB_WEBSITE", "OTHER", "DATA_SOURCE"])
 
 # Create enum fields
