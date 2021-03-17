@@ -34,7 +34,7 @@ const Privacy: FC = () => {
 
           <h3>
             We invite you to <a href="/previewpolicies">preview</a> our updated
-            Privacy Policy, which will go into effect on April 1, 2021.
+            Terms of Service, which will go into effect on April 1, 2021.
           </h3>
 
           <br />
