@@ -513,7 +513,7 @@ components:
             type: string
           link_type:
             type: string
-            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
     collection:
       type: object
       required:
