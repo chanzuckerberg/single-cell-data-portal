@@ -103,3 +103,9 @@ variable priority {
   type        = number
   description = "Listener rule priority number within the given listener"
 }
+
+variable wait_for_steady_state {
+  type        = bool
+  description = "Whether Terraform should block until the service is in a steady state before exiting"
+  default     = false
+}

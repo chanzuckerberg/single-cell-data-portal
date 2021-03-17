@@ -13,4 +13,6 @@ module stack {
   frontend_url        = "https://production.single-cell.czi.technology"
   backend_url         = "https://api.production.single-cell.czi.technology"
   stack_prefix        = ""
+
+  wait_for_steady_state = var.wait_for_steady_state
 }

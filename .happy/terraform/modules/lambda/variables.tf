@@ -3,6 +3,11 @@ variable image {
   description = "Image name"
 }
 
+variable name {
+  type        = string
+  description = "Lambda name"
+}
+
 variable artifact_bucket {
   type        = string
   description = "Artifact bucket name"
@@ -32,4 +37,14 @@ variable deployment_stage {
 variable lambda_execution_role {
   type        = string
   description = "Role for lambda execution"
+}
+
+variable security_groups {
+  type        = list(string)
+  description = "Security groups for lambda tasks"
+}
+
+variable subnets {
+  type        = list(string)
+  description = "Subnets for lambda tasks"
 }
