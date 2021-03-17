@@ -192,4 +192,3 @@ class Collection(Entity):
             self.session.flush()
 
         super().update(**kwargs)
-        self.session.commit()
