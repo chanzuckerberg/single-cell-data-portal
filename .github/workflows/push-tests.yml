@@ -1,12 +1,11 @@
 name: Push Tests
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches: "*"
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: "*"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -18,36 +17,36 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
-  # lint:
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: us-west-2
-  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-  #         role-duration-seconds: 900
-  #     - name: Login to ECR
-  #       uses: docker/login-action@v1
-  #       with:
-  #         registry: ${{ secrets.ECR_REPO }}
-  #     - uses: actions/checkout@v2
-  #     - name: Lint Python
-  #       run: |
-  #         docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
-  #     - name: Lint frontend
-  #       run: |
-  #         docker-compose run --no-deps --rm frontend make lint
-  #     - uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: ${{ job.status }}
-  #         fields: repo,commit,author,eventName,workflow,job,mention
-  #         mention: 'here'
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-  #       if: failure() && github.ref == 'refs/heads/main'
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Lint Python
+        run: |
+          docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
+      - name: Lint frontend
+        run: |
+          docker-compose run --no-deps --rm frontend make lint
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: 'here'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   smoke-test:
     runs-on: ubuntu-20.04
@@ -65,14 +64,13 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      # - name: Run tests in docker-compose
-      #   run: |
-      #     echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-      #     make local-sync
-      #     make local-smoke-test
+      - name: Run tests in docker-compose
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-sync
+          make local-smoke-test
       - name: Push images
-        # if: github.ref == 'refs/heads/main'
-        if: github.ref == 'refs/heads/mbarrien/gh-deploy'
+        if: github.ref == 'refs/heads/main'
         run: |
           # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
@@ -89,8 +87,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/main'
-    if: github.ref == 'refs/heads/mbarrien/gh-deploy'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -120,45 +117,44 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  # unit-test:
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: us-west-2
-  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-  #         role-duration-seconds: 900
-  #     - name: Login to ECR
-  #       uses: docker/login-action@v1
-  #       with:
-  #         registry: ${{ secrets.ECR_REPO }}
-  #     - uses: actions/checkout@v2
-  #     - name: Run tests in docker-compose
-  #       run: |
-  #         echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-  #         make local-sync
-  #         make local-unit-test
-  #     - uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: ${{ job.status }}
-  #         fields: repo,commit,author,eventName,workflow,job,mention
-  #         mention: 'here'
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-  #       if: failure() && github.ref == 'refs/heads/main'
+  unit-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Run tests in docker-compose
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-sync
+          make local-unit-test
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: 'here'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   push-image:
     needs:
-      # - unit-test
+      - unit-test
       - smoke-test
-      # - lint
+      - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/main'
-    if: github.ref == 'refs/heads/mbarrien/gh-deploy'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -190,13 +186,12 @@ jobs:
 
   push-upload-image:
     needs:
-      # - unit-test
+      - unit-test
       - smoke-test
-      # - lint
+      - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/main'
-    if: github.ref == 'refs/heads/mbarrien/gh-deploy'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -233,8 +228,7 @@ jobs:
         if: failure() && github.ref == 'refs/heads/main'
 
   create_deployment:
-    # if: github.ref == 'refs/heads/main'
-    if: github.ref == 'refs/heads/mbarrien/gh-deploy'
+    if: github.ref == 'refs/heads/main'
     needs:
       - push-image
       - push-upload-image
@@ -249,7 +243,12 @@ jobs:
           environment: stage
           payload: ${{ env.payload }}
           required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
-          # TODO: Avoid circular dependency on the deploy step
+          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
+          # it's not considered ready for deploy normally by required_contexts, but we need to
+          # deploy for this to be considered ready.
+          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
+          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
+          # For now, we just ignore required_contexts to deploy on every success.
           # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
         env:
           GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
