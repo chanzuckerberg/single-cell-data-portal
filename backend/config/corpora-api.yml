@@ -391,6 +391,50 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /dp/v1/datasets/{dataset_uuid}/gene_sets:
+    post:
+      tags:
+        - datasets
+        - genesets
+      summary: Update links between a dataset and gene sets
+      description: >-
+        Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
+        collection owner and the dataset and gene sets must all belong to the same private collection
+      operationId: corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gene_sets:
+                  description: A object containing an add list of geneset ids and a remove list
+                  $ref: "#/components/schemas/dataset_gene_set_linkage_update"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genesets:
+                    type: array
+                      items:
+                        $ref: "#/components/schemas/gene_set"
+                  presigned_url:
+                    type: string
+                  file_name:
+                    type: string
+                  file_size:
+                    type: number
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
   /dp/v1/datasets/{dataset_uuid}/status:
     get:
       tags:
@@ -733,6 +777,20 @@ components:
                 type: string
               additional_params:
                 type: object
+    dataset_gene_set_linkage_update:
+      type: object
+      description: List of gene set ids to link or unlink to a dataset
+      properties:
+        add:
+          type: array
+          items:
+            type: strings
+            description: gene set ids
+        remove:
+          type: array
+          items:
+            type: strings
+            description: gene set ids
 
   parameters:
     path_collection_uuid:

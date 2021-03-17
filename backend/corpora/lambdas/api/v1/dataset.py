@@ -70,3 +70,6 @@ def delete_dataset(dataset_uuid: str, user: str):
     if dataset.tombstone is False:
         dataset.dataset_and_asset_deletion()
     return "", 202
+
+def dataset_gene_set_linkage_update(dataset_uuid: str, user: str, update_lists):
+
