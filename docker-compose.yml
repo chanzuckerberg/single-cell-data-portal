@@ -161,6 +161,8 @@ services:
       - ./backend/chalice/api_server/.chalice-dev:/corpora-data-portal/backend/chalice/api_server/.chalice
       - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
       - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
+      # SecretsManager population relies on oauth json
+      - ./oauth/users.json:/chalice/users.json
     networks:
        corporanet:
           aliases:
