@@ -236,7 +236,7 @@ class TestCollection(BaseAuthAPITest):
                 {"link_name": "", "link_type": "DATA_SOURCE",
                  "link_url": "http://test_no_link_name_data_source_url.place"},
             ],
-            "name": "test_collection_id",
+            "name": "test_collection_name",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
             "contact_name": "Some Body",

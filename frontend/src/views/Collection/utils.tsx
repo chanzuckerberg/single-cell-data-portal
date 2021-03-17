@@ -30,6 +30,18 @@ export function renderLinks(links: Link[]) {
   });
 }
 
+export function renderContact(
+  contact_name: Collection["contact_name"],
+  contact_email: Collection["contact_email"]
+) {
+  return (
+    <React.Fragment>
+      <span className={Classes.TEXT_MUTED}>Contact</span>
+      <StyledLink href={"mailto:" + contact_email}>{contact_name}</StyledLink>
+    </React.Fragment>
+  );
+}
+
 export function getIsPublishable(datasets: Collection["datasets"]) {
   return (
     Boolean(datasets?.length) &&
