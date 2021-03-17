@@ -9,7 +9,7 @@ from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParamete
 
 def post(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, user)
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
     if not collection:
         raise ForbiddenHTTPException
     gene_sets = body["gene_sets"]
