@@ -29,6 +29,16 @@ const ToS: FC = () => {
               alt="cellxgene logo"
             />
           </header>
+
+          <br />
+
+          <h3>
+            We invite you to <a href="/previewpolicies">preview</a> our updated
+            Privacy Policy, which will go into effect on April 1, 2021.
+          </h3>
+
+          <br />
+
           <main>
             <h1>Privacy Policy</h1>
 
@@ -37,12 +47,6 @@ const ToS: FC = () => {
             </p>
 
             <h2>Introduction</h2>
-
-            <p>
-              We invite you to <a href="/previewpolicies">preview</a> our
-              updated Privacy Policy, which will go into effect on April 1,
-              2021.
-            </p>
 
             <p>
               We are a site for biologists, computational researchers, and

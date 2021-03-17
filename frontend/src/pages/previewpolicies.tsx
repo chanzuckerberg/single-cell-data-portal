@@ -73,20 +73,19 @@ const PreviewPolicies: FC = () => {
                 alt="cellxgene logo"
               />
             </header>
+
+            <br />
+            <h3>
+              Jump to <a href="#tos">Terms of Use</a>.
+            </h3>
+            <br />
+
             <main>
               <h1>Privacy Policy</h1>
 
-              <p>
-                April 1, 2020. There is no prior version of this privacy policy.
-              </p>
+              <p>Last updated: April 1, 2021.</p>
 
               <h2>Introduction</h2>
-
-              <p>
-                We invite you to <a href="/previewpolicies">preview</a> our
-                updated Privacy Policy, which will go into effect on April 1,
-                2021.
-              </p>
 
               <p>
                 We are a site for biologists, computational researchers, and
@@ -547,7 +546,7 @@ const PreviewPolicies: FC = () => {
               />
             </header>
 
-            <h1>Terms of Use</h1>
+            <h1 id="tos">Terms of Use</h1>
 
             <p>
               <span className="caps">
@@ -559,11 +558,6 @@ const PreviewPolicies: FC = () => {
             </p>
 
             <h2>Introduction</h2>
-
-            <p>
-              We invite you to <a href="/previewpolicies">preview</a> our
-              updated Terms of Use, which will go into effect on April 1, 2021.
-            </p>
 
             <p>
               These Terms of Use (the “<strong>Terms</strong>”) apply to
