@@ -33,7 +33,6 @@ export const CZILogo = styled.img`
 
 export const CellxgeneLogo = styled.img`
   height: 35px;
-  margin-left: 10px;
 `;
 
 export const PrivacyStyle = styled.div`
