@@ -1,12 +1,11 @@
 import typing
 from datetime import datetime
-
 from sqlalchemy import and_
 
 from . import Dataset
-from ..utils.db_session import clone
 from .entity import Entity
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
+from ..utils.db_session import clone
 
 
 class Collection(Entity):
@@ -58,31 +57,28 @@ class Collection(Entity):
 
     @classmethod
     def get_collection(
-        cls, session, collection_uuid, visibility=CollectionVisibility.PUBLIC.name, include_tombstones=False
-    ):
+        cls,
+        session,
+        collection_uuid: str,
+        visibility: str = CollectionVisibility.PUBLIC.name,
+        include_tombstones: bool = False,
+        owner: typing.Optional[str] = None,
+    ) -> typing.Union["Collection", None]:
         """
         Given the collection_uuid, retrieve a live collection.
+        :param session: the database session object.
         :param collection_uuid:
-        """
-        collection = cls.get(session, (collection_uuid, visibility))
-        if not include_tombstones:
-            if collection and collection.tombstone is True:
-                return None
-        return collection
-
-    @classmethod
-    def if_owner(
-        cls, session, collection_uuid: str, visibility: CollectionVisibility, user: str
-    ) -> typing.Union[DbCollection, None]:
-        """
-        Return a collection if the user is the owner of a collection.
-
-        :param collection_uuid: the uuid of the collection
         :param visibility: the visibility of the collection
-        :param user: the uuid of the user.
-        :return: a collection if the user is the owner of the collection else None
+        :param include_tombstones: If true, the collection is returned even if it has been tombstoned.
+        :param owner: A user id use to check if the user is the owner of the collection. If the user id matches the
+        owner then the collection is returned. If this parameters is not included then owner is not used as a filter.
+        :return: the collection if it matches the filter.
         """
-        filters = [cls.table.id == collection_uuid, cls.table.owner == user, cls.table.visibility == visibility]
+        filters = [cls.table.id == collection_uuid, cls.table.visibility == visibility]
+        if owner:
+            filters.append(cls.table.owner == owner)
+        if not include_tombstones:
+            filters.append(cls.table.tombstone == False)  # noqa
         collection = session.query(cls.table).filter(*filters).one_or_none()
         return cls(collection) if collection else None
 
@@ -178,3 +174,21 @@ class Collection(Entity):
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.dataset_and_asset_deletion()
+
+    def update(self, links: list = None, **kwargs) -> None:
+        """
+        Update an existing collection to match provided the parameters. The specified columns are replaced.
+        :param links: links to create and connect to the collection. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param kwargs: Any other fields in the dataset that will be replaced.
+        """
+        if links:
+            for link in self.links:
+                self.session.delete(link)
+            new_objs = [
+                DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
+            ]
+            self.session.add_all(new_objs)
+            self.session.flush()
+
+        super().update(**kwargs)

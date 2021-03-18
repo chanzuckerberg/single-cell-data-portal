@@ -4,6 +4,7 @@ export enum COLLECTION_LINK_TYPE {
   PROTOCOL = "PROTOCOL",
   LAB_WEBSITE = "LAB_WEBSITE",
   OTHER = "OTHER",
+  DATA_SOURCE = "DATA_SOURCE",
 }
 
 export const COLLECTION_LINK_TYPE_OPTIONS = {
@@ -23,6 +24,10 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
   [COLLECTION_LINK_TYPE.OTHER]: {
     text: "Other",
     value: COLLECTION_LINK_TYPE.OTHER,
+  },
+  [COLLECTION_LINK_TYPE.DATA_SOURCE]: {
+    text: "Data Source",
+    value: COLLECTION_LINK_TYPE.DATA_SOURCE,
   },
 };
 

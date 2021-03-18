@@ -206,14 +206,48 @@ class TestCollection(BaseAuthAPITest):
             ],
             "id": "test_collection_id",
             "links": [
-                {"link_type": "RAW_DATA", "link_name": "test_link_name", "link_url": "test_url"},
-                {"link_type": "OTHER", "link_name": "test_summary_link_name", "link_url": "test_summary_url"},
+                {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
+                {"link_name": "", "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                },
+                {"link_name": "", "link_type": "RAW_DATA", "link_url": "http://test_no_link_name_raw_data_url.place"},
+                {
+                    "link_name": "test_protocol_link_name",
+                    "link_type": "PROTOCOL",
+                    "link_url": "http://test_protocol_url.place",
+                },
+                {"link_name": "", "link_type": "PROTOCOL", "link_url": "http://test_no_link_name_protocol_url.place"},
+                {
+                    "link_name": "test_lab_website_link_name",
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_lab_website_url.place",
+                },
+                {
+                    "link_name": "",
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_no_link_name_lab_website_url.place",
+                },
+                {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
+                {"link_name": "", "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
+                {
+                    "link_name": "test_data_source_link_name",
+                    "link_type": "DATA_SOURCE",
+                    "link_url": "http://test_data_source_url.place",
+                },
+                {
+                    "link_name": "",
+                    "link_type": "DATA_SOURCE",
+                    "link_url": "http://test_no_link_name_data_source_url.place",
+                },
             ],
-            "name": "test_collection",
+            "name": "test_collection_name",
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
-            "contact_email": "",
-            "contact_name": "",
+            "contact_name": "Some Body",
+            "contact_email": "somebody@chanzuckerberg.com",
             "data_submission_policy_version": "0",
         }
 
@@ -577,3 +611,81 @@ class TestCollectionDeletion(BaseAuthAPITest):
         self.assertIn(public_collection.id, collection_ids)
         self.assertNotIn(private_collection.id, collection_ids)
         self.assertNotIn(collection_to_delete.id, collection_ids)
+
+
+class TestUpdateCollection(BaseAuthAPITest):
+    def test__update_collection__OK(self):
+        collection = self.generate_collection(self.session)
+        test_fields = [
+            "name",
+            "description",
+            "contact_name",
+            "contact_email",
+            "links",
+            "data_submission_policy_version",
+        ]
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        # Update the collection
+        expected_body = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
+            "data_submission_policy_version": "0",
+        }
+        data = json.dumps(expected_body)
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        actual_body = json.loads(response.body)
+        for field in test_fields:
+            self.assertEqual(expected_body[field], actual_body[field])
+
+    def test__update_collection__403(self):
+        collection = self.generate_collection(self.session, owner="someone else")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        data = json.dumps({"name": "new name"})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test__update_collection_links__OK(self):
+        collection = self.generate_collection(self.session)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        # add links
+        links = [
+            {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+            {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+        ]
+        data = json.dumps({"links": links})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(links, json.loads(response.body)["links"])
+
+        # remove links
+        links.pop()
+        data = json.dumps({"links": links})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(links, json.loads(response.body)["links"])
+
+        # update links
+        links = [{"link_name": "New name", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
+        data = json.dumps({"links": links})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(links, json.loads(response.body)["links"])
+
+        # all together
+        links = [
+            {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+            {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+        ]
+        data = json.dumps({"links": links})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(links, json.loads(response.body)["links"])
