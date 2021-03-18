@@ -30,11 +30,15 @@ const PreviewPolicies: FC = () => {
             />
           </header>
 
+          <br />
+
           <h1>
             Summary of April 2021 Updates to Terms of Service and Privacy Policy
           </h1>
 
-          <span>
+          <br />
+
+          <div>
             We periodically update our terms and policies to ensure that they
             are transparent and easy to understand. Here is a summary of the key
             updates from April 2021:
@@ -51,7 +55,7 @@ const PreviewPolicies: FC = () => {
                 .
               </li>
             </ul>
-          </span>
+          </div>
         </PrivacyStyle>
       </CommonStyle>
 
