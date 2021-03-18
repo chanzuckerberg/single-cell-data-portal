@@ -98,6 +98,19 @@ class TestApi(unittest.TestCase):
             if collection["visibility"] == "PRIVATE":
                 private_collection_uuids.append(collection["id"])
 
+        # update the collection infp
+        updated_data = {
+            "contact_email": "person@random.com",
+            "contact_name": "Doctor Who",
+            "data_submission_policy_version": "1",
+            "description": "These are different words",
+            "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
+            "name": "lots of cells",
+        }
+        res = requests.put(f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(data), headers=headers)
+        res.raise_for_status()
+        data = json.loads(res.content)
+        self.assertEqual(updated_data, data)
         self.assertIn(collection_uuid, private_collection_uuids)
 
         # make collection public
