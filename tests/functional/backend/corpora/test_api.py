@@ -106,10 +106,12 @@ class TestApi(unittest.TestCase):
             "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
             "name": "lots of cells",
         }
-        res = requests.put(f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers)
+        res = requests.put(
+            f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
+        )
         res.raise_for_status()
         data = json.loads(res.content)
-        data.pop('access_type')
+        data.pop("access_type")
         for key in updated_data.keys():
             self.assertEqual(updated_data[key], data[key])
 
