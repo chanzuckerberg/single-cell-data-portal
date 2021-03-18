@@ -1,11 +1,9 @@
 import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
-import rawCZILogo from "src/components/common/staticPages/CZI_Logotype_RGB.png";
 import {
   CellxgeneLogo,
   CommonStyle,
-  CZILogo,
   Layout,
   PrivacyStyle,
 } from "src/components/common/staticPages/style";
@@ -18,11 +16,6 @@ const PreviewPolicies: FC = () => {
         <PrivacyStyle>
           <SEO title="Preview Policies" />
           <header>
-            <CZILogo
-              data-test-id="czi-logo"
-              src={String(rawCZILogo)}
-              alt="CZI logo"
-            />
             <CellxgeneLogo
               data-test-id="cellxgene-logo"
               src={String(rawCellxgeneLogo)}
@@ -64,11 +57,6 @@ const PreviewPolicies: FC = () => {
           <PrivacyStyle>
             {/* <SEO title="Privacy" /> */}
             {/* <header>
-              <CZILogo
-                data-test-id="czi-logo"
-                src={String(rawCZILogo)}
-                alt="CZI logo"
-              />
               <CellxgeneLogo
                 data-test-id="cellxgene-logo"
                 src={String(rawCellxgeneLogo)}
@@ -536,11 +524,6 @@ const PreviewPolicies: FC = () => {
           <PrivacyStyle>
             {/* <SEO title="Terms of Service" /> */}
             {/* <header>
-              <CZILogo
-                data-test-id="czi-logo"
-                src={String(rawCZILogo)}
-                alt="CZI logo"
-              />
               <CellxgeneLogo
                 data-test-id="cellxgene-logo"
                 src={String(rawCellxgeneLogo)}
