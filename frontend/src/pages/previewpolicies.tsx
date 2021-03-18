@@ -34,26 +34,24 @@ const PreviewPolicies: FC = () => {
             Summary of April 2021 Updates to Terms of Service and Privacy Policy
           </h1>
 
-          <p>
-            <span>
-              We periodically update our terms and policies to ensure that they
-              are transparent and easy to understand. Here is a summary of the
-              key updates from April 2021:
-              <ul>
-                <li>
-                  Cellxgene is now provided by the Chan Zuckerberg Initiative
-                  Foundation. The Chan Zuckerberg Initiative has moved its
-                  Science team to its 501(c)(3) private foundation from CZI,
-                  LLC. We’re committed to preserving the same experience for
-                  you. For questions about these changes, please contact us at{" "}
-                  <a href="mailto:privacy@chanzuckerberg.com">
-                    privacy@chanzuckerberg.com
-                  </a>
-                  .
-                </li>
-              </ul>
-            </span>
-          </p>
+          <span>
+            We periodically update our terms and policies to ensure that they
+            are transparent and easy to understand. Here is a summary of the key
+            updates from April 2021:
+            <ul>
+              <li>
+                Cellxgene is now provided by the Chan Zuckerberg Initiative
+                Foundation. The Chan Zuckerberg Initiative has moved its Science
+                team to its 501(c)(3) private foundation from CZI, LLC. We’re
+                committed to preserving the same experience for you. For
+                questions about these changes, please contact us at{" "}
+                <a href="mailto:privacy@chanzuckerberg.com">
+                  privacy@chanzuckerberg.com
+                </a>
+                .
+              </li>
+            </ul>
+          </span>
         </PrivacyStyle>
       </CommonStyle>
 
@@ -61,7 +59,7 @@ const PreviewPolicies: FC = () => {
         <CommonStyle>
           <PrivacyStyle>
             {/* <SEO title="Privacy" /> */}
-            <header>
+            {/* <header>
               <CZILogo
                 data-test-id="czi-logo"
                 src={String(rawCZILogo)}
@@ -72,7 +70,7 @@ const PreviewPolicies: FC = () => {
                 src={String(rawCellxgeneLogo)}
                 alt="cellxgene logo"
               />
-            </header>
+            </header> */}
 
             <br />
             <h3>
@@ -486,7 +484,7 @@ const PreviewPolicies: FC = () => {
                         privacy@chanzuckerberg.com
                       </a>
                       .
-                      <p>
+                      <div>
                         To comply with article 27 of the GDPR and the UK-GDPR,
                         we have appointed a representative who can accept
                         communications on behalf of CZIF and CZI LLC in relation
@@ -519,7 +517,7 @@ const PreviewPolicies: FC = () => {
                             UKrepresentative.ChanZuckerberg@twobirds.com
                           </a>
                         </address>
-                      </p>
+                      </div>
                     </li>
                   </ol>
                 </li>
@@ -533,7 +531,7 @@ const PreviewPolicies: FC = () => {
         <CommonStyle>
           <PrivacyStyle>
             {/* <SEO title="Terms of Service" /> */}
-            <header>
+            {/* <header>
               <CZILogo
                 data-test-id="czi-logo"
                 src={String(rawCZILogo)}
@@ -544,7 +542,7 @@ const PreviewPolicies: FC = () => {
                 src={String(rawCellxgeneLogo)}
                 alt="cellxgene logo"
               />
-            </header>
+            </header> */}
 
             <h1 id="tos">Terms of Use</h1>
 
