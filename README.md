@@ -55,13 +55,27 @@ see [Data Portal Database Procedures](backend/database/README.md)
 1. Set `AWS_PROFILE`
 1. Run the tests `$ make unit-test`
 
+### Installing Chamber
+For running functional tests below, you will need to install Chamber on your machine. Chamber
+is a tool for reading secrets stored in AWS Secret Store and Parameter Store.
+
+On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0,
+and add it somewhere on your path.
+
+On Mac, run
+```
+brew install chamber
+```
+
 ### Running functional tests
 
+1. Install Chamber, using the instructions above
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. In another terminal run `make functional-test`
 
 ### Running local functional tests
 
+1. Install Chamber, using the instructions above
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. Run `make local-init` to launch a local dev environment
 1. Run `make functional-test`
