@@ -152,10 +152,21 @@ local-unit-test: ## Run backend tests in the dev environment
 		docker-compose exec -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
 	fi
 
+# We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
+# set to be the empty string.
+# Note that there is a distinction between BOTO_ENDPOINT_URL being
+# the empty string (in which case we override the existing variable
+# defined in docker-compose.yml to be empty string), and not being
+# set (in which case the default from docker-compose is untouched)
 .PHONY: local-functional-test
 local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
 local-functional-test: ## Run functional tests in the dev environment
-	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE backend bash -c "cd /corpora-data-portal && make container-functionaltest"
+	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
+		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
+	fi; \
+	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
+		docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		backend bash -c "cd /corpora-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
