@@ -134,6 +134,7 @@ class ProjectLinkType(enum.Enum):
     PROTOCOL = "protocol"
     LAB_WEBSITE = "lab_website"
     OTHER = "other"
+    DATA_SOURCE = "data_source"
 
 
 # provide a consistent name

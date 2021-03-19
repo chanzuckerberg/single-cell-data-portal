@@ -5,4 +5,5 @@ export enum ROUTES {
   PRIVATE_COLLECTION = "/collections/:id/private",
   TOS = "/tos/",
   PRIVACY = "/privacy/",
+  PREVIEW_POLICIES = "/previewpolicies/",
 }

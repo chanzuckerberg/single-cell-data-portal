@@ -24,7 +24,9 @@ class AwsSecret:
     def __init__(self, name):
         self._debug("AwsSecret.__init__({})".format(name))
         self.name = name
-        self.secrets_mgr = boto3.client(service_name="secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        self.secrets_mgr = boto3.client(
+            service_name="secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None
+        )
         self.secret_metadata = None
         self._load()
 
@@ -98,6 +100,6 @@ def delete_many_from_s3(bucket_name: str, dataset_uuid: str) -> None:
     """
     if not dataset_uuid:
         raise ValueError
-    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
     bucket = s3.Bucket(bucket_name)
     bucket.objects.filter(Prefix=f"{dataset_uuid}/").delete()

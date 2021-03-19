@@ -33,7 +33,6 @@ export const CZILogo = styled.img`
 
 export const CellxgeneLogo = styled.img`
   height: 35px;
-  margin-left: 10px;
 `;
 
 export const PrivacyStyle = styled.div`
@@ -69,26 +68,33 @@ export const PrivacyStyle = styled.div`
     padding-left: 8px;
   }
 
+  .section1 > li,
   .section2 > li,
   .section3 > li,
   .section4 > li,
   .section5 > li,
+  .section6 > li,
+  .section7 > li,
   .section8 > li,
   .section9 > li,
   .section10 > li {
     counter-increment: increase-by;
   }
 
+  ol.section1,
   ol.section2,
   ol.section3,
   ol.section4,
   ol.section5,
+  ol.section6,
+  ol.section7,
   ol.section8,
   ol.section9,
   ol.section10 {
     list-style-type: none;
   }
 
+  .section1 > li:before,
   .section2 > li:before,
   .section3 > li:before,
   .section4 > li:before,
@@ -110,6 +116,12 @@ export const PrivacyStyle = styled.div`
   }
   .section5 > li:before {
     content: "5." counter(increase-by, decimal) " ";
+  }
+  .section6 > li:before {
+    content: "6." counter(increase-by, decimal) " ";
+  }
+  .section7 > li:before {
+    content: "7." counter(increase-by, decimal) " ";
   }
   .section8 > li:before {
     content: "8." counter(increase-by, decimal) " ";

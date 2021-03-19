@@ -49,26 +49,21 @@ class SecretConfig:
         return self.__class__._config
 
     def __getattr__(self, name):
-        if self.config_is_loaded():
-            return (
-                self.value_from_config(name)
-                or self.value_from_env(name)
-                or self.value_from_defaults(name)
-                or self.raise_error(name)
-            )
-        else:
-            return (
-                self.value_from_env(name)
-                or (self.load() and self.value_from_config(name))
-                or self.value_from_defaults(name)
-                or self.raise_error(name)
-            )
+        # Environment variables intentionally override config file.
+        if not self.config_is_loaded():
+            self.load()
+        return (
+            self.value_from_env(name)
+            or self.value_from_config(name)
+            or self.value_from_defaults(name)
+            or self.raise_error(name)
+        )
 
     @classmethod
     def reset(cls):
         cls._config = None
         cls._defaults = {}
-        cls.use_env = False
+        cls.use_env = True
 
     def set(self, config):
         """

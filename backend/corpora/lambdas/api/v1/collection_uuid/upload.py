@@ -30,7 +30,7 @@ def link(collection_uuid: str, body: dict, user: str):
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
 
     # Create dataset
-    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE, user)
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=user)
     if not collection:
         raise ForbiddenHTTPException
     dataset = Dataset.create(db_session, processing_status=Dataset.new_processing_status(), collection=collection)

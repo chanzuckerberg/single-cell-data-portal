@@ -30,6 +30,15 @@ const Privacy: FC = () => {
             />
           </header>
 
+          <br />
+
+          <h3>
+            We invite you to <a href="/previewpolicies">preview</a> our updated
+            Terms of Service, which will go into effect on April 1, 2021.
+          </h3>
+
+          <br />
+
           <h1>Terms of Use</h1>
 
           <p>

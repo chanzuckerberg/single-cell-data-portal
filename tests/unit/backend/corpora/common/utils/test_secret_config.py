@@ -26,7 +26,7 @@ class TestSecretConfig(unittest.TestCase):
     def setUpClass(cls):
         # AwsSecret.debug_logging = True
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
-        cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
         cls.patcher = patch("backend.corpora.common.utils.aws.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr
@@ -95,12 +95,14 @@ class TestSecretConfig(unittest.TestCase):
 
     def test_when_item_is_not_in_config_not_in_env_we_raise(self):
         with EnvironmentSetup({"CONFIG_SOURCE": None}):
+            BogoComponentConfig.use_env = True
             with self.assertRaises(RuntimeError):
                 config = BogoComponentConfig(deployment=self.deployment_env)
                 print(config.secret_that_we_never_put_into_config)
 
     def test_when_item_is_not_in_config_but_is_in_env_and_use_env_is_not_set_we_raise(self):
         with ExistingAwsSecretTestFixture(secret_name=self.secret_name, secret_value="{}"):
+            BogoComponentConfig.use_env = False
             with EnvironmentSetup({"CONFIG_SOURCE": None, "SECRET1": "secret1_from_env"}):
                 with self.assertRaises(RuntimeError):
                     config = BogoComponentConfig(deployment=self.deployment_env)
@@ -117,6 +119,7 @@ class TestSecretConfig(unittest.TestCase):
         with ExistingAwsSecretTestFixture(
             secret_name=self.secret_name, secret_value='{"secret1":"secret1_from_cloud"}'
         ):
+            BogoComponentConfig.use_env = False
             with EnvironmentSetup({"CONFIG_SOURCE": None}):
                 config = BogoComponentConfig(deployment=self.deployment_env)
                 self.assertEqual("secret1_from_cloud", config.secret1)

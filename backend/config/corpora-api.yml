@@ -145,6 +145,52 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+    put:
+      tags:
+        - collections
+      summary: Update a private collection's details
+      security:
+        - cxguserCookie: []
+      description: >-
+        Update a private collection's summary, links, contact info, and description details.
+      operationId: corpora.lambdas.api.v1.collection.update_collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: name of the collection
+                description:
+                  type: string
+                  description: description of the collection
+                contact_name:
+                  type: string
+                  description: name of the primary person of contact for the collection
+                contact_email:
+                  type: string
+                  description: email of contact person for the collection
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
+                links:
+                  $ref: "#/components/schemas/links"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
     delete:
       tags:
         - collections
@@ -513,7 +559,7 @@ components:
             type: string
           link_type:
             type: string
-            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER]
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
     collection:
       type: object
       required:

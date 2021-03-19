@@ -71,12 +71,21 @@ def get_collection_dataset(dataset_uuid: str):
 def delete_collection(collection_uuid: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, include_tombstones=True, owner=user
     )
     if not collection:
-        raise ForbiddenHTTPException()
-    if not Collection.if_owner(db_session, collection.id, collection.visibility, user):
         raise ForbiddenHTTPException()
     if not collection.tombstone:
         collection.tombstone_collection()
     return "", 202
+
+
+def update_collection(collection_uuid: str, body: dict, user: str):
+    db_session = g.db_session
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
+    if not collection:
+        raise ForbiddenHTTPException()
+    collection.update(**body)
+    result = collection.reshape_for_api()
+    result["access_type"] = "WRITE"
+    return make_response(jsonify(result), 200)

@@ -2,6 +2,7 @@
 
 ## Development quickstart
 1. [install docker](https://docs.docker.com/get-docker/). If brew is installed run `brew install docker`.
+1. [install chamber](https://github.com/segmentio/chamber). If brew is installed run `brew install chamber`. (This is needed for running functional tests.)
 1. From the root of this repository, run `make local-init` to build and run the dev environment. The first build takes awhile, but subsequent runs will use cached artifacts.
 1. Visit [http://localhost:5000](http://localhost:5000) to view the backend, and [http://localhost:8000](http://localhost:8000) for the frontend.
 1. `make local-dbconsole` starts a connection with the local postgresql db.
