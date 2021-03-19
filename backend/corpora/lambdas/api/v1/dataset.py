@@ -89,7 +89,7 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
     gene_sets = [x.to_dict(
         remove_attr=['collection', 'collection_visibility', 'collection_id', 'created_at', 'updated_at', 'gene_symbols']
     ) for x in dataset.genesets]
-    return make_response(jsonify(gene_sets), 200)
+    return make_response(jsonify(gene_sets), 202)
 
 
 def validate_genesets_in_collection_and_linked_to_dataset(dataset, collection, update_list):

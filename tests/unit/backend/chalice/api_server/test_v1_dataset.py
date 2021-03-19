@@ -259,6 +259,7 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
         response = self.app.post(test_url, headers, data=json.dumps(data))
         response.raise_for_status()
         self.assertEqual(len(json.loads(response.body)), 4)
+        self.assertEqual(response.status_code, 202)
 
     def test__dataset_gene_set_linkage_update__403(self):
         collection_0 = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name,
