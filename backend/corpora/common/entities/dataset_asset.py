@@ -21,7 +21,9 @@ class DatasetAsset(Entity):
     def s3_client(cls):
         if not cls._s3:
             cls._s3 = boto3.client(
-                "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None, config=boto3.session.Config(signature_version="s3v4")
+                "s3",
+                endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None,
+                config=boto3.session.Config(signature_version="s3v4"),
             )
         return cls._s3
 

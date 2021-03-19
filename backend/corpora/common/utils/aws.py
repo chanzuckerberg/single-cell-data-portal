@@ -24,7 +24,9 @@ class AwsSecret:
     def __init__(self, name):
         self._debug("AwsSecret.__init__({})".format(name))
         self.name = name
-        self.secrets_mgr = boto3.client(service_name="secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
+        self.secrets_mgr = boto3.client(
+            service_name="secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None
+        )
         self.secret_metadata = None
         self._load()
 
