@@ -2,10 +2,11 @@ from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import CollectionVisibility
 from ....common.entities import Dataset, Collection
+from ....common.entities.geneset import GenesetDatasetLink, Geneset
 from ....common.utils.exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
-    ForbiddenHTTPException,
+    ForbiddenHTTPException, CorporaException,
 )
 
 
@@ -71,5 +72,37 @@ def delete_dataset(dataset_uuid: str, user: str):
         dataset.dataset_and_asset_deletion()
     return "", 202
 
-def dataset_gene_set_linkage_update(dataset_uuid: str, user: str, update_lists):
 
+def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
+    db_session = g.db_session
+    dataset = Dataset.get(db_session, dataset_uuid)
+    if not dataset:
+        raise ForbiddenHTTPException()
+    collection = Collection.get_collection(db_session, dataset.collection.id, CollectionVisibility.PRIVATE.name, owner=user)
+    if not collection:
+        raise ForbiddenHTTPException()
+    validate_genesets_in_collection_and_linked_to_dataset(dataset, collection, body)
+    try:
+        GenesetDatasetLink.update_links_for_a_dataset(db_session, dataset_uuid, add=body['add'], remove=body['remove'])
+    except CorporaException:
+        raise NotFoundHTTPException()
+    gene_sets = [x.to_dict(
+        remove_attr=['collection', 'collection_visibility', 'collection_id', 'created_at', 'updated_at', 'gene_symbols']
+    ) for x in dataset.genesets]
+    return make_response(jsonify(gene_sets), 200)
+
+
+def validate_genesets_in_collection_and_linked_to_dataset(dataset, collection, update_list):
+    dataset_geneset_ids = [x.id for x in dataset.genesets]
+    collection_geneset_ids = [x.id for x in collection.genesets]
+
+    add_list_in_collection = all(item in collection_geneset_ids for item in update_list['add'])
+    remove_list_in_collection = all(item in collection_geneset_ids for item in update_list['remove'])
+    if not add_list_in_collection or not remove_list_in_collection:
+        raise NotFoundHTTPException()
+    remove_list_in_dataset = all(item in dataset_geneset_ids for item in update_list['remove'])
+    if not remove_list_in_dataset:
+        raise NotFoundHTTPException()
+    add_list_in_dataset = any(item in dataset_geneset_ids for item in update_list['add'])
+    if add_list_in_dataset:
+        raise NotFoundHTTPException()

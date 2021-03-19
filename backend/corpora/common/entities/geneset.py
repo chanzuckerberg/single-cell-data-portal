@@ -1,5 +1,8 @@
+from sqlalchemy.exc import SQLAlchemyError
+
 from ..corpora_orm import DbGeneset, DbGenesetDatasetLink
 from .entity import Entity
+from ..utils.exceptions import CorporaException
 
 
 class Geneset(Entity):
@@ -44,3 +47,30 @@ class GenesetDatasetLink(Entity):
         session.add(link)
         session.commit()
         return cls(link)
+
+    @classmethod
+    def get(cls, session, geneset_id: str, dataset_id: str):
+        try:
+            links = session.query(cls.table).filter(
+                cls.table.geneset_id == geneset_id,
+                cls.table.dataset_id == dataset_id
+            ).all()
+            return links[0]
+        except IndexError:
+            return None
+
+    @classmethod
+    def update_links_for_a_dataset(cls, session, dataset_id: str, add: list, remove: list):
+        for gene_set_id in remove:
+            link = cls.get(session=session, dataset_id=dataset_id, geneset_id=gene_set_id)
+            if link is None:
+                session.rollback()
+                raise CorporaException
+            session.delete(link)
+        try:
+            for geneset_id in add:
+                session.add(DbGenesetDatasetLink(geneset_id=geneset_id, dataset_id=dataset_id))
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise CorporaException

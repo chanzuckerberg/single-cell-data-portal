@@ -1,10 +1,11 @@
 import json
 import os
 import unittest
+from requests import HTTPError
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import UploadStatus, CollectionVisibility
+from backend.corpora.common.corpora_orm import UploadStatus, CollectionVisibility, generate_uuid
 from backend.corpora.common.utils.db_session import processing_status_updater
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
@@ -226,3 +227,116 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 401)
+
+
+class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
+    def setUp(self):
+        CorporaTestCaseUsingMockAWS.setUp(self)
+
+    def tearDown(self):
+        CorporaTestCaseUsingMockAWS.tearDown(self)
+
+    def test__dataset_gene_set_linkage_update__ok(self):
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        dataset = self.generate_dataset(self.session, collection=collection)
+        geneset0 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        geneset1 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        geneset2 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        geneset3 = self.generate_geneset(self.session, collection=collection)
+        geneset4 = self.generate_geneset(self.session, collection=collection)
+
+        links = dataset.genesets
+        self.assertEqual(len(links), 3)
+        link_ids = [x.id for x in links]
+        self.assertIn(geneset0.id, link_ids)
+        self.assertIn(geneset1.id, link_ids)
+        self.assertIn(geneset2.id, link_ids)
+        data = {"add": [geneset3.id, geneset4.id], "remove": [geneset2.id]}
+        test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(test_url, headers, data=json.dumps(data))
+        response.raise_for_status()
+        self.assertEqual(len(json.loads(response.body)), 4)
+
+    def test__dataset_gene_set_linkage_update__403(self):
+        collection_0 = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name,
+                                              owner="test_user_id")
+        collection_1 = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name,
+                                              owner="someone_else")
+        dataset_0 = self.generate_dataset(self.session, collection=collection_0)
+        dataset_1 = self.generate_dataset(self.session, collection=collection_1)
+
+        with self.subTest("dataset does not exist"):
+            data = {"add": [], "remove": []}
+            test_url = f"/dp/v1/datasets/{generate_uuid()}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 403)
+
+        with self.subTest("collection public"):
+            test_url = f"/dp/v1/datasets/{dataset_0.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 403)
+
+        with self.subTest("user not collection owner"):
+            test_url = f"/dp/v1/datasets/{dataset_1.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 403)
+
+    def test__dataset_gene_set_linkage_update__404(self):
+        collection_0 = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        dataset = self.generate_dataset(self.session, collection=collection_0)
+        collection_1 = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        geneset0 =self.generate_geneset(self.session, collection=collection_0, dataset_ids=[dataset.id])
+        geneset1 = self.generate_geneset(self.session, collection=collection_1)
+        geneset2 = self.generate_geneset(self.session, collection=collection_0)
+
+        with self.subTest("add list references genesets that do not belong to the collection"):
+            data = {"add": [geneset1.id], "remove": []}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 404)
+
+        with self.subTest("remove list references genesets that do not belong to the collection"):
+            data = {"add": [], "remove": [geneset1.id]}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 404)
+
+        with self.subTest("add list references genesets already linked to the dataset"):
+            data = {"add": [geneset0.id], "remove": []}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 404)
+
+        with self.subTest("remove list references genesets that are not currently linked to the dataset"):
+            data = {"add": [], "remove": [geneset2.id]}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 404)
