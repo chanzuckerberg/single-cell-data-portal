@@ -227,28 +227,28 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  upgrade-stage:
+  create_deployment:
     if: github.ref == 'refs/heads/main'
     needs:
       - push-image
       - push-upload-image
     runs-on: ubuntu-20.04
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Generate payload
+        run: |
+          echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
+      - uses: avakar/create-deployment@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
-      - uses: actions/checkout@v2
-      - name: Install happy dependencies
-        run: |
-          pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
-      - name: Update stage
+          auto_merge: false
+          environment: stage
+          payload: ${{ env.payload }}
+          required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
+          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
+          # it's not considered ready for deploy normally by required_contexts, but we need to
+          # deploy for this to be considered ready.
+          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
+          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
+          # For now, we just ignore required_contexts to deploy on every success.
+          # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
         env:
-          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-        run: |
-          ./scripts/happy --profile="" --env stage update stagestack --tag sha-${GITHUB_SHA:0:8}
+          GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
