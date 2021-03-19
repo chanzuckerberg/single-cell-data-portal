@@ -27,18 +27,11 @@ describe("Collection", () => {
       // Try delete
       await page.click(getText("Delete"));
 
-      await Promise.all([
-        page.waitForNavigation({ waitUntil: "networkidle" }),
-        await page.click(getText("Delete Collection")),
-      ]);
+      await page.click(getText("Delete Collection"));
 
-      await Promise.all([
-        page.waitForNavigation({ waitUntil: "networkidle" }),
-        await goToPage(
-          TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
-        ),
-      ]);
-
+      await goToPage(
+        TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
+      );
       await expect(page).not.toHaveSelector(getText(TEST_COLLECTION.name), {
         timeout: TIMEOUT_MS,
       });
