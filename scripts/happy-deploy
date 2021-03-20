@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# TODO(mbarrien): Trigger a workflow instead of creating a deployment object directly
+# to allow server side to calculate the next staging ref to deploy
+
+GITHUB_ORG=chanzuckerberg
+GITHUB_REPO=corpora-data-portal
+DEPLOYMENT_STAGE=$1
+GITHUB_SHA=$2
+
+# Note: Github SHA must be a full length SHA
+if [ -z "${DEPLOYMENT_STAGE}" -o -z "${GITHUB_SHA}" ]; then
+  echo "Usage: $0 deployment_stage github_sha"
+  exit 1
+fi
+if [ -z "${GITHUB_USERNAME}" -o -z "${GITHUB_TOKEN}" ]; then
+  echo "Environment variables GITHUB_USERNAME and GITHUB_TOKEN must be set."
+  exit 1
+fi
+
+DATA=$(cat <<EOF
+{
+  "ref": "${GITHUB_SHA}",
+  "auto_merge": false,
+  "environment": "${DEPLOYMENT_STAGE}",
+  "required_contexts": [],
+  "payload": {
+    "tag": "sha-${GITHUB_SHA:0:8}"
+  }
+}
+EOF)
+
+curl \
+  -u "${GITHUB_USERNAME}:${GITHUB_TOKEN}" \
+  -X POST \
+  -H "Accept: application/vnd.github.v3+json" \
+  "https://api.github.com/repos/${GITHUB_ORG}/${GITHUB_REPO}/deployments" \
+  -d "${DATA}"
