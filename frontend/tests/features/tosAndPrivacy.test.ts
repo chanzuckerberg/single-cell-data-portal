@@ -8,7 +8,6 @@ describe("ToS and Privacy", () => {
     await goToPage(`${TEST_URL}${ROUTES.TOS}`);
 
     await expect(page).toHaveSelector(getText("Terms of Use"));
-    await expect(page).toHaveSelector(getTestID("czi-logo"));
     await expect(page).toHaveSelector(getTestID("cellxgene-logo"));
   });
 
@@ -16,7 +15,6 @@ describe("ToS and Privacy", () => {
     await goToPage(`${TEST_URL}${ROUTES.PRIVACY}`);
 
     await expect(page).toHaveSelector(getText("Privacy Policy"));
-    await expect(page).toHaveSelector(getTestID("czi-logo"));
     await expect(page).toHaveSelector(getTestID("cellxgene-logo"));
   });
 });
