@@ -262,10 +262,12 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
         self.assertEqual(response.status_code, 202)
 
     def test__dataset_gene_set_linkage_update__403(self):
-        collection_0 = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name,
-                                              owner="test_user_id")
-        collection_1 = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name,
-                                              owner="someone_else")
+        collection_0 = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
+        collection_1 = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
+        )
         dataset_0 = self.generate_dataset(self.session, collection=collection_0)
         dataset_1 = self.generate_dataset(self.session, collection=collection_1)
 
@@ -302,7 +304,7 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
         collection_1 = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
-        geneset0 =self.generate_geneset(self.session, collection=collection_0, dataset_ids=[dataset.id])
+        geneset0 = self.generate_geneset(self.session, collection=collection_0, dataset_ids=[dataset.id])
         geneset1 = self.generate_geneset(self.session, collection=collection_1)
         geneset2 = self.generate_geneset(self.session, collection=collection_0)
 

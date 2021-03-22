@@ -51,10 +51,11 @@ class GenesetDatasetLink(Entity):
     @classmethod
     def get(cls, session, geneset_id: str, dataset_id: str):
         try:
-            links = session.query(cls.table).filter(
-                cls.table.geneset_id == geneset_id,
-                cls.table.dataset_id == dataset_id
-            ).all()
+            links = (
+                session.query(cls.table)
+                .filter(cls.table.geneset_id == geneset_id, cls.table.dataset_id == dataset_id)
+                .all()
+            )
             return links[0]
         except IndexError:
             return None
