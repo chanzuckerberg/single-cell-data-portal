@@ -1142,6 +1142,93 @@ def watch(ctx, stack_name):
     stack.watch()
     stack.print_outputs()
 
+@cli.group()
+def hosts():
+    "Commands to manage system hostsfile"
+    pass
+
+class HostnameManager():
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_file_borders(self):
+        cwd = os.getcwd()
+        directory = os.path.split(cwd)[-1]
+        return [
+            f"# ==== Happy docker-compose DNS for {directory} ===\n",
+            f"# ==== Happy docker-compose DNS for {directory} ===\n",
+        ]
+
+    def get_hostsfile(self):
+        with open(self.filename, "r") as hostsfile:
+            return hostsfile.readlines()
+
+    def get_compose_containers(self):
+        containers = []
+        with open("docker-compose.yml") as composefile:
+            result = yaml.load(composefile, Loader=yaml.Loader)
+            for service_name, service in result["services"].items():
+                containers.append(service_name)
+        return containers
+
+    def cleanup_config(self, borders, config):
+        write_lines = True
+        new_config = []
+        for idx in range(len(config)):
+            line = config[idx]
+            if write_lines and line == borders[0]:
+                write_lines = False
+                continue
+            if not write_lines and line == borders[1]:
+                write_lines = True
+                continue
+            if write_lines:
+                new_config.append(line)
+        return new_config
+
+    def update_config(self, config, newconfig):
+        with open(self.filename, "w") as hostfile:
+            for line in config:
+                hostfile.write(line)
+            for line in newconfig:
+                hostfile.write(line)
+
+    def generate_config(self, borders, containers):
+        lines = []
+        lines.append(borders[0])
+        for container in containers:
+            lines.append(f"127.0.0.1\t{container}\n")
+        lines.append(borders[1])
+        return lines
+
+@hosts.command()
+@click.option(
+    "--hostsfile",
+    default="/etc/hosts",
+    help="Path to system hosts file"
+)
+def install(hostsfile):
+    "Install compose DNS entries"
+    hostmgr = HostnameManager(hostsfile)
+    config = hostmgr.get_hostsfile()
+    containers = hostmgr.get_compose_containers()
+    borders = hostmgr.get_file_borders()
+    config = hostmgr.cleanup_config(borders, config)
+    hostmgr.update_config(config, hostmgr.generate_config(borders, containers))
+
+@hosts.command()
+@click.option(
+    "--hostsfile",
+    default="/etc/hosts",
+    help="Path to system hosts file"
+)
+def uninstall(hostsfile):
+    "Remove compose DNS entries"
+    hostmgr = HostnameManager(hostsfile)
+    config = hostmgr.get_hostsfile()
+    borders = hostmgr.get_file_borders()
+    config = hostmgr.cleanup_config(borders, config)
+    hostmgr.update_config(config, [])
 
 if __name__ == "__main__":
     obj = {}
