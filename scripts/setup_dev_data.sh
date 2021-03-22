@@ -4,17 +4,17 @@ export AWS_DEFAULT_REGION=us-west-2
 export AWS_ACCESS_KEY_ID=nonce
 export AWS_SECRET_ACCESS_KEY=nonce
 
-export FRONTEND_URL=http://localhost:8000
-export BACKEND_URL=http://localhost:5000
+export FRONTEND_URL=http://frontend.corporanet.local:8000
+export BACKEND_URL=http://backend.corporanet.local:5000
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
 # If you need to run it directly on your laptop for some reason, change
 # localstack below to localhost
-export LOCALSTACK_URL=http://localstack:4566
+export LOCALSTACK_URL=http://localstack.corporanet.local:4566
 # How the backend can reach the OIDC idp
-export OIDC_INTERNAL_URL=http://oidc
+export OIDC_INTERNAL_URL=http://oidc.corporanet.local
 # How a web browser can reach the OIDC idp
-export OIDC_BROWSER_URL=https://localhost:8443
+export OIDC_BROWSER_URL=https://oidc.corporanet.local:8443
 
 echo -n "waiting for localstack to be ready: "
 until $(curl --output /dev/null --silent --head ${LOCALSTACK_URL}); do

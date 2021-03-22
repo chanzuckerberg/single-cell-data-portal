@@ -8,8 +8,8 @@
             "authorization_code"
         ],
         "RedirectUris": [
-            "https://localhost:5000/dp/v1/oauth2/callback",
-            "http://localhost:5000/dp/v1/oauth2/callback"
+            "https://backend.corporanet.local:5000/dp/v1/oauth2/callback",
+            "http://backend.corporanet.local:5000/dp/v1/oauth2/callback"
         ],
         "AllowedScopes": [
            "openid", "profile", "email", "offline_access"

@@ -1167,8 +1167,14 @@ class HostnameManager():
         containers = []
         with open("docker-compose.yml") as composefile:
             result = yaml.load(composefile, Loader=yaml.Loader)
+            got_alias = False
             for service_name, service in result["services"].items():
-                containers.append(service_name)
+                for networkname, netconf in service.get("networks", {}).items():
+                    for alias in netconf.get("aliases", []):
+                        got_alias = True
+                        containers.append(alias)
+                if not got_alias:
+                    containers.append(service_name)
         return containers
 
     def cleanup_config(self, borders, config):

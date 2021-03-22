@@ -140,6 +140,8 @@ local-clean: local-nohostconfig ## Remove everything related to the local dev en
 	docker-compose rm -sf
 	-docker volume rm corpora-data-portal_database
 	-docker volume rm corpora-data-portal_localstack
+	-docker network rm corpora-data-portal_corporanet
+	-docker network rm corpora-data-portal_default
 
 .PHONY: local-logs
 local-logs: ## Tail the logs of the dev env containers. ex: make local-logs CONTAINER=backend
