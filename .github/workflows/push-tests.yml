@@ -146,12 +146,12 @@ jobs:
       - name: Login to Prod ECR
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.ECR_PROD_REPO }}
+          registry: ${{ secrets.ECR_REPO_PROD }}
       - name: push lambda upload image
         shell: bash
         run: |
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
-          docker push ${{ secrets.ECR_PROD_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
 
   unit-test:
     runs-on: ubuntu-20.04
