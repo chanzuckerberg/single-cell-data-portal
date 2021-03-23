@@ -151,6 +151,7 @@ jobs:
         shell: bash
         run: |
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
           docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
           #docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
           #ocker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
