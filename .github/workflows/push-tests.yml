@@ -150,9 +150,9 @@ jobs:
       - name: push lambda upload image
         shell: bash
         run: |
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
 
   unit-test:
     runs-on: ubuntu-20.04
