@@ -3,7 +3,7 @@ name: Push Tests
 on:
   push:
     branches:
-      - srm78/fix-prod-ecr
+      - main
   pull_request:
     branches: "*"
 
@@ -129,7 +129,7 @@ jobs:
 
   push-prod-images:
     runs-on: ubuntu-20.04
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -150,11 +150,9 @@ jobs:
       - name: push lambda upload image
         shell: bash
         run: |
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
-          #docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
-          #ocker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:build-${GITHUB_RUN_NUMBER}
 
   unit-test:
     runs-on: ubuntu-20.04
