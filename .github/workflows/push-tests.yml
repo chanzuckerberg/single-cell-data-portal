@@ -129,7 +129,7 @@ jobs:
 
   push-prod-images:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
