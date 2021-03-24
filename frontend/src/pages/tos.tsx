@@ -1,28 +1,21 @@
-import React, { FC } from "react";
+import React from "react";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
-import rawCZILogo from "src/components/common/staticPages/CZI_Logotype_RGB.png";
 import {
   CellxgeneLogo,
   CommonStyle,
-  CZILogo,
   Layout,
   PrivacyStyle,
 } from "src/components/common/staticPages/style";
 import SEO from "src/components/seo";
 
-const Privacy: FC = () => {
+const Privacy = () => {
   return (
     <Layout>
       <CommonStyle>
         <PrivacyStyle>
           <SEO title="Terms of Service" />
           <header>
-            <CZILogo
-              data-test-id="czi-logo"
-              src={String(rawCZILogo)}
-              alt="CZI logo"
-            />
             <CellxgeneLogo
               data-test-id="cellxgene-logo"
               src={String(rawCellxgeneLogo)}
@@ -32,14 +25,7 @@ const Privacy: FC = () => {
 
           <br />
 
-          <h3>
-            We invite you to <a href="/previewpolicies">preview</a> our updated
-            Terms of Service, which will go into effect on April 1, 2021.
-          </h3>
-
-          <br />
-
-          <h1>Terms of Use</h1>
+          <h1 id="tos">Terms of Use</h1>
 
           <p>
             <span className="caps">
@@ -49,6 +35,8 @@ const Privacy: FC = () => {
               UNDER THIS CONTRACT.
             </span>
           </p>
+
+          <br />
 
           <h2>Introduction</h2>
 
@@ -70,12 +58,13 @@ const Privacy: FC = () => {
 
           <p>
             You agree that by accessing the Site, you are entering into a
-            legally-binding contract with the Chan Zuckerberg Initiative, LLC (“
-            <strong>Provider,</strong>” “<strong>we</strong>,” “
-            <strong>us</strong>”) and agree to be bound by these Terms as well
-            as our <a href={ROUTES.PRIVACY}>Privacy Policy</a>. If you don’t
-            agree to these Terms, or to our{" "}
-            <a href={ROUTES.PRIVACY}>Privacy Policy</a>, don’t access the Site.
+            legally-binding contract with the Chan Zuckerberg Initiative
+            Foundation, a 501(c)(3) nonprofit private foundation (
+            <strong>“Provider,” “we,” “us”</strong>) and agree to be bound by
+            these Terms as well as our{" "}
+            <a href={ROUTES.PRIVACY}>Privacy Policy</a>. If you don’t agree to
+            these Terms, or to our <a href={ROUTES.PRIVACY}>Privacy Policy</a>,
+            don’t access the Site.
           </p>
 
           <p>
@@ -120,9 +109,9 @@ const Privacy: FC = () => {
               access to the Site at any time, without notice, and for any reason
               including for breach of these Terms. The Data on the Site has been
               compiled from a variety of sources, and is subject to change
-              without notice. CZI does not investigate, monitor or check Data
+              without notice. CZIF does not investigate, monitor or check Data
               for accuracy, appropriateness, completeness, or other reliability.
-              As such, you agree that CZI shall not be responsible for any Data
+              As such, you agree that CZIF shall not be responsible for any Data
               or failure to include any Data or updates thereto. Your use of the
               Data is at your own risk.
             </li>
@@ -141,18 +130,20 @@ const Privacy: FC = () => {
             <li>
               <h4>Limitation of Liability.</h4>{" "}
               <span className="caps">
-                TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, CZI WILL NOT
+                TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, CZIF AND
+                AFFILIATES (INCLUDING WITHOUT LIMITATION CHAN ZUCKERBERG
+                INITIATIVE, LLC; COLLECTIVELY, THE “PROTECTED PARTIES”) WILL NOT
                 BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR
                 CONSEQUENTIAL DAMAGES OF ANY KIND (INCLUDING LOST PROFITS, LOST
                 DATA, BUSINESS INTERRUPTION, OR LOSS OF GOODWILL) IRRESPECTIVE
                 OF WHETHER SUCH DAMAGES ARISE FROM CLAIMS BROUGHT IN CONTRACT,
                 TORT, NEGLIGENCE, WARRANTY, STRICT LIABILITY, OR ANY OTHER
-                THEORY AT LAW OR IN EQUITY, AND EVEN IF ANY CZI PROTECTED PARTY
-                HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. WITHOUT
-                LIMITING THE FOREGOING, TO THE MAXIMUM EXTENT PERMITTED BY
-                APPLICABLE LAW, IN NO EVENT WILL THE CZI PROTECTED PARTIES’
-                AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THESE TERMS OR
-                THE SERVICE EXCEED USD $100.
+                THEORY AT LAW OR IN EQUITY, AND EVEN IF ANY CZI LLC PROTECTED
+                PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+                WITHOUT LIMITING THE FOREGOING, TO THE MAXIMUM EXTENT PERMITTED
+                BY APPLICABLE LAW, IN NO EVENT WILL THE CZI LLC PROTECTED
+                PARTIES’ AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THESE
+                TERMS OR THE SERVICE EXCEED USD $100.
               </span>
             </li>
 
@@ -160,7 +151,7 @@ const Privacy: FC = () => {
               <h4>Indemnification.</h4>
               <ol className="section5">
                 <li>
-                  You shall indemnify, defend and hold CZI harmless from and
+                  You shall indemnify, defend and hold CZIF harmless from and
                   against, and shall pay all damages, costs, fees and expenses
                   (including reasonable attorneys’ fees and expenses) relating
                   to, any third party (including government entity) claim,
@@ -170,16 +161,16 @@ const Privacy: FC = () => {
                   your permission to submit data to cellxgene for public use.
                 </li>
                 <li>
-                  Section 5.1 indemnification is conditioned upon, CZI giving
+                  Section 5.1 indemnification is conditioned upon, CZIF giving
                   you written notice of any such Claim, and giving you control
                   of the defense and settlement of any such Claim, and
-                  cooperating with the you in such defense. Notwithstanding
-                  anything to the contrary, (1) CZI may participate in defense
-                  of such Claim with its own counsel at its own expense and (2)
-                  you may not settle any Claim without CZI’s prior written
-                  consent, which will not be unreasonably withheld, unless it
-                  unconditionally releases CZI of all liability, obligation, and
-                  fault.
+                  cooperating with you in such defense. Notwithstanding anything
+                  to the contrary, (1) CZIF may participate in defense of such
+                  Claim with its own counsel at its own expense and (2) you may
+                  not settle any Claim without CZIF’s prior written consent,
+                  which will not be unreasonably withheld, unless it
+                  unconditionally releases CZIF of all liability, obligation,
+                  and fault.
                 </li>
               </ol>
             </li>
@@ -211,7 +202,7 @@ const Privacy: FC = () => {
                   that we shall (in good faith) meet and attempt to resolve the
                   Dispute within thirty (30) days. If the Dispute is not
                   resolved during such time period, then you and a
-                  representative of CZI shall (in good faith) meet and attempt
+                  representative of CZIF shall (in good faith) meet and attempt
                   to resolve the Dispute through non-binding mediation with a
                   mutually agreed upon mediator within thirty (30) additional
                   days.
@@ -228,7 +219,7 @@ const Privacy: FC = () => {
                   and the substantive laws of the State of California, exclusive
                   of conflict or choice of law rules. In-person proceedings will
                   take place in San Mateo County, California and your reasonable
-                  and documented travel expenses will be paid by CZI. The
+                  and documented travel expenses will be paid by CZIF. The
                   arbitrator shall have the power to award any type of relief
                   that would be available in a court of competent jurisdiction
                   and will issue a written decision at the end of the
@@ -274,7 +265,9 @@ const Privacy: FC = () => {
                   these Terms without our consent. However, you agree that we
                   may assign these Terms in connection with a reorganization, or
                   to a successor or assign that agrees to assume our obligations
-                  under these Terms (and Privacy Policy) without your consent.
+                  under these Terms (and{" "}
+                  <a href={ROUTES.PRIVACY}>Privacy Policy</a>) without your
+                  consent.
                 </li>
               </ol>
             </li>
@@ -284,24 +277,22 @@ const Privacy: FC = () => {
               writing and deemed to have been given on the date delivered by a
               nationally recognized express mail service, such as Federal
               Express, or by certified and registered mail (signature for
-              receipt required) to CZI as follows:
-              <p>
-                <em>
-                  Chan Zuckerberg Initiative
-                  <br />
-                  2682 Middlefield Road, Suite i<br />
-                  Redwood City, CA 94063
-                  <br />
-                  Attn: General Counsel
-                </em>
-              </p>
-              <p>
+              receipt required) to CZIF as follows:
+              <br />
+              <br />
+              <address>
+                Chan Zuckerberg Initiative Foundation <br />
+                314 Lytton Ave.
+                <br />
+                Palo Alto, CA 94301
+                <br />
+                Attn: General Counsel <br />
                 Email: courtesy copy:{" "}
                 <a href="mailto:legalczi1@chanzuckerberg.com">
                   legalczi1@chanzuckerberg.com
                 </a>{" "}
                 (email does not constitute notice)
-              </p>
+              </address>
             </li>
 
             <li>
@@ -313,7 +304,7 @@ const Privacy: FC = () => {
               . Keep in mind that – if the Data you wish to submit is not
               already published in a public archive such as GEO, as an open link
               in a publication, or in a github repository – you will be required
-              to grant CZI permission to use, display and create derivative
+              to grant CZIF permission to use, display and create derivative
               works (e.g. visualizations) of the Data for purposes of offering
               the Site, and must therefore have the authority to give that
               permission.

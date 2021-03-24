@@ -1,28 +1,21 @@
-import React, { FC } from "react";
+import React from "react";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
-import rawCZILogo from "src/components/common/staticPages/CZI_Logotype_RGB.png";
 import {
   CellxgeneLogo,
   CommonStyle,
-  CZILogo,
   Layout,
   PrivacyStyle,
 } from "src/components/common/staticPages/style";
 import SEO from "src/components/seo";
 
-const ToS: FC = () => {
+const ToS = () => {
   return (
     <Layout>
       <CommonStyle>
         <PrivacyStyle>
           <SEO title="Privacy" />
           <header>
-            <CZILogo
-              data-test-id="czi-logo"
-              src={String(rawCZILogo)}
-              alt="CZI logo"
-            />
             <CellxgeneLogo
               data-test-id="cellxgene-logo"
               src={String(rawCellxgeneLogo)}
@@ -32,19 +25,12 @@ const ToS: FC = () => {
 
           <br />
 
-          <h3>
-            We invite you to <a href="/previewpolicies">preview</a> our updated
-            Privacy Policy, which will go into effect on April 1, 2021.
-          </h3>
-
-          <br />
-
           <main>
             <h1>Privacy Policy</h1>
 
-            <p>
-              April 1, 2020. There is no prior version of this privacy policy.
-            </p>
+            <p>Last updated: April 1, 2021.</p>
+
+            <br />
 
             <h2>Introduction</h2>
 
@@ -86,8 +72,9 @@ const ToS: FC = () => {
                 <h3>Data Controllers and Contracting Parties</h3>
                 <p>
                   By accessing and using the Site, you are contracting with the
-                  Chan Zuckerberg Initiative, LLC (“<strong>Provider</strong>,”
-                  “<strong>we</strong>” or “<strong>us</strong>”), and agreeing
+                  Chan Zuckerberg Initiative Foundation, a 501(c)(3) nonprofit
+                  private foundation (“<strong>Provider</strong>,” “
+                  <strong>we</strong>” or “<strong>us</strong>”), and agreeing
                   that Provider is the “controller” of your personal data
                   provided to, collected by, or processed in connection with the
                   Site. This Privacy Policy along with the{" "}
@@ -120,8 +107,13 @@ const ToS: FC = () => {
                     <h4>Data You Provide To Us.</h4> We collect certain
                     information from you when you provide it to us directly.
                     Specifically, this includes data you submit for display in
-                    cellxgene as well as if you contact us for support or with
-                    information about a dataset via email.
+                    cellxgene (ex: single-cell .loom matrix files), data you
+                    provide you us as part of submission or registering for an
+                    account (ex: name and email address), as well as if you
+                    contact us for support or with information about a dataset
+                    via email. This information is necessary in order to create
+                    your account and provide you with access to the services we
+                    offer on the Site.
                   </li>
                   <li>
                     <h4>Data From Your Browser or Device.</h4> Whenever you use
@@ -136,7 +128,9 @@ const ToS: FC = () => {
                         files. This information includes IP addresses, the
                         Internet Site Provider, referring pages, date/time
                         stamps, clickstream data, and duration of time spent on
-                        the Site.
+                        the Site. We collect this data pursuant to our
+                        legitimate interests in understanding how Visitors use
+                        our Site.
                       </li>
                       <li>
                         <h5>Device.</h5> In addition to log data, we collect
@@ -144,7 +138,8 @@ const ToS: FC = () => {
                         Site; this includes the type of device, browser type,
                         operating system, settings, unique device identifiers,
                         and crash data that helps us understand when something
-                        goes wrong.
+                        goes wrong. We collect this data pursuant to our
+                        legitimate interests in improving our Site.
                       </li>
                       <li>
                         <h5>Cookies and Other Similar Technologies.</h5> We also
@@ -222,14 +217,13 @@ const ToS: FC = () => {
 
                 <ol className="section4">
                   <li>
-                    <h4>Third Party Site Providers.</h4> CZI works with vendors,
-                    service providers, and other partners that help us provide
-                    the Site by providing services on our behalf. These services
-                    are, for example, performing statistical analysis, database
-                    management services, database hosting, and security. They
-                    will have access to your information as reasonably necessary
-                    to perform these tasks on our behalf and are obligated not
-                    to disclose or use it for other purposes.
+                    <h4>Third Party Site Providers.</h4> CZIF works with service
+                    providers that help us operate, secure, and improve the
+                    Site. These services are, for example, performing
+                    statistical analysis, database management services, database
+                    hosting, and security. To the extent they will have access
+                    to your information, their use is limited by this Privacy
+                    Policy.
                   </li>
                   <li>
                     <h4>Legal and Safety Reasons.</h4> We may disclose
@@ -241,18 +235,22 @@ const ToS: FC = () => {
                     preventing any violation of the law.
                   </li>
                   <li>
-                    <h4>CZI Entities.</h4> We may share your information with
-                    our affiliates, in which case we will require them to honor
-                    this Privacy Policy. “Affiliates” refers to entities
-                    controlled by CZI and does not include Facebook for purposes
-                    of this policy; CZI and Facebook are independent entities,
-                    and we do not share data with Facebook.
+                    <h4>CZIF Entities and Affiliates.</h4> The Chan Zuckerberg
+                    Initiative, LLC (“CZI LLC”) is our primary technology
+                    partner, focusing on the Site’s infrastructure, security,
+                    and compliance. In this role, CZI LLC is a data controller
+                    for all data referenced in this Privacy Policy. As with
+                    Service Providers mentioned above, CZI LLC&lsquo;s use of
+                    data is limited by this Privacy Policy. “Affiliates” refers
+                    to entities controlled by or under common control with CZIF
+                    (such as CZI LLC) and does not include Facebook for purposes
+                    of this policy.
                   </li>
                   <li>
                     <h4>Reorganization, Sale or Merger.</h4> We may share your
                     information in connection with a merger, reorganization, or
                     sale of all or a portion of our organization or assets
-                    related to CZI. In the event of a merger, reorganization or
+                    related to CZIF. In the event of a merger, reorganization or
                     sale of assets, the buyer or other successor entity will
                     continue to be bound by the terms of this Privacy Policy.
                   </li>
@@ -290,7 +288,7 @@ const ToS: FC = () => {
                       machine-readable form.
                     </li>
                     <li>
-                      <h5>The right not to be discriminated against.</h5> CZI
+                      <h5>The right not to be discriminated against.</h5> CZIF
                       will not discriminate against you in any manner for
                       exercising any of the above rights with respect to your
                       personal data.
@@ -323,7 +321,7 @@ const ToS: FC = () => {
               <li>
                 <h3>Data Transfers.</h3>
                 <p>
-                  CZI is based in the United States; when you engage with the
+                  CZIF is based in the United States; when you engage with the
                   Site, you are sending personal data into the United States
                   which may have different data protection rules than those of
                   your country. We process data both inside and outside of the
@@ -378,96 +376,8 @@ const ToS: FC = () => {
               </li>
 
               <li>
-                <h3>California Residents</h3>
-                <ol className="section9">
-                  <li>
-                    The CCPA gives consumers who are residents of California the
-                    right to request the following information about the
-                    personal information that a business has collected in the
-                    past 12 months:
-                    <p>
-                      <h4>Information about Data Collection.</h4>
-                    </p>
-                    <ul>
-                      <li>
-                        The categories of personal information that have been
-                        collected.
-                      </li>
-                      <li>
-                        The specific pieces of personal information that have
-                        been collected about you.
-                      </li>
-                      <li>
-                        The categories of sources from which personal
-                        information has been collected.
-                      </li>
-                      <li>
-                        The business purpose for which we have collected
-                        personal information.
-                      </li>
-                    </ul>
-                    <p>
-                      <h4>Information about Data Disclosure.</h4>
-                    </p>
-                    <ul>
-                      <li>
-                        The categories of third parties with whom personal
-                        information has been shared.
-                      </li>
-                      <li>
-                        The categories of personal information that we have
-                        disclosed for a business purpose.
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    We have described in fuller detail in this Privacy Policy
-                    the personal information that we collect and how we use and
-                    disclose it, but we provide the following additional
-                    disclosure:
-                    <ul>
-                      <li>
-                        <h5>Information we collect.</h5> We have collected the
-                        following categories of personal information within the
-                        past 12 months: (1) identifiers; and (2) internet or
-                        other similar network activity.
-                      </li>
-                      <li>
-                        <h5>Sources of information.</h5> We obtain these
-                        categories of personal information directly and
-                        indirectly from activity on cellxgene.cziscience.com.
-                        For example, from the website usage details collected
-                        automatically.
-                      </li>
-                      <li>
-                        <h5>Purposes of disclosure.</h5> We disclose the
-                        personal information we collect for one or more of the
-                        following business purposes: (1) to provide you with
-                        information you request from us; (2) to operate, de-bug
-                        and improve our Site as described in more detail in this
-                        Privacy Policy; (3) to protect against malicious or
-                        fraudulent activity on the Site and prevent security
-                        incidents.
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    To request any of the above information, email{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>
-                    . Please include in your request sufficient information to
-                    allow us to reasonably verify that you are the person about
-                    whom we’ve collected personal information. Please note that
-                    we do not sell your personal data, and that CZI will not
-                    discriminate against you in any way based on your exercise
-                    of these rights.
-                  </li>
-                </ol>
-              </li>
-              <li>
                 <h3>Other Important Information</h3>
-                <ol className="section10">
+                <ol className="section9">
                   <li>
                     <h4>Security.</h4> Security of personal data is important to
                     us. We implement security safeguards designed to protect
@@ -516,25 +426,42 @@ const ToS: FC = () => {
                     <a href="mailto:privacy@chanzuckerberg.com">
                       privacy@chanzuckerberg.com
                     </a>
-                    . If contacting us does not resolve your complaint,
-                    residents in the European Union (and some other countries)
-                    also have the right to contact our Data Protection Officer
-                    (at{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>
-                    ) and their local data protection authorities. You may
-                    contact our representative for the European Union at{" "}
-                    <a href="mailto:GDPR-rep@chanzuckerberg.com">
-                      GDPR-rep@chanzuckerberg.com
-                    </a>
                     .
+                    <div>
+                      To comply with article 27 of the GDPR and the UK-GDPR, we
+                      have appointed a representative who can accept
+                      communications on behalf of CZIF and CZI LLC in relation
+                      to personal data processing activities falling within the
+                      scope of the GDPR or the UK-GDPR. If you wish to contact
+                      them, their details are as follows:
+                      <br />
+                      <br />
+                      <address>
+                        European GDPR Representative: <br />
+                        Bird & Bird GDPR Representative Services SRL <br />
+                        Avenue Louise 235 <br />
+                        1050 Bruxelles <br />
+                        Belgium
+                        <br />
+                        <a href="mailto:EUrepresentative.ChanZuckerberg@twobirds.com">
+                          EUrepresentative.ChanZuckerberg@twobirds.com
+                        </a>
+                      </address>
+                      <address>
+                        UK Data Protection Representative:
+                        <br />
+                        Bird & Bird GDPR Representative Services UK
+                        <br />
+                        12 New Fetter Lane <br />
+                        London EC4A 1JP <br />
+                        United Kingdom
+                        <br />
+                        <a href="mailto:UKrepresentative.ChanZuckerberg@twobirds.com">
+                          UKrepresentative.ChanZuckerberg@twobirds.com
+                        </a>
+                      </address>
+                    </div>
                   </li>
-                  <p>
-                    See <a href={`${ROUTES.TOS}#section7`}>Section 7</a> of the{" "}
-                    <a href={ROUTES.TOS}>Terms of Use</a> for contact
-                    information.
-                  </p>
                 </ol>
               </li>
             </ol>
