@@ -116,7 +116,12 @@ def save_token(cookie_name: str, token: dict) -> None:
         if os.getenv("DEV_MODE_COOKIES"):
             require_secure_cookies = False
         response.set_cookie(
-            cookie_name, value, httponly=True, secure=require_secure_cookies, samesite="Strict", max_age=24 * 60 * 60 * 90
+            cookie_name,
+            value,
+            httponly=True,
+            secure=require_secure_cookies,
+            samesite="Strict",
+            max_age=24 * 60 * 60 * 90,
         )
         return response
 
