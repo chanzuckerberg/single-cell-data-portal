@@ -15,6 +15,8 @@ jest.setTimeout(2 * 60 * 1000);
 jest.retryTimes(2);
 
 beforeEach(async () => {
+  await jestPlaywright.resetPage();
+
   const client = await page.context().newCDPSession(page);
 
   await client.send("Animation.setPlaybackRate", {
