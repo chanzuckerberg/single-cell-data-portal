@@ -158,7 +158,7 @@ jobs:
           #docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main
           docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
 
   unit-test:
     runs-on: ubuntu-20.04
