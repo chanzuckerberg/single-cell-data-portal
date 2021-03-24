@@ -10,8 +10,8 @@ module stack {
   deployment_stage    = "prod"
   delete_protected    = true
   require_okta        = false
-  frontend_url        = "https://production.single-cell.czi.technology"
-  backend_url         = "https://api.production.single-cell.czi.technology"
+  frontend_url        = "https://cellxgene.cziscience.com"
+  backend_url         = "https://api.cellxgene.cziscience.com"
   stack_prefix        = ""
 
   wait_for_steady_state = var.wait_for_steady_state
