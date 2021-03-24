@@ -1,6 +1,6 @@
 export enum BOOLEAN {
-  TRUE = "true",
-  FALSE = "false",
+  TRUE = "yes",
+  FALSE = "no",
 }
 
 export function set(key: string, value: BOOLEAN) {
