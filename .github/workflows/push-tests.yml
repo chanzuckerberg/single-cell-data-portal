@@ -3,7 +3,7 @@ name: Push Tests
 on:
   push:
     branches:
-      - main
+      - srm78/fix-ci
   pull_request:
     branches: "*"
 
@@ -129,7 +129,7 @@ jobs:
 
   push-prod-images:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -150,8 +150,11 @@ jobs:
       - name: push lambda upload image
         shell: bash
         run: |
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          #docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          #docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          #docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:branch-main ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:branch-main
           docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
 
   unit-test:
@@ -264,28 +267,28 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  create_deployment:
-    if: github.ref == 'refs/heads/main'
-    needs:
-      - push-image
-      - push-upload-image
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Generate payload
-        run: |
-          echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
-      - uses: avakar/create-deployment@v1
-        with:
-          auto_merge: false
-          environment: stage
-          payload: ${{ env.payload }}
-          required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
-          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
-          # it's not considered ready for deploy normally by required_contexts, but we need to
-          # deploy for this to be considered ready.
-          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
-          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
-          # For now, we just ignore required_contexts to deploy on every success.
-          # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
-        env:
-          GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
+  #create_deployment:
+  #  if: github.ref == 'refs/heads/main'
+  #  needs:
+  #    - push-image
+  #    - push-upload-image
+  #  runs-on: ubuntu-20.04
+  #  steps:
+  #    - name: Generate payload
+  #      run: |
+  #        echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
+  #    - uses: avakar/create-deployment@v1
+  #      with:
+  #        auto_merge: false
+  #        environment: stage
+  #        payload: ${{ env.payload }}
+  #        required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
+  #        # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
+  #        # it's not considered ready for deploy normally by required_contexts, but we need to
+  #        # deploy for this to be considered ready.
+  #        # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
+  #        # we'd have to enumerate every other Github PR status here, which can be constantly changing.
+  #        # For now, we just ignore required_contexts to deploy on every success.
+  #        # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
+  #      env:
+  #        GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
