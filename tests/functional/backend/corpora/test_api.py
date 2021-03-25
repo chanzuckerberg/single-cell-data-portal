@@ -86,7 +86,6 @@ class TestApi(unittest.TestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         collection_uuid = data["collection_uuid"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
@@ -97,8 +96,24 @@ class TestApi(unittest.TestCase):
         for collection in data["collections"]:
             if collection["visibility"] == "PRIVATE":
                 private_collection_uuids.append(collection["id"])
-
         self.assertIn(collection_uuid, private_collection_uuids)
+
+        # update the collection info
+        updated_data = {
+            "contact_email": "person@random.com",
+            "contact_name": "Doctor Who",
+            "description": "These are different words",
+            "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
+            "name": "lots of cells",
+        }
+        res = requests.put(
+            f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
+        )
+        res.raise_for_status()
+        data = json.loads(res.content)
+        data.pop("access_type")
+        for key in updated_data.keys():
+            self.assertEqual(updated_data[key], data[key])
 
         # make collection public
         res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
@@ -122,16 +137,51 @@ class TestApi(unittest.TestCase):
         collection_uuids = [x["id"] for x in data["collections"]]
         self.assertIn(collection_uuid, collection_uuids)
 
-        # delete collection
+        # cannot delete public collection
         res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.accepted)
+        self.assertEqual(res.status_code, requests.codes.forbidden)
 
-        # check collection gone
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
-        data = json.loads(res.content)
-        collection_uuids = [x["id"] for x in data["collections"]]
-        self.assertNotIn(collection_uuid, collection_uuids)
+    def test_delete_private_collection(self):
+        def test_collection_flow(self):
+            # create collection
+            data = {
+                "contact_email": "lisbon@gmail.com",
+                "contact_name": "Madrid Sparkle",
+                "data_submission_policy_version": "1",
+                "description": "Well here are some words",
+                "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+                "name": "my2collection",
+            }
+
+            headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+            res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
+            res.raise_for_status()
+            data = json.loads(res.content)
+            collection_uuid = data["collection_uuid"]
+            self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            self.assertEqual(res.status_code, requests.codes.created)
+            self.assertIn("collection_uuid", data)
+
+            # check created collection returns as private
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            data = json.loads(res.content)
+            private_collection_uuids = []
+            for collection in data["collections"]:
+                if collection["visibility"] == "PRIVATE":
+                    private_collection_uuids.append(collection["id"])
+            self.assertIn(collection_uuid, private_collection_uuids)
+
+            # delete collection
+            res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            res.raise_for_status()
+            self.assertEqual(res.status_code, requests.codes.accepted)
+
+            # check collection gone
+            no_auth_headers = {"Content-Type": "application/json"}
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+            data = json.loads(res.content)
+            collection_uuids = [x["id"] for x in data["collections"]]
+            self.assertNotIn(collection_uuid, collection_uuids)
 
     def test_dataset_upload_flow(self):
         body = {
@@ -183,4 +233,4 @@ class TestApi(unittest.TestCase):
 
         # Check that the dataset is gone
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.unauthorized)
+        self.assertEqual(res.status_code, requests.codes.forbidden)
