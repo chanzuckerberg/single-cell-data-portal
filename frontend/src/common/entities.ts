@@ -181,3 +181,10 @@ export interface DatasetUploadStatus {
   conversion_cxg_status: CONVERSION_STATUS;
   conversion_rds_status: CONVERSION_STATUS;
 }
+
+export interface GeneSet {
+  name: string;
+  id: string;
+  description: string;
+  linked_datasets: Dataset["id"][];
+}
