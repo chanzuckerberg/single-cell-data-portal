@@ -63,9 +63,9 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-se
     "grant_type": ""
 }' || true
 
-${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database.corporanet.local:5432"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/config --secret-string '{"upload_sfn_arn": "arn:aws:states:us-west-2:000000000000:stateMachine:uploader-dev-sfn"}' || true
-${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database.corporanet.local:5432"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "aws::::/upload"}'
 
 # Make a 1mb data file

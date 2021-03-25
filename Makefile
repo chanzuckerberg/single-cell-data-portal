@@ -155,15 +155,15 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 local-unit-test: ## Run backend tests in the dev environment
 	@if [ -z "$(path)" ]; then \
         echo "Running all tests"; \
-		docker-compose exec -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
 	else \
 		echo "Running test(s): $(path)"; \
-		docker-compose exec -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
 	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
 		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
 		docker-compose exec -T backend bash -c "apt-get update && apt-get install -y git"; \
-		docker-compose exec -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
 	fi
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
