@@ -23,6 +23,7 @@
     "gatsby-plugin-typescript": "^2.4.23",
     "gatsby-source-filesystem": "^2.3.35",
     "gatsby-transformer-sharp": "^2.5.19",
+    "is-svg": "^4.3.1",
     "jschardet": "^2.3.0",
     "lodash-es": "^4.17.15",
     "node-fetch": "^2.6.1",
@@ -33,6 +34,7 @@
     "react-dom": "^16.14.0",
     "react-helmet": "^5.2.1",
     "react-query": "^2.25.2",
+    "ssri": "^8.0.1",
     "styled-components": "^5.2.0",
     "theme-ui": "^0.3.1"
   },
@@ -47,8 +49,8 @@
     "@types/react-helmet": "^6.1.0",
     "@types/styled-components": "^5.1.4",
     "@types/theme-ui": "^0.3.7",
-    "@typescript-eslint/eslint-plugin": "^2.34.0",
-    "@typescript-eslint/parser": "^2.34.0",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.6.0",
     "babel-preset-gatsby": "^0.5.14",
@@ -63,7 +65,7 @@
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.5",
-    "eslint-plugin-react-hooks": "^2.5.1",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-sonarjs": "^0.5.0",
     "expect-playwright": "^0.3.2",
     "gatsby-plugin-asset-path": "^3.0.2",
@@ -76,10 +78,12 @@
     "prettier": "2.1.1",
     "prettier-plugin-organize-imports": "^1.1.1",
     "react-query-devtools": "^2.6.0",
+    "sockjs-client": "^1.5.1",
     "start-server-and-test": "^1.11.7",
     "stylelint": "^13.7.2",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-standard": "^20.0.0",
+    "type-fest": "^1.0.1",
     "typescript": "^3.9.7"
   },
   "keywords": [
@@ -87,6 +91,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "build": "gatsby build --prefix-paths",
     "develop": "gatsby develop",
     "format": "npx prettier --write .",
@@ -110,6 +115,12 @@
     "smoke-test-prod-build": "start-server-and-test build-and-start-prod :9000 e2e-localProd",
     "smoke-test-with-local-backend": "start-server-and-test build-and-start-local-backend :5000 build-and-start-prod :9000 e2e-localProd",
     "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd-ci"
+  },
+  "resolutions": {
+    "ssri": "8.0.1",
+    "sockjs-client": "1.5.1",
+    "is-svg": "4.3.1",
+    "type-fest": "1.0.1"
   },
   "repository": {
     "type": "git",
