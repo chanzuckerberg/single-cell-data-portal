@@ -1,4 +1,4 @@
-import { memoize } from "lodash-es";
+import memoize from "lodash/memoize";
 import { Dataset, Ontology } from "src/common/entities";
 
 export const aggregateDatasetsMetadata = memoize(function (

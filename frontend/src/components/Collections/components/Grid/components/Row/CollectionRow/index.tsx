@@ -1,5 +1,6 @@
 import { Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
+import Link from "next/link";
 import React, { FC } from "react";
 import {
   ACCESS_TYPE,
@@ -43,7 +44,10 @@ type DOI = {
 };
 
 const CollectionRow: FC<Props> = (props) => {
-  const { data: collection } = useCollection(props.id, props.visibility);
+  const { data: collection } = useCollection({
+    id: props.id,
+    visibility: props.visibility,
+  });
 
   if (!collection) return null;
 
@@ -77,12 +81,14 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow>
       <StyledCell>
-        <CollectionTitleText
-          to={`/collections/${id}${isPrivate ? "/private" : ""}`}
-          data-test-id="collection-link"
-        >
-          {name}
-        </CollectionTitleText>
+        <Link href={`/collections/${id}${isPrivate ? "/private" : ""}`}>
+          <CollectionTitleText
+            href={`/collections/${id}${isPrivate ? "/private" : ""}`}
+            data-test-id="collection-link"
+          >
+            {name}
+          </CollectionTitleText>
+        </Link>
         <ContactText>{contact_name}</ContactText>
 
         {props.accessType === ACCESS_TYPE.WRITE ? (

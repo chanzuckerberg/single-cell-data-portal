@@ -45,7 +45,11 @@ async function fetchCollection(
   _: unknown,
   id: string,
   visibility: VISIBILITY_TYPE
-): Promise<Collection> {
+): Promise<Collection | null> {
+  if (!id) {
+    return null;
+  }
+
   const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
   const finalUrl =
@@ -63,11 +67,11 @@ async function fetchCollection(
   return result;
 }
 
-export function useCollection(
-  id: string,
-  visibility: VISIBILITY_TYPE = VISIBILITY_TYPE.PUBLIC
-) {
-  return useQuery<Collection>(
+export function useCollection({
+  id = "",
+  visibility = VISIBILITY_TYPE.PUBLIC,
+}) {
+  return useQuery<Collection | null>(
     [USE_COLLECTION, id, visibility],
     fetchCollection
   );

@@ -1,5 +1,5 @@
 import { IconNames } from "@blueprintjs/icons";
-import { debounce } from "lodash-es";
+import debounce from "lodash/debounce";
 import React, { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,

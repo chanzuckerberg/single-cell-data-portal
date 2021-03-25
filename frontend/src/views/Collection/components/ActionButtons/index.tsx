@@ -30,7 +30,7 @@ const ActionButtons: FC<Props> = ({
   visibility,
   addNewFile,
 }) => {
-  const { data: collection } = useCollection(collectionId, visibility);
+  const { data: collection } = useCollection({ id: collectionId, visibility });
 
   const selectedDataset = getSelectedDataset({
     datasets: collection?.datasets,

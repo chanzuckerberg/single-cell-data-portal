@@ -9,7 +9,7 @@ if [ ! -e ./node_modules ]; then
 fi
 ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 if [ ! -z "$API_URL" ]; then
-  cat src/configs/rdev.js | envsubst > src/configs/configs.js
+  cat src/configs/rdev.js | envsubst >src/configs/configs.js
 else
   cp src/configs/local.js src/configs/configs.js
 fi
@@ -21,8 +21,7 @@ fi
 
 # Build and run without dev mode in remote dev env.
 if [ "${DEPLOYMENT_STAGE}" == "dev" ]; then
-    exec gatsby develop --host 0.0.0.0
+  exec npm run dev
 else
-    npm run build
-    exec gatsby serve --host 0.0.0.0
+  exec npm run build-and-start-prod -p 9000
 fi

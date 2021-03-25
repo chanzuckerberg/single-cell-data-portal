@@ -1,6 +1,6 @@
 import { FormGroup, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { debounce } from "lodash-es";
+import debounce from "lodash/debounce";
 import React, { FC, useRef, useState } from "react";
 import { DEBOUNCE_TIME_MS } from "../../../CreateCollectionModal/components/Content/common/constants";
 import { Value } from "../common/constants";
