@@ -23,7 +23,6 @@
     "gatsby-plugin-typescript": "^2.4.23",
     "gatsby-source-filesystem": "^2.3.35",
     "gatsby-transformer-sharp": "^2.5.19",
-    "is-svg": "^4.3.1",
     "jschardet": "^2.3.0",
     "lodash-es": "^4.17.15",
     "node-fetch": "^2.6.1",
@@ -55,9 +54,9 @@
     "babel-jest": "^26.6.0",
     "babel-preset-gatsby": "^0.5.14",
     "concurrently": "^5.3.0",
-    "eslint": "^7.11.0",
+    "eslint": "^7.22.0",
     "eslint-config-prettier": "^6.13.0",
-    "eslint-config-react-app": "^5.2.1",
+    "eslint-config-react-app": "^6.0.0",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-flowtype": "^5.2.0",
     "eslint-plugin-import": "^2.22.1",
@@ -66,7 +65,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "eslint-plugin-sonarjs": "^0.5.0",
+    "eslint-plugin-sonarjs": "^0.6.0",
     "expect-playwright": "^0.3.2",
     "gatsby-plugin-asset-path": "^3.0.2",
     "gatsby-plugin-root-import": "^2.0.5",
@@ -83,7 +82,6 @@
     "stylelint": "^13.7.2",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-standard": "^20.0.0",
-    "type-fest": "^1.0.1",
     "typescript": "^3.9.7"
   },
   "keywords": [
@@ -118,9 +116,7 @@
   },
   "resolutions": {
     "ssri": "8.0.1",
-    "sockjs-client": "1.5.1",
-    "is-svg": "4.3.1",
-    "type-fest": "1.0.1"
+    "sockjs-client": "1.5.1"
   },
   "repository": {
     "type": "git",
