@@ -8,7 +8,7 @@ def get_cxguser_cookie():
     # suppress https warnings.
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-    OIDC_LOGIN_URL = "http://localhost:5000/dp/v1/login"
+    OIDC_LOGIN_URL = "http://backend.corporanet.local:5000/dp/v1/login"
     USERS_CONFIGURATION_PATH = "oauth/users.json"
     CLIENTS_CONFIGURATION_PATH = "oauth/clients-config.json"
 
@@ -24,7 +24,7 @@ def get_cxguser_cookie():
     client_data = data[0]
     client_id = client_data["ClientId"]
 
-    # Calling http://localhost:5000/dp/v1/login
+    # Calling http://backend.corporanet.local:5000/dp/v1/login
     session = requests.session()
     response = session.get(OIDC_LOGIN_URL, verify=False, allow_redirects=False)
     location = response.headers["Location"]
