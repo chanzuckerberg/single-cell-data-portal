@@ -30,6 +30,7 @@ module.exports = withImages({
               frameAncestors: ["'none'"],
               imgSrc: ["'self'", "data:"],
               mediaSrc: ["self"],
+              manifestSrc: ["self"],
               objectSrc: ["'none'"],
               reportURI:
                 configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
