@@ -18,7 +18,7 @@ module.exports = withImages({
         headers: createSecureHeaders({
           contentSecurityPolicy: {
             directives: {
-              baseUri: "self",
+              baseUri: "'self'",
               connectSrc: [
                 "'self'",
                 "sentry.prod.si.czi.technology",
@@ -26,11 +26,11 @@ module.exports = withImages({
               ],
               defaultSrc: ["'self'"],
               fontSrc: ["'self'", "https://fonts.gstatic.com"],
-              formAction: "self",
+              formAction: "'self'",
               frameAncestors: ["'none'"],
               imgSrc: ["'self'", "data:"],
-              mediaSrc: ["self"],
-              manifestSrc: ["self"],
+              mediaSrc: ["'self'"],
+              manifestSrc: ["'self'"],
               objectSrc: ["'none'"],
               reportURI:
                 configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
