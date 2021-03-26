@@ -57,13 +57,16 @@ export default class Document extends RawDocument {
             sizes="180x180"
             href="/apple-touch-icon.png"
           />
-          <link rel="manifest" href="/site.webmanifest" />
+          <link
+            rel="manifest"
+            href="/site.webmanifest"
+            crossOrigin="use-credentials"
+          />
           <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
           <meta name="theme-color" content="#000000" />
           <link
             href="https://fonts.googleapis.com/css?family=Montserrat:500,700|Roboto&amp;display=swap"
             rel="stylesheet"
-            data-react-helmet="true"
           />
         </Head>
         <body>
