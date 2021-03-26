@@ -23,5 +23,9 @@ fi
 if [ "${DEPLOYMENT_STAGE}" == "dev" ]; then
   exec npm run dev
 else
-  exec npm run build-and-start-prod -p 9000
+  # We need "-- --" because `npm run build-and-start-prod`
+  # runs `npm run build && npm run serve` under the hood,
+  # so we need to pass `-- -p 9000` to `npm run serve`, which
+  # will then call `next start -p 9000` correctly
+  exec npm run build-and-start-prod -- -- -p 9000
 fi
