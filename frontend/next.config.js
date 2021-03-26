@@ -29,8 +29,8 @@ module.exports = withImages({
               formAction: "'self'",
               frameAncestors: ["'none'"],
               imgSrc: ["'self'", "data:"],
-              mediaSrc: ["'self'"],
               manifestSrc: ["'self'"],
+              mediaSrc: ["'self'"],
               objectSrc: ["'none'"],
               reportURI:
                 configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
