@@ -40,7 +40,7 @@ def get_chalice_app(flask_app):
     deployment = os.environ["DEPLOYMENT_STAGE"]
     allowed_origins = []
     if deployment not in ["prod"]:
-        allowed_origins.append(r"^http://localhost:\d+")
+        allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment != "test":  # pragma: no cover
@@ -58,9 +58,12 @@ def get_chalice_app(flask_app):
     app.log.info(f"CORS allowed_origins: {allowed_origins}")
 
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
+    require_secure_cookies = True
+    if os.getenv("DEV_MODE_COOKIES"):
+        require_secure_cookies = False
     flask_app.config.update(
         SECRET_KEY=flask_secret_key,
-        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SECURE=require_secure_cookies,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
     )

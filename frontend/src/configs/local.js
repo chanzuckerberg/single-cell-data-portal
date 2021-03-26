@@ -2,7 +2,7 @@
 // to a new file named `configs.js` in this directory.
 
 const configs = {
-  API_URL: "http://localhost:5000",
+  API_URL: "http://backend.corporanet.local:5000",
 };
 
 if (typeof module !== "undefined") module.exports = configs;
