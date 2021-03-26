@@ -48,6 +48,9 @@ Options:
   --help              Show this message and exit.
 ```
 
+### GitHub Action Ingegration
+A new stack can also be deployed to remote development environment through GitHub Action integration. Pushing any branch prefixed with "rdev-" will trigger the GH Action workflow to create or update a dev stack, with the stack name equals the part of branch name following the prefix, e.g. pushing branch "rdev-my-dev-branch" will deploy the stack "my-dev-branch" in the remote dev enviroment. This is useful in situation where local connections is slow.
+
 ### Authentication
 The backend of Happy uses CZI's deployment of Terraform Enterprise (TFE) to deploy and track the resources
 for the stacks. This requires logging into TFE to get a long-lived token tied to your user.
