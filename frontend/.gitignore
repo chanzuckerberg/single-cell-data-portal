@@ -1,3 +1,5 @@
+# WARNING: PLEASE MAKE SURE TO KEEP THIS FILE IN SYNC WITH `.dockerignore`
+
 # Logs
 logs
 *.log
