@@ -1,15 +1,12 @@
+import Image from "next/image";
 import React, { FC } from "react";
 import logo from "src/common/images/logo.svg";
-import { Logo as StyledLogo, LogoWrapper } from "./style";
+import { LogoWrapper } from "./style";
 
-interface Props {
-  small?: boolean;
-}
-
-export const Logo: FC<Props> = ({ small }) => {
+export const Logo: FC = () => {
   return (
     <LogoWrapper data-test-id="logo">
-      <StyledLogo size={small ? 100 : undefined} src={String(logo)} />
+      <Image width="147px" height="35px" src={String(logo)} />
     </LogoWrapper>
   );
 };

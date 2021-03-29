@@ -19,6 +19,7 @@ $pt-font-size-large: $pt-grid-size * 2 !default;
 $pt-font-size-small: $pt-grid-size * 1.5 !default;
 
 @import "@blueprintjs/core/src/blueprint.scss";
+@import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 .bp3-button {
   box-shadow: inset 0px -1px 1px rgba(16, 22, 26, 0.1) !important;

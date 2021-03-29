@@ -1,5 +1,6 @@
 import { H3, Tab, Tabs } from "@blueprintjs/core";
-import { RouteComponentProps } from "@reach/router";
+import Head from "next/head";
+import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
@@ -20,25 +21,30 @@ import {
 } from "./style";
 import { getIsPublishable, renderContact, renderLinks } from "./utils";
 
-interface RouteProps {
-  id?: string;
-}
-
 enum TABS {
   GENE_SETS = "gene-sets-tab",
   DATASETS = "datasets-tab",
 }
 
-export type Props = RouteComponentProps<RouteProps>;
+const Collection: FC = () => {
+  const router = useRouter();
+  const { params } = router.query;
 
-const Collection: FC<Props> = ({ id = "" }) => {
-  const isPrivate = window.location.pathname.includes("/private");
+  let id = "";
+  let isPrivate = false;
+
+  if (Array.isArray(params)) {
+    id = params[0];
+    isPrivate = params[1] === "private";
+  } else if (params) {
+    id = params;
+  }
 
   const visibility = isPrivate
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const { data: collection, isError } = useCollection(id, visibility);
+  const { data: collection, isError } = useCollection({ id, visibility });
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
@@ -55,48 +61,57 @@ const Collection: FC<Props> = ({ id = "" }) => {
   };
 
   return (
-    <ViewGrid>
-      <CollectionInfo>
-        <H3>{collection.name}</H3>
-        <Description>{collection.description}</Description>
-        <LinkContainer>
-          {renderLinks(collection.links)}
-          {renderContact(collection.contact_name, collection.contact_email)}
-        </LinkContainer>
-      </CollectionInfo>
+    <>
+      <Head>
+        <title>cellxgene | {collection.name}</title>
+      </Head>
+      <ViewGrid>
+        <CollectionInfo>
+          <H3>{collection.name}</H3>
+          <Description>{collection.description}</Description>
+          <LinkContainer>
+            {renderLinks(collection.links)}
+            {renderContact(collection.contact_name, collection.contact_email)}
+          </LinkContainer>
+        </CollectionInfo>
 
-      <CollectionButtons>
-        {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
-          <DeleteCollection id={id} />
-        )}
-        {isPrivate && (
-          <PublishCollection isPublishable={isPublishable} id={id} />
-        )}
-      </CollectionButtons>
-      <TabWrapper>
-        <Tabs
-          onChange={handleOnChange}
-          selectedTabId={selectedTab}
-          id="collection-tabs"
-          defaultSelectedTabId={TABS.DATASETS}
-        >
-          <Tab
-            id={TABS.DATASETS}
-            title="Datasets"
-            panel={
-              <DatasetTab
-                collectionID={id}
-                datasets={datasets}
-                visibility={visibility}
-              />
-            }
-          />
-          {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
-            <Tab id={TABS.GENE_SETS} title="Gene Sets" panel={<GeneSetTab />} />
+        <CollectionButtons>
+          {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
+            <DeleteCollection id={id} />
           )}
-        </Tabs>
-      </TabWrapper>
-    </ViewGrid>
+          {isPrivate && (
+            <PublishCollection isPublishable={isPublishable} id={id} />
+          )}
+        </CollectionButtons>
+        <TabWrapper>
+          <Tabs
+            onChange={handleOnChange}
+            selectedTabId={selectedTab}
+            id="collection-tabs"
+            defaultSelectedTabId={TABS.DATASETS}
+          >
+            <Tab
+              id={TABS.DATASETS}
+              title="Datasets"
+              panel={
+                <DatasetTab
+                  collectionID={id}
+                  datasets={datasets}
+                  visibility={visibility}
+                />
+              }
+            />
+            {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
+              <Tab
+                id={TABS.GENE_SETS}
+                title="Gene Sets"
+                panel={<GeneSetTab />}
+              />
+            )}
+          </Tabs>
+        </TabWrapper>
+      </ViewGrid>
+    </>
   );
 };
 

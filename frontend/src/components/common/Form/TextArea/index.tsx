@@ -4,7 +4,7 @@ import {
   TextArea as RawTextArea,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { noop } from "lodash-es";
+import noop from "lodash/noop";
 import React, { FC, useRef, useState } from "react";
 import { Value } from "../common/constants";
 import { StyledIcon, Wrapper } from "./style";

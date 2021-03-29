@@ -1,15 +1,5 @@
 import styled from "styled-components";
-import { Image } from "theme-ui";
 import { fontStyle } from "../theme";
-
-interface LogoProps {
-  size?: number;
-}
-
-export const Logo = styled(Image)`
-  width: ${({ size = 200 }: LogoProps) => `${size}px`};
-  height: 35px;
-`;
 
 export const LogoWrapper = styled.span`
   display: flex;

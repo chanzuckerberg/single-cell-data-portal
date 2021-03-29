@@ -1,5 +1,5 @@
 import { Button, Classes, Intent } from "@blueprintjs/core";
-import { useNavigate } from "@reach/router";
+import { useRouter } from "next/router";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { COLLECTION_LINK_TYPE } from "src/common/entities";
@@ -42,7 +42,7 @@ const Content: FC<Props> = (props) => {
   const [isValid, setIsValid] = useState(false);
   const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
@@ -175,7 +175,7 @@ const Content: FC<Props> = (props) => {
     setIsLoading(false);
 
     if (collectionId) {
-      navigate(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
+      router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
     }
   }
 

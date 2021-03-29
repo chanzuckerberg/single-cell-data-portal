@@ -1,9 +1,8 @@
-import { Link } from "@reach/router";
 import { BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
 // Collection Title Column
-export const CollectionTitleText = styled(Link)`
+export const CollectionTitleText = styled.a`
   color: ${BLUE.C};
   font-size: 14px;
   font-weight: 500;
