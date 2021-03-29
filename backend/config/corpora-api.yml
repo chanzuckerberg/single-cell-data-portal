@@ -454,6 +454,26 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
+  /dp/v1/genesets/{geneset_uuid}:
+    delete:
+      tags:
+        - genesets
+      summary: Delete gene sets from a collection
+      security:
+        - cxguserCookie: [ ]
+      description: >-
+        Delete a gene set from a private collection
+      operationId: corpora.lambdas.api.v1.gene_sets.delete
+      parameters:
+        - $ref: "#/components/parameters/path_geneset_uuid"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
+
   /dp/v1/login:
     get:
       tags:
@@ -538,6 +558,9 @@ components:
       type: string
     dataset_uuid:
       description: A unique identifier of a Dataset.
+      type: string
+    geneset_uuid:
+      description: A unique identifier of a gene set.
       type: string
     visibility:
       description: >-
@@ -747,6 +770,12 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_uuid"
+    path_geneset_uuid:
+      name: geneset_uuid
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/geneset_uuid"
     path_filename:
       name: filename
       description: The name of a file to add, remove, or download.
