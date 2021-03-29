@@ -11,6 +11,10 @@ services:
     volumes:
       - database:/var/lib/postgresql/data
       - ./backend/database:/import
+    networks:
+       corporanet:
+          aliases:
+            - database.corporanet.local
   localstack:
     image: localstack/localstack@sha256:7c6635493185d25165979995fb073fd789c72b6d8b17ef3a70b798d55576732f
     ports:
@@ -25,6 +29,10 @@ services:
       - DEFAULT_REGION=us-west-2
     volumes:
       - localstack:/tmp/localstack
+    networks:
+       corporanet:
+          aliases:
+            - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     build:
@@ -44,6 +52,10 @@ services:
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
+    networks:
+       corporanet:
+          aliases:
+            - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     build:
@@ -72,6 +84,10 @@ services:
       - DEPLOYMENT_STAGE=dev
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
+    networks:
+       corporanet:
+          aliases:
+            - uploadfailures.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     build:
@@ -97,6 +113,10 @@ services:
       - DEPLOYMENT_STAGE=dev
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
+    networks:
+       corporanet:
+          aliases:
+            - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     build:
@@ -121,6 +141,7 @@ services:
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=dev
       - RESTART_ON_FAILURE=yes
+      - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.
     command: ["python3", "/chalice/run_local_server.py", "--host", "0.0.0.0"]
     volumes:
@@ -135,6 +156,10 @@ services:
       - ./backend/chalice/api_server/.chalice-dev:/corpora-data-portal/backend/chalice/api_server/.chalice
       - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
       - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
+    networks:
+       corporanet:
+          aliases:
+            - backend.corporanet.local
   oidc:
     image: soluto/oidc-server-mock:0.3.0
     ports:
@@ -159,6 +184,12 @@ services:
     volumes:
       - ./oauth/pkcs12:/tmp/pkcs12:ro
       - ./oauth:/tmp/config:ro
+    networks:
+       corporanet:
+          aliases:
+            - oidc.corporanet.local
+networks:
+  corporanet:
 volumes:
   database:
   localstack:

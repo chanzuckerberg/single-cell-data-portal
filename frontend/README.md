@@ -110,7 +110,7 @@ This starts an FE server that hits a **local** API server
 1. Requirements:
 
    1. You are able to spin up a local BE server
-   1. Your `src/configs/configs.js` points to local BE server. E.g., `http://localhost:5000`
+   1. Your `src/configs/configs.js` points to local BE server. E.g., `http://backend.corporanet.local:5000`
 
 1. For Gatsby Prod Build: `npm run smoke-test-with-local-backend`
 

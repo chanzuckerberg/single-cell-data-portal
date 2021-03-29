@@ -89,8 +89,20 @@ local-ecr-login:
 		aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com; \
 	fi
 
+.PHONY: local-hostconfig
+local-hostconfig: 
+	if [ "$$(uname -s)" == "Darwin" ]; then \
+	  sudo ./scripts/happy hosts install; \
+	fi
+
+.PHONY: local-nohostconfig
+local-nohostconfig: 
+	if [ "$$(uname -s)" == "Darwin" ]; then \
+	  sudo ./scripts/happy hosts uninstall; \
+	fi
+
 .PHONY: local-init
-local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login ## Launch a new local dev env and populate it with test data.
+local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig ## Launch a new local dev env and populate it with test data.
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
 	docker-compose exec -T backend pip3 install awscli
 	docker-compose exec -T backend /corpora-data-portal/scripts/setup_dev_data.sh
@@ -105,7 +117,7 @@ local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importin
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
 
 .PHONY: local-sync
-local-sync: local-rebuild local-init ## Re-sync the local-environment state after modifying library deps or docker configs
+local-sync: local-rebuild local-init local-hostconfig ## Re-sync the local-environment state after modifying library deps or docker configs
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
@@ -116,7 +128,7 @@ local-stop: ## Stop the local dev environment.
 	docker-compose stop
 
 .PHONY: local-clean
-local-clean: ## Remove everything related to the local dev environment (including db data!)
+local-clean: local-nohostconfig ## Remove everything related to the local dev environment (including db data!)
 	-if [ -f ./oauth/pkcs12/server.crt ] ; then \
 	    export CERT=$$(docker run -v $(PWD)/oauth/pkcs12:/tmp/certs --workdir /tmp/certs --rm=true --entrypoint "" soluto/oidc-server-mock:0.3.0 bash -c "openssl x509 -in server.crt -outform DER | sha1sum | cut -d ' ' -f 1"); \
 	    echo ""; \
@@ -128,6 +140,8 @@ local-clean: ## Remove everything related to the local dev environment (includin
 	docker-compose rm -sf
 	-docker volume rm corpora-data-portal_database
 	-docker volume rm corpora-data-portal_localstack
+	-docker network rm corpora-data-portal_corporanet
+	-docker network rm corpora-data-portal_default
 
 .PHONY: local-logs
 local-logs: ## Tail the logs of the dev env containers. ex: make local-logs CONTAINER=backend
@@ -141,15 +155,15 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 local-unit-test: ## Run backend tests in the dev environment
 	@if [ -z "$(path)" ]; then \
         echo "Running all tests"; \
-		docker-compose exec -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
 	else \
 		echo "Running test(s): $(path)"; \
-		docker-compose exec -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
 	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
 		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
 		docker-compose exec -T backend bash -c "apt-get update && apt-get install -y git"; \
-		docker-compose exec -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
 	fi
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is

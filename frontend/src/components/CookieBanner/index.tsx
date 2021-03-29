@@ -25,12 +25,12 @@ const CookieBanner: FC = () => {
     <Wrapper>
       By using this site, you are agreeing to our{" "}
       <Link href={ROUTES.TOS} target="_blank" rel="noreferrer">
-        terms of service (updates coming)
+        terms of service
       </Link>
       . We use cookies to help us improve our future efforts, and we also use
       necessary cookies to make our site work. To learn more, read our{" "}
       <Link href={ROUTES.PRIVACY} target="_blank" rel="noreferrer">
-        privacy policy (updates coming)
+        privacy policy
       </Link>
       .
       <ButtonWrapper>
