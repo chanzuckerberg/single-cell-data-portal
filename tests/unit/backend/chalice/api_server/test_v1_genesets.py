@@ -87,6 +87,12 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
             self.assertEqual(202, response.status_code)
 
+            # get dataset
+            response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
+            response.raise_for_status()
+            body = json.loads(response.body)
+            self.assertIn(dataset.id, [d["id"] for d in body.get("datasets", [])])
+
     def test__delete_gene_set__UNAUTHORIZED(self):
         headers = dict(host="localhost", Cookie=get_auth_token(self.app))
         collection = self.generate_collection(
