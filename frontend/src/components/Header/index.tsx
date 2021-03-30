@@ -25,9 +25,7 @@ const Header: FC = () => {
         <Right>
           {isMyCollectionsShown && (
             <Link href={ROUTES.MY_COLLECTIONS}>
-              {/* TODO(thuang): Remove the disable once the issue resolves: https://github.com/vercel/next.js/discussions/8207 */}
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>
+              <a href={ROUTES.MY_COLLECTIONS}>
                 <MyCollectionsButton intent={Intent.PRIMARY} minimal>
                   My Collections
                 </MyCollectionsButton>
