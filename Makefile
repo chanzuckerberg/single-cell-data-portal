@@ -49,10 +49,6 @@ smoke-test-prod-build:
 smoke-test-with-local-backend:
 	$(MAKE) smoke-test-with-local-backend -C ./frontend
 
-.PHONY: smoke-test-with-local-backend-ci
-smoke-test-with-local-backend-ci:
-	$(MAKE) smoke-test-with-local-backend-ci -C ./frontend
-
 .PHONY: e2e
 e2e:
 	$(MAKE) e2e -C ./frontend DEPLOYMENT_STAGE=$(DEPLOYMENT_STAGE)
@@ -185,6 +181,10 @@ local-functional-test: ## Run functional tests in the dev environment
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose exec -T frontend make smoke-test-with-local-dev
+
+.PHONY: local-e2e
+local-e2e: ## Run frontend/e2e tests
+	docker-compose exec -e DEPLOYMENT_STAGE -T frontend make e2e
 
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
