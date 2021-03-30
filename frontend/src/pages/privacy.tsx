@@ -1,3 +1,4 @@
+import Head from "next/head";
 import React from "react";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
@@ -7,14 +8,15 @@ import {
   Layout,
   PrivacyStyle,
 } from "src/components/common/staticPages/style";
-import SEO from "src/components/seo";
 
 const ToS = () => {
   return (
     <Layout>
       <CommonStyle>
         <PrivacyStyle>
-          <SEO title="Privacy" />
+          <Head>
+            <title>cellxgene | Privacy</title>
+          </Head>
           <header>
             <CellxgeneLogo
               data-test-id="cellxgene-logo"

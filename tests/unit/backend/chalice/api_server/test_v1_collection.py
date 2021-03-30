@@ -67,7 +67,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
 
     def test__list_collection_options__allow(self):
-        origin = "http://localhost:8000"
+        origin = "http://localhost:3000"
         res = self.app.options("/dp/v1/collections", headers={"origin": origin})
         res.raise_for_status()
         self.assertEqual(origin, res.headers["Access-Control-Allow-Origin"])

@@ -1,4 +1,4 @@
-#### Reviewers
+### Reviewers
 **Functional:** 
 
 **Readability:** 
@@ -13,3 +13,5 @@
 ## Definition of Done (from ticket)
 
 ## QA steps (optional)
+
+## Known Issues
