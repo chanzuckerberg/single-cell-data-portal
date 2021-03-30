@@ -1086,6 +1086,34 @@ def get_ecr_repo(config):
     first_registry = first_repo["url"].split("/")[0]
     return first_registry
 
+def login_ecrs(images, ecrs, ecr_client):
+    """Login to all registries associated with images.
+
+    An item in images must be a key in ecrs, skipping any that is not, with a warning msg.
+
+    If images list is empty, assume that we are building and pushing everything, so
+    login everywhere.
+    """
+
+    registry_logins = set()
+    if not images:
+        registry_logins = set([entry["url"].split("/")[0] for entry in ecrs.values()])
+    else:
+        for image_name in images:
+            if image_name not in ecrs:
+                print(f"WARNING: Registry url for image {image_name} not found, please check config. Skipping...")
+                continue
+            registry_logins.add(ecrs[image_name]["url"].split("/")[0])
+
+    print("logging in to ECR...")
+    for registry in registry_logins:
+        # Equivalent to aws get-login-password
+        # We need to do this *before* a build now for buildkit's build cache to work.
+        auth = ecr_client.get_authorization_token()["authorizationData"][0]
+        auth_token = b64decode(auth["authorizationToken"]).decode()
+        pwd = auth_token.split(":")[1].encode()
+        cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", registry], input=pwd)
+        print(f"login to {registry}, done!")
 
 @cli.command()
 @click.argument("images", nargs=-1, default=None)
@@ -1101,15 +1129,7 @@ def push(ctx, images, tag, extra_tag, compose_env):
     ecrs = config.ecrs
     ecr_client = AwsSession.get_client(ctx, "ecr")
 
-    # Equivalent to aws get-login-password
-    # We need to do this *before* a build now for buildkit's build cache to work.
-    print("logging in to ECR...")
-    first_registry = get_ecr_repo(config)
-    auth = ecr_client.get_authorization_token()["authorizationData"][0]
-    auth_token = b64decode(auth["authorizationToken"]).decode()
-    pwd = auth_token.split(":")[1].encode()
-    cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", first_registry], input=pwd)
-    print("login done!")
+    login_ecrs(images, ecrs, ecr_client)
 
     if not tag:
         tag = generate_tag(ctx)
@@ -1119,7 +1139,14 @@ def push(ctx, images, tag, extra_tag, compose_env):
         builder_config["env"] = compose_env
     elif os.path.isfile(config.default_compose_env):
         builder_config["env"] = config.default_compose_env
+
+    # NOTE: It's OK to set an arbitrary repo here because it's only
+    # used for buildkit caching during image building.
+    # Image pushing does not care about this setting, and will push
+    # images to the right places with some re-tagging.
+    first_registry = get_ecr_repo(config)
     builder_config["ecr_repo"] = first_registry  # TODO this is a leak in our abstraction, need to fix.
+
     builder = ArtifactBuilder(builder_config)
     artifacts = builder.build(images)
     print("Build complete")
