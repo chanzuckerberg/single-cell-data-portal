@@ -24,8 +24,8 @@ const Header: FC = () => {
         <HomepageLink />
         <Right>
           {isMyCollectionsShown && (
-            <Link href={ROUTES.MY_COLLECTIONS}>
-              <a href={ROUTES.MY_COLLECTIONS}>
+            <Link href={ROUTES.MY_COLLECTIONS} passHref>
+              <a href="passHref">
                 <MyCollectionsButton intent={Intent.PRIMARY} minimal>
                   My Collections
                 </MyCollectionsButton>

@@ -81,11 +81,11 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow>
       <StyledCell>
-        <Link href={`/collections/${id}${isPrivate ? "/private" : ""}`}>
-          <CollectionTitleText
-            data-test-id="collection-link"
-            href={`/collections/${id}${isPrivate ? "/private" : ""}`}
-          >
+        <Link
+          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          passHref
+        >
+          <CollectionTitleText data-test-id="collection-link" href="passHref">
             {name}
           </CollectionTitleText>
         </Link>

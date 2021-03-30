@@ -5,8 +5,8 @@ import { Link } from "./style";
 
 export const HomepageLink: FC = () => {
   return (
-    <Link href={ROUTES.HOMEPAGE}>
-      <a href={ROUTES.HOMEPAGE}>
+    <Link href={ROUTES.HOMEPAGE} passHref>
+      <a href="passHref">
         <Logo />
       </a>
     </Link>
