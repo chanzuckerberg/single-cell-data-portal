@@ -56,25 +56,23 @@ jobs:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
         run: |
           ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
-      ### This runs but is disabled because the local-functional-tests fail on staging, since it lacks a test_account_password secret value
-      ### and corpora_github_actions_dev role does not have permissions to run states:StartExecution.
-      # - name: Run functional test
-      #   env:
-      #     TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-      #     DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-      #   if: github.event.deployment.environment == 'stage'
-      #   run: |
-      #     echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-      #     mkdir -p .local/bin
-      #     curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
-      #     chmod +x .local/bin/chamber
-      #     PATH="$PATH:$(pwd)/.local/bin"
-      #     if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-      #       export DEPLOYMENT_STAGE=staging
-      #     fi
-      #     echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-      #     docker-compose up --no-deps -d backend
-      #     BOTO_ENDPOINT_URL= make local-functional-test
+      - name: Run functional test
+        env:
+          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        if: github.event.deployment.environment != 'prod'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          mkdir -p .local/bin
+          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
+          chmod +x .local/bin/chamber
+          PATH="$PATH:$(pwd)/.local/bin"
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+          docker-compose up --no-deps -d backend
+          BOTO_ENDPOINT_URL= make local-functional-test
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
