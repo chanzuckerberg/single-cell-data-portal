@@ -49,10 +49,6 @@ smoke-test-prod-build:
 smoke-test-with-local-backend:
 	$(MAKE) smoke-test-with-local-backend -C ./frontend
 
-.PHONY: smoke-test-with-local-backend-ci
-smoke-test-with-local-backend-ci:
-	$(MAKE) smoke-test-with-local-backend-ci -C ./frontend
-
 .PHONY: e2e
 e2e:
 	$(MAKE) e2e -C ./frontend DEPLOYMENT_STAGE=$(DEPLOYMENT_STAGE)

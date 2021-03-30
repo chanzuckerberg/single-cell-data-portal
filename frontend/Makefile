@@ -42,10 +42,6 @@ smoke-test-prod-build:
 smoke-test-with-local-backend:
 	npm run smoke-test-with-local-backend
 
-.PHONY: smoke-test-with-local-backend-ci
-smoke-test-with-local-backend-ci:
-	npm run smoke-test-with-local-backend-ci
-
 .PHONY: e2e
 e2e:
 	npm run e2e-$(DEPLOYMENT_STAGE)

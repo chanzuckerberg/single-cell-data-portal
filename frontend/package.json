@@ -97,7 +97,6 @@
     "smoke-test": "start-server-and-test start :3000 e2e",
     "smoke-test-prod-build": "start-server-and-test build-and-start-prod :9000 e2e-localProd",
     "smoke-test-with-local-backend": "start-server-and-test build-and-start-local-backend :5000 build-and-start-prod :9000 e2e-localProd",
-    "smoke-test-with-local-backend-ci": "start-server-and-test build-and-start-local-backend-ci :5000 build-and-start-prod :9000 e2e-localProd-ci"
   },
   "repository": {
     "type": "git",
