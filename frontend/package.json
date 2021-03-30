@@ -82,7 +82,7 @@
     "serve": "next start",
     "clean": "gatsby clean",
     "test": "jest jest/config.js",
-    "e2e": "TEST_ENV=local jest --config jest/e2e.config.js",
+    "e2e": "jest --config jest/e2e.config.js",
     "e2e-localProd": "TEST_ENV=localProd jest --config jest/e2e.config.js",
     "e2e-localProd-ci": "DEBUG=pw:api TEST_ENV=localProd jest --config jest/e2e.config.js",
     "e2e-dev": "TEST_ENV=dev jest --config jest/e2e.config.js",
