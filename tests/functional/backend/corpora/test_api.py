@@ -11,7 +11,7 @@ API_URL = {
     "dev": "https://api.dev.corpora.cziscience.com",
     "prod": "https://api.cellxgene.cziscience.com",
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "test": "http://localhost:5000"
+    "test": "http://localhost:5000",
 }
 
 
