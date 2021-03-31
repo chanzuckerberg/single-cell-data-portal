@@ -126,8 +126,9 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         geneset0 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
         geneset1 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
         geneset2 = self.generate_geneset(self.session, collection=collection)
-        GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id, add=[geneset2.id],
-                                                      remove=[geneset0.id])
+        GenesetDatasetLink.update_links_for_a_dataset(
+            self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id]
+        )
 
         linked_genesest_ids = [x.id for x in dataset.genesets]
         self.assertIn(geneset1.id, linked_genesest_ids)
@@ -142,8 +143,9 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         geneset2 = self.generate_geneset(self.session, collection=collection)
         with self.subTest("cant link geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
-                GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id,
-                                                              add=[geneset2.id, generate_uuid()], remove=[geneset0.id])
+                GenesetDatasetLink.update_links_for_a_dataset(
+                    self.session, dataset_id=dataset.id, add=[geneset2.id, generate_uuid()], remove=[geneset0.id]
+                )
 
             linked_genesest_ids = [x.id for x in dataset.genesets]
             self.assertIn(geneset0.id, linked_genesest_ids)
@@ -151,8 +153,9 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
             self.assertNotIn(geneset2.id, linked_genesest_ids)
         with self.subTest("cant delete link to geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
-                GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id, add=[geneset2.id],
-                                                              remove=[geneset0.id, generate_uuid()])
+                GenesetDatasetLink.update_links_for_a_dataset(
+                    self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id, generate_uuid()]
+                )
 
             linked_genesest_ids = [x.id for x in dataset.genesets]
             self.assertIn(geneset0.id, linked_genesest_ids)
