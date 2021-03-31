@@ -17,7 +17,15 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "types": ["jest-playwright-preset", "expect-playwright", "jest"]
+    "types": ["jest-playwright-preset", "expect-playwright", "jest"],
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "public", ".cache"]
+  "exclude": ["node_modules", "public", ".cache"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "src/common/constants/nodeEnv.js"
+  ]
 }

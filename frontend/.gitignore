@@ -1,3 +1,5 @@
+# WARNING: PLEASE MAKE SURE TO KEEP THIS FILE IN SYNC WITH `.dockerignore`
+
 # Logs
 logs
 *.log
@@ -58,10 +60,6 @@ typings/
 # configs
 src/configs/configs.js
 
-# gatsby files
-.cache/
-public
-
 # Mac files
 .DS_Store
 
@@ -69,5 +67,9 @@ public
 yarn-error.log
 .pnp/
 .pnp.js
+
 # Yarn Integrity file
 .yarn-integrity
+
+# Next.js
+.next

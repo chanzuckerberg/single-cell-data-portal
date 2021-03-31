@@ -7,7 +7,12 @@ from requests import HTTPError
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
-API_URL = {"dev": "https://api.dev.corpora.cziscience.com", "test": "http://localhost:5000"}
+API_URL = {
+    "dev": "https://api.dev.corpora.cziscience.com",
+    "prod": "https://api.cellxgene.cziscience.com",
+    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
+    "test": "http://localhost:5000",
+}
 
 
 class TestApi(unittest.TestCase):

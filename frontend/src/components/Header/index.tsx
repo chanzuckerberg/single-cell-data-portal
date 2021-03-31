@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { Link } from "@reach/router";
+import Link from "next/link";
 import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
@@ -24,10 +24,12 @@ const Header: FC = () => {
         <HomepageLink />
         <Right>
           {isMyCollectionsShown && (
-            <Link to={ROUTES.MY_COLLECTIONS}>
-              <MyCollectionsButton intent={Intent.PRIMARY} minimal>
-                My Collections
-              </MyCollectionsButton>
+            <Link href={ROUTES.MY_COLLECTIONS} passHref>
+              <a href="passHref">
+                <MyCollectionsButton intent={Intent.PRIMARY} minimal>
+                  My Collections
+                </MyCollectionsButton>
+              </a>
             </Link>
           )}
           <AuthButtons />

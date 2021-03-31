@@ -1,6 +1,6 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { useNavigate } from "@reach/router";
+import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
@@ -19,10 +19,10 @@ interface Props {
 const PublishCollection: FC<Props> = ({ id = "", isPublishable }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [publish, { isSuccess, isLoading }] = usePublishCollection();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   if (isSuccess) {
-    navigate(ROUTES.COLLECTION.replace(":id", id));
+    router.push(ROUTES.COLLECTION.replace(":id", id));
   }
 
   const toggleAlert = () => setIsOpen(!isOpen);

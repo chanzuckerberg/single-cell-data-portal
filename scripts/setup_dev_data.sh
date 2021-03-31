@@ -4,7 +4,7 @@ export AWS_DEFAULT_REGION=us-west-2
 export AWS_ACCESS_KEY_ID=nonce
 export AWS_SECRET_ACCESS_KEY=nonce
 
-export FRONTEND_URL=http://frontend.corporanet.local:8000
+export FRONTEND_URL=http://frontend.corporanet.local:3000
 export BACKEND_URL=http://backend.corporanet.local:5000
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
@@ -25,20 +25,19 @@ echo " done"
 
 echo "Creating secretsmanager secrets"
 local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
-${local_aws} s3api create-bucket --bucket corpora-data-dev &> /dev/null || true
-${local_aws} s3api create-bucket --bucket artifact-bucket &> /dev/null || true
-${local_aws} s3api create-bucket --bucket cellxgene-bucket &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/dev/config &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &> /dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/test/config &> /dev/null || true
+${local_aws} s3api create-bucket --bucket corpora-data-dev &>/dev/null || true
+${local_aws} s3api create-bucket --bucket artifact-bucket &>/dev/null || true
+${local_aws} s3api create-bucket --bucket cellxgene-bucket &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/auth0-secret &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/database_local &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/dev/config &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/config &>/dev/null || true
 
 echo "Creating default state machine"
 ${local_aws} iam create-role --role-name StepRole --assume-role-policy-document '{"Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Principal": { "Service": "states.amazonaws.com" }, "Action": "sts:AssumeRole" }' || true
 ${local_aws} stepfunctions create-state-machine --name uploader-dev-sfn --definition '{"StartAt": "noop", "States": {"noop": {"Type": "Pass", "Result": {}, "ResultPath": "$.coords", "End": true}}}' --role-arn arn:aws:iam::000000000000:role/StepRole || true
-
 
 echo "Updating secrets"
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/auth0-secret --secret-string '{
@@ -70,7 +69,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/confi
 
 # Make a 1mb data file
 echo "Writing test file to s3"
-dd if=/dev/zero of=fake-h5ad-file.h5ad bs=1024 count=1024 &> /dev/null
+dd if=/dev/zero of=fake-h5ad-file.h5ad bs=1024 count=1024 &>/dev/null
 ${local_aws} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
 rm fake-h5ad-file.h5ad
 

@@ -1,7 +1,7 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import { useNavigate } from "@reach/router";
+import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
@@ -17,9 +17,9 @@ interface Props {
 
 const DeleteCollection: FC<Props> = ({ id }) => {
   const [deleteMutation, { isSuccess }] = useDeleteCollection(id);
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  if (isSuccess) navigate(ROUTES.MY_COLLECTIONS);
+  if (isSuccess) router.push(ROUTES.MY_COLLECTIONS);
 
   const handleDelete = () => {
     deleteMutation(id);

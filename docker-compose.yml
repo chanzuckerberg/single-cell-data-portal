@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   database:
@@ -45,7 +45,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8000:8000"
+      - "3000:3000"
     command: ["./container_init.sh"]
     environment:
       - DEPLOYMENT_STAGE=dev

@@ -1,4 +1,4 @@
-import { Link as LinkRaw } from "gatsby";
+import LinkRaw from "next/link";
 import styled from "styled-components";
 
 export const Link = styled(LinkRaw)`
