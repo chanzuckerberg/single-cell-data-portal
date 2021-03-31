@@ -10,7 +10,7 @@ resource aws_batch_job_definition batch_job_def {
 {
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 28000,
+  "memory": 230000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
