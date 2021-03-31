@@ -9,7 +9,7 @@ from ....common.utils.exceptions import (
 
 def delete(geneset_uuid: str, user: str):
     """
-    Deletes an existing dataset or cancels an in progress upload.
+    Deletes an existing geneset
     """
     db_session = g.db_session
     geneset = Geneset.get(db_session, geneset_uuid)
