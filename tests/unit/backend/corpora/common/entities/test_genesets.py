@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
-from backend.corpora.common.corpora_orm import DbCollection, generate_uuid, DbGenesetDatasetLink
+from backend.corpora.common.corpora_orm import DbCollection, generate_uuid
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -111,7 +111,7 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         dataset = self.generate_dataset(self.session, collection=collection)
         geneset = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
         link = GenesetDatasetLink.get(self.session, dataset_id=dataset.id, geneset_id=geneset.id)
-        self.assertIsInstance(link, DbGenesetDatasetLink)
+        self.assertIsInstance(link, GenesetDatasetLink)
 
     def test_get_gene_set_dataset_link__does_not_exist(self):
         collection = self.generate_collection(self.session)
@@ -126,9 +126,8 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         geneset0 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
         geneset1 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
         geneset2 = self.generate_geneset(self.session, collection=collection)
-        GenesetDatasetLink.update_links_for_a_dataset(
-            self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id]
-        )
+        GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id, add=[geneset2.id],
+                                                      remove=[geneset0.id])
 
         linked_genesest_ids = [x.id for x in dataset.genesets]
         self.assertIn(geneset1.id, linked_genesest_ids)
@@ -143,9 +142,8 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         geneset2 = self.generate_geneset(self.session, collection=collection)
         with self.subTest("cant link geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
-                GenesetDatasetLink.update_links_for_a_dataset(
-                    self.session, dataset_id=dataset.id, add=[geneset2.id, generate_uuid()], remove=[geneset0.id]
-                )
+                GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id,
+                                                              add=[geneset2.id, generate_uuid()], remove=[geneset0.id])
 
             linked_genesest_ids = [x.id for x in dataset.genesets]
             self.assertIn(geneset0.id, linked_genesest_ids)
@@ -153,9 +151,8 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
             self.assertNotIn(geneset2.id, linked_genesest_ids)
         with self.subTest("cant delete link to geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
-                GenesetDatasetLink.update_links_for_a_dataset(
-                    self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id, generate_uuid()]
-                )
+                GenesetDatasetLink.update_links_for_a_dataset(self.session, dataset_id=dataset.id, add=[geneset2.id],
+                                                              remove=[geneset0.id, generate_uuid()])
 
             linked_genesest_ids = [x.id for x in dataset.genesets]
             self.assertIn(geneset0.id, linked_genesest_ids)
