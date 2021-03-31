@@ -1,19 +1,25 @@
-import { H3, Tab, Tabs } from "@blueprintjs/core";
+import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { useQueryCache } from "react-query";
+import { ACCESS_TYPE, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { useCollection } from "src/common/queries/collections";
-import DeleteCollection from "src/components/Collections/components/DeleteCollection";
-import PublishCollection from "src/components/Collections/components/PublishCollection";
+import {
+  useCollection,
+  useCollectionUploadLinks,
+  USE_COLLECTION,
+} from "src/common/queries/collections";
+import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
+import ActionButtons, { UploadedFiles } from "./components/ActionButtons";
+import DatasetUploadToast from "./components/DatasetUploadToast";
 import GeneSetTab from "./components/GeneSetTab";
 import {
-  CollectionButtons,
   CollectionInfo,
   Description,
   LinkContainer,
@@ -44,13 +50,42 @@ const Collection: FC = () => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
+  const [uploadLink] = useCollectionUploadLinks(id, visibility);
+
+  const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
+
   const { data: collection, isError } = useCollection({ id, visibility });
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
+  const queryCache = useQueryCache();
+
   if (!collection || isError) {
     return null;
   }
+
+  const addNewFile = (newFile: UploadingFile) => {
+    if (!newFile.link) return;
+
+    const payload = JSON.stringify({ url: newFile.link });
+
+    uploadLink(
+      { collectionId: id, payload },
+      {
+        onSuccess: (datasetID: Dataset["id"]) => {
+          newFile.id = datasetID;
+          DatasetUploadToast.show({
+            icon: IconNames.TICK,
+            intent: Intent.PRIMARY,
+            message:
+              "Your file is being uploaded which will continue in the background, even if you close this window.",
+          });
+          setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
+          queryCache.invalidateQueries(USE_COLLECTION);
+        },
+      }
+    );
+  };
 
   const datasets = collection.datasets;
 
@@ -59,6 +94,9 @@ const Collection: FC = () => {
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
   };
+
+  const shouldShowPrivateWriteAction =
+    collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
   return (
     <>
@@ -70,19 +108,23 @@ const Collection: FC = () => {
           <H3>{collection.name}</H3>
           <Description>{collection.description}</Description>
           <LinkContainer>
-            {renderLinks(collection.links)}
+            {/*
+             * (thuang): Contact and Links order defined here:
+             * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell/124
+             */}
             {renderContact(collection.contact_name, collection.contact_email)}
+            {renderLinks(collection.links)}
           </LinkContainer>
         </CollectionInfo>
 
-        <CollectionButtons>
-          {collection.access_type === ACCESS_TYPE.WRITE && isPrivate && (
-            <DeleteCollection id={id} />
-          )}
-          {isPrivate && (
-            <PublishCollection isPublishable={isPublishable} id={id} />
-          )}
-        </CollectionButtons>
+        {shouldShowPrivateWriteAction && (
+          <ActionButtons
+            id={id}
+            addNewFile={addNewFile}
+            isPublishable={isPublishable}
+          />
+        )}
+
         <TabWrapper>
           <Tabs
             onChange={handleOnChange}

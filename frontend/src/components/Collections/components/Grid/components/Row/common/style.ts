@@ -24,6 +24,7 @@ export const DetailsCell = styled(StyledCell)`
   line-height: 18px;
   letter-spacing: -0.1px;
   padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
+  vertical-align: middle !important;
 `;
 
 export const LeftAlignedDetailsCell = styled(DetailsCell)`
@@ -39,11 +40,16 @@ export const RightAlignedDetailsCell = styled(DetailsCell)`
   text-align: right !important;
 `;
 
-export const ExploreButtonCell = styled(RightAlignedDetailsCell)`
+export const ActionCell = styled(RightAlignedDetailsCell)`
   vertical-align: middle !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   & > .${Classes.BUTTON} {
     margin: auto 0;
   }
+`;
+
+export const ActionButtonsContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `;

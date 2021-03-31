@@ -1,4 +1,6 @@
+import { Tooltip } from "@blueprintjs/core";
 import React, { FC } from "react";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Dataset } from "src/common/entities";
 import Modal from "src/components/common/Modal";
 import Content from "./components/Content";
@@ -13,23 +15,30 @@ interface Props {
 
 const DownloadDataset: FC<Props> = ({
   name,
-  dataAssets,
+  dataAssets = EMPTY_ARRAY,
   isDisabled = false,
   Button = StyledButton,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const toggleOpen = () => setIsOpen(!isOpen);
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+  };
+
+  if (!dataAssets.length) {
+    return null;
+  }
 
   return (
     <>
-      <Button
-        disabled={isDisabled}
-        onClick={toggleOpen}
-        data-test-id="dataset-download-button"
-      >
-        Download
-      </Button>
+      <Tooltip content="Download">
+        <Button
+          disabled={isDisabled || !dataAssets.length}
+          onClick={toggleOpen}
+          data-test-id="dataset-download-button"
+        />
+      </Tooltip>
+
       <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
         <Content name={name} dataAssets={dataAssets} onClose={toggleOpen} />
       </Modal>

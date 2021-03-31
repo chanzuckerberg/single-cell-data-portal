@@ -5,15 +5,14 @@ import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import {
+  useCollection,
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
-import ActionButtons, {
-  UploadedFiles,
-} from "src/views/Collection/components/ActionButtons";
+import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
 import EmptyModal from "../EmptyModal";
 
@@ -29,10 +28,9 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
 
   const [uploadLink] = useCollectionUploadLinks(collectionID, visibility);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
+  const { data: collection } = useCollection({ id: collectionID, visibility });
 
   const queryCache = useQueryCache();
-
-  const [selected, setSelected] = useState<Dataset["id"]>("");
 
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
@@ -71,10 +69,11 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
     <>
       {isDatasetPresent ? (
         <DatasetsGrid
+          visibility={visibility}
+          accessType={collection?.access_type}
           datasets={datasets}
           uploadedFiles={uploadedFiles}
           invalidateCollectionQuery={invalidateCollectionQuery}
-          onSelect={setSelected}
         />
       ) : (
         <EmptyModal
@@ -104,15 +103,6 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
               />
             </DropboxChooser>
           }
-        />
-      )}
-
-      {isDatasetPresent && (
-        <ActionButtons
-          collectionId={collectionID}
-          selectedDatasetId={selected}
-          visibility={visibility}
-          addNewFile={addNewFile}
         />
       )}
     </>
