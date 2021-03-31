@@ -75,3 +75,9 @@ variable wait_for_steady_state {
   description = "Should terraform block until ECS services reach a steady state?"
   default     = false
 }
+
+variable batch_container_memory_limit {
+  type        = number
+  description = "Memory hard limit for the batch container"
+  default     = 28000
+}
