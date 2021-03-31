@@ -111,7 +111,7 @@ def validate_genesets_in_collection_and_linked_to_dataset(dataset, collection, u
 
     add_list_in_collection = all(item in collection_geneset_ids for item in update_list["add"])
     remove_list_in_collection = all(item in collection_geneset_ids for item in update_list["remove"])
-    if not add_list_in_collection or not remove_list_in_collection:
+    if not (add_list_in_collection and remove_list_in_collection):
         raise NotFoundHTTPException()
     remove_list_in_dataset = all(item in dataset_geneset_ids for item in update_list["remove"])
     if not remove_list_in_dataset:

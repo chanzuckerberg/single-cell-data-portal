@@ -410,6 +410,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - add
+                - remove
               properties:
                 update_list:
                   description: A object containing an add list of geneset ids and a remove list
