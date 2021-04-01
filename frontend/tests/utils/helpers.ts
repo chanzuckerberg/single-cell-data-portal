@@ -1,3 +1,4 @@
+import { Request } from "playwright-core";
 import {
   TEST_EMAIL,
   TEST_ENV,
@@ -15,6 +16,7 @@ export async function goToPage(url: string = TEST_URL) {
 
 export async function login() {
   goToPage();
+  page.screenshot({ path: `./tmp-screenshots/login-${Date.now()}.png` });
   expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
   try {
     await expect(page).toHaveSelector(getText("My Collections"), {
@@ -23,7 +25,22 @@ export async function login() {
   } catch (error) {
     const url = page.url();
     if (TEST_ENV === "happy") {
+      let request: Request | undefined = undefined;
+      await context.route("**/*", (route) => {
+        if (!request) request = route.request();
+        route.continue().catch((e) => {
+          console.error(e);
+        });
+      });
       await page.click(getText("Log In"));
+      await context.unroute("**/*");
+      if (request !== undefined) {
+        let r = request;
+        while (r) {
+          console.log(r.url());
+          r = r.redirectedTo();
+        }
+      }
       await page.fill('[name="Username"]', TEST_USERNAME);
       await page.fill('[name="Password"]', TEST_PASSWORD);
       await Promise.all([
