@@ -29,16 +29,6 @@ export const DatasetContainer = styled.div`
   grid-column: 1 / span 8;
 `;
 
-export const CollectionButtons = styled.div`
-  grid-column: 6 / span 3;
-  justify-self: end;
-  display: flex;
-  flex-direction: row;
-  & > :not(:last-child) {
-    margin-right: ${PT_GRID_SIZE_PX * 2}px;
-  }
-`;
-
 // microsoft/typescript-styled-plugin #110
 const hoverSelector = `.${Classes.TAB}:not([aria-disabled="true"]):hover`;
 

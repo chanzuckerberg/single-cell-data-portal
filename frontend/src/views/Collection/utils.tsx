@@ -2,6 +2,7 @@ import { Classes } from "@blueprintjs/core";
 import React from "react";
 import {
   Collection,
+  COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
   DATASET_ASSET_FORMAT,
   Link,
@@ -9,8 +10,31 @@ import {
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { StyledLink } from "./common/style";
 
+const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
+  COLLECTION_LINK_TYPE.DOI,
+  COLLECTION_LINK_TYPE.DATA_SOURCE,
+  COLLECTION_LINK_TYPE.RAW_DATA,
+  COLLECTION_LINK_TYPE.PROTOCOL,
+  COLLECTION_LINK_TYPE.LAB_WEBSITE,
+  COLLECTION_LINK_TYPE.OTHER,
+];
+
 export function renderLinks(links: Link[]) {
-  return links?.map(({ link_url: url, link_type: type }) => {
+  const linkTypesToLinks = createLinkTypesToLinks(links);
+
+  const orderedLinks: Link[] = [];
+
+  for (const linkType of LINK_ORDER) {
+    const links = linkTypesToLinks[linkType];
+
+    if (!links) continue;
+
+    for (const link of links) {
+      orderedLinks.push(link);
+    }
+  }
+
+  return orderedLinks.map(({ link_url: url, link_type: type }) => {
     const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
     if (!linkTypeOption) return null;
@@ -28,6 +52,24 @@ export function renderLinks(links: Link[]) {
       </React.Fragment>
     );
   });
+}
+
+type LinkTypesToLinks = {
+  [key in COLLECTION_LINK_TYPE]?: Link[];
+};
+
+function createLinkTypesToLinks(links: Link[]) {
+  const linkTypesToLinks: LinkTypesToLinks = {};
+
+  for (const link of links) {
+    const linkTypeToLinks = linkTypesToLinks[link.link_type] || [];
+
+    linkTypeToLinks.push(link);
+
+    linkTypesToLinks[link.link_type] = linkTypeToLinks;
+  }
+
+  return linkTypesToLinks;
 }
 
 export function renderContact(
