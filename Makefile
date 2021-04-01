@@ -86,13 +86,13 @@ local-ecr-login:
 	fi
 
 .PHONY: local-hostconfig
-local-hostconfig: 
+local-hostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
 	  sudo ./scripts/happy hosts install; \
 	fi
 
 .PHONY: local-nohostconfig
-local-nohostconfig: 
+local-nohostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
 	  sudo ./scripts/happy hosts uninstall; \
 	fi
@@ -188,7 +188,7 @@ local-functional-test: ## Run functional tests in the dev environment
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
-	docker-compose exec -T frontend make smoke-test-on-local-dev
+	docker-compose exec -T frontend make smoke-test-with-local-dev
 
 .PHONY: local-e2e
 local-e2e: ## Run frontend/e2e tests
