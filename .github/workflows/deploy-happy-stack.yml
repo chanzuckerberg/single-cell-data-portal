@@ -64,23 +64,24 @@ jobs:
             export DEPLOYMENT_STAGE=staging
           fi
           make local-e2e
-      - name: Run functional test
-        env:
-          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        if: github.event.deployment.environment != 'prod'
-        run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          mkdir -p .local/bin
-          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
-          chmod +x .local/bin/chamber
-          PATH="$PATH:$(pwd)/.local/bin"
-          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            export DEPLOYMENT_STAGE=staging
-          fi
-          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-          docker-compose up --no-deps -d backend
-          BOTO_ENDPOINT_URL= make local-functional-test
+      # Disabled temporarily
+      # - name: Run functional test
+      #   env:
+      #     TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+      #     DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+      #   if: github.event.deployment.environment != 'prod'
+      #   run: |
+      #     echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+      #     mkdir -p .local/bin
+      #     curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
+      #     chmod +x .local/bin/chamber
+      #     PATH="$PATH:$(pwd)/.local/bin"
+      #     if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+      #       export DEPLOYMENT_STAGE=staging
+      #     fi
+      #     echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+      #     docker-compose up --no-deps -d backend
+      #     BOTO_ENDPOINT_URL= make local-functional-test
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
