@@ -111,6 +111,7 @@ module backend_service {
   security_groups   = local.security_groups
   task_role_arn     = local.ecs_role_arn
   service_port      = 5000
+  memory            = 1536
   cmd               = local.backend_cmd
   deployment_stage  = local.deployment_stage
   step_function_arn = module.upload_sfn.step_function_arn
