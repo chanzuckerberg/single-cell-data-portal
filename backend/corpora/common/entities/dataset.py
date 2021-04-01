@@ -9,6 +9,7 @@ from ..corpora_orm import (
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
+    DbGenesetDatasetLink,
 )
 
 
@@ -130,6 +131,9 @@ class Dataset(Entity):
             self.session.delete(dd)
         for af in self.artifacts:
             self.session.delete(af)
+        self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
+            synchronize_session="evaluate"
+        )
         self.session.commit()
 
     def dataset_and_asset_deletion(self):
