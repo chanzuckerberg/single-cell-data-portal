@@ -44,3 +44,9 @@ variable frontend_url {
   type        = string
   description = "url for the frontend app"
 }
+
+variable batch_container_memory_limit {
+  type        = number
+  description = "Memory hard limit for the batch container"
+  default     = 28000
+}

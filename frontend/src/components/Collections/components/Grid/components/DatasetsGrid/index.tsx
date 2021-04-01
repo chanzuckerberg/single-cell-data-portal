@@ -1,11 +1,5 @@
-import React, {
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
-import { Dataset } from "src/common/entities";
+import React, { FC } from "react";
+import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import {
   DatasetHeaderCell,
   LeftAlignedHeaderCell,
@@ -19,27 +13,17 @@ interface Props {
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
-  onSelect: Dispatch<SetStateAction<string>>;
+  visibility: VISIBILITY_TYPE;
+  accessType?: Collection["access_type"];
 }
 
 const DatasetsGrid: FC<Props> = ({
   datasets,
   uploadedFiles,
   invalidateCollectionQuery,
-  onSelect,
+  visibility,
+  accessType,
 }) => {
-  const [selected, setSelected] = useState<Dataset["id"]>("");
-
-  useEffect(() => {
-    onSelect(selected);
-  }, [selected, onSelect]);
-
-  const handleSelect = (id: Dataset["id"]) => {
-    if (id !== selected) {
-      setSelected(id);
-    }
-  };
-
   return (
     <StyledCollectionsGrid bordered>
       <thead>
@@ -56,12 +40,12 @@ const DatasetsGrid: FC<Props> = ({
       <tbody>
         {sortByCreatedAtAscending(datasets).map((dataset) => (
           <DatasetRow
+            visibility={visibility}
+            accessType={accessType}
             key={dataset.id}
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
-            onSelect={handleSelect}
-            selected={selected}
           />
         ))}
       </tbody>
