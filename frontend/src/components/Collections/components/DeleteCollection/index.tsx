@@ -1,5 +1,4 @@
-import { Button, H6, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
@@ -13,9 +12,10 @@ const AsyncAlert = loadable(
 );
 interface Props {
   id: Collection["id"];
+  Button?: React.ElementType;
 }
 
-const DeleteCollection: FC<Props> = ({ id }) => {
+const DeleteCollection: FC<Props> = ({ id, Button = RawButton }) => {
   const [deleteMutation, { isSuccess }] = useDeleteCollection(id);
   const router = useRouter();
 
@@ -37,14 +37,7 @@ const DeleteCollection: FC<Props> = ({ id }) => {
 
   return (
     <>
-      <Button
-        intent={Intent.DANGER}
-        minimal
-        text="Delete"
-        icon={IconNames.TRASH}
-        onClick={toggleAlert}
-        onMouseEnter={handleHover}
-      />
+      <Button onClick={toggleAlert} onMouseEnter={handleHover} />
 
       {isOpen && (
         <AsyncAlert

@@ -1,5 +1,5 @@
 import loadable from "@loadable/component";
-import React, { FC, useState } from "react";
+import React, { useState } from "react";
 import { Dataset } from "src/common/entities";
 
 declare global {
@@ -34,9 +34,14 @@ const DROPBOX_OPTIONS = {
 
 export interface Props {
   onUploadFile: (newFile: UploadingFile) => void;
+  children: React.ReactElement;
 }
 
-const DropboxChooser: FC<Props> = ({ children, onUploadFile }) => {
+const DropboxChooser = ({ children, onUploadFile }: Props) => {
+  if (!React.Children.only(children)) {
+    throw Error("DropboxChooser expects only one child");
+  }
+
   const [isContentShown, setIsContentShown] = useState(false);
 
   const handleMouseOver = () => {
@@ -60,9 +65,10 @@ const DropboxChooser: FC<Props> = ({ children, onUploadFile }) => {
 
   return (
     <>
-      <div onMouseOver={handleMouseOver} onClick={handleClick}>
-        {children}
-      </div>
+      {React.cloneElement(children, {
+        onClick: handleClick,
+        onMouseOver: handleMouseOver,
+      })}
       {isContentShown && <AsyncContent />}
     </>
   );

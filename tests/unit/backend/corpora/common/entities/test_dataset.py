@@ -14,6 +14,7 @@ from backend.corpora.common.corpora_orm import (
     Base,
 )
 from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
 from backend.corpora.common.utils.db_session import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -245,16 +246,21 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
 
     def test__tombstone_dataset_and_delete_child_objects(self):
         dataset = self.create_dataset_with_artifacts(artifact_count=3, deployment_dir_count=2)
+        geneset = self.generate_geneset(self.session)
+        GenesetDatasetLink.create(self.session, geneset.id, dataset.id)
         self.assertEqual(dataset.processing_status.upload_status, UploadStatus.UPLOADING)
         self.assertEqual(len(dataset.artifacts), 3)
         self.assertEqual(len(dataset.deployment_directories), 2)
+        self.assertEqual(len(dataset.genesets), 1)
         self.assertFalse(dataset.tombstone)
 
         dataset.tombstone_dataset_and_delete_child_objects()
         self.assertEqual(len(dataset.artifacts), 0)
         self.assertEqual(len(dataset.deployment_directories), 0)
+        self.assertEqual(len(dataset.genesets), 0)
         self.assertTrue(dataset.tombstone)
         self.assertIsNone(dataset.processing_status)
+        self.assertIsNotNone(Geneset.get(self.session, geneset.id))
 
     def test__tombstone_deletes_assets_from_s3(self):
         file_name = "local.h5ad"

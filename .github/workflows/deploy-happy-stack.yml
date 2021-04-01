@@ -56,6 +56,14 @@ jobs:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
         run: |
           ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
+      - name: Run Smoke Tests
+        env:
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          make local-e2e
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
@@ -73,14 +81,6 @@ jobs:
           echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
           docker-compose up --no-deps -d backend
           BOTO_ENDPOINT_URL= make local-functional-test
-      - name: Run Smoke Tests
-        env:
-          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        run: |
-          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            export DEPLOYMENT_STAGE=staging
-          fi
-          make local-e2e
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
