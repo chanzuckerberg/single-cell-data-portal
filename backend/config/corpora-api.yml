@@ -414,9 +414,14 @@ paths:
                 - add
                 - remove
               properties:
-                update_list:
-                  description: A object containing an add list of geneset ids and a remove list
-                  $ref: "#/components/schemas/dataset_gene_set_linkage_update"
+                add:
+                  type: array
+                  items:
+                    type: string
+                remove:
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: OK
@@ -773,20 +778,7 @@ components:
                 type: string
               additional_params:
                 type: object
-    dataset_gene_set_linkage_update:
-      type: object
-      description: List of gene set ids to link or unlink to a dataset
-      properties:
-        add:
-          type: array
-          items:
-            type: string
-            description: gene set ids
-        remove:
-          type: array
-          items:
-            type: string
-            description: gene set ids
+
 
   parameters:
     path_collection_uuid:

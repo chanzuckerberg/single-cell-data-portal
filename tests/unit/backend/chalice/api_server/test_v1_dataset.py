@@ -361,3 +361,19 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
             with self.assertRaises(HTTPError):
                 response.raise_for_status()
             self.assertEqual(response.status_code, 400)
+
+        with self.subTest("no data"):
+            data = {}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+            self.assertEqual(response.status_code, 400)
+
+        with self.subTest("empty data"):
+            data = {"add": [], "remove": []}
+            test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            response = self.app.post(test_url, headers, data=json.dumps(data))
+            self.assertEqual(response.status_code, 202)
