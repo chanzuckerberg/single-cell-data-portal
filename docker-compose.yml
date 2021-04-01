@@ -164,7 +164,7 @@ services:
     image: soluto/oidc-server-mock:0.3.0
     ports:
       - "4011:80"
-      - "8443:443"
+      - "8443:8443"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       SERVER_OPTIONS_INLINE: |
@@ -178,7 +178,7 @@ services:
       API_RESOURCES_PATH: /tmp/config/api_resources.json
       USERS_CONFIGURATION_PATH: /tmp/config/users.json
       CLIENTS_CONFIGURATION_PATH: /tmp/config/clients-config.json
-      ASPNETCORE_URLS: https://+:443;http://+:80
+      ASPNETCORE_URLS: https://+:8443;http://+:80
       # ASPNETCORE_Kestrel__Certificates__Default__Password: <password for pfx file>
       ASPNETCORE_Kestrel__Certificates__Default__Path: /tmp/pkcs12/certificate.pfx
     volumes:
