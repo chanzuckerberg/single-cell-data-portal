@@ -51,5 +51,6 @@ export const ActionCell = styled(RightAlignedDetailsCell)`
 
 export const ActionButtonsContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 0 16px;
 `;
