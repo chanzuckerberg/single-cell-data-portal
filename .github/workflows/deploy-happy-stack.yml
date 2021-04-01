@@ -60,6 +60,7 @@ jobs:
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
