@@ -81,10 +81,11 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow>
       <StyledCell>
-        <Link href={`/collections/${id}${isPrivate ? "/private" : ""}`}>
-          {/* TODO(thuang): Remove the disable once the issue resolves: https://github.com/vercel/next.js/discussions/8207 */}
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <CollectionTitleText data-test-id="collection-link">
+        <Link
+          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          passHref
+        >
+          <CollectionTitleText data-test-id="collection-link" href="passHref">
             {name}
           </CollectionTitleText>
         </Link>

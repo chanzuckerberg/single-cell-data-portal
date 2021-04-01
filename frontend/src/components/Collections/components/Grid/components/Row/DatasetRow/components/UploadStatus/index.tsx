@@ -1,6 +1,5 @@
-import { Button, Intent } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import React, { FC } from "react";
-import DeleteDataset from "../DeleteDataset";
 import { DatasetStatusTag, StatusContainer, StyledSpinner } from "./style";
 
 interface Props {
@@ -8,8 +7,6 @@ interface Props {
   isValidating: boolean;
   isWaiting: boolean;
   progress: number;
-  datasetId: string;
-  collectionId: string;
 }
 
 const UploadStatus: FC<Props> = ({
@@ -17,8 +14,6 @@ const UploadStatus: FC<Props> = ({
   isValidating,
   isWaiting,
   progress,
-  datasetId,
-  collectionId,
 }) => {
   let content: { progress?: number; text: string } = {
     progress,
@@ -53,21 +48,8 @@ const UploadStatus: FC<Props> = ({
         />
         {content.text}
       </DatasetStatusTag>
-      <DeleteDataset
-        id={datasetId}
-        collectionId={collectionId}
-        Button={CancelButton}
-      />
     </StatusContainer>
   );
 };
-
-function CancelButton({ ...props }) {
-  return (
-    <Button minimal {...props}>
-      Cancel
-    </Button>
-  );
-}
 
 export default UploadStatus;

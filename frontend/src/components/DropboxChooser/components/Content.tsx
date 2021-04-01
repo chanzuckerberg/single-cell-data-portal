@@ -13,7 +13,7 @@ const Chooser: FC = () => {
     dropins();
   }, []);
 
-  return <div id={ID} data-app-key={APP_KEY}></div>;
+  return <div id={ID} data-app-key={APP_KEY} style={{ display: "none" }}></div>;
 };
 
 export default Chooser;
