@@ -54,6 +54,8 @@ const Collection: FC = () => {
 
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
 
+  const [isUploadingLink, setIsUploadingLink] = useState(false);
+
   const { data: collection, isError } = useCollection({ id, visibility });
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
@@ -69,9 +71,12 @@ const Collection: FC = () => {
 
     const payload = JSON.stringify({ url: newFile.link });
 
+    setIsUploadingLink(true);
+
     uploadLink(
       { collectionId: id, payload },
       {
+        onSettled: () => setIsUploadingLink(false),
         onSuccess: (datasetID: Dataset["id"]) => {
           newFile.id = datasetID;
           DatasetUploadToast.show({
@@ -89,7 +94,7 @@ const Collection: FC = () => {
 
   const datasets = collection.datasets;
 
-  const isPublishable = getIsPublishable(datasets);
+  const isPublishable = getIsPublishable(datasets) && !isUploadingLink;
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
