@@ -424,8 +424,17 @@ def validate_h5ad_file(dataset_id, local_filename):
         update_db(dataset_id, processing_status=status)
 
 
+def log_batch_environment():
+    batch_environment_variables = ["AWS_BATCH_CE_NAME", "AWS_BATCH_JOB_ATTEMPT", "AWS_BATCH_JOB_ID"]
+    vars = dict()
+    for var in batch_environment_variables:
+        vars[var] = os.getenv(var)
+    logger.info(f"Batch Job Info: {vars}")
+
+
 def main():
     check_env()
+    log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     try:
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
