@@ -3,8 +3,13 @@ const {
   GetSecretValueCommand,
 } = require("@aws-sdk/client-secrets-manager");
 const featureFlags = require("./featureFlags");
-
-const endpoint = new URL(process.env["BOTO_ENDPOINT_URL"]);
+let endpoint;
+try {
+  endpoint = new URL(process.env["BOTO_ENDPOINT_URL"]);
+} catch (e) {
+  console.log("BOTO_ENDPOINT_URL not assigned, assuming running on deployment");
+  endpoint = "";
+}
 
 const client = new SecretsManagerClient({
   endpoint,
