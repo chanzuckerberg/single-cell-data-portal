@@ -391,6 +391,51 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /dp/v1/datasets/{dataset_uuid}/gene_sets:
+    post:
+      tags:
+        - datasets
+        - genesets
+      summary: Update links between a dataset and gene sets
+      security:
+        - cxguserCookie: [ ]
+      description: >-
+        Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
+        collection owner and the dataset and gene sets must all belong to the same private collection
+      operationId: corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - add
+                - remove
+              properties:
+                add:
+                  type: array
+                  items:
+                    type: string
+                remove:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/gene_set"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
   /dp/v1/datasets/{dataset_uuid}/status:
     get:
       tags:
@@ -628,7 +673,7 @@ components:
         genesets:
           type: array
           items:
-            $ref : "#/components/schemas/gene_set"
+            $ref: "#/components/schemas/gene_set"
     ontology_element:
       type: object
       properties:
@@ -756,6 +801,7 @@ components:
                 type: string
               additional_params:
                 type: object
+
 
   parameters:
     path_collection_uuid:
