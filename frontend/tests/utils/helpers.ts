@@ -14,11 +14,9 @@ export async function login() {
     await expect(page).toHaveSelector(getText("My Collections"), {
       timeout: TIMEOUT_MS,
     });
-    console.log("LOG IN NOT FOUND");
   } catch (error) {
     const url = page.url();
     const username = TEST_USERNAME;
-    console.log(username);
     await page.click(getText("Log In"));
     await page.fill('[name="Username"], [name="email"]', username);
     await page.fill('[name="Password"], [name="password"]', TEST_PASSWORD);
