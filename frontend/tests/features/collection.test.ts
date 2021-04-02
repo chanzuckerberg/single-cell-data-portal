@@ -25,7 +25,8 @@ describe("Collection", () => {
       const collectionId = await createCollection();
 
       // Try delete
-      await page.click(getText("Delete"));
+      await page.click(getTestID("collection-more-button"));
+      await page.click(getText("Delete Collection"));
 
       await page.click(getText("Delete Collection"));
 
