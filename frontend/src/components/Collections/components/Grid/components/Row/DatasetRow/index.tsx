@@ -1,24 +1,32 @@
-import { AnchorButton, Intent } from "@blueprintjs/core";
+import { AnchorButton, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
+  ACCESS_TYPE,
+  Collection,
   CONVERSION_STATUS,
   Dataset,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
+  VISIBILITY_TYPE,
 } from "src/common/entities";
+import ExploreSVG from "src/common/images/explore.svg";
 import { useDatasetStatus } from "src/common/queries/datasets";
+import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
+  ActionButtonsContainer,
+  ActionCell,
   DetailsCell,
-  ExploreButtonCell,
   StyledRow,
-} from "src/components/Collections/components/Grid/components/Row/common/style.ts";
+} from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
 import CellCount from "./components/CellCount";
+import DownloadButton from "./components/DownloadButton";
+import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
-import { StyledRadio, TitleContainer } from "./style";
+import { TitleContainer } from "./style";
 import {
   checkIfCancelled,
   checkIfFailed,
@@ -58,16 +66,16 @@ interface Props {
   dataset: Dataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
-  onSelect: (id: Dataset["id"]) => void;
-  selected?: Dataset["id"];
+  visibility: Collection["visibility"];
+  accessType?: Collection["access_type"];
 }
 
 const DatasetRow: FC<Props> = ({
   dataset,
   file,
   invalidateCollectionQuery,
-  onSelect,
-  selected,
+  visibility,
+  accessType,
 }) => {
   const queryCache = useQueryCache();
 
@@ -149,49 +157,61 @@ const DatasetRow: FC<Props> = ({
     <StyledRow>
       <DetailsCell>
         <TitleContainer>
-          <StyledRadio
-            onChange={() => onSelect(dataset.id)}
-            checked={selected === dataset.id}
-          />
-          <div>{name}</div>
+          <span>{name}</span>
           {!isLoading && (
             <ErrorTooltip isFailed={isFailed} error={error} type={type} />
           )}
+          {isLoading && (
+            <AsyncUploadStatus
+              isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
+              isConverting={
+                getConversionStatus(datasetStatus) ===
+                CONVERSION_STATUS.CONVERTING
+              }
+              isValidating={
+                datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
+              }
+              progress={datasetStatus.upload_progress}
+            />
+          )}
         </TitleContainer>
-        {isLoading && (
-          <AsyncUploadStatus
-            isWaiting={datasetStatus.upload_status === UPLOAD_STATUS.WAITING}
-            isConverting={
-              getConversionStatus(datasetStatus) ===
-              CONVERSION_STATUS.CONVERTING
-            }
-            isValidating={
-              datasetStatus.validation_status === VALIDATION_STATUS.VALIDATING
-            }
-            progress={datasetStatus.upload_progress}
-            datasetId={dataset.id}
-            collectionId={dataset.collection_id}
-          />
-        )}
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
       <Popover values={assay} isLoading={isMetadataLoading} />
       <Popover values={disease} isLoading={isMetadataLoading} />
       <Popover values={organism} isLoading={isMetadataLoading} />
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
-      <ExploreButtonCell>
-        {hasCXGFile(dataset) && (
-          <AnchorButton
-            intent={Intent.PRIMARY}
-            outlined
-            text="Explore"
-            href={dataset?.dataset_deployments[0]?.url}
-            target="_blank"
-            rel="noopener"
-            data-test-id="view-dataset-link"
+      <ActionCell>
+        <ActionButtonsContainer>
+          {visibility === VISIBILITY_TYPE.PRIVATE &&
+            accessType === ACCESS_TYPE.WRITE && (
+              <MoreDropdown
+                collectionId={dataset.collection_id}
+                datasetId={dataset.id}
+              />
+            )}
+
+          <DownloadDataset
+            name={dataset?.name || ""}
+            dataAssets={dataset?.dataset_assets}
+            Button={DownloadButton}
           />
-        )}
-      </ExploreButtonCell>
+
+          {hasCXGFile(dataset) && (
+            <Tooltip content="Explore">
+              <AnchorButton
+                minimal
+                intent={Intent.PRIMARY}
+                icon={<img alt="Explore" src={String(ExploreSVG)} />}
+                href={dataset?.dataset_deployments[0]?.url}
+                target="_blank"
+                rel="noopener"
+                data-test-id="view-dataset-link"
+              />
+            </Tooltip>
+          )}
+        </ActionButtonsContainer>
+      </ActionCell>
     </StyledRow>
   );
 };

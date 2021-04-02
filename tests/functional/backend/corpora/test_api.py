@@ -14,6 +14,13 @@ API_URL = {
     "test": "http://localhost:5000",
 }
 
+AUDIENCE = {
+    "dev": "cellxgene.dev.single-cell.czi.technology/",
+    "prod": "cellxgene.cziscience.com/",
+    "staging": "cellxgene.staging.single-cell.czi.technology/",
+    "test": "cellxgene.dev.single-cell.czi.technology/",
+}
+
 
 class TestApi(unittest.TestCase):
     @classmethod
@@ -39,7 +46,7 @@ class TestApi(unittest.TestCase):
                 grant_type="password",
                 username="user@example.com",
                 password=config.test_account_password,
-                audience="cellxgene.dev.single-cell.czi.technology/",
+                audience=AUDIENCE.get(cls.deployment_stage),
                 scope="openid profile email offline",
                 client_id=config.client_id,
                 client_secret=config.client_secret,
