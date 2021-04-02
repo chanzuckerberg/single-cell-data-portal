@@ -6,6 +6,8 @@ RUN pip3 install -r requirements.txt
 ADD backend/chalice/upload_failures .
 ADD backend/corpora/lambdas/upload_failures ./chalicelib/backend/corpora/upload_failures
 
+ADD backend/__init__.py ./chalicelib/backend/__init__.py
+ADD backend/corpora/__init__.py ./chalicelib/backend/corpora/__init__.py
 COPY backend/corpora/common ./chalicelib/backend/corpora/common
 COPY backend/corpora/dataset_processing ./chalicelib/backend/corpora/dataset_processing
 RUN mkdir -p ./.chalice

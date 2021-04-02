@@ -78,7 +78,10 @@ const Content: FC<Props> = (props) => {
   return (
     <>
       <div className={Classes.DIALOG_BODY}>
-        <Form ref={formEl}>
+        {/* (thuang): turn off autocomplete seems to be the safest bet for now
+         * https://github.com/facebook/react/issues/1159
+         */}
+        <Form ref={formEl} autoComplete="off">
           <Input
             name={FIELD_NAMES.NAME}
             text="Collection Name"
