@@ -124,10 +124,6 @@ import sys
 
 from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
-
-logger = logging.getLogger(__name__)
-logging.basicConfig()
-
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DatasetArtifactType,
@@ -138,6 +134,9 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
 from backend.corpora.dataset_processing.download import download
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
@@ -168,12 +167,14 @@ def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ) -> DatasetAsset:
     file_base = basename(file_name)
+    logger.info(f"Uploading to [{artifact_type}] to S3 bucket: [{artifact_bucket}].")
     s3_client.upload_file(
         file_name,
         artifact_bucket,
         join(bucket_prefix, file_base),
         ExtraArgs={"ACL": "bucket-owner-full-control"},
     )
+    logger.info(f"Updating database with  {artifact_type}.")
     with db_session_manager() as session:
         DatasetAsset.create(
             session,
@@ -188,7 +189,7 @@ def create_artifact(
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
-
+    logger.info(f"Creating Artifacts.")
     # upload AnnData
     create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
@@ -216,6 +217,7 @@ def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         dataset.dataset_and_asset_deletion()
+        logger.info("Upload Canceled.")
 
 
 def update_db(dataset_id, metadata=None, processing_status=None):
@@ -227,10 +229,11 @@ def update_db(dataset_id, metadata=None, processing_status=None):
         if metadata:
             # TODO: Delete this line once mean_genes_per_cell is in the db
             metadata.pop("mean_genes_per_cell", None)
-
+            logger.debug(f"updating metadata.")
             dataset.update(**metadata)
 
         if processing_status:
+            logger.debug(f"updating processing_status.{processing_status}")
             processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
@@ -315,11 +318,14 @@ def make_loom(local_filename):
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
-    seurat_proc = subprocess.run(
-        ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
-        capture_output=True,
-    )
-    if seurat_proc.returncode != 0:
+    try:
+        seurat_proc = subprocess.run(
+            ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        logger.exception()
         raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
 
     return local_filename.replace(".h5ad", ".rds")
@@ -448,11 +454,19 @@ def main():
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
         sys.exit(0)
-    except ProcessingFailed as ex:
-        logging.error(ex.status)
+    except ProcessingFailed:
+        logging.exception()
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
         sys.exit(1)
     except ValidationFailed:
+        logger.exception()
+        sys.exit(1)
+    except Exception:
+        message = "An unexpect error occured while processing the data set."
+        logger.exception(message)
+        update_db(
+            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
+        )
         sys.exit(1)
 
 
