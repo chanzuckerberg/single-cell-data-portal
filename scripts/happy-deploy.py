@@ -12,14 +12,14 @@ github_deployment_endpoint = "https://api.github.com/repos/chanzuckerberg/corpor
 
 
 def get_latest_successfull_deployment(github_api_token, stage):
-    """get the latest successful/active deployment githun sha"""
+    """get the latest successful/active deployment github commit"""
     query = """
     query($repo_owner:String!, $repo_name:String!, $deployment_env:String!) { 
         repository(owner: $repo_owner, name: $repo_name) { 
-          deployments(environments: [$deployment_env], first: 30) { 
+          deployments(environments: [$deployment_env], last: 30) {
             nodes { 
               commitOid 
-              statuses(first: 100) { 
+              statuses(first: 30) {
                 nodes { 
                   state 
                   updatedAt 
@@ -60,19 +60,19 @@ def get_latest_successfull_deployment(github_api_token, stage):
                 else:
                     if sha_tuple[1] < parsed_t:
                         sha_tuple = (gh_sha, parsed_t)
-            break
+                break
 
     return sha_tuple[0]
 
 
-def trigger_deploy(github_api_token, deployment_stage, github_sha):
-    """Start deployment to the given environment based on the github sha"""
+def trigger_deploy(github_api_token, deployment_stage, github_commit):
+    """Start deployment to the given environment based on the github commit"""
     headers = {"Authorization": "token %s" % github_api_token, "Accept": "application/vnd.github.v3.text-match+json"}
 
-    tag = f"sha-{github_sha[0:8]}"
+    tag = f"sha-{github_commit[0:8]}"
 
     params = {
-        "ref": github_sha,
+        "ref": github_commit,
         "auto_merge": False,
         "environment": deployment_stage,
         "required_contexts": [],
@@ -94,22 +94,23 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha):
 
 @click.command()
 @click.argument("deployment_stage")
-@click.option("--github_sha", help="github sha to be deployed", default=None)
-def happy_deploy(deployment_stage, github_sha):
+@click.option("--github_commit", help="github commit hash to be deployed", default=None)
+def happy_deploy(deployment_stage, github_commit):
     api_token = os.getenv("GITHUB_TOKEN")
     if api_token is None:
         print("Error: Please set GITHUB_TOKEN environment variable")
         return
 
-    # If github sha is not provided, get the latest succesfull deployment
-    # github sha of staging environment
-    if github_sha is None:
-        github_sha = get_latest_successfull_deployment(api_token, "stage")
+    # If github commit hash is not provided, get the latest succesfull
+    # deployment commit hash of the staging environment
+    if github_commit is None:
+        github_commit = get_latest_successfull_deployment(api_token, "stage")
 
+    print("SAN:",github_commit)
     # Trigger deployment on the given stage. This will trigger github actions
     # and start/update the deployment.
-    if github_sha is not None:
-        trigger_deploy(api_token, deployment_stage, github_sha)
+    if github_commit is not None:
+        trigger_deploy(api_token, deployment_stage, github_commit)
 
 
 if __name__ == "__main__":
