@@ -106,7 +106,6 @@ def happy_deploy(deployment_stage, github_commit):
     if github_commit is None:
         github_commit = get_latest_successfull_deployment(api_token, "stage")
 
-    print("SAN:",github_commit)
     # Trigger deployment on the given stage. This will trigger github actions
     # and start/update the deployment.
     if github_commit is not None:
