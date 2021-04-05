@@ -11,8 +11,12 @@ class BaseAPITest(DataPortalTestCase):
     """
     Provide access to the test Corpora API. All test for the Corpora API should inherit this class.
     """
-
-    maxDiff = None  # Easier to compare json responses.
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+            cls.app = app.test_client()
+            cls.maxDiff = None  # Easier to compare json responses.
 
     def setUp(self):
         super().setUp()

@@ -1,35 +1,33 @@
+import sys
+
 import connexion
 import json
 import logging
 import os
+
+import flask
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, Response
+from flask import g
 from flask_cors import CORS
 from urllib.parse import urlparse
 
+import backend
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.aws import AwsSecret
+from backend.corpora.common.utils.db_session import db_session_manager
 
-DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = os.environ["APP_NAME"]
 
 
 def create_flask_app():
-    connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
-    # From https://github.com/zalando/connexion/issues/346
-    connexion_app.app.url_map.strict_slashes = False
-    swagger_spec_path = f"{APP_NAME}.yml"
-    connexion_app.add_api(swagger_spec_path, validate_responses=True)
-    return connexion_app.app
+    app = connexion.FlaskApp(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
+    swagger_spec_path = os.path.join(
+        os.path.abspath(os.path.join(os.path.dirname(backend.__file__))), "config", f"{os.environ['APP_NAME']}.yml"
+    )
+    app.add_api(swagger_spec_path, validate_responses=True)
+    return app.app
 
 
 def configure_flask_app(flask_app):
-    # configure logging
-    gunicorn_logger = logging.getLogger("gunicorn.error")
-    flask_app.logger.handlers = gunicorn_logger.handlers
-    flask_app.logger.setLevel(gunicorn_logger.level)
-    flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
-
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
     allowed_origins = []
@@ -61,25 +59,33 @@ def configure_flask_app(flask_app):
         SESSION_COOKIE_SAMESITE="Lax",
     )
     flask_app.json_encoder = CustomJSONEncoder
+    flask_app.debug = True
+    flask_app.logger.setLevel(logging.DEBUG)
     return flask_app
 
 
-class InterceptRequestMiddleware:
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
+class DatabaseMiddleware:
+    def __init__(self, app):
+        self.app = app
 
-    def __call__(self, environ, start_response):
-        environ["HTTP_CXGPUBLIC"] = "dummy"
-        return self.wsgi_app(environ, start_response)
+    def __call__(self, *args, **kwargs):
+        g.db_session = db_session_manager()
+        g.db_session.__enter__()
+        return self.app(*args, **kwargs)
 
 
 app = configure_flask_app(create_flask_app())
-app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
+app.wsgi_app = DatabaseMiddleware(app.wsgi_app)
 
 
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
+
+
+@app.teardown_request
+def close_transaction(e=None):
+    g.db_session.__exit__(*sys.exc_info())
 
 
 with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
@@ -88,7 +94,7 @@ with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_f
 
 @app.route("/", methods=["GET", "HEAD"])
 def serve_swagger_ui():
-    return Response(swagger_ui_html, mimetype="text/html")
+    return flask.Response(swagger_ui_html, mimetype="text/html")
 
 
 @app.errorhandler(ProblemException)

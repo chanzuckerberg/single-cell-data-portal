@@ -13,7 +13,6 @@ from backend.corpora.common.entities import Collection
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
-
 class TestCollection(BaseAuthAPITest):
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)

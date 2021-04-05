@@ -2,6 +2,7 @@ import json
 import typing
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
+from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 

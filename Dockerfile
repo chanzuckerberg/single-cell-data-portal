@@ -34,4 +34,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD gunicorn --worker-class gevent --workers 8 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 30 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 8 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 5 --keep-alive 5 --log-level info
