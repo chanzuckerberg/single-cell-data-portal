@@ -4,6 +4,7 @@ from sqlalchemy import and_
 
 from . import Dataset
 from .entity import Entity
+from .geneset import Geneset
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
 from ..utils.db_session import clone
 
@@ -170,7 +171,8 @@ class Collection(Entity):
 
     def tombstone_collection(self):
         self.update(tombstone=True)
-
+        for geneset in self.genesets:
+            Geneset.get(self.session, geneset.id).delete()
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.dataset_and_asset_deletion()

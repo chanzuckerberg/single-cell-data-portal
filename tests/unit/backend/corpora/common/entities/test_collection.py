@@ -217,3 +217,5 @@ class TestCollection(DataPortalTestCase):
         self.assertEqual(len(collection.datasets), 2)
         for dataset in collection.datasets:
             self.assertTrue(dataset.tombstone)
+
+    def test_tombstone_collection_deletes_all_genesets_in_collection(self):
