@@ -51,6 +51,7 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
         with requests.get(url, stream=True) as resp:
             resp.raise_for_status()
             with open(local_path, "wb") as fp:
+                logger.info("Starting download.")
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     if tracker.stop_downloader.is_set():
                         logger.info("Download ended early!")
@@ -107,6 +108,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
             }
         else:
             status = {"upload_progress": progress}
+        logger.info("Updating processing_status")
         _processing_status_updater(processing_status, status)
         db_session.commit()
 
@@ -144,6 +146,7 @@ def download(
     :return: The current dataset processing status.
     """
     with db_session_manager() as session:
+        logger.info("Setting up download.")
         processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
