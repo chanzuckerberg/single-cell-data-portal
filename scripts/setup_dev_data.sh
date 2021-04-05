@@ -16,8 +16,8 @@ export OIDC_INTERNAL_URL=http://oidc.corporanet.local
 # How a web browser can reach the OIDC idp
 export OIDC_BROWSER_URL=https://oidc.corporanet.local:8443
 
-# Get test credentials from oauth/user.json
-oauth_file="./users.json"
+# Get test credentials from oauth/users.json
+oauth_file="oauth/users.json"
 oauth_user=$(cat ${oauth_file} | jq '.[0]')
 
 export TEST_ACCOUNT_USERNAME=$(jq '.Username' <<< "${oauth_user}")

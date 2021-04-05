@@ -80,10 +80,10 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/chalice/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/chalicelib/backend/corpora/upload_failures
-      - ./backend/corpora/common:/var/task/chalicelib/backend/corpora/common
-      - ./backend/corpora/dataset_processing:/var/task/chalicelib/backend/corpora/dataset_processing
+      - ./backend/corpora/upload_failures:/var/task
+      - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
+      - ./backend/corpora/common:/var/task/backend/corpora/common
+      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -162,21 +162,11 @@ services:
       - RESTART_ON_FAILURE=yes
       - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.
-    command: ["python3", "/chalice/run_local_server.py", "--host", "0.0.0.0"]
     volumes:
-      # Create a packaged chalice app.
-      - ./backend/chalice/api_server:/chalice
-      - ./backend/corpora:/chalice/chalicelib/corpora
-      - ./backend/config:/chalice/chalicelib/config
-      - ./backend/chalice/api_server/.chalice-dev:/chalice/.chalice
       # Mount dirs in a layout suitable for running tests.
       - .:/corpora-data-portal
-      # The unit tests ALSO depend on having a packaged chalice app.
-      - ./backend/chalice/api_server/.chalice-dev:/corpora-data-portal/backend/chalice/api_server/.chalice
-      - ./backend/corpora:/corpora-data-portal/backend/chalice/api_server/chalicelib/corpora
-      - ./backend/config:/corpora-data-portal/backend/chalice/api_server/chalicelib/config
       # SecretsManager population relies on oauth json
-      - ./oauth/users.json:/chalice/users.json
+      - ./oauth/users.json:/oauth/users.json
     networks:
        corporanet:
           aliases:
