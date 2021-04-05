@@ -22,7 +22,7 @@ Filename                  | Purpose                           | Information link
 1.  Set the following environment variables:
 
     ```shell
-    export DEPLOYMENT_STAGE=dev
+    export DEPLOYMENT_STAGE=test
     export AWS_PROFILE=single-cell-dev
     ```
 
@@ -36,7 +36,7 @@ Filename                  | Purpose                           | Information link
 ## Deploy
 1. Set environment variables:
 	```shell
-	export DEPLOYMENT_STAGE=dev
+	export DEPLOYMENT_STAGE=test
 	export AWS_PROFILE=single-cell-dev
 	```
 	

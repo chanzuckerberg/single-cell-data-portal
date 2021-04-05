@@ -18,13 +18,13 @@ jobs:
           pip install -r tests/scale/requirements-scale.txt
       - name: Dev Scale Test
         run: |
-          locust -f tests/scale/scale_test_portal_apis.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
+          locust -f tests/scale/scale_test_portal_apis.py --headless -u 30 -r 10 --host https://api.cellxgene.staging.single-cell.czi.technology/ --run-time 5m 2>&1 | tee locust_stage_stats.txt
       - name: Slack success webhook
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
-          DEV_STATS=$(tail -n 13 locust_dev_stats.txt)
-          DEV_MSG="\`\`\`DEV SCALE TEST RESULTS: ${DEV_STATS}\`\`\`"
-          curl -X POST -H 'Content-type: application/json' --data "{'text':'${DEV_MSG}'}" $SLACK_WEBHOOK
+          STAGING_STATS=$(tail -n 13 locust_staging_stats.txt)
+          STAGING_MSG="\`\`\`STAGING SCALE TEST RESULTS: ${STAGING_STATS}\`\`\`"
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'${STAGING_MSG}'}" $SLACK_WEBHOOK
 
 

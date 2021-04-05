@@ -48,7 +48,7 @@ services:
       - "3000:3000"
     command: ["./container_init.sh"]
     environment:
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
       - AWS_ACCESS_KEY_ID=dev_access_key_id
@@ -86,7 +86,7 @@ services:
       - AWS_ACCESS_KEY_ID=dev_access_key_id
       - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
@@ -115,7 +115,7 @@ services:
       - AWS_ACCESS_KEY_ID=dev_access_key_id
       - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
@@ -144,7 +144,7 @@ services:
       - AWS_ACCESS_KEY_ID=dev_access_key_id
       - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - RESTART_ON_FAILURE=yes
       - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.

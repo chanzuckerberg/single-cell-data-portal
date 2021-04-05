@@ -141,7 +141,6 @@ logging.basicConfig(level=logging.INFO)
 # This is unfortunate, but this information doesn't appear to live anywhere
 # accessible to the uploader
 DEPLOYMENT_STAGE_TO_URL = {
-    "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
     "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
     "prod": "https://cellxgene.cziscience.com/e",
     "rdev": os.environ.get("FRONTEND_URL"),

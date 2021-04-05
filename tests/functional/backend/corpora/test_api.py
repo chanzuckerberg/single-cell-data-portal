@@ -8,14 +8,12 @@ from requests import HTTPError
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
-    "dev": "https://api.dev.corpora.cziscience.com",
     "prod": "https://api.cellxgene.cziscience.com",
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "test": "http://localhost:5000",
 }
 
 AUDIENCE = {
-    "dev": "cellxgene.dev.single-cell.czi.technology/",
     "prod": "cellxgene.cziscience.com/",
     "staging": "cellxgene.staging.single-cell.czi.technology/",
     "test": "cellxgene.dev.single-cell.czi.technology/",
