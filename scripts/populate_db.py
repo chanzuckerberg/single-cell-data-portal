@@ -7,9 +7,6 @@ import click
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database, drop_database
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
-
 env = os.environ.get("DEPLOYMENT_STAGE")
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from tests.unit.backend.fixtures.test_db import TestDatabase

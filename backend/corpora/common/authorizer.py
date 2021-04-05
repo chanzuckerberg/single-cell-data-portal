@@ -2,11 +2,11 @@ import os
 from functools import lru_cache
 
 import requests
-from chalice import UnauthorizedError
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 from .corpora_config import CorporaAuthConfig
+from backend.corpora.common.utils.exceptions import UnauthorizedError
 
 
 def assert_authorized_token(token: str) -> dict:

@@ -21,9 +21,6 @@ from sqlalchemy.orm import relationship
 from typing import Optional, List
 from uuid import uuid4
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
-
 from .utils.exceptions import CorporaException
 
 
