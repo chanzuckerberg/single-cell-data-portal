@@ -43,8 +43,8 @@ See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
 ### Deployment
 
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. [Deploy Backend](backend/chalice/api_server/README.md#Deploy)
-1. [Deploy Cloudfront-invalidator](backend/chalice/cloudfront_invalidator/README.md#Deploy)
+1. [Deploy Backend](backend/entrypoints/api_server/README.md#Deploy)
+1. [Deploy Cloudfront-invalidator](backend/entrypoints/cloudfront_invalidator/README.md#Deploy)
 1. [Deploy Frontend](frontend/README.md#Deployment)
 
 ### Database Procedures

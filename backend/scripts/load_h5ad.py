@@ -16,13 +16,9 @@ This script will be deprecated when file upload is implemented in Corpora.
 import json
 import os
 import scanpy as sc
-import sys
 import uuid
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, pkg_root)
-
-from corpora.common.corpora_orm import (
+from backend.corpora.common.corpora_orm import (
     DBSessionMaker,
     ProjectStatus,
     ProcessingState,
