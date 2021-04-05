@@ -69,9 +69,9 @@ class CorporaAuthConfig(SecretConfig):
             "issuer": [],
         }
         template["issuer"].append(self.api_base_url + "/" if not self.api_base_url.endswith("/") else self.api_base_url)
-        if self.config.get("api_signin_url") and os.environ["DEPLOYMENT_STAGE"] == "dev":
+        if self.config.get("api_signin_url"):
             # Adding the API sign in URL to the list of allow token issues. This allow the API to accept Auth token
-            # generated for testing.
+            # generated for testing. Used in dev and staging.
             template["issuer"].append(self.api_signin_url)
 
         return template

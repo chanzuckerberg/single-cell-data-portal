@@ -168,6 +168,14 @@ local-unit-test: ## Run backend tests in the dev environment
 # the empty string (in which case we override the existing variable
 # defined in docker-compose.yml to be empty string), and not being
 # set (in which case the default from docker-compose is untouched)
+#
+# Unfortunately, this isn't working properly if DEPLOYMENT_STAGE is not test.
+# If you want to run this locally against staging, use the following mouthful of a
+# command, replacing IAM_ROLE with a role you have access to:
+# export IAM_ROLE=insert_iam_arn_here
+# eval $(echo $(AWS_PROFILE=single-cell-dev aws sts assume-role --role-arn ${IAM_ROLE} --role-session-name functional-test \
+#     | jq -r '"AWS_ACCESS_KEY_ID=\(.Credentials.AccessKeyId) AWS_SECRET_ACCESS_KEY=\(.Credentials.SecretAccessKey) AWS_SESSION_TOKEN=\(.Credentials.SessionToken)"') \
+# 	AWS_REGION=us-west-2 BOTO_ENDPOINT_URL= DEPLOYMENT_STAGE=staging make local-functional-test)
 .PHONY: local-functional-test
 local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
 local-functional-test: ## Run functional tests in the dev environment
