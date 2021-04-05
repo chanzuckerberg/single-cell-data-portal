@@ -24,7 +24,7 @@ RUN git clone https://github.com/chanzuckerberg/cellxgene.git \
 RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 tiledb==0.7.4 cellxgene-schema awscli
 
 ADD requirements.txt requirements.txt
-ADD backend/chalice/api_server/requirements.txt backend/chalice/api_server/requirements.txt
+ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
 RUN pip3 install -r requirements.txt
 
 ADD tests /corpora-data-portal/tests

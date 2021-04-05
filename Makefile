@@ -45,7 +45,7 @@ container-functionaltest:
 
 .PHONY: local-backend
 local-backend:
-	$(MAKE) local-server -C ./backend/chalice/api_server
+	$(MAKE) local-server -C ./backend/corpora/api_server
 
 .PHONY: smoke-test-prod-build
 smoke-test-prod-build:
