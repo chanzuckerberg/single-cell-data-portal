@@ -46,9 +46,13 @@ smoke-test-with-local-backend:
 e2e:
 	TEST_ENV=$(DEPLOYMENT_STAGE) npm run e2e
 
+.PHONY: e2e-on-local-dev
+e2e-on-local-dev:
+	docker-compose exec frontend make smoke-test-with-local-dev
+
 .PHONY: smoke-test-with-local-dev
 smoke-test-with-local-dev:
-	npm run e2e; \
+	npm run e2e-happy; \
 	test_result=$$?; \
 	cp src/configs/local.js src/configs/configs.js; \
 	exit $$test_result

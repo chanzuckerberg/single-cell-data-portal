@@ -16,6 +16,13 @@ export OIDC_INTERNAL_URL=http://oidc.corporanet.local
 # How a web browser can reach the OIDC idp
 export OIDC_BROWSER_URL=https://oidc.corporanet.local:8443
 
+# Get test credentials from oauth/user.json
+oauth_file="./users.json"
+oauth_user=$(cat ${oauth_file} | jq '.[0]')
+
+export TEST_ACCOUNT_USERNAME=$(jq '.Username' <<< "${oauth_user}")
+export TEST_ACCOUNT_PASSWORD=$(jq '.Password' <<< "${oauth_user}")
+
 echo -n "waiting for localstack to be ready: "
 until $(curl --output /dev/null --silent --head ${LOCALSTACK_URL}); do
     echo -n '.'
@@ -51,8 +58,11 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/dev/auth0-
     "internal_url": "'"${OIDC_INTERNAL_URL}"'",
     "cookie_name": "cxguser",
     "callback_base_url": "'"${BACKEND_URL}"'",
-    "redirect_to_frontend": "'"${FRONTEND_URL}"'"
+    "redirect_to_frontend": "'"${FRONTEND_URL}"'",
+    "test_account_username": '"${TEST_ACCOUNT_USERNAME}"',
+    "test_account_password": '"${TEST_ACCOUNT_PASSWORD}"'
 }' || true
+
 
 # TODO: python3 -m unittest tests.unit.backend.corpora.common.test_authorizer.TestAuthorizer.test_invalid_token
 ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-secret --secret-string '{

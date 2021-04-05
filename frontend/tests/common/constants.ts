@@ -1,9 +1,17 @@
-type TEST_ENV = "local" | "localProd" | "dev" | "staging" | "prod" | "rdev";
+type TEST_ENV =
+  | "local"
+  | "localProd"
+  | "dev"
+  | "staging"
+  | "prod"
+  | "rdev"
+  | "happy";
 
 export const TEST_ENV: TEST_ENV = (process.env.TEST_ENV as TEST_ENV) || "local";
 
 const TEST_ENV_TO_TEST_URL = {
   dev: "https://cellxgene.dev.single-cell.czi.technology",
+  happy: "http://frontend.corporanet.local:3000",
   local: "http://localhost:3000",
   localProd: "http://localhost:9000",
   prod: "https://cellxgene.cziscience.com",
@@ -12,6 +20,10 @@ const TEST_ENV_TO_TEST_URL = {
 };
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
-export const TEST_EMAIL = "";
+export const TEST_USERNAME =
+  TEST_ENV === "happy"
+    ? (process.env.TEST_ACCOUNT_USER as string)
+    : "user@example.com";
+export const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASS || "";
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };

@@ -15,7 +15,12 @@ interface Props {
 const MoreDropdown = ({ popoverProps = {}, buttonProps = {} }: Props) => {
   return (
     <Popover {...popoverProps}>
-      <Button {...buttonProps} minimal icon={IconNames.MORE} />
+      <Button
+        {...buttonProps}
+        minimal
+        icon={IconNames.MORE}
+        data-test-id="collection-more-button"
+      />
     </Popover>
   );
 };
