@@ -23,6 +23,25 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         bdy = json.loads(rsp.body)
         return [g["id"] for g in bdy.get("genesets", [])]
 
+    def _delete_geneset_test(self, collection_id, headers, geneset):
+        # get geneset
+        actual_geneset_ids = self._get_geneset_ids(collection_id, headers)
+        self.assertIn(geneset.id, actual_geneset_ids)
+
+        # delete the geneset
+        actual_geneset_ids = self._get_geneset_ids(collection_id, headers)
+        self.assertIn(geneset.id, actual_geneset_ids)
+        response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
+        self.assertEqual(202, response.status_code)
+
+        # try to get geneset
+        actual_geneset_ids = self._get_geneset_ids(collection_id, headers)
+        self.assertNotIn(geneset.id, actual_geneset_ids)
+
+        # Delete a seconds time
+        response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
+        self.assertEqual(202, response.status_code)
+
     def test__delete_geneset_ACCEPTED(self):
         """
         Delete a geneset from a private collection.
@@ -43,19 +62,7 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
             self.assertIn(geneset.id, actual_geneset_ids)
 
-            # delete the geneset
-            actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
-            self.assertIn(geneset.id, actual_geneset_ids)
-            response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
-            self.assertEqual(202, response.status_code)
-
-            # try to get geneset
-            actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
-            self.assertNotIn(geneset.id, actual_geneset_ids)
-
-            # Delete a seconds time
-            response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
-            self.assertEqual(202, response.status_code)
+            self._delete_geneset_test(collection.id, headers, geneset)
 
         with self.subTest("With dataset"):
             # create dataset
@@ -73,19 +80,7 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
             self.assertIn(geneset.id, actual_geneset_ids)
 
-            # delete the geneset
-            actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
-            self.assertIn(geneset.id, actual_geneset_ids)
-            response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
-            self.assertEqual(202, response.status_code)
-
-            # try to get geneset
-            actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
-            self.assertNotIn(geneset.id, actual_geneset_ids)
-
-            # Delete a seconds time
-            response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
-            self.assertEqual(202, response.status_code)
+            self._delete_geneset_test(collection.id, headers, geneset)
 
             # get dataset
             response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)

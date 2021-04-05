@@ -503,11 +503,11 @@ paths:
     delete:
       tags:
         - genesets
-      summary: Delete gene sets from a collection
+      summary: Delete a genese
       security:
         - cxguserCookie: [ ]
       description: >-
-        Delete a gene set from a private collection
+        Delete a gene by set removing it from a collection and any data sets it was linked to.
       operationId: corpora.lambdas.api.v1.gene_sets.delete
       parameters:
         - $ref: "#/components/parameters/path_geneset_uuid"

@@ -19,6 +19,6 @@ def delete(geneset_uuid: str, user: str):
     if geneset.collection.owner != user:
         raise ForbiddenHTTPException()
     if geneset.collection_visibility == CollectionVisibility.PUBLIC:
-        return make_response(jsonify("Can not delete a public geneset"), 405)
+        return make_response(jsonify("Cannot delete a public geneset"), 405)
     geneset.delete()
     return accepted_response
