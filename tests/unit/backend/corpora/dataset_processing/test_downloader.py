@@ -105,7 +105,7 @@ class TestDownload(DataPortalTestCase):
         progress_tracker.stop_downloader.set()
         with self.assertLogs(download.logger, logging.INFO) as logs:
             download.downloader(url=url, local_path=local_file, chunk_size=1024, tracker=progress_tracker)
-            self.assertIn("Download ended early!", logs.output[0])
+            self.assertIn("Download ended early!", logs.output[1])
 
     def test__bad_url__FAILED(self):
         local_file = "local.h5ad"

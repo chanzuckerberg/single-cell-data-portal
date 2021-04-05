@@ -189,7 +189,7 @@ def create_artifact(
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    logger.info(f"Creating Artifacts.")
+    logger.info("Creating Artifacts.")
     # upload AnnData
     create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
     update_db(
@@ -229,7 +229,7 @@ def update_db(dataset_id, metadata=None, processing_status=None):
         if metadata:
             # TODO: Delete this line once mean_genes_per_cell is in the db
             metadata.pop("mean_genes_per_cell", None)
-            logger.debug(f"updating metadata.")
+            logger.debug("Updating metadata.")
             dataset.update(**metadata)
 
         if processing_status:
