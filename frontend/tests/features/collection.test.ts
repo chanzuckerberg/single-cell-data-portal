@@ -28,7 +28,7 @@ describe("Collection", () => {
       await page.click(getTestID("collection-more-button"));
       await page.click(getText("Delete Collection"));
 
-      await page.click(getText("Delete Collection"));
+      await page.click(".bp3-alert-footer >> text=Delete Collection");
 
       await goToPage(
         TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
