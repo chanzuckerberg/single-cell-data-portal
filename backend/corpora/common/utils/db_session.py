@@ -7,6 +7,7 @@ from sqlalchemy import event
 
 from .exceptions import CorporaException
 from ..corpora_config import CorporaDbConfig
+from ..corpora_orm import DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -59,3 +60,22 @@ def db_session_manager(**kwargs):
         raise CorporaException(msg)
     finally:
         session.close()
+
+def processing_status_updater(session, uuid: str, updates: dict):
+    session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
+    session.commit()
+    logger.debug("updating status", updates)
+
+
+from flask import g
+from functools import wraps
+
+
+def dbconnect(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with db_session_manager() as session:
+            g.db_session = session
+            return func(*args, **kwargs)
+
+    return wrapper

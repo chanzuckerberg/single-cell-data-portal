@@ -14,8 +14,6 @@ from urllib.parse import urlparse
 import backend
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.aws import AwsSecret
-from backend.corpora.common.utils.db_session import db_session_manager
-
 
 
 def create_flask_app():
@@ -64,28 +62,12 @@ def configure_flask_app(flask_app):
     return flask_app
 
 
-class DatabaseMiddleware:
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, *args, **kwargs):
-        g.db_session = db_session_manager()
-        g.db_session.__enter__()
-        return self.app(*args, **kwargs)
-
-
 app = configure_flask_app(create_flask_app())
-app.wsgi_app = DatabaseMiddleware(app.wsgi_app)
 
 
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
-
-
-@app.teardown_request
-def close_transaction(e=None):
-    g.db_session.__exit__(*sys.exc_info())
 
 
 with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
@@ -94,7 +76,7 @@ with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_f
 
 @app.route("/", methods=["GET", "HEAD"])
 def serve_swagger_ui():
-    return flask.Response(swagger_ui_html, mimetype="text/html")
+    return Response(swagger_ui_html, mimetype="text/html")
 
 
 @app.errorhandler(ProblemException)
