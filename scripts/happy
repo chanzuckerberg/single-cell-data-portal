@@ -266,6 +266,9 @@ class Stack:
 
     def destroy(self):
         self._ensure_workspace()
+        if not self.workspace.latest_config_version_id:
+            print("WARNING: No latest version of workspace to destroy. Assuming already empty and continuing.")
+            return True
         self.workspace.run(is_destroy=True)
         return self.workspace.wait()
 
