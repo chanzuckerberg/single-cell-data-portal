@@ -5,6 +5,7 @@ from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility, ProcessingStatus
 from .....common import upload_sfn
 from .....common.entities import Collection, Dataset
+from .....common.utils.db_session import dbconnect
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import (
     ForbiddenHTTPException,
@@ -16,6 +17,7 @@ from .....common.utils.exceptions import (
 from .....common.utils.math_utils import GB
 
 
+@dbconnect
 def link(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     dataset_id = upload_from_link(db_session, collection_uuid, user, body["url"])

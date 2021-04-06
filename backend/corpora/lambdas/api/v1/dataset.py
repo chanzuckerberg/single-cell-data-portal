@@ -3,6 +3,7 @@ from flask import make_response, jsonify, g
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
+from ....common.utils.db_session import dbconnect
 from ....common.utils.exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
@@ -11,6 +12,7 @@ from ....common.utils.exceptions import (
 )
 
 
+@dbconnect
 def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
     db_session = g.db_session
     # retrieve the dataset
@@ -44,6 +46,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
     )
 
 
+@dbconnect
 def get_status(dataset_uuid: str, user: str):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
@@ -57,6 +60,7 @@ def get_status(dataset_uuid: str, user: str):
     return make_response(jsonify(status), 200)
 
 
+@dbconnect
 def delete_dataset(dataset_uuid: str, user: str):
     """
     Deletes an existing dataset or cancels an in progress upload.
@@ -81,6 +85,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     return "", 202
 
 
+@dbconnect
 def get_dataset_identifiers(url: str):
     db_session = g.db_session
     dataset = Dataset.get_by_explorer_url(db_session, url)
@@ -99,6 +104,7 @@ def get_dataset_identifiers(url: str):
     return make_response(jsonify(dataset_identifiers), 200)
 
 
+@dbconnect
 def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)

@@ -2,9 +2,12 @@ from flask import make_response, g
 
 from .....common.corpora_orm import CollectionVisibility
 from .....common.entities import Collection
-from .....common.utils.exceptions import ForbiddenHTTPException, ConflictException
+from .....common.utils.exceptions import  ConflictException
+from .....common.utils.db_session import dbconnect
+from .....common.utils.exceptions import ForbiddenHTTPException
 
 
+@dbconnect
 def post(collection_uuid: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=user)
