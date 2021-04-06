@@ -84,3 +84,17 @@ def processing_status_updater(session, uuid: str, updates: dict):
     session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
     session.commit()
     logger.debug("updating status", updates)
+
+
+from flask import g
+from functools import wraps
+
+
+def dbconnect(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with db_session_manager() as session:
+            g.db_session = session
+            return func(*args, **kwargs)
+
+    return wrapper
