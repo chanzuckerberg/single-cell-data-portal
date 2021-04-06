@@ -232,15 +232,13 @@ class TestCollection(DataPortalTestCase):
         self.assertIsNotNone(gs_ds_link)
         collection.tombstone_collection()
 
-        # check geneset deleted
+        # check gene sets deleted
         geneset = Geneset.get(session=self.session, key=geneset0.id)
         self.assertIsNone(geneset)
         geneset = Geneset.get(session=self.session, key=geneset1.id)
         self.assertIsNone(geneset)
+        self.assertEqual(len(collection.genesets), 0)
 
         # check geneset dataset links removed
         gs_ds_link = GenesetDatasetLink.get(session=self.session, geneset_id=geneset0.id, dataset_id=dataset.id)
         self.assertIsNone(gs_ds_link)
-
-
-
