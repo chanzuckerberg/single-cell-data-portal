@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.collection import Collection
+from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
@@ -219,3 +220,27 @@ class TestCollection(DataPortalTestCase):
             self.assertTrue(dataset.tombstone)
 
     def test_tombstone_collection_deletes_all_genesets_in_collection(self):
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        dataset = self.generate_dataset(self.session, collection=collection)
+        geneset0 = self.generate_geneset(self.session, collection=collection, dataset_ids=[dataset.id])
+        geneset1 = self.generate_geneset(self.session, collection=collection)
+
+        self.assertEqual(len(collection.genesets), 2)
+        gs_ds_link = GenesetDatasetLink.get(session=self.session, geneset_id=geneset0.id, dataset_id=dataset.id)
+        self.assertIsNotNone(gs_ds_link)
+        collection.tombstone_collection()
+
+        # check geneset deleted
+        geneset = Geneset.get(session=self.session, key=geneset0.id)
+        self.assertIsNone(geneset)
+        geneset = Geneset.get(session=self.session, key=geneset1.id)
+        self.assertIsNone(geneset)
+
+        # check geneset dataset links removed
+        gs_ds_link = GenesetDatasetLink.get(session=self.session, geneset_id=geneset0.id, dataset_id=dataset.id)
+        self.assertIsNone(gs_ds_link)
+
+
+
