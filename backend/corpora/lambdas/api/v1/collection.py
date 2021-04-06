@@ -6,8 +6,10 @@ from flask import make_response, jsonify, g
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
+from ....common.utils.db_session import dbconnect
 
 
+@dbconnect
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
     db_session = g.db_session
     all_collections = Collection.list_attributes_in_time_range(
@@ -33,6 +35,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
+@dbconnect
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, visibility)
@@ -48,6 +51,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     return make_response(jsonify(result), 200)
 
 
+@dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
@@ -63,6 +67,7 @@ def post_collection_revision(collection_uuid: str, user: str):
     return make_response(jsonify(result), 201)
 
 
+@dbconnect
 def create_collection(body: object, user: str):
     db_session = g.db_session
     collection = Collection.create(
@@ -84,6 +89,7 @@ def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
 
 
+@dbconnect
 def delete_collection(collection_uuid: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
@@ -96,6 +102,7 @@ def delete_collection(collection_uuid: str, user: str):
     return "", 202
 
 
+@dbconnect
 def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)

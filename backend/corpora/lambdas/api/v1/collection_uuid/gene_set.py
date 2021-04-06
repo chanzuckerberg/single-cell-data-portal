@@ -4,9 +4,11 @@ from sqlalchemy.exc import IntegrityError
 from .....common.corpora_orm import CollectionVisibility
 from .....common.entities import Collection
 from .....common.entities.geneset import Geneset
+from .....common.utils.db_session import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 
 
+@dbconnect
 def post(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
