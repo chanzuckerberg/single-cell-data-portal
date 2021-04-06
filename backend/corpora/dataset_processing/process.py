@@ -413,7 +413,7 @@ def validate_h5ad_file(dataset_id, local_filename):
         update_db(dataset_id, processing_status=status)
         raise ValidationFailed
     else:
-        logger.info("Validation complete", flush=True)
+        logger.info("Validation complete")
         status = dict(
             conversion_cxg_status=ConversionStatus.CONVERTING,
             conversion_loom_status=ConversionStatus.CONVERTING,
@@ -443,14 +443,14 @@ def main():
             os.environ["DROPBOX_URL"],
             "local.h5ad",
         )
-        logger.info("Download complete", flush=True)
+        logger.info("Download complete")
 
         validate_h5ad_file(dataset_id, local_filename)
         process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
         # Process metadata
         metadata = extract_metadata(local_filename)
-        logger.info(metadata, flush=True)
+        logger.info(metadata)
         update_db(dataset_id, metadata)
 
         # create artifacts
