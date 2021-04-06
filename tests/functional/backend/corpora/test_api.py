@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import time
 import unittest
 import requests
 from requests import HTTPError
@@ -227,9 +228,20 @@ class TestApi(unittest.TestCase):
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
-        # TODO @madison update if we speed up backend
         self.assertEqual(data["upload_status"], "WAITING")
-
+        keep_trying = True
+        upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
+        conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
+        while keep_trying:
+            time.sleep(30)
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+            res.raise_for_status()
+            self.assertIn(data['upload_status'], upload_statuses)
+            self.assertIn(data['conversion_cxg_status'], conversion_statuses)
+            if data['conversion_cxg_status'] == "FAILED":
+                raise(f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+            if data['conversion_cxg_status'] == "CONVERTED":
+                keep_trying = False
         # Check non_auth user cant check status
         no_auth_headers = {"Content-Type": "application/json"}
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
