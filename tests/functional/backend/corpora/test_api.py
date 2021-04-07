@@ -229,30 +229,37 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
         self.assertEqual(data["upload_status"], "WAITING")
-        keep_trying = True
-        upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-        conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
-        while keep_trying:
-            time.sleep(30)
+
+        with self.subTest("Test dataset conversion"):
+            keep_trying = True
+            upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
+            conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
+            timer = time.time()
+            while keep_trying:
+                time.sleep(30)
+                res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+                res.raise_for_status()
+                self.assertIn(data["upload_status"], upload_statuses)
+                self.assertIn(data["conversion_cxg_status"], conversion_statuses)
+                if data["conversion_cxg_status"] == "FAILED":
+                    raise(f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+                if data["conversion_cxg_status"] == "CONVERTED":
+                    keep_trying = False
+                if time.time() >= timer + 300:
+                    raise TimeoutError
+
+
+        with self.subTest("test non owner cant retrieve status"):
+            no_auth_headers = {"Content-Type": "application/json"}
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
+            with self.assertRaises(HTTPError):
+                res.raise_for_status()
+
+        with self.subTest("Test dataset deletion"):
+            res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
+            res.raise_for_status()
+            self.assertEqual(res.status_code, requests.codes.accepted)
+
+            # Check that the dataset is gone
             res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
-            res.raise_for_status()
-            self.assertIn(data["upload_status"], upload_statuses)
-            self.assertIn(data["conversion_cxg_status"], conversion_statuses)
-            if data["conversion_cxg_status"] == "FAILED":
-                raise (f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
-            if data["conversion_cxg_status"] == "CONVERTED":
-                keep_trying = False
-        # Check non_auth user cant check status
-        no_auth_headers = {"Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
-        with self.assertRaises(HTTPError):
-            res.raise_for_status()
-
-        # Delete dataset
-        res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.accepted)
-
-        # Check that the dataset is gone
-        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.forbidden)
+            self.assertEqual(res.status_code, requests.codes.forbidden)
