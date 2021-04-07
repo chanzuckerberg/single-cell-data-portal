@@ -425,11 +425,12 @@ def validate_h5ad_file(dataset_id, local_filename):
 
 
 def log_batch_environment():
-    batch_environment_variables = ["AWS_BATCH_CE_NAME", "AWS_BATCH_JOB_ATTEMPT", "AWS_BATCH_JOB_ID"]
-    vars = dict()
+    batch_environment_variables = ["AWS_BATCH_CE_NAME", "AWS_BATCH_JOB_ATTEMPT", "AWS_BATCH_JOB_ID", "DROPBOX_URL",
+                                   "ARTIFACT_BUCKET", "CELLXGENE_BUCKET", "DATASET_ID", "DEPLOYMENT_STAGE"]
+    env_vars = dict()
     for var in batch_environment_variables:
-        vars[var] = os.getenv(var)
-    logger.info(f"Batch Job Info: {vars}")
+        env_vars[var] = os.getenv(var)
+    logger.info(f"Batch Job Info: {env_vars}")
 
 
 def main():
