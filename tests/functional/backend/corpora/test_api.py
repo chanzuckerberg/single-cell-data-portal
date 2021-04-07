@@ -242,12 +242,11 @@ class TestApi(unittest.TestCase):
                 self.assertIn(data["upload_status"], upload_statuses)
                 self.assertIn(data["conversion_cxg_status"], conversion_statuses)
                 if data["conversion_cxg_status"] == "FAILED":
-                    raise(f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+                    raise (f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
                 if data["conversion_cxg_status"] == "CONVERTED":
                     keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError
-
 
         with self.subTest("test non owner cant retrieve status"):
             no_auth_headers = {"Content-Type": "application/json"}
