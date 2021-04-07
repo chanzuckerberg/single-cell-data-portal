@@ -153,7 +153,6 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.forbidden)
 
     def test_delete_private_collection(self):
-        def test_collection_flow(self):
             # create collection
             data = {
                 "contact_email": "lisbon@gmail.com",
@@ -226,8 +225,8 @@ class TestApi(unittest.TestCase):
 
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
+        self.assertEqual(res.status_code, requests.codes.ok)
         self.assertEqual(data["upload_status"], "WAITING")
 
         with self.subTest("Test dataset conversion"):
@@ -236,17 +235,22 @@ class TestApi(unittest.TestCase):
             conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
             timer = time.time()
             while keep_trying:
-                time.sleep(30)
+                data = None
                 res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
                 res.raise_for_status()
-                self.assertIn(data["upload_status"], upload_statuses)
-                self.assertIn(data["conversion_cxg_status"], conversion_statuses)
-                if data["conversion_cxg_status"] == "FAILED":
-                    raise (f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
-                if data["conversion_cxg_status"] == "CONVERTED":
-                    keep_trying = False
+                data = json.loads(res.content)
+                upload_status = data["upload_status"]
+                self.assertIn(upload_status, upload_statuses)
+                # conversion statuses only returned once uploaded
+                if upload_status == "UPLOADED":
+                    self.assertIn(data["conversion_cxg_status"], conversion_statuses)
+                    if data["conversion_cxg_status"] == "FAILED":
+                        raise (f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+                    if data["conversion_cxg_status"] == "CONVERTED":
+                        keep_trying = False
                 if time.time() >= timer + 300:
-                    raise TimeoutError
+                    raise TimeoutError(f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+                time.sleep(30)
 
         with self.subTest("test non owner cant retrieve status"):
             no_auth_headers = {"Content-Type": "application/json"}
