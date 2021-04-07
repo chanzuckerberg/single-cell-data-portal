@@ -1,10 +1,10 @@
-import { FormGroup, InputGroup, Intent } from "@blueprintjs/core";
+import { FormGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
 import React, { FC, useRef, useState } from "react";
 import { DEBOUNCE_TIME_MS } from "../../../CreateCollectionModal/components/Content/common/constants";
 import { Value } from "../common/constants";
-import { LabelText, StyledIcon, StyledLabel } from "./style";
+import { LabelText, StyledIcon, StyledInputGroup, StyledLabel } from "./style";
 
 interface Props {
   name: string;
@@ -44,7 +44,11 @@ const Input: FC<Props> = ({
         intent={(!isValid && Intent.DANGER) || undefined}
       >
         <LabelText>{text}</LabelText>
-        <InputGroup
+        <StyledInputGroup
+          // (thuang): `autoComplete="off"` and `type="search"` are needed to stop autofill
+          // https://stackoverflow.com/a/30873633
+          autoComplete="off"
+          type="search"
           inputRef={inputRef}
           intent={(!isValid && Intent.DANGER) || undefined}
           id={name}

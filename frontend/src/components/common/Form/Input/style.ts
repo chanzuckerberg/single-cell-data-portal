@@ -1,4 +1,4 @@
-import { Icon, Label } from "@blueprintjs/core";
+import { Icon, InputGroup, Label } from "@blueprintjs/core";
 import { DARK_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
@@ -24,4 +24,10 @@ export const IconWrapper = styled.div`
 
 export const StyledIcon = styled(Icon)`
   margin-right: ${PT_GRID_SIZE_PX}px;
+`;
+
+export const StyledInputGroup = styled(InputGroup)`
+  && input {
+    border-radius: unset;
+  }
 `;
