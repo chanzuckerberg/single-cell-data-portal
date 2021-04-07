@@ -236,11 +236,11 @@ class TestApi(unittest.TestCase):
             time.sleep(30)
             res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
             res.raise_for_status()
-            self.assertIn(data['upload_status'], upload_statuses)
-            self.assertIn(data['conversion_cxg_status'], conversion_statuses)
-            if data['conversion_cxg_status'] == "FAILED":
-                raise(f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
-            if data['conversion_cxg_status'] == "CONVERTED":
+            self.assertIn(data["upload_status"], upload_statuses)
+            self.assertIn(data["conversion_cxg_status"], conversion_statuses)
+            if data["conversion_cxg_status"] == "FAILED":
+                raise (f"CXG CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
+            if data["conversion_cxg_status"] == "CONVERTED":
                 keep_trying = False
         # Check non_auth user cant check status
         no_auth_headers = {"Content-Type": "application/json"}
