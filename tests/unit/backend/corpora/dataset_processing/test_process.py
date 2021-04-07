@@ -40,11 +40,35 @@ class TestDatasetProcessing(DataPortalTestCase):
         cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
         cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
         cls.cxg_filename = pathlib.Path(cls.tmp_dir, "test.cxg")
-
+        cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
         cls.h5ad_filename.touch()
         cls.seurat_filename.touch()
         cls.loom_filename.touch()
         cls.cxg_filename.touch()
+
+        cls.get_real_data("a5da03d7-f44b-4bb8-81a4-bc80960d6223", "04be802c-ffc6-4a7f-a4c5-f2812f1a707f", cls.real_h5ad_filename)
+
+    @staticmethod
+    def get_real_data(dataset_id, asset_id, local_filename):
+        response = requests.post(f"https://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/"
+                                 f"{dataset_id}/asset/{asset_id}")
+        response.raise_for_status()
+        presigned_url = response.json()['presigned_url']
+
+        with requests.get(presigned_url, stream=True) as resp:
+            resp.raise_for_status()
+            with open(local_filename, "wb") as fp:
+                for chunk in resp.iter_content(chunk_size=None):
+                    fp.write(chunk)
+
+    def test_make_cxg(self):
+        make_cxg(str(self.real_h5ad_filename))
+
+    def test_make_seurat(self):
+        make_seurat(str(self.real_h5ad_filename))
+
+    def test_make_loom(self):
+        make_loom(str(self.real_h5ad_filename))
 
     @classmethod
     def tearDownClass(cls):
@@ -386,6 +410,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             )
 
         with self.subTest("invalid artifact type"):
+
             class BadEnum(enum.Enum):
                 fake = "fake"
 
