@@ -249,6 +249,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     file_info = get_file_info(fixed_dropbox_url)
     status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
     logger.info(status)
+    logger.info("Download complete")
     return local_path
 
 
@@ -284,8 +285,7 @@ def extract_metadata(filename):
             {"label": k[0], "ontology_term_id": k[1]}
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
-
-    return {
+    metadata = {
         "name": adata.uns["title"],
         "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
         "tissue": _get_term_pairs("tissue"),
@@ -297,6 +297,8 @@ def extract_metadata(filename):
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
     }
+    logger.info(f"Extract metadata: {metadata}")
+    return metadata
 
 
 def make_loom(local_filename):
@@ -434,6 +436,7 @@ def log_batch_environment():
 
 
 def main():
+    return_value = 0
     check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
@@ -444,14 +447,12 @@ def main():
             os.environ["DROPBOX_URL"],
             "local.h5ad",
         )
-        logger.info("Download complete")
 
         validate_h5ad_file(dataset_id, local_filename)
         process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
 
         # Process metadata
         metadata = extract_metadata(local_filename)
-        logger.info(metadata)
         update_db(dataset_id, metadata)
 
         # create artifacts
@@ -463,22 +464,20 @@ def main():
         update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-        sys.exit(0)
-    except ProcessingFailed:
-        logging.exception()
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
-        sys.exit(1)
-    except ValidationFailed:
+    except (ValidationFailed, ProcessingFailed):
         logger.exception()
-        sys.exit(1)
-    except Exception:
+        return_value = 1
+    except Exception as ex:
         message = "An unexpect error occured while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
         )
-        sys.exit(1)
+        return_value = 1
+
+    return return_value
 
 
 if __name__ == "__main__":
-    main()
+    rv = main()
+    sys.exit(rv)
