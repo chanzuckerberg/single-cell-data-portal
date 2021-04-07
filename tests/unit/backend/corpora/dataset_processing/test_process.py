@@ -1,17 +1,17 @@
 import enum
+
+import anndata
+import boto3
 import logging
+import numpy
 import os
+import pandas
 import pathlib
 import shutil
 import tempfile
 import time
-from unittest.mock import patch
-
-import anndata
-import boto3
-import numpy
-import pandas
 from moto import mock_s3
+from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -24,10 +24,11 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions, download_from_dropbox_url
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 
 
 class TestDatasetProcessing(DataPortalTestCase):
@@ -385,7 +386,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             )
 
         with self.subTest("invalid artifact type"):
-
             class BadEnum(enum.Enum):
                 fake = "fake"
 
@@ -531,3 +531,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         end = time.time()
         # check that tombstoning ends the download thread early
         self.assertLess(end - start, 11)
+
+    def test_main(self):
+        dataset = self.generate_dataset(self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name)
+        with EnvironmentSetup(
+                {'DROPBOX_URL': "some_url", 'ARTIFACT_BUCKET': "s3://artifacts", 'CELLXGENE_BUCKET': 's3://cellxgene',
+                 'DATASET_ID': dataset.id}):
+            process.main()
