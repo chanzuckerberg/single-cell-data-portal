@@ -122,7 +122,7 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.common.utils.dl_sources import build_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
@@ -242,12 +242,12 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
-    if not fixed_dropbox_url:
+    file_url = build_url(dropbox_url)
+    if not file_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    file_info = get_file_info(fixed_dropbox_url)
-    status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    file_info = file_url.file_info()
+    status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
     logger.info(status)
     logger.info("Download complete")
     return local_path

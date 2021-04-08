@@ -106,8 +106,6 @@ services:
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
       - ./backend/corpora/common:/backend/corpora/common
-      # Mount dirs in a layout suitable for running tests.
-      - .:/corpora-data-portal
     command: ["sleep", "infinity"]
     environment:
       - PYTHONUNBUFFERED=1

@@ -5,7 +5,7 @@ from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
 from .....common.entities import Collection, Dataset
-from .....common.utils import dropbox
+from .....common.utils.dl_sources import url
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, TooLargeHTTPException
 from .....common.utils.math_utils import GB
 
@@ -13,16 +13,16 @@ from .....common.utils.math_utils import GB
 def link(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     # Verify Dropbox URL
-    url = dropbox.get_download_url_from_shared_link(body["url"])
+    url = url.get_download_url_from_shared_link(body["url"])
     if not url:
         raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
 
     # Get file info
     try:
-        resp = dropbox.get_file_info(url)
+        resp = url.get_file_info(url)
     except requests.HTTPError:
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
-    except dropbox.MissingHeaderException as ex:
+    except url.MissingHeaderException as ex:
         raise InvalidParametersHTTPException(ex.detail)
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
