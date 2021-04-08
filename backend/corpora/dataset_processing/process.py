@@ -435,33 +435,37 @@ def log_batch_environment():
     logger.info(f"Batch Job Info: {env_vars}")
 
 
+def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+    local_filename = download_from_dropbox_url(
+        dataset_id,
+        dropbox_url,
+        "local.h5ad",
+    )
+
+    validate_h5ad_file(dataset_id, local_filename)
+    process_cxg(local_filename, dataset_id, cellxgene_bucket)
+
+    # Process metadata
+    metadata = extract_metadata(local_filename)
+    update_db(dataset_id, metadata)
+
+    # create artifacts
+    create_artifacts(
+        local_filename,
+        dataset_id,
+        artifact_bucket
+    )
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+
+
 def main():
     return_value = 0
     check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     try:
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
-        local_filename = download_from_dropbox_url(
-            dataset_id,
-            os.environ["DROPBOX_URL"],
-            "local.h5ad",
-        )
-
-        validate_h5ad_file(dataset_id, local_filename)
-        process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
-
-        # Process metadata
-        metadata = extract_metadata(local_filename)
-        update_db(dataset_id, metadata)
-
-        # create artifacts
-        create_artifacts(
-            local_filename,
-            dataset_id,
-            os.environ["ARTIFACT_BUCKET"],
-        )
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
