@@ -119,7 +119,6 @@ This starts an FE server that hits a **local** API server
 These are the commands we integrate in CI/CD pipeline for PR tests and
 after deployment tests
 
-1. Dev: `npm run e2e-dev`
 1. Staging: `npm run e2e-staging`
 1. Prod: `npm run e2e-prod`
 
