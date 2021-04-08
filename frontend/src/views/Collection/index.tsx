@@ -4,7 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
 import { useQueryCache } from "react-query";
-import { ACCESS_TYPE, Dataset, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
@@ -16,7 +16,7 @@ import {
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
-import ActionButtons, { UploadedFiles } from "./components/ActionButtons";
+import ActionButtons from "./components/ActionButtons";
 import DatasetUploadToast from "./components/DatasetUploadToast";
 import GeneSetTab from "./components/GeneSetTab";
 import {
@@ -52,9 +52,14 @@ const Collection: FC = () => {
 
   const [uploadLink] = useCollectionUploadLinks(id, visibility);
 
-  const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
+  const [isUploadingLink, setIsUploadingLink] = useState(false);
 
-  const { data: collection, isError } = useCollection({ id, visibility });
+  const collectionState = useCollection({
+    id,
+    visibility,
+  });
+
+  const { data: collection, isError, isFetching } = collectionState;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
@@ -69,18 +74,20 @@ const Collection: FC = () => {
 
     const payload = JSON.stringify({ url: newFile.link });
 
+    setIsUploadingLink(true);
+
     uploadLink(
       { collectionId: id, payload },
       {
-        onSuccess: (datasetID: Dataset["id"]) => {
-          newFile.id = datasetID;
+        onSettled: () => setIsUploadingLink(false),
+        onSuccess: () => {
           DatasetUploadToast.show({
             icon: IconNames.TICK,
             intent: Intent.PRIMARY,
             message:
               "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
-          setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
+
           queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
@@ -89,7 +96,11 @@ const Collection: FC = () => {
 
   const datasets = collection.datasets;
 
-  const isPublishable = getIsPublishable(datasets);
+  // (thuang): `isFetching` is used to prevent incorrectly enabling "Publish"
+  // when React Query is fetching cached `collection` and its outdated
+  // `datasets`
+  const isPublishable =
+    getIsPublishable(datasets) && !isUploadingLink && !isFetching;
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);

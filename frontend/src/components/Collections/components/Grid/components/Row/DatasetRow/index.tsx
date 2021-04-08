@@ -16,6 +16,7 @@ import { useDatasetStatus } from "src/common/queries/datasets";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import {
+  ActionButton,
   ActionButtonsContainer,
   ActionCell,
   DetailsCell,
@@ -183,33 +184,39 @@ const DatasetRow: FC<Props> = ({
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
       <ActionCell>
         <ActionButtonsContainer>
-          {visibility === VISIBILITY_TYPE.PRIVATE &&
-            accessType === ACCESS_TYPE.WRITE && (
-              <MoreDropdown
-                collectionId={dataset.collection_id}
-                datasetId={dataset.id}
-              />
+          <ActionButton>
+            {visibility === VISIBILITY_TYPE.PRIVATE &&
+              accessType === ACCESS_TYPE.WRITE && (
+                <MoreDropdown
+                  collectionId={dataset.collection_id}
+                  datasetId={dataset.id}
+                />
+              )}
+          </ActionButton>
+
+          <ActionButton>
+            <DownloadDataset
+              name={dataset?.name || ""}
+              dataAssets={dataset?.dataset_assets}
+              Button={DownloadButton}
+            />
+          </ActionButton>
+
+          <ActionButton>
+            {hasCXGFile(dataset) && (
+              <Tooltip content="Explore">
+                <AnchorButton
+                  minimal
+                  intent={Intent.PRIMARY}
+                  icon={<img alt="Explore" src={String(ExploreSVG)} />}
+                  href={dataset?.dataset_deployments[0]?.url}
+                  target="_blank"
+                  rel="noopener"
+                  data-test-id="view-dataset-link"
+                />
+              </Tooltip>
             )}
-
-          <DownloadDataset
-            name={dataset?.name || ""}
-            dataAssets={dataset?.dataset_assets}
-            Button={DownloadButton}
-          />
-
-          {hasCXGFile(dataset) && (
-            <Tooltip content="Explore">
-              <AnchorButton
-                minimal
-                intent={Intent.PRIMARY}
-                icon={<img alt="Explore" src={String(ExploreSVG)} />}
-                href={dataset?.dataset_deployments[0]?.url}
-                target="_blank"
-                rel="noopener"
-                data-test-id="view-dataset-link"
-              />
-            </Tooltip>
-          )}
+          </ActionButton>
         </ActionButtonsContainer>
       </ActionCell>
     </StyledRow>
