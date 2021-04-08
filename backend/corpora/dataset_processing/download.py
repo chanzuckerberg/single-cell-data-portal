@@ -170,7 +170,7 @@ def download(
             status = {
                 "upload_status": UploadStatus.FAILED,
                 "upload_message": str(progress_tracker.error),
-                "processing_status": ProcessingStatus.FAILURE
+                "processing_status": ProcessingStatus.FAILURE,
             }
             _processing_status_updater(processing_status, status)
 

@@ -122,7 +122,7 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.common.utils.dl_sources import build_url
+from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
@@ -242,7 +242,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    file_url = build_url(dropbox_url)
+    file_url = from_url(dropbox_url)
     if not file_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
@@ -285,6 +285,7 @@ def extract_metadata(filename):
             {"label": k[0], "ontology_term_id": k[1]}
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
+
     metadata = {
         "name": adata.uns["title"],
         "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
@@ -427,8 +428,16 @@ def validate_h5ad_file(dataset_id, local_filename):
 
 
 def log_batch_environment():
-    batch_environment_variables = ["AWS_BATCH_CE_NAME", "AWS_BATCH_JOB_ATTEMPT", "AWS_BATCH_JOB_ID", "DROPBOX_URL",
-                                   "ARTIFACT_BUCKET", "CELLXGENE_BUCKET", "DATASET_ID", "DEPLOYMENT_STAGE"]
+    batch_environment_variables = [
+        "AWS_BATCH_CE_NAME",
+        "AWS_BATCH_JOB_ATTEMPT",
+        "AWS_BATCH_JOB_ID",
+        "DROPBOX_URL",
+        "ARTIFACT_BUCKET",
+        "CELLXGENE_BUCKET",
+        "DATASET_ID",
+        "DEPLOYMENT_STAGE",
+    ]
     env_vars = dict()
     for var in batch_environment_variables:
         env_vars[var] = os.getenv(var)
@@ -451,11 +460,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     update_db(dataset_id, metadata)
 
     # create artifacts
-    create_artifacts(
-        local_filename,
-        dataset_id,
-        artifact_bucket
-    )
+    create_artifacts(local_filename, dataset_id, artifact_bucket)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
@@ -471,7 +476,7 @@ def main():
     except (ValidationFailed, ProcessingFailed):
         logger.exception()
         return_value = 1
-    except Exception as ex:
+    except Exception:
         message = "An unexpect error occured while processing the data set."
         logger.exception(message)
         update_db(
