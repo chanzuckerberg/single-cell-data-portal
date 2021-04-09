@@ -192,7 +192,7 @@ local-smoke-test: ## Run frontend/e2e tests in the dev environment
 
 .PHONY: local-e2e
 local-e2e: ## Run frontend/e2e tests
-	docker-compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -T frontend make e2e
+	docker-compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -T frontend make e2e
 
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
