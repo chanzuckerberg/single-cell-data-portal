@@ -28,6 +28,12 @@ container-unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
+.PHONY: processing-unittest
+processing-unittest:
+	# This target is intended to be run INSIDE a container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
+
 .PHONY: functional-test
 functional-test: local-functional-test
 	# Keeping old target name for reverse comatibility
@@ -152,9 +158,11 @@ local-unit-test: ## Run backend tests in the dev environment
 	@if [ -z "$(path)" ]; then \
         echo "Running all tests"; \
 		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T processing bash -c "cd /corpora-data-portal && make processing-unittest"; \
 	else \
 		echo "Running test(s): $(path)"; \
 		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+		docker-compose exec -e DEV_MODE_COOKIES= -T processing bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
 	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
 		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
