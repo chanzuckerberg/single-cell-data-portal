@@ -64,7 +64,7 @@ jobs:
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
-          make local-e2e
+          BOTO_ENDPOINT_URL= make local-e2e
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
