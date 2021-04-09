@@ -21,7 +21,6 @@ export const StatusContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: ${PT_GRID_SIZE_PX}px;
 `;
 
 interface Props {
