@@ -1,18 +1,6 @@
-import { Classes, Radio } from "@blueprintjs/core";
-import {
-  GRAY,
-  PT_GRID_SIZE_PX,
-  PT_TEXT_COLOR,
-} from "src/components/common/theme";
+import { Classes } from "@blueprintjs/core";
+import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
-
-export const UploadStatusContainer = styled.div`
-  color: ${GRAY.A} !important;
-`;
-
-export const DatasetTitleCell = styled.td`
-  vertical-align: middle !important;
-`;
 
 export const TitleContainer = styled.div`
   display: flex;
@@ -27,8 +15,6 @@ export const TitleContainer = styled.div`
   & > .${Classes.POPOVER_WRAPPER} {
     margin-left: ${PT_GRID_SIZE_PX}px;
   }
-`;
-
-export const StyledRadio = styled(Radio)`
-  margin: 0;
+  padding: 0 ${PT_GRID_SIZE_PX}px;
+  justify-content: space-between;
 `;

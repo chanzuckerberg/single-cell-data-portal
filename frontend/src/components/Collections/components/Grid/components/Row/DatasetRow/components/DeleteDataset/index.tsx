@@ -21,6 +21,7 @@ const DeleteDataset: FC<Props> = ({
   Button = DefaultButton,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [deleteDataset] = useDeleteDataset(collectionId);
 
@@ -37,13 +38,15 @@ const DeleteDataset: FC<Props> = ({
       <Button onMouseEnter={handleHover} disabled={!id} onClick={toggleAlert} />
       {isOpen && (
         <AsyncAlert
+          loading={isLoading}
           cancelButtonText={"Cancel"}
           confirmButtonText={"Delete Dataset"}
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}
-          onConfirm={() => {
-            deleteDataset(id);
+          onConfirm={async () => {
+            setIsLoading(true);
+            await deleteDataset(id);
             toggleAlert();
           }}
         >

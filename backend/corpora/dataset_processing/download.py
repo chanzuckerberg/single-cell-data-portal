@@ -147,6 +147,7 @@ def download(
     """
     with db_session_manager() as session:
         logger.info("Setting up download.")
+        logger.info(f"file_size: {file_size}")
         processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0

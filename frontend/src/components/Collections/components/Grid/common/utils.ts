@@ -41,8 +41,10 @@ export const aggregateDatasetsMetadata = memoize(function (
 hashFn);
 
 function hashFn(datasets: Dataset[]): string {
-  return datasets.reduce((acc, dataset) => {
-    return acc + dataset.id;
+  return datasets.reduce((acc, { id, cell_count }) => {
+    // (thuang): We need `cell_count` as well to aggregate the metadata
+    // when they become available
+    return acc + id + cell_count;
   }, "");
 }
 
