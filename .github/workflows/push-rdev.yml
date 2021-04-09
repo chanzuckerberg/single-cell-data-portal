@@ -37,7 +37,6 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
 
   create-update-rdev:
@@ -57,7 +56,6 @@ jobs:
       - name: Install happy dependencies
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
       - name: Create update rdev
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}

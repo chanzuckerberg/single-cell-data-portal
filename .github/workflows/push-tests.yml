@@ -84,7 +84,6 @@ jobs:
         run: |
           # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
@@ -116,7 +115,6 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures processing
       - uses: 8398a7/action-slack@v3
         with:
@@ -213,7 +211,6 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
