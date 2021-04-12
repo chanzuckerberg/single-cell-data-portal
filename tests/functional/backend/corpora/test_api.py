@@ -256,7 +256,13 @@ class TestApi(unittest.TestCase):
                         self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if conversion_anndata_status == "FAILED":
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if conversion_cxg_status == conversion_loom_status == conversion_rds_status == conversion_anndata_status == "CONVERTED":
+                    if (
+                        conversion_cxg_status
+                        == conversion_loom_status
+                        == conversion_rds_status
+                        == conversion_anndata_status
+                        == "CONVERTED"
+                    ):
                         keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError(
