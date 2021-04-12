@@ -37,7 +37,7 @@ class TestCollectionUploadLink(BaseAuthAPITest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(401, response.status_code)
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.h5ad"})
+    @patch("corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.h5ad"})
     def test__link_not_owner__403(self, mock_get_file_info):
         path = "/dp/v1/collections/test_collection_id_not_owner/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -66,7 +66,7 @@ class TestCollectionUploadLink(BaseAuthAPITest):
             self.assertEqual(400, response.status_code)
             self.assertEqual("The URL provided causes an error with Dropbox.", json.loads(response.body)["detail"])
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 1, "name": "file.txt"})
+    @patch("corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"})
     def test__unsupported_format__400(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -76,7 +76,7 @@ class TestCollectionUploadLink(BaseAuthAPITest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(400, response.status_code)
 
-    @patch("corpora.common.utils.dropbox.get_file_info", return_value={"size": 31 * GB, "name": "file.txt"})
+    @patch("corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 31 * GB, "name": "file.txt"})
     def test__oversized__413(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}

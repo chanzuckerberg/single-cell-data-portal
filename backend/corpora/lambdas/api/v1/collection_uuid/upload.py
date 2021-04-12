@@ -13,13 +13,13 @@ from .....common.utils.math_utils import GB
 def link(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     # Verify Dropbox URL
-    file_link = from_url(body["url"])
-    if not file_link:
+    valid_link = from_url(body["url"])
+    if not valid_link:
         raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
 
     # Get file info
     try:
-        resp = file_link.file_info(file_link)
+        resp = valid_link.file_info()
     except requests.HTTPError:
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
     except MissingHeaderException as ex:
@@ -36,5 +36,5 @@ def link(collection_uuid: str, body: dict, user: str):
     dataset = Dataset.create(db_session, processing_status=Dataset.new_processing_status(), collection=collection)
 
     # Start processing link
-    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, file_link.url)
+    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, valid_link.url)
     return make_response({"dataset_uuid": dataset.id}, 202)

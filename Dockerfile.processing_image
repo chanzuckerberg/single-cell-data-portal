@@ -40,10 +40,10 @@ ADD requirements.txt requirements.txt
 ADD backend/chalice/api_server/requirements.txt backend/chalice/api_server/requirements.txt
 RUN pip3 install -r requirements.txt
 
+ADD tests /corpora-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
 ADD backend/corpora/__init__.py backend/corpora/__init__.py
 ADD backend/corpora/dataset_processing backend/corpora/dataset_processing
 ADD backend/corpora/common backend/corpora/common
-ADD tests tests
 
 CMD ["python3", "-m", "backend.corpora.dataset_processing.process"]

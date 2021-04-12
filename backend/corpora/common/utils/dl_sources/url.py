@@ -4,12 +4,13 @@ from abc import ABC, abstractmethod
 from urllib.parse import urlparse
 
 
-class MissingHeaderException:
+class MissingHeaderException(Exception):
     def __init__(self, detail: str = "", *args, **kwargs) -> None:
         self.detail = "Missing header from response. " + detail
 
 
 class URL(ABC):
+    """Define the abstract base class to support different download sources."""
     def __init__(self, url, parsed_url):
         self.url = url
         self.parsed_url = parsed_url
@@ -38,7 +39,7 @@ class URL(ABC):
 
 class DropBoxURL(URL):
     @classmethod
-    def validator(cls, url: str) -> typing.Optional["URL"]:
+    def validate(cls, url: str) -> typing.Optional["URL"]:
         """Converts a valid DropBox URL into a direct download link. If the url is not a valid DropBox URL, none is
         returned. Otherwise, the converted URL is returned.
         """
@@ -80,7 +81,7 @@ class S3URL(URL):
         parsed_url = urlparse(url)
         return (
             cls(url, parsed_url)
-            if parsed_url.scheme != "https" or not parsed_url.netloc.endswith("s3.amazonaws.com")
+            if parsed_url.scheme == "https" and parsed_url.netloc.endswith("s3.amazonaws.com")
             else None
         )
 
@@ -97,14 +98,14 @@ class S3URL(URL):
 _registered = set()
 
 
-def register(parser):
+def register(parser: URL):
     global _registered
     _registered.add(parser)
 
 
-def from_url(url) -> "URL":
-    for parser in _registered:
-        url_obj = parser(url)
+def from_url(url) -> URL:
+    for source in _registered:
+        url_obj = source.validate(url)
         if url_obj:
             return url_obj
 
