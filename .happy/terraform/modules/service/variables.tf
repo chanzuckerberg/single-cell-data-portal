@@ -91,7 +91,7 @@ variable frontend_url {
 variable deployment_stage {
   type        = string
   description = "The name of the deployment stage of the Application"
-  default     = "dev"
+  default     = "test"
 }
 
 variable step_function_arn {

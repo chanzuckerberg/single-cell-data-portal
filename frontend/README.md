@@ -32,10 +32,10 @@ WARNING: Do not store sensitive data in the environment variables.
 
 1. **Specify deployment.**
 
-   Set the `DEPLOYMENT_STAGE` environment variable to a valid deployed environment: `dev`, `staging`
+   Set the `DEPLOYMENT_STAGE` environment variable to a valid deployed environment: `test`, `staging`
 
    ```shell
-   export DEPLOYMENT_STAGE=dev
+   export DEPLOYMENT_STAGE=test
    ```
 
 1. **Deploy.**
@@ -97,7 +97,7 @@ This starts an FE server that hits **dev environment** API server
 
    1. Your `src/configs/configs.js` points to Dev API URL instead of `localhost`.
 
-      E.g., `https://api.dev.corpora.cziscience.com`
+      E.g., `https://api.dev.corpora.cziscience.com` (FIXME mbarrien)
 
 1. For Gatsby Prod Build: `npm run smoke-test-prod-build`
 
@@ -119,7 +119,6 @@ This starts an FE server that hits a **local** API server
 These are the commands we integrate in CI/CD pipeline for PR tests and
 after deployment tests
 
-1. Dev: `npm run e2e-dev`
 1. Staging: `npm run e2e-staging`
 1. Prod: `npm run e2e-prod`
 

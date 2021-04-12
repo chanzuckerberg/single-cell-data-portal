@@ -20,7 +20,7 @@ if [ $# -ne 0 ]; then
 fi
 
 # Build and run without dev mode in remote dev env.
-if [ "${DEPLOYMENT_STAGE}" == "dev" ]; then
+if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
   exec npm run dev
 else
   # We need "-- --" because `npm run build-and-start-prod`
