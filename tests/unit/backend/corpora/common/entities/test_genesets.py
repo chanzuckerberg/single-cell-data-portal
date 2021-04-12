@@ -52,6 +52,19 @@ class TestGeneSets(DataPortalTestCase):
         self.assertIn(geneset_1.id, linked_geneset_ids)
         self.assertIn(geneset_2.id, linked_geneset_ids)
 
+    def test_gene_order_is_maintained(self):
+        collection = self.generate_collection(self.session)
+        genes = [
+            {"name": "a", "position": "first", "description": "words"},
+            {"name": "b", "position": "second", "description": "words"},
+            {"name": "c", "position": "third", "description": "words"},
+            {"name": "d", "position": "fourth", "description": "words"}]
+        geneset = self.generate_geneset(session=self.session, name="name", gene_symbols=genes, collection=collection)
+        self.session.flush()
+        geneset = Geneset.get(self.session, geneset.id)
+        self.assertEqual(geneset.gene_symbols[0], genes[0])
+        self.assertEqual(geneset.gene_symbols, genes)
+
 
 class TestGenesetDatasetLinks(DataPortalTestCase):
     def test_link_a_geneset_and_dataset(self):
