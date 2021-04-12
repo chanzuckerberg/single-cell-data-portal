@@ -252,12 +252,18 @@ class TestApi(unittest.TestCase):
                         raise (f"RDS CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
                     if data["conversion_anndata_status"] == "FAILED":
                         raise (f"Anndata CONVERSION FAILED. Check logs for dataset: {dataset_uuid}")
-                    if data["conversion_cxg_status"] == data["conversion_loom_status"] == data[
-                        "conversion_rds_status"] == data["conversion_anndata_status"] == "CONVERTED":
+                    if (
+                        data["conversion_cxg_status"]
+                        == data["conversion_loom_status"]
+                        == data["conversion_rds_status"]
+                        == data["conversion_anndata_status"]
+                        == "CONVERTED"
+                    ):
                         keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError(
-                        f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}")
+                        f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                    )
                 time.sleep(30)
 
         with self.subTest("test non owner cant retrieve status"):
