@@ -51,8 +51,8 @@ services:
       - DEPLOYMENT_STAGE=dev
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./frontend:/corpora-frontend
@@ -83,8 +83,8 @@ services:
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=dev
       - ARTIFACT_BUCKET=artifact-bucket
@@ -114,8 +114,8 @@ services:
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=dev
       - ARTIFACT_BUCKET=artifact-bucket
@@ -143,8 +143,8 @@ services:
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=dev
       - RESTART_ON_FAILURE=yes

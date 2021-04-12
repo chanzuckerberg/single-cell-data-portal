@@ -3,14 +3,14 @@ import unittest
 import mock
 import requests
 from requests import HTTPError
-from backend.corpora.common.utils.dl_sources.url import from_url, DropBoxURL, register, MissingHeaderException
+from backend.corpora.common.utils.dl_sources.url import from_url, DropBoxURL, MissingHeaderException, RegisteredSources
 
 
 class TestDropbox(unittest.TestCase):
     def setUp(self):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
-        register(DropBoxURL)
+        RegisteredSources.add(DropBoxURL)
 
     def test__get_download_url__positive(self):
         positive_tests = [

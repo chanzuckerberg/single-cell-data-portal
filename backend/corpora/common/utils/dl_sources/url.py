@@ -1,7 +1,7 @@
 import requests
 import typing
 from abc import ABC, abstractmethod
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 
 
 class MissingHeaderException(Exception):
@@ -11,13 +11,14 @@ class MissingHeaderException(Exception):
 
 class URL(ABC):
     """Define the abstract base class to support different download sources."""
-    def __init__(self, url, parsed_url):
-        self.url = url
-        self.parsed_url = parsed_url
+
+    def __init__(self, url, parsed_url: ParseResult):
+        self.url: str = url
+        self.parsed_url: ParseResult = parsed_url
 
     @classmethod
     @abstractmethod
-    def validate(cls, url) -> typing.Optional["URL"]:
+    def validate(cls, url: str) -> typing.Optional["URL"]:
         """Validates the URL matches the expected format, and returns a new class object if valid.."""
         pass
 
@@ -28,7 +29,7 @@ class URL(ABC):
         """
         pass
 
-    def _get_key(self, headers, key) -> str:
+    def _get_key(self, headers: dict, key: str) -> str:
         try:
             return headers[key]
         except KeyError:
@@ -76,39 +77,53 @@ class DropBoxURL(URL):
 
 
 class S3URL(URL):
+    _netloc = "s3.amazonaws.com"
+    _scheme = "https"
+
     @classmethod
-    def validate(cls, url):
+    def validate(cls, url: str):
         parsed_url = urlparse(url)
         return (
             cls(url, parsed_url)
-            if parsed_url.scheme == "https" and parsed_url.netloc.endswith("s3.amazonaws.com")
+            if parsed_url.scheme == cls._scheme and parsed_url.netloc.endswith(cls._netloc)
             else None
         )
 
     def file_info(self) -> dict:
-        resp = requests.get(self.url, allow_redirects=True, headers={"Range": "bytes=0"})
+        resp = requests.get(self.url, headers={"Range": "bytes=0-0"})
         resp.raise_for_status()
 
         return {
-            "size": int(self._get_key(resp.headers, "content-length")),
-            "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
+            "size": int(self._get_key(resp.headers, "content-range").split("/")[1]),
+            "name": self.parsed_url.path,
         }
 
 
-_registered = set()
+class RegisteredSources:
+    _registered = set()
 
+    @classmethod
+    def add(cls, parser: typing.Type[URL]):
+        if issubclass(parser, URL):
+            cls._registered.add(parser)
+        else:
+            raise TypeError(f"subclass type {URL.__name__} expected")
 
-def register(parser: URL):
-    global _registered
-    _registered.add(parser)
+    @classmethod
+    def remove(cls, parser: typing.Type[URL]):
+        cls._registered.remove(parser)
+
+    @classmethod
+    def get(cls) -> typing.Iterable:
+        return cls._registered
 
 
 def from_url(url) -> URL:
-    for source in _registered:
+    for source in RegisteredSources.get():
         url_obj = source.validate(url)
         if url_obj:
             return url_obj
 
 
-register(DropBoxURL)
-register(S3URL)
+RegisteredSources.add(DropBoxURL)
+RegisteredSources.add(S3URL)

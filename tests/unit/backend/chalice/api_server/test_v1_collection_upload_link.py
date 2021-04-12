@@ -1,5 +1,4 @@
 import json
-
 from furl import furl
 from mock import patch
 
@@ -76,7 +75,9 @@ class TestCollectionUploadLink(BaseAuthAPITest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(400, response.status_code)
 
-    @patch("corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 31 * GB, "name": "file.txt"})
+    @patch(
+        "corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 31 * GB, "name": "file.txt"}
+    )
     def test__oversized__413(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
