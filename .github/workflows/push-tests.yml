@@ -179,7 +179,13 @@ jobs:
           mkdir -p .local/bin
           curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
           chmod +x .local/bin/chamber
-          make local-functional-test
+          PATH="$PATH:$(pwd)/.local/bin"
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+          docker-compose up --no-deps -d backend
+          BOTO_ENDPOINT_URL= make local-functional-test
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
