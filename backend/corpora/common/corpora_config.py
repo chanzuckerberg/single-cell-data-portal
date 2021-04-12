@@ -51,11 +51,6 @@ class CorporaAuthConfig(SecretConfig):
             secret_name="auth0-secret",
             **kwargs,
         )
-        deployment = os.environ["DEPLOYMENT_STAGE"]
-        if not self.config_is_loaded():
-            self.load()
-        if deployment == "test":
-            self.config["callback_base_url"] = "http://localhost:5000"
 
     def get_defaults_template(self):
         template = {
