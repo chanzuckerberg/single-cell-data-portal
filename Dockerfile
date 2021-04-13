@@ -37,4 +37,11 @@ RUN mkdir -p chalicelib config vendor
 ADD backend/corpora chalicelib/corpora
 ADD backend/config/corpora-api.yml chalicelib/config/corpora-api.yml
 
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT="unknown"
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
 CMD ["python3", "/chalice/run_local_server.py"]
