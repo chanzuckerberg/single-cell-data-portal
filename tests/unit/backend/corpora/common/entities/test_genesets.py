@@ -58,7 +58,8 @@ class TestGeneSets(DataPortalTestCase):
             {"name": "a", "position": "first", "description": "words"},
             {"name": "b", "position": "second", "description": "words"},
             {"name": "c", "position": "third", "description": "words"},
-            {"name": "d", "position": "fourth", "description": "words"}]
+            {"name": "d", "position": "fourth", "description": "words"},
+        ]
         geneset = self.generate_geneset(session=self.session, name="name", genes=genes, collection=collection)
         self.session.flush()
         geneset = Geneset.get(self.session, geneset.id)
