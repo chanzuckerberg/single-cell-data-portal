@@ -39,6 +39,8 @@ class URL(ABC):
 
 
 class DropBoxURL(URL):
+    """Supports download URLs from a DropBox share link."""
+
     @classmethod
     def validate(cls, url: str) -> typing.Optional["URL"]:
         """Converts a valid DropBox URL into a direct download link. If the url is not a valid DropBox URL, none is
@@ -77,6 +79,8 @@ class DropBoxURL(URL):
 
 
 class S3URL(URL):
+    """Supports presigned URLs from an AWS S3 bucket."""
+
     _netloc = "s3.amazonaws.com"
     _scheme = "https"
 
@@ -100,6 +104,8 @@ class S3URL(URL):
 
 
 class RegisteredSources:
+    """Manages all of the donwload sources."""
+
     _registered = set()
 
     @classmethod
@@ -118,7 +124,8 @@ class RegisteredSources:
         return cls._registered
 
 
-def from_url(url) -> URL:
+def from_url(url: str) -> URL:
+    """Given a URL return a object that can be use by the processing container to download data."""
     for source in RegisteredSources.get():
         url_obj = source.validate(url)
         if url_obj:

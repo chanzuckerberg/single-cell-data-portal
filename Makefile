@@ -162,7 +162,6 @@ local-unit-test: ## Run backend tests in the dev environment
 	else \
 		echo "Running test(s): $(path)"; \
 		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
-		docker-compose exec -e DEV_MODE_COOKIES= -T processing bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
 	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
 		ci_env=$$(bash <(curl -s https://codecov.io/env)); \

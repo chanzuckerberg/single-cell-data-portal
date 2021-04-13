@@ -1,17 +1,17 @@
 import enum
-
-import anndata
-import boto3
 import logging
-import numpy
 import os
-import pandas
 import pathlib
 import shutil
 import tempfile
 import time
-from moto import mock_s3
 from unittest.mock import patch
+
+import anndata
+import boto3
+import numpy
+import pandas
+from moto import mock_s3
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -24,8 +24,8 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
+from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import convert_file_ignore_exceptions, download_from_dropbox_url
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -39,6 +39,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
         cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
         cls.cxg_filename = pathlib.Path(cls.tmp_dir, "test.cxg")
+
         cls.h5ad_filename.touch()
         cls.seurat_filename.touch()
         cls.loom_filename.touch()
