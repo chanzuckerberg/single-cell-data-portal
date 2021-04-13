@@ -322,25 +322,30 @@ def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
     try:
-        seurat_proc = subprocess.run(
+        subprocess.run(
             ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
             capture_output=True,
             check=True,
         )
-    except subprocess.CalledProcessError:
-        logger.exception()
-        raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
+    except subprocess.CalledProcessError as ex:
+        msg = f"Seurat conversion failed: {ex.output} {ex.stderr}"
+        logger.exception(msg)
+        raise RuntimeError(msg) from ex
 
     return local_filename.replace(".h5ad", ".rds")
 
 
 def make_cxg(local_filename):
     cxg_dir = local_filename.replace(".h5ad", ".cxg")
-    cxg_proc = subprocess.run(
-        ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename], capture_output=True
-    )
-    if cxg_proc.returncode != 0:
-        raise RuntimeError(f"CXG conversion failed: {cxg_proc.stderr}")
+    try:
+        subprocess.run(
+            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename], capture_output=True, check=True,
+        )
+    except subprocess.CalledProcessError as ex:
+        msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
+        logger.exception(msg)
+        raise RuntimeError(msg) from ex
+
     return cxg_dir
 
 
