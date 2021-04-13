@@ -81,3 +81,15 @@ variable batch_container_memory_limit {
   description = "Memory hard limit for the batch container"
   default     = 28000
 }
+
+variable frontend_instance_count {
+  type        = number
+  description = "How many frontend tasks to run"
+  default     = 2
+}
+
+variable backend_instance_count {
+  type        = number
+  description = "How many backend tasks to run"
+  default     = 2
+}
