@@ -339,7 +339,9 @@ def make_cxg(local_filename):
     cxg_dir = local_filename.replace(".h5ad", ".cxg")
     try:
         subprocess.run(
-            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename], capture_output=True, check=True,
+            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename],
+            capture_output=True,
+            check=True,
         )
     except subprocess.CalledProcessError as ex:
         msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
