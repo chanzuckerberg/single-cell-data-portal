@@ -100,57 +100,65 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
-        # check created collection returns as private
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
-        data = json.loads(res.content)
-        private_collection_uuids = []
-        for collection in data["collections"]:
-            if collection["visibility"] == "PRIVATE":
-                private_collection_uuids.append(collection["id"])
-        self.assertIn(collection_uuid, private_collection_uuids)
+        with self.subTest("Test created collection is private"):
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            data = json.loads(res.content)
+            private_collection_uuids = []
+            for collection in data["collections"]:
+                if collection["visibility"] == "PRIVATE":
+                    private_collection_uuids.append(collection["id"])
+            self.assertIn(collection_uuid, private_collection_uuids)
 
-        # update the collection info
-        updated_data = {
-            "contact_email": "person@random.com",
-            "contact_name": "Doctor Who",
-            "description": "These are different words",
-            "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
-            "name": "lots of cells",
-        }
-        res = requests.put(
-            f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
-        )
-        res.raise_for_status()
-        data = json.loads(res.content)
-        data.pop("access_type")
-        for key in updated_data.keys():
-            self.assertEqual(updated_data[key], data[key])
+        with self.subTest("Test update collection info"):
+            updated_data = {
+                "contact_email": "person@random.com",
+                "contact_name": "Doctor Who",
+                "description": "These are different words",
+                "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
+                "name": "lots of cells",
+            }
+            res = requests.put(
+                f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
+            )
+            res.raise_for_status()
+            data = json.loads(res.content)
+            data.pop("access_type")
+            for key in updated_data.keys():
+                self.assertEqual(updated_data[key], data[key])
 
         # make collection public
-        res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.accepted)
+        with self.subTest("Test make collection public"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
+            res.raise_for_status()
+            self.assertEqual(res.status_code, requests.codes.accepted)
 
-        # check  collection returns as public
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
-        data = json.loads(res.content)
-        public_collection_uuids = []
-        for collection in data["collections"]:
-            if collection["visibility"] == "PUBLIC":
-                public_collection_uuids.append(collection["id"])
+            # check  collection returns as public
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            data = json.loads(res.content)
+            public_collection_uuids = []
+            for collection in data["collections"]:
+                if collection["visibility"] == "PUBLIC":
+                    public_collection_uuids.append(collection["id"])
 
-        self.assertIn(collection_uuid, public_collection_uuids)
+            self.assertIn(collection_uuid, public_collection_uuids)
 
-        # check collection available to everyone
-        no_auth_headers = {"Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
-        data = json.loads(res.content)
-        collection_uuids = [x["id"] for x in data["collections"]]
-        self.assertIn(collection_uuid, collection_uuids)
+        with self.subTest("Test everyone can retrieve a public collection"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            no_auth_headers = {"Content-Type": "application/json"}
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+            data = json.loads(res.content)
+            collection_uuids = [x["id"] for x in data["collections"]]
+            self.assertIn(collection_uuid, collection_uuids)
 
         # cannot delete public collection
-        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.forbidden)
+        with self.subTest("Test a public collection can not be deleted"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            self.assertEqual(res.status_code, requests.codes.forbidden)
 
     def test_delete_private_collection(self):
         # create collection
