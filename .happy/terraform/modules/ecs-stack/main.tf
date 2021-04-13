@@ -82,7 +82,7 @@ module frontend_service {
   vpc               = local.vpc_id
   image             = "${local.frontend_image_repo}:${local.image_tag}"
   cluster           = local.cluster
-  desired_count     = 2
+  desired_count     = var.frontend_instance_count
   listener          = local.frontend_listener_arn
   subnets           = local.subnets
   security_groups   = local.security_groups
@@ -106,7 +106,7 @@ module backend_service {
   vpc               = local.vpc_id
   image             = "${local.backend_image_repo}:${local.image_tag}"
   cluster           = local.cluster
-  desired_count     = 2
+  desired_count     = var.backend_instance_count
   listener          = local.backend_listener_arn
   subnets           = local.subnets
   security_groups   = local.security_groups
