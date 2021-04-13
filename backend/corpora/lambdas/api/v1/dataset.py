@@ -97,7 +97,7 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
                 "collection_id",
                 "created_at",
                 "updated_at",
-                "gene_symbols",
+                "genes",
             ]
         )
         for x in dataset.genesets

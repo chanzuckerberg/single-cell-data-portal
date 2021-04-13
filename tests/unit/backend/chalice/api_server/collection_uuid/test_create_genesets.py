@@ -66,14 +66,14 @@ class TestGenesetCreation(BaseAuthAPITest):
         geneset2 = Geneset.get(self.session, genesets["geneset2"])
         geneset3 = Geneset.get(self.session, genesets["geneset3"])
 
-        self.assertEqual(geneset1.gene_symbols, self.geneset1["genes"])
-        self.assertEqual(geneset2.gene_symbols, self.geneset2["genes"])
-        self.assertEqual(geneset3.gene_symbols, self.geneset3["genes"])
+        self.assertEqual(geneset1.genes, self.geneset1["genes"])
+        self.assertEqual(geneset2.genes, self.geneset2["genes"])
+        self.assertEqual(geneset3.genes, self.geneset3["genes"])
 
     def test_geneset_creation__geneset_already_exists(self):
         data = {"gene_sets": [self.geneset1]}
         Geneset.create(
-            self.session, collection=self.collection, name="geneset1", description="words", gene_symbols=["aaa"]
+            self.session, collection=self.collection, name="geneset1", description="words", genes=["aaa"]
         )
         response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(400, response.status_code)

@@ -19,7 +19,7 @@ def post(collection_uuid: str, body: dict, user: str):
                 db_session,
                 name=gene_set["gene_set_name"],
                 description=gene_set["gene_set_description"],
-                gene_symbols=gene_set["genes"],
+                genes=gene_set["genes"],
                 collection_id=collection.id,
                 collection_visibility=collection.visibility.name,
             )
