@@ -47,8 +47,8 @@ enum FIELD_NAMES {
 }
 
 const Content: FC<Props> = (props) => {
-  const { onClose, id } = props;
-  const initialBooleanState = id ? true : false;
+  const isEditCollection = !!props.id;
+  const initialBooleanState = isEditCollection;
   const [isValid, setIsValid] = useState(initialBooleanState);
   const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +68,10 @@ const Content: FC<Props> = (props) => {
   const [mutateCreateCollection] = useCreateCollection();
   const [mutateEditCollection] = useEditCollection();
 
-  const { data } = useCollection({ id, visibility: VISIBILITY_TYPE.PRIVATE });
+  const { data } = useCollection({
+    id: props.id,
+    visibility: VISIBILITY_TYPE.PRIVATE,
+  });
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
@@ -96,6 +99,7 @@ const Content: FC<Props> = (props) => {
     }
   }, [links, fieldValidation, policyVersion, isValid]);
 
+  const { onClose } = props;
   return (
     <>
       <div className={Classes.DIALOG_BODY}>
@@ -171,7 +175,9 @@ const Content: FC<Props> = (props) => {
           <Button
             intent={Intent.PRIMARY}
             disabled={!isValid}
-            onClick={id ? submitEditCollection : submitCreateCollection}
+            onClick={
+              isEditCollection ? submitEditCollection : submitCreateCollection
+            }
             loading={isLoading}
             data-test-id="create-button"
           >
@@ -226,9 +232,13 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    await mutateEditCollection(id, JSON.stringify(payload));
+    await mutateEditCollection({
+      id: props.id ?? "",
+      payload: JSON.stringify(payload),
+    });
 
     setIsLoading(false);
+    onClose();
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {

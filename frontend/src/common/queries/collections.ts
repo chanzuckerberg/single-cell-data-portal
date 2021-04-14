@@ -220,10 +220,13 @@ export function usePublishCollection() {
   });
 }
 
-async function editCollection(
-  id: string,
-  payload: string
-): Promise<Collection> {
+const editCollection = async function ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: string;
+}): Promise<Collection> {
   if (!id) {
     throw Error("No id given");
   } else if (!payload) {
@@ -243,7 +246,7 @@ async function editCollection(
 
   if (!response.ok) throw result;
   return result;
-}
+};
 
 export function useEditCollection() {
   const queryCache = useQueryCache();
