@@ -1,3 +1,4 @@
+import csv
 import typing
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,6 +38,28 @@ class Geneset(Entity):
                 )
             )
         return reshaped_genesets
+
+    @classmethod
+    def generate_tidy_csv(cls, session, geneset_ids: list, s3_uri: str):
+        headers = "GENE_SET_NAME,GENE_SET_DESCRIPTION,GENE_SYMBOL,GENE_DESCRIPTION,"
+        n = 1
+        for x in something:
+            headers += f"PROVENANCE{n}, PROVENANCE{n}_DESCRIPTION"
+            n+=1
+        # w = csv.writer(sys.stderr)
+        for id in geneset_ids:
+            geneset = Geneset.get(session, id)
+            geneset_row = geneset.geneset_to_csv_row()
+            if len(geneset.genes)
+        with open('mycsvfile.csv', 'wb') as f:
+            w = csv.writer(f)
+            w.writerow(somedict.keys())
+            w.writerow(somedict.values())
+
+
+
+    def geneset_to_csv_row(self):
+        return ""
 
 
 class GenesetDatasetLink(Entity):
