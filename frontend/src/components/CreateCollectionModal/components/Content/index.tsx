@@ -35,6 +35,7 @@ interface Props {
 type Link = {
   id: number;
   url: string;
+  name: string;
   isValid: boolean;
   type: COLLECTION_LINK_TYPE;
 };
@@ -45,6 +46,12 @@ enum FIELD_NAMES {
   CONTACT_NAME = "contact-name",
   CONTACT_EMAIL = "contact-email",
 }
+
+const AddLinkButton = () => (
+  <Button outlined intent={Intent.PRIMARY}>
+    Add Link
+  </Button>
+);
 
 const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
@@ -79,6 +86,7 @@ const Content: FC<Props> = (props) => {
       return {
         id: index,
         isValid: true,
+        name: link.link_name,
         type: link.link_type,
         url: link.link_url,
       };
@@ -152,7 +160,7 @@ const Content: FC<Props> = (props) => {
               defaultValue={url}
             />
           ))}
-          <AddLink handleClick={handleAddLinkClick} />
+          <AddLink handleClick={handleAddLinkClick} Button={AddLinkButton} />
           <Policy handleChange={handlePolicyChange} />
         </Form>
       </div>
@@ -195,7 +203,8 @@ const Content: FC<Props> = (props) => {
 
     const payload = formDataToObject(formData);
 
-    const payloadLinks = links.map(({ type, url }) => ({
+    const payloadLinks = links.map(({ type, url, name }) => ({
+      link_name: name,
       link_type: type,
       link_url: url,
     }));
@@ -256,11 +265,13 @@ const Content: FC<Props> = (props) => {
     index,
     value,
     isValid: isValidFromLinkInput,
+    name,
   }: LinkValue) {
     const link = links[index];
     const newLink: Link = {
       ...link,
       isValid: isValidFromLinkInput,
+      name,
       url: value,
     };
 
@@ -290,7 +301,13 @@ const Content: FC<Props> = (props) => {
 };
 
 function createLinkInput(type: COLLECTION_LINK_TYPE) {
-  return { id: Date.now(), isValid: false, type, url: "" };
+  return {
+    id: Date.now(),
+    isValid: false,
+    name: "",
+    type,
+    url: "",
+  };
 }
 
 export default Content;

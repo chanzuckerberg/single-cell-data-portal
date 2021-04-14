@@ -1,20 +1,23 @@
+import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import debounce from "lodash/debounce";
-import React, { FC } from "react";
+import { debounce } from "lodash";
+import React, { FC, useState } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
 } from "src/common/entities";
 import Input from "src/components/common/Form/Input";
 import { GRAY } from "src/components/common/theme";
-import { DEBOUNCE_TIME_MS } from "src/components/CreateCollectionModal/components/Content/common/constants";
-import { IconWrapper, StyledButton, Wrapper } from "./style";
+import { DEBOUNCE_TIME_MS } from "../../common/constants";
+import AddLink from "../AddLink";
+import { IconWrapper, LinkWrapper, StyledButton } from "./style";
 
 export type LinkValue = {
   id: number;
   value: string;
   isValid: boolean;
   index: number;
+  name: string;
 };
 
 const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
@@ -41,20 +44,36 @@ const LinkInput: FC<Props> = ({
 
   const { text, value } = option;
 
+  const [name, setName] = useState("");
+  const [linkType, setLinkType] = useState(value as COLLECTION_LINK_TYPE);
+
+  const LinkTypeButton = () => (
+    <Button minimal={true} rightIcon="caret-down">
+      {COLLECTION_LINK_TYPE_OPTIONS[linkType].text}
+    </Button>
+  );
+
   return (
-    <Wrapper>
+    <LinkWrapper>
+      <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
+
       <Input
         name={value}
-        text={text}
-        handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
+        text="Name"
+        placeholder="Name"
+        handleChange={handleNameChange}
+      />
+      <Input
+        name={value}
+        text="URL"
         syncValidation={[isValidHttpUrl, isDOILink(value)]}
-        noNameAttr
         placeholder={
           value === COLLECTION_LINK_TYPE.DOI
             ? DOI_PLACEHOLDER
             : LINK_PLACEHOLDER
         }
         defaultValue={defaultValue}
+        handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
       />
       <IconWrapper>
         <StyledButton
@@ -64,8 +83,15 @@ const LinkInput: FC<Props> = ({
           onClick={() => handleDelete(id)}
         />
       </IconWrapper>
-    </Wrapper>
+    </LinkWrapper>
   );
+
+  function handleNameChange({ value }: { isValid: boolean; value: string }) {
+    setName(value);
+  }
+  function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
+    setLinkType(newLinkType);
+  }
 
   function handleChange_({
     isValid: isValidFromInput,
@@ -74,7 +100,13 @@ const LinkInput: FC<Props> = ({
     isValid: boolean;
     value: string;
   }) {
-    handleChange({ id, index, isValid: isValidFromInput, value });
+    handleChange({
+      id,
+      index,
+      isValid: isValidFromInput,
+      name,
+      value,
+    });
   }
 };
 
