@@ -11,6 +11,7 @@ import {
   formDataToObject,
   useCollection,
   useCreateCollection,
+  useEditCollection,
 } from "src/common/queries/collections";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
@@ -46,7 +47,9 @@ enum FIELD_NAMES {
 }
 
 const Content: FC<Props> = (props) => {
-  const [isValid, setIsValid] = useState(false);
+  const { onClose, id } = props;
+  const initialBooleanState = id ? true : false;
+  const [isValid, setIsValid] = useState(initialBooleanState);
   const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -54,17 +57,16 @@ const Content: FC<Props> = (props) => {
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
   }>({
-    [FIELD_NAMES.NAME]: false,
-    [FIELD_NAMES.DESCRIPTION]: false,
-    [FIELD_NAMES.CONTACT_NAME]: false,
-    [FIELD_NAMES.CONTACT_EMAIL]: false,
+    [FIELD_NAMES.NAME]: initialBooleanState,
+    [FIELD_NAMES.DESCRIPTION]: initialBooleanState,
+    [FIELD_NAMES.CONTACT_NAME]: initialBooleanState,
+    [FIELD_NAMES.CONTACT_EMAIL]: initialBooleanState,
   });
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const [mutate] = useCreateCollection();
-
-  const { onClose, id } = props;
+  const [mutateCreateCollection] = useCreateCollection();
+  const [mutateEditCollection] = useEditCollection();
 
   const { data } = useCollection({ id, visibility: VISIBILITY_TYPE.PRIVATE });
   const { name, description, contact_email, contact_name } = data || {};
@@ -169,7 +171,7 @@ const Content: FC<Props> = (props) => {
           <Button
             intent={Intent.PRIMARY}
             disabled={!isValid}
-            onClick={onSubmit}
+            onClick={id ? submitEditCollection : submitCreateCollection}
             loading={isLoading}
             data-test-id="create-button"
           >
@@ -180,7 +182,7 @@ const Content: FC<Props> = (props) => {
     );
   }
 
-  async function onSubmit() {
+  async function submitCreateCollection() {
     if (!formEl?.current) return;
 
     const formData = new FormData(formEl.current);
@@ -197,13 +199,36 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    const collectionId = (await mutate(JSON.stringify(payload))) as string;
+    const collectionId = (await mutateCreateCollection(
+      JSON.stringify(payload)
+    )) as string;
 
     setIsLoading(false);
 
     if (collectionId) {
       router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
     }
+  }
+  async function submitEditCollection() {
+    if (!formEl?.current) return;
+
+    const formData = new FormData(formEl.current);
+
+    const payload = formDataToObject(formData);
+
+    const payloadLinks = links.map(({ type, url }) => ({
+      link_type: type,
+      link_url: url,
+    }));
+
+    payload.links = payloadLinks;
+    payload[POLICY_PAYLOAD_KEY] = policyVersion;
+
+    setIsLoading(true);
+
+    await mutateEditCollection(id, JSON.stringify(payload));
+
+    setIsLoading(false);
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
