@@ -45,4 +45,11 @@ ADD backend/corpora/__init__.py backend/corpora/__init__.py
 ADD backend/corpora/dataset_processing backend/corpora/dataset_processing
 ADD backend/corpora/common backend/corpora/common
 
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
 CMD ["python3", "-m", "backend.corpora.dataset_processing.process"]

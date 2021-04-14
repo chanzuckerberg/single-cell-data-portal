@@ -41,6 +41,9 @@ services:
         - "${DOCKER_REPO}corpora-frontend:branch-main"
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: always
     depends_on:
       - backend
@@ -70,6 +73,9 @@ services:
       dockerfile: Dockerfile.upload_failures
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: "no"
     ports:
       - "9000:8080"
@@ -102,6 +108,9 @@ services:
       dockerfile: Dockerfile.processing_image
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: "no"
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
@@ -130,6 +139,9 @@ services:
         - "${DOCKER_REPO}corpora-backend:branch-main"
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: always
     depends_on:
       - localstack
