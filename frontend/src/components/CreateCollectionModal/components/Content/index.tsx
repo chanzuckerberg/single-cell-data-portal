@@ -2,9 +2,14 @@ import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { COLLECTION_LINK_TYPE } from "src/common/entities";
+import {
+  Collection,
+  COLLECTION_LINK_TYPE,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
 import {
   formDataToObject,
+  useCollection,
   useCreateCollection,
 } from "src/common/queries/collections";
 import { Value } from "src/components/common/Form/common/constants";
@@ -22,6 +27,8 @@ const REQUIRED_FIELD_TEXT = "Required";
 
 interface Props {
   onClose: () => void;
+  editingMode?: boolean;
+  id?: Collection["id"];
 }
 
 type Link = {
@@ -55,9 +62,23 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const [links, setLinks] = useState<Link[]>([]);
-
   const [mutate] = useCreateCollection();
+
+  const { onClose, id } = props;
+
+  const { data } = useCollection({ id, visibility: VISIBILITY_TYPE.PRIVATE });
+  const { name, description, contact_email, contact_name } = data || {};
+
+  const [links, setLinks] = useState<Link[]>(
+    data?.links.map((link, index) => {
+      return {
+        id: index,
+        isValid: true,
+        type: link.link_type,
+        url: link.link_url,
+      };
+    }) || []
+  );
 
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
@@ -73,8 +94,6 @@ const Content: FC<Props> = (props) => {
     }
   }, [links, fieldValidation, policyVersion, isValid]);
 
-  const { onClose } = props;
-
   return (
     <>
       <div className={Classes.DIALOG_BODY}>
@@ -87,6 +106,7 @@ const Content: FC<Props> = (props) => {
             text="Collection Name"
             handleChange={handleInputChange}
             placeholder={REQUIRED_FIELD_TEXT}
+            defaultValue={name}
           />
           <StyledLabel htmlFor="description">
             <LabelText>Description</LabelText>
@@ -96,6 +116,7 @@ const Content: FC<Props> = (props) => {
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
               fill
+              defaultValue={description}
             />
           </StyledLabel>
           <ContactWrapper>
@@ -104,15 +125,17 @@ const Content: FC<Props> = (props) => {
               text="Contact Name"
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_name}
             />
             <StyledInput
               name={FIELD_NAMES.CONTACT_EMAIL}
               text="Contact Email"
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_email}
             />
           </ContactWrapper>
-          {links.map(({ type, id }, index) => (
+          {links.map(({ type, id, url }, index) => (
             <LinkInput
               index={index}
               type={type}
@@ -120,6 +143,7 @@ const Content: FC<Props> = (props) => {
               key={id}
               handleChange={handleLinkInputChange}
               handleDelete={handleLinkInputDelete}
+              defaultValue={url}
             />
           ))}
           <AddLink handleClick={handleAddLinkClick} />

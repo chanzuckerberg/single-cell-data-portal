@@ -2,6 +2,7 @@ import { Dialog } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC, useState } from "react";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
+import { Collection } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
@@ -20,7 +21,10 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollection: FC<{ className?: string }> = ({ className }) => {
+const CreateCollection: FC<{ className?: string; id?: Collection["id"] }> = ({
+  className,
+  id,
+}) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -65,7 +69,7 @@ const CreateCollection: FC<{ className?: string }> = ({ className }) => {
         canEscapeKeyClose={config.canEscapeKeyClose}
         canOutsideClickClose={config.canOutsideClickClose}
       >
-        {isOpen && <config.content onClose={toggleOpen} />}
+        {isOpen && <config.content onClose={toggleOpen} id={id} />}
       </Dialog>
     </>
   );

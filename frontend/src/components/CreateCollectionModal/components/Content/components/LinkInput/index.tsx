@@ -26,6 +26,7 @@ interface Props {
   index: number;
   type: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
+  defaultValue: string;
 }
 
 const LinkInput: FC<Props> = ({
@@ -34,6 +35,7 @@ const LinkInput: FC<Props> = ({
   id,
   type,
   index,
+  defaultValue,
 }) => {
   const option = COLLECTION_LINK_TYPE_OPTIONS[type];
 
@@ -52,6 +54,7 @@ const LinkInput: FC<Props> = ({
             ? DOI_PLACEHOLDER
             : LINK_PLACEHOLDER
         }
+        defaultValue={defaultValue}
       />
       <IconWrapper>
         <StyledButton
