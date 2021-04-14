@@ -183,7 +183,7 @@ local-functional-test: ## Run functional tests in the dev environment
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
 		backend bash -c "cd /corpora-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
