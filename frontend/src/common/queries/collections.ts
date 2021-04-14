@@ -3,7 +3,11 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
+import {
+  DEFAULT_FETCH_OPTIONS,
+  DELETE_FETCH_OPTIONS,
+  JSON_BODY_FETCH_OPTIONS,
+} from "./common";
 import { ENTITIES } from "./entities";
 
 export const USE_COLLECTIONS = {
@@ -80,10 +84,9 @@ export function useCollection({
 export async function createCollection(payload: string): Promise<string> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
-    headers: {
-      "Content-Type": "application/json",
-    },
+
     method: "POST",
   });
 
@@ -133,10 +136,8 @@ async function collectionUploadLinks({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
-    headers: {
-      "Content-Type": "application/json",
-    },
     method: "POST",
   });
 
@@ -215,6 +216,44 @@ export function usePublishCollection() {
       // (thuang): We don't need to invalidate `[USE_COLLECTION, id, visibility]`
       // because `visibility` has changed from PRIVATE to PUBLIC
       queryCache.invalidateQueries([USE_COLLECTIONS]);
+    },
+  });
+}
+
+async function editCollection(
+  id: string,
+  payload: string
+): Promise<Collection> {
+  if (!id) {
+    throw Error("No id given");
+  } else if (!payload) {
+    throw Error("No payload given");
+  }
+
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: payload,
+    method: "PUT",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) throw result;
+  return result;
+}
+
+export function useEditCollection() {
+  const queryCache = useQueryCache();
+
+  return useMutation(editCollection, {
+    onSuccess: (collection: Collection) => {
+      return queryCache.setQueryData(
+        [USE_COLLECTION, collection.id, collection.visibility],
+        collection
+      );
     },
   });
 }
