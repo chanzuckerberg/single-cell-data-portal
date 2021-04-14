@@ -26,4 +26,11 @@ RUN apt-get update && apt-get install -y \
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
 
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
 ENTRYPOINT ["./container_init.sh"]
