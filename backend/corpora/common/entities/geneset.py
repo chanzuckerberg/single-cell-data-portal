@@ -10,8 +10,8 @@ class Geneset(Entity):
     table = DbGeneset
 
     @classmethod
-    def create(cls, session, name: str, description: str, gene_symbols: list, dataset_ids: list = [], **kwargs):
-        gene_set = DbGeneset(name=name, description=description, gene_symbols=gene_symbols, **kwargs)
+    def create(cls, session, name: str, description: str, genes: list, dataset_ids: list = [], **kwargs):
+        gene_set = DbGeneset(name=name, description=description, genes=genes, **kwargs)
         session.add(gene_set)
         session.commit()
         if dataset_ids:
@@ -27,7 +27,7 @@ class Geneset(Entity):
             reshaped_genesets.append(
                 geneset.to_dict(
                     remove_attr=[
-                        "gene_symbols",
+                        "genes",
                         "created_at",
                         "updated_at",
                         "collection",
