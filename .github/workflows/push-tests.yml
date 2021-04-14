@@ -20,18 +20,8 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
-      - name: Configure AWS prod Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        if: github.event.deployment.environment == 'prod'
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
-        if: github.event.deployment.environment != 'prod'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -84,7 +74,6 @@ jobs:
         run: |
           # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
@@ -116,7 +105,6 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures processing
       - uses: 8398a7/action-slack@v3
         with:
@@ -213,7 +201,6 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          pip install -r .happy/requirements2.txt
           scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:

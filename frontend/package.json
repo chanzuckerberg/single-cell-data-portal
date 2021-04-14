@@ -86,7 +86,6 @@
     "e2e": "jest --config jest/e2e.config.js",
     "e2e-localProd": "TEST_ENV=localProd jest --config jest/e2e.config.js",
     "e2e-localProd-ci": "DEBUG=pw:api TEST_ENV=localProd jest --config jest/e2e.config.js",
-    "e2e-dev": "TEST_ENV=dev jest --config jest/e2e.config.js",
     "e2e-staging": "TEST_ENV=staging jest --config jest/e2e.config.js",
     "e2e-prod": "TEST_ENV=prod jest --config jest/e2e.config.js",
     "e2e-rdev": "TEST_ENV=rdev jest --config jest/e2e.config.js",

@@ -62,7 +62,7 @@ db/import:
 
 db/import/schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
-	# Usage: DEPLOYMENT_STAGE=dev make db/import/schema
+	# Usage: DEPLOYMENT_STAGE=test make db/import/schema
 	pg_restore --schema-only --clean --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
 	# Also import alembic schema version
 	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc

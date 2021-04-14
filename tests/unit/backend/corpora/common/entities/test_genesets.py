@@ -14,7 +14,7 @@ class TestGeneSets(DataPortalTestCase):
             self.session,
             name="geneset",
             description="words to describe it",
-            gene_symbols=["AAA", "BBB", "CCC"],
+            genes=["AAA", "BBB", "CCC"],
             collection=collection,
         )
         self.assertEqual(geneset.name, "geneset")
@@ -31,8 +31,8 @@ class TestGeneSets(DataPortalTestCase):
         stored_geneset = Geneset.get(self.session, geneset.id)
         self.assertIsInstance(stored_geneset.description, str)
         self.assertIsInstance(stored_geneset.name, str)
-        self.assertIsInstance(stored_geneset.gene_symbols, list)
-        self.assertGreater(len(stored_geneset.gene_symbols), 1)
+        self.assertIsInstance(stored_geneset.genes, list)
+        self.assertGreater(len(stored_geneset.genes), 1)
         self.assertIsNotNone(stored_geneset.collection)
         self.assertIsInstance(stored_geneset.collection, DbCollection)
 
@@ -51,6 +51,20 @@ class TestGeneSets(DataPortalTestCase):
         self.assertIn(geneset_0.id, linked_geneset_ids)
         self.assertIn(geneset_1.id, linked_geneset_ids)
         self.assertIn(geneset_2.id, linked_geneset_ids)
+
+    def test_gene_order_is_maintained(self):
+        collection = self.generate_collection(self.session)
+        genes = [
+            {"name": "a", "position": "first", "description": "words"},
+            {"name": "b", "position": "second", "description": "words"},
+            {"name": "c", "position": "third", "description": "words"},
+            {"name": "d", "position": "fourth", "description": "words"},
+        ]
+        geneset = self.generate_geneset(session=self.session, name="name", genes=genes, collection=collection)
+        self.session.flush()
+        geneset = Geneset.get(self.session, geneset.id)
+        self.assertEqual(geneset.genes[0], genes[0])
+        self.assertEqual(geneset.genes, genes)
 
 
 class TestGenesetDatasetLinks(DataPortalTestCase):

@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import time
 import unittest
 import requests
 from requests import HTTPError
@@ -8,14 +9,12 @@ from requests import HTTPError
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
-    "dev": "https://api.dev.corpora.cziscience.com",
     "prod": "https://api.cellxgene.cziscience.com",
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "test": "http://localhost:5000",
 }
 
 AUDIENCE = {
-    "dev": "cellxgene.dev.single-cell.czi.technology/",
     "prod": "cellxgene.cziscience.com/",
     "staging": "cellxgene.staging.single-cell.czi.technology/",
     "test": "cellxgene.dev.single-cell.czi.technology/",
@@ -101,6 +100,86 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
+        with self.subTest("Test created collection is private"):
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            data = json.loads(res.content)
+            private_collection_uuids = []
+            for collection in data["collections"]:
+                if collection["visibility"] == "PRIVATE":
+                    private_collection_uuids.append(collection["id"])
+            self.assertIn(collection_uuid, private_collection_uuids)
+
+        with self.subTest("Test update collection info"):
+            updated_data = {
+                "contact_email": "person@random.com",
+                "contact_name": "Doctor Who",
+                "description": "These are different words",
+                "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
+                "name": "lots of cells",
+            }
+            res = requests.put(
+                f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
+            )
+            res.raise_for_status()
+            data = json.loads(res.content)
+            data.pop("access_type")
+            for key in updated_data.keys():
+                self.assertEqual(updated_data[key], data[key])
+
+        # make collection public
+        with self.subTest("Test make collection public"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
+            res.raise_for_status()
+            self.assertEqual(res.status_code, requests.codes.accepted)
+
+            # check  collection returns as public
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            data = json.loads(res.content)
+            public_collection_uuids = []
+            for collection in data["collections"]:
+                if collection["visibility"] == "PUBLIC":
+                    public_collection_uuids.append(collection["id"])
+
+            self.assertIn(collection_uuid, public_collection_uuids)
+
+        with self.subTest("Test everyone can retrieve a public collection"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            no_auth_headers = {"Content-Type": "application/json"}
+            res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+            data = json.loads(res.content)
+            collection_uuids = [x["id"] for x in data["collections"]]
+            self.assertIn(collection_uuid, collection_uuids)
+
+        # cannot delete public collection
+        with self.subTest("Test a public collection can not be deleted"):
+            if self.deployment_stage == "prod":
+                self.skipTest("Do not make test collections public in prod")
+            res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            self.assertEqual(res.status_code, requests.codes.forbidden)
+
+    def test_delete_private_collection(self):
+        # create collection
+        data = {
+            "contact_email": "lisbon@gmail.com",
+            "contact_name": "Madrid Sparkle",
+            "data_submission_policy_version": "1",
+            "description": "Well here are some words",
+            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+            "name": "my2collection",
+        }
+
+        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
+        res.raise_for_status()
+        data = json.loads(res.content)
+        collection_uuid = data["collection_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertIn("collection_uuid", data)
+
         # check created collection returns as private
         res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
@@ -110,90 +189,17 @@ class TestApi(unittest.TestCase):
                 private_collection_uuids.append(collection["id"])
         self.assertIn(collection_uuid, private_collection_uuids)
 
-        # update the collection info
-        updated_data = {
-            "contact_email": "person@random.com",
-            "contact_name": "Doctor Who",
-            "description": "These are different words",
-            "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "datasource.com"}],
-            "name": "lots of cells",
-        }
-        res = requests.put(
-            f"{self.api}/dp/v1/collections/{collection_uuid}", data=json.dumps(updated_data), headers=headers
-        )
-        res.raise_for_status()
-        data = json.loads(res.content)
-        data.pop("access_type")
-        for key in updated_data.keys():
-            self.assertEqual(updated_data[key], data[key])
-
-        # make collection public
-        res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
+        # delete collection
+        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.accepted)
 
-        # check  collection returns as public
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
-        data = json.loads(res.content)
-        public_collection_uuids = []
-        for collection in data["collections"]:
-            if collection["visibility"] == "PUBLIC":
-                public_collection_uuids.append(collection["id"])
-
-        self.assertIn(collection_uuid, public_collection_uuids)
-
-        # check collection available to everyone
+        # check collection gone
         no_auth_headers = {"Content-Type": "application/json"}
         res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
         data = json.loads(res.content)
         collection_uuids = [x["id"] for x in data["collections"]]
-        self.assertIn(collection_uuid, collection_uuids)
-
-        # cannot delete public collection
-        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.forbidden)
-
-    def test_delete_private_collection(self):
-        def test_collection_flow(self):
-            # create collection
-            data = {
-                "contact_email": "lisbon@gmail.com",
-                "contact_name": "Madrid Sparkle",
-                "data_submission_policy_version": "1",
-                "description": "Well here are some words",
-                "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
-                "name": "my2collection",
-            }
-
-            headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
-            res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
-            res.raise_for_status()
-            data = json.loads(res.content)
-            collection_uuid = data["collection_uuid"]
-            self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.created)
-            self.assertIn("collection_uuid", data)
-
-            # check created collection returns as private
-            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
-            data = json.loads(res.content)
-            private_collection_uuids = []
-            for collection in data["collections"]:
-                if collection["visibility"] == "PRIVATE":
-                    private_collection_uuids.append(collection["id"])
-            self.assertIn(collection_uuid, private_collection_uuids)
-
-            # delete collection
-            res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
-
-            # check collection gone
-            no_auth_headers = {"Content-Type": "application/json"}
-            res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
-            data = json.loads(res.content)
-            collection_uuids = [x["id"] for x in data["collections"]]
-            self.assertNotIn(collection_uuid, collection_uuids)
+        self.assertNotIn(collection_uuid, collection_uuids)
 
     def test_dataset_upload_flow(self):
         body = {
@@ -227,22 +233,62 @@ class TestApi(unittest.TestCase):
 
         res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
-        # TODO @madison update if we speed up backend
+        self.assertEqual(res.status_code, requests.codes.ok)
         self.assertEqual(data["upload_status"], "WAITING")
 
-        # Check non_auth user cant check status
-        no_auth_headers = {"Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
-        with self.assertRaises(HTTPError):
+        with self.subTest("Test dataset conversion"):
+            keep_trying = True
+            upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
+            conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
+            timer = time.time()
+            while keep_trying:
+                data = None
+                res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+                res.raise_for_status()
+                data = json.loads(res.content)
+                upload_status = data["upload_status"]
+                self.assertIn(upload_status, upload_statuses)
+                # conversion statuses only returned once uploaded
+                if upload_status == "UPLOADED":
+                    conversion_cxg_status = data["conversion_cxg_status"]
+                    conversion_loom_status = data["conversion_loom_status"]
+                    conversion_rds_status = data["conversion_rds_status"]
+                    conversion_anndata_status = data["conversion_anndata_status"]
+                    self.assertIn(data["conversion_cxg_status"], conversion_statuses)
+                    if conversion_cxg_status == "FAILED":
+                        self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
+                    if conversion_loom_status == "FAILED":
+                        self.fail(f"Loom CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
+                    if conversion_rds_status == "FAILED":
+                        self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
+                    if conversion_anndata_status == "FAILED":
+                        self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
+                    if (
+                        conversion_cxg_status
+                        == conversion_loom_status
+                        == conversion_rds_status
+                        == conversion_anndata_status
+                        == "CONVERTED"
+                    ):
+                        keep_trying = False
+                if time.time() >= timer + 300:
+                    raise TimeoutError(
+                        f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                    )
+                time.sleep(30)
+
+        with self.subTest("test non owner cant retrieve status"):
+            no_auth_headers = {"Content-Type": "application/json"}
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=no_auth_headers)
+            with self.assertRaises(HTTPError):
+                res.raise_for_status()
+
+        with self.subTest("Test dataset deletion"):
+            res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
             res.raise_for_status()
+            self.assertEqual(res.status_code, requests.codes.accepted)
 
-        # Delete dataset
-        res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.accepted)
-
-        # Check that the dataset is gone
-        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.forbidden)
+            # Check that the dataset is gone
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+            self.assertEqual(res.status_code, requests.codes.forbidden)

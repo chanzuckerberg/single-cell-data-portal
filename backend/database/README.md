@@ -17,7 +17,7 @@
 ```shell
 cd corpora-data-portal/backend
 export CORPORA_LOCAL_DEV=1
-export DEPLOYMENT_STAGE=dev 
+export DEPLOYMENT_STAGE=test
 make db/migrate
 ```
 
@@ -30,7 +30,7 @@ make db/migrate
 ```shell
 cd corpora-data-portal/backend
 export CORPORA_LOCAL_DEV=1
-export DEPLOYMENT_STAGE=dev 
+export DEPLOYMENT_STAGE=test
 make db/new_migration_auto MESSAGE="purpose_of_migration"
 ```
 See [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect).
@@ -43,7 +43,7 @@ The following steps will test that a migration script works on a local database 
 2. Open a new terminal and download the remote database schema:
 ```shell
 cd corpora-data-portal/backend
-export DEPLOYMENT_STAGE=dev
+export DEPLOYMENT_STAGE=test
 make db/download
 ```
 This wll download the database into a file ending in *.sqlc*.
@@ -82,7 +82,7 @@ To stop it run `make local-stop` from `./corpora-data-portal`
 
 ```shell
 cd ./corpora-data-poral/backend
-export DEPLOYMENT_STAGE=dev
+export DEPLOYMENT_STAGE=test
 make db/tunnel
 ```
 

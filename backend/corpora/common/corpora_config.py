@@ -46,20 +46,11 @@ class CorporaAuthConfig(SecretConfig):
     environ_source = "CORPORA_AUTH_CONFIG"
 
     def __init__(self, *args, **kwargs):
-        deployment = os.environ["DEPLOYMENT_STAGE"]
-        if deployment == "test":
-            super().__init__(component_name="backend", deployment="dev", secret_name="auth0-secret", **kwargs)
-            if not self.config_is_loaded():
-                self.load()
-            self.config["callback_base_url"] = "http://localhost:5000"
-        else:
-            super().__init__(
-                component_name="backend",
-                secret_name="auth0-secret",
-                **kwargs,
-            )
-            if not self.config_is_loaded():
-                self.load()
+        super().__init__(
+            component_name="backend",
+            secret_name="auth0-secret",
+            **kwargs,
+        )
 
     def get_defaults_template(self):
         template = {

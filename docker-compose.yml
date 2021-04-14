@@ -41,6 +41,9 @@ services:
         - "${DOCKER_REPO}corpora-frontend:branch-main"
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: always
     depends_on:
       - backend
@@ -48,7 +51,7 @@ services:
       - "3000:3000"
     command: ["./container_init.sh"]
     environment:
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
       - AWS_ACCESS_KEY_ID=test
@@ -70,6 +73,9 @@ services:
       dockerfile: Dockerfile.upload_failures
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: "no"
     ports:
       - "9000:8080"
@@ -86,7 +92,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
@@ -102,6 +108,9 @@ services:
       dockerfile: Dockerfile.processing_image
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: "no"
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
@@ -117,7 +126,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
@@ -132,6 +141,9 @@ services:
         - "${DOCKER_REPO}corpora-backend:branch-main"
       args:
         - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
     restart: always
     depends_on:
       - localstack
@@ -146,7 +158,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=dev
+      - DEPLOYMENT_STAGE=test
       - RESTART_ON_FAILURE=yes
       - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.

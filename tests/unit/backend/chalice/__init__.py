@@ -11,7 +11,7 @@ class ChaliceTestHarness:
     """
 
     def __init__(self, project_dir):
-        config = CLIFactory(project_dir=project_dir).create_config_obj(chalice_stage_name="dev")
+        config = CLIFactory(project_dir=project_dir).create_config_obj(chalice_stage_name="test")
         self._chalice_app = config.chalice_app
         self._gateway = LocalGateway(self._chalice_app, config)
 

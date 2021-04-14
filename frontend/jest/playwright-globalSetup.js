@@ -16,7 +16,7 @@ const client = new SecretsManagerClient({
 });
 
 const secretValueRequest = {
-  SecretId: "corpora/backend/dev/auth0-secret",
+  SecretId: "corpora/backend/test/auth0-secret",
 };
 
 const command = new GetSecretValueCommand(secretValueRequest);

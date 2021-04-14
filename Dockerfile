@@ -2,7 +2,7 @@
 FROM ubuntu:focal-20210119
 
 ENV APP_NAME=corpora-api
-ENV DEPLOYMENT_STAGE=dev
+ENV DEPLOYMENT_STAGE=test
 ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
 ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
@@ -36,5 +36,12 @@ RUN mv .chalice/config.json.dev .chalice/config.json
 RUN mkdir -p chalicelib config vendor
 ADD backend/corpora chalicelib/corpora
 ADD backend/config/corpora-api.yml chalicelib/config/corpora-api.yml
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 CMD ["python3", "/chalice/run_local_server.py"]

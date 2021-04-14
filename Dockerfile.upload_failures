@@ -12,4 +12,11 @@ COPY backend/corpora/common ./chalicelib/backend/corpora/common
 COPY backend/corpora/dataset_processing ./chalicelib/backend/corpora/dataset_processing
 RUN mkdir -p ./.chalice
 
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
 CMD ["app.handle_failure"]

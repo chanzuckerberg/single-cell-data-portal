@@ -18,7 +18,7 @@ Filename                  | Purpose                           | Information link
 See [DEV_ENV.md](../../../DEV_ENV.md) for a local dev quickstart.
 
 ## Deploy
-1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `dev`, `staging`, `prod`
+1. Set `DEPLOYMENT_STAGE` to a new or existing stage: `test`, `staging`, `prod`
 1. Install dependencies `pip install -r requirements-dev.txt`
 1. Configure the AWS CLI
     1. `pip install awscli`

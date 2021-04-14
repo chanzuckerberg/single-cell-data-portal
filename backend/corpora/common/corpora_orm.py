@@ -405,7 +405,7 @@ class DbGeneset(Base, AuditMixin):
 
     name = Column(String, nullable=False)
     description = Column(String)
-    gene_symbols = Column(JSONB)
+    genes = Column(JSONB)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")

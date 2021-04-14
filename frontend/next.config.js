@@ -12,6 +12,12 @@ const SCRIPT_SRC = ["'self'"];
 module.exports = withImages({
   future: { webpack5: true },
 
+  async generateBuildId() {
+    // Return null to allow next.js to fallback to default behavior
+    // if COMMIT_SHA env is missing or empty.
+    return process.env.COMMIT_SHA || null;
+  },
+
   headers() {
     return [
       {
