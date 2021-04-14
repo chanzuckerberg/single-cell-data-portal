@@ -50,8 +50,7 @@ const Menu = ({ id = "" }: Props) => {
   return (
     <StyledMenu>
       <DeleteCollection id={id} Button={DeleteButton} />
-      <EditButton />
-      <CreateCollection id={id} />
+      <CreateCollection id={id} Button={EditButton} />
     </StyledMenu>
   );
 };
