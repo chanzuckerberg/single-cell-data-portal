@@ -149,15 +149,17 @@ const Content: FC<Props> = (props) => {
               defaultValue={contact_email}
             />
           </ContactWrapper>
-          {links.map(({ type, id, url }, index) => (
+          {links.map(({ type, id, url, name, isValid }, index) => (
             <LinkInput
               index={index}
               type={type}
               id={id}
               key={id}
+              name={name}
               handleChange={handleLinkInputChange}
               handleDelete={handleLinkInputDelete}
               defaultValue={url}
+              isValid={isValid}
             />
           ))}
           <AddLink handleClick={handleAddLinkClick} Button={AddLinkButton} />
@@ -196,7 +198,7 @@ const Content: FC<Props> = (props) => {
     );
   }
 
-  async function submitCreateCollection() {
+  function createPayload() {
     if (!formEl?.current) return;
 
     const formData = new FormData(formEl.current);
@@ -212,6 +214,14 @@ const Content: FC<Props> = (props) => {
     payload.links = payloadLinks;
     payload[POLICY_PAYLOAD_KEY] = policyVersion;
 
+    return payload;
+  }
+
+  async function submitCreateCollection() {
+    const payload = createPayload();
+
+    if (!payload) return;
+
     setIsLoading(true);
 
     const collectionId = (await mutateCreateCollection(
@@ -224,20 +234,11 @@ const Content: FC<Props> = (props) => {
       router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
     }
   }
+
   async function submitEditCollection() {
-    if (!formEl?.current) return;
+    const payload = createPayload();
 
-    const formData = new FormData(formEl.current);
-
-    const payload = formDataToObject(formData);
-
-    const payloadLinks = links.map(({ type, url }) => ({
-      link_type: type,
-      link_url: url,
-    }));
-
-    payload.links = payloadLinks;
-    payload[POLICY_PAYLOAD_KEY] = policyVersion;
+    if (!payload) return;
 
     setIsLoading(true);
 

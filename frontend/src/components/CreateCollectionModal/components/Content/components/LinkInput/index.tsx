@@ -1,7 +1,7 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { debounce } from "lodash";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
@@ -30,6 +30,8 @@ interface Props {
   type: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
   defaultValue: string;
+  name: string;
+  isValid: boolean;
 }
 
 const LinkInput: FC<Props> = ({
@@ -39,13 +41,19 @@ const LinkInput: FC<Props> = ({
   type,
   index,
   defaultValue,
+  name: defaultName,
+  isValid,
 }) => {
   const option = COLLECTION_LINK_TYPE_OPTIONS[type];
 
   const { text, value } = option;
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [linkType, setLinkType] = useState(value as COLLECTION_LINK_TYPE);
+
+  useEffect(() => {
+    handleChange_({ isValid, value: defaultValue });
+  }, [name, linkType]);
 
   const LinkTypeButton = () => (
     <Button minimal={true} rightIcon="caret-down">
@@ -56,12 +64,12 @@ const LinkInput: FC<Props> = ({
   return (
     <LinkWrapper>
       <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
-
       <Input
         name={value}
         text="Name"
         placeholder="Name"
         handleChange={handleNameChange}
+        defaultValue={defaultName}
       />
       <Input
         name={value}
