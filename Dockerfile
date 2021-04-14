@@ -38,7 +38,7 @@ ADD backend/corpora chalicelib/corpora
 ADD backend/config/corpora-api.yml chalicelib/config/corpora-api.yml
 
 ARG HAPPY_BRANCH="unknown"
-ARG HAPPY_COMMIT="unknown"
+ARG HAPPY_COMMIT=""
 LABEL branch=${HAPPY_BRANCH}
 LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
