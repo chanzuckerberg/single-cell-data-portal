@@ -1,4 +1,4 @@
-import { Dialog } from "@blueprintjs/core";
+import { Dialog, IButtonProps } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC, useState } from "react";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
@@ -21,10 +21,15 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollection: FC<{ className?: string; id?: Collection["id"] }> = ({
-  className,
-  id,
-}) => {
+const CreateCollectionButton = (props: Partial<IButtonProps>) => (
+  <StyledButton {...props}>Create Collection</StyledButton>
+);
+
+const CreateCollection: FC<{
+  className?: string;
+  id?: Collection["id"];
+  Button?: React.ElementType;
+}> = ({ className, id, Button }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -52,15 +57,15 @@ const CreateCollection: FC<{ className?: string; id?: Collection["id"] }> = ({
         title: "Create an account or sign-in to get started",
       };
 
+  const OpenDialogButton = Button || CreateCollectionButton;
+
   return (
     <>
-      <StyledButton
+      <OpenDialogButton
         onMouseOver={() => config.content.preload()}
         onClick={toggleOpen}
         {...{ className }}
-      >
-        Create Collection
-      </StyledButton>
+      />
       <Dialog
         isCloseButtonShown={config.isCloseButtonShown}
         title={config.title}
