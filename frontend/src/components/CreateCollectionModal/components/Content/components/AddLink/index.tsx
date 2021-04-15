@@ -39,6 +39,7 @@ const AddLink: FC<AddLinkProps> = ({ handleClick, Button }) => {
     <Popover
       content={<LinkTypes handleClick={handleClick} />}
       position={Position.BOTTOM_LEFT}
+      captureDismiss={true}
     >
       <Button />
     </Popover>
