@@ -689,3 +689,10 @@ class TestUpdateCollection(BaseAuthAPITest):
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
         response.raise_for_status()
         self.assertEqual(links, json.loads(response.body)["links"])
+
+        # Clear All links
+        links = []
+        data = json.dumps({"links": links})
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        response.raise_for_status()
+        self.assertEqual(links, json.loads(response.body)["links"])

@@ -191,7 +191,7 @@ const Content: FC<Props> = (props) => {
             loading={isLoading}
             data-test-id="create-button"
           >
-            Create
+            {isEditCollection ? "Save" : "Create"}
           </Button>
         </div>
       </div>
