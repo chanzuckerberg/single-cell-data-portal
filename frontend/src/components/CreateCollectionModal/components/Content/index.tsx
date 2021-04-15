@@ -82,9 +82,9 @@ const Content: FC<Props> = (props) => {
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
-    data?.links.map((link) => {
+    data?.links.map((link, index) => {
       return {
-        id: Date.now(),
+        id: Date.now() + index,
         isValid: true,
         linkName: link.link_name,
         linkType: link.link_type,
