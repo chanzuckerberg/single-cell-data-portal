@@ -1,7 +1,7 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { debounce } from "lodash";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
@@ -14,23 +14,24 @@ import { IconWrapper, LinkWrapper, StyledButton } from "./style";
 
 export type LinkValue = {
   id: number;
-  value: string;
+  url: string;
   isValid: boolean;
   index: number;
-  name: string;
+  linkName: string;
+  linkType: COLLECTION_LINK_TYPE;
 };
 
 const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
-  handleChange: ({ id, value, isValid }: LinkValue) => void;
+  handleChange: ({ id, url, isValid }: LinkValue) => void;
   id: number;
   index: number;
-  type: COLLECTION_LINK_TYPE;
+  linkName: string;
+  linkType: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
-  defaultValue: string;
-  name: string;
+  url: string;
   isValid: boolean;
 }
 
@@ -38,26 +39,18 @@ const LinkInput: FC<Props> = ({
   handleChange,
   handleDelete,
   id,
-  type,
+  linkType,
   index,
-  defaultValue,
-  name: defaultName,
+  url,
+  linkName,
   isValid,
 }) => {
-  const option = COLLECTION_LINK_TYPE_OPTIONS[type];
-
+  const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
   const { text, value } = option;
-
-  const [name, setName] = useState(defaultName);
-  const [linkType, setLinkType] = useState(value as COLLECTION_LINK_TYPE);
-
-  useEffect(() => {
-    handleChange_({ isValid, value: defaultValue });
-  }, [name, linkType]);
 
   const LinkTypeButton = () => (
     <Button minimal={true} rightIcon="caret-down">
-      {COLLECTION_LINK_TYPE_OPTIONS[linkType].text}
+      {text}
     </Button>
   );
 
@@ -65,11 +58,11 @@ const LinkInput: FC<Props> = ({
     <LinkWrapper>
       <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
       <Input
-        name={value}
-        text="Name"
+        name="Name"
+        text="Name(optional)"
         placeholder="Name"
         handleChange={handleNameChange}
-        defaultValue={defaultName}
+        defaultValue={linkName}
       />
       <Input
         name={value}
@@ -80,7 +73,7 @@ const LinkInput: FC<Props> = ({
             ? DOI_PLACEHOLDER
             : LINK_PLACEHOLDER
         }
-        defaultValue={defaultValue}
+        defaultValue={url}
         handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
       />
       <IconWrapper>
@@ -94,11 +87,30 @@ const LinkInput: FC<Props> = ({
     </LinkWrapper>
   );
 
-  function handleNameChange({ value }: { isValid: boolean; value: string }) {
-    setName(value);
+  function handleNameChange({
+    value: newLinkName,
+  }: {
+    isValid: boolean;
+    value: string;
+  }) {
+    handleChange({
+      id,
+      index,
+      isValid,
+      linkName: newLinkName,
+      linkType,
+      url,
+    });
   }
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
-    setLinkType(newLinkType);
+    handleChange({
+      id,
+      index,
+      isValid,
+      linkName,
+      linkType: newLinkType,
+      url,
+    });
   }
 
   function handleChange_({
@@ -112,8 +124,9 @@ const LinkInput: FC<Props> = ({
       id,
       index,
       isValid: isValidFromInput,
-      name,
-      value,
+      linkName,
+      linkType,
+      url: value,
     });
   }
 };

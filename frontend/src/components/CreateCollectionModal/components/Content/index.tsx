@@ -35,9 +35,9 @@ interface Props {
 type Link = {
   id: number;
   url: string;
-  name: string;
+  linkName: string;
   isValid: boolean;
-  type: COLLECTION_LINK_TYPE;
+  linkType: COLLECTION_LINK_TYPE;
 };
 
 enum FIELD_NAMES {
@@ -82,12 +82,12 @@ const Content: FC<Props> = (props) => {
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
-    data?.links.map((link, index) => {
+    data?.links.map((link) => {
       return {
-        id: index,
+        id: Date.now(),
         isValid: true,
-        name: link.link_name,
-        type: link.link_type,
+        linkName: link.link_name,
+        linkType: link.link_type,
         url: link.link_url,
       };
     }) || []
@@ -149,16 +149,16 @@ const Content: FC<Props> = (props) => {
               defaultValue={contact_email}
             />
           </ContactWrapper>
-          {links.map(({ type, id, url, name, isValid }, index) => (
+          {links.map(({ linkType, id, url, linkName, isValid }, index) => (
             <LinkInput
               index={index}
-              type={type}
+              linkType={linkType}
               id={id}
               key={id}
-              name={name}
+              linkName={linkName}
               handleChange={handleLinkInputChange}
               handleDelete={handleLinkInputDelete}
-              defaultValue={url}
+              url={url}
               isValid={isValid}
             />
           ))}
@@ -205,9 +205,9 @@ const Content: FC<Props> = (props) => {
 
     const payload = formDataToObject(formData);
 
-    const payloadLinks = links.map(({ type, url, name }) => ({
+    const payloadLinks = links.map(({ linkType, url, linkName: name }) => ({
       link_name: name,
-      link_type: type,
+      link_type: linkType,
       link_url: url,
     }));
 
@@ -264,16 +264,18 @@ const Content: FC<Props> = (props) => {
 
   function handleLinkInputChange({
     index,
-    value,
+    url,
     isValid: isValidFromLinkInput,
-    name,
+    linkName,
+    linkType,
   }: LinkValue) {
     const link = links[index];
     const newLink: Link = {
       ...link,
       isValid: isValidFromLinkInput,
-      name,
-      url: value,
+      linkName,
+      linkType,
+      url,
     };
 
     const newLinks = [...links];
@@ -301,12 +303,12 @@ const Content: FC<Props> = (props) => {
   }
 };
 
-function createLinkInput(type: COLLECTION_LINK_TYPE) {
+function createLinkInput(linkType: COLLECTION_LINK_TYPE): Link {
   return {
     id: Date.now(),
     isValid: false,
-    name: "",
-    type,
+    linkName: "",
+    linkType,
     url: "",
   };
 }
