@@ -1,4 +1,3 @@
-import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { debounce } from "lodash";
 import React, { FC } from "react";
@@ -7,10 +6,17 @@ import {
   COLLECTION_LINK_TYPE_OPTIONS,
 } from "src/common/entities";
 import Input from "src/components/common/Form/Input";
+import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
 import { DEBOUNCE_TIME_MS } from "../../common/constants";
 import AddLink from "../AddLink";
-import { IconWrapper, LinkWrapper, StyledButton } from "./style";
+import {
+  IconWrapper,
+  LinkWrapper,
+  StyledButton,
+  StyledLinkTypeButton,
+  StyledURLInput,
+} from "./style";
 
 export type LinkValue = {
   id: number;
@@ -49,9 +55,12 @@ const LinkInput: FC<Props> = ({
   const { text, value } = option;
 
   const LinkTypeButton = () => (
-    <Button minimal={true} rightIcon="caret-down">
-      {text}
-    </Button>
+    <StyledDiv>
+      <LabelText>Type</LabelText>
+      <StyledLinkTypeButton outlined minimal={true} rightIcon="caret-down">
+        {text}
+      </StyledLinkTypeButton>
+    </StyledDiv>
   );
 
   return (
@@ -63,8 +72,9 @@ const LinkInput: FC<Props> = ({
         placeholder="Name"
         handleChange={handleNameChange}
         defaultValue={linkName}
+        percentage={25}
       />
-      <Input
+      <StyledURLInput
         name={value}
         text="URL"
         syncValidation={[isValidHttpUrl, isDOILink(value)]}
@@ -75,6 +85,7 @@ const LinkInput: FC<Props> = ({
         }
         defaultValue={url}
         handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
+        percentage={40}
       />
       <IconWrapper>
         <StyledButton
