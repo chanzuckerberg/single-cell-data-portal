@@ -31,3 +31,8 @@ export const StyledInputGroup = styled(InputGroup)`
     border-radius: unset;
   }
 `;
+
+export const StyledDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+`;

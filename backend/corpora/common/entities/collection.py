@@ -184,13 +184,13 @@ class Collection(Entity):
          be removed and replaced with new entries.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
-        if links:
-            for link in self.links:
-                self.session.delete(link)
-            new_objs = [
-                DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
-            ]
-            self.session.add_all(new_objs)
-            self.session.flush()
+        links = links if links else []
+        for link in self.links:
+            self.session.delete(link)
+        new_objs = [
+            DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
+        ]
+        self.session.add_all(new_objs)
+        self.session.flush()
 
         super().update(**kwargs)
