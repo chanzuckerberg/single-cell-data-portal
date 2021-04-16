@@ -180,7 +180,7 @@ def download(
 
         status_dict = processing_status.to_dict()
         if processing_status.upload_status == UploadStatus.FAILED:
-            logger.Error(f"Upload failed: {status_dict}")
+            logger.error(f"Upload failed: {status_dict}")
             raise ProcessingFailed(status_dict)
         else:
             return status_dict
