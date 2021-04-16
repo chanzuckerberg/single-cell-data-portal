@@ -3,6 +3,8 @@ import logging
 import multiprocessing
 import os
 import random
+
+from unittest.mock import patch
 import requests
 import socketserver
 
@@ -136,4 +138,19 @@ class TestDownload(DataPortalTestCase):
                 file_size,
                 chunk_size=1024,
                 update_frequency=1,
+            )
+
+    @patch("shutil.disk_usage")
+    def test__disk_space__error(self, mock_disk_usage):
+        mock_disk_usage.return_value = (0, 0, 0)
+        local_file = "local.h5ad"
+        self.addCleanup(self.cleanup_local_file, local_file)
+        url = f"http://localhost:{self.port}/upload_test_file.txt"
+        file_size = int(requests.head(url).headers["content-length"])
+        with self.assertRaises(ProcessingFailed):
+            download.download(
+                "test_dataset_id_fake",
+                url,
+                local_file,
+                file_size
             )
