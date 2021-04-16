@@ -39,7 +39,7 @@ const AddLink: FC<AddLinkProps> = ({ handleClick, Button }) => {
     <Popover
       content={<LinkTypes handleClick={handleClick} />}
       position={Position.BOTTOM_LEFT}
-      captureDismiss={true}
+      captureDismiss={true} // Not setting this led to this ridiculously obfuscated bug where choosing a link type would close the menu that held the edit collection button. Closing that menu would close the entire edit collection modal
     >
       <Button />
     </Popover>
