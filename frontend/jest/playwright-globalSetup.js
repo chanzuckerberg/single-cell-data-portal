@@ -15,8 +15,10 @@ const client = new SecretsManagerClient({
   endpoint,
 });
 
+const deployment_stage = process.env.DEPLOYMENT_STAGE || "test";
+
 const secretValueRequest = {
-  SecretId: "corpora/backend/test/auth0-secret",
+  SecretId: `corpora/backend/${deployment_stage}/auth0-secret`,
 };
 
 const command = new GetSecretValueCommand(secretValueRequest);

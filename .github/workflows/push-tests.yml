@@ -118,7 +118,6 @@ jobs:
   push-prod-images:
     needs:
       - push-image
-      - push-upload-image
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main'
     steps:
@@ -211,54 +210,10 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  push-upload-image:
-    needs:
-      - unit-test
-      - smoke-test
-      - lint
-      - build-extra-images
-    runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
-      # TODO - eventually we'll need to log into multiple ECR's
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Docker pull, tag, and push
-        env:
-          ECR_REPO: ${{ secrets.ECR_REPO }}
-          UPLOAD_ECR: ${{ secrets.ECR_REPO }}
-        shell: bash
-        run: |
-          docker pull ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8}
-          for tag in active branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g') sha-${GITHUB_SHA:0:8}; do
-              docker tag ${ECR_REPO}/corpora-upload:sha-${GITHUB_SHA:0:8} ${UPLOAD_ECR}/corpora-upload-dev:${tag}
-              docker push ${UPLOAD_ECR}/corpora-upload-dev:${tag}
-          done
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
-
   create_deployment:
     if: github.ref == 'refs/heads/main'
     needs:
       - push-image
-      - push-upload-image
     runs-on: ubuntu-20.04
     steps:
       - name: Generate payload
