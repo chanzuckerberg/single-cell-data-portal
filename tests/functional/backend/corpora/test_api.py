@@ -43,7 +43,7 @@ class TestApi(unittest.TestCase):
             headers={"content-type": "application/x-www-form-urlencoded"},
             data=dict(
                 grant_type="password",
-                username="user@example.com",
+                username=config.test_account_username,
                 password=config.test_account_password,
                 audience=AUDIENCE.get(cls.deployment_stage),
                 scope="openid profile email offline",

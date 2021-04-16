@@ -106,8 +106,7 @@ local-nohostconfig:
 .PHONY: local-init
 local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig ## Launch a new local dev env and populate it with test data.
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
-	docker-compose exec -T backend pip3 install awscli
-	docker-compose exec -T backend /corpora-data-portal/scripts/setup_dev_data.sh
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && /corpora-data-portal/scripts/setup_dev_data.sh"
 
 .PHONY: local-status
 local-status: ## Show the status of the containers in the dev environment.
@@ -157,16 +156,16 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 local-unit-test: ## Run backend tests in the dev environment
 	@if [ -z "$(path)" ]; then \
         echo "Running all tests"; \
-		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && make container-unittest"; \
-		docker-compose exec -e DEV_MODE_COOKIES= -T processing bash -c "cd /corpora-data-portal && make processing-unittest"; \
+		export CI=""; \
+		ci_env=""; \
+		if [ ! -z "$(CODECOV_TOKEN)" ]; then \
+			ci_env=$$(bash <(curl -s https://codecov.io/env)); \
+			CI=true; \
+		fi; \
+		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend bash -c "cd /corpora-data-portal && make container-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
 	else \
 		echo "Running test(s): $(path)"; \
-		docker-compose exec -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
-	fi
-	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-		docker-compose exec -T backend bash -c "apt-get update && apt-get install -y git"; \
-		docker-compose exec -e DEV_MODE_COOKIES= -e CI=true $$ci_env -T backend bash -c "cd /corpora-data-portal && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest"; \
+		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
@@ -190,12 +189,12 @@ local-functional-test: ## Run functional tests in the dev environment
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose exec -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
 		backend bash -c "cd /corpora-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
-	docker-compose exec -T frontend make smoke-test-with-local-dev
+	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
 
 .PHONY: local-e2e
 local-e2e: ## Run frontend/e2e tests
@@ -210,9 +209,7 @@ local-dbconsole: ## Connect to the local postgres database.
 
 .PHONY: local-uploadjob
 local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_url
-	docker-compose $(COMPOSE_OPTS) up -d processing
-	docker-compose exec -T processing sh -c "rm -rf /local.*"
-	docker-compose exec -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing python3 -m backend.corpora.dataset_processing.process
+	docker-compose $(COMPOSE_OPTS) run --rm -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing sh -c "rm -rf /local.* && python3 -m backend.corpora.dataset_processing.process"
 
 .PHONY: local-uploadfailure
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
@@ -221,4 +218,4 @@ local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
-	docker-compose exec backend bash -c "cd /corpora-data-portal && python login.py"
+	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /corpora-data-portal && python login.py"
