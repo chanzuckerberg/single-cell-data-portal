@@ -40,7 +40,7 @@ export function renderLinks(links: Link[]) {
 
       if (!linkTypeOption) return null;
 
-      const urlName = name ? name : getUrlHost(url);
+      const urlName = name || getUrlHost(url);
 
       const { text } = linkTypeOption;
 

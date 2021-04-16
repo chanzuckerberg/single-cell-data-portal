@@ -1,5 +1,4 @@
 import { IconNames } from "@blueprintjs/icons";
-import { debounce } from "lodash";
 import React, { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
@@ -8,7 +7,6 @@ import {
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
-import { DEBOUNCE_TIME_MS } from "../../common/constants";
 import AddLink from "../AddLink";
 import {
   IconWrapper,
@@ -84,7 +82,7 @@ const LinkInput: FC<Props> = ({
             : LINK_PLACEHOLDER
         }
         defaultValue={url}
-        handleChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
+        handleChange={handleChange_}
         percentage={40}
       />
       <IconWrapper>
