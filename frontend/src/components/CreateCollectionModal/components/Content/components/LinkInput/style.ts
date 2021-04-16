@@ -27,8 +27,12 @@ export const StyledLinkTypeButton = styled(Button)`
   justify-content: space-between;
 `;
 
-export const StyledURLInput = styled(Input)``;
-export const StyledNameInput = styled(Input)``;
+export const StyledURLInput = styled(Input)`
+  /* Blank for LinkWrapper to target */
+`;
+export const StyledNameInput = styled(Input)`
+  /* Blank for LinkWrapper to target */
+`;
 
 export const LinkWrapper = styled.div`
   display: flex;
