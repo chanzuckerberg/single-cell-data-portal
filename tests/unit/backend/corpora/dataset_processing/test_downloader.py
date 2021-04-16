@@ -148,9 +148,4 @@ class TestDownload(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(ProcessingFailed):
-            download.download(
-                "test_dataset_id_fake",
-                url,
-                local_file,
-                file_size
-            )
+            download.download("test_dataset_id_fake", url, local_file, file_size)
