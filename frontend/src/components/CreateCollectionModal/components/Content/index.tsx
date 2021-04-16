@@ -2,10 +2,16 @@ import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { COLLECTION_LINK_TYPE } from "src/common/entities";
+import {
+  Collection,
+  COLLECTION_LINK_TYPE,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
 import {
   formDataToObject,
+  useCollection,
   useCreateCollection,
+  useEditCollection,
 } from "src/common/queries/collections";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
@@ -22,13 +28,16 @@ const REQUIRED_FIELD_TEXT = "Required";
 
 interface Props {
   onClose: () => void;
+  editingMode?: boolean;
+  id?: Collection["id"];
 }
 
 type Link = {
   id: number;
   url: string;
+  linkName: string;
   isValid: boolean;
-  type: COLLECTION_LINK_TYPE;
+  linkType: COLLECTION_LINK_TYPE;
 };
 
 enum FIELD_NAMES {
@@ -38,8 +47,16 @@ enum FIELD_NAMES {
   CONTACT_EMAIL = "contact-email",
 }
 
+const AddLinkButton = () => (
+  <Button outlined intent={Intent.PRIMARY}>
+    Add Link
+  </Button>
+);
+
 const Content: FC<Props> = (props) => {
-  const [isValid, setIsValid] = useState(false);
+  const isEditCollection = !!props.id;
+  const initialBooleanState = isEditCollection;
+  const [isValid, setIsValid] = useState(initialBooleanState);
   const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -47,17 +64,34 @@ const Content: FC<Props> = (props) => {
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
   }>({
-    [FIELD_NAMES.NAME]: false,
-    [FIELD_NAMES.DESCRIPTION]: false,
-    [FIELD_NAMES.CONTACT_NAME]: false,
-    [FIELD_NAMES.CONTACT_EMAIL]: false,
+    [FIELD_NAMES.NAME]: initialBooleanState,
+    [FIELD_NAMES.DESCRIPTION]: initialBooleanState,
+    [FIELD_NAMES.CONTACT_NAME]: initialBooleanState,
+    [FIELD_NAMES.CONTACT_EMAIL]: initialBooleanState,
   });
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const [links, setLinks] = useState<Link[]>([]);
+  const [mutateCreateCollection] = useCreateCollection();
+  const [mutateEditCollection] = useEditCollection();
 
-  const [mutate] = useCreateCollection();
+  const { data } = useCollection({
+    id: props.id,
+    visibility: VISIBILITY_TYPE.PRIVATE,
+  });
+  const { name, description, contact_email, contact_name } = data || {};
+
+  const [links, setLinks] = useState<Link[]>(
+    data?.links.map((link, index) => {
+      return {
+        id: Date.now() + index,
+        isValid: true,
+        linkName: link.link_name,
+        linkType: link.link_type,
+        url: link.link_url,
+      };
+    }) || []
+  );
 
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
@@ -74,7 +108,6 @@ const Content: FC<Props> = (props) => {
   }, [links, fieldValidation, policyVersion, isValid]);
 
   const { onClose } = props;
-
   return (
     <>
       <div className={Classes.DIALOG_BODY}>
@@ -87,6 +120,7 @@ const Content: FC<Props> = (props) => {
             text="Collection Name"
             handleChange={handleInputChange}
             placeholder={REQUIRED_FIELD_TEXT}
+            defaultValue={name}
           />
           <StyledLabel htmlFor="description">
             <LabelText>Description</LabelText>
@@ -96,6 +130,7 @@ const Content: FC<Props> = (props) => {
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
               fill
+              defaultValue={description}
             />
           </StyledLabel>
           <ContactWrapper>
@@ -104,25 +139,30 @@ const Content: FC<Props> = (props) => {
               text="Contact Name"
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_name}
             />
             <StyledInput
               name={FIELD_NAMES.CONTACT_EMAIL}
               text="Contact Email"
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_email}
             />
           </ContactWrapper>
-          {links.map(({ type, id }, index) => (
+          {links.map(({ linkType, id, url, linkName, isValid }, index) => (
             <LinkInput
               index={index}
-              type={type}
+              linkType={linkType}
               id={id}
               key={id}
+              linkName={linkName}
               handleChange={handleLinkInputChange}
               handleDelete={handleLinkInputDelete}
+              url={url}
+              isValid={isValid}
             />
           ))}
-          <AddLink handleClick={handleAddLinkClick} />
+          <AddLink handleClick={handleAddLinkClick} Button={AddLinkButton} />
           <Policy handleChange={handlePolicyChange} />
         </Form>
       </div>
@@ -145,41 +185,70 @@ const Content: FC<Props> = (props) => {
           <Button
             intent={Intent.PRIMARY}
             disabled={!isValid}
-            onClick={onSubmit}
+            onClick={
+              isEditCollection ? submitEditCollection : submitCreateCollection
+            }
             loading={isLoading}
             data-test-id="create-button"
           >
-            Create
+            {isEditCollection ? "Save" : "Create"}
           </Button>
         </div>
       </div>
     );
   }
 
-  async function onSubmit() {
+  function createPayload() {
     if (!formEl?.current) return;
 
     const formData = new FormData(formEl.current);
 
     const payload = formDataToObject(formData);
 
-    const payloadLinks = links.map(({ type, url }) => ({
-      link_type: type,
+    const payloadLinks = links.map(({ linkType, url, linkName: name }) => ({
+      link_name: name,
+      link_type: linkType,
       link_url: url,
     }));
 
     payload.links = payloadLinks;
     payload[POLICY_PAYLOAD_KEY] = policyVersion;
 
+    return payload;
+  }
+
+  async function submitCreateCollection() {
+    const payload = createPayload();
+
+    if (!payload) return;
+
     setIsLoading(true);
 
-    const collectionId = (await mutate(JSON.stringify(payload))) as string;
+    const collectionId = (await mutateCreateCollection(
+      JSON.stringify(payload)
+    )) as string;
 
     setIsLoading(false);
 
     if (collectionId) {
       router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
     }
+  }
+
+  async function submitEditCollection() {
+    const payload = createPayload();
+
+    if (!payload) return;
+
+    setIsLoading(true);
+
+    await mutateEditCollection({
+      id: props.id ?? "",
+      payload: JSON.stringify(payload),
+    });
+
+    setIsLoading(false);
+    onClose();
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
@@ -195,14 +264,18 @@ const Content: FC<Props> = (props) => {
 
   function handleLinkInputChange({
     index,
-    value,
+    url,
     isValid: isValidFromLinkInput,
+    linkName,
+    linkType,
   }: LinkValue) {
     const link = links[index];
     const newLink: Link = {
       ...link,
       isValid: isValidFromLinkInput,
-      url: value,
+      linkName,
+      linkType,
+      url,
     };
 
     const newLinks = [...links];
@@ -230,8 +303,14 @@ const Content: FC<Props> = (props) => {
   }
 };
 
-function createLinkInput(type: COLLECTION_LINK_TYPE) {
-  return { id: Date.now(), isValid: false, type, url: "" };
+function createLinkInput(linkType: COLLECTION_LINK_TYPE): Link {
+  return {
+    id: Date.now(),
+    isValid: false,
+    linkName: "",
+    linkType,
+    url: "",
+  };
 }
 
 export default Content;
