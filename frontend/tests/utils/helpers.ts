@@ -29,15 +29,14 @@ export async function login() {
   }
 }
 
-export async function tryUntil(assert: () => void) {
-  const MAX_RETRY = 50;
+export async function tryUntil(assert: () => void, maxRetry = 50) {
   const WAIT_FOR_MS = 200;
 
   let retry = 0;
 
   let savedError: Error = new Error();
 
-  while (retry < MAX_RETRY) {
+  while (retry < maxRetry) {
     try {
       await assert();
 
@@ -49,7 +48,7 @@ export async function tryUntil(assert: () => void) {
     }
   }
 
-  if (retry === MAX_RETRY) {
+  if (retry === maxRetry) {
     savedError.message += " tryUntil() failed";
     throw savedError;
   }
