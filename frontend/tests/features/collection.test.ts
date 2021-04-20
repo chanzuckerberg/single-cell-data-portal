@@ -1,4 +1,5 @@
 import { ROUTES } from "src/common/constants/routes";
+import { Collection } from "src/common/entities";
 import {
   BLUEPRINT_SAFE_TYPE_OPTIONS,
   TEST_ENV,
@@ -23,7 +24,9 @@ describe("Collection", () => {
       const timestamp = Date.now();
       await login();
 
-      const collectionId = await createCollection(String(timestamp));
+      const collectionName = "TEST_COLLECTION" + timestamp;
+
+      const collectionId = await createCollection({ name: collectionName });
 
       // Try delete
       await page.click(getTestID("collection-more-button"));
@@ -36,9 +39,7 @@ describe("Collection", () => {
       );
 
       await tryUntil(async () => {
-        await expect(page).not.toHaveSelector(
-          getText(TEST_COLLECTION.name + timestamp)
-        );
+        await expect(page).not.toHaveSelector(getText(collectionName));
       }, 5);
     });
 
@@ -60,24 +61,27 @@ describe("Collection", () => {
   });
 });
 
-async function createCollection(unique?: string): Promise<string> {
+async function createCollection(
+  collection?: Partial<Collection>
+): Promise<string> {
   await page.click(getText("Create Collection"));
 
-  const collectionName = TEST_COLLECTION.name + unique;
-  await page.type("#name", collectionName, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  const testCollection = { ...TEST_COLLECTION, ...collection };
+
+  await page.type("#name", testCollection.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
   await page.type(
     "#description",
-    TEST_COLLECTION.description,
+    testCollection.description,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
   await page.type(
     "#contact-name",
-    TEST_COLLECTION.contactName,
+    testCollection.contactName,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
   await page.type(
     "#contact-email",
-    TEST_COLLECTION.contactEmail,
+    testCollection.contactEmail,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
   await page.click(getText("I agree to cellxgene's data submission policies."));
@@ -90,7 +94,7 @@ async function createCollection(unique?: string): Promise<string> {
     collection_uuid: string;
   };
 
-  await expect(page).toHaveSelector(getText(collectionName));
+  await expect(page).toHaveSelector(getText(testCollection.name));
 
   return collection_uuid;
 }
