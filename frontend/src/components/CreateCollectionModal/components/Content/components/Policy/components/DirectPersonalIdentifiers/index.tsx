@@ -24,12 +24,13 @@ const DirectIdentifiers: FC = ({ children }) => {
 
 const CATEGORIES = [
   "names",
-  "all geographic subdivisions smaller than a state, except for the initial three digits of the ZIP code if the geographic unit formed by combining all ZIP codes with the same three initial digits contains more than 20,000 people",
+  "For US: all geographic subdivisions smaller than a state, except for the initial three digits of the ZIP code if the geographic unit formed by combining all ZIP codes with the same three initial digits contains more than 20,000 people",
+  "For non-US: any geographic subdivision smaller than a city (e.g. neighborhood, mailing address).",
   "all elements of dates except year, and all ages over 89 or elements indicative of such age",
   "telephone numbers ",
   "fax numbers",
   "email addresses ",
-  "social security numbers",
+  "government ID numbers (e.g. social security)",
   "medical record numbers",
   "health plan beneficiary numbers",
   "account numbers",
@@ -67,9 +68,9 @@ function Content() {
               rel="noopener"
               href="https://www.hhs.gov/hipaa/for-professionals/privacy/index.html"
             >
-              HIPAA Privacy Rule
+              HIPAA Privacy Rule{" "}
             </a>
-            :
+            as well as other regulations (e.g. GDPR):
           </Text>
         </FirstSentence>
       </div>
