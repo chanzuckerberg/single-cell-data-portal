@@ -23,7 +23,7 @@ describe("Collection", () => {
       const timestamp = Date.now();
       await login();
 
-      const collectionId = await createCollection(timestamp.toString());
+      const collectionId = await createCollection(String(timestamp));
 
       // Try delete
       await page.click(getTestID("collection-more-button"));
