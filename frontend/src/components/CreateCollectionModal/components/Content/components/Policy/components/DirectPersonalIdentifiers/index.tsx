@@ -69,7 +69,7 @@ function Content() {
               href="https://www.hhs.gov/hipaa/for-professionals/privacy/index.html"
             >
               HIPAA Privacy Rule
-            </a>
+            </a>{" "}
             as well as other regulations (e.g. GDPR):
           </Text>
         </FirstSentence>
