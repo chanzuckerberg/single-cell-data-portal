@@ -4,7 +4,7 @@ import {
   TEST_ENV,
   TEST_URL,
 } from "tests/common/constants";
-import { goToPage, login, TIMEOUT_MS } from "tests/utils/helpers";
+import { goToPage, login } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
@@ -20,9 +20,10 @@ const TEST_COLLECTION = {
 describe("Collection", () => {
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
+      const timestamp = Date.now();
       await login();
 
-      const collectionId = await createCollection();
+      const collectionId = await createCollection(timestamp.toString());
 
       // Try delete
       await page.click(getTestID("collection-more-button"));
@@ -33,9 +34,13 @@ describe("Collection", () => {
       await goToPage(
         TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
       );
-      await expect(page).not.toHaveSelector(getText(TEST_COLLECTION.name), {
-        timeout: TIMEOUT_MS,
-      });
+
+      // wait five seconds for cache to clear
+      await setTimeout(async () => {
+        await expect(page).not.toHaveSelector(
+          getText(TEST_COLLECTION.name + timestamp)
+        );
+      }, 5000);
     });
 
     describe("Publish a collection", () => {
@@ -56,9 +61,11 @@ describe("Collection", () => {
   });
 });
 
-async function createCollection(): Promise<string> {
+async function createCollection(unique?: string): Promise<string> {
   await page.click(getText("Create Collection"));
-  await page.type("#name", TEST_COLLECTION.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
+
+  const collectionName = TEST_COLLECTION.name + unique;
+  await page.type("#name", collectionName, BLUEPRINT_SAFE_TYPE_OPTIONS);
   await page.type(
     "#description",
     TEST_COLLECTION.description,
@@ -84,7 +91,7 @@ async function createCollection(): Promise<string> {
     collection_uuid: string;
   };
 
-  await expect(page).toHaveSelector(getText(TEST_COLLECTION.name));
+  await expect(page).toHaveSelector(getText(collectionName));
 
   return collection_uuid;
 }
