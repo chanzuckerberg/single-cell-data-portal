@@ -4,7 +4,7 @@ import {
   TEST_ENV,
   TEST_URL,
 } from "tests/common/constants";
-import { goToPage, login } from "tests/utils/helpers";
+import { goToPage, login, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
@@ -35,12 +35,11 @@ describe("Collection", () => {
         TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
       );
 
-      // wait five seconds for cache to clear
-      await setTimeout(async () => {
+      await tryUntil(async () => {
         await expect(page).not.toHaveSelector(
           getText(TEST_COLLECTION.name + timestamp)
         );
-      }, 5000);
+      }, 5);
     });
 
     describe("Publish a collection", () => {
