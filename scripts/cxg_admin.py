@@ -22,28 +22,45 @@ logger = logging.getLogger(__name__)
 os.environ["CORPORA_LOCAL_DEV"] = "1"
 
 
-@click.command()
-@click.argument("uuid")
+@click.group()
 @click.option("--deployment", default="test", show_default=True, help="The name of the deployment to target.")
-@click.confirmation_option(prompt="Are you sure you want to delete the dataset from cellxgene?")
-def delete_dataset(uuid, deployment):
+@click.pass_context
+def cli(ctx, deployment):
+    os.environ["DEPLOYMENT_STAGE"] = deployment
+    ctx.obj["deployment"] = deployment
+    DBSessionMaker(get_database_uri())
+
+
+@cli.command()
+@click.argument("uuid")
+@click.pass_context
+def delete_dataset(ctx, uuid):
     """Delete a dataset from Cellxgene. You must first SSH into the target deployment using `make db/tunnel` before
     running."""
-    DBSessionMaker(get_database_uri())
+
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(json.dumps(dataset.to_dict(), sort_keys=True, indent=2, cls=CustomJSONEncoder))
-            delete_deployment_directories(dataset.deployment_directories, deployment)
+            print(
+                json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
+            )
+            click.confirm(
+                f"Are you sure you want to delete the dataset:{uuid} from cellxgene:{ctx.obj['deployment']}?",
+                abort=True,
+            )
+            delete_deployment_directories(dataset.deployment_directories, ctx.obj["deployment"])
             dataset.dataset_and_asset_deletion()
             dataset.delete()
             dataset = Dataset.get(session, uuid, include_tombstones=True)
-        if dataset is None:
-            click.echo(f"Deleted: {uuid}")
-            exit(0)
+            if dataset is None:
+                click.echo(f"Deleted: {uuid}")
+                exit(0)
+            else:
+                click.echo(f"Failed to delete: {uuid}")
+                exit(1)
         else:
-            click.echo(f"Failed to delete: {uuid}")
-            exit(1)
+            click.echo(f"Dataset:{uuid} not found!")
+            exit(0)
 
 
 def get_database_uri() -> str:
@@ -63,4 +80,4 @@ def delete_deployment_directories(deployment_directories, deployment):
 
 
 if __name__ == "__main__":
-    delete_dataset()
+    cli(obj={})
