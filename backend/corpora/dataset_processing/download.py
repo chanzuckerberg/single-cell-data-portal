@@ -5,7 +5,7 @@ import threading
 import requests
 from sqlalchemy import inspect
 
-from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
+from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus, ProcessingStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
@@ -175,6 +175,7 @@ def download(
             status = {
                 "upload_status": UploadStatus.FAILED,
                 "upload_message": str(progress_tracker.error),
+                "processing_status": ProcessingStatus.FAILURE,
             }
             _processing_status_updater(processing_status, status)
 
