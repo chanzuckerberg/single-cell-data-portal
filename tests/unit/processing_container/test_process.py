@@ -17,10 +17,10 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         super().setUpClass()
         cls.tmp_dir = tempfile.mkdtemp()
         cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
-        presigned_url = cls.get_presigned_url(
+        cls.presigned_url = cls.get_presigned_url(
             "5e486133-cdc6-4da2-a46d-fadebbf45762", "43e498b2-4037-441a-8a58-89ff680a0a39"
         )
-        cls.download(presigned_url, cls.real_h5ad_filename)
+        cls.download(cls.presigned_url, cls.real_h5ad_filename)
 
     @staticmethod
     def get_presigned_url(dataset_id, asset_id):
@@ -53,7 +53,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         make_loom(str(self.real_h5ad_filename))
 
     def test_main(self):
-        url = self.get_presigned_url("a5da03d7-f44b-4bb8-81a4-bc80960d6223", "04be802c-ffc6-4a7f-a4c5-f2812f1a707f")
+        url = self.presigned_url
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
