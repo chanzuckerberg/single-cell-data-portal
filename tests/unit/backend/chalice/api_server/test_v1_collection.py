@@ -763,3 +763,42 @@ class TestRevision(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
+
+    def test__publish_revision__201(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        test_url = f"/dp/v1/collections/{collection.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        # Start revision
+        response = self.app.post(test_url, headers=headers)
+        response.raise_for_status()
+
+        # Update the revision
+        expected_body = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
+            "data_submission_policy_version": "0",
+        }
+        data = json.dumps(expected_body)
+        response = self.app.put(f"{test_url}?visibility=PRIVATE", data=data, headers=headers)
+        response.raise_for_status()
+
+        # publish the revision
+        response = self.app.post(f"{test_url}/publish", headers=headers)
+        response.raise_for_status()
+
+        # Get the revised collection
+        response = self.app.get(f"{test_url}", headers=headers)
+        response.raise_for_status()
+        actual_body = json.loads(response.body)
+        self.assertEqual(actual_body["visibility"], "PUBLIC")
+        for link in expected_body.pop("links"):
+            self.assertIn(link, actual_body["links"])
+        for keys in expected_body.keys():
+            self.assertEqual(expected_body[keys], actual_body[keys])
