@@ -750,7 +750,7 @@ class TestRevision(BaseAuthAPITest):
 
     def test__revision_nonexistent__403(self):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(f"/dp/v1/collections/random", headers=headers)
+        response = self.app.post("/dp/v1/collections/random", headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__revision_not_owner__403(self):
