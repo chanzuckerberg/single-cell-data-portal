@@ -18,7 +18,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         cls.tmp_dir = tempfile.mkdtemp()
         cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
         presigned_url = cls.get_presigned_url(
-            "a5da03d7-f44b-4bb8-81a4-bc80960d6223", "04be802c-ffc6-4a7f-a4c5-f2812f1a707f"
+            "5e486133-cdc6-4da2-a46d-fadebbf45762", "43e498b2-4037-441a-8a58-89ff680a0a39"
         )
         cls.download(presigned_url, cls.real_h5ad_filename)
 
