@@ -20,14 +20,12 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 os.environ["CORPORA_LOCAL_DEV"] = "1"
-s3 = boto3.resource("s3")
 
 
 @click.command()
 @click.argument("uuid")
-@click.option(
-    "--deployment", default=os.getenv("DEPLOYMENT_STAGE", "test"), help="The name of the deployment to target."
-)
+@click.option("--deployment", default="test", show_default=True, help="The name of the deployment to target.")
+@click.confirmation_option(prompt="Are you sure you want to delete the dataset from cellxgene?")
 def delete_dataset(uuid, deployment):
     """Delete a dataset from Cellxgene. You must first SSH into the target deployment using `make db/tunnel` before
     running."""
@@ -55,7 +53,7 @@ def get_database_uri() -> str:
 
 
 def delete_deployment_directories(deployment_directories, deployment):
-    s3 = boto3.resource("s3")
+    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
     bucket_name = f"hosted-cellxgene-{deployment}"
     bucket = s3.Bucket(bucket_name)
     for deployment_directory in deployment_directories:
