@@ -713,10 +713,11 @@ class TestRevision(BaseAuthAPITest):
         for test in tests:
             with self.subTest(test):
                 collection = self.generate_collection(self.session, **test)
+                test_url = f"/dp/v1/collections/{collection.id}"
                 headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
                 # Test post
-                response = self.app.post(f"/dp/v1/collections/{collection.id}", headers=headers)
+                response = self.app.post(test_url, headers=headers)
                 self.assertEqual(201, response.status_code)
                 post_body = json.loads(response.body)
                 for key in test.keys():
@@ -725,7 +726,7 @@ class TestRevision(BaseAuthAPITest):
                     else:
                         self.assertEqual(test[key], post_body[key])
                 # Test get
-                response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
+                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
                 self.assertEqual(200, response.status_code)
                 get_body = json.loads(response.body)
                 self.assertEqual(post_body, get_body)
@@ -734,7 +735,7 @@ class TestRevision(BaseAuthAPITest):
                 get_body.pop("access_type")
                 expected_body = get_body
                 headers = {"host": "localhost", "Content-Type": "application/json"}
-                response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
+                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
                 self.assertEqual(200, response.status_code)
                 actual_body = json.loads(response.body)
                 self.assertEqual("READ", actual_body.pop("access_type"))
@@ -742,10 +743,11 @@ class TestRevision(BaseAuthAPITest):
 
     def test__revision__409(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        test_url = f"/dp/v1/collections/{collection.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(f"/dp/v1/collections/{collection.id}", headers=headers)
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
-        response = self.app.post(f"/dp/v1/collections/{collection.id}", headers=headers)
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(409, response.status_code)
 
     def test__revision_nonexistent__403(self):
@@ -757,6 +759,7 @@ class TestRevision(BaseAuthAPITest):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC, owner="someone else"
         )
+        test_url = f"/dp/v1/collections/{collection.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(f"/dp/v1/collections/{collection.id}", headers=headers)
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
