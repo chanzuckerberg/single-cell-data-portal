@@ -714,14 +714,31 @@ class TestRevision(BaseAuthAPITest):
             with self.subTest(test):
                 collection = self.generate_collection(self.session, **test)
                 headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+                # Test post
                 response = self.app.post(f"/dp/v1/collections/{collection.id}", headers=headers)
                 self.assertEqual(201, response.status_code)
-                actual_body = json.loads(response.body)
+                post_body = json.loads(response.body)
                 for key in test.keys():
                     if key == "visibility":
-                        self.assertEqual("PRIVATE", actual_body[key])
+                        self.assertEqual("PRIVATE", post_body[key])
                     else:
-                        self.assertEqual(test[key], actual_body[key])
+                        self.assertEqual(test[key], post_body[key])
+                # Test get
+                response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
+                self.assertEqual(200, response.status_code)
+                get_body = json.loads(response.body)
+                self.assertEqual(post_body, get_body)
+
+                # Test unauthenticated get
+                get_body.pop("access_type")
+                expected_body = get_body
+                headers = {"host": "localhost", "Content-Type": "application/json"}
+                response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
+                self.assertEqual(200, response.status_code)
+                actual_body = json.loads(response.body)
+                self.assertEqual("READ", actual_body.pop("access_type"))
+                self.assertEqual(expected_body, actual_body)
 
     def test__revision__409(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
