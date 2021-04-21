@@ -53,10 +53,10 @@ def delete_dataset(ctx, uuid):
             dataset.delete()
             dataset = Dataset.get(session, uuid, include_tombstones=True)
             if dataset is None:
-                click.echo(f"Deleted: {uuid}")
+                click.echo(f"Deleted dataset:{uuid}")
                 exit(0)
             else:
-                click.echo(f"Failed to delete: {uuid}")
+                click.echo(f"Failed to delete dataset:{uuid}")
                 exit(1)
         else:
             click.echo(f"Dataset:{uuid} not found!")
