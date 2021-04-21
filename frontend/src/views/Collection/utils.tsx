@@ -34,24 +34,26 @@ export function renderLinks(links: Link[]) {
     }
   }
 
-  return orderedLinks.map(({ link_url: url, link_type: type }) => {
-    const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
+  return orderedLinks.map(
+    ({ link_url: url, link_type: type, link_name: name }) => {
+      const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
-    if (!linkTypeOption) return null;
+      if (!linkTypeOption) return null;
 
-    const urlHost = getUrlHost(url);
+      const urlName = name || getUrlHost(url);
 
-    const { text } = linkTypeOption;
+      const { text } = linkTypeOption;
 
-    if (!urlHost) return null;
+      if (!urlName) return null;
 
-    return (
-      <React.Fragment key={`${type}+${url}`}>
-        <span className={Classes.TEXT_MUTED}>{text}</span>
-        <StyledLink href={url}>{urlHost}</StyledLink>
-      </React.Fragment>
-    );
-  });
+      return (
+        <React.Fragment key={`${type}+${url}`}>
+          <span className={Classes.TEXT_MUTED}>{text}</span>
+          <StyledLink href={url}>{urlName}</StyledLink>
+        </React.Fragment>
+      );
+    }
+  );
 }
 
 type LinkTypesToLinks = {

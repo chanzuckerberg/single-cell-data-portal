@@ -16,6 +16,7 @@ interface Props {
   noNameAttr?: boolean;
   className?: string;
   placeholder?: string;
+  defaultValue?: string;
 }
 
 const DangerIcon = () => {
@@ -32,6 +33,7 @@ const Input: FC<Props> = ({
   noNameAttr = false,
   className,
   placeholder = "",
+  defaultValue,
 }) => {
   const [isValid, setIsValid] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
@@ -57,6 +59,7 @@ const Input: FC<Props> = ({
           disabled={disabled}
           onChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
           placeholder={placeholder}
+          defaultValue={defaultValue}
         />
       </FormGroup>
     </StyledLabel>

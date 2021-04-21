@@ -1,11 +1,4 @@
-import {
-  Button,
-  Intent,
-  Menu,
-  MenuItem,
-  Popover,
-  Position,
-} from "@blueprintjs/core";
+import { Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import React, { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
@@ -14,6 +7,10 @@ import {
 
 interface Props {
   handleClick: (type: COLLECTION_LINK_TYPE) => void;
+}
+
+interface AddLinkProps extends Props {
+  Button: React.ElementType;
 }
 
 const OPTION_ORDER = [
@@ -37,15 +34,14 @@ const LinkTypes: FC<Props> = ({ handleClick }) => {
   );
 };
 
-const AddLink: FC<Props> = ({ handleClick }) => {
+const AddLink: FC<AddLinkProps> = ({ handleClick, Button }) => {
   return (
     <Popover
       content={<LinkTypes handleClick={handleClick} />}
       position={Position.BOTTOM_LEFT}
+      captureDismiss={true} // Not setting this led to this ridiculously obfuscated bug where choosing a link type would close the menu that held the edit collection button. Closing that menu would close the entire edit collection modal
     >
-      <Button outlined intent={Intent.PRIMARY}>
-        Add Link
-      </Button>
+      <Button />
     </Popover>
   );
 };
