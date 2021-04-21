@@ -47,8 +47,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         make_cxg(str(self.real_h5ad_filename))
 
     def test_make_seurat(self):
-        with self.assertRaises(RuntimeError):
-            make_seurat(str(self.real_h5ad_filename))
+        make_seurat(str(self.real_h5ad_filename))
 
     def test_make_loom(self):
         make_loom(str(self.real_h5ad_filename))
