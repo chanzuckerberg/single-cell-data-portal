@@ -34,7 +34,7 @@ describe("Collection", () => {
 
       await tryUntil(async () => {
         await expect(page).not.toHaveSelector(getText(collectionName));
-      }, 10);
+      }, 50);
     });
 
     describe("Publish a collection", () => {
