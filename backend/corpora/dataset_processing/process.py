@@ -144,6 +144,7 @@ DEPLOYMENT_STAGE_TO_URL = {
     "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
     "prod": "https://cellxgene.cziscience.com/e",
     "rdev": os.environ.get("FRONTEND_URL"),
+    "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
 }
 
 s3_client = boto3.client(

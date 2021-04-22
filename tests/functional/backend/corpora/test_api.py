@@ -11,6 +11,7 @@ from backend.corpora.common.corpora_config import CorporaAuthConfig
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
+    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
     "test": "http://localhost:5000",
 }
 
@@ -18,6 +19,7 @@ AUDIENCE = {
     "prod": "cellxgene.cziscience.com/",
     "staging": "cellxgene.staging.single-cell.czi.technology/",
     "test": "cellxgene.dev.single-cell.czi.technology/",
+    "dev": "cellxgene.dev.single-cell.czi.technology/",
 }
 
 
