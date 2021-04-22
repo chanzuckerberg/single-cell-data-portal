@@ -1,11 +1,6 @@
-import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
-import {
-  BLUEPRINT_SAFE_TYPE_OPTIONS,
-  TEST_ENV,
-  TEST_URL,
-} from "tests/common/constants";
-import { goToPage, login, tryUntil } from "tests/utils/helpers";
+import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
+import { login, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
 const describeIfDeployed =
@@ -26,21 +21,20 @@ describe("Collection", () => {
 
       const collectionName = "TEST_COLLECTION" + timestamp;
 
-      const collectionId = await createCollection({ name: collectionName });
+      await createCollection({ name: collectionName });
 
       // Try delete
       await page.click(getTestID("collection-more-button"));
       await page.click(getText("Delete Collection"));
 
-      await page.click(".bp3-alert-footer >> text=Delete Collection");
-
-      await goToPage(
-        TEST_URL + ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId)
-      );
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: "networkidle" }),
+        page.click(".bp3-alert-footer >> text=Delete Collection"),
+      ]);
 
       await tryUntil(async () => {
         await expect(page).not.toHaveSelector(getText(collectionName));
-      }, 5);
+      }, 10);
     });
 
     describe("Publish a collection", () => {
