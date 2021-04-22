@@ -40,7 +40,13 @@ const CreateCollection: FC<{
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isAuth);
 
-  if (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE || isLoading) {
+  // (thuang): FEATURES.CREATE_COLLECTION is being deprecated
+  const isCreateCollection = get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+
+  const shouldShowFeature = isCreateCollection || isCurator;
+
+  if (!shouldShowFeature || isLoading) {
     return null;
   }
 

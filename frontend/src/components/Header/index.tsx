@@ -11,12 +11,15 @@ import AuthButtons from "./components/AuthButtons";
 import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
+  // (thuang): FEATURES.AUTH and FEATURES.CREATE_COLLECTION are being deprecated
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const isCreateCollection = get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
 
-  const { data: userInfo } = useUserInfo(isAuth);
+  const { data: userInfo } = useUserInfo(isAuth || isCurator);
 
   const isMyCollectionsShown =
-    userInfo?.name && get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
+    userInfo?.name && (isCreateCollection || isCurator);
 
   return (
     <Wrapper>
