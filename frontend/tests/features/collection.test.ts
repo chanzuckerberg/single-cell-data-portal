@@ -28,7 +28,7 @@ describe("Collection", () => {
       await page.click(getText("Delete Collection"));
 
       await Promise.all([
-        page.waitForNavigation({ waitUntil: "networkidle" }),
+        page.waitForNavigation({ waitUntil: "load" }),
         page.click(".bp3-alert-footer >> text=Delete Collection"),
       ]);
 
