@@ -11,7 +11,7 @@
             "terraform_directory": ".happy/terraform/envs/rdev",
             "log_group_prefix": "/dp/rdev"
         },
-        "stage": {
+        "dev": {
             "aws_profile": "single-cell-dev",
             "secret_arn": "happy/env-dev-config",
             "terraform_directory": ".happy/terraform/envs/dev",
