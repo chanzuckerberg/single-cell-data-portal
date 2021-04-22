@@ -7,6 +7,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
+import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
 
 const AsyncContent = loadable(
@@ -30,6 +31,7 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -39,7 +41,10 @@ const CreateCollection: FC<{
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isAuth);
 
-  if (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE || isLoading) {
+  if (
+    (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE && !isCurator) ||
+    isLoading
+  ) {
     return null;
   }
 
@@ -81,18 +86,7 @@ const CreateCollection: FC<{
 
   function toggleOpen() {
     setIsOpen(!isOpen);
-    if (shouldModuleOpen) {
-      const url = window.location.href;
-      const afterSlashBeforeParam = url
-        .substring(url.indexOf("/") + 1)
-        .split("?")[0];
-
-      urlParams.delete(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
-      if (urlParams.toString().length > 0) {
-        const newURL = afterSlashBeforeParam + "?" + urlParams.toString();
-        window.history.replaceState(null, " ", "/" + newURL);
-      }
-    }
+    if (shouldModuleOpen) removeParams(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
   }
 };
 
