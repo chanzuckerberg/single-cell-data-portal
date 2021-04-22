@@ -7,14 +7,13 @@ module stack {
   image_tag                    = var.image_tag
   priority                     = var.priority
   stack_name                   = var.stack_name
-  deployment_stage             = "prod"
+  deployment_stage             = "dev"
   delete_protected             = true
   require_okta                 = false
-  frontend_url                 = "https://cellxgene.cziscience.com"
-  backend_url                  = "https://api.cellxgene.cziscience.com"
+  frontend_url                 = "https://cellxgene.dev.single-cell.czi.technology"
+  backend_url                  = "https://api.cellxgene.dev.single-cell.czi.technology"
   stack_prefix                 = ""
-  batch_container_memory_limit = 300000
-  backend_instance_count       = 6
+  batch_container_memory_limit = 230000
 
   wait_for_steady_state        = var.wait_for_steady_state
 }
