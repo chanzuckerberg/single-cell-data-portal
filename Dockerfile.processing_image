@@ -19,7 +19,8 @@ RUN apt-get update && apt-get -y install \
 # Install R dependencies
 RUN R -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager'); BiocManager::install('SingleCellExperiment')"
 RUN R -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager'); BiocManager::install('LoomExperiment')"
-RUN R -e "install.packages(c('devtools', 'igraph')); library(devtools); devtools::install_github('cellgeni/sceasy')"
+RUN R -e "install.packages(c('devtools', 'igraph'));"
+RUN R -e "library(devtools); devtools::install_github('cellgeni/sceasy')"
 RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
 RUN wget -O- https://deb.nodesource.com/setup_15.x | bash - \

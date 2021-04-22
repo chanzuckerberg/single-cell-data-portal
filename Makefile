@@ -3,7 +3,7 @@ SHELL:=/bin/bash
   # is written/read to allow us to use layers of previous builds as cache.
 export DOCKER_BUILDKIT:=1
 export COMPOSE_DOCKER_CLI_BUILD:=1
-export COMPOSE_OPTS:=--env .env.ecr
+export COMPOSE_OPTS:=--env-file .env.ecr
 ifeq ($(AWS_ACCESS_KEY_ID),)
 	export TEST_AWS_PROFILE ?= single-cell-dev
 endif
@@ -114,7 +114,7 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker-compose $(COMPOSE_OPTS) build frontend backend
+	docker-compose $(COMPOSE_OPTS) build frontend backend processing
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
 
 .PHONY: local-sync
