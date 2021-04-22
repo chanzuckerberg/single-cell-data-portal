@@ -1,15 +1,17 @@
 export function removeParams(params: Array<string> | string): void {
+  if (!params || !params.length) return;
+
   if (typeof params === "string") params = [params];
-  if (params.length < 1) return;
-  const urlParams = new URLSearchParams(window.location.search);
-  const url = window.location.href;
-  const afterSlashBeforeParam = url
-    .substring(url.indexOf("/") + 1)
-    .split("?")[0];
+
+  const { search, href } = window.location;
+
+  const urlParams = new URLSearchParams(search);
+  const pathname = new URL(href).pathname;
+
   params.forEach((param) => urlParams.delete(param));
-  let newURL = afterSlashBeforeParam;
-  if (urlParams.toString().length > 0) {
-    newURL += "?" + urlParams.toString();
-  }
-  window.history.replaceState(null, " ", "/" + newURL);
+
+  const query = urlParams.toString();
+  const newURL = pathname + (query ? "?" + query : "");
+
+  window.history.replaceState(null, "", newURL);
 }
