@@ -31,7 +31,6 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -41,10 +40,7 @@ const CreateCollection: FC<{
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isAuth);
 
-  if (
-    (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE && !isCurator) ||
-    isLoading
-  ) {
+  if (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE || isLoading) {
     return null;
   }
 

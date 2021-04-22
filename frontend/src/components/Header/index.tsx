@@ -11,14 +11,12 @@ import AuthButtons from "./components/AuthButtons";
 import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
 
-  const { data: userInfo } = useUserInfo(isAuth || isCurator);
+  const { data: userInfo } = useUserInfo(isAuth);
 
   const isMyCollectionsShown =
-    userInfo?.name &&
-    (get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE || isCurator);
+    userInfo?.name && get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
 
   return (
     <Wrapper>
