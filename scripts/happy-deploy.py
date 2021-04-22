@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-import click
 import dateutil.parser as dp
 import json
 import os
+import sys
+
+import click
 import requests
 
 github_org = "chanzuckerberg"
@@ -11,23 +13,24 @@ github_graphql_endpoint = "https://api.github.com/graphql"
 github_deployment_endpoint = "https://api.github.com/repos/chanzuckerberg/corpora-data-portal/deployments"
 
 
-def get_latest_successfull_deployment(github_api_token, stage):
-    """get the latest successful/active deployment githun sha"""
+def get_latest_successful_deployment(github_api_token, stage):
+    """get the latest successful/active deployment github sha"""
+    # Assumption: One of the most recent 50 deployment attempts was successful
     query = """
-    query($repo_owner:String!, $repo_name:String!, $deployment_env:String!) { 
-        repository(owner: $repo_owner, name: $repo_name) { 
-          deployments(environments: [$deployment_env], first: 30) { 
-            nodes { 
-              commitOid 
-              statuses(first: 100) { 
-                nodes { 
-                  state 
-                  updatedAt 
-                } 
-              } 
-            } 
-          } 
-        } 
+    query($repo_owner:String!, $repo_name:String!, $deployment_env:String!) {
+        repository(owner: $repo_owner, name: $repo_name) {
+          deployments(environments: [$deployment_env], last: 50) {
+            nodes {
+              commitOid
+              statuses(first: 100) {
+                nodes {
+                  state
+                  updatedAt
+                }
+              }
+            }
+          }
+        }
       }
       """
 
@@ -60,12 +63,12 @@ def get_latest_successfull_deployment(github_api_token, stage):
                 else:
                     if sha_tuple[1] < parsed_t:
                         sha_tuple = (gh_sha, parsed_t)
-            break
+                break
 
-    return sha_tuple[0]
+    return sha_tuple
 
 
-def trigger_deploy(github_api_token, deployment_stage, github_sha):
+def trigger_deploy(github_api_token, deployment_stage, github_sha, dry_run):
     """Start deployment to the given environment based on the github sha"""
     headers = {"Authorization": "token %s" % github_api_token, "Accept": "application/vnd.github.v3.text-match+json"}
 
@@ -78,6 +81,10 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha):
         "required_contexts": [],
         "payload": {"tag": tag},
     }
+
+    if dry_run:
+       print(f"Dry run requested. Would deploy {tag} to environment {deployment_stage}")
+       return
 
     print(f"Deploying {tag} to environment {deployment_stage}")
     try:
@@ -95,21 +102,29 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha):
 @click.command()
 @click.argument("deployment_stage")
 @click.option("--github_sha", help="github sha to be deployed", default=None)
-def happy_deploy(deployment_stage, github_sha):
+@click.option("--dry_run", help="do not perform actual deployment", default=False, is_flag=True)
+def happy_deploy(deployment_stage, github_sha, dry_run):
     api_token = os.getenv("GITHUB_TOKEN")
     if api_token is None:
         print("Error: Please set GITHUB_TOKEN environment variable")
         return
 
-    # If github sha is not provided, get the latest succesfull deployment
+    deployment_stage = "stage"
+
+    # If github sha is not provided, get the latest succesful deployment
     # github sha of staging environment
     if github_sha is None:
-        github_sha = get_latest_successfull_deployment(api_token, "stage")
+        github_sha, parsed_t = get_latest_successful_deployment(api_token, deployment_stage)
+        print(f"Latest succesful '{deployment_stage}' deployment on {parsed_t}: commit {github_sha}")
+
+    if github_sha is None:
+        print(f"Error: Could not find a successful deployment for deployment stage {deployment_stage}, and no --github_sha was given")
+        sys.exit(1)
 
     # Trigger deployment on the given stage. This will trigger github actions
     # and start/update the deployment.
     if github_sha is not None:
-        trigger_deploy(api_token, deployment_stage, github_sha)
+        trigger_deploy(api_token, deployment_stage, github_sha, dry_run)
 
 
 if __name__ == "__main__":
