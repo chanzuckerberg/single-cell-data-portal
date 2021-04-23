@@ -66,7 +66,7 @@ function renderCollections(
             key={id + visibility}
             visibility={visibility}
             accessType={accessType}
-            revision={revision}
+            hasRevision={revision}
           />
         );
       }

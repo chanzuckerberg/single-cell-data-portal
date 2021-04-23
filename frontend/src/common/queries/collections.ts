@@ -264,3 +264,29 @@ export function useEditCollection() {
     },
   });
 }
+
+const createRevision = async function (id: string) {
+  if (!id) {
+    throw Error("No id given");
+  }
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    method: "POST",
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw result;
+};
+
+export function useCreateRevision(callback: () => void) {
+  const queryCache = useQueryCache();
+
+  return useMutation(createRevision, {
+    onSuccess: () => {
+      callback();
+      return queryCache.invalidateQueries([USE_COLLECTIONS]);
+    },
+  });
+}

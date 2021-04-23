@@ -1,13 +1,18 @@
-import { Intent, Tag } from "@blueprintjs/core";
+import { Button, Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { FC } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import {
   ACCESS_TYPE,
   COLLECTION_LINK_TYPE,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import { useCollection } from "src/common/queries/collections";
+import {
+  useCollection,
+  useCreateRevision,
+} from "src/common/queries/collections";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
@@ -22,7 +27,7 @@ interface Props {
   id: string;
   accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
-  revision?: boolean;
+  hasRevision?: boolean;
 }
 
 const AsyncPopover = loadable(
@@ -50,6 +55,19 @@ const CollectionRow: FC<Props> = (props) => {
     id: props.id,
     visibility: props.visibility,
   });
+  const router = useRouter();
+  const navigateToRevision = () => {
+    router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
+  };
+  const [mutate] = useCreateRevision(navigateToRevision);
+
+  const handleRevisionClick = () => {
+    if (!props.hasRevision) {
+      mutate(id);
+    } else {
+      navigateToRevision();
+    }
+  };
 
   if (!collection) return null;
 
@@ -102,7 +120,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revision && (
+            {props.hasRevision && (
               <Tag minimal intent={Intent.PRIMARY}>
                 Revision Pending
               </Tag>
@@ -115,7 +133,29 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
+      {typeof props.hasRevision !== "undefined" && !isPrivate && (
+        <RevisionCell
+          hasRevision={props.hasRevision}
+          handleRevisionClick={handleRevisionClick}
+        />
+      )}
     </StyledRow>
+  );
+};
+
+const RevisionCell = ({
+  hasRevision,
+  handleRevisionClick,
+}: {
+  hasRevision?: boolean;
+  handleRevisionClick: () => void;
+}) => {
+  return (
+    <RightAlignedDetailsCell>
+      <Button intent={Intent.PRIMARY} minimal onClick={handleRevisionClick}>
+        {hasRevision ? "Continue" : "Start Revision"}
+      </Button>
+    </RightAlignedDetailsCell>
   );
 };
 
