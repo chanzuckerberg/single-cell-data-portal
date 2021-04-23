@@ -4,11 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  ACCESS_TYPE,
-  COLLECTION_LINK_TYPE,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCreateRevision,
@@ -76,18 +72,7 @@ const CollectionRow: FC<Props> = (props) => {
     return null;
   }
 
-  const { id, links, visibility, name, datasets } = collection;
-
-  // todo(1109): port path grabbing over to collection
-  const dois: Array<DOI> = links.reduce((acc, link) => {
-    if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
-
-    const url = new URL(link.link_url);
-
-    acc.push({ doi: url.pathname.substring(1), link: link.link_url });
-
-    return acc;
-  }, [] as DOI[]);
+  const { id, visibility, name, datasets } = collection;
 
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
