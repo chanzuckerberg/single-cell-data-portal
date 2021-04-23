@@ -171,8 +171,8 @@ local-unit-test: ## Run backend tests in the dev environment
 .PHONY: _unit_test
 _unit_test:
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend bash -c "cd /corpora-data-portal && make container-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
-#	uncomment bellow after https://github.com/chanzuckerberg/corpora-data-portal/issues/1129
-#	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing bash -c "cd /corpora-data-portal && make processing-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+#	TODO: uncomment bellow after https://github.com/chanzuckerberg/corpora-data-portal/issues/1129
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing bash -c "cd /corpora-data-portal && make processing-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
