@@ -21,6 +21,10 @@ export interface CollectionResponse {
   visibility: VISIBILITY_TYPE;
 }
 
+export interface RevisionResponse extends CollectionResponse {
+  revision?: boolean;
+}
+
 async function fetchCollections(): Promise<CollectionResponse[]> {
   const json = await (
     await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
@@ -208,7 +212,7 @@ async function publishCollection(id: Collection["id"]) {
   }
 }
 
-export function usePublishCollection() {
+export function usePublishCollection(): RevisionResponse[] {
   const queryCache = useQueryCache();
 
   return useMutation(publishCollection, {

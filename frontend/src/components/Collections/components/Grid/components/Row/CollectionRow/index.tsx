@@ -15,12 +15,13 @@ import {
   StyledCell,
   StyledRow,
 } from "../common/style";
-import { CollectionTitleText, ContactText, DOILink } from "./style";
+import { CollectionTitleText } from "./style";
 
 interface Props {
   id: string;
   accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
+  revision?: boolean;
 }
 
 const AsyncPopover = loadable(
@@ -58,6 +59,7 @@ const CollectionRow: FC<Props> = (props) => {
 
   const { id, links, visibility, contact_name, name, datasets } = collection;
 
+  // todo(1109): port path grabbing over to collection
   const dois: Array<DOI> = links.reduce((acc, link) => {
     if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
 
@@ -89,27 +91,21 @@ const CollectionRow: FC<Props> = (props) => {
             {name}
           </CollectionTitleText>
         </Link>
-        <ContactText>{contact_name}</ContactText>
-
-        {props.accessType === ACCESS_TYPE.WRITE ? (
-          <Tag
-            minimal
-            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
-            data-test-id="visibility-tag"
-          >
-            {isPrivate ? "Private" : "Published"}
-          </Tag>
-        ) : (
-          dois?.map((doi) => (
-            <DOILink
-              key={doi.doi}
-              href={doi.link}
-              target="_blank"
-              rel="noopener"
+        {props.accessType === ACCESS_TYPE.WRITE && (
+          <>
+            <Tag
+              minimal
+              intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
+              data-test-id="visibility-tag"
             >
-              {doi.doi}
-            </DOILink>
-          ))
+              {isPrivate ? "Private" : "Published"}
+            </Tag>
+            {props.revision && (
+              <Tag minimal intent={Intent.PRIMARY}>
+                Revision Pending
+              </Tag>
+            )}
+          </>
         )}
       </StyledCell>
       {conditionalPopover(tissue)}
