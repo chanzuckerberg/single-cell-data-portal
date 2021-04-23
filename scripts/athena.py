@@ -2,6 +2,57 @@ import boto3
 from uuid import uuid4
 from collections import defaultdict
 import time
+from pandas import DataFrame
+import numpy as np
+import pandas
+import requests
+
+pandas.set_option("display.max_rows", None, "display.max_columns", None, "display.width", 1000)
+
+
+def get_json_response(collection_id):
+    collection_info_response = requests.get(f"https://api.cellxgene.cziscience.com/dp/v1/collections/{collection_id}")
+    collection_info = collection_info_response.json()
+    return collection_info
+
+
+def construct_map_of_dataset_assets_to_collection_and_dataset_information_from_apis():
+    # Fetch list of collection ids
+    collections_response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/collections")
+    collections = collections_response.json()["collections"]
+    collection_ids = [collection.get("id") for collection in collections]
+
+    all_collection_responses = {}
+    for collection_id in collection_ids:
+        all_collection_responses[collection_id] = get_json_response(collection_id)
+
+    dataset_name_by_s3_uri = {}
+    collection_id_by_s3_uri = {}
+
+    for collection_id, collection_information in all_collection_responses.items():
+        datasets_in_collection = collection_information.get("datasets")
+
+        for dataset in datasets_in_collection:
+            dataset_id = dataset.get("id")
+            dataset_name = dataset.get("name")
+            dataset_assets = dataset.get("dataset_assets")
+
+            for dataset_asset in dataset_assets:
+                uri = dataset_asset.get("s3_uri")
+                uri = uri.replace("s3://corpora-data-prod/", "")
+
+                if uri in dataset_name_by_s3_uri:
+                    print(f"Why is this URI repeated in dataset name dict? {uri}")
+                else:
+                    dataset_name_by_s3_uri[uri] = dataset_name
+                if uri in collection_id_by_s3_uri:
+                    print(f"Why is this URI repeated in collection id dict? {uri}")
+                else:
+                    collection_id_by_s3_uri[uri] = collection_id
+
+    print("Finished construction metadata maps from APIs!")
+
+    return dataset_name_by_s3_uri, collection_id_by_s3_uri
 
 
 def create_query(client, query_id):
@@ -20,7 +71,7 @@ def create_query(client, query_id):
     return response.get("QueryExecutionId")
 
 
-def get_query_results(client, query_id):
+def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by_s3_uri):
     # Wait for the query results
     results_have_not_been_calculated = True
     while results_have_not_been_calculated:
@@ -50,20 +101,32 @@ def get_query_results(client, query_id):
         total_downloads += 1
 
         # Get dataset id
-        dataset_id = row_data[0].get("VarCharValue").split("/")[0]
+        dataset_id = row_data[0].get("VarCharValue")
 
         # Get existing aggregated metrics, if any.
         if dataset_id not in metadata_by_dataset:
             metadata_by_dataset[dataset_id] = {
-                "curl_download_count": 0,
-                "browser_download_count": 0,
-                "total_download_count": 0,
+                "dataset_name": dataset_name_by_s3_uri.get(dataset_id, "PRIVATE_DATASET"),
+                "collection_id": collection_id_by_s3_uri.get(dataset_id, "PRIVATE COLLECTION"),
+                "curl_downloads": 0,
+                "browser_downloads": 0,
+                "total_downloads": 0,
+                "h5ad_downloads": 0,
+                "loom_downloads": 0,
+                "seurat_downloads": 0,
             }
         dataset_metrics = metadata_by_dataset[dataset_id]
 
         for index, metadata in enumerate(row_data):
             if index == 0:
-                dataset_metrics["total_download_count"] += 1
+                dataset_metrics["total_downloads"] += 1
+
+                if "h5ad" in metadata.get("VarCharValue"):
+                    dataset_metrics["h5ad_downloads"] += 1
+                elif "loom" in metadata.get("VarCharValue"):
+                    dataset_metrics["loom_downloads"] += 1
+                elif "rds" in metadata.get("VarCharValue"):
+                    dataset_metrics["seurat_downloads"] += 1
 
             if index == 2:
                 ip_address = ips.add(metadata.get("VarCharValue"))
@@ -71,27 +134,32 @@ def get_query_results(client, query_id):
             if index == 5:
                 type_of_download = metadata.get("VarCharValue")
                 if "curl" in type_of_download:
-                    dataset_metrics["curl_download_count"] += 1
+                    dataset_metrics["curl_downloads"] += 1
                 else:
-                    dataset_metrics["browser_download_count"] += 1
+                    dataset_metrics["browser_downloads"] += 1
 
         metadata_by_dataset[dataset_id] = dataset_metrics
 
+    dataset_metrics_df = DataFrame.from_dict(metadata_by_dataset, orient="index")
+
+    print(dataset_metrics_df)
+    print()
     print(f"Total number of downloads of all datasets: {total_downloads}")
     print(f"Total number of unique IP addresses: {len(ips)}")
-    print()
-    for dataset_id, dataset_metrics in metadata_by_dataset.items():
-        print(
-            f"Dataset with id {dataset_id} was downloaded a total of {dataset_metrics['total_download_count']} times. {dataset_metrics['curl_download_count']} times via curl and {dataset_metrics['browser_download_count']} times via browser."
-        )
 
 
 if __name__ == "__main__":
     client = boto3.client("athena", region_name="us-west-2")
     query_id = str(uuid4())
 
+    # Construct dataset id -> collection id and dataset id -> dataset name indices
+    (
+        dataset_name_by_s3_uri,
+        collection_id_by_s3_uri,
+    ) = construct_map_of_dataset_assets_to_collection_and_dataset_information_from_apis()
+
     # Create query
     query_execution_id = create_query(client, query_id)
 
     # Get query results
-    get_query_results(client, query_execution_id)
+    get_query_results(client, query_execution_id, dataset_name_by_s3_uri, collection_id_by_s3_uri)
