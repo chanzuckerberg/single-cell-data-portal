@@ -14,6 +14,7 @@ import {
   RightAlignedDetailsCell,
   StyledCell,
   StyledRow,
+  TagContainer,
 } from "../common/style";
 import { CollectionTitleText } from "./style";
 
@@ -91,8 +92,9 @@ const CollectionRow: FC<Props> = (props) => {
             {name}
           </CollectionTitleText>
         </Link>
+
         {props.accessType === ACCESS_TYPE.WRITE && (
-          <>
+          <TagContainer>
             <Tag
               minimal
               intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
@@ -105,7 +107,7 @@ const CollectionRow: FC<Props> = (props) => {
                 Revision Pending
               </Tag>
             )}
-          </>
+          </TagContainer>
         )}
       </StyledCell>
       {conditionalPopover(tissue)}
