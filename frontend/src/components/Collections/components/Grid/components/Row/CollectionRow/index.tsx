@@ -41,11 +41,6 @@ const conditionalPopover = (values: string[]) => {
   return <AsyncPopover values={values} />;
 };
 
-type DOI = {
-  doi: string;
-  link: string;
-};
-
 const CollectionRow: FC<Props> = (props) => {
   const { data: collection } = useCollection({
     id: props.id,
