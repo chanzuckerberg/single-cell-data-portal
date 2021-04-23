@@ -15,6 +15,12 @@ export const USE_COLLECTIONS = {
   id: "collections",
 };
 
+function idError(id: string | null) {
+  if (!id) {
+    throw Error("No id given");
+  }
+}
+
 export interface CollectionResponse {
   id: string;
   created_at: number;
@@ -194,10 +200,6 @@ export function useDeleteCollection(id = "") {
 }
 
 async function publishCollection(id: Collection["id"]) {
-  if (!id) {
-    throw Error("No id given");
-  }
-
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
 
   const response = await fetch(url, {
@@ -231,9 +233,8 @@ const editCollection = async function ({
   id: string;
   payload: string;
 }): Promise<Collection> {
-  if (!id) {
-    throw Error("No id given");
-  } else if (!payload) {
+  idError(id);
+  if (!payload) {
     throw Error("No payload given");
   }
 
@@ -266,9 +267,7 @@ export function useEditCollection() {
 }
 
 const createRevision = async function (id: string) {
-  if (!id) {
-    throw Error("No id given");
-  }
+  idError(id);
   const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
   const response = await fetch(url, {
