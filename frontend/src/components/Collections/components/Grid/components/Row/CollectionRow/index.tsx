@@ -57,7 +57,7 @@ const CollectionRow: FC<Props> = (props) => {
     return null;
   }
 
-  const { id, links, visibility, contact_name, name, datasets } = collection;
+  const { id, links, visibility, name, datasets } = collection;
 
   // todo(1109): port path grabbing over to collection
   const dois: Array<DOI> = links.reduce((acc, link) => {

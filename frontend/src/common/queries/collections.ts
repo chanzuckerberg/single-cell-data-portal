@@ -212,7 +212,7 @@ async function publishCollection(id: Collection["id"]) {
   }
 }
 
-export function usePublishCollection(): RevisionResponse[] {
+export function usePublishCollection() {
   const queryCache = useQueryCache();
 
   return useMutation(publishCollection, {
