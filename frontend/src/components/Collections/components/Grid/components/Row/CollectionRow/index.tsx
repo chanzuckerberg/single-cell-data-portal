@@ -6,6 +6,7 @@ import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
+  REVISION_STATUS,
   useCollection,
   useCreateRevision,
 } from "src/common/queries/collections";
@@ -23,7 +24,7 @@ interface Props {
   id: string;
   accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
-  hasRevision?: boolean;
+  revisionStatus?: REVISION_STATUS;
 }
 
 const AsyncPopover = loadable(
@@ -53,7 +54,7 @@ const CollectionRow: FC<Props> = (props) => {
   const [mutate] = useCreateRevision(navigateToRevision);
 
   const handleRevisionClick = () => {
-    if (!props.hasRevision) {
+    if (props.revisionStatus === REVISION_STATUS.NOT_STARTED) {
       mutate(id);
     } else {
       navigateToRevision();
@@ -100,7 +101,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.hasRevision && (
+            {props.revisionStatus === REVISION_STATUS.STARTED && (
               <Tag minimal intent={Intent.PRIMARY}>
                 Revision Pending
               </Tag>
@@ -113,9 +114,9 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-      {typeof props.hasRevision !== "undefined" && !isPrivate ? (
+      {typeof props.revisionStatus !== "undefined" && !isPrivate ? (
         <RevisionCell
-          hasRevision={props.hasRevision}
+          revisionStatus={props.revisionStatus}
           handleRevisionClick={handleRevisionClick}
         />
       ) : (
@@ -126,16 +127,18 @@ const CollectionRow: FC<Props> = (props) => {
 };
 
 const RevisionCell = ({
-  hasRevision,
+  revisionStatus,
   handleRevisionClick,
 }: {
-  hasRevision?: boolean;
+  revisionStatus?: REVISION_STATUS;
   handleRevisionClick: () => void;
 }) => {
   return (
     <RightAlignedDetailsCell>
       <Button intent={Intent.PRIMARY} minimal onClick={handleRevisionClick}>
-        {hasRevision ? "Continue" : "Start Revision"}
+        {revisionStatus === REVISION_STATUS.STARTED
+          ? "Continue"
+          : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
   );
