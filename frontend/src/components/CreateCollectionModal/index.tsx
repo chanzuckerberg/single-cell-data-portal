@@ -32,17 +32,17 @@ const CreateCollection: FC<{
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
 
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
-  const { data: userInfo, isLoading } = useUserInfo(isAuth);
+  const { data: userInfo, isLoading } = useUserInfo(isAuth || isCurator);
 
   // (thuang): FEATURES.CREATE_COLLECTION is being deprecated
   const isCreateCollection = get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
   const shouldShowFeature = isCreateCollection || isCurator;
 
