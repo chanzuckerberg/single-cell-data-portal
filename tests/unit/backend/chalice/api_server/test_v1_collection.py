@@ -696,3 +696,69 @@ class TestUpdateCollection(BaseAuthAPITest):
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
         response.raise_for_status()
         self.assertEqual(links, json.loads(response.body)["links"])
+
+
+class TestRevision(BaseAuthAPITest):
+    def test__revision__201(self):
+        tests = [
+            {"visibility": CollectionVisibility.PUBLIC},
+            {
+                "visibility": CollectionVisibility.PUBLIC,
+                "links": [
+                    {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                ],
+            },
+        ]
+        for test in tests:
+            with self.subTest(test):
+                collection = self.generate_collection(self.session, **test)
+                test_url = f"/dp/v1/collections/{collection.id}"
+                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+                # Test post
+                response = self.app.post(test_url, headers=headers)
+                self.assertEqual(201, response.status_code)
+                post_body = json.loads(response.body)
+                for key in test.keys():
+                    if key == "visibility":
+                        self.assertEqual("PRIVATE", post_body[key])
+                    else:
+                        self.assertEqual(test[key], post_body[key])
+                # Test get
+                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
+                self.assertEqual(200, response.status_code)
+                get_body = json.loads(response.body)
+                self.assertEqual(post_body, get_body)
+                self.assertEqual("WRITE", get_body.pop("access_type"))
+
+                # Test unauthenticated get
+                headers = {"host": "localhost", "Content-Type": "application/json"}
+                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
+                self.assertEqual(200, response.status_code)
+                actual_body = json.loads(response.body)
+                self.assertEqual("READ", actual_body.pop("access_type"))
+                self.assertEqual(get_body, actual_body)
+
+    def test__revision__409(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        test_url = f"/dp/v1/collections/{collection.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(409, response.status_code)
+
+    def test__revision_nonexistent__403(self):
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post("/dp/v1/collections/random", headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test__revision_not_owner__403(self):
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC, owner="someone else"
+        )
+        test_url = f"/dp/v1/collections/{collection.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)

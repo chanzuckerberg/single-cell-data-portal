@@ -44,3 +44,8 @@ class NotFoundHTTPException(ProblemException):
 class MethodNotAllowedException(ProblemException):
     def __init__(self, detail: str = "Method not allowed.", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.not_allowed, title="Not Allowed", detail=detail, *args, **kwargs)
+
+
+class ConflictException(ProblemException):
+    def __init__(self, detail: str = "A duplicate resource already exists.", *args, **kwargs) -> None:
+        super().__init__(status=requests.codes.conflict, title="Conflict", detail=detail, *args, **kwargs)

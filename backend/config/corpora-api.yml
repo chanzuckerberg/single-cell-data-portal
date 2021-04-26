@@ -144,6 +144,34 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+    post:
+      tags:
+        - collections
+      summary: Start a revision of a public collection,
+      security:
+        - cxguserCookie: []
+        - dummyAuth: []
+      description: >-
+        This will return a private version of the public collection with all datasets and assoicated attributes of the
+        public collection.
+      operationId: corpora.lambdas.api.v1.collection.post_collection_revision
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      responses:
+        "201":
+          description: A new collection revision has been created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
 
     put:
       tags:
