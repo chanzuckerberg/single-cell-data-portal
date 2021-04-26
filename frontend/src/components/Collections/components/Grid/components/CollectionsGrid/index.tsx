@@ -96,7 +96,7 @@ function generateRevisions(
     }
   );
   // If revisions are disabled just return the array with objects' revisions status set to disabled
-  if (revisionsEnabled) return newCollections;
+  if (!revisionsEnabled) return newCollections;
 
   const revisionMap = new Map<string, RevisionResponse>();
 
