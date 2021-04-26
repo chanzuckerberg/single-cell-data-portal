@@ -765,7 +765,14 @@ class TestRevision(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test__publish_revision__201(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC,
+            links=[
+                {"link_url": "http://doi.org/10.1010", "link_type": "DOI"},
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+            ],
+        )
         test_url = f"/dp/v1/collections/{collection.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
