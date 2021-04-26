@@ -36,7 +36,7 @@ processing-unittest:
 
 .PHONY: functional-test
 functional-test: local-functional-test
-	# Keeping old target name for reverse comatibility
+	# Keeping old target name for reverse compatibility
 
 .PHONY: container-functionaltest
 container-functionaltest:
