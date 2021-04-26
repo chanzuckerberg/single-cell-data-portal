@@ -730,16 +730,15 @@ class TestRevision(BaseAuthAPITest):
                 self.assertEqual(200, response.status_code)
                 get_body = json.loads(response.body)
                 self.assertEqual(post_body, get_body)
+                self.assertEqual("WRITE", get_body.pop("access_type"))
 
                 # Test unauthenticated get
-                get_body.pop("access_type")
-                expected_body = get_body
                 headers = {"host": "localhost", "Content-Type": "application/json"}
                 response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
                 self.assertEqual(200, response.status_code)
                 actual_body = json.loads(response.body)
                 self.assertEqual("READ", actual_body.pop("access_type"))
-                self.assertEqual(expected_body, actual_body)
+                self.assertEqual(get_body, actual_body)
 
     def test__revision__409(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
