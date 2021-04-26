@@ -1,4 +1,11 @@
-type TEST_ENV = "local" | "localProd" | "staging" | "prod" | "rdev" | "happy";
+type TEST_ENV =
+  | "local"
+  | "localProd"
+  | "staging"
+  | "prod"
+  | "rdev"
+  | "happy"
+  | "dev";
 
 export const TEST_ENV: TEST_ENV = (process.env.TEST_ENV as TEST_ENV) || "local";
 
@@ -8,6 +15,7 @@ const TEST_ENV_TO_TEST_URL = {
   localProd: "http://localhost:9000",
   prod: "https://cellxgene.cziscience.com",
   rdev: process.env.RDEV_LINK || "",
+  dev: "https://cellxgene.dev.single-cell.czi.technology",
   staging: "https://cellxgene.staging.single-cell.czi.technology",
 };
 
