@@ -50,7 +50,7 @@ class DropBoxURL(URL):
         parsed_url = urlparse(url)
         if parsed_url.scheme != "https" or parsed_url.netloc != "www.dropbox.com":
             return None
-# dl=0 will show the file in the preview page. A link with ? dl=1 will force the file to download.
+        # dl=0 will show the file in the preview page. A link with ? dl=1 will force the file to download.
         if "dl=0" in parsed_url.query:
             new_query = parsed_url.query.replace("dl=0", "dl=1")
         elif not parsed_url.query:
