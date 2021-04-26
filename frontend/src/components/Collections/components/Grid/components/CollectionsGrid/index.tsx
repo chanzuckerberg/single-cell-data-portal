@@ -3,6 +3,7 @@ import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   CollectionResponse,
   RevisionResponse,
+  REVISION_STATUS,
 } from "src/common/queries/collections";
 import {
   CollectionHeaderCell,
@@ -56,11 +57,11 @@ function renderCollections(
   collections: CollectionResponse[],
   displayVisibility?: VISIBILITY_TYPE,
   accessType?: ACCESS_TYPE,
-  revisionsEnabled?: boolean
+  revisionsEnabled = false
 ) {
   const collectionElements = [] as Array<ReactChild>;
-  const revisions = revisionsEnabled ? findRevisions(collections) : false;
-  sortByCreatedAtDescending(revisions || collections).forEach(
+  const revisions = generateRevisions(collections, revisionsEnabled);
+  sortByCreatedAtDescending(revisions).forEach(
     ({ id, visibility, revision }) => {
       if (!displayVisibility || visibility === displayVisibility) {
         collectionElements.push(
@@ -69,7 +70,7 @@ function renderCollections(
             key={id + visibility}
             visibility={visibility}
             accessType={accessType}
-            hasRevision={revision}
+            revisionStatus={revision}
           />
         );
       }
@@ -85,14 +86,31 @@ function sortByCreatedAtDescending(
   return collections?.sort((a, b) => b.created_at - a.created_at) || [];
 }
 
-function findRevisions(collections: CollectionResponse[]): RevisionResponse[] {
-  const revisionMap = new Map<CollectionResponse, number>();
-  collections.forEach((collection) => {
-    revisionMap.set(collection, (revisionMap.get(collection) ?? 0) + 1);
+function generateRevisions(
+  collections: CollectionResponse[],
+  revisionsEnabled: boolean
+): RevisionResponse[] {
+  const newCollections = collections.map(
+    (collection): RevisionResponse => {
+      return { ...collection, revision: REVISION_STATUS.DISABLED };
+    }
+  );
+  // If revisions are disabled just return the array with objects' revisions status set to disabled
+  if (revisionsEnabled) return newCollections;
+
+  const revisionMap = new Map<string, RevisionResponse>();
+
+  newCollections.forEach((collection) => {
+    const revisionObj = revisionMap.get(collection.id) || collection;
+    if (revisionObj.revision !== REVISION_STATUS.STARTED) {
+      revisionObj.revision =
+        revisionObj.revision === REVISION_STATUS.DISABLED
+          ? REVISION_STATUS.NOT_STARTED
+          : REVISION_STATUS.STARTED;
+      revisionMap.set(collection.id, revisionObj);
+    }
   });
-  return Array.from(revisionMap, ([collection, number]) => {
-    return { ...collection, revision: number > 1 } as RevisionResponse;
-  });
+  return Array.from(revisionMap.values());
 }
 
 export default CollectionsGrid;
