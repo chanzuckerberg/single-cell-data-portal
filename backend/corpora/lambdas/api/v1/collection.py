@@ -1,10 +1,11 @@
+import sqlalchemy
 from typing import Optional
 
 from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
-from ....common.utils.exceptions import ForbiddenHTTPException
+from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
@@ -45,6 +46,21 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     result = collection.reshape_for_api()
     result["access_type"] = access_type
     return make_response(jsonify(result), 200)
+
+
+def post_collection_revision(collection_uuid: str, user: str):
+    db_session = g.db_session
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
+    if not collection:
+        raise ForbiddenHTTPException()
+    try:
+        collection_revision = collection.revision()
+    except sqlalchemy.exc.IntegrityError as ex:
+        db_session.rollback()
+        raise ConflictException() from ex
+    result = collection_revision.reshape_for_api()
+    result["access_type"] = "WRITE"
+    return make_response(jsonify(result), 201)
 
 
 def create_collection(body: object, user: str):

@@ -27,12 +27,12 @@ class DBSessionMaker:
         return self._session_make(**kwargs)
 
 
-def clone(model: Base, primary_key: dict, **kwargs) -> Base:
+def clone(model: Base, primary_key: dict = None, **kwargs) -> Base:
     """Clone an arbitrary sqlalchemy model object with new primary keys.
     https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
 
     :param model: The SQLAlchemy model to clone
-    :param primary_key: The new primary key values.
+    :param primary_key: The new primary key values. If None a new primary key is generated
     :param kwargs: Updates the columns in the cloned model.
     :return: a clone of the original model with any kwargs passed in and the new primary key.
     """
@@ -40,7 +40,8 @@ def clone(model: Base, primary_key: dict, **kwargs) -> Base:
     non_pk_columns = [key for key in table.columns.keys() if key not in table.primary_key]
     data = {column: getattr(model, column) for column in non_pk_columns}
     data.update(kwargs)
-    data.update(primary_key)
+    if primary_key:
+        data.update(primary_key)
     return model.__class__(**data)
 
 
