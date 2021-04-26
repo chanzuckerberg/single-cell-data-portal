@@ -21,6 +21,12 @@ function idError(id: string | null) {
   }
 }
 
+export enum REVISION_STATUS {
+  NOT_STARTED,
+  STARTED,
+  DISABLED,
+}
+
 export interface CollectionResponse {
   id: string;
   created_at: number;
@@ -28,7 +34,7 @@ export interface CollectionResponse {
 }
 
 export interface RevisionResponse extends CollectionResponse {
-  revision?: boolean;
+  revision: REVISION_STATUS;
 }
 
 async function fetchCollections(): Promise<CollectionResponse[]> {
