@@ -35,6 +35,9 @@ const CollectionsGrid: FC<Props> = ({
           <LeftAlignedHeaderCell>Disease</LeftAlignedHeaderCell>
           <LeftAlignedHeaderCell>Organism</LeftAlignedHeaderCell>
           <RightAlignedHeaderCell>Cell Count</RightAlignedHeaderCell>
+          {revisionsEnabled && (
+            <RightAlignedHeaderCell></RightAlignedHeaderCell>
+          )}
         </tr>
       </thead>
       <tbody>
@@ -85,7 +88,7 @@ function sortByCreatedAtDescending(
 function findRevisions(collections: CollectionResponse[]): RevisionResponse[] {
   const revisionMap = new Map<CollectionResponse, number>();
   collections.forEach((collection) => {
-    revisionMap.set(collection, revisionMap.get(collection) ?? 1);
+    revisionMap.set(collection, (revisionMap.get(collection) ?? 0) + 1);
   });
   return Array.from(revisionMap, ([collection, number]) => {
     return { ...collection, revision: number > 1 } as RevisionResponse;

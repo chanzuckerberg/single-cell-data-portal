@@ -113,11 +113,13 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-      {typeof props.hasRevision !== "undefined" && !isPrivate && (
+      {typeof props.hasRevision !== "undefined" && !isPrivate ? (
         <RevisionCell
           hasRevision={props.hasRevision}
           handleRevisionClick={handleRevisionClick}
         />
+      ) : (
+        <RightAlignedDetailsCell />
       )}
     </StyledRow>
   );
