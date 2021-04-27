@@ -1,7 +1,12 @@
+import csv
+import os
 import typing
+
+import boto3
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
+from .geneset import Geneset
 from ..corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
@@ -149,3 +154,39 @@ class Dataset(Entity):
             "upload_progress": 0,
             "processing_status": ProcessingStatus.PENDING,
         }
+
+    def copy_csv_to_s3(self, csv_file):
+        cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
+        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
+        if os.getenv("CELLXGENE_BUCKET"):
+            cellxgene_bucket = os.getenv("CELLXGENE_BUCKET")
+        # bucket = s3.Bucket(cellxgene_bucket)
+        s3.meta.client.upload_file(csv_file, cellxgene_bucket, csv_file)
+
+
+    def generate_tidy_csv_for_all_linked_genesets(self, csv_file=None):
+        if csv_file is None:
+            base, ext = os.path.splitext(self.deployment_directories[0].url)
+            if ext is not None:  # strip extension, if any
+                csv_file = f"{base}-genesets.csv"
+        fieldnames = ["GENE_SET_NAME", "GENE_SET_DESCRIPTION", "GENE_SYMBOL", "GENE_DESCRIPTION"]
+        genesets = []
+        max_additional_params = 0
+        for geneset in self.genesets:
+            geneset_entity = Geneset.get(session=self.session, key=geneset.id)
+            gene_rows, gene_max = geneset_entity.convert_geneset_to_gene_dicts()
+            if gene_max > max_additional_params:
+                max_additional_params = gene_max
+            genesets += gene_rows
+
+        for i in range(1, max_additional_params+1):
+            fieldnames.append(f"PROVENANCE{i}")
+            fieldnames.append(f"PROVENANCE{i}_DESCRIPTION")
+
+        with open(csv_file, 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for gene in genesets:
+                writer.writerow(gene)
+        return csv_file
+
