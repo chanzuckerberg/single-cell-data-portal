@@ -66,10 +66,13 @@ class BogusGenesetParams:
             gene = {
                 "gene_symbol": cls.generate_random_string(4),
                 "gene_description": "describe a gene",
-                "additional_params": {}
+                "additional_params": {},
             }
-            if i%3 == 0:
-                gene["additional_params"] = {"provenance1": "some words", "provenance1_description": "another set of words"}
+            if i % 3 == 0:
+                gene["additional_params"] = {
+                    "provenance1": "some words",
+                    "provenance1_description": "another set of words",
+                }
             genes.append(gene)
         bogus_data = dict(
             description="This is a geneset bwhahaha",

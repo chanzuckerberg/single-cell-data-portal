@@ -160,9 +160,7 @@ class Dataset(Entity):
         s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
         if os.getenv("CELLXGENE_BUCKET"):
             cellxgene_bucket = os.getenv("CELLXGENE_BUCKET")
-        # bucket = s3.Bucket(cellxgene_bucket)
         s3.meta.client.upload_file(csv_file, cellxgene_bucket, csv_file)
-
 
     def generate_tidy_csv_for_all_linked_genesets(self, csv_file=None):
         if csv_file is None:
@@ -179,14 +177,13 @@ class Dataset(Entity):
                 max_additional_params = gene_max
             genesets += gene_rows
 
-        for i in range(1, max_additional_params+1):
+        for i in range(1, max_additional_params + 1):
             fieldnames.append(f"PROVENANCE{i}")
             fieldnames.append(f"PROVENANCE{i}_DESCRIPTION")
 
-        with open(csv_file, 'w') as f:
+        with open(csv_file, "w") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             for gene in genesets:
                 writer.writerow(gene)
         return csv_file
-

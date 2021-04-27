@@ -68,25 +68,43 @@ class TestGeneSets(DataPortalTestCase):
 
     def test_geneset_to_gene_dict_conversion__ok(self):
         expected_gene_dicts = [
-            {'GENE_SET_NAME': 'first geneset', 'GENE_SET_DESCRIPTION': 'describe the geneset', 'GENE_SYMBOL': 'IGHG4',
-             'GENE_DESCRIPTION': 'gene 1', 'PROVENANCE1': 'some words',
-             'PROVENANCE1_DESCRIPTION': 'another set of words'},
-            {'GENE_SET_NAME': 'first geneset', 'GENE_SET_DESCRIPTION': 'describe the geneset', 'GENE_SYMBOL': 'CANX',
-             'GENE_DESCRIPTION': 'gene 2', 'PROVENANCE1': 'some words', 'PROVENANCE2': 'some words(2)',
-             'PROVENANCE1_DESCRIPTION': 'another set of words', 'PROVENANCE2_DESCRIPTION': 'another set of words(2)'},
-            {'GENE_SET_NAME': 'first geneset', 'GENE_SET_DESCRIPTION': 'describe the geneset', 'GENE_SYMBOL': 'HBA2',
-             'GENE_DESCRIPTION': 'gene 3'},
-            {'GENE_SET_NAME': 'first geneset', 'GENE_SET_DESCRIPTION': 'describe the geneset', 'GENE_SYMBOL': 'HBD',
-             'GENE_DESCRIPTION': 'gene 4'}]
+            {
+                "GENE_SET_NAME": "first geneset",
+                "GENE_SET_DESCRIPTION": "describe the geneset",
+                "GENE_SYMBOL": "IGHG4",
+                "GENE_DESCRIPTION": "gene 1",
+                "PROVENANCE1": "some words",
+                "PROVENANCE1_DESCRIPTION": "another set of words",
+            },
+            {
+                "GENE_SET_NAME": "first geneset",
+                "GENE_SET_DESCRIPTION": "describe the geneset",
+                "GENE_SYMBOL": "CANX",
+                "GENE_DESCRIPTION": "gene 2",
+                "PROVENANCE1": "some words",
+                "PROVENANCE2": "some words(2)",
+                "PROVENANCE1_DESCRIPTION": "another set of words",
+                "PROVENANCE2_DESCRIPTION": "another set of words(2)",
+            },
+            {
+                "GENE_SET_NAME": "first geneset",
+                "GENE_SET_DESCRIPTION": "describe the geneset",
+                "GENE_SYMBOL": "HBA2",
+                "GENE_DESCRIPTION": "gene 3",
+            },
+            {
+                "GENE_SET_NAME": "first geneset",
+                "GENE_SET_DESCRIPTION": "describe the geneset",
+                "GENE_SYMBOL": "HBD",
+                "GENE_DESCRIPTION": "gene 4",
+            },
+        ]
         collection = self.generate_collection(self.session)
         genes1 = [
             {
                 "gene_symbol": "IGHG4",
                 "gene_description": "gene 1",
-                "additional_params": {
-                    "provenance1": "some words",
-                    "provenance1_description": "another set of words"
-                }
+                "additional_params": {"provenance1": "some words", "provenance1_description": "another set of words"},
             },
             {
                 "gene_symbol": "CANX",
@@ -95,21 +113,15 @@ class TestGeneSets(DataPortalTestCase):
                     "provenance1": "some words",
                     "provenance1_description": "another set of words",
                     "provenance2": "some words(2)",
-                    "provenance2_description": "another set of words(2)"
-                }
+                    "provenance2_description": "another set of words(2)",
+                },
             },
-            {
-                "gene_symbol": "HBA2",
-                "gene_description": "gene 3",
-                "additional_params": {}
-            },
-            {
-                "gene_symbol": "HBD",
-                "gene_description": "gene 4",
-                "additional_params": {}
-            }]
-        geneset = self.generate_geneset(self.session, collection=collection, name="first geneset",
-                                        description="describe the geneset", genes=genes1)
+            {"gene_symbol": "HBA2", "gene_description": "gene 3", "additional_params": {}},
+            {"gene_symbol": "HBD", "gene_description": "gene 4", "additional_params": {}},
+        ]
+        geneset = self.generate_geneset(
+            self.session, collection=collection, name="first geneset", description="describe the geneset", genes=genes1
+        )
 
         gene_dict, max_parms = geneset.convert_geneset_to_gene_dicts()
         with self.subTest("geneset to gene dict conversion returns expected list"):

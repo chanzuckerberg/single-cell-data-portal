@@ -1,4 +1,3 @@
-import csv
 import typing
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -46,14 +45,14 @@ class Geneset(Entity):
             gene_row = {
                 "GENE_SET_NAME": self.name,
                 "GENE_SET_DESCRIPTION": self.description,
-                "GENE_SYMBOL": gene['gene_symbol'],
-                "GENE_DESCRIPTION": gene['gene_description']
+                "GENE_SYMBOL": gene["gene_symbol"],
+                "GENE_DESCRIPTION": gene["gene_description"],
             }
-            for key, value in gene['additional_params'].items():
+            for key, value in gene["additional_params"].items():
                 gene_row[key.upper()] = value
             gene_rows.append(gene_row)
 
-            addit_params_count = int(len(gene.get('additional_params', ""))/2)
+            addit_params_count = int(len(gene.get("additional_params", "")) / 2)
             if addit_params_count > max_additional_params:
                 max_additional_params = addit_params_count
         return gene_rows, max_additional_params
@@ -73,8 +72,8 @@ class GenesetDatasetLink(Entity):
     def get(cls, session, geneset_id: str, dataset_id: str):
         link = (
             session.query(cls.table)
-                .filter(cls.table.geneset_id == geneset_id, cls.table.dataset_id == dataset_id)
-                .one_or_none()
+            .filter(cls.table.geneset_id == geneset_id, cls.table.dataset_id == dataset_id)
+            .one_or_none()
         )
         if link:
             return cls(link)
@@ -83,7 +82,7 @@ class GenesetDatasetLink(Entity):
 
     @classmethod
     def update_links_for_a_dataset(
-            cls, session, dataset_id: str, add: typing.Optional[list] = None, remove: typing.Optional[list] = None
+        cls, session, dataset_id: str, add: typing.Optional[list] = None, remove: typing.Optional[list] = None
     ):
         for gene_set_id in remove:
             link = cls.get(session=session, dataset_id=dataset_id, geneset_id=gene_set_id)

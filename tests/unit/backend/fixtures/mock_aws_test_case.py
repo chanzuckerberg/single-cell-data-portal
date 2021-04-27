@@ -32,7 +32,9 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         self.cellxgene_bucket = self.s3_resource.Bucket(f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         try:
             self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
-            self.cellxgene_bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
+            self.cellxgene_bucket.create(
+                CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+            )
 
         except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
