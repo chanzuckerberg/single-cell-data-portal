@@ -3,4 +3,5 @@ export enum FEATURES {
   AUTH = "auth",
   GENE_SETS = "gs",
   CURATOR = "rubber-chicken",
+  REVISION = "rc",
 }

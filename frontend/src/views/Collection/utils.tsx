@@ -39,8 +39,14 @@ export function renderLinks(links: Link[]) {
       const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
       if (!linkTypeOption) return null;
-
-      const urlName = name || getUrlHost(url);
+      let urlName: string | null = name;
+      if (!urlName) {
+        if (linkTypeOption === COLLECTION_LINK_TYPE_OPTIONS["DOI"]) {
+          urlName = new URL(url).pathname.substring(1);
+        } else {
+          urlName = getUrlHost(url);
+        }
+      }
 
       const { text } = linkTypeOption;
 
