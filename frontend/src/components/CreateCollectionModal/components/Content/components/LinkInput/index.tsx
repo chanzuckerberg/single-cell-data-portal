@@ -66,7 +66,7 @@ const LinkInput: FC<Props> = ({
       <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
       <Input
         name="Name"
-        text="Name(optional)"
+        text="Name (optional)"
         placeholder="Name"
         handleChange={handleNameChange}
         defaultValue={linkName}
