@@ -16,7 +16,7 @@
             "secret_arn": "happy/env-dev-config",
             "terraform_directory": ".happy/terraform/envs/dev",
             "delete_protected": true,
-            "auto_run_migrations": false,
+            "auto_run_migrations": true,
             "log_group_prefix": "/dp/dev"
         },
         "stage": {
@@ -24,7 +24,7 @@
             "secret_arn": "happy/env-stage-config",
             "terraform_directory": ".happy/terraform/envs/stage",
             "delete_protected": true,
-            "auto_run_migrations": false,
+            "auto_run_migrations": true,
             "log_group_prefix": "/dp/staging"
         },
         "prod": {
