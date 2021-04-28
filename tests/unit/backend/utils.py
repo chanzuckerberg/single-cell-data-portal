@@ -64,7 +64,7 @@ class BogusGenesetParams:
         genes = []
         for i in range(gene_count):
             gene = {
-                "gene_symbol": cls.generate_random_string(4),
+                "gene_symbol": f"{i}",
                 "gene_description": "describe a gene",
                 "additional_params": {},
             }

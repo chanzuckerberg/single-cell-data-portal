@@ -25,17 +25,22 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             self.s3_mock.start()
             s3_args = {}
 
-        # Corpora Bucket
         self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
+        # Corpora Bucket
         self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
-        # Cellxgene Bucket
-        self.cellxgene_bucket = self.s3_resource.Bucket(f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         try:
             self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
+        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
+            pass
+
+        # Cellxgene Bucket
+        self.cellxgene_bucket = self.s3_resource.Bucket(
+            os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
+        )
+        try:
             self.cellxgene_bucket.create(
                 CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-
         except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
 

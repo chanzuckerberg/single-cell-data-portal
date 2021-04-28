@@ -156,10 +156,8 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file):
-        cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
-        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
-        if os.getenv("CELLXGENE_BUCKET"):
-            cellxgene_bucket = os.getenv("CELLXGENE_BUCKET")
+        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        cellxgene_bucket = os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         s3.meta.client.upload_file(csv_file, cellxgene_bucket, csv_file)
 
     def generate_tidy_csv_for_all_linked_genesets(self, csv_file=None):
