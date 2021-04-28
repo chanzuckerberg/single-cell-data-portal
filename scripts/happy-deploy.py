@@ -83,8 +83,8 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha, dry_run):
     }
 
     if dry_run:
-       print(f"Dry run requested. Would deploy {tag} to environment {deployment_stage}")
-       return
+        print(f"Dry run requested. Would deploy {tag} to environment {deployment_stage}")
+        return
 
     print(f"Deploying {tag} to environment {deployment_stage}")
     try:
@@ -118,7 +118,9 @@ def happy_deploy(deployment_stage, github_sha, dry_run):
         print(f"Latest succesful '{deployment_stage}' deployment on {parsed_t}: commit {github_sha}")
 
     if github_sha is None:
-        print(f"Error: Could not find a successful deployment for deployment stage {deployment_stage}, and no --github_sha was given")
+        print(
+            f"Error: Could not find a successful deployment for deployment stage {deployment_stage}, and no --github_sha was given"
+        )
         sys.exit(1)
 
     # Trigger deployment on the given stage. This will trigger github actions
