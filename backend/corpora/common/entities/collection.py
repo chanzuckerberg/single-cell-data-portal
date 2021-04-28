@@ -174,6 +174,7 @@ class Collection(Entity):
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
             dataset.collection_visibility = CollectionVisibility.PUBLIC
+            dataset.published = True
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
