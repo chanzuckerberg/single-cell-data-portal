@@ -1,0 +1,9 @@
+GENE_SET_NAME,GENE_SET_DESCRIPTION,GENE_SYMBOL,GENE_DESCRIPTION,PROVENANCE1,PROVENANCE1_DESCRIPTION,PROVENANCE2,PROVENANCE2_DESCRIPTION
+first geneset,describe the geneset,HBB,gene 1,,,,
+first geneset,describe the geneset,HBA1,gene 2,,,,
+first geneset,describe the geneset,HBA2,gene 3,some words,another set of words,,
+first geneset,describe the geneset,HBD,gene 4,,,,
+second geneset,describe another geneset,IGHG4,gene 1,some words,another set of words,,
+second geneset,describe another geneset,CANX,gene 2,some words,another set of words,some words(2),another set of words(2)
+second geneset,describe another geneset,HBA2,gene 3,,,,
+second geneset,describe another geneset,HBD,gene 4,,,,
