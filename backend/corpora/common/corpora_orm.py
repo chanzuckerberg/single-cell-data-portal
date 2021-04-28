@@ -245,6 +245,8 @@ class DbDataset(Base, AuditMixin):
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
+    original_id = Column(String)
+    published = Column(Boolean, default=False)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
