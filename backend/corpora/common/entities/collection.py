@@ -193,21 +193,6 @@ class Collection(Entity):
         self.session.commit()
         return Collection(revision_collection)
 
-    def revision(self) -> "Collection":
-        """
-        Generate a collection revision from a public collection
-        :return: collection revision.
-
-        """
-        revision_collection = clone(
-            self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PRIVATE)
-        )
-        self.session.add(revision_collection)
-        for link in self.links:
-            self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
-        self.session.commit()
-        return Collection(revision_collection)
-
     def tombstone_collection(self):
         self.update(tombstone=True)
         for geneset in self.genesets:
