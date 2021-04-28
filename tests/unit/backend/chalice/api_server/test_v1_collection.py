@@ -183,7 +183,7 @@ class TestCollection(BaseAuthAPITest):
                         "conversion_rds_status": "NA",
                         "conversion_cxg_status": "NA",
                     },
-                    "published": False
+                    "published": False,
                 }
             ],
             "description": "test_description",
