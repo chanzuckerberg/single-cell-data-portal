@@ -52,7 +52,7 @@ class Geneset(Entity):
                 gene_row[key.upper()] = value
             gene_rows.append(gene_row)
 
-            addit_params_count = int(len(gene.get("additional_params", "")) / 2)
+            addit_params_count = len(gene.get("additional_params", "")) // 2
             if addit_params_count > max_additional_params:
                 max_additional_params = addit_params_count
         return gene_rows, max_additional_params
