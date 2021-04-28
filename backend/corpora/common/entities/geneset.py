@@ -48,7 +48,7 @@ class Geneset(Entity):
                 "GENE_SYMBOL": gene["gene_symbol"],
                 "GENE_DESCRIPTION": gene["gene_description"],
             }
-            for key, value in gene["additional_params"].items():
+            for key, value in gene.get("additional_params",dict()).items():
                 gene_row[key.upper()] = value
             gene_rows.append(gene_row)
 
