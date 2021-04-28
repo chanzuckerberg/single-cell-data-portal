@@ -42,6 +42,7 @@ class TestPublish(BaseAuthAPITest):
         if dataset_ids:
             actual_datasets = [d["id"] for d in actual["datasets"]]
             self.assertListEqual(dataset_ids, actual_datasets)
+            self.assertTrue(all([d["published"] for d in actual["datasets"]]))
         if link_names:
             actual_links = [link["link_name"] for link in actual["links"]]
             self.assertListEqual(link_names, actual_links)
