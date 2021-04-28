@@ -38,6 +38,25 @@ class Geneset(Entity):
             )
         return reshaped_genesets
 
+    def convert_geneset_to_gene_dicts(self):
+        max_additional_params = 0
+        gene_rows = []
+        for gene in self.genes:
+            gene_row = {
+                "GENE_SET_NAME": self.name,
+                "GENE_SET_DESCRIPTION": self.description,
+                "GENE_SYMBOL": gene["gene_symbol"],
+                "GENE_DESCRIPTION": gene["gene_description"],
+            }
+            for key, value in gene.get("additional_params", dict()).items():
+                gene_row[key.upper()] = value
+            gene_rows.append(gene_row)
+
+            addit_params_count = len(gene.get("additional_params", "")) // 2
+            if addit_params_count > max_additional_params:
+                max_additional_params = addit_params_count
+        return gene_rows, max_additional_params
+
 
 class GenesetDatasetLink(Entity):
     table = DbGenesetDatasetLink

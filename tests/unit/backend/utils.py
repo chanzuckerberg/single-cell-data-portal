@@ -60,10 +60,20 @@ class BogusDatasetParams:
 
 class BogusGenesetParams:
     @classmethod
-    def get(cls, **kwargs):
+    def get(cls, gene_count=6, **kwargs):
         genes = []
-        for i in range(6):
-            genes.append(cls.generate_random_string(4))
+        for i in range(gene_count):
+            gene = {
+                "gene_symbol": f"{i}",
+                "gene_description": "describe a gene",
+                "additional_params": {},
+            }
+            if i % 3 == 0:
+                gene["additional_params"] = {
+                    "provenance1": "some words",
+                    "provenance1_description": "another set of words",
+                }
+            genes.append(gene)
         bogus_data = dict(
             description="This is a geneset bwhahaha",
             name=cls.generate_random_string(7),
