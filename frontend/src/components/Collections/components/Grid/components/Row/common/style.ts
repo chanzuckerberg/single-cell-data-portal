@@ -14,6 +14,14 @@ export const StyledCell = styled.td`
   }
 `;
 
+export const TagContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  & > .${Classes.TAG}:first-child {
+    margin-right: ${PT_GRID_SIZE_PX}px;
+  }
+`;
+
 export const DetailsCell = styled(StyledCell)`
   color: ${GRAY.A} !important;
   ${textClippingCSS}

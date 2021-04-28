@@ -5,7 +5,7 @@ from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
 from .....common.entities import Collection, Dataset
-from .....common.utils import dropbox
+from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, TooLargeHTTPException
 from .....common.utils.math_utils import GB
 
@@ -13,16 +13,16 @@ from .....common.utils.math_utils import GB
 def link(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     # Verify Dropbox URL
-    url = dropbox.get_download_url_from_shared_link(body["url"])
-    if not url:
+    valid_link = from_url(body["url"])
+    if not valid_link:
         raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
 
     # Get file info
     try:
-        resp = dropbox.get_file_info(url)
+        resp = valid_link.file_info()
     except requests.HTTPError:
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
-    except dropbox.MissingHeaderException as ex:
+    except MissingHeaderException as ex:
         raise InvalidParametersHTTPException(ex.detail)
     if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
@@ -36,5 +36,5 @@ def link(collection_uuid: str, body: dict, user: str):
     dataset = Dataset.create(db_session, processing_status=Dataset.new_processing_status(), collection=collection)
 
     # Start processing link
-    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, url)
+    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, valid_link.url)
     return make_response({"dataset_uuid": dataset.id}, 202)

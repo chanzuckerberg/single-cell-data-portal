@@ -7,6 +7,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
+import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
 
 const AsyncContent = loadable(
@@ -31,15 +32,21 @@ const CreateCollection: FC<{
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
 
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
-  const { data: userInfo, isLoading } = useUserInfo(isAuth);
+  const { data: userInfo, isLoading } = useUserInfo(isAuth || isCurator);
 
-  if (get(FEATURES.CREATE_COLLECTION) !== BOOLEAN.TRUE || isLoading) {
+  // (thuang): FEATURES.CREATE_COLLECTION is being deprecated
+  const isCreateCollection = get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
+
+  const shouldShowFeature = isCreateCollection || isCurator;
+
+  if (!shouldShowFeature || isLoading) {
     return null;
   }
 
@@ -81,18 +88,7 @@ const CreateCollection: FC<{
 
   function toggleOpen() {
     setIsOpen(!isOpen);
-    if (shouldModuleOpen) {
-      const url = window.location.href;
-      const afterSlashBeforeParam = url
-        .substring(url.indexOf("/") + 1)
-        .split("?")[0];
-
-      urlParams.delete(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
-      if (urlParams.toString().length > 0) {
-        const newURL = afterSlashBeforeParam + "?" + urlParams.toString();
-        window.history.replaceState(null, " ", "/" + newURL);
-      }
-    }
+    if (shouldModuleOpen) removeParams(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
   }
 };
 

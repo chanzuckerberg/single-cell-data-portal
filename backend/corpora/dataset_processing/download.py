@@ -1,10 +1,11 @@
 import logging
+import shutil
 import threading
 
 import requests
 from sqlalchemy import inspect
 
-from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
+from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus, ProcessingStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
@@ -54,16 +55,16 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
                 logger.info("Starting download.")
                 for chunk in resp.iter_content(chunk_size=chunk_size):
                     if tracker.stop_downloader.is_set():
-                        logger.info("Download ended early!")
+                        logger.warning("Download ended early!")
                         return
                     elif chunk:
                         fp.write(chunk)
                         chunk_size = len(chunk)
                         tracker.update(chunk_size)
                         logger.debug(f"chunk size: {chunk_size}")
-    except (requests.HTTPError, OSError) as ex:
+    except Exception as ex:
         tracker.error = ex
-        logger.exception(f"Download Failed for {url}")
+        logger.error(f"Download Failed for {url}")
     finally:
         tracker.stop_updater.set()
 
@@ -86,29 +87,30 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
             tracker.cancel()
             return
 
-        elif progress > 1:
-            tracker.stop_downloader.set()
-            message = "The expected file size is smaller than the actual file size."
-            status = {
-                "upload_progress": progress,
-                "upload_message": message,
-                "upload_status": UploadStatus.FAILED,
-            }
-        elif progress < 1 and tracker.stop_updater.is_set():
-            message = "The expected file size is greater than the actual file size."
-            status = {
-                "upload_progress": progress,
-                "upload_message": message,
-                "upload_status": UploadStatus.FAILED,
-            }
-        elif progress == 1 and tracker.stop_updater.is_set():
-            status = {
-                "upload_progress": progress,
-                "upload_status": UploadStatus.UPLOADED,
-            }
+        elif tracker.stop_updater.is_set():
+            if progress > 1:
+                tracker.stop_downloader.set()
+                message = "The expected file size is smaller than the downloaded file size."
+                status = {
+                    "upload_progress": progress,
+                    "upload_message": message,
+                    "upload_status": UploadStatus.FAILED,
+                }
+            elif progress < 1:
+                message = "The expected file size is greater than the actual file size."
+                status = {
+                    "upload_progress": progress,
+                    "upload_message": message,
+                    "upload_status": UploadStatus.FAILED,
+                }
+            elif progress == 1:
+                status = {
+                    "upload_progress": progress,
+                    "upload_status": UploadStatus.UPLOADED,
+                }
         else:
             status = {"upload_progress": progress}
-        logger.info("Updating processing_status")
+        logger.debug("Updating processing_status")
         _processing_status_updater(processing_status, status)
         db_session.commit()
 
@@ -148,6 +150,8 @@ def download(
     with db_session_manager() as session:
         logger.info("Setting up download.")
         logger.info(f"file_size: {file_size}")
+        if file_size >= shutil.disk_usage("/")[2]:
+            raise ProcessingFailed("Insufficient disk space.")
         processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
@@ -171,11 +175,13 @@ def download(
             status = {
                 "upload_status": UploadStatus.FAILED,
                 "upload_message": str(progress_tracker.error),
+                "processing_status": ProcessingStatus.FAILURE,
             }
             _processing_status_updater(processing_status, status)
 
         status_dict = processing_status.to_dict()
         if processing_status.upload_status == UploadStatus.FAILED:
+            logger.error(f"Upload failed: {status_dict}")
             raise ProcessingFailed(status_dict)
         else:
             return status_dict

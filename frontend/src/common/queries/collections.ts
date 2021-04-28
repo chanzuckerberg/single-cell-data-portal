@@ -15,10 +15,26 @@ export const USE_COLLECTIONS = {
   id: "collections",
 };
 
+function idError(id: string | null) {
+  if (!id) {
+    throw Error("No id given");
+  }
+}
+
+export enum REVISION_STATUS {
+  NOT_STARTED,
+  STARTED,
+  DISABLED,
+}
+
 export interface CollectionResponse {
   id: string;
   created_at: number;
   visibility: VISIBILITY_TYPE;
+}
+
+export interface RevisionResponse extends CollectionResponse {
+  revision: REVISION_STATUS;
 }
 
 async function fetchCollections(): Promise<CollectionResponse[]> {
@@ -190,10 +206,6 @@ export function useDeleteCollection(id = "") {
 }
 
 async function publishCollection(id: Collection["id"]) {
-  if (!id) {
-    throw Error("No id given");
-  }
-
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
 
   const response = await fetch(url, {
@@ -227,9 +239,8 @@ const editCollection = async function ({
   id: string;
   payload: string;
 }): Promise<Collection> {
-  if (!id) {
-    throw Error("No id given");
-  } else if (!payload) {
+  idError(id);
+  if (!payload) {
     throw Error("No payload given");
   }
 
@@ -257,6 +268,30 @@ export function useEditCollection() {
         [USE_COLLECTION, collection.id, collection.visibility],
         collection
       );
+    },
+  });
+}
+
+const createRevision = async function (id: string) {
+  idError(id);
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    method: "POST",
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw result;
+};
+
+export function useCreateRevision(callback: () => void) {
+  const queryCache = useQueryCache();
+
+  return useMutation(createRevision, {
+    onSuccess: () => {
+      callback();
+      return queryCache.invalidateQueries([USE_COLLECTIONS]);
     },
   });
 }

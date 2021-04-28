@@ -17,7 +17,10 @@ import { API_URL } from "src/configs/configs";
 import { ButtonWrapper, Initial } from "./style";
 
 const AuthButtons = () => {
-  const hasAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
+  // (thuang): FEATURES.AUTH is being deprecated
+  const hasAuth =
+    get(FEATURES.AUTH) === BOOLEAN.TRUE ||
+    get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
   const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);
 

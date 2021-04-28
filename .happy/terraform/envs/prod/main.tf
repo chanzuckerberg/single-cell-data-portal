@@ -13,7 +13,7 @@ module stack {
   frontend_url                 = "https://cellxgene.cziscience.com"
   backend_url                  = "https://api.cellxgene.cziscience.com"
   stack_prefix                 = ""
-  batch_container_memory_limit = 230000
+  batch_container_memory_limit = 300000
   backend_instance_count       = 6
 
   wait_for_steady_state        = var.wait_for_steady_state

@@ -122,7 +122,7 @@ import numpy
 import scanpy
 import sys
 
-from backend.corpora.common.utils.dropbox import get_download_url_from_shared_link, get_file_info
+from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
@@ -144,6 +144,8 @@ DEPLOYMENT_STAGE_TO_URL = {
     "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
     "prod": "https://cellxgene.cziscience.com/e",
     "rdev": os.environ.get("FRONTEND_URL"),
+    "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
+    "test": "http://frontend.corporanet.local:3000",
 }
 
 s3_client = boto3.client(
@@ -241,13 +243,14 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     Handles fixing the url so it downloads directly.
     """
 
-    fixed_dropbox_url = get_download_url_from_shared_link(dropbox_url)
-    if not fixed_dropbox_url:
+    file_url = from_url(dropbox_url)
+    if not file_url:
         raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
 
-    file_info = get_file_info(fixed_dropbox_url)
-    status = download(dataset_uuid, fixed_dropbox_url, local_path, file_info["size"])
+    file_info = file_url.file_info()
+    status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
     logger.info(status)
+    logger.info("Download complete")
     return local_path
 
 
@@ -284,7 +287,7 @@ def extract_metadata(filename):
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
 
-    return {
+    metadata = {
         "name": adata.uns["title"],
         "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
         "tissue": _get_term_pairs("tissue"),
@@ -296,6 +299,8 @@ def extract_metadata(filename):
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
     }
+    logger.info(f"Extract metadata: {metadata}")
+    return metadata
 
 
 def make_loom(local_filename):
@@ -318,25 +323,32 @@ def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
     try:
-        seurat_proc = subprocess.run(
+        subprocess.run(
             ["Rscript", os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"), local_filename],
             capture_output=True,
             check=True,
         )
-    except subprocess.CalledProcessError:
-        logger.exception()
-        raise RuntimeError(f"Seurat conversion failed: {seurat_proc.stdout} {seurat_proc.stderr}")
+    except subprocess.CalledProcessError as ex:
+        msg = f"Seurat conversion failed: {ex.output} {ex.stderr}"
+        logger.exception(msg)
+        raise RuntimeError(msg) from ex
 
     return local_filename.replace(".h5ad", ".rds")
 
 
 def make_cxg(local_filename):
     cxg_dir = local_filename.replace(".h5ad", ".cxg")
-    cxg_proc = subprocess.run(
-        ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename], capture_output=True
-    )
-    if cxg_proc.returncode != 0:
-        raise RuntimeError(f"CXG conversion failed: {cxg_proc.stderr}")
+    try:
+        subprocess.run(
+            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as ex:
+        msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
+        logger.exception(msg)
+        raise RuntimeError(msg) from ex
+
     return cxg_dir
 
 
@@ -424,59 +436,65 @@ def validate_h5ad_file(dataset_id, local_filename):
 
 
 def log_batch_environment():
-    batch_environment_variables = ["AWS_BATCH_CE_NAME", "AWS_BATCH_JOB_ATTEMPT", "AWS_BATCH_JOB_ID"]
-    vars = dict()
+    batch_environment_variables = [
+        "AWS_BATCH_CE_NAME",
+        "AWS_BATCH_JOB_ATTEMPT",
+        "AWS_BATCH_JOB_ID",
+        "DROPBOX_URL",
+        "ARTIFACT_BUCKET",
+        "CELLXGENE_BUCKET",
+        "DATASET_ID",
+        "DEPLOYMENT_STAGE",
+    ]
+    env_vars = dict()
     for var in batch_environment_variables:
-        vars[var] = os.getenv(var)
-    logger.info(f"Batch Job Info: {vars}")
+        env_vars[var] = os.getenv(var)
+    logger.info(f"Batch Job Info: {env_vars}")
+
+
+def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+    local_filename = download_from_dropbox_url(
+        dataset_id,
+        dropbox_url,
+        "local.h5ad",
+    )
+
+    validate_h5ad_file(dataset_id, local_filename)
+    process_cxg(local_filename, dataset_id, cellxgene_bucket)
+
+    # Process metadata
+    metadata = extract_metadata(local_filename)
+    update_db(dataset_id, metadata)
+
+    # create artifacts
+    create_artifacts(local_filename, dataset_id, artifact_bucket)
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
 def main():
+    return_value = 0
     check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     try:
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
-        local_filename = download_from_dropbox_url(
-            dataset_id,
-            os.environ["DROPBOX_URL"],
-            "local.h5ad",
-        )
-        logger.info("Download complete")
-
-        validate_h5ad_file(dataset_id, local_filename)
-        process_cxg(local_filename, dataset_id, os.environ["CELLXGENE_BUCKET"])
-
-        # Process metadata
-        metadata = extract_metadata(local_filename)
-        logger.info(metadata)
-        update_db(dataset_id, metadata)
-
-        # create artifacts
-        create_artifacts(
-            local_filename,
-            dataset_id,
-            os.environ["ARTIFACT_BUCKET"],
-        )
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-        sys.exit(0)
-    except ProcessingFailed:
-        logging.exception()
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE))
-        sys.exit(1)
-    except ValidationFailed:
+    except (ValidationFailed, ProcessingFailed):
         logger.exception()
-        sys.exit(1)
+        return_value = 1
     except Exception:
         message = "An unexpect error occured while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
         )
-        sys.exit(1)
+        return_value = 1
+
+    return return_value
 
 
 if __name__ == "__main__":
-    main()
+    rv = main()
+    sys.exit(rv)
