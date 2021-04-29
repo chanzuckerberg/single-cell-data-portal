@@ -17,7 +17,7 @@ export const USE_COLLECTIONS = {
 
 function idError(id: string | null) {
   if (!id) {
-    throw Error("No id given");
+    throw Error("No collection id given");
   }
 }
 
@@ -290,6 +290,43 @@ export function useCreateRevision(callback: () => void) {
     onSuccess: () => {
       callback();
       return queryCache.invalidateQueries([USE_COLLECTIONS]);
+    },
+  });
+}
+
+const reuploadDataset = async function ({
+  payload,
+  id,
+}: {
+  payload: string;
+  id: string;
+}) {
+  if (!payload) {
+    throw Error("No payload given");
+  }
+  idError(id);
+
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, { id });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    method: "PUT",
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw result;
+};
+
+export function useReuploadDataset(id: string) {
+  const queryCache = useQueryCache();
+
+  return useMutation(reuploadDataset, {
+    onSuccess: () => {
+      queryCache.invalidateQueries([
+        USE_COLLECTION,
+        id,
+        VISIBILITY_TYPE.PRIVATE,
+      ]);
     },
   });
 }
