@@ -219,3 +219,11 @@ class Collection(Entity):
         self.session.flush()
 
         super().update(**kwargs)
+
+    def delete(self):
+        for dataset in self.datasets:
+            if dataset.original_id:
+                dataset.delete()
+            else:
+                dataset.dataset_and_asset_deletion()
+        self.delete()

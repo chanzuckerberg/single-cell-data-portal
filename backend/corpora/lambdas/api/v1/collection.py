@@ -86,13 +86,9 @@ def get_collection_dataset(dataset_uuid: str):
 
 def delete_collection(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, include_tombstones=True, owner=user
-    )
-    if not collection:
-        raise ForbiddenHTTPException()
-    if not collection.tombstone:
-        collection.tombstone_collection()
+    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, user)
+    if collection and not collection.tombstone:
+        collection.delete()
     return "", 202
 
 

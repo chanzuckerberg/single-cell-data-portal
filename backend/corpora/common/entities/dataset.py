@@ -1,3 +1,7 @@
+import logging
+
+from urllib.parse import urlparse
+
 import csv
 import os
 import typing
@@ -7,6 +11,7 @@ import boto3
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
+from ..corpora_config import CorporaConfig
 from ..corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
@@ -16,6 +21,9 @@ from ..corpora_orm import (
     ProcessingStatus,
     DbGenesetDatasetLink,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -145,7 +153,17 @@ class Dataset(Entity):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
+        self.delete_deployment_directories()
         self.tombstone_dataset_and_delete_child_objects()
+
+    def delete_deployment_directories(self):
+        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        bucket_name = CorporaConfig().cellxgene_bucket
+        bucket = s3.Bucket(bucket_name)
+        for deployment_directory in self.deployment_directories:
+            object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
+            logger.info(f"Deleting all files in bucket {bucket_name} under {object_name}.")
+            bucket.objects.filter(Prefix=object_name).delete()
 
     @staticmethod
     def new_processing_status():
@@ -157,8 +175,7 @@ class Dataset(Entity):
 
     def copy_csv_to_s3(self, csv_file):
         s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-        cellxgene_bucket = os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
-        s3.meta.client.upload_file(csv_file, cellxgene_bucket, csv_file)
+        s3.meta.client.upload_file(csv_file, CorporaConfig().cellxgene_bucket, csv_file)
 
     def generate_tidy_csv_for_all_linked_genesets(self, csv_file=None):
         if csv_file is None:
