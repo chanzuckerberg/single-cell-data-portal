@@ -25,9 +25,15 @@ interface Props {
   collectionID: Collection["id"];
   visibility: Collection["visibility"];
   datasets: Array<Dataset>;
+  isRevision: boolean;
 }
 
-const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
+const DatasetTab: FC<Props> = ({
+  collectionID,
+  visibility,
+  datasets,
+  isRevision,
+}) => {
   // DEBUG
   // DEBUG
   // DEBUG
@@ -231,6 +237,8 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
           datasets={datasets}
           uploadedFiles={uploadedFiles}
           invalidateCollectionQuery={invalidateCollectionQuery}
+          isRevision={isRevision}
+          onUploadFile={addNewFile}
         />
       ) : (
         <EmptyModal

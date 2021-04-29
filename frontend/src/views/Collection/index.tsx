@@ -168,6 +168,7 @@ const Collection: FC = () => {
                   collectionID={id}
                   datasets={datasets}
                   visibility={visibility}
+                  isRevision={isRevision}
                 />
               }
             />

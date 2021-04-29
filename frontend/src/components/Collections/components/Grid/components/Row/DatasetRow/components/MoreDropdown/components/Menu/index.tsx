@@ -6,6 +6,9 @@ import {
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import React from "react";
+import DropboxChooser, {
+  Props as ChooserProps,
+} from "src/components/DropboxChooser";
 import DeleteDataset from "../../../DeleteDataset";
 
 const DeleteButton = (props: IMenuItemProps) => {
@@ -20,12 +23,31 @@ const DeleteButton = (props: IMenuItemProps) => {
   );
 };
 
+const UpdateButton = (props: Partial<IMenuItemProps>) => {
+  return (
+    <MenuItem
+      {...props}
+      shouldDismissPopover={false}
+      icon={IconNames.EDIT}
+      intent={Intent.NONE}
+      text="Update Dataset"
+    />
+  );
+};
+
 interface Props {
   collectionId?: string;
   datasetId?: string;
+  isRevision: boolean;
+  onUploadFile: ChooserProps["onUploadFile"];
 }
 
-const Menu = ({ collectionId = "", datasetId = "" }: Props) => {
+const Menu = ({
+  collectionId = "",
+  datasetId = "",
+  isRevision,
+  onUploadFile,
+}: Props) => {
   return (
     <RawMenu>
       <DeleteDataset
@@ -33,6 +55,11 @@ const Menu = ({ collectionId = "", datasetId = "" }: Props) => {
         id={datasetId}
         Button={DeleteButton}
       />
+      {isRevision && (
+        <DropboxChooser onUploadFile={onUploadFile}>
+          <UpdateButton />
+        </DropboxChooser>
+      )}
     </RawMenu>
   );
 };

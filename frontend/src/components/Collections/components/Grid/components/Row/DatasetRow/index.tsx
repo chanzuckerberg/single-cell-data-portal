@@ -23,6 +23,7 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
+import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";
 import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
@@ -69,6 +70,8 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
+  isRevision: boolean;
+  onUploadFile: ChooserProps["onUploadFile"];
 }
 
 const DatasetRow: FC<Props> = ({
@@ -77,6 +80,8 @@ const DatasetRow: FC<Props> = ({
   invalidateCollectionQuery,
   visibility,
   accessType,
+  isRevision,
+  onUploadFile,
 }) => {
   const queryCache = useQueryCache();
 
@@ -190,6 +195,8 @@ const DatasetRow: FC<Props> = ({
                 <MoreDropdown
                   collectionId={dataset.collection_id}
                   datasetId={dataset.id}
+                  isRevision={isRevision}
+                  onUploadFile={onUploadFile}
                 />
               )}
           </ActionButton>

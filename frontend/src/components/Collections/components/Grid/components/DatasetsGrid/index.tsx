@@ -6,6 +6,7 @@ import {
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
 } from "src/components/Collections/components/Grid/common/style";
+import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import DatasetRow from "../Row/DatasetRow";
 
@@ -15,6 +16,8 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: VISIBILITY_TYPE;
   accessType?: Collection["access_type"];
+  isRevision: boolean;
+  onUploadFile: ChooserProps["onUploadFile"];
 }
 
 const DatasetsGrid: FC<Props> = ({
@@ -23,6 +26,7 @@ const DatasetsGrid: FC<Props> = ({
   invalidateCollectionQuery,
   visibility,
   accessType,
+  isRevision,
 }) => {
   return (
     <StyledCollectionsGrid bordered>
@@ -46,6 +50,7 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
+            isRevision={isRevision}
           />
         ))}
       </tbody>
