@@ -2,5 +2,6 @@ export enum FEATURES {
   CREATE_COLLECTION = "cc",
   AUTH = "auth",
   GENE_SETS = "gs",
-  CURATOR = "rubber-chicken",
+  CURATOR = "curator",
+  REVISION = "rc",
 }

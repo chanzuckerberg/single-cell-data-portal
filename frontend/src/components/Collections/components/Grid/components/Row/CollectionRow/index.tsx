@@ -1,26 +1,30 @@
-import { Intent, Tag } from "@blueprintjs/core";
+import { Button, Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { FC } from "react";
+import { ROUTES } from "src/common/constants/routes";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
-  ACCESS_TYPE,
-  COLLECTION_LINK_TYPE,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
-import { useCollection } from "src/common/queries/collections";
+  REVISION_STATUS,
+  useCollection,
+  useCreateRevision,
+} from "src/common/queries/collections";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledCell,
   StyledRow,
+  TagContainer,
 } from "../common/style";
-import { CollectionTitleText, ContactText, DOILink } from "./style";
+import { CollectionTitleText } from "./style";
 
 interface Props {
   id: string;
   accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
+  revisionStatus?: REVISION_STATUS;
 }
 
 const AsyncPopover = loadable(
@@ -38,16 +42,24 @@ const conditionalPopover = (values: string[]) => {
   return <AsyncPopover values={values} />;
 };
 
-type DOI = {
-  doi: string;
-  link: string;
-};
-
 const CollectionRow: FC<Props> = (props) => {
   const { data: collection } = useCollection({
     id: props.id,
     visibility: props.visibility,
   });
+  const router = useRouter();
+  const navigateToRevision = () => {
+    router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
+  };
+  const [mutate] = useCreateRevision(navigateToRevision);
+
+  const handleRevisionClick = () => {
+    if (props.revisionStatus === REVISION_STATUS.NOT_STARTED) {
+      mutate(id);
+    } else {
+      navigateToRevision();
+    }
+  };
 
   if (!collection) return null;
 
@@ -56,17 +68,7 @@ const CollectionRow: FC<Props> = (props) => {
     return null;
   }
 
-  const { id, links, visibility, contact_name, name, datasets } = collection;
-
-  const dois: Array<DOI> = links.reduce((acc, link) => {
-    if (link.link_type !== COLLECTION_LINK_TYPE.DOI) return acc;
-
-    const url = new URL(link.link_url);
-
-    acc.push({ doi: url.pathname.substring(1), link: link.link_url });
-
-    return acc;
-  }, [] as DOI[]);
+  const { id, visibility, name, datasets } = collection;
 
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
@@ -89,27 +91,22 @@ const CollectionRow: FC<Props> = (props) => {
             {name}
           </CollectionTitleText>
         </Link>
-        <ContactText>{contact_name}</ContactText>
 
-        {props.accessType === ACCESS_TYPE.WRITE ? (
-          <Tag
-            minimal
-            intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
-            data-test-id="visibility-tag"
-          >
-            {isPrivate ? "Private" : "Published"}
-          </Tag>
-        ) : (
-          dois?.map((doi) => (
-            <DOILink
-              key={doi.doi}
-              href={doi.link}
-              target="_blank"
-              rel="noopener"
+        {props.accessType === ACCESS_TYPE.WRITE && (
+          <TagContainer>
+            <Tag
+              minimal
+              intent={isPrivate ? Intent.PRIMARY : Intent.SUCCESS}
+              data-test-id="visibility-tag"
             >
-              {doi.doi}
-            </DOILink>
-          ))
+              {isPrivate ? "Private" : "Published"}
+            </Tag>
+            {props.revisionStatus === REVISION_STATUS.STARTED && (
+              <Tag minimal intent={Intent.PRIMARY}>
+                Revision Pending
+              </Tag>
+            )}
+          </TagContainer>
         )}
       </StyledCell>
       {conditionalPopover(tissue)}
@@ -117,7 +114,33 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
+      {props.revisionStatus !== REVISION_STATUS.DISABLED && !isPrivate ? (
+        <RevisionCell
+          revisionStatus={props.revisionStatus}
+          handleRevisionClick={handleRevisionClick}
+        />
+      ) : (
+        <RightAlignedDetailsCell />
+      )}
     </StyledRow>
+  );
+};
+
+const RevisionCell = ({
+  revisionStatus,
+  handleRevisionClick,
+}: {
+  revisionStatus?: REVISION_STATUS;
+  handleRevisionClick: () => void;
+}) => {
+  return (
+    <RightAlignedDetailsCell>
+      <Button intent={Intent.PRIMARY} minimal onClick={handleRevisionClick}>
+        {revisionStatus === REVISION_STATUS.STARTED
+          ? "Continue"
+          : "Start Revision"}
+      </Button>
+    </RightAlignedDetailsCell>
   );
 };
 

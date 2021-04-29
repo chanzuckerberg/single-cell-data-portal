@@ -54,8 +54,8 @@ services:
       - DEPLOYMENT_STAGE=test
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./frontend:/corpora-frontend
@@ -89,8 +89,8 @@ services:
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
@@ -115,14 +115,16 @@ services:
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
       - ./backend/corpora/common:/backend/corpora/common
+      # Mount dirs in a layout suitable for running tests.
+      - .:/corpora-data-portal
     command: ["sleep", "infinity"]
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
@@ -153,8 +155,8 @@ services:
       - CORPORA_LOCAL_DEV=true
       - AWS_REGION=us-west-2
       - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=dev_access_key_id
-      - AWS_SECRET_ACCESS_KEY=dev_secret_access_key
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
       - DEPLOYMENT_STAGE=test
       - RESTART_ON_FAILURE=yes

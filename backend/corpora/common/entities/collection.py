@@ -158,16 +158,41 @@ class Collection(Entity):
 
         """
         # Create a public collection with the same uuid and same fields
-        public_collection = clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
-        self.session.add(public_collection)
+        public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
+        if public_collection:
+            public_collection.update(
+                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True)
+            )
+        else:
+            public_collection = Collection(
+                clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
+            )
+            self.session.add(public_collection)
+
         # Copy over relationships
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
             dataset.collection_visibility = CollectionVisibility.PUBLIC
+            dataset.published = True
         self.session.commit()
         self.delete()
-        self.db_object = public_collection
+        self.db_object = public_collection.db_object
+
+    def revision(self) -> "Collection":
+        """
+        Generate a collection revision from a public collection
+        :return: collection revision.
+
+        """
+        revision_collection = clone(
+            self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PRIVATE)
+        )
+        self.session.add(revision_collection)
+        for link in self.links:
+            self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
+        self.session.commit()
+        return Collection(revision_collection)
 
     def tombstone_collection(self):
         self.update(tombstone=True)

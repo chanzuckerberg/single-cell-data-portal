@@ -1,0 +1,18 @@
+name: "Lint PR commit"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-ull-request@v3.4.0
+        with:
+          validateSingleCommit: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

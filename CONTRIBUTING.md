@@ -17,3 +17,5 @@ The followings guidelines allows the core developers to manage the workload of p
 - For not urgent but safe/trivial PRs, please use label `bot/merge` and request reviews, so `czimergebot` will automatically merge the PR for you once you get at least one approval + when all Github PR checks pass
 
 - For urgent but safe/trivial PRs, please feel free to force merge now, but still tag reviewers, in case they spot low priority fixes that can be done as a followup PR
+
+- Please title your PR's with the intended squash commit message. This title should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard (`<type>[optional scope]: <description>`). PR titles will be linted via the [lint-pr workflow](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/.github/workflows/lint-pr.yml).

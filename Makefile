@@ -3,7 +3,7 @@ SHELL:=/bin/bash
   # is written/read to allow us to use layers of previous builds as cache.
 export DOCKER_BUILDKIT:=1
 export COMPOSE_DOCKER_CLI_BUILD:=1
-export COMPOSE_OPTS:=--env .env.ecr
+export COMPOSE_OPTS:=--env-file .env.ecr
 ifeq ($(AWS_ACCESS_KEY_ID),)
 	export TEST_AWS_PROFILE ?= single-cell-dev
 endif
@@ -28,9 +28,15 @@ container-unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
+.PHONY: processing-unittest
+processing-unittest:
+	# This target is intended to be run INSIDE a container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
+
 .PHONY: functional-test
 functional-test: local-functional-test
-	# Keeping old target name for reverse comatibility
+	# Keeping old target name for reverse compatibility
 
 .PHONY: container-functionaltest
 container-functionaltest:
@@ -156,11 +162,17 @@ local-unit-test: ## Run backend tests in the dev environment
 			ci_env=$$(bash <(curl -s https://codecov.io/env)); \
 			CI=true; \
 		fi; \
-		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend bash -c "cd /corpora-data-portal && make container-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+		$(MAKE) _unit_test; \
 	else \
 		echo "Running test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
 	fi
+
+.PHONY: _unit_test
+_unit_test:
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend bash -c "cd /corpora-data-portal && make container-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+#	TODO: uncomment below after https://github.com/chanzuckerberg/corpora-data-portal/issues/1129
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing bash -c "cd /corpora-data-portal && make processing-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
