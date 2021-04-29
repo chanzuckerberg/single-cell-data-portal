@@ -1,3 +1,8 @@
+// DEBUG
+// DEBUG
+// DEBUG
+// DEBUG
+/* eslint-disable sonarjs/no-duplicate-string */
 import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import memoize from "lodash/memoize";
@@ -29,6 +34,7 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
   // DEBUG
   // DEBUG
   // DEBUG
+
   datasets = [
     {
       assay: [
@@ -44,8 +50,12 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
       dataset_assets: [
         {
           created_at: 1619722362.932458,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           dataset_id: "65b2656d-9dbc-4f19-bd46-ce720034399e",
           filename: "local.h5ad",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           filetype: "H5AD",
           id: "c2d0351b-8719-469f-97bc-22a9db599213",
           s3_uri:
@@ -58,10 +68,14 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
           created_at: 1619722371.187526,
           dataset_id: "65b2656d-9dbc-4f19-bd46-ce720034399e",
           filename: "local.loom",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           filetype: "LOOM",
           id: "fb4f589e-0f05-452a-8199-806866e0f541",
           s3_uri:
             "s3://corpora-data-staging/65b2656d-9dbc-4f19-bd46-ce720034399e/local.loom",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           type: "REMIX",
           updated_at: 1619722371.187531,
           user_submitted: true,
@@ -70,10 +84,14 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
           created_at: 1619722404.651116,
           dataset_id: "65b2656d-9dbc-4f19-bd46-ce720034399e",
           filename: "local.rds",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           filetype: "RDS",
           id: "a953e4da-55c6-4506-974c-9967fd6a583e",
           s3_uri:
             "s3://corpora-data-staging/65b2656d-9dbc-4f19-bd46-ce720034399e/local.rds",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           type: "REMIX",
           updated_at: 1619722404.651123,
           user_submitted: true,
@@ -81,6 +99,8 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
       ],
       dataset_deployments: [
         {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           created_at: 1619722359.19262,
           dataset_id: "65b2656d-9dbc-4f19-bd46-ce720034399e",
           id: "e1d2e3ba-30bb-416c-a656-2f0f840ba9a5",
@@ -101,6 +121,8 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
           ontology_term_id: "MONDO:0004975",
         },
       ],
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       ethnicity: [
         {
           label: "unknown",
@@ -117,17 +139,32 @@ const DatasetTab: FC<Props> = ({ collectionID, visibility, datasets }) => {
         ontology_term_id: "NCBITaxon:9606",
       },
       processing_status: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         conversion_anndata_status: "CONVERTED",
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         conversion_cxg_status: "CONVERTED",
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         conversion_loom_status: "CONVERTED",
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         conversion_rds_status: "CONVERTED",
         created_at: 1619722267.866859,
         dataset_id: "65b2656d-9dbc-4f19-bd46-ce720034399e",
         id: "32cd2d51-0d60-4b3a-a620-15c73b301714",
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         processing_status: "SUCCESS",
         updated_at: 1619722404.706159,
         upload_progress: 1,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         upload_status: "UPLOADED",
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         validation_status: "VALID",
       },
       published: false,
