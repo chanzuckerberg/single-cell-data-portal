@@ -14,6 +14,8 @@ from backend.corpora.common.utils.aws import AwsSecret
 
 def create_flask_app():
     app = connexion.FlaskApp(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
+    # From https://github.com/zalando/connexion/issues/346
+    app.app.url_map.strict_slashes = False
     swagger_spec_path = os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(backend.__file__))), "config", f"{os.environ['APP_NAME']}.yml"
     )
