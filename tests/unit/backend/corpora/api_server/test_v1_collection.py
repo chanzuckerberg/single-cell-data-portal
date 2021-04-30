@@ -387,7 +387,7 @@ class TestCollection(BaseAuthAPITest):
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(response.status_code, 200)
         actual_dataset_ids = [d_id["id"] for d_id in json.loads(response.data)["datasets"]]
-        self.assertNotIn(dataset.id, actual_dataset_ids)
+        self.assertNotIn(dataset_id, actual_dataset_ids)
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
