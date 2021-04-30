@@ -82,7 +82,8 @@ rm fake-h5ad-file.h5ad
 echo "Populating test db"
 export CORPORA_LOCAL_DEV=true
 export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
-python3 $(dirname ${BASH_SOURCE[0]})/populate_db.py
+cd $(dirname ${BASH_SOURCE[0]})/..
+python3 -m scripts.populate_db
 echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"
