@@ -26,9 +26,8 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
 
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-            response.raise_for_status()
-            actual_body = json.loads(response.body)
-            self.assertIn("dataset_uuid", actual_body.keys())
+            self.assertEqual(202, response.status_code)
+            self.assertIn("dataset_uuid", json.loads(response.data).keys())
 
     def test__link_no_auth__401(self):
         path = "/dp/v1/collections/test_collection_id/upload-links"
@@ -61,7 +60,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
-            self.assertEqual("The dropbox shared link is invalid.", json.loads(response.body)["detail"])
+            self.assertEqual("The dropbox shared link is invalid.", json.loads(response.data)["detail"])
 
         with self.subTest("Bad Dropbox link"):
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -69,7 +68,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
-            self.assertEqual("The URL provided causes an error with Dropbox.", json.loads(response.body)["detail"])
+            self.assertEqual("The URL provided causes an error with Dropbox.", json.loads(response.data)["detail"])
 
     @patch(
         "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"}

@@ -19,7 +19,7 @@ class BaseAPITest(DataPortalTestCase):
     def setUpClass(cls):
         super().setUpClass()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
-            cls.app = app.test_client()
+            cls.app = app.test_client(use_cookies=False)
             cls.maxDiff = None  # Easier to compare json responses.
 
     @classmethod

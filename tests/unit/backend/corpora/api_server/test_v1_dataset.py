@@ -1,7 +1,6 @@
 import json
 import os
 import unittest
-from requests import HTTPError
 
 from furl import furl
 
@@ -34,8 +33,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
         presign_url = actual_body.pop("presigned_url")
         self.assertIsNotNone(presign_url)
         self.assertEqual(expected_body, actual_body)
@@ -45,14 +44,14 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(500, response.status_code)
-        body = json.loads(response.body)
+        body = json.loads(response.data)
         self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
         test_url = furl(path="/dp/v1/datasets/test_user_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
-        body = json.loads(response.body)
+        body = json.loads(response.data)
         self.assertEqual("'dataset/test_user_id' not found.", body["detail"])
         print(body)
 
@@ -60,15 +59,15 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
-        body = json.loads(response.body)
+        body = json.loads(response.data)
         self.assertEqual("'dataset/test_dataset_id/asset/fake_asset' not found.", body["detail"])
 
     def test__get_status__ok(self):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/status")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
         expected_body = {
             "conversion_anndata_status": "NA",
             "conversion_cxg_status": "NA",
@@ -97,8 +96,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
         expected_body = {
             "dataset_id": dataset.id,
             "id": processing_status_id,
@@ -111,7 +110,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             processing_status = {"upload_status": status, "upload_progress": 0.0}
             processing_status_updater(self.session, processing_status_id, processing_status)
             response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(json.loads(response.body)["upload_status"], status.name)
+            self.assertEqual(json.loads(response.data)["upload_status"], status.name)
 
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
@@ -149,8 +148,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         collection_url = furl(path=f"/dp/v1/collections/{collection.id}")
         collection_url.add(query_params=dict(visibility=CollectionVisibility.PRIVATE.name))
         response = self.app.get(collection_url.url, headers=headers)
-        response.raise_for_status()
-        body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertIn(dataset.id, dataset_ids)
 
@@ -161,8 +160,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         # check dataset no longer returned in collection
         response = self.app.get(collection_url.url, headers=headers)
-        response.raise_for_status()
-        body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
 
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.id, dataset_ids)
@@ -191,8 +190,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = f"/dp/v1/datasets/{dataset.id}/status"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url, headers=headers)
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
         expected_body = {
             "dataset_id": dataset.id,
             "id": dataset.processing_status.id,
@@ -215,7 +214,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(json.loads(response.body), "Can not delete a public dataset")
+        self.assertEqual(json.loads(response.data), "Can not delete a public dataset")
 
     def test__cancel_dataset_download__user_not_collection_owner(self):
         collection = self.generate_collection(self.session, owner="someone_else")
@@ -348,9 +347,8 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
         data = {"add": [geneset3.id, geneset4.id], "remove": [geneset2.id]}
         test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers, data=json.dumps(data))
-        response.raise_for_status()
-        self.assertEqual(len(json.loads(response.body)), 4)
+        response = self.app.post(test_url, headers=headers, data=json.dumps(data))
+        self.assertEqual(len(json.loads(response.data)), 4)
         self.assertEqual(response.status_code, 202)
 
     def test__dataset_gene_set_linkage_update__403(self):
@@ -367,25 +365,19 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
             data = {"add": [], "remove": []}
             test_url = f"/dp/v1/datasets/{generate_uuid()}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 403)
 
         with self.subTest("collection public"):
             test_url = f"/dp/v1/datasets/{dataset_0.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 403)
 
         with self.subTest("user not collection owner"):
             test_url = f"/dp/v1/datasets/{dataset_1.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 403)
 
     def test__dataset_gene_set_linkage_update__404(self):
@@ -404,68 +396,54 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
             data = {"add": [geneset1.id], "remove": []}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 404)
 
         with self.subTest("remove list references genesets that do not belong to the collection"):
             data = {"add": [], "remove": [geneset1.id]}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 404)
 
         with self.subTest("add list references genesets already linked to the dataset"):
             data = {"add": [geneset0.id], "remove": []}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 404)
 
         with self.subTest("remove list references genesets that are not currently linked to the dataset"):
             data = {"add": [], "remove": [geneset2.id]}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 404)
 
         with self.subTest("request body missing remove list"):
             data = {"remove": [geneset0.id]}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 400)
 
         with self.subTest("request body missing add list"):
             data = {"add": [geneset2.id]}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 400)
 
         with self.subTest("no data"):
             data = {}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 400)
 
         with self.subTest("empty data"):
             data = {"add": [], "remove": []}
             test_url = f"/dp/v1/datasets/{dataset.id}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            response = self.app.post(test_url, headers, data=json.dumps(data))
+            response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 202)

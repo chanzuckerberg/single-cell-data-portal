@@ -19,8 +19,8 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             rsp = self.app.get(f"/dp/v1/collections/{collection_id}", headers=headers)
         else:
             rsp = self.app.get(f"/dp/v1/collections/{collection_id}?visibility=PRIVATE", headers=headers)
-        rsp.raise_for_status()
-        bdy = json.loads(rsp.body)
+        self.assertEqual(200, rsp.status_code)
+        bdy = json.loads(rsp.data)
         return [g["id"] for g in bdy.get("genesets", [])]
 
     def _delete_geneset_test(self, collection_id, headers, geneset):
@@ -84,8 +84,8 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
             # get dataset
             response = self.app.get(f"/dp/v1/collections/{collection.id}?visibility=PRIVATE", headers=headers)
-            response.raise_for_status()
-            body = json.loads(response.body)
+            self.assertEqual(200, response.status_code)
+            body = json.loads(response.data)
             self.assertIn(dataset.id, [d["id"] for d in body.get("datasets", [])])
 
     def test__delete_gene_set__UNAUTHORIZED(self):
