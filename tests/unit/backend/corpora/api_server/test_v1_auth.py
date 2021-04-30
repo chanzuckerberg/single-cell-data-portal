@@ -31,7 +31,7 @@ class TestAuth(BaseAuthAPITest):
         with self.subTest("userinfo_not_authenticated"):
             response = self.app.get("/dp/v1/userinfo", headers=headers)
             self.assertEqual(401, response.status_code)
-            body = json.loads(response.body)
+            body = json.loads(response.data)
             self.assertEqual(body["detail"], "No authorization token provided")
 
         with self.subTest("login"):
@@ -63,7 +63,7 @@ class TestAuth(BaseAuthAPITest):
             # check userinfo
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
-            body = json.loads(response.body)
+            body = json.loads(response.data)
             self.check_user_info(body)
             self.assertFalse("Set-Cookie" in response.headers)  # no cookie expected
 
@@ -73,7 +73,7 @@ class TestAuth(BaseAuthAPITest):
             # check the userinfo again (token has now expired, make sure it is refreshed)
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
-            body = json.loads(response.body)
+            body = json.loads(response.data)
             self.check_user_info(body)
             self.assertTrue("Set-Cookie" in response.headers)
             cxguser_cookie = response.headers["Set-Cookie"]
@@ -81,7 +81,7 @@ class TestAuth(BaseAuthAPITest):
             # check the userinfo again (make sure the replacement cookie works)
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
-            body = json.loads(response.body)
+            body = json.loads(response.data)
             self.check_user_info(body)
             self.assertFalse("Set-Cookie" in response.headers)
 

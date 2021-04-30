@@ -13,30 +13,29 @@ class TestPublish(BaseAuthAPITest):
     ):
         path = f"/dp/v1/collections/{collection_id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(path, headers)
-        response.raise_for_status()
+        response = self.app.post(path, headers=headers)
         self.assertEqual(202, response.status_code)
-        self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.body))
+        self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(Collection.get(self.session, [collection_id, "PUBLIC"]).delete)
 
         # cannot call twice
-        response = self.app.post(path, headers)
+        response = self.app.post(path, headers=headers)
         self.assertEqual(403, response.status_code)
 
         # check if the collection is listed
         path = "/dp/v1/collections"
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        response = self.app.get(path, headers)
-        response.raise_for_status()
-        ids = [col["id"] for col in json.loads(response.body)["collections"]]
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        ids = [col["id"] for col in json.loads(response.data)["collections"]]
         self.assertIn(collection_id, ids)
 
         # check get collection_uuid
         path = f"/dp/v1/collections/{collection_id}"
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        response = self.app.get(path, headers)
-        response.raise_for_status()
-        actual = json.loads(response.body)
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        actual = json.loads(response.data)
         self.assertEqual("PUBLIC", actual["visibility"])
         self.assertEqual(collection_id, actual["id"])
         if dataset_ids:
@@ -83,12 +82,12 @@ class TestPublish(BaseAuthAPITest):
         collection_id = self.generate_collection(self.session, owner="someone_else").id
         path = f"/dp/v1/collections/{collection_id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(path, headers)
+        response = self.app.post(path, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__bad_uuid__403(self):
         collection_id = "bad_uuid"
         path = f"/dp/v1/collections/{collection_id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(path, headers)
+        response = self.app.post(path, headers=headers)
         self.assertEqual(403, response.status_code)

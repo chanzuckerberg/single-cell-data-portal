@@ -46,8 +46,8 @@ class TestGenesetCreation(BaseAuthAPITest):
     def test_geneset_creation__ok(self):
         data = {"gene_sets": [self.geneset1, self.geneset2, self.geneset3]}
         response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
-        response.raise_for_status()
-        body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
         self.assertEqual(len(body), 3)
         geneset_names = [x["name"] for x in body]
         self.assertIn("geneset1", geneset_names)
@@ -57,8 +57,8 @@ class TestGenesetCreation(BaseAuthAPITest):
     def test_all_gene_information_correctly_stored(self):
         data = {"gene_sets": [self.geneset1, self.geneset2, self.geneset3]}
         response = self.app.post(self.test_url, headers=self.headers, data=json.dumps(data))
-        response.raise_for_status()
-        body = json.loads(response.body)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
         genesets = {}
         for x in body:
             genesets[x["name"]] = x["id"]
