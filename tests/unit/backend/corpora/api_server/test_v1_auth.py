@@ -41,10 +41,10 @@ class TestAuth(BaseAuthAPITest):
             split = urllib.parse.urlsplit(location)
             args = dict(urllib.parse.parse_qsl(split.query))
             self.assertTrue(location.startswith(f"{self.auth_config.api_authorize_url}"))
-            self.assertTrue("response_type=code" in location)
+            self.assertIn("response_type=code", location)
             self.assertEqual(args["client_id"], self.auth_config.client_id)
             self.assertEqual(args["response_type"], "code")
-            self.assertTrue("/dp/v1/oauth2/callback" in args["redirect_uri"])
+            self.assertIn("/dp/v1/oauth2/callback", args["redirect_uri"])
             # Test session cookie
             self.check_set_cookie_is_secure(response.headers["Set-Cookie"], ["HttpOnly", "Secure", "SameSite=Lax"])
 
@@ -53,7 +53,7 @@ class TestAuth(BaseAuthAPITest):
             response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
-            self.assertTrue("Set-Cookie" in response.headers)
+            self.assertIn("Set-Cookie", response.headers)
             # Test cxguser cookie
             self.check_set_cookie_is_secure(
                 response.headers["Set-Cookie"], expected_flags=["HttpOnly", "Secure", "SameSite=Strict"]
@@ -65,7 +65,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(200, response.status_code)
             body = json.loads(response.data)
             self.check_user_info(body)
-            self.assertFalse("Set-Cookie" in response.headers)  # no cookie expected
+            self.assertNotIn("Set-Cookie", response.headers)  # no cookie expected
 
             # sleep so the token expires, then try userinfo again, verify it refreshed
             time.sleep(TOKEN_EXPIRES + 1)
@@ -75,7 +75,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(200, response.status_code)
             body = json.loads(response.data)
             self.check_user_info(body)
-            self.assertTrue("Set-Cookie" in response.headers)
+            self.assertIn("Set-Cookie", response.headers)
             cxguser_cookie = response.headers["Set-Cookie"]
 
             # check the userinfo again (make sure the replacement cookie works)
@@ -83,7 +83,7 @@ class TestAuth(BaseAuthAPITest):
             self.assertEqual(200, response.status_code)
             body = json.loads(response.data)
             self.check_user_info(body)
-            self.assertFalse("Set-Cookie" in response.headers)
+            self.assertNotIn("Set-Cookie", response.headers)
 
         with self.subTest("login_redirect"):
             response = self.app.get("/dp/v1/login?redirect=?showCC=1", headers=headers)
