@@ -60,7 +60,17 @@ def configure_flask_app(flask_app):
     return flask_app
 
 
+class InterceptRequestMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        environ["HTTP_CXGPUBLIC"] = "dummy"
+        return self.wsgi_app(environ, start_response)
+
+
 app = configure_flask_app(create_flask_app())
+app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
 
 
 @app.teardown_appcontext
