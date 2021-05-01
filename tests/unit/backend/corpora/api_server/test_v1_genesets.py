@@ -9,10 +9,11 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 
 class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
-        CorporaTestCaseUsingMockAWS.setUp(self)
+        # Needed for proper setUp resolution in multiple inheritance
+        super().setUp()
 
     def tearDown(self):
-        CorporaTestCaseUsingMockAWS.tearDown(self)
+        super().tearDown()
 
     def _get_geneset_ids(self, collection_id, headers, public=False):
         if public:
