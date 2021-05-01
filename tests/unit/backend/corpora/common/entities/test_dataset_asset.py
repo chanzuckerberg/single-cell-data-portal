@@ -21,6 +21,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
     def tearDown(self):
         self.session.close()
+        super().tearDown()
 
     def test__get__ok(self):
         asset = DatasetAsset.get(self.session, self.uuid)

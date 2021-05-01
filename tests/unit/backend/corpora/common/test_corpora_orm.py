@@ -46,7 +46,7 @@ class AssociatePropertyOwner(Base):
 class testToDict(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
-        DataPortalTestCase.setUpClass()
+        super().setUpClass()
         engine = DBSessionMaker().engine
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
@@ -54,7 +54,7 @@ class testToDict(DataPortalTestCase):
     @classmethod
     def tearDownClass(cls):
         cls.reinitialize_database()
-        DataPortalTestCase.tearDownClass()
+        super().tearDownClass()
 
     @staticmethod
     def remove_ids(new_dict) -> dict:

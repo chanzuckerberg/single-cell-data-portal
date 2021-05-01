@@ -13,16 +13,12 @@ class BaseAPITest(DataPortalTestCase):
     Provide access to the test Corpora API. All test for the Corpora API should inherit this class.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
-            cls.app = app.test_client(use_cookies=False)
-            cls.maxDiff = None  # Easier to compare json responses.
+    maxDiff = None  # Easier to compare json responses.
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
+    def setUp(self):
+        super().setUp()
+        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+            self.app = app.test_client(use_cookies=False)
 
     @staticmethod
     def remove_timestamps(body: dict) -> dict:

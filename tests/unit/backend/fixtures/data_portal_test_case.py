@@ -8,17 +8,16 @@ from tests.unit.backend.fixtures.test_db import TestDatabaseManager
 class DataPortalTestCase(GenerateDataMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         TestDatabaseManager.initialize_db()
 
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
     def setUp(self):
+        super().setUp()
         self.session = DBSessionMaker().session()
 
     def tearDown(self) -> None:
         self.session.close()
+        super().tearDown()
 
     @staticmethod
     def reinitialize_database():

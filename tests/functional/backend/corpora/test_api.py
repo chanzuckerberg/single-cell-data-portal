@@ -26,9 +26,11 @@ AUDIENCE = {
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
     def setUp(self):
+        super().setUp()
         self.get_auth_token()
         self.api = API_URL.get(self.deployment_stage)
         self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"

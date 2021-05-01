@@ -13,10 +13,11 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 
 class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
-        CorporaTestCaseUsingMockAWS.setUp(self)
+        # Needed for proper setUp resolution in multiple inheritance
+        super().setUp()
 
     def tearDown(self):
-        CorporaTestCaseUsingMockAWS.tearDown(self)
+        super().tearDown()
 
     def test__post_dataset_asset__OK(self):
         bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
@@ -230,10 +231,11 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
-        CorporaTestCaseUsingMockAWS.setUp(self)
+        # Needed for proper setUp resolution in multiple inheritance
+        super().setUp()
 
     def tearDown(self):
-        CorporaTestCaseUsingMockAWS.tearDown(self)
+        super().tearDown()
 
     def test__dataset_gene_set_linkage_update__ok(self):
         collection = self.generate_collection(
