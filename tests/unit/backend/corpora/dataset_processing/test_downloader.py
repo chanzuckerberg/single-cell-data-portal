@@ -26,7 +26,7 @@ def start_server(path, port):
 class TestDownload(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
-        DataPortalTestCase.setUpClass()
+        super().setUpClass()
         cls.port = random.randint(10000, 20000)
         cls.server_process = multiprocessing.Process(
             target=start_server, args=("tests/unit/backend/corpora/fixtures", cls.port), daemon=True
@@ -35,7 +35,7 @@ class TestDownload(DataPortalTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        DataPortalTestCase.tearDownClass()
+        super().tearDownClass()
         cls.server_process.terminate()
 
     def cleanup_local_file(self, local_file):
