@@ -90,6 +90,7 @@ export interface Dataset {
   // preprint_doi: DOI;
   // publication_doi: DOI;
   created_at: number;
+  original_uuid?: string;
 }
 
 export enum DATASET_ASSET_FORMAT {
