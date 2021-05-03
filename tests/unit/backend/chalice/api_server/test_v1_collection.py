@@ -598,7 +598,6 @@ class TestCollectionDeletion(BaseAuthAPITest):
         )
 
         test_urls = [furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC")),
-                    furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="public")),
                     furl(path=f"/dp/v1/collections/{collection.id}")]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         for test_url in test_urls:

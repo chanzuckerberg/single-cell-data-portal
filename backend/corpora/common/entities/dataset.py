@@ -134,7 +134,8 @@ class Dataset(Entity):
 
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
-        self.session.delete(self.processing_status)
+        if self.processing_status:
+            self.session.delete(self.processing_status)
         for dd in self.deployment_directories:
             self.session.delete(dd)
         for af in self.artifacts:

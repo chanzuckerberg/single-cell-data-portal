@@ -85,7 +85,7 @@ def get_collection_dataset(dataset_uuid: str):
 
 
 def delete_collection(collection_uuid: str, visibility: str, user: str):
-    if visibility.upper() != CollectionVisibility.PRIVATE.name:
+    if visibility != CollectionVisibility.PRIVATE.name:
         return "", 403
 
     db_session = g.db_session

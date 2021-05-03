@@ -9,37 +9,38 @@ class GenerateDataMixin:
     Use to populate the database with test data that should be cleanup after the test
     """
 
-    def generate_collection(self, session, **params) -> Collection:
-        def delete(uuid, visibility):
-            with db_session_manager() as session:
-                col = Collection.get(session, (uuid, visibility))
-                if col:
-                    col.delete()
+    @staticmethod
+    def delete_collection(uuid, visibility):
+        with db_session_manager() as session:
+            col = Collection.get(session, (uuid, visibility))
+            if col:
+                col.delete()
 
+    def generate_collection(self, session, **params) -> Collection:
         _collection = Collection.create(session, **BogusCollectionParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(delete, _collection.id, _collection.visibility)
+        self.addCleanup(self.delete_collection, _collection.id, _collection.visibility)
         return _collection
 
-    def generate_dataset(self, session, **params) -> Dataset:
-        def delete(uuid):
-            with db_session_manager() as session:
-                dat = Dataset.get(session, uuid)
-                if dat:
-                    dat.delete()
+    @staticmethod
+    def delete_dataset(uuid):
+        with db_session_manager() as session:
+            dat = Dataset.get(session, uuid)
+            if dat:
+                dat.delete()
 
+    def generate_dataset(self, session, **params) -> Dataset:
         _dataset = Dataset.create(session, **BogusDatasetParams.get(**params))
-        # Cleanup collection after test
-        self.addCleanup(delete, _dataset.id)
+        self.addCleanup(self.delete_dataset, _dataset.id)
         return _dataset
 
-    def generate_geneset(self, session, **params) -> Geneset:
-        def delete(uuid):
-            with db_session_manager() as session:
-                geneset = Geneset.get(session, uuid)
-                if geneset:
-                    geneset.delete()
+    @staticmethod
+    def delete_geneset(uuid):
+        with db_session_manager() as session:
+            geneset = Geneset.get(session, uuid)
+            if geneset:
+                geneset.delete()
 
+    def generate_geneset(self, session, **params) -> Geneset:
         _geneset = Geneset.create(session, **BogusGenesetParams.get(**params))
-        self.addCleanup(delete, _geneset.id)
+        self.addCleanup(self.delete_geneset, _geneset.id)
         return _geneset

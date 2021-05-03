@@ -17,7 +17,7 @@ class TestPublish(BaseAuthAPITest):
         response.raise_for_status()
         self.assertEqual(202, response.status_code)
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.body))
-        self.addCleanup(Collection.get(self.session, [collection_id, "PUBLIC"]).delete)
+        self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # cannot call twice
         response = self.app.post(path, headers)
