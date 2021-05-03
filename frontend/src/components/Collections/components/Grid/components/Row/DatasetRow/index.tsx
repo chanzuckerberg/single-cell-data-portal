@@ -28,6 +28,7 @@ import CellCount from "./components/CellCount";
 import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
+import { DatasetStatusTag } from "./components/UploadStatus/style";
 import { TitleContainer } from "./style";
 import {
   checkIfCancelled,
@@ -70,7 +71,7 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
-  isRevision: boolean;
+  revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
 }
 
@@ -80,7 +81,7 @@ const DatasetRow: FC<Props> = ({
   invalidateCollectionQuery,
   visibility,
   accessType,
-  isRevision,
+  revisionsEnabled,
   onUploadFile,
 }) => {
   const queryCache = useQueryCache();
@@ -132,6 +133,8 @@ const DatasetRow: FC<Props> = ({
 
   const isMetadataLoading = checkIfMetadataLoading(dataset, datasetStatus);
 
+  const isRevision = dataset.original_uuid;
+
   useCancelDatasetStatusQuery({
     datasetId: dataset.id,
     isFailed,
@@ -180,6 +183,11 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
+          {isRevision && (
+            <DatasetStatusTag minimal intent={Intent.PRIMARY}>
+              Updated
+            </DatasetStatusTag>
+          )}
         </TitleContainer>
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
@@ -195,7 +203,7 @@ const DatasetRow: FC<Props> = ({
                 <MoreDropdown
                   collectionId={dataset.collection_id}
                   datasetId={dataset.id}
-                  isRevision={isRevision}
+                  revisionsEnabled={revisionsEnabled}
                   onUploadFile={onUploadFile}
                 />
               )}
