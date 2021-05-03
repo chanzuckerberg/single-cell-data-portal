@@ -86,15 +86,22 @@ def get_collection_dataset(dataset_uuid: str):
 
 def delete_collection(collection_uuid: str, visibility: str, user: str):
     if visibility != CollectionVisibility.PRIVATE.name:
+        # Only allowed to delete private collections
         return "", 403
 
     db_session = g.db_session
-    priv_collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
+    priv_collection = Collection.get_collection(
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user
+    )
     if priv_collection and not priv_collection.tombstone:
-        pub_collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
+        pub_collection = Collection.get_collection(
+            db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user
+        )
         if pub_collection:
+            # If a revision, tombstone the private collection
             priv_collection.tombstone_collection()
         else:
+            # Else delete the private collection.
             priv_collection.delete()
     return "", 202
 
