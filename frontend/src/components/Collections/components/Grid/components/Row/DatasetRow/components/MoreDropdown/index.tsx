@@ -6,13 +6,15 @@ import Menu from "./components/Menu";
 interface Props {
   collectionId?: string;
   datasetId?: string;
-  isRevision: boolean;
+  revisionsEnabled: boolean;
+  onUploadFile: ChooserProps["onUploadFile"];
 }
 
 const MoreDropdown = ({
   collectionId = "",
   datasetId = "",
-  isRevision,
+  revisionsEnabled,
+  onUploadFile,
 }: Props) => {
   const popoverProps = useMemo(() => {
     return {
@@ -20,12 +22,13 @@ const MoreDropdown = ({
         <Menu
           collectionId={collectionId}
           datasetId={datasetId}
-          isRevision={isRevision}
+          revisionsEnabled={revisionsEnabled}
+          onUploadFile={onUploadFile}
         />
       ),
       position: Position.BOTTOM,
     };
-  }, [collectionId, datasetId, isRevision]);
+  }, [collectionId, datasetId, revisionsEnabled]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };

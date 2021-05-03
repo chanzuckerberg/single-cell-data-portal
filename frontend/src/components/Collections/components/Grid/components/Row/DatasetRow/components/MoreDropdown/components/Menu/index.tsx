@@ -38,14 +38,14 @@ const UpdateButton = (props: Partial<IMenuItemProps>) => {
 interface Props {
   collectionId?: string;
   datasetId?: string;
-  isRevision: boolean;
+  revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
 }
 
 const Menu = ({
   collectionId = "",
   datasetId = "",
-  isRevision,
+  revisionsEnabled,
   onUploadFile,
 }: Props) => {
   return (
@@ -55,7 +55,7 @@ const Menu = ({
         id={datasetId}
         Button={DeleteButton}
       />
-      {isRevision && (
+      {revisionsEnabled && (
         <DropboxChooser onUploadFile={onUploadFile}>
           <UpdateButton />
         </DropboxChooser>

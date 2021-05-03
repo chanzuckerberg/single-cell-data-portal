@@ -27,6 +27,7 @@ const DatasetsGrid: FC<Props> = ({
   visibility,
   accessType,
   isRevision,
+  onUploadFile,
 }) => {
   return (
     <StyledCollectionsGrid bordered>
@@ -50,7 +51,8 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
-            isRevision={isRevision}
+            revisionsEnabled={isRevision}
+            onUploadFile={onUploadFile}
           />
         ))}
       </tbody>
