@@ -160,7 +160,7 @@ class Dataset(Entity):
             cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
-    def get_cxg_bucket_path(deployment_directory):
+    def get_cxg_bucket_path(deployment_directory: str) -> str:
         """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
         deployment directory URL"""
         object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
@@ -168,7 +168,7 @@ class Dataset(Entity):
         return base
 
     @staticmethod
-    def new_processing_status():
+    def new_processing_status() -> dict:
         return {
             "upload_status": UploadStatus.WAITING,
             "upload_progress": 0,
