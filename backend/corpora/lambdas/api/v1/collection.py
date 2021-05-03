@@ -84,11 +84,18 @@ def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
 
 
-def delete_collection(collection_uuid: str, user: str):
+def delete_collection(collection_uuid: str, visibility: str, user: str):
+    if visibility.upper() != CollectionVisibility.PRIVATE.name:
+        return "", 403
+
     db_session = g.db_session
-    collection = Collection.if_owner(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, user)
-    if collection and not collection.tombstone:
-        collection.delete()
+    priv_collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
+    if priv_collection and not priv_collection.tombstone:
+        pub_collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
+        if pub_collection:
+            priv_collection.tombstone_collection()
+        else:
+            priv_collection.delete()
     return "", 202
 
 

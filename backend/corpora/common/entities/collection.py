@@ -222,8 +222,9 @@ class Collection(Entity):
 
     def delete(self):
         for dataset in self.datasets:
-            if dataset.original_id:
-                dataset.delete()
+            ds = Dataset(dataset)
+            if ds.original_id:
+                ds.delete()
             else:
-                dataset.dataset_and_asset_deletion()
-        self.delete()
+                ds.dataset_and_asset_deletion()
+        super().delete()
