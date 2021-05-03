@@ -14,9 +14,6 @@ class CorporaConfig(SecretConfig):
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:
             template["upload_sfn_arn"] = upload_snf_arn
-        template["cellxgene_bucket"] = os.getenv(
-            "CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
-        )
         return template
 
 
