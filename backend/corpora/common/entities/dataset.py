@@ -161,8 +161,10 @@ class Dataset(Entity):
 
     @staticmethod
     def get_cxg_bucket_path(deployment_directory):
+        """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
+        deployment directory URL"""
         object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
-        base, ext = os.path.splitext(object_name)
+        base, _ = os.path.splitext(object_name)
         return base
 
     @staticmethod

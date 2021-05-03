@@ -377,7 +377,6 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         dataset.delete_deployment_directories()
         self.assertFalse([x.key for x in self.cellxgene_bucket.objects.all()])
 
-
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
         Verify if rows have been deleted from the database.
