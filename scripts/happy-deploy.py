@@ -109,17 +109,17 @@ def happy_deploy(deployment_stage, github_sha, dry_run):
         print("Error: Please set GITHUB_TOKEN environment variable")
         return
 
-    deployment_stage = "stage"
+    read_deployment_stage = "stage"
 
     # If github sha is not provided, get the latest succesful deployment
     # github sha of staging environment
     if github_sha is None:
-        github_sha, parsed_t = get_latest_successful_deployment(api_token, deployment_stage)
-        print(f"Latest succesful '{deployment_stage}' deployment on {parsed_t}: commit {github_sha}")
+        github_sha, parsed_t = get_latest_successful_deployment(api_token, read_deployment_stage)
+        print(f"Latest succesful '{read_deployment_stage}' deployment on {parsed_t}: commit {github_sha}")
 
     if github_sha is None:
         print(
-            f"Error: Could not find a successful deployment for deployment stage {deployment_stage}, and no --github_sha was given"
+            f"Error: Could not find a successful deployment for deployment stage {read_deployment_stage}, and no --github_sha was given"
         )
         sys.exit(1)
 
