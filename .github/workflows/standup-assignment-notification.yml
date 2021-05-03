@@ -1,0 +1,48 @@
+name: "Automated Standup Assignment and Notification"
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+
+jobs:
+  standup-assignment-notification:
+    name: Standup Assignment and Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Select engineers
+        shell: bash
+        run: |
+          SEVE="@seve"
+          MADISON="@madison.dunitz"
+          TRENT="@trent.smith"
+          ENGINEERS=($SEVE $MADISON $TRENT)
+          ENGINEER_COUNT=${#ENGINEERS[@]}
+          SLACK_MESSAGE="Standup this week!\n"
+          i=0
+          while [ $i -lt 3 ]
+          do
+              index=$(($RANDOM % $ENGINEER_COUNT))
+              if [ $i -eq 0 ]
+              then
+                  SLACK_MESSAGE+="Monday - ${ENGINEERS[$index]}\n"
+              fi
+              if [ $i -eq 1 ]
+              then
+                  SLACK_MESSAGE+="Wednesday - ${ENGINEERS[$index]}\n"
+              fi
+              if [ $i -eq 2 ]
+              then
+                  SLACK_MESSAGE+="Friday - ${ENGINEERS[$index]}\n"
+              fi
+              i=$((i+1))
+              ENGINEERS=( "${ENGINEERS[@]:0:$(($index))}" "${ENGINEERS[@]:$index+1}" )
+              ENGINEER_COUNT=$((ENGINEER_COUNT-1))
+          done
+          SLACK_MESSAGE+="Thank you!"
+          echo "$SLACK_MESSAGE" > "slack_message.txt"
+      - name: Slack notification webhook
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          STANDUP_ASSIGNMENT=$(cat slack_message.txt)
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'${STANDUP_ASSIGNMENT}'}" $SLACK_WEBHOOK
