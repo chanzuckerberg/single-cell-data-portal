@@ -127,12 +127,6 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
-    def delete(self):
-        """
-        Delete the Dataset and all child objects.
-        """
-        super().delete()
-
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
         if self.processing_status:
@@ -147,11 +141,12 @@ class Dataset(Entity):
         self.session.commit()
 
     def dataset_and_asset_deletion(self):
-        for artifact in self.artifacts:
-            asset = DatasetAsset.get(self.session, artifact.id)
-            asset.delete_from_s3()
-        self.delete_deployment_directories()
-        self.tombstone_dataset_and_delete_child_objects()
+        if not self.published:
+            for artifact in self.artifacts:
+                asset = DatasetAsset.get(self.session, artifact.id)
+                asset.delete_from_s3()
+            self.delete_deployment_directories()
+        self.delete()
 
     def delete_deployment_directories(self):
         for deployment_directory in self.deployment_directories:

@@ -1,9 +1,14 @@
+from os.path import basename
+import random
+import tempfile
 import os
 
 import boto3
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
+from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType, DbDeploymentDirectory
+from backend.corpora.common.entities import DatasetAsset
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -64,3 +69,30 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         s3object = self.s3_resource.Bucket(bucket_name).Object(object_key)
         s3object.put(Body=content, ContentType=content_type)
         return s3object
+
+    def generate_artifact(
+        self, session, dataset_id, artifact_type=DatasetArtifactFileType.H5AD, file_name="data", upload=False
+    ) -> DatasetAsset:
+        file_base = basename(file_name)
+        if upload:
+            with tempfile.TemporaryDirectory() as temp_path:
+                file_name = f"{temp_path}/data.{artifact_type.name}"
+                content = "".join(random.choices("abcdef", k=16))
+                with open(file_name, "w") as fp:
+                    fp.write(content)
+                s3_uri = DatasetAsset.upload(file_name, dataset_id, self.bucket.name)
+        else:
+            s3_uri = DatasetAsset.make_s3_uri(self.bucket.name, dataset_id, file_base)
+        return DatasetAsset.create(
+            session, dataset_id, file_base, artifact_type, DatasetArtifactType.REMIX, False, s3_uri
+        )
+
+    def generate_deployment_directory(self, session, dataset_id, upload=False) -> DbDeploymentDirectory:
+        if upload:
+            file_name = f"{dataset_id}/data.cxg"
+            content = "".join(random.choices("abcdef", k=16))
+            self.cellxgene_bucket.Object(file_name).put(Body=content, ContentType="application/octet-stream")
+        deployment_directory = DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/")
+        session.add(DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/"))
+        session.commit()
+        return deployment_directory

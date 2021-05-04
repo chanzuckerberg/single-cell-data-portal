@@ -148,10 +148,6 @@ DEPLOYMENT_STAGE_TO_URL = {
     "test": "http://frontend.corporanet.local:3000",
 }
 
-s3_client = boto3.client(
-    "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None, config=boto3.session.Config(signature_version="s3v4")
-)
-
 
 def check_env():
     """Verify that the required environment variables are set."""
@@ -167,24 +163,16 @@ def check_env():
 def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ) -> DatasetAsset:
-    file_base = basename(file_name)
-    logger.info(f"Uploading to [{artifact_type}] to S3 bucket: [{artifact_bucket}].")
-    s3_client.upload_file(
-        file_name,
-        artifact_bucket,
-        join(bucket_prefix, file_base),
-        ExtraArgs={"ACL": "bucket-owner-full-control"},
-    )
-    logger.info(f"Updating database with  {artifact_type}.")
+    s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
     with db_session_manager() as session:
+        logger.info(f"Updating database with  {artifact_type}.")
         DatasetAsset.create(
             session,
             dataset_id=dataset_id,
-            filename=file_base,
-            filetype=artifact_type,
-            type_enum=DatasetArtifactType.REMIX,
+            filename=file_name,
+            type_enum=artifact_type,
             user_submitted=True,
-            s3_uri=join("s3://", artifact_bucket, bucket_prefix, file_base),
+            s3_uri=s3_uri,
         )
 
 
