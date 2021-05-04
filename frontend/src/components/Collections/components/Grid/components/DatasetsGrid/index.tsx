@@ -17,7 +17,11 @@ interface Props {
   visibility: VISIBILITY_TYPE;
   accessType?: Collection["access_type"];
   isRevision: boolean;
-  onUploadFile: ChooserProps["onUploadFile"];
+  onUploadFile: (
+    reuploadDataset?: any,
+    datasetId?: any
+  ) => ChooserProps["onUploadFile"];
+  reuploadDataset: () => void;
 }
 
 const DatasetsGrid: FC<Props> = ({
@@ -28,6 +32,7 @@ const DatasetsGrid: FC<Props> = ({
   accessType,
   isRevision,
   onUploadFile,
+  reuploadDataset,
 }) => {
   return (
     <StyledCollectionsGrid bordered>
@@ -52,7 +57,7 @@ const DatasetsGrid: FC<Props> = ({
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
             revisionsEnabled={isRevision}
-            onUploadFile={onUploadFile}
+            onUploadFile={onUploadFile(reuploadDataset, dataset.id)}
           />
         ))}
       </tbody>

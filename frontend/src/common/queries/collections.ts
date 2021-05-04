@@ -294,22 +294,27 @@ export function useCreateRevision(callback: () => void) {
   });
 }
 
+export interface ReuploadLink {
+  payload: string;
+  collectionId: string;
+}
+
 const reuploadDataset = async function ({
   payload,
-  id,
-}: {
-  payload: string;
-  id: string;
-}) {
+  collectionId,
+}: ReuploadLink) {
   if (!payload) {
     throw Error("No payload given");
   }
-  idError(id);
+  idError(collectionId);
 
-  const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, { id });
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, {
+    id: collectionId,
+  });
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    body: payload,
     method: "PUT",
   });
 
@@ -317,14 +322,14 @@ const reuploadDataset = async function ({
   if (!response.ok) throw result;
 };
 
-export function useReuploadDataset(id: string) {
+export function useReuploadDataset(collectionId: string) {
   const queryCache = useQueryCache();
 
   return useMutation(reuploadDataset, {
     onSuccess: () => {
       queryCache.invalidateQueries([
         USE_COLLECTION,
-        id,
+        collectionId,
         VISIBILITY_TYPE.PRIVATE,
       ]);
     },
