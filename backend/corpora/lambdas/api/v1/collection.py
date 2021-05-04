@@ -4,7 +4,7 @@ from typing import Optional
 from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
-from ....common.entities import Collection
+from ....common.entities import Collection, Dataset
 from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
 
 
@@ -58,7 +58,12 @@ def post_collection_revision(collection_uuid: str, user: str):
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
+    for dataset in collection.datasets:
+        dataset = Dataset.get(db_session, dataset_uuid=dataset.id)
+        dataset.revision()
     result = collection_revision.reshape_for_api()
+    import pdb
+    pdb.set_trace()
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
 
