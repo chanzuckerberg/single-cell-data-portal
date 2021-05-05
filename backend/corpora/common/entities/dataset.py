@@ -141,12 +141,11 @@ class Dataset(Entity):
         self.session.commit()
 
     def asset_deletion(self):
-        if not self.published:
-            for artifact in self.artifacts:
-                asset = DatasetAsset.get(self.session, artifact.id)
-                asset.delete_from_s3()
-                asset.delete()
-            self.delete_deployment_directories()
+        for artifact in self.artifacts:
+            asset = DatasetAsset.get(self.session, artifact.id)
+            asset.delete_from_s3()
+            asset.delete()
+        self.delete_deployment_directories()
 
     def delete_deployment_directories(self):
         for deployment_directory in self.deployment_directories:

@@ -1,3 +1,4 @@
+import logging
 from os.path import basename, join
 
 import os
@@ -9,6 +10,8 @@ from botocore.exceptions import ClientError
 
 from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
+
+logger = logging.get_logger(__name__)
 
 
 class DatasetAsset(Entity):
