@@ -1,4 +1,3 @@
-from os.path import basename
 import random
 import tempfile
 import os

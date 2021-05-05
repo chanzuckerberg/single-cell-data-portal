@@ -8,8 +8,6 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
     generate_uuid,
-    DatasetArtifactType,
-    DatasetArtifactFileType,
 )
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest

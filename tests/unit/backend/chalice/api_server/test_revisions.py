@@ -1,7 +1,7 @@
 import botocore
 import json
 from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
-from backend.corpora.common.entities import DatasetAsset, Collection
+from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from backend.corpora.common.utils.db_session import clone
 from backend.corpora.common.utils.json import CustomJSONEncoder

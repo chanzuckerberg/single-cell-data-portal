@@ -115,9 +115,8 @@ import logging
 import os
 import subprocess
 import typing
-from os.path import basename, join
+from os.path import join
 
-import boto3
 import numpy
 import scanpy
 import sys
@@ -126,7 +125,6 @@ from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
-    DatasetArtifactType,
     ConversionStatus,
     ValidationStatus,
     ProcessingStatus,
