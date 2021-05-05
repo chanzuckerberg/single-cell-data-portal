@@ -180,9 +180,12 @@ export function useCollectionUploadLinks(
 }
 
 async function deleteCollection(collectionID: Collection["id"]) {
-  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id: collectionID });
+  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
+    id: collectionID,
+  });
+  const finalUrl = baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`;
 
-  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+  const response = await fetch(finalUrl, DELETE_FETCH_OPTIONS);
 
   const json = await response.json();
 
