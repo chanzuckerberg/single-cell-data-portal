@@ -207,6 +207,7 @@ def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         dataset.asset_deletion()
+        dataset.deployment_directories_deletion()
         dataset.delete()
         logger.info("Upload Canceled.")
 

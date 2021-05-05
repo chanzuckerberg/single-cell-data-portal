@@ -145,15 +145,12 @@ class Dataset(Entity):
             asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
             asset.delete()
-        self.delete_deployment_directories()
 
-    def delete_deployment_directories(self):
+    def deployment_directories_deletion(self):
         for deployment_directory in self.deployment_directories:
             object_names = get_cxg_bucket_path(deployment_directory)
             logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
             cxg_bucket.objects.filter(Prefix=object_names).delete()
-            self.session.delete(deployment_directory)
-        self.session.commit()
 
     @staticmethod
     def new_processing_status() -> dict:

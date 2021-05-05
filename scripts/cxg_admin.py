@@ -48,7 +48,8 @@ def delete_dataset(ctx, uuid):
                 f"Are you sure you want to delete the dataset:{uuid} from cellxgene:{ctx.obj['deployment']}?",
                 abort=True,
             )
-            dataset.dataset_and_asset_deletion()
+            dataset.asset_deletion()
+            dataset.deployment_directory_deletion()
             dataset.delete()
             dataset = Dataset.get(session, uuid, include_tombstones=True)
             if dataset is None:

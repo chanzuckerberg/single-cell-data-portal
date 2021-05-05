@@ -2,6 +2,7 @@ import random
 import tempfile
 import os
 
+import botocore
 import boto3
 from moto import mock_s3
 
@@ -72,7 +73,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
     def generate_artifact(
         self, session, dataset_id, artifact_type=DatasetArtifactFileType.H5AD, file_name="data", upload=False
     ) -> DatasetAsset:
-        file_name = f"data.{artifact_type.name}"
+        file_name = f"{file_name}.{artifact_type.name}"
         if upload:
             with tempfile.TemporaryDirectory() as temp_path:
                 temp_file = f"{temp_path}/{file_name}"
@@ -95,3 +96,11 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         session.add(DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/"))
         session.commit()
         return deployment_directory
+
+    def assertS3FileExists(self, bucket, file_name):
+        self.assertGreater(bucket.Object(file_name).content_length, 1)
+
+    def assertS3FileDoesNotExist(self, bucket, file_name, msg=None):
+        msg = msg if msg else f"s3://{bucket.name}/{file_name} found."
+        with self.assertRaises(botocore.exceptions.ClientError, msg=msg):
+            bucket.Object(file_name).content_length

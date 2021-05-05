@@ -201,6 +201,7 @@ class Collection(Entity):
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.asset_deletion()
+            ds.deployment_directories_deletion()
             ds.tombstone_dataset_and_delete_child_objects()
 
     def update(self, links: list = None, **kwargs) -> None:
@@ -226,5 +227,6 @@ class Collection(Entity):
             ds = Dataset(dataset)
             if not ds.published:
                 ds.asset_deletion()
+                ds.deployment_directories_deletion()
             ds.delete()
         super().delete()

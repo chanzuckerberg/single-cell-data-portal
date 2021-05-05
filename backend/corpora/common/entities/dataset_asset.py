@@ -97,6 +97,9 @@ class DatasetAsset(Entity):
         session.commit()
         return cls(db_object)
 
+    def get_bucket_path(self):
+        return f"{self.dataset_id}/{self.filename}"
+
     @staticmethod
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
         return join("s3://", artifact_bucket, bucket_prefix, file_name)
