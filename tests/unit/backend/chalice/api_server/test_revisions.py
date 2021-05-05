@@ -267,3 +267,58 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for bucket, key in s3_objects:
                 with self.assertRaises(botocore.exceptions.ClientError):
                     bucket.Object(key).content_length
+
+    def test__delete_published_dataset_during_revision(self):
+        """The dataset is tombstone in the revision. The published artifacts are intact"""
+        # Generate public collection
+        pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
+        pub_dataset = self.generate_dataset(
+            self.session, collection_visibility="PUBLIC", collection_id=pub_collection.id, published=True
+        )
+        dep_dir = self.generate_deployment_directory(self.session, pub_dataset.id, upload=True)
+        arts = [
+            self.generate_artifact(self.session, pub_dataset.id, ext, upload=True) for ext in DatasetArtifactFileType
+        ]
+        expected_body = json.loads(json.dumps(pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
+
+        # Generate revision
+        rev_collection = self.generate_collection(self.session, visibility="PRIVATE", id=pub_collection.id)
+        rev_datasets = self.generate_dataset(
+            self.session,
+            collection_visibility="PRIVATE",
+            collection_id=rev_collection.id,
+            published=True,
+            original_id=pub_dataset.id,
+        )
+        for child in arts:
+            self.session.add(clone(child.db_object, dataset_id=rev_datasets.id))
+        self.session.add(clone(dep_dir, dataset_id=rev_datasets.id))
+        self.session.commit()
+
+        test_dataset_url = f"/dp/v1/datasets/{rev_datasets.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        resp = self.app.delete(test_dataset_url, headers=headers)
+        resp.raise_for_status()
+
+        test_collection_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
+        resp = self.app.get(test_collection_url, headers=headers)
+        resp.raise_for_status()
+        self.assertEqual(json.loads(resp.body)['datasets'], [])
+        self.session.expire_all()
+        self.assertTrue(rev_collection.datasets[0].tombstone)
+
+        with self.subTest("published artifacts ok"):
+            for artifact in pub_dataset.artifacts:
+                art = DatasetAsset(artifact)
+                self.assertGreater(art.get_file_size(), 1)
+        with self.subTest("published deployed directories ok"):
+            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
+            self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+        with self.subTest("publish collection ok"):
+            test_url = f"/dp/v1/collections/{pub_collection.id}"
+            resp = self.app.get(test_url)
+            resp.raise_for_status()
+            actual_body = json.loads(resp.body)
+            for key in expected_body.keys():
+                if key in actual_body.keys():
+                    self.assertEqual(expected_body[key], actual_body[key])
