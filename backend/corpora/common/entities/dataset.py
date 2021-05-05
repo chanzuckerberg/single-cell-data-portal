@@ -161,7 +161,7 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:
-        s3_file = f"{get_cxg_bucket_path(self.deployment_directories[0])}/genesets.csv"
+        s3_file = f"{get_cxg_bucket_path(self.deployment_directories[0])}-genesets.csv"
         cxg_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
@@ -193,5 +193,7 @@ def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:
     """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
     deployment directory URL"""
     object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
+    if object_name.endswith("/"):
+        object_name = object_name[:-1]
     base, _ = os.path.splitext(object_name)
     return base
