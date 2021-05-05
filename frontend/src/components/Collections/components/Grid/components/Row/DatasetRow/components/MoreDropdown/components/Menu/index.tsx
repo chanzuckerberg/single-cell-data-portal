@@ -9,6 +9,7 @@ import React from "react";
 import DropboxChooser, {
   Props as ChooserProps,
 } from "src/components/DropboxChooser";
+import styled from "styled-components";
 import DeleteDataset from "../../../DeleteDataset";
 
 const DeleteButton = (props: IMenuItemProps) => {
@@ -42,6 +43,14 @@ interface Props {
   onUploadFile: ChooserProps["onUploadFile"];
 }
 
+const StyledMenu = styled(RawMenu)`
+  border-radius: 3px;
+  padding: 8px;
+  & > li:last-child {
+    margin-bottom: 0;
+  }
+`;
+
 const Menu = ({
   collectionId = "",
   datasetId = "",
@@ -49,18 +58,18 @@ const Menu = ({
   onUploadFile,
 }: Props) => {
   return (
-    <RawMenu>
-      <DeleteDataset
-        collectionId={collectionId}
-        id={datasetId}
-        Button={DeleteButton}
-      />
+    <StyledMenu>
       {revisionsEnabled && (
         <DropboxChooser onUploadFile={onUploadFile}>
           <UpdateButton />
         </DropboxChooser>
       )}
-    </RawMenu>
+      <DeleteDataset
+        collectionId={collectionId}
+        id={datasetId}
+        Button={DeleteButton}
+      />
+    </StyledMenu>
   );
 };
 

@@ -49,8 +49,8 @@ const StyledMenu = styled(RawMenu)`
 const Menu = ({ id = "" }: Props) => {
   return (
     <StyledMenu>
-      <DeleteCollection id={id} Button={DeleteButton} />
       <CreateCollection id={id} Button={EditButton} />
+      <DeleteCollection id={id} Button={DeleteButton} />
     </StyledMenu>
   );
 };

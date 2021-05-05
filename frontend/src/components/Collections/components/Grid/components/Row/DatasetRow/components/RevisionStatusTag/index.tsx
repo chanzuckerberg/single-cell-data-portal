@@ -19,7 +19,7 @@ const statusToIntent = {
   [REVISION_STATUS.NEW]: Intent.SUCCESS,
 };
 
-const RevisionStatusTag = ({ dataset }: Props): ReactElement | undefined => {
+const RevisionStatusTag = ({ dataset }: Props): ReactElement | null => {
   let revisionStatus = REVISION_STATUS.NEW;
   const isPublished = dataset.published;
   if (!isPublished) {
@@ -31,7 +31,7 @@ const RevisionStatusTag = ({ dataset }: Props): ReactElement | undefined => {
   } else if (dataset.tombstone) {
     revisionStatus = REVISION_STATUS.DELETED;
   } else {
-    return;
+    return null;
   }
   return (
     <StyledTag minimal intent={statusToIntent[revisionStatus]}>
