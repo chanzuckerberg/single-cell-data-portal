@@ -110,7 +110,7 @@ class DatasetAsset(Entity):
     ) -> str:
         file_base = basename(file_name)
         logger.info(f"Uploading to [{file_base}] to S3 bucket: [{artifact_bucket}].")
-        cls.s3_client.upload_file(
+        cls.s3_client().upload_file(
             file_name,
             artifact_bucket,
             join(bucket_prefix, file_base),
