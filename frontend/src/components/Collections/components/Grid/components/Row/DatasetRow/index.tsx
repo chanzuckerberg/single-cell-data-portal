@@ -28,7 +28,7 @@ import CellCount from "./components/CellCount";
 import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
-import { DatasetStatusTag } from "./components/UploadStatus/style";
+import RevisionStatusTag from "./components/RevisionStatusTag";
 import { TitleContainer } from "./style";
 import {
   checkIfCancelled,
@@ -183,11 +183,7 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
-          {isRevision && (
-            <DatasetStatusTag minimal intent={Intent.PRIMARY}>
-              Updated
-            </DatasetStatusTag>
-          )}
+          {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
         </TitleContainer>
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
