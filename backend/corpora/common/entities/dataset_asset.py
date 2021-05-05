@@ -1,20 +1,33 @@
 from os.path import basename, join
 
 import logging
+import os
 import typing
 from urllib.parse import urlparse
 
+import boto3
 from botocore.exceptions import ClientError
 
 from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
-from ..utils.s3_buckets import s3_client
 
 logger = logging.getLogger(__name__)
 
 
 class DatasetAsset(Entity):
     table = DbDatasetArtifact
+
+    _s3 = None
+
+    @classmethod
+    def s3_client(cls):
+        if not cls._s3:
+            cls._s3 = boto3.client(
+                "s3",
+                endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None,
+                config=boto3.session.Config(signature_version="s3v4"),
+            )
+        return cls._s3
 
     def __init__(self, db_object: DbDatasetArtifact):
         super().__init__(db_object)
@@ -30,7 +43,7 @@ class DatasetAsset(Entity):
         :return: Presigned URL to download the requested file
         """
         try:
-            response = s3_client.generate_presigned_url(
+            response = self.s3_client().generate_presigned_url(
                 "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
@@ -46,7 +59,7 @@ class DatasetAsset(Entity):
         """
 
         try:
-            response = s3_client.head_object(Bucket=self.bucket_name, Key=self.key_name)
+            response = self.s3_client().head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None
@@ -55,7 +68,7 @@ class DatasetAsset(Entity):
 
     def delete_from_s3(self):
         try:
-            s3_client.delete_object(Bucket=self.bucket_name, Key=self.key_name)
+            self.s3_client().delete_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to delete artifact '{self.url}'.")
             return None
@@ -88,15 +101,16 @@ class DatasetAsset(Entity):
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
         return join("s3://", artifact_bucket, bucket_prefix, file_name)
 
-    @staticmethod
+    @classmethod
     def upload(
+        cls,
         file_name: str,
         bucket_prefix: str,
         artifact_bucket: str,
     ) -> str:
         file_base = basename(file_name)
         logger.info(f"Uploading to [{file_base}] to S3 bucket: [{artifact_bucket}].")
-        s3_client.upload_file(
+        cls.s3_client.upload_file(
             file_name,
             artifact_bucket,
             join(bucket_prefix, file_base),

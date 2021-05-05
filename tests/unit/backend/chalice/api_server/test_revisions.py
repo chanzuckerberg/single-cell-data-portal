@@ -130,18 +130,20 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.session, collection_visibility="PUBLIC", collection_id=pub_collection.id, published=True
         )
         dep_dir = self.generate_deployment_directory(self.session, pub_dataset.id, upload=True)
-        arts = [self.generate_artifact(self.session, pub_dataset.id, ext, upload=True) for ext in DatasetArtifactFileType]
+        arts = [
+            self.generate_artifact(self.session, pub_dataset.id, ext, upload=True) for ext in DatasetArtifactFileType
+        ]
         expected_body = json.loads(json.dumps(pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
 
         # Generate revision
         rev_collection = self.generate_collection(self.session, visibility="PRIVATE", id=pub_collection.id)
         rev_datasets = self.generate_dataset(
-                self.session,
-                collection_visibility="PRIVATE",
-                collection_id=rev_collection.id,
-                published=True,
-                original_id=pub_dataset.id,
-            )
+            self.session,
+            collection_visibility="PRIVATE",
+            collection_id=rev_collection.id,
+            published=True,
+            original_id=pub_dataset.id,
+        )
         for child in arts:
             self.session.add(clone(child.db_object, dataset_id=rev_datasets.id))
         self.session.add(clone(dep_dir, dataset_id=rev_datasets.id))
@@ -159,7 +161,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("published deployed directories ok"):
-            s3_file=get_cxg_bucket_path(pub_dataset.deployment_directories[0])
+            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
             self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
         with self.subTest("publish collection ok"):
             test_url = f"/dp/v1/collections/{pub_collection.id}"
@@ -178,11 +180,11 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         # Generate revision
         rev_collection = self.generate_collection(self.session, visibility="PRIVATE", id=pub_collection.id)
         rev_datasets = self.generate_dataset(
-                self.session,
-                collection_visibility="PRIVATE",
-                collection_id=rev_collection.id,
-                published=False,
-            )
+            self.session,
+            collection_visibility="PRIVATE",
+            collection_id=rev_collection.id,
+            published=False,
+        )
         self.generate_deployment_directory(self.session, rev_datasets.id, upload=True)
         [self.generate_artifact(self.session, rev_datasets.id, ext, upload=True) for ext in DatasetArtifactFileType]
 
@@ -191,7 +193,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("new deployed directories exist"):
-            s3_file=get_cxg_bucket_path(rev_datasets.deployment_directories[0])
+            s3_file = get_cxg_bucket_path(rev_datasets.deployment_directories[0])
             self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
 
         test_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
@@ -207,7 +209,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertIsNone(art.get_file_size())
         with self.subTest("new deployed directories deleted"):
             with self.assertRaises(botocore.exceptions.ClientError):
-                s3_file=get_cxg_bucket_path(rev_datasets.deployment_directories[0])
+                s3_file = get_cxg_bucket_path(rev_datasets.deployment_directories[0])
                 self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
 
     def test__revision_deleted_with_refreshed_datasets(self):
@@ -225,15 +227,19 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         # Generate revision
         rev_collection = self.generate_collection(self.session, visibility="PRIVATE", id=pub_collection.id)
         rev_datasets = self.generate_dataset(
-                self.session,
-                collection_visibility="PRIVATE",
-                collection_id=rev_collection.id,
-                published=False,
-                original_id=pub_dataset.id,
-            )
+            self.session,
+            collection_visibility="PRIVATE",
+            collection_id=rev_collection.id,
+            published=False,
+            original_id=pub_dataset.id,
+        )
         dep_dir = self.generate_deployment_directory(self.session, rev_datasets.id, upload=True)
-        arts = [self.generate_artifact(self.session, rev_datasets.id, ext, upload=True) for ext in DatasetArtifactFileType]
-        s3_objects = [(self.bucket, art.key_name) for art in arts] + [(self.cellxgene_bucket, get_cxg_bucket_path(dep_dir))]
+        arts = [
+            self.generate_artifact(self.session, rev_datasets.id, ext, upload=True) for ext in DatasetArtifactFileType
+        ]
+        s3_objects = [(self.bucket, art.key_name) for art in arts] + [
+            (self.cellxgene_bucket, get_cxg_bucket_path(dep_dir))
+        ]
 
         test_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -247,7 +253,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("published deployed directories ok"):
-            s3_file=get_cxg_bucket_path(pub_dataset.deployment_directories[0])
+            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
             self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
         with self.subTest("publish collection ok"):
             test_url = f"/dp/v1/collections/{pub_collection.id}"
