@@ -128,6 +128,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     ValidationStatus,
     ProcessingStatus,
+    DatasetArtifactType,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
@@ -160,7 +161,7 @@ def check_env():
 
 def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
-) -> DatasetAsset:
+):
     s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
     with db_session_manager() as session:
         logger.info(f"Updating database with  {artifact_type}.")
@@ -168,7 +169,8 @@ def create_artifact(
             session,
             dataset_id=dataset_id,
             filename=file_name,
-            type_enum=artifact_type,
+            filetype=artifact_type,
+            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=s3_uri,
         )
