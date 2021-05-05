@@ -38,7 +38,7 @@ const DatasetsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {sortByCreatedAtAscending(datasets).map((dataset) => (
+        {sortByCellCountDescending(datasets).map((dataset) => (
           <DatasetRow
             visibility={visibility}
             accessType={accessType}
@@ -53,8 +53,10 @@ const DatasetsGrid: FC<Props> = ({
   );
 };
 
-function sortByCreatedAtAscending(datasets: Dataset[]): Dataset[] {
-  return datasets?.sort((a, b) => a.created_at - b.created_at) || [];
+function sortByCellCountDescending(datasets: Dataset[]): Dataset[] {
+  return (
+    datasets?.sort((a, b) => (b.cell_count ?? 0) - (a.cell_count ?? 0)) || []
+  );
 }
 
 export default DatasetsGrid;
