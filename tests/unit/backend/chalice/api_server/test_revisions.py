@@ -303,7 +303,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_collection_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
         resp = self.app.get(test_collection_url, headers=headers)
         resp.raise_for_status()
-        self.assertEqual(json.loads(resp.body)['datasets'], [])
+        self.assertEqual(json.loads(resp.body)["datasets"], [])
         self.session.expire_all()
         self.assertTrue(rev_collection.datasets[0].tombstone)
 
