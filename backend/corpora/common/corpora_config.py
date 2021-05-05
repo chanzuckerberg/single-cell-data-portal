@@ -11,8 +11,9 @@ class CorporaConfig(SecretConfig):
 
     def get_defaults_template(self):
         template = {"upload_file_formats": ["h5ad"], "upload_max_file_size_gb": 30}
-        if os.getenv("UPLOAD_SFN_ARN"):
-            template["upload_sfn_arn"] = os.getenv("UPLOAD_SFN_ARN")
+        upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
+        if upload_snf_arn:
+            template["upload_sfn_arn"] = upload_snf_arn
         return template
 
 
