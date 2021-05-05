@@ -32,7 +32,7 @@
             "secret_arn": "happy/env-prod-config",
             "terraform_directory": ".happy/terraform/envs/prod",
             "delete_protected": true,
-            "auto_run_migrations": false,
+            "auto_run_migrations": true,
             "log_group_prefix": "/dp/prod"
         }
     },
