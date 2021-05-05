@@ -4,7 +4,6 @@ import csv
 import os
 import typing
 
-import boto3
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
