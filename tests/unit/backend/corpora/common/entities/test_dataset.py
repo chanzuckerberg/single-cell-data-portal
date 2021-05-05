@@ -17,7 +17,7 @@ from backend.corpora.common.corpora_orm import (
     DbCollection,
     Base,
 )
-from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities.dataset import Dataset, get_cxg_bucket_path
 from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
 from backend.corpora.common.utils.db_session import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
@@ -266,24 +266,51 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         self.assertIsNone(dataset.processing_status)
         self.assertIsNotNone(Geneset.get(self.session, geneset.id))
 
-    def test__tombstone_deletes_assets_from_s3(self):
-        file_name = "local.h5ad"
-        self.create_s3_object(file_name, self.bucket_name, content="hgdklgk dflgjklf")
-        artifact_params = dict(
-            filename="filename_1",
-            filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
-            user_submitted=True,
-            s3_uri=f"s3://{self.bucket_name}/{file_name}",
-        )
+    def test__deletes_assets_from_s3(self):
         dataset_params = BogusDatasetParams.get()
-        dataset = Dataset.create(
-            self.session,
-            **dataset_params,
-            artifacts=[artifact_params],
-        )
-        dataset.dataset_and_asset_deletion()
+        dataset = Dataset.create(self.session, **dataset_params)
+        artifact = self.generate_artifact(self.session, dataset.id, upload=True)
+        art_bucket_path = artifact.get_bucket_path()
+        self.assertS3FileExists(self.bucket, art_bucket_path)
+        dataset.asset_deletion()
         self.assertEqual(len(dataset.artifacts), 0)
+        self.assertS3FileDoesNotExist(self.bucket, art_bucket_path)
+
+    def test__deployment_directories_delete(self):
+        """S3 resources are not deleted"""
+        dataset = Dataset.create(self.session, **BogusDatasetParams.get())
+        dep_dir = self.generate_deployment_directory(self.session, dataset_id=dataset.id, upload=True)
+        cxg_bucket_path = get_cxg_bucket_path(dep_dir)
+        self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
+
+        dataset.deployment_directories_deletion()
+        self.assertS3FileDoesNotExist(self.cellxgene_bucket, cxg_bucket_path)
+
+    def test__dataset_delete(self):
+        dataset = Dataset.create(self.session, **BogusDatasetParams.get())
+        dataset_id = dataset.id
+        artifact = self.generate_artifact(self.session, dataset_id, upload=True)
+        art_bucket_path = artifact.get_bucket_path()
+        artifact_id = dataset.artifacts[0].id
+        dep_dir = self.generate_deployment_directory(self.session, dataset_id=dataset_id, upload=True)
+        cxg_bucket_path = get_cxg_bucket_path(dep_dir)
+        deployment_directory_id = dataset.deployment_directories[0].id
+
+        self.session.expire_all()
+        dataset = Dataset.get(self.session, dataset_id)
+        self.assertIsNotNone(self.session.query(DbDeploymentDirectory).get(deployment_directory_id))
+        self.assertIsNotNone(self.session.query(DbDatasetArtifact).get(artifact_id))
+        self.assertIsNotNone(dataset)
+        self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
+        self.assertS3FileExists(self.bucket, art_bucket_path)
+        dataset.delete()
+        self.session.expire_all()
+        dataset = Dataset.get(self.session, dataset_id)
+        self.assertIsNone(dataset)
+        self.assertIsNone(self.session.query(DbDeploymentDirectory).get(deployment_directory_id))
+        self.assertIsNone(self.session.query(DbDatasetArtifact).get(artifact_id))
+        self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
+        self.assertS3FileExists(self.bucket, art_bucket_path)
 
     def test__generate_tidy_csv_for_all_linked_genesets__correctly_creates_csv(self):
         collection = self.generate_collection(self.session)
@@ -372,6 +399,10 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             s3_file = dataset.copy_csv_to_s3(csv_file)
         stored_files = [x.key for x in self.cellxgene_bucket.objects.all()]
         self.assertIn(s3_file, stored_files)
+
+        # Delete all geneset files.
+        dataset.deployment_directories_deletion()
+        self.assertFalse([x.key for x in self.cellxgene_bucket.objects.all()])
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
