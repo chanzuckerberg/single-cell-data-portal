@@ -280,7 +280,7 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         """S3 resources are not deleted"""
         dataset = Dataset.create(self.session, **BogusDatasetParams.get())
         dep_dir = self.generate_deployment_directory(self.session, dataset_id=dataset.id, upload=True)
-        cxg_bucket_path = get_cxg_bucket_path(dep_dir)
+        cxg_bucket_path = f"{get_cxg_bucket_path(dep_dir)}/"
         self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
 
         dataset.deployment_directories_deletion()
@@ -293,7 +293,7 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         art_bucket_path = artifact.get_bucket_path()
         artifact_id = dataset.artifacts[0].id
         dep_dir = self.generate_deployment_directory(self.session, dataset_id=dataset_id, upload=True)
-        cxg_bucket_path = get_cxg_bucket_path(dep_dir)
+        cxg_bucket_path = f"{get_cxg_bucket_path(dep_dir)}/"
         deployment_directory_id = dataset.deployment_directories[0].id
 
         self.session.expire_all()
