@@ -282,10 +282,8 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             **dataset_params,
             artifacts=[artifact_params],
         )
-        dataset.asset_deletion()
+        dataset.dataset_and_asset_deletion()
         self.assertEqual(len(dataset.artifacts), 0)
-        with self.assertRaises(botocore.exceptions.ClientError):
-            self.bucket.Object(file_name).content_length
 
     def test__generate_tidy_csv_for_all_linked_genesets__correctly_creates_csv(self):
         collection = self.generate_collection(self.session)
@@ -374,7 +372,6 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             s3_file = dataset.copy_csv_to_s3(csv_file)
         stored_files = [x.key for x in self.cellxgene_bucket.objects.all()]
         self.assertIn(s3_file, stored_files)
-
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
