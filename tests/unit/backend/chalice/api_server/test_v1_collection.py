@@ -2,6 +2,7 @@ import itertools
 import json
 from datetime import datetime
 from furl import furl
+import unittest
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -510,12 +511,13 @@ class TestCollectionDeletion(BaseAuthAPITest):
         # delete collection
         response = self.app.delete(test_url.url, headers=headers)
         response.raise_for_status()
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 204)
 
         # check collection and datasets delete
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
+    @unittest.skip("Tombstone not supported through API.")
     def test_tombstone_collection__ok(self):
         # Generate test collection
         collection = self.generate_collection(
@@ -545,7 +547,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
         # delete collection
         response = self.app.delete(test_url.url, headers=headers)
         response.raise_for_status()
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 204)
 
         # check collection and datasets delete
         self.session.expire_all()
@@ -580,7 +582,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         response.raise_for_status()
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 204)
 
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -596,7 +598,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__public__403(self):
         collection = self.generate_collection(
@@ -611,7 +613,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
         for test_url in test_urls:
             with self.subTest(test_url.url):
                 response = self.app.delete(test_url.url, headers=headers)
-                self.assertEqual(response.status_code, 403)
+                self.assertEqual(response.status_code, 405)
 
     def test_delete_collection__not_owner(self):
         collection = self.generate_collection(
@@ -649,7 +651,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
 
         test_url = furl(path=f"/dp/v1/collections/{collection_to_delete.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 204)
 
         # check not returned privately
         response = self.app.get("/dp/v1/collections/", headers=headers)

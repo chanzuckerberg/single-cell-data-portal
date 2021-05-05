@@ -205,7 +205,8 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
 def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
-        dataset.dataset_and_asset_deletion()
+        dataset.asset_deletion()
+        dataset.delete()
         logger.info("Upload Canceled.")
 
 

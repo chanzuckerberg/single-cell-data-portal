@@ -1,3 +1,4 @@
+import botocore
 import tempfile
 
 import filecmp
@@ -266,7 +267,7 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         self.assertIsNone(dataset.processing_status)
         self.assertIsNotNone(Geneset.get(self.session, geneset.id))
 
-    def test__tombstone_deletes_assets_from_s3(self):
+    def test__deletes_assets_from_s3(self):
         file_name = "local.h5ad"
         self.create_s3_object(file_name, self.bucket_name, content="hgdklgk dflgjklf")
         artifact_params = dict(
@@ -282,8 +283,10 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             **dataset_params,
             artifacts=[artifact_params],
         )
-        dataset.dataset_and_asset_deletion()
+        dataset.asset_deletion()
         self.assertEqual(len(dataset.artifacts), 0)
+        with self.assertRaises(botocore.exceptions.ClientError):
+            self.bucket.Object(file_name).content_length
 
     def test__generate_tidy_csv_for_all_linked_genesets__correctly_creates_csv(self):
         collection = self.generate_collection(self.session)

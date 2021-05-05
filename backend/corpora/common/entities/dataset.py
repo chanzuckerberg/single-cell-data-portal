@@ -140,27 +140,21 @@ class Dataset(Entity):
         )
         self.session.commit()
 
-    def dataset_and_asset_deletion(self):
+    def asset_deletion(self):
         if not self.published:
             for artifact in self.artifacts:
                 asset = DatasetAsset.get(self.session, artifact.id)
                 asset.delete_from_s3()
+                asset.delete()
             self.delete_deployment_directories()
-        self.delete()
 
     def delete_deployment_directories(self):
         for deployment_directory in self.deployment_directories:
-            object_names = self.get_cxg_bucket_path(deployment_directory)
+            object_names = get_cxg_bucket_path(deployment_directory)
             logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
             cxg_bucket.objects.filter(Prefix=object_names).delete()
-
-    @staticmethod
-    def get_cxg_bucket_path(deployment_directory: str) -> str:
-        """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
-        deployment directory URL"""
-        object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
-        base, _ = os.path.splitext(object_name)
-        return base
+            self.session.delete(deployment_directory)
+        self.session.commit()
 
     @staticmethod
     def new_processing_status() -> dict:
@@ -171,7 +165,7 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:
-        s3_file = f"{self.get_cxg_bucket_path(self.deployment_directories[0])}/genesets.csv"
+        s3_file = f"{get_cxg_bucket_path(self.deployment_directories[0])}/genesets.csv"
         cxg_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
@@ -197,3 +191,11 @@ class Dataset(Entity):
             for gene in genesets:
                 writer.writerow(gene)
         return csv_file
+
+
+def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:
+    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
+    deployment directory URL"""
+    object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
+    base, _ = os.path.splitext(object_name)
+    return base

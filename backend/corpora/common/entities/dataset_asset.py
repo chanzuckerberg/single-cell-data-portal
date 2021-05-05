@@ -85,8 +85,8 @@ class DatasetAsset(Entity):
         return cls(db_object)
 
     @staticmethod
-    def make_s3_uri(artifact_bucket, bucket_prefix, file_base):
-        return join("s3://", artifact_bucket, bucket_prefix, file_base)
+    def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
+        return join("s3://", artifact_bucket, bucket_prefix, file_name)
 
     @staticmethod
     def upload(
@@ -102,4 +102,4 @@ class DatasetAsset(Entity):
             join(bucket_prefix, file_base),
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
-        return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_name)
+        return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
