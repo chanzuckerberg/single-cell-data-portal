@@ -1,3 +1,5 @@
+import tempfile
+
 import filecmp
 import os
 import typing
@@ -280,8 +282,10 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             **dataset_params,
             artifacts=[artifact_params],
         )
-        dataset.dataset_and_asset_deletion()
+        dataset.asset_deletion()
         self.assertEqual(len(dataset.artifacts), 0)
+        with self.assertRaises(botocore.exceptions.ClientError):
+            self.bucket.Object(file_name).content_length
 
     def test__generate_tidy_csv_for_all_linked_genesets__correctly_creates_csv(self):
         collection = self.generate_collection(self.session)
@@ -334,16 +338,16 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             description="describe another geneset",
             genes=genes1,
         )
-
-        csv_file = dataset.generate_tidy_csv_for_all_linked_genesets()
-        expected_csv = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../../fixtures/sample_geneset_csv.csv")
-        )  # noqa
-        self.assertTrue(filecmp.cmp(csv_file, expected_csv, shallow=False))
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            csv_file = dataset.generate_tidy_csv_for_all_linked_genesets(temp_dir_name)
+            expected_csv = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "../../../fixtures/sample_geneset_csv.csv")
+            )  # noqa
+            self.assertTrue(filecmp.cmp(csv_file, expected_csv, shallow=False))
 
     def test__generate_tidy_csv_for_all_linked_genesets__stores_file_in_correct_location(self):
         collection = self.generate_collection(self.session)
-        deployment_directory_params = dict(url="test_url")
+        deployment_directory_params = dict(url="http://test_domain.example/e/test_dataset_id.cxg/")
         dataset = self.generate_dataset(
             self.session, collection=collection, deployment_directories=[deployment_directory_params]
         )
@@ -365,10 +369,12 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             description="describe the geneset",
             genes=genes0,
         )
-        csv_file = dataset.generate_tidy_csv_for_all_linked_genesets()
-        dataset.copy_csv_to_s3(csv_file)
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            csv_file = dataset.generate_tidy_csv_for_all_linked_genesets(temp_dir_name)
+            s3_file = dataset.copy_csv_to_s3(csv_file)
         stored_files = [x.key for x in self.cellxgene_bucket.objects.all()]
-        self.assertIn(csv_file, stored_files)
+        self.assertIn(s3_file, stored_files)
+
 
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """

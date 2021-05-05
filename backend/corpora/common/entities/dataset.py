@@ -123,12 +123,6 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
-    def delete(self):
-        """
-        Delete the Dataset and all child objects.
-        """
-        super().delete()
-
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
         self.session.delete(self.processing_status)
@@ -148,7 +142,7 @@ class Dataset(Entity):
         self.tombstone_dataset_and_delete_child_objects()
 
     @staticmethod
-    def new_processing_status():
+    def new_processing_status() -> dict:
         return {
             "upload_status": UploadStatus.WAITING,
             "upload_progress": 0,
@@ -169,7 +163,7 @@ class Dataset(Entity):
         genesets = []
         max_additional_params = 0
         for geneset in self.genesets:
-            geneset_entity = Geneset.get(session=self.session, key=geneset.id)
+            geneset_entity = Geneset(geneset)
             gene_rows, gene_max = geneset_entity.convert_geneset_to_gene_dicts()
             if gene_max > max_additional_params:
                 max_additional_params = gene_max
