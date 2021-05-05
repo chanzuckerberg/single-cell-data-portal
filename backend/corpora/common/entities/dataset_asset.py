@@ -1,6 +1,5 @@
 from os.path import basename, join
 
-import logging
 import os
 import typing
 from urllib.parse import urlparse
@@ -10,8 +9,6 @@ from botocore.exceptions import ClientError
 
 from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
-
-logger = logging.getLogger(__name__)
 
 
 class DatasetAsset(Entity):
@@ -109,7 +106,6 @@ class DatasetAsset(Entity):
         artifact_bucket: str,
     ) -> str:
         file_base = basename(file_name)
-        logger.info(f"Uploading to [{file_base}] to S3 bucket: [{artifact_bucket}].")
         cls.s3_client().upload_file(
             file_name,
             artifact_bucket,

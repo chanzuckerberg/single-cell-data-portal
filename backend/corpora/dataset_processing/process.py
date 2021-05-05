@@ -162,6 +162,7 @@ def check_env():
 def create_artifact(
     file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
 ):
+    logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
     with db_session_manager() as session:
         logger.info(f"Updating database with  {artifact_type}.")
