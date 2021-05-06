@@ -16,7 +16,7 @@ from ..corpora_orm import (
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
-    DbGenesetDatasetLink,
+    DbGenesetDatasetLink, CollectionVisibility,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_session import clone
@@ -32,21 +32,21 @@ class Dataset(Entity):
 
     @classmethod
     def create(
-        cls,
-        session,
-        revision: int = 0,
-        name: str = "",
-        organism: dict = None,
-        tissue: list = None,
-        assay: list = None,
-        disease: list = None,
-        sex: list = None,
-        ethnicity: list = None,
-        development_stage: list = None,
-        artifacts: list = None,
-        deployment_directories: list = None,
-        processing_status: dict = None,
-        **kwargs,
+            cls,
+            session,
+            revision: int = 0,
+            name: str = "",
+            organism: dict = None,
+            tissue: list = None,
+            assay: list = None,
+            disease: list = None,
+            sex: list = None,
+            ethnicity: list = None,
+            development_stage: list = None,
+            artifacts: list = None,
+            deployment_directories: list = None,
+            processing_status: dict = None,
+            **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -78,7 +78,7 @@ class Dataset(Entity):
         return cls(dataset)
 
     def update(
-        self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
+            self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
     ) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
@@ -136,8 +136,8 @@ class Dataset(Entity):
 
         """
         revision_dataset = clone(
-            self.db_object, original_uuid=self.id
-        )
+            self.db_object, original_id=self.id, collection_id=self.collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE)
         self.session.add(revision_dataset)
         for artifact in self.artifacts:
             self.session.add(clone(artifact, dataset_id=revision_dataset.id))

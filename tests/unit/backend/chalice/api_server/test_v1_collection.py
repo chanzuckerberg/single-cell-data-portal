@@ -846,8 +846,6 @@ class TestRevision(BaseAuthAPITest):
         )
         test_url = f"/dp/v1/collections/{collection.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        import pdb
-        pdb.set_trace()
         # Start revision
         response = self.app.post(test_url, headers=headers)
         response.raise_for_status()
