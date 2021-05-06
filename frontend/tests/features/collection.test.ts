@@ -1,7 +1,9 @@
 import { Collection } from "src/common/entities";
+import { sortByCellCountDescending } from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { login, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
+import datasets from "./fixtures/datasets";
 
 const describeIfDeployed =
   TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
@@ -35,6 +37,14 @@ describe("Collection", () => {
       await tryUntil(async () => {
         await expect(page).not.toHaveSelector(getText(collectionName));
       }, 50);
+    });
+
+    describe("dataset order", () => {
+      let lastValue = 1_000_000_000;
+      sortByCellCountDescending(datasets).forEach((dataset) => {
+        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
+        lastValue = dataset.cell_count ?? 0;
+      });
     });
 
     describe("Publish a collection", () => {
