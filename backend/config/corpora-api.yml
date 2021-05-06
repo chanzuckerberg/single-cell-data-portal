@@ -301,7 +301,7 @@ paths:
         downloading through this collection.
       security:
         - cxguserCookie: []
-      operationId: corpora.lambdas.api.v1.collection_uuid.upload.link
+      operationId: corpora.lambdas.api.v1.collection_uuid.upload.relink
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
