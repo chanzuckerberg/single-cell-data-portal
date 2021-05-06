@@ -5,7 +5,6 @@ import logging
 import os
 import typing
 
-
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
@@ -147,12 +146,6 @@ class Dataset(Entity):
             self.session.add(clone(deployment, dataset_id=revision_dataset.id))
         self.session.commit()
         return Dataset(revision_dataset)
-
-    def delete(self):
-        """
-        Delete the Dataset and all child objects.
-        """
-        super().delete()
 
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
