@@ -98,7 +98,7 @@ class DatasetAsset(Entity):
         return cls(db_object)
 
     def get_bucket_path(self):
-        return f"{self.dataset_id}/{self.filename}"
+        return "/".join(self.s3_uri.split("/")[-2:])
 
     @staticmethod
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):

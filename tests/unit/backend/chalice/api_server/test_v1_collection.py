@@ -9,8 +9,7 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     generate_uuid,
 )
-from backend.corpora.common.entities import Collection, DatasetAsset
-from backend.corpora.common.entities.dataset import get_cxg_bucket_path
+from backend.corpora.common.entities import Collection
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -495,29 +494,18 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_1 = self.generate_dataset_with_s3(
+        dataset_1 = self.generate_dataset_with_s3_resources(
             self.session,
-            artifacts=True,
-            deployment_directories=True,
             collection=collection,
             processing_status=processing_status_1,
         )
-        dataset_2 = self.generate_dataset_with_s3(
+        dataset_2 = self.generate_dataset_with_s3_resources(
             self.session,
-            artifacts=True,
-            deployment_directories=True,
             collection=collection,
             processing_status=processing_status_2,
         )
 
-        s3_objects = (
-            [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset_1.artifacts]
-            + [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset_2.artifacts]
-            + [
-                (self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset_1.deployment_directories[0])}.cxg/"),
-                (self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset_2.deployment_directories[0])}.cxg/"),
-            ]
-        )
+        s3_objects = self.get_s3_object_paths_from_dataset(dataset_1) + self.get_s3_object_paths_from_dataset(dataset_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
 
@@ -623,7 +611,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 204)
 
     def test_delete_collection__public__405(self):
         collection = self.generate_collection(

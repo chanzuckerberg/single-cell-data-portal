@@ -4,11 +4,14 @@ import os
 
 import botocore
 import boto3
+import typing
+from boto.s3.bucket import Bucket
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType, DbDeploymentDirectory
 from backend.corpora.common.entities import DatasetAsset, Dataset
+from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -97,7 +100,9 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         session.commit()
         return deployment_directory
 
-    def generate_dataset_with_s3(self, session, artifacts=True, deployment_directories=True, **params) -> Dataset:
+    def generate_dataset_with_s3_resources(
+        self, session, artifacts=True, deployment_directories=True, **params
+    ) -> Dataset:
         dataset = self.generate_dataset(session, **params)
         if artifacts:
             for ext in DatasetArtifactFileType:
@@ -106,10 +111,16 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             self.generate_deployment_directory(session, dataset.id, upload=True)
         return dataset
 
-    def assertS3FileExists(self, bucket, file_name):
+    def get_s3_object_paths_from_dataset(self, dataset: Dataset) -> typing.List[typing.Tuple[Bucket, str]]:
+        s3_objects = [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset.artifacts] + [
+            (self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset.deployment_directories[0])}.cxg/")
+        ]
+        return s3_objects
+
+    def assertS3FileExists(self, bucket: Bucket, file_name: str):
         self.assertGreater(bucket.Object(file_name).content_length, 1)
 
-    def assertS3FileDoesNotExist(self, bucket, file_name, msg=None):
+    def assertS3FileDoesNotExist(self, bucket: Bucket, file_name: str, msg: str = None):
         msg = msg if msg else f"s3://{bucket.name}/{file_name} found."
         with self.assertRaises(botocore.exceptions.ClientError, msg=msg):
             bucket.Object(file_name).content_length
