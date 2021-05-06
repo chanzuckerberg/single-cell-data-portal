@@ -8,7 +8,7 @@ from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType, DbDeploymentDirectory
-from backend.corpora.common.entities import DatasetAsset
+from backend.corpora.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -96,6 +96,15 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         session.add(DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/"))
         session.commit()
         return deployment_directory
+
+    def generate_dataset_with_s3(self, session, artifacts=True, deployment_directories=True, **params) -> Dataset:
+        dataset = self.generate_dataset(session, **params)
+        if artifacts:
+            for ext in DatasetArtifactFileType:
+                self.generate_artifact(session, dataset.id, ext, upload=True)
+        if deployment_directories:
+            self.generate_deployment_directory(session, dataset.id, upload=True)
+        return dataset
 
     def assertS3FileExists(self, bucket, file_name):
         self.assertGreater(bucket.Object(file_name).content_length, 1)
