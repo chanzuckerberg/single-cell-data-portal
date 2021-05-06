@@ -1,4 +1,3 @@
-import botocore
 import json
 from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset
@@ -161,8 +160,8 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("published deployed directories ok"):
-            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
-            self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+            s3_file = f"{get_cxg_bucket_path(dep_dir)}.cxg/"
+            self.assertS3FileExists(self.cellxgene_bucket, s3_file)
         with self.subTest("publish collection ok"):
             test_url = f"/dp/v1/collections/{pub_collection.id}"
             resp = self.app.get(test_url)
@@ -193,8 +192,8 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("new deployed directories exist"):
-            s3_file = get_cxg_bucket_path(rev_datasets.deployment_directories[0])
-            self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+            s3_file = f"{get_cxg_bucket_path(rev_datasets.deployment_directories[0])}.cxg/"
+            self.assertS3FileExists(self.cellxgene_bucket, s3_file)
 
         test_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -208,9 +207,8 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertIsNone(art.get_file_size())
         with self.subTest("new deployed directories deleted"):
-            with self.assertRaises(botocore.exceptions.ClientError):
-                s3_file = get_cxg_bucket_path(rev_datasets.deployment_directories[0])
-                self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+            s3_file = f"{get_cxg_bucket_path(rev_datasets.deployment_directories[0])}.cxg/"
+            self.assertS3FileDoesNotExist(self.cellxgene_bucket, s3_file)
 
     def test__revision_deleted_with_refreshed_datasets(self):
         """The refreshed datasets should be deleted and the published dataset intact."""
@@ -238,7 +236,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.generate_artifact(self.session, rev_datasets.id, ext, upload=True) for ext in DatasetArtifactFileType
         ]
         s3_objects = [(self.bucket, art.key_name) for art in arts] + [
-            (self.cellxgene_bucket, get_cxg_bucket_path(dep_dir))
+            (self.cellxgene_bucket, f"{get_cxg_bucket_path(dep_dir)}.cxg/")
         ]
 
         test_url = f"/dp/v1/collections/{pub_collection.id}?visibility=PRIVATE"
@@ -253,8 +251,8 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("published deployed directories ok"):
-            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
-            self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+            s3_file = f"{get_cxg_bucket_path(pub_dataset.deployment_directories[0])}.cxg/"
+            self.assertS3FileExists(self.cellxgene_bucket, s3_file)
         with self.subTest("publish collection ok"):
             test_url = f"/dp/v1/collections/{pub_collection.id}"
             resp = self.app.get(test_url)
@@ -265,8 +263,7 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                     self.assertEqual(expected_body[key], actual_body[key])
         with self.subTest("refreshed dataset s3 resources deleted"):
             for bucket, key in s3_objects:
-                with self.assertRaises(botocore.exceptions.ClientError):
-                    bucket.Object(key).content_length
+                self.assertS3FileDoesNotExist(bucket, key)
 
     def test__delete_published_dataset_during_revision(self):
         """The dataset is tombstone in the revision. The published artifacts are intact"""
@@ -312,8 +309,8 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 art = DatasetAsset(artifact)
                 self.assertGreater(art.get_file_size(), 1)
         with self.subTest("published deployed directories ok"):
-            s3_file = get_cxg_bucket_path(pub_dataset.deployment_directories[0])
-            self.assertGreater(self.cellxgene_bucket.Object(s3_file).content_length, 1)
+            s3_file = f"{get_cxg_bucket_path(pub_dataset.deployment_directories[0])}.cxg/"
+            self.assertS3FileExists(self.cellxgene_bucket, s3_file)
         with self.subTest("publish collection ok"):
             test_url = f"/dp/v1/collections/{pub_collection.id}"
             resp = self.app.get(test_url)
