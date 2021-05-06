@@ -204,7 +204,6 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def test__delete_published_dataset_during_revision(self):
         """The dataset is tombstone in the revision. The published artifacts are intact"""
-        # Generate public collection
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         pub_s3_objects, rev_s3_objects = self.copy_dataset_from_published_to_revision()
         # Delete a published dataset in the revision
