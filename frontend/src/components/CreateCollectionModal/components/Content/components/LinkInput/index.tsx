@@ -140,7 +140,7 @@ const LinkInput: FC<Props> = ({
   }
 };
 
-function isDOILink(
+export function isDOILink(
   type: COLLECTION_LINK_TYPE
 ): (value: string) => true | string {
   return (value: string) => {

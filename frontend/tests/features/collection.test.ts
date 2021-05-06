@@ -1,5 +1,6 @@
-import { Collection } from "src/common/entities";
+import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collections/components/Grid/components/DatasetsGrid";
+import { isDOILink } from "src/components/CreateCollectionModal/components/Content/components/LinkInput";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_ENV } from "tests/common/constants";
 import { login, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
@@ -16,6 +17,28 @@ const TEST_COLLECTION = {
 };
 
 describe("Collection", () => {
+  describe("Collection Creation Modal", () => {
+    it("Validates DOI Path", () => {
+      const validator = isDOILink(COLLECTION_LINK_TYPE["DOI"]);
+      expect(validator("http://doi.org/10.1038/nphys1170")).toBeTruthy();
+      expect(
+        validator("http://dx.doi.org/10.1002/0470841559.ch1")
+      ).toBeTruthy();
+      expect(
+        validator("http://dx.doii.org/10.1002/0470841559.ch1")
+      ).toEqualText("Please enter a valid DOI link");
+      expect(validator("http://doi.org/")).toEqualText(
+        "Please enter a valid DOI link"
+      );
+    });
+    it("Doesn't Validate non-DOI path", () => {
+      const validator = isDOILink(COLLECTION_LINK_TYPE["OTHER"]);
+      expect(
+        validator("http://dx.doii.org/10.1002/0470841559.ch1")
+      ).toBeTruthy();
+      expect(validator("http://doi.org/")).toBeTruthy();
+    });
+  });
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
       const timestamp = Date.now();
