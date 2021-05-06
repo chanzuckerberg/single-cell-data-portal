@@ -91,7 +91,7 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
 
     db_session = g.db_session
     priv_collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user, include_tombstones=True
     )
     if priv_collection:
         if not priv_collection.tombstone:
