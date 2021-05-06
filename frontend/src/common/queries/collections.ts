@@ -180,14 +180,15 @@ export function useCollectionUploadLinks(
 }
 
 async function deleteCollection(collectionID: Collection["id"]) {
-  const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id: collectionID });
+  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
+    id: collectionID,
+  });
+  const finalUrl = baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`;
 
-  const response = await fetch(url, DELETE_FETCH_OPTIONS);
-
-  const json = await response.json();
+  const response = await fetch(finalUrl, DELETE_FETCH_OPTIONS);
 
   if (!response.ok) {
-    throw json;
+    throw await response.json();
   }
 }
 
@@ -213,10 +214,8 @@ async function publishCollection(id: Collection["id"]) {
     method: "POST",
   });
 
-  const result = await response.json();
-
   if (!response.ok) {
-    throw result;
+    throw await response.json();
   }
 }
 
@@ -281,8 +280,7 @@ const createRevision = async function (id: string) {
     method: "POST",
   });
 
-  const result = await response.json();
-  if (!response.ok) throw result;
+  if (!response.ok) throw await response.json();
 };
 
 export function useCreateRevision(callback: () => void) {

@@ -221,3 +221,12 @@ class Collection(Entity):
         self.session.flush()
 
         super().update(**kwargs)
+
+    def delete(self):
+        for dataset in self.datasets:
+            ds = Dataset(dataset)
+            if not ds.published:
+                ds.asset_deletion()
+                ds.deployment_directories_deletion()
+            ds.delete()
+        super().delete()
