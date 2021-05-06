@@ -1,7 +1,12 @@
 import typing
 
-from backend.corpora.common.corpora_orm import Base, DatasetArtifactFileType, DatasetArtifactType, UploadStatus, \
-    ValidationStatus
+from backend.corpora.common.corpora_orm import (
+    Base,
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    UploadStatus,
+    ValidationStatus,
+)
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.utils import BogusDatasetParams
 

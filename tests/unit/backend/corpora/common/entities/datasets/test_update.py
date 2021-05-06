@@ -1,5 +1,9 @@
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType, DbDatasetProcessingStatus, \
-    UploadStatus
+from backend.corpora.common.corpora_orm import (
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    DbDatasetProcessingStatus,
+    UploadStatus,
+)
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed

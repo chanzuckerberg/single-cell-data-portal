@@ -98,4 +98,3 @@ class TestDatasetGenesetCSV(TestDataset):
         # Delete all geneset files.
         dataset.deployment_directories_deletion()
         self.assertFalse([x.key for x in self.cellxgene_bucket.objects.all()])
-

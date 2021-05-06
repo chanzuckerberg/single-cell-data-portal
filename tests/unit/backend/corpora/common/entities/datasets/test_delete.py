@@ -1,5 +1,11 @@
-from backend.corpora.common.corpora_orm import CollectionVisibility, DbDataset, DbDatasetArtifact, \
-    DbDeploymentDirectory, DbCollection, UploadStatus
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    DbDataset,
+    DbDatasetArtifact,
+    DbDeploymentDirectory,
+    DbCollection,
+    UploadStatus,
+)
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
@@ -8,7 +14,6 @@ from tests.unit.backend.utils import BogusDatasetParams
 
 
 class TestDeleteDataset(TestDataset):
-
     def test__cascade_delete_dataset__ok(self):
         # Create the dataset
         test_dataset = Dataset.create(
@@ -37,8 +42,6 @@ class TestDeleteDataset(TestDataset):
             expected_exists = test_collection_ids
             self.assertRowsDeleted(expected_deleted)
             self.assertRowsExist(expected_exists)
-
-
 
     def test__tombstone_dataset_and_delete_child_objects(self):
         dataset = self.create_dataset_with_artifacts(artifact_count=3, deployment_dir_count=2)

@@ -9,4 +9,3 @@ class TestListDataset(TestDataset):
         generated_ids = [Dataset.create(self.session, **BogusDatasetParams.get()).id for _ in range(generate)]
         dataset = Dataset.list(self.session)
         self.assertTrue(set(generated_ids).issubset([d.id for d in dataset]))
-

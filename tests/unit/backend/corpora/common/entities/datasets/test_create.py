@@ -1,5 +1,9 @@
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType, DatasetArtifactType, UploadStatus, \
-    ValidationStatus
+from backend.corpora.common.corpora_orm import (
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    UploadStatus,
+    ValidationStatus,
+)
 from backend.corpora.common.entities import Dataset
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusDatasetParams

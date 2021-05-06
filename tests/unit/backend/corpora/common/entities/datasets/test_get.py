@@ -37,4 +37,3 @@ class TestGetDataset(TestDataset):
         dataset = Dataset.get(self.session, self.uuid)
         asset = dataset.get_asset("fake_asset")
         self.assertIsNone(asset)
-
