@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 
 import csv
+import logging
 import os
 import typing
 
@@ -18,6 +19,8 @@ from ..corpora_orm import (
     DbGenesetDatasetLink,
 )
 from ..utils.s3_buckets import cxg_bucket
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -138,11 +141,17 @@ class Dataset(Entity):
         )
         self.session.commit()
 
-    def dataset_and_asset_deletion(self):
+    def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
-        self.tombstone_dataset_and_delete_child_objects()
+            asset.delete()
+
+    def deployment_directories_deletion(self):
+        for deployment_directory in self.deployment_directories:
+            object_names = get_cxg_bucket_path(deployment_directory)
+            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
+            cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
     def new_processing_status() -> dict:
