@@ -12,22 +12,23 @@ class TestDatasetRevision(TestDataset):
             original_artifacts = dataset.pop("artifacts")
             for i in range(0, len(rev_artifacts)):
                 for key in rev_artifacts[i].keys():
-                    self.compare_original_and_revision(original_artifacts[i], rev_artifacts[i], key,
-                                                       ("dataset_id", "id"))
+                    self.compare_original_and_revision(
+                        original_artifacts[i], rev_artifacts[i], key, ("dataset_id", "id")
+                    )
 
         with self.subTest("deployment is correctly created and points to correct s3 uri "):
             rev_deployment = rev_dataset.pop("deployment_directories")[0]
             original_deployment = dataset.pop("deployment_directories")[0]
             for key in rev_deployment.keys():
-                self.compare_original_and_revision(original_deployment, rev_deployment, key,
-                                                   ("dataset_id", "id"))
+                self.compare_original_and_revision(original_deployment, rev_deployment, key, ("dataset_id", "id"))
 
         with self.subTest("Test processing status copied over"):
             rev_processing_status = rev_dataset.pop("processing_status")
             original_processing_status = dataset.pop("processing_status")
             for key in rev_processing_status.keys():
-                self.compare_original_and_revision(original_processing_status, rev_processing_status, key,
-                                                   ("dataset_id", "id"))
+                self.compare_original_and_revision(
+                    original_processing_status, rev_processing_status, key, ("dataset_id", "id")
+                )
 
         with self.subTest("revision points at a different collection"):
             revision_collection = rev_dataset.pop("collection")
@@ -35,8 +36,9 @@ class TestDatasetRevision(TestDataset):
             self.assertNotEqual(revision_collection, dataset_1_collection)
         with self.subTest("metadata of revised matches original"):
             for key in rev_dataset.keys():
-                self.compare_original_and_revision(dataset, rev_dataset, key,
-                                                   ("original_id", "id", "collection_visibility"))
+                self.compare_original_and_revision(
+                    dataset, rev_dataset, key, ("original_id", "id", "collection_visibility")
+                )
 
     def compare_original_and_revision(self, original, revision, key, unique_fields):
         if key in unique_fields:
