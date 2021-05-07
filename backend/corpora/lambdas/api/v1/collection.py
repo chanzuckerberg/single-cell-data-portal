@@ -59,7 +59,7 @@ def post_collection_revision(collection_uuid: str, user: str):
         db_session.rollback()
         raise ConflictException() from ex
     for dataset in collection.datasets:
-        Dataset(dataset).revision()
+        Dataset(dataset).create_revision()
     result = collection_revision.reshape_for_api()
 
     result["access_type"] = "WRITE"

@@ -15,7 +15,7 @@ from ..corpora_orm import (
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
-    DbGenesetDatasetLink, CollectionVisibility,
+    DbGenesetDatasetLink, CollectionVisibility, generate_uuid,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_session import clone
@@ -128,15 +128,21 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
-    def revision(self) -> "Dataset":
+    def create_revision(self) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
         :return: dataset revision.
 
         """
+        revision_dataset_uuid = generate_uuid()
         revision_dataset = clone(
-            self.db_object, original_id=self.id, collection_id=self.collection_id,
-            collection_visibility=CollectionVisibility.PRIVATE)
+            self.db_object,
+            id=revision_dataset_uuid,
+            collection_id=self.collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE,
+            original_id=self.id,
+            published=False,
+            revision=self.revision + 1)
         self.session.add(revision_dataset)
         for artifact in self.artifacts:
             self.session.add(clone(artifact, dataset_id=revision_dataset.id))
@@ -161,16 +167,25 @@ class Dataset(Entity):
         self.session.commit()
 
     def asset_deletion(self):
+        if self.original_id:
+            original_dataset = Dataset.get(id=self.original_id)
+            original_s3_artifacts = [x['s3_uri'] for x in original_dataset.artifacts]
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
-            asset.delete_from_s3()
+            if artifact.s3_uri not in original_s3_artifacts:
+                asset.delete_from_s3()
             asset.delete()
 
     def deployment_directories_deletion(self):
+        original_deployment_objects = []
+        if self.original_id:
+            original_dataset = Dataset.get(id=self.original_id)
+            original_deployment_objects = [get_cxg_bucket_path(x) for x in original_dataset.deployment_directories]
         for deployment_directory in self.deployment_directories:
             object_names = get_cxg_bucket_path(deployment_directory)
-            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
-            cxg_bucket.objects.filter(Prefix=object_names).delete()
+            if object_names not in original_deployment_objects:
+                logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
+                cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
     def new_processing_status() -> dict:

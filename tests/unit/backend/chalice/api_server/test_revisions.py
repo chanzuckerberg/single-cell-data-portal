@@ -2,6 +2,7 @@ import json
 import typing
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import clone
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
@@ -24,6 +25,9 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for test in tests:
             with self.subTest(test):
                 collection = self.generate_collection(self.session, **test)
+                dataset_0 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
+                dataset_1 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
+
                 test_url = f"/dp/v1/collections/{collection.id}"
                 headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
@@ -41,7 +45,23 @@ class TestRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertEqual(200, response.status_code)
                 get_body = json.loads(response.body)
                 self.assertEqual(post_body, get_body)
-
+                with self.subTest("Test datasets in revised collection are not original datasets"):
+                    new_dataset_ids = [x['id'] for x in get_body['datasets']]
+                    self.assertNotIn(dataset_0.id, new_dataset_ids)
+                    self.assertNotIn(dataset_1.id, new_dataset_ids)
+                with self.subTest("Test revised datasets point at original datasets"):
+                    original_dataset_ids = [x['original_id'] for x in get_body['datasets']]
+                    self.assertIn(dataset_0.id, original_dataset_ids)
+                    self.assertIn(dataset_1.id, original_dataset_ids)
+                with self.subTest("Check assets point at revised dataset"):
+                    assets_0 = get_body['datasets'][0]['dataset_assets']
+                    assets_1 = get_body['datasets'][1]['dataset_assets']
+                    revised_dataset_0 = get_body['datasets'][0]['id']
+                    revised_dataset_1 = get_body['datasets'][1]['id']
+                    for x in assets_0:
+                        self.assertEqual(revised_dataset_0, x['dataset_id'])
+                    for x in assets_1:
+                        self.assertEqual(revised_dataset_1, x['dataset_id'])
                 # Test unauthenticated get
                 get_body.pop("access_type")
                 expected_body = get_body
@@ -256,17 +276,7 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                     original_id=dataset.id,
                 )
             else:
-                rev_dataset = self.generate_dataset(
-                    self.session,
-                    collection_visibility="PRIVATE",
-                    collection_id=self.rev_collection.id,
-                    published=True,
-                    original_id=dataset.id,
-                )
-                for artifact in dataset.artifacts:
-                    self.session.add(clone(artifact, dataset_id=rev_dataset.id))
-                self.session.add(clone(dataset.deployment_directories[0], dataset_id=rev_dataset.id))
-                self.session.commit()
+                rev_dataset = Dataset(dataset).create_revision()
             pub_s3_objects.extend(self.get_s3_object_paths_from_dataset(dataset))
             rev_s3_objects.extend(self.get_s3_object_paths_from_dataset(rev_dataset))
         return pub_s3_objects, rev_s3_objects
