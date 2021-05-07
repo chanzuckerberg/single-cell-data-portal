@@ -192,6 +192,8 @@ class Collection(Entity):
         for link in self.links:
             self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
         self.session.commit()
+        for dataset in self.datasets:
+            Dataset(dataset).create_revision()
         return Collection(revision_collection)
 
     def tombstone_collection(self):
