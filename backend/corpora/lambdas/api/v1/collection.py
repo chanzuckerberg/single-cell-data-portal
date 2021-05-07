@@ -84,16 +84,21 @@ def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
 
 
-def delete_collection(collection_uuid: str, user: str):
+def delete_collection(collection_uuid: str, visibility: str, user: str):
+    if visibility != CollectionVisibility.PRIVATE.name:
+        # Only allowed to delete private collections
+        return "", 405
+
     db_session = g.db_session
-    collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, include_tombstones=True, owner=user
+    priv_collection = Collection.get_collection(
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user, include_tombstones=True
     )
-    if not collection:
-        raise ForbiddenHTTPException()
-    if not collection.tombstone:
-        collection.tombstone_collection()
-    return "", 202
+    if priv_collection:
+        if not priv_collection.tombstone:
+            priv_collection.delete()
+        return "", 204
+    else:
+        return "", 403
 
 
 def update_collection(collection_uuid: str, body: dict, user: str):

@@ -1,9 +1,17 @@
+import random
+import tempfile
 import os
 
+import botocore
 import boto3
+import typing
+from boto.s3.bucket import Bucket
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
+from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType, DbDeploymentDirectory
+from backend.corpora.common.entities import DatasetAsset, Dataset
+from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -64,3 +72,55 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         s3object = self.s3_resource.Bucket(bucket_name).Object(object_key)
         s3object.put(Body=content, ContentType=content_type)
         return s3object
+
+    def generate_artifact(
+        self, session, dataset_id, artifact_type=DatasetArtifactFileType.H5AD, file_name="data", upload=False
+    ) -> DatasetAsset:
+        file_name = f"{file_name}.{artifact_type.name}"
+        if upload:
+            with tempfile.TemporaryDirectory() as temp_path:
+                temp_file = f"{temp_path}/{file_name}"
+                content = "".join(random.choices("abcdef", k=16))
+                with open(temp_file, "w") as fp:
+                    fp.write(content)
+                s3_uri = DatasetAsset.upload(temp_file, dataset_id, self.bucket.name)
+        else:
+            s3_uri = DatasetAsset.make_s3_uri(self.bucket.name, dataset_id, file_name)
+        return DatasetAsset.create(
+            session, dataset_id, file_name, artifact_type, DatasetArtifactType.REMIX, False, s3_uri
+        )
+
+    def generate_deployment_directory(self, session, dataset_id, upload=False) -> DbDeploymentDirectory:
+        if upload:
+            file_name = f"{dataset_id}.cxg/"
+            content = "".join(random.choices("abcdef", k=16))
+            self.cellxgene_bucket.Object(file_name).put(Body=content, ContentType="application/octet-stream")
+        deployment_directory = DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/")
+        session.add(DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/"))
+        session.commit()
+        return deployment_directory
+
+    def generate_dataset_with_s3_resources(
+        self, session, artifacts=True, deployment_directories=True, **params
+    ) -> Dataset:
+        dataset = self.generate_dataset(session, **params)
+        if artifacts:
+            for ext in DatasetArtifactFileType:
+                self.generate_artifact(session, dataset.id, ext, upload=True)
+        if deployment_directories:
+            self.generate_deployment_directory(session, dataset.id, upload=True)
+        return dataset
+
+    def get_s3_object_paths_from_dataset(self, dataset: Dataset) -> typing.List[typing.Tuple[Bucket, str]]:
+        s3_objects = [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset.artifacts] + [
+            (self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset.deployment_directories[0])}.cxg/")
+        ]
+        return s3_objects
+
+    def assertS3FileExists(self, bucket: Bucket, file_name: str):
+        self.assertGreater(bucket.Object(file_name).content_length, 1)
+
+    def assertS3FileDoesNotExist(self, bucket: Bucket, file_name: str, msg: str = None):
+        msg = msg if msg else f"s3://{bucket.name}/{file_name} found."
+        with self.assertRaises(botocore.exceptions.ClientError, msg=msg):
+            bucket.Object(file_name).content_length

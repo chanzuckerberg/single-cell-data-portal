@@ -48,8 +48,8 @@ def delete_dataset(ctx, uuid):
                 f"Are you sure you want to delete the dataset:{uuid} from cellxgene:{ctx.obj['deployment']}?",
                 abort=True,
             )
-            delete_deployment_directories(dataset.deployment_directories, ctx.obj["deployment"])
-            dataset.dataset_and_asset_deletion()
+            dataset.asset_deletion()
+            dataset.deployment_directory_deletion()
             dataset.delete()
             dataset = Dataset.get(session, uuid, include_tombstones=True)
             if dataset is None:
@@ -67,16 +67,6 @@ def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
     uri = uri._replace(netloc="@".join([uri[1].split("@")[0], "localhost:5432"]))
     return uri.geturl()
-
-
-def delete_deployment_directories(deployment_directories, deployment):
-    s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-    bucket_name = f"hosted-cellxgene-{deployment}"
-    bucket = s3.Bucket(bucket_name)
-    for deployment_directory in deployment_directories:
-        object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
-        logger.info(f"Deleting all files in bucket {bucket_name} under {object_name}.")
-        bucket.objects.filter(Prefix=object_name).delete()
 
 
 if __name__ == "__main__":
