@@ -167,7 +167,7 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__revision_deleted_with_published_datasets(self):
         """The published dataset artifacts should be intact after deleting a collection revision"""
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.copy_dataset_from_published_to_revision()
+        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
 
         # Revision and Published collection refer to the same S3 resources
         self.assertEqual(pub_s3_objects, rev_s3_objects)
@@ -206,7 +206,8 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         be intact after deleting a collection revision
         """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.copy_dataset_from_published_to_revision(refreshed=True)
+        self.refresh_datasets()
+        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
 
         # Refreshed datasets do not point to the published resources in s3.
         for s3_object in rev_s3_objects:
@@ -224,7 +225,7 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__delete_published_dataset_during_revision(self):
         """The dataset is tombstone in the revision. The published artifacts are intact"""
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.copy_dataset_from_published_to_revision()
+        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
         # Delete a published dataset in the revision
         rev_dataset_id = self.rev_collection.datasets[0].id
         test_dataset_url = f"/dp/v1/datasets/{rev_dataset_id}"
@@ -256,26 +257,25 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 if key in actual_body.keys():
                     self.assertEqual(expected_body[key], actual_body[key])
 
-    def copy_dataset_from_published_to_revision(self, refreshed=False) -> typing.Tuple[typing.List, typing.List]:
-        """
+    def refresh_datasets(self):
+        for dataset in self.rev_collection.datasets:
+            Dataset(dataset).delete()
+        for dataset in self.pub_collection.datasets:
+            self.generate_dataset_with_s3_resources(
+                self.session,
+                collection_visibility="PRIVATE",
+                collection_id=self.rev_collection.id,
+                original_id=dataset.id,
+            )
 
-        :param refreshed: created a refreshed version of the published dataset
+    def get_s3_objects_from_collections(self) -> typing.Tuple[typing.List, typing.List]:
+        """
         :return: a list of s3 objects in the published collection, and a list of s3 objects the revision collection.
         """
         rev_s3_objects = []
         pub_s3_objects = []
 
-        # Copy published datasets to revision
-        for dataset in self.pub_collection.datasets:
-            if refreshed:
-                rev_dataset = self.generate_dataset_with_s3_resources(
-                    self.session,
-                    collection_visibility="PRIVATE",
-                    collection_id=self.rev_collection.id,
-                    original_id=dataset.id,
-                )
-            else:
-                rev_dataset = Dataset(dataset).create_revision()
-            pub_s3_objects.extend(self.get_s3_object_paths_from_dataset(dataset))
-            rev_s3_objects.extend(self.get_s3_object_paths_from_dataset(rev_dataset))
+        for i in range(len(self.pub_collection.datasets)):
+            pub_s3_objects.extend(self.get_s3_object_paths_from_dataset(self.pub_collection.datasets[i]))
+            rev_s3_objects.extend(self.get_s3_object_paths_from_dataset(self.rev_collection.datasets[i]))
         return pub_s3_objects, rev_s3_objects
