@@ -4,7 +4,7 @@ from typing import Optional
 from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
-from ....common.entities import Collection, Dataset
+from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
 
 
