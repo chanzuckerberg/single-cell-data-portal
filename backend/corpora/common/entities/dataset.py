@@ -143,7 +143,6 @@ class Dataset(Entity):
             collection_id=self.collection_id,
             collection_visibility=CollectionVisibility.PRIVATE,
             original_id=self.id,
-            published=False,
             revision=self.revision + 1,
         )
         self.session.add(revision_dataset)
@@ -170,26 +169,16 @@ class Dataset(Entity):
         self.session.commit()
 
     def asset_deletion(self):
-        original_s3_artifacts = []
-        if self.original_id:
-            original_dataset = Dataset.get(self.session, self.original_id)
-            original_s3_artifacts = [x.s3_uri for x in original_dataset.artifacts]
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
-            if artifact.s3_uri not in original_s3_artifacts:
-                asset.delete_from_s3()
+            asset.delete_from_s3()
             asset.delete()
 
     def deployment_directories_deletion(self):
-        original_deployment_objects = []
-        if self.original_id:
-            original_dataset = Dataset.get(self.session, self.original_id)
-            original_deployment_objects = [get_cxg_bucket_path(x) for x in original_dataset.deployment_directories]
         for deployment_directory in self.deployment_directories:
             object_names = get_cxg_bucket_path(deployment_directory)
-            if object_names not in original_deployment_objects:
-                logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
-                cxg_bucket.objects.filter(Prefix=object_names).delete()
+            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
+            cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
     def new_processing_status() -> dict:

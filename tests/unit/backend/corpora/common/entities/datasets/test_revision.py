@@ -43,7 +43,7 @@ class TestDatasetRevision(TestDataset):
             self.assertNotEqual(revision_collection, dataset_1_collection)
         with self.subTest("metadata of revised matches original"):
             for key in rev_dataset.keys():
-                if key in ("published", "revision", "original_id", "id", "collection_visibility"):
+                if key in ("revision", "original_id", "id", "collection_visibility"):
                     self.assertNotEqual(rev_dataset[key], dataset[key])
                 else:
                     self.assertEqual(rev_dataset[key], dataset[key])
