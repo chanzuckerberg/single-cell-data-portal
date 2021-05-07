@@ -15,7 +15,9 @@ from ..corpora_orm import (
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
-    DbGenesetDatasetLink, CollectionVisibility, generate_uuid,
+    DbGenesetDatasetLink,
+    CollectionVisibility,
+    generate_uuid,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_session import clone
@@ -31,21 +33,21 @@ class Dataset(Entity):
 
     @classmethod
     def create(
-            cls,
-            session,
-            revision: int = 0,
-            name: str = "",
-            organism: dict = None,
-            tissue: list = None,
-            assay: list = None,
-            disease: list = None,
-            sex: list = None,
-            ethnicity: list = None,
-            development_stage: list = None,
-            artifacts: list = None,
-            deployment_directories: list = None,
-            processing_status: dict = None,
-            **kwargs,
+        cls,
+        session,
+        revision: int = 0,
+        name: str = "",
+        organism: dict = None,
+        tissue: list = None,
+        assay: list = None,
+        disease: list = None,
+        sex: list = None,
+        ethnicity: list = None,
+        development_stage: list = None,
+        artifacts: list = None,
+        deployment_directories: list = None,
+        processing_status: dict = None,
+        **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -77,7 +79,7 @@ class Dataset(Entity):
         return cls(dataset)
 
     def update(
-            self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
+        self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
     ) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
@@ -142,7 +144,8 @@ class Dataset(Entity):
             collection_visibility=CollectionVisibility.PRIVATE,
             original_id=self.id,
             published=False,
-            revision=self.revision + 1)
+            revision=self.revision + 1,
+        )
         self.session.add(revision_dataset)
         for artifact in self.artifacts:
             self.session.add(clone(artifact, dataset_id=revision_dataset.id))
@@ -167,9 +170,10 @@ class Dataset(Entity):
         self.session.commit()
 
     def asset_deletion(self):
+        original_s3_artifacts = []
         if self.original_id:
-            original_dataset = Dataset.get(id=self.original_id)
-            original_s3_artifacts = [x['s3_uri'] for x in original_dataset.artifacts]
+            original_dataset = Dataset.get(self.session, self.original_id)
+            original_s3_artifacts = [x.s3_uri for x in original_dataset.artifacts]
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
             if artifact.s3_uri not in original_s3_artifacts:
@@ -179,7 +183,7 @@ class Dataset(Entity):
     def deployment_directories_deletion(self):
         original_deployment_objects = []
         if self.original_id:
-            original_dataset = Dataset.get(id=self.original_id)
+            original_dataset = Dataset.get(self.session, self.original_id)
             original_deployment_objects = [get_cxg_bucket_path(x) for x in original_dataset.deployment_directories]
         for deployment_directory in self.deployment_directories:
             object_names = get_cxg_bucket_path(deployment_directory)
