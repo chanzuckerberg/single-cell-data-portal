@@ -58,8 +58,6 @@ def post_collection_revision(collection_uuid: str, user: str):
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
-    for dataset in collection.datasets:
-        Dataset(dataset).create_revision()
     result = collection_revision.reshape_for_api()
 
     result["access_type"] = "WRITE"

@@ -143,7 +143,6 @@ class Dataset(Entity):
             collection_id=self.collection_id,
             collection_visibility=CollectionVisibility.PRIVATE,
             original_id=self.id,
-            revision=self.revision + 1,
         )
         self.session.add(revision_dataset)
         for artifact in self.artifacts:
