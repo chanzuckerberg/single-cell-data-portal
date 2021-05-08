@@ -59,6 +59,7 @@ def post_collection_revision(collection_uuid: str, user: str):
         db_session.rollback()
         raise ConflictException() from ex
     result = collection_revision.reshape_for_api()
+
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
 
