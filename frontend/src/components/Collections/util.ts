@@ -1,4 +1,5 @@
 import memoize from "lodash/memoize";
+import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import {
   CollectionResponse,
   RevisionResponse,
@@ -15,6 +16,7 @@ export function generateRevisions(
 
 export const generateRevisionMap = memoize(
   (collections: CollectionResponse[], revisionsEnabled: boolean) => {
+    // generate list of collections with revision status (default to disabled)
     const newCollections = collections.map(
       (collection): RevisionResponse => {
         return { ...collection, revision: REVISION_STATUS.DISABLED };
@@ -23,7 +25,7 @@ export const generateRevisionMap = memoize(
     // If revisions are disabled just return the array with objects' revisions status set to disabled
     if (!revisionsEnabled) return newCollections;
 
-    const revisionMap = new Map<string, RevisionResponse>();
+    const revisionMap = new Map<Collection["id"], RevisionResponse>();
 
     newCollections.forEach((collection) => {
       const revisionObj = revisionMap.get(collection.id) || collection;
@@ -32,6 +34,10 @@ export const generateRevisionMap = memoize(
           revisionObj.revision === REVISION_STATUS.DISABLED
             ? REVISION_STATUS.NOT_STARTED
             : REVISION_STATUS.STARTED;
+        revisionObj.visibility =
+          revisionObj.revision === REVISION_STATUS.STARTED
+            ? VISIBILITY_TYPE.PUBLIC
+            : revisionObj.visibility;
         revisionMap.set(collection.id, revisionObj);
       }
     });
