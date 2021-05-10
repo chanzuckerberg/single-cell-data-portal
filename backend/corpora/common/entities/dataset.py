@@ -114,7 +114,7 @@ class Dataset(Entity):
         self.session.commit()
 
     @classmethod
-    def get(cls, session, dataset_uuid, include_tombstones=False):
+    def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
         dataset = super().get(session, dataset_uuid)
         if not include_tombstones:
             if dataset and dataset.tombstone is True:
