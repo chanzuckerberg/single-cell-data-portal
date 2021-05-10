@@ -91,18 +91,18 @@ class Dataset(Entity):
          existing attached entries will be removed and replaced with new entries.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
-        if artifacts or deployment_directories or processing_status:
-            if artifacts:
+        if any([i is not None for i in [artifacts, deployment_directories, processing_status]]):
+            if artifacts is not None:
                 for af in self.artifacts:
                     self.session.delete(af)
                 new_objs = [DbDatasetArtifact(dataset_id=self.id, **art) for art in artifacts]
                 self.session.add_all(new_objs)
-            if deployment_directories:
+            if deployment_directories is not None:
                 for dd in self.deployment_directories:
                     self.session.delete(dd)
                 new_objs = [DbDeploymentDirectory(dataset_id=self.id, **dd) for dd in deployment_directories]
                 self.session.add_all(new_objs)
-            if processing_status:
+            if processing_status is not None:
                 if self.processing_status:
                     self.session.delete(self.processing_status)
                 new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
@@ -155,13 +155,9 @@ class Dataset(Entity):
         return Dataset(revision_dataset)
 
     def tombstone_dataset_and_delete_child_objects(self):
-        self.update(tombstone=True)
+        self.update(tombstone=True, deployment_directories=[], artifacts=[])
         if self.processing_status:
             self.session.delete(self.processing_status)
-        for dd in self.deployment_directories:
-            self.session.delete(dd)
-        for af in self.artifacts:
-            self.session.delete(af)
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
@@ -220,10 +216,6 @@ class Dataset(Entity):
         if not self.published:
             self.asset_deletion()
             self.deployment_directories_deletion()
-        for dd in self.deployment_directories:
-            self.session.delete(dd)
-        for af in self.artifacts:
-            self.session.delete(af)
         self.update(
             name="",
             organism=None,
@@ -235,11 +227,9 @@ class Dataset(Entity):
             development_stage=None,
             published=False,
             revision=self.revision + 1,
+            deployment_directories=[],
+            artifacts=[],
         )
-        # self.session.add(db_object)
-        # self.session.commit()
-        # self.delete()
-        # self.db_object = db_object
 
 
 def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:
