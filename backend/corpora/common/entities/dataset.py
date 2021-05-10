@@ -225,8 +225,7 @@ class Dataset(Entity):
             self.session.delete(dd)
         for af in self.artifacts:
             self.session.delete(af)
-        db_object = clone(
-            self.db_object,
+        self.update(
             name="",
             organism=None,
             tissue=None,
@@ -238,10 +237,10 @@ class Dataset(Entity):
             published=False,
             revision=self.revision + 1,
         )
-        self.session.add(db_object)
-        self.session.commit()
-        self.delete()
-        self.db_object = db_object
+        # self.session.add(db_object)
+        # self.session.commit()
+        # self.delete()
+        # self.db_object = db_object
 
 
 def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:

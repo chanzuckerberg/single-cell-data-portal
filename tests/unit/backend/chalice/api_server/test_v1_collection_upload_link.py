@@ -8,7 +8,7 @@ from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
-from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestCollectionPostUploadLink(BaseAuthAPITest):
@@ -113,20 +113,20 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.path = "/dp/v1/collections/test_collection_id/upload-links"
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
     @patch("corpora.common.upload_sfn.start_upload_sfn")
-    def test__reupload_published_dataset_revision__202(self, mocked):
+    def test__reupload_published_dataset_during_revision__202(self, mocked):
         """reupload a published dataset during a revision"""
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        pub_dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id, collection_visibility=collection.visibility, published=True, processing_status={"processing_status": ProcessingStatus.SUCCESS})
+        pub_collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
+        pub_dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=pub_collection.id, collection_visibility=pub_collection.visibility, published=True, processing_status={"processing_status": ProcessingStatus.SUCCESS})
         pub_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        rev_collection = collection.create_revision()
-        path = "/dp/v1/collections/test_collection_id/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {"url": self.good_link, "id": rev_collection.dataset[0].id}
+        rev_collection = pub_collection.revision()
+        body = {"url": self.good_link, "id": rev_collection.datasets[0].id}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=headers, data=json.dumps(body))
+            response = self.app.put(self.path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
             new_datset_id = json.loads(response.body)["dataset_uuid"]
             self.assertEqual(pub_dataset.id, Dataset.get(self.session, new_datset_id).original_id)
@@ -140,54 +140,49 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id, collection_visibility=collection.visibility, published=False, processing_status={"processing_status": ProcessingStatus.SUCCESS})
         dataset_id = dataset.id
         s3_objects = self.get_s3_object_paths_from_dataset(dataset)
-        path = "/dp/v1/collections/test_collection_id/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.good_link, "id": dataset_id}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=headers, data=json.dumps(body))
+            response = self.app.put(self.path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
+            # self.session.expire_all()
             actual_body = json.loads(response.body)
-            self.assertIsNone(Dataset.get(self.session, dataset_id))
-            self.assertNotEqual(dataset_id, actual_body["dataset_uuid"])
+            # self.assertIsNone(Dataset.get(self.session, dataset_id))
+            self.assertEqual(dataset_id, actual_body["dataset_uuid"])
             for s3_object in s3_objects:
                 self.assertS3FileDoesNotExist(*s3_object)
 
-    def test__reupload_published_dataset__405(self):
-        """cannot reupload a public published dataset"""
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        pub_dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id, collection_visibility=collection.visibility, published=True, processing_status={"processing_status": ProcessingStatus.SUCCESS})
-        public_dataset_id = pub_dataset.id
-        pub_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        path = "/dp/v1/collections/test_collection_id/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        body = {"url": self.good_link, "id": pub_dataset.id}
-
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=headers, data=json.dumps(body))
-            self.assertEqual(405, response.status_code)
-            self.assertIsNotNone(Dataset.get(self.session, public_dataset_id))
-            for s3_object in pub_s3_objects:
-                self.assertS3FileExists(*s3_object)
-
     @patch("corpora.common.upload_sfn.start_upload_sfn")
-    def test__reupload_dataset__405(self, mock):
+    def test__reupload_unpublished_dataset_during_revision_202(self, mock):
+        """reupload a unpublished dataset during a revision, this removes the old s3 assets. A new uuid is generated"""
+        collection = self.generate_collection(self.session)
+        dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id, collection_visibility=collection.visibility, published=True, processing_status={"processing_status": ProcessingStatus.SUCCESS})
+        # published_dataset_id = dataset.id
+        pub_s3_objects = self.get_s3_object_paths_from_dataset(dataset)
+        body = {"url": self.good_link, "id": dataset.id}
+
+        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
+            response = self.app.put(self.path, headers=self.headers, data=json.dumps(body))
+            self.assertEqual(202, response.status_code)
+            # self.session.expire_all()
+            # self.assertIsNotNone(Dataset.get(self.session, published_dataset_id))
+            for s3_object in pub_s3_objects:
+                self.assertS3FileExists(*s3_object)
+
+    def test__reupload_public_dataset__405(self):
         """cannot reupload a public published dataset"""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
         pub_dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id, collection_visibility=collection.visibility, published=True, processing_status={"processing_status": ProcessingStatus.SUCCESS})
         public_dataset_id = pub_dataset.id
-        pub_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        path = "/dp/v1/collections/test_collection_id/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        public_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
         body = {"url": self.good_link, "id": pub_dataset.id}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=headers, data=json.dumps(body))
+            response = self.app.put(self.path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(405, response.status_code)
             self.assertIsNotNone(Dataset.get(self.session, public_dataset_id))
-            for s3_object in pub_s3_objects:
+            for s3_object in public_s3_objects:
                 self.assertS3FileExists(*s3_object)
-
 
     def test__reupload_while_processing_dataset__405(self):
         """cannot reupload a dataset that is pending"""
@@ -195,15 +190,14 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for processing_status in ProcessingStatus:
             if processing_status == ProcessingStatus.PENDING:
                 continue
-            dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id,
-                                                          collection_visibility=collection.visibility,
-                                                          processing_status={"processing_status": processing_status})
-            s3_objects = self.get_s3_object_paths_from_dataset(dataset)
-            path = "/dp/v1/collections/test_collection_id/upload-links"
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            body = {"url": self.good_link, "id": dataset.id}
-            with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-                response = self.app.put(path, headers=headers, data=json.dumps(body))
-                self.assertEqual(405, response.status_code)
-                for s3_object in s3_objects:
-                    self.assertS3FileExists(*s3_object)
+            with self.subTest(processing_status):
+                dataset = self.generate_dataset_with_s3_resources(self.session, collection_id=collection.id,
+                                                              collection_visibility=collection.visibility,
+                                                              processing_status={"processing_status": processing_status})
+                s3_objects = self.get_s3_object_paths_from_dataset(dataset)
+                body = {"url": self.good_link, "id": dataset.id}
+                with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
+                    response = self.app.put(self.path, headers=self.headers, data=json.dumps(body))
+                    self.assertEqual(405, response.status_code)
+                    for s3_object in s3_objects:
+                        self.assertS3FileExists(*s3_object)

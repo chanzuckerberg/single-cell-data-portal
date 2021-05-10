@@ -51,7 +51,7 @@ def upload_from_link(db_session, collection_uuid: str, user: str, url: dict, dat
         raise ForbiddenHTTPException
 
     if dataset_id:
-        dataset = Dataset.get(dataset_id)
+        dataset = Dataset.get(db_session, dataset_id)
         if dataset.processing_status.processing_status in [ProcessingStatus.SUCCESS, ProcessingStatus.FAILURE]:
             dataset.reprocess()
         else:
