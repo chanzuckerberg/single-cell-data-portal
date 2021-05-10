@@ -223,3 +223,35 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.assertEqual(405, response.status_code)
             for s3_object in s3_objects:
                 self.assertS3FileExists(*s3_object)
+
+    def test__reupload_dataset_not_owner__403(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else")
+        dataset = self.generate_dataset_with_s3_resources(
+            self.session,
+            collection_id=collection.id,
+            collection_visibility=collection.visibility,
+            published=False,
+            processing_status={"processing_status": ProcessingStatus.SUCCESS},
+        )
+        dataset_id = dataset.id
+        path = f"/dp/v1/collections/{collection.id}/upload-links"
+        body = {"url": self.good_link, "id": dataset_id}
+
+        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
+            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+            self.assertEqual(403, response.status_code)
+
+    def test__dataset_not_in_collection__404(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset_with_s3_resources(
+            self.session,
+            published=False,
+            processing_status={"processing_status": ProcessingStatus.SUCCESS},
+        )
+        dataset_id = dataset.id
+        path = f"/dp/v1/collections/{collection.id}/upload-links"
+        body = {"url": self.good_link, "id": dataset_id}
+
+        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
+            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+            self.assertEqual(404, response.status_code)

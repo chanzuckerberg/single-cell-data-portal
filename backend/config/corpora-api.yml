@@ -332,8 +332,12 @@ paths:
           $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
-        "409":
-          $ref: "#/components/responses/409"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
         "413":
           $ref: "#/components/responses/413"
 

@@ -10,7 +10,7 @@ from .....common.utils.exceptions import (
     ForbiddenHTTPException,
     InvalidParametersHTTPException,
     TooLargeHTTPException,
-    MethodNotAllowedException,
+    MethodNotAllowedException, NotFoundHTTPException,
 )
 from .....common.utils.math_utils import GB
 
@@ -49,13 +49,16 @@ def upload_from_link(db_session, collection_uuid: str, user: str, url: dict, dat
     collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=user)
     if not collection:
         raise ForbiddenHTTPException
-
     if dataset_id:
         dataset = Dataset.get(db_session, dataset_id)
-        if dataset.processing_status.processing_status in [ProcessingStatus.SUCCESS, ProcessingStatus.FAILURE]:
-            dataset.reprocess()
+        if collection_uuid == dataset.collection_id and CollectionVisibility.PRIVATE == dataset.collection_visibility:
+            if dataset.processing_status.processing_status in [ProcessingStatus.SUCCESS, ProcessingStatus.FAILURE]:
+                dataset.reprocess()
+            else:
+                raise MethodNotAllowedException
         else:
-            raise MethodNotAllowedException
+            raise NotFoundHTTPException
+
     else:
         dataset = Dataset.create(db_session, collection=collection)
     dataset.update(processing_status=dataset.new_processing_status())
