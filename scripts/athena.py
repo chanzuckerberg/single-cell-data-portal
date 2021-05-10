@@ -82,7 +82,7 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
                 print("Query completed executing! Now aggregating results!")
                 results_have_not_been_calculated = False
         except:
-            print("Wasn't able to get query information yet. Please be patient!")
+            print(f"Wasn't able to get query information for query ID {query_id} yet. Please be patient!")
             time.sleep(1)
 
     response = client.get_query_results(QueryExecutionId=query_id, MaxResults=123)
