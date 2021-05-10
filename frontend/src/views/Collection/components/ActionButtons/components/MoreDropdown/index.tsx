@@ -5,12 +5,13 @@ import Menu from "./components/Menu";
 
 interface Props {
   id: string;
+  isRevision: boolean;
 }
 
-const MoreDropdown = ({ id = "" }: Props) => {
+const MoreDropdown = ({ id = "", isRevision }: Props) => {
   const popoverProps = useMemo(() => {
     return {
-      content: <Menu id={id} />,
+      content: <Menu id={id} isRevision={isRevision} />,
       position: Position.BOTTOM,
     };
   }, [id]);

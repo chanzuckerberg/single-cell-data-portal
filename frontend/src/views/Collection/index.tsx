@@ -150,6 +150,7 @@ const Collection: FC = () => {
             id={id}
             addNewFile={addNewFile}
             isPublishable={isPublishable}
+            isRevision={isRevision}
           />
         )}
 
