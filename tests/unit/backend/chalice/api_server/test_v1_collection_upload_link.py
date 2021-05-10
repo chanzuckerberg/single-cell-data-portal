@@ -225,7 +225,9 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertS3FileExists(*s3_object)
 
     def test__reupload_dataset_not_owner__403(self):
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
+        )
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,

@@ -10,7 +10,8 @@ from .....common.utils.exceptions import (
     ForbiddenHTTPException,
     InvalidParametersHTTPException,
     TooLargeHTTPException,
-    MethodNotAllowedException, NotFoundHTTPException,
+    MethodNotAllowedException,
+    NotFoundHTTPException,
 )
 from .....common.utils.math_utils import GB
 
