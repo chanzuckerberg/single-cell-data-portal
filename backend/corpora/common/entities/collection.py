@@ -143,8 +143,6 @@ class Collection(Entity):
             dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
             for link in result["links"]
         ]
-
-        result["datasets"] = [ds for ds in result["datasets"] if not ds.get("tombstone")]
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")

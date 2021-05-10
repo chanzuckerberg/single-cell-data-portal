@@ -232,17 +232,24 @@ class TestDeleteRevision(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         resp = self.app.delete(test_dataset_url, headers=self.headers)
         resp.raise_for_status()
 
-        # Get the revision
-        resp = self.app.get(self.test_url_collect_private, headers=self.headers)
-        resp.raise_for_status()
-
         # The dataset is a tombstone in the revision
-        self.assertEqual(json.loads(resp.body)["datasets"], [])
         self.session.expire_all()
         for dataset in self.rev_collection.datasets:
             if dataset.id == rev_dataset_id:
                 self.assertTrue(self.rev_collection.datasets[0].tombstone)
                 break
+
+        # Get revision by owner, tombstone visible
+        resp = self.app.get(self.test_url_collect_private, headers=self.headers)
+        resp.raise_for_status()
+        self.assertEqual(json.loads(resp.body)["datasets"][0]["id"], rev_dataset_id)
+
+        # Get revision, tombstone invisible
+        resp = self.app.get(self.test_url_collect_private)
+        resp.raise_for_status()
+        self.assertEqual(json.loads(resp.body)["datasets"], [])
+
+        # Published assets are not deleted
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
     def assertPublishedCollectionOK(self, expected_body, s3_objects):
