@@ -35,4 +35,3 @@ jobs:
           METRICS_MSG="\`\`\`PROD DATASET DOWNLOAD METRICS: \n${DOWNLOAD_STATS}\`\`\`"
           curl -X POST -H 'Content-type: application/json' --data "{'text':'${METRICS_MSG}'}" $SLACK_WEBHOOK
 
-
