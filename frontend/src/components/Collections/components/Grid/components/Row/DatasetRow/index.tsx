@@ -133,8 +133,6 @@ const DatasetRow: FC<Props> = ({
 
   const isMetadataLoading = checkIfMetadataLoading(dataset, datasetStatus);
 
-  const isRevision = dataset.original_uuid;
-
   useCancelDatasetStatusQuery({
     datasetId: dataset.id,
     isFailed,
