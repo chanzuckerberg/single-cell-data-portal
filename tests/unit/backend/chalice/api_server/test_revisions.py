@@ -8,6 +8,7 @@ from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
 
+
 class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
@@ -40,6 +41,7 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 collection_visibility="PRIVATE",
                 collection_id=self.rev_collection.id,
                 original_id=dataset.id,
+                revision=dataset.revision + 1,
             )
 
     def get_s3_objects_from_collections(self) -> typing.Tuple[typing.List, typing.List]:
@@ -242,7 +244,7 @@ class TestDeleteRevision(BaseRevisionTest):
 class TestPublishRevision(BaseRevisionTest):
     def setUp(self):
         super().setUp()
-        self.test_url=f"/dp/v1/collections/{self.pub_collection.id}/publish"
+        self.test_url = f"/dp/v1/collections/{self.pub_collection.id}/publish"
 
     def verify_publish_collection(
         self, collection_id: str, dataset_ids: typing.List[str] = None, link_names: typing.List[str] = None
@@ -281,52 +283,40 @@ class TestPublishRevision(BaseRevisionTest):
             for dataset_id in dataset_ids:
                 dataset = Dataset.get(self.session, dataset_id)
                 for s3_object in self.get_s3_object_paths_from_dataset(dataset):
-                    if dataset.tombstoned:
-                        self.assertS3FileDoesNotExist(*s3_object)
-                    else:
-                        self.assertS3FileExists(*s3_object)
+                    self.assertS3FileExists(*s3_object)
+        else:
+            self.assertFalse(actual["datasets"])
         if link_names:
             actual_links = [link["link_name"] for link in actual["links"]]
             self.assertListEqual(link_names, actual_links)
 
     def test__with_revision_with_new_dataset__OK(self):
         """publish a revision with new datasets"""
-        collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name
-        )
-        rev_collection = collection.revision()
-        dataset_ids = [
-            self.generate_dataset_with_s3_resources(
-                self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE.name
-            ).id
-        ]
-        self.verify_publish_collection(rev_collection.id, dataset_ids)
+        new_dataset_id = self.generate_dataset_with_s3_resources(
+            self.session, collection_id=self.rev_collection.id, collection_visibility=CollectionVisibility.PRIVATE
+        ).id
+        dataset_ids = [ds.id for ds in self.pub_collection.datasets]
+        dataset_ids.append(new_dataset_id)
+        self.verify_publish_collection(self.rev_collection.id, dataset_ids)
 
-    def test__with_revision_with_deleted_datasets__OK(self):
+    def test__with_revision_with_tombstoned_datasets__OK(self):
         """publish a revision with delete datasets"""
-        collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name
-        )
-        dataset = self.generate_dataset_with_s3_resources(
-                self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PUBLIC.name, published=True
-            )
-        rev_collection = collection.revision()
-        self.app.delete(f"/dp/v1/datasets/{rev_collection.datasets[0].id}", self.headers)
-        self.verify_publish_collection(rev_collection.id, [dataset.id])
+        rev_dataset_id = self.rev_collection.datasets[0].id
+        pub_dataset = self.pub_collection.datasets[0]
+        published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
+        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
+        self.session.expire_all()
+        self.verify_publish_collection(self.rev_collection.id)
+        dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
+        self.assertTrue(dataset.tombstone)
+        for s3_object in published_s3_objects:
+            self.assertS3FileDoesNotExist(*s3_object)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
         """"publish a revision with refreshed datasets"""
         """publish a revision with delete datasets"""
-        collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name
-        )
-        dataset = self.generate_dataset_with_s3_resources(
-            self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PUBLIC.name, published=True
-        )
-        rev_collection = collection.revision()
-        self.app.delete(f"/dp/v1/datasets/{rev_collection.datasets[0].id}", self.headers)
-        self.verify_publish_collection(rev_collection.id, [dataset.id])
-
+        self.refresh_datasets()
+        self.verify_publish_collection(self.rev_collection.id, [self.pub_collection.datasets[0].id])
 
     def test__publish_revision_with_collection_info_updated__201(self):
         collection = self.generate_collection(

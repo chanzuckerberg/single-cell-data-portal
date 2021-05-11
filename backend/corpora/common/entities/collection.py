@@ -173,8 +173,34 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            dataset.collection_visibility = CollectionVisibility.PUBLIC
-            dataset.published = True
+            if dataset.original_id:
+                original = Dataset.get(self.session, dataset.original_id)
+                if (public_collection.id, public_collection.visibility) == (
+                    original.collection_id,
+                    original.collection_visibility,
+                ) and (dataset.tombstone or dataset.revision > original.revision):
+                    original.deployment_directories_deletion()
+                    original.asset_deletion()
+                    updates = dataset.to_dict(
+                        remove_attr=[
+                            "update_at",
+                            "created_at",
+                            "collection_visibility",
+                            "id",
+                            "original_id",
+                            "published",
+                        ],
+                        remove_relationships=True,
+                    )
+                    if dataset.revision > original.revision:
+                        for artifact in dataset.artifacts:
+                            artifact.dataset_id = original.id
+                        for deployed_directory in dataset.deployment_directories:
+                            deployed_directory.dataset_id = original.id
+                    original.update(**updates)
+            else:
+                dataset.collection_visibility = CollectionVisibility.PUBLIC
+                dataset.published = True
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
