@@ -192,6 +192,8 @@ class Collection(Entity):
         for link in self.links:
             self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
         self.session.commit()
+        for dataset in self.datasets:
+            Dataset(dataset).create_revision()
         return Collection(revision_collection)
 
     def tombstone_collection(self):
@@ -221,3 +223,12 @@ class Collection(Entity):
         self.session.flush()
 
         super().update(**kwargs)
+
+    def delete(self):
+        for dataset in self.datasets:
+            ds = Dataset(dataset)
+            if not ds.published:
+                ds.asset_deletion()
+                ds.deployment_directories_deletion()
+            ds.delete()
+        super().delete()

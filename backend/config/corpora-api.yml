@@ -231,9 +231,10 @@ paths:
       operationId: corpora.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/query_visibility"
       responses:
-        "202":
-          $ref: "#/components/responses/202"
+        "204":
+          $ref: "#/components/responses/204"
         "401":
           $ref: "#/components/responses/401"
 
@@ -877,6 +878,8 @@ components:
       description: Created.
     202:
       description: Accepted
+    204:
+      description: No Content
     400:
       description: Invalid parameter.
       content:
