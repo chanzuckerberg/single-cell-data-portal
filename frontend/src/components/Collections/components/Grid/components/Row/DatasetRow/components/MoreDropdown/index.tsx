@@ -1,6 +1,7 @@
 import { Position } from "@blueprintjs/core";
 import React, { useMemo } from "react";
 import RawMoreDropdown from "src/components/common/MoreDropdown";
+import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import Menu from "./components/Menu";
 
 interface Props {
