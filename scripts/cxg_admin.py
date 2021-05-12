@@ -77,7 +77,7 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 
         key = (collection_uuid, CollectionVisibility.PUBLIC.name)
         collection = Collection.get(session, key)
-        collection_name = collection.to_dict()['name']
+        collection_name = collection.to_dict()["name"]
 
         if collection is not None:
             click.confirm(
@@ -111,8 +111,11 @@ def transfer_collections(ctx, curr_owner, new_owner):
                 f"{new_owner}?",
                 abort=True,
             )
-            updated = session.query(DbCollection).filter(DbCollection.owner == curr_owner).update(
-                {DbCollection.owner: new_owner})
+            updated = (
+                session.query(DbCollection)
+                .filter(DbCollection.owner == curr_owner)
+                .update({DbCollection.owner: new_owner})
+            )
             if updated > 0:
                 click.echo(f"Updated owner of collection for {updated} collections. {new_owner} is now the owner")
                 exit(0)
