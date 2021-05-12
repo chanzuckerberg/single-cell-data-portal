@@ -70,8 +70,8 @@ def delete_dataset(ctx, uuid):
 @click.argument("new_owner")
 @click.pass_context
 def update_collection_owner(ctx, collection_uuid, new_owner):
-    """Update the owner of a corpora collection. You must first SSH into the target deployment using `make db/tunnel` before
-    running."""
+    """Update the owner of a corpora collection. You must first SSH into the target deployment using
+    `make db/tunnel` before running."""
 
     with db_session_manager() as session:
 
@@ -80,9 +80,6 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
         collection_name = collection.to_dict()['name']
 
         if collection is not None:
-            print(
-                json.dumps(collection_name, indent=2, cls=CustomJSONEncoder)
-            )
             click.confirm(
                 f"Are you sure you want to update the owner of the collection:{collection_name}?",
                 abort=True,
@@ -93,7 +90,7 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
                 click.echo(f"Updated owner of collection:{collection_uuid}. Owner is now {collection.owner}")
                 exit(0)
             else:
-                click.echo(f"Failed to uodate owner for collection_uuid:{collection_uuid}")
+                click.echo(f"Failed to update owner for collection_uuid:{collection_uuid}")
                 exit(0)
 
 
@@ -103,15 +100,15 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 @click.pass_context
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned bu the curr_owner to the new_owner. You must first SSH into the target
-    deployment using `make db/tunnel` before
-    running."""
+    deployment using `make db/tunnel` before running."""
 
     with db_session_manager() as session:
         collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
 
         if collections is not None:
             click.confirm(
-                f"Are you sure you want to update the owner of {len(collections)} collection from {curr_owner} to {new_owner}?",
+                f"Are you sure you want to update the owner of {len(collections)} collection from {curr_owner} to "
+                f"{new_owner}?",
                 abort=True,
             )
             updated = session.query(DbCollection).filter(DbCollection.owner == curr_owner).update(
@@ -121,7 +118,9 @@ def transfer_collections(ctx, curr_owner, new_owner):
                 exit(0)
             else:
                 click.echo(
-                    f"Failed to uodate owner for collections. {curr_owner} is still the owner of {len(collections)} collections")
+                    f"Failed to update owner for collections. {curr_owner} is still the owner of {len(collections)} "
+                    f"collections"
+                )
                 exit(0)
 
 
