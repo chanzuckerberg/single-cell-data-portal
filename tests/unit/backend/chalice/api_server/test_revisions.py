@@ -280,6 +280,7 @@ class TestPublishRevision(BaseRevisionTest):
             actual_datasets = [d["id"] for d in actual["datasets"]]
             self.assertListEqual(dataset_ids, actual_datasets)
             self.assertTrue(all([d["published"] for d in actual["datasets"]]))
+            self.assertTrue(all([d["original_id"] is None for d in actual["datasets"]]))
             for dataset_id in dataset_ids:
                 dataset = Dataset.get(self.session, dataset_id)
                 for s3_object in self.get_s3_object_paths_from_dataset(dataset):
