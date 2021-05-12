@@ -161,7 +161,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.id, dataset_ids)
 
-    def test__delete_dataset_can_safetly_be_called_twice(self):
+    def test__call_delete_dataset__twice(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
         processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
         dataset = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
@@ -174,7 +174,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         # delete again
         response = self.app.delete(test_url, headers=headers)
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 403)
 
     def test__get_deleted_dataset_status__returns_403(self):
         collection = self.generate_collection(

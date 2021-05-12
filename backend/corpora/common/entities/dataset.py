@@ -1,9 +1,9 @@
 from urllib.parse import urlparse
 
 import csv
+import logging
 import os
 import typing
-
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
@@ -16,8 +16,13 @@ from ..corpora_orm import (
     UploadStatus,
     ProcessingStatus,
     DbGenesetDatasetLink,
+    CollectionVisibility,
+    generate_uuid,
 )
 from ..utils.s3_buckets import cxg_bucket
+from ..utils.db_session import clone
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -125,6 +130,30 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    def create_revision(self) -> "Dataset":
+        """
+        Generate a dataset revision from a dataset in a public collection
+        :return: dataset revision.
+
+        """
+        revision_dataset_uuid = generate_uuid()
+        revision_dataset = clone(
+            self.db_object,
+            id=revision_dataset_uuid,
+            collection_id=self.collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE,
+            original_id=self.id,
+        )
+        self.session.add(revision_dataset)
+        for artifact in self.artifacts:
+            self.session.add(clone(artifact, dataset_id=revision_dataset.id))
+        if self.processing_status:
+            self.session.add(clone(self.processing_status, dataset_id=revision_dataset.id))
+        for deployment in self.deployment_directories:
+            self.session.add(clone(deployment, dataset_id=revision_dataset.id))
+        self.session.commit()
+        return Dataset(revision_dataset)
+
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
         if self.processing_status:
@@ -138,11 +167,17 @@ class Dataset(Entity):
         )
         self.session.commit()
 
-    def dataset_and_asset_deletion(self):
+    def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
-        self.tombstone_dataset_and_delete_child_objects()
+            asset.delete()
+
+    def deployment_directories_deletion(self):
+        for deployment_directory in self.deployment_directories:
+            object_names = get_cxg_bucket_path(deployment_directory)
+            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
+            cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
     def new_processing_status() -> dict:
