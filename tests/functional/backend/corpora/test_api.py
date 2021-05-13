@@ -160,7 +160,7 @@ class TestApi(unittest.TestCase):
             if self.deployment_stage == "prod":
                 self.skipTest("Do not make test collections public in prod")
             res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.forbidden)
+            self.assertEqual(res.status_code, requests.codes.not_allowed)
 
     def test_delete_private_collection(self):
         # create collection
@@ -192,13 +192,13 @@ class TestApi(unittest.TestCase):
         self.assertIn(collection_uuid, private_collection_uuids)
 
         # delete collection
-        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}?visibility=PRIVATE", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.accepted)
 
         # check collection gone
         no_auth_headers = {"Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+        res = requests.get(f"{self.api}/dp/v1/collections?visibility=PRIVATE", headers=no_auth_headers)
         data = json.loads(res.content)
         collection_uuids = [x["id"] for x in data["collections"]]
         self.assertNotIn(collection_uuid, collection_uuids)
