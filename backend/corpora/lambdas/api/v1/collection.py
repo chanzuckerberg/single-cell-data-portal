@@ -38,7 +38,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(db_session, collection_uuid, visibility)
     if not collection:
         raise ForbiddenHTTPException()
-    get_tombstone_datasets = (user == collection.owner and collection.visibility == CollectionVisibility.PRIVATE)
+    get_tombstone_datasets = user == collection.owner and collection.visibility == CollectionVisibility.PRIVATE
     result = collection.reshape_for_api(get_tombstone_datasets)
     result["access_type"] = "WRITE" if user == collection.owner else "READ"
     return make_response(jsonify(result), 200)
