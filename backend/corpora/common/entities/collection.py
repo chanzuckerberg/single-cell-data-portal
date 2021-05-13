@@ -129,9 +129,10 @@ class Collection(Entity):
 
         return results
 
-    def reshape_for_api(self) -> dict:
+    def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
         Reshape the collection to match the expected api output.
+        :tombstoned_datasets: Determines if tombtoned datasets will be included.
         :return: A dictionary that can be converted into JSON matching the expected api response.
         """
 
@@ -143,12 +144,14 @@ class Collection(Entity):
             dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
             for link in result["links"]
         ]
+        datasets = []
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            dataset.pop("tombstone", None)
-
-        return result
+            tombstone = dataset.pop("tombstone", False)
+            if not(tombstoned_datasets or tombstone):
+                datasets.append(dataset)
+        result["datas t
 
     def publish(self):
         """
