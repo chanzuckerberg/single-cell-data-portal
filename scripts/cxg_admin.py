@@ -107,7 +107,7 @@ def transfer_collections(ctx, curr_owner, new_owner):
 
         if collections is not None:
             click.confirm(
-                f"Are you sure you want to update the owner of {len(collections)} collection from {curr_owner} to "
+                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections)>1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
                 abort=True,
             )
