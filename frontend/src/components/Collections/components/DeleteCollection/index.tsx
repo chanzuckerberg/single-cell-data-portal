@@ -13,9 +13,14 @@ const AsyncAlert = loadable(
 interface Props {
   id: Collection["id"];
   Button?: React.ElementType;
+  isRevision: boolean;
 }
 
-const DeleteCollection: FC<Props> = ({ id, Button = RawButton }) => {
+const DeleteCollection: FC<Props> = ({
+  id,
+  Button = RawButton,
+  isRevision,
+}) => {
   const [deleteMutation, { isSuccess }] = useDeleteCollection(id);
   const router = useRouter();
 
@@ -37,12 +42,18 @@ const DeleteCollection: FC<Props> = ({ id, Button = RawButton }) => {
 
   return (
     <>
-      <Button onClick={toggleAlert} onMouseEnter={handleHover} />
+      <Button
+        onClick={toggleAlert}
+        onMouseEnter={handleHover}
+        isRevision={isRevision}
+      />
 
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
-          confirmButtonText={"Delete Collection"}
+          confirmButtonText={
+            isRevision ? "Cancel Revision" : "Delete Collection"
+          }
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}
@@ -51,11 +62,18 @@ const DeleteCollection: FC<Props> = ({ id, Button = RawButton }) => {
             toggleAlert();
           }}
         >
-          <H6>Are you sure you want to delete this collection?</H6>
+          <H6>
+            Are you sure you want to {isRevision ? "cancel" : "delete"} this{" "}
+            {isRevision ? "revision" : "collection"}?
+          </H6>
           <p>
-            Deleting this collection will also delete any uploaded datasets. If
-            you’ve shared this collection or its datasets with anyone, they will
-            also lose access. You cannot undo this action.
+            {isRevision
+              ? "Cancelling this revision"
+              : "Deleting this collection"}{" "}
+            will also delete any uploaded datasets.{" "}
+            {!isRevision &&
+              "If you’ve shared this collection or its datasets with anyone, they will also lose access. "}
+            You cannot undo this action.
           </p>
         </AsyncAlert>
       )}

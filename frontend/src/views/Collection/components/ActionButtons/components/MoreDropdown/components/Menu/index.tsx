@@ -10,14 +10,16 @@ import DeleteCollection from "src/components/Collections/components/DeleteCollec
 import CreateCollection from "src/components/CreateCollectionModal";
 import styled from "styled-components";
 
-const DeleteButton = (props: Partial<IMenuItemProps>) => {
+const DeleteButton = (
+  props: Partial<IMenuItemProps> & { isRevision: boolean }
+) => {
   return (
     <MenuItem
       {...props}
       shouldDismissPopover={false}
       icon={IconNames.TRASH}
       intent={Intent.DANGER}
-      text="Delete Collection"
+      text={props.isRevision ? "Cancel Revision" : "Delete Collection"}
     />
   );
 };
@@ -36,6 +38,7 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 
 interface Props {
   id?: string;
+  isRevision: boolean;
 }
 
 const StyledMenu = styled(RawMenu)`
@@ -46,11 +49,11 @@ const StyledMenu = styled(RawMenu)`
   }
 `;
 
-const Menu = ({ id = "" }: Props) => {
+const Menu = ({ id = "", isRevision }: Props) => {
   return (
     <StyledMenu>
-      <DeleteCollection id={id} Button={DeleteButton} />
       <CreateCollection id={id} Button={EditButton} />
+      <DeleteCollection id={id} isRevision={isRevision} Button={DeleteButton} />
     </StyledMenu>
   );
 };
