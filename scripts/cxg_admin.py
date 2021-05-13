@@ -70,7 +70,7 @@ def delete_dataset(ctx, uuid):
 @click.argument("new_owner")
 @click.pass_context
 def update_collection_owner(ctx, collection_uuid, new_owner):
-    """Update the owner of a corpora collection. You must first SSH into the target deployment using
+    """Update the owner of a cellxgene collection. You must first SSH into the target deployment using
     `make db/tunnel` before running."""
 
     with db_session_manager() as session:
