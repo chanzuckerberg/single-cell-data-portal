@@ -3,11 +3,14 @@ from uuid import uuid4
 from collections import defaultdict
 import time
 from pandas import DataFrame
+import datetime
 import numpy as np
 import pandas
 import requests
 
-pandas.set_option("display.max_rows", None, "display.max_columns", None, "display.width", 1000)
+pandas.set_option(
+    "display.max_rows", None, "display.max_columns", None, "display.width", 1000, "display.max_colwidth", None
+)
 
 
 def get_json_response(collection_id):
@@ -42,11 +45,11 @@ def construct_map_of_dataset_assets_to_collection_and_dataset_information_from_a
                 uri = uri.replace("s3://corpora-data-prod/", "")
 
                 if uri in dataset_name_by_s3_uri:
-                    print(f"Why is this URI repeated in dataset name dict? {uri}")
+                    print(f"ERROR: Why is this URI repeated in dataset name dict? {uri}")
                 else:
                     dataset_name_by_s3_uri[uri] = dataset_name
                 if uri in collection_id_by_s3_uri:
-                    print(f"Why is this URI repeated in collection id dict? {uri}")
+                    print(f"ERROR: Why is this URI repeated in collection id dict? {uri}")
                 else:
                     collection_id_by_s3_uri[uri] = collection_id
 
@@ -56,11 +59,21 @@ def construct_map_of_dataset_assets_to_collection_and_dataset_information_from_a
 
 
 def create_query(client, query_id):
+    today = datetime.date.today().strftime("%Y-%m-%d:%H:%M:%S")
+    one_week_ago = (datetime.datetime.now() - datetime.timedelta(days=7)).date().strftime("%Y-%m-%d:%H:%M:%S")
+    query_string = (
+        "SELECT key, requestdatetime, remoteip, operation, bytessent, useragent FROM "
+        "cellxgene_portal_dataset_download_logs_db.dataset_download_logs WHERE operation like "
+        "'REST.GET.OBJECT' AND parse_datetime(requestdatetime,'dd/MMM/yyyy:HH:mm:ss Z') BETWEEN "
+        f"parse_datetime('{one_week_ago}','yyyy-MM-dd:HH:mm:ss') AND parse_datetime('{today}',"
+        "'yyyy-MM-dd:HH:mm:ss');"
+    )
+
     response = client.get_database(
         CatalogName="AwsDataCatalog", DatabaseName="cellxgene_portal_dataset_download_logs_db"
     )
     response = client.start_query_execution(
-        QueryString="SELECT key, requestdatetime, remoteip, operation, bytessent, useragent FROM cellxgene_portal_dataset_download_logs_db.dataset_download_logs WHERE operation like 'REST.GET.OBJECT';",
+        QueryString=query_string,
         ClientRequestToken=query_id,
         QueryExecutionContext={"Database": "cellxgene_portal_dataset_download_logs_db", "Catalog": "AwsDataCatalog"},
         ResultConfiguration={
@@ -103,11 +116,16 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
         # Get dataset id
         dataset_id = row_data[0].get("VarCharValue")
 
+        # If this dataset is private, skip its download metrics
+        if (dataset_id not in collection_id_by_s3_uri) and (dataset_id not in dataset_name_by_s3_uri):
+            continue
+
+        # Generate the unique dataset index for this dataset by concatenating the collection ID and the dataset ID
+        dataset_index = f"{collection_id_by_s3_uri.get(dataset_id, 'PRIVATE_COLLECTION')}/{dataset_name_by_s3_uri.get(dataset_id, 'PRIVATE_DATASET')}"
+
         # Get existing aggregated metrics, if any.
-        if dataset_id not in metadata_by_dataset:
-            metadata_by_dataset[dataset_id] = {
-                "dataset_name": dataset_name_by_s3_uri.get(dataset_id, "PRIVATE_DATASET"),
-                "collection_id": collection_id_by_s3_uri.get(dataset_id, "PRIVATE COLLECTION"),
+        if dataset_index not in metadata_by_dataset:
+            metadata_by_dataset[dataset_index] = {
                 "curl_downloads": 0,
                 "browser_downloads": 0,
                 "total_downloads": 0,
@@ -115,7 +133,7 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
                 "loom_downloads": 0,
                 "seurat_downloads": 0,
             }
-        dataset_metrics = metadata_by_dataset[dataset_id]
+        dataset_metrics = metadata_by_dataset[dataset_index]
 
         for index, metadata in enumerate(row_data):
             if index == 0:
@@ -138,7 +156,7 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
                 else:
                     dataset_metrics["browser_downloads"] += 1
 
-        metadata_by_dataset[dataset_id] = dataset_metrics
+        metadata_by_dataset[dataset_index] = dataset_metrics
 
     dataset_metrics_df = DataFrame.from_dict(metadata_by_dataset, orient="index")
 
