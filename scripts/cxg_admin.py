@@ -99,7 +99,7 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 @click.argument("new_owner")
 @click.pass_context
 def transfer_collections(ctx, curr_owner, new_owner):
-    """Transfer all collections owned bu the curr_owner to the new_owner. You must first SSH into the target
+    """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
     deployment using `make db/tunnel` before running."""
 
     with db_session_manager() as session:
