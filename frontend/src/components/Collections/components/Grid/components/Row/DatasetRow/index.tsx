@@ -23,10 +23,12 @@ import {
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
 import { UploadingFile } from "src/components/DropboxChooser";
+import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";
 import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
+import RevisionStatusTag from "./components/RevisionStatusTag";
 import { TitleContainer } from "./style";
 import {
   checkIfCancelled,
@@ -69,6 +71,8 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
+  revisionsEnabled: boolean;
+  onUploadFile: ChooserProps["onUploadFile"];
 }
 
 const DatasetRow: FC<Props> = ({
@@ -77,6 +81,8 @@ const DatasetRow: FC<Props> = ({
   invalidateCollectionQuery,
   visibility,
   accessType,
+  revisionsEnabled,
+  onUploadFile,
 }) => {
   const queryCache = useQueryCache();
 
@@ -175,6 +181,7 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
+          {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
         </TitleContainer>
       </DetailsCell>
       <Popover values={tissue} isLoading={isMetadataLoading} />
@@ -190,6 +197,8 @@ const DatasetRow: FC<Props> = ({
                 <MoreDropdown
                   collectionId={dataset.collection_id}
                   datasetId={dataset.id}
+                  revisionsEnabled={revisionsEnabled}
+                  onUploadFile={onUploadFile}
                 />
               )}
           </ActionButton>
