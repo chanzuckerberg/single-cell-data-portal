@@ -149,9 +149,15 @@ class Collection(Entity):
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
             tombstone = dataset.pop("tombstone", False)
-            if not(tombstoned_datasets or tombstone):
+            if tombstone:
+                if tombstoned_datasets:
+                    datasets.append(dataset)
+                else:
+                    continue
+            else:
                 datasets.append(dataset)
-        result["datas t
+        result["datasets"] = datasets
+        return result
 
     def publish(self):
         """
