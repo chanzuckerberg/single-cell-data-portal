@@ -6,6 +6,7 @@ import {
   RightAlignedHeaderCell,
   StyledCollectionsGrid,
 } from "src/components/Collections/components/Grid/common/style";
+import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import DatasetRow from "../Row/DatasetRow";
 
@@ -15,6 +16,12 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: VISIBILITY_TYPE;
   accessType?: Collection["access_type"];
+  isRevision: boolean;
+  onUploadFile: (
+    reuploadDataset?: any,
+    datasetId?: any
+  ) => ChooserProps["onUploadFile"];
+  reuploadDataset: () => void;
 }
 
 const DatasetsGrid: FC<Props> = ({
@@ -23,6 +30,9 @@ const DatasetsGrid: FC<Props> = ({
   invalidateCollectionQuery,
   visibility,
   accessType,
+  isRevision,
+  onUploadFile,
+  reuploadDataset,
 }) => {
   return (
     <StyledCollectionsGrid bordered>
@@ -38,7 +48,7 @@ const DatasetsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {sortByCreatedAtAscending(datasets).map((dataset) => (
+        {sortByCellCountDescending(datasets).map((dataset) => (
           <DatasetRow
             visibility={visibility}
             accessType={accessType}
@@ -46,6 +56,8 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
+            revisionsEnabled={isRevision}
+            onUploadFile={onUploadFile(reuploadDataset, dataset.id)}
           />
         ))}
       </tbody>
@@ -53,8 +65,10 @@ const DatasetsGrid: FC<Props> = ({
   );
 };
 
-function sortByCreatedAtAscending(datasets: Dataset[]): Dataset[] {
-  return datasets?.sort((a, b) => a.created_at - b.created_at) || [];
+export function sortByCellCountDescending(datasets: Dataset[]): Dataset[] {
+  return (
+    datasets?.sort((a, b) => (b.cell_count ?? 0) - (a.cell_count ?? 0)) || []
+  );
 }
 
 export default DatasetsGrid;

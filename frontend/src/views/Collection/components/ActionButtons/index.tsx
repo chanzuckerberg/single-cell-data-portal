@@ -16,12 +16,18 @@ interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   id: Collection["id"];
   isPublishable: boolean;
+  isRevision: boolean;
 }
 
-const ActionButtons = ({ addNewFile, id, isPublishable }: Props) => {
+const ActionButtons = ({
+  addNewFile,
+  id,
+  isPublishable,
+  isRevision,
+}: Props) => {
   return (
     <Wrapper>
-      <MoreDropdown id={id} />
+      <MoreDropdown id={id} isRevision={isRevision} />
 
       <AddButton addNewFile={addNewFile} />
       <PublishCollection id={id} isPublishable={isPublishable} />
