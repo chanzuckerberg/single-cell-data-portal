@@ -245,11 +245,7 @@ paths:
         - collections
         - datasets
       description: >-
-        An authenticated user can upload a file from a shared link to a dataset in their collection.
-
-        If the upload is in an error state, this endpoint can be used with the dataset_id to restart the collection.
-        If a new link is provided, the new link will be used. If the collection is not in an error state, this endpoint
-        will return an error.
+        An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
       operationId: corpora.lambdas.api.v1.collection_uuid.upload.link
@@ -291,14 +287,11 @@ paths:
         - collections
         - datasets
       description: >-
-        An authenticated user can upload a file to replace an existing dataset in a collection from a shared link.
+        An authenticated user can upload a file from a shared link to replace an existing dataset in their collection.
 
-        If the upload is in an error state, this endpoint can be used with the dataset_id to restart the collection.
-        If a new link is provided, the new link will be used. If the collection is not in an error state, this endpoint
-        will return an error.
-
-        The previous version of the dataset is replaced with the new versions and is no longer available for
-        downloading through this collection.
+        The existing dataset must be in an error start or completely upload before a reupload can be attempted.
+        Once the upload of the replacement dataset is complete, the previous version of the dataset is replaced and is
+        no longer available for downloading through this collection.
       security:
         - cxguserCookie: []
       operationId: corpora.lambdas.api.v1.collection_uuid.upload.relink
