@@ -314,4 +314,3 @@ class TestPublishRevision(BaseRevisionTest):
     def test_with_revision_and_existing_datasets(self):
         actual_body = self.publish_collection(self.rev_collection.id)
         self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
-
