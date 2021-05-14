@@ -21,16 +21,18 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
     def assertPublishedCollectionOK(self, expected_body, s3_objects):
+        """Checks that the published collection is as expected and S3 Objects exist"""
         with self.subTest("published artifacts and deployment_directories ok"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileExists(bucket, file_name)
         with self.subTest("publish collection ok"):
-            resp = self.app.get(self.test_url_collection_public)
+            resp = self.app.get(f"/dp/v1/collections/{self.pub_collection.id}")
             resp.raise_for_status()
             actual_body = json.loads(resp.body)
-            for key in expected_body.keys():
-                if key in actual_body.keys():
-                    self.assertEqual(expected_body[key], actual_body[key])
+            for link in expected_body.pop("links"):
+                self.assertIn(link, actual_body["links"])
+            for keys in expected_body.keys():
+                self.assertEqual(expected_body[keys], actual_body[keys])
 
     def refresh_datasets(self):
         for dataset in self.rev_collection.datasets:
@@ -246,9 +248,8 @@ class TestPublishRevision(BaseRevisionTest):
         super().setUp()
         self.test_url = f"/dp/v1/collections/{self.pub_collection.id}/publish"
 
-    def verify_publish_collection(
-        self, collection_id: str, dataset_ids: typing.List[str] = None, link_names: typing.List[str] = None
-    ):
+    def publish_collection(self, collection_id: str):
+        self.session.expire_all()
         path = f"/dp/v1/collections/{collection_id}/publish"
         response = self.app.post(path, self.headers)
         response.raise_for_status()
@@ -276,20 +277,19 @@ class TestPublishRevision(BaseRevisionTest):
         actual = json.loads(response.body)
         self.assertEqual("PUBLIC", actual["visibility"])
         self.assertEqual(collection_id, actual["id"])
-        if dataset_ids:
-            actual_datasets = [d["id"] for d in actual["datasets"]]
-            self.assertListEqual(dataset_ids, actual_datasets)
-            self.assertTrue(all([d["published"] for d in actual["datasets"]]))
-            self.assertTrue(all([d["original_id"] is None for d in actual["datasets"]]))
-            for dataset_id in dataset_ids:
-                dataset = Dataset.get(self.session, dataset_id)
-                for s3_object in self.get_s3_object_paths_from_dataset(dataset):
+        return actual
+
+    def verify_datasets(self, actual_body, expected_dataset_ids):
+        actual_datasets = [d["id"] for d in actual_body["datasets"]]
+        self.assertListEqual(expected_dataset_ids, actual_datasets)
+        self.assertTrue(all([d["published"] for d in actual_body["datasets"]]))
+        for dataset_id in expected_dataset_ids:
+            dataset = Dataset.get(self.session, dataset_id)
+            for s3_object in self.get_s3_object_paths_from_dataset(dataset):
+                if dataset.tombstone:
+                    self.assertS3FileDoesNotExist(*s3_object)
+                else:
                     self.assertS3FileExists(*s3_object)
-        else:
-            self.assertFalse(actual["datasets"])
-        if link_names:
-            actual_links = [link["link_name"] for link in actual["links"]]
-            self.assertListEqual(link_names, actual_links)
 
     def test__with_revision_with_new_dataset__OK(self):
         """publish a revision with new datasets"""
@@ -320,22 +320,6 @@ class TestPublishRevision(BaseRevisionTest):
         self.verify_publish_collection(self.rev_collection.id, [self.pub_collection.datasets[0].id])
 
     def test__publish_revision_with_collection_info_updated__201(self):
-        collection = self.generate_collection(
-            self.session,
-            visibility=CollectionVisibility.PUBLIC,
-            links=[
-                {"link_url": "http://doi.org/10.1010", "link_type": "DOI"},
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-            ],
-        )
-        test_url = f"/dp/v1/collections/{collection.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-
-        # Start revision
-        response = self.app.post(test_url, headers=headers)
-        response.raise_for_status()
-
-        # Update the revision
         expected_body = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -347,20 +331,12 @@ class TestPublishRevision(BaseRevisionTest):
             ],
             "data_submission_policy_version": "0",
         }
-        data = json.dumps(expected_body)
-        response = self.app.put(f"{test_url}?visibility=PRIVATE", data=data, headers=headers)
-        response.raise_for_status()
+        self.rev_collection.update(**expected_body)
+        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
+        actual_body = self.publish_collection(self.rev_collection.id)
+        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
 
-        # publish the revision
-        response = self.app.post(f"{test_url}/publish", headers=headers)
-        response.raise_for_status()
-
-        # Get the revised collection
-        response = self.app.get(f"{test_url}", headers=headers)
-        response.raise_for_status()
-        actual_body = json.loads(response.body)
-        self.assertEqual(actual_body["visibility"], "PUBLIC")
-        for link in expected_body.pop("links"):
-            self.assertIn(link, actual_body["links"])
-        for keys in expected_body.keys():
-            self.assertEqual(expected_body[keys], actual_body[keys])
+    def test_with_revision_and_existing_datasets(self):
+        actual_body = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
