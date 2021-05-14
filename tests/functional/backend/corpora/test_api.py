@@ -194,7 +194,7 @@ class TestApi(unittest.TestCase):
         # delete collection
         res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}?visibility=PRIVATE", headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.accepted)
+        self.assertEqual(res.status_code, requests.codes.no_content)
 
         # check collection gone
         no_auth_headers = {"Content-Type": "application/json"}
