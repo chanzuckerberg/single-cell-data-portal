@@ -17,4 +17,5 @@ export const TitleContainer = styled.div`
   }
   padding: 0 ${PT_GRID_SIZE_PX}px;
   justify-content: space-between;
+  align-items: center;
 `;
