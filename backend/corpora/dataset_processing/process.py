@@ -473,7 +473,7 @@ def main():
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
-        logger.exception()
+        logger.exception("An Error occured while processing.")
         return_value = 1
     except Exception:
         message = "An unexpect error occured while processing the data set."
