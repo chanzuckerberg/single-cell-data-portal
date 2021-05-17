@@ -58,6 +58,12 @@ class TestApi(unittest.TestCase):
         token = {"id_token": id_token}
         cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
+    def test_version(self):
+        res = requests.get(f"{self.api}/dp/v1/deployed_version")
+        res.raise_for_status()
+        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertIsNotNone(res.json()["Data Portal"])
+
     def test_auth(self):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
         res = requests.get(f"{self.api}/dp/v1/userinfo", headers=headers)

@@ -3,4 +3,5 @@ from flask import make_response, jsonify
 
 
 def get():
-    return make_response(jsonify({"Data Portal": os.environ["COMMIT_SHA"]}), 200)
+    version_info = {"Data Portal": os.getenv("COMMIT_SHA")}
+    return make_response(jsonify(version_info), 200)
