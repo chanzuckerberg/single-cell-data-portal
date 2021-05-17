@@ -180,8 +180,12 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            dataset.collection_visibility = CollectionVisibility.PUBLIC
-            dataset.published = True
+            if dataset.original_id:
+                "skip modified datasets"
+                continue  # TODO: expand to support tombstone and refresh corpora-data-portal/1177
+            else:
+                dataset.collection_visibility = CollectionVisibility.PUBLIC
+                dataset.published = True
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
