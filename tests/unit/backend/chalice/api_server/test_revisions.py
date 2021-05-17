@@ -229,12 +229,18 @@ class TestDeleteRevision(BaseRevisionTest):
         resp = self.app.delete(test_dataset_url, headers=self.headers)
         resp.raise_for_status()
 
-        # Get the revision
+        # Get the revision authenticated
         resp = self.app.get(self.test_url_collect_private, headers=self.headers)
         resp.raise_for_status()
+        # The dataset is a tombstone in the revision
+        self.assertTrue(json.loads(resp.body)["datasets"][0]["tombstone"])
 
+        # Get the revision unauthenticated
+        resp = self.app.get(self.test_url_collect_private)
+        resp.raise_for_status()
         # The dataset is a tombstone in the revision
         self.assertEqual(json.loads(resp.body)["datasets"], [])
+
         self.session.expire_all()
         for dataset in self.rev_collection.datasets:
             if dataset.id == rev_dataset_id:
@@ -298,7 +304,8 @@ class TestPublishRevision(BaseRevisionTest):
         ).id
         dataset_ids = [ds.id for ds in self.pub_collection.datasets]
         dataset_ids.append(new_dataset_id)
-        self.verify_publish_collection(self.rev_collection.id, dataset_ids)
+        actual_body = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
         """publish a revision with delete datasets"""
@@ -306,8 +313,7 @@ class TestPublishRevision(BaseRevisionTest):
         pub_dataset = self.pub_collection.datasets[0]
         published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
         self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
-        self.session.expire_all()
-        self.verify_publish_collection(self.rev_collection.id)
+        self.publish_collection(self.rev_collection.id)
         dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
         self.assertTrue(dataset.tombstone)
         for s3_object in published_s3_objects:
@@ -317,7 +323,8 @@ class TestPublishRevision(BaseRevisionTest):
         """"publish a revision with refreshed datasets"""
         """publish a revision with delete datasets"""
         self.refresh_datasets()
-        self.verify_publish_collection(self.rev_collection.id, [self.pub_collection.datasets[0].id])
+        actual_body = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(actual_body, [self.pub_collection.datasets[0].id])
 
     def test__publish_revision_with_collection_info_updated__201(self):
         expected_body = {

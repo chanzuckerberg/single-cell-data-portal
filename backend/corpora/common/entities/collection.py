@@ -148,8 +148,7 @@ class Collection(Entity):
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            tombstone = dataset.pop("tombstone", False)
-            if tombstone:
+            if dataset["tombstone"]:
                 if tombstoned_datasets:
                     datasets.append(dataset)
                 else:
