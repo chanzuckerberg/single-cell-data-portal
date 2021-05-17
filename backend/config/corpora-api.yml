@@ -289,7 +289,7 @@ paths:
       description: >-
         An authenticated user can upload a file from a shared link to replace an existing dataset in their collection.
 
-        The existing dataset must be in an error start or completely upload before a re-upload can be attempted.
+        The existing dataset must be in an error start or completely uploaded before a re-upload can be attempted.
         Once the upload of the replacement dataset is complete, the previous version of the dataset is replaced and is
         no longer available for downloading through this collection.
       security:
