@@ -203,6 +203,8 @@ class Collection(Entity):
                             artifact.dataset_id = original.id
                         for deployed_directory in dataset.deployment_directories:
                             deployed_directory.dataset_id = original.id
+                    elif dataset.tombstone:
+                        dataset.tombstone_dataset_and_delete_child_objects()
                     original.update(**updates)
             else:
                 dataset.collection_visibility = CollectionVisibility.PUBLIC
