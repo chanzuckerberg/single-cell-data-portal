@@ -2,7 +2,7 @@ from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import CollectionVisibility
 from ....common.entities.geneset import Geneset
-from ....common.utils.db_session import dbconnect
+from ....api_server.db import dbconnect
 from ....common.utils.exceptions import (
     ForbiddenHTTPException,
 )
