@@ -310,3 +310,7 @@ class TestPublishRevision(BaseRevisionTest):
         actual_body = self.publish_collection(self.rev_collection.id)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
         self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+
+    def test_with_revision_and_existing_datasets(self):
+        actual_body = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
