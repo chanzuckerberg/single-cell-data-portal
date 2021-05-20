@@ -75,7 +75,7 @@ def delete_dataset(dataset_uuid: str, user: str):
         return make_response(jsonify("Can not delete a public dataset"), 405)
     if dataset.tombstone is False:
         if dataset.published:
-            dataset.tombstone_dataset_and_delete_child_objects()
+            dataset.update(tombstone=True)
         else:
             dataset.asset_deletion()
             dataset.deployment_directories_deletion()
