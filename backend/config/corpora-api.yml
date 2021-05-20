@@ -297,7 +297,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: corpora.lambdas.api.v1.collection_uuid.upload.relink
+      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.relink
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
