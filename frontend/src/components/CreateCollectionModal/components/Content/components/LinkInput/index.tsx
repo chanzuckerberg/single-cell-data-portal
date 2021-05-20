@@ -140,14 +140,16 @@ const LinkInput: FC<Props> = ({
   }
 };
 
-function isDOILink(
+export function isDOILink(
   type: COLLECTION_LINK_TYPE
 ): (value: string) => true | string {
   return (value: string) => {
     // Skip validation if type is not DOI
     if (type !== COLLECTION_LINK_TYPE.DOI) return true;
-
-    const isValid = value.includes("doi.org");
+    const origin = "doi.org/";
+    const originIndex = value.indexOf("doi.org/");
+    const isValid =
+      originIndex !== -1 && value.slice(originIndex + origin.length).length > 0;
 
     return isValid || "Please enter a valid DOI link";
   };

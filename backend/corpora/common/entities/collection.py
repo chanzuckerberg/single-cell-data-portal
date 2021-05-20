@@ -129,9 +129,10 @@ class Collection(Entity):
 
         return results
 
-    def reshape_for_api(self) -> dict:
+    def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
         Reshape the collection to match the expected api output.
+        :tombstoned_datasets: Determines if tombtoned datasets will be included.
         :return: A dictionary that can be converted into JSON matching the expected api response.
         """
 
@@ -143,13 +144,19 @@ class Collection(Entity):
             dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
             for link in result["links"]
         ]
-
-        result["datasets"] = [ds for ds in result["datasets"] if not ds.get("tombstone")]
+        datasets = []
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = dataset.pop("deployment_directories")
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            dataset.pop("tombstone", None)
-
+            tombstone = dataset.pop("tombstone", False)
+            if tombstone:
+                if tombstoned_datasets:
+                    datasets.append(dataset)
+                else:
+                    continue
+            else:
+                datasets.append(dataset)
+        result["datasets"] = datasets
         return result
 
     def publish(self):
@@ -173,8 +180,12 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            dataset.collection_visibility = CollectionVisibility.PUBLIC
-            dataset.published = True
+            if dataset.original_id:
+                "skip modified datasets"
+                continue  # TODO: expand to support tombstone and refresh corpora-data-portal/1177
+            else:
+                dataset.collection_visibility = CollectionVisibility.PUBLIC
+                dataset.published = True
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
@@ -192,6 +203,8 @@ class Collection(Entity):
         for link in self.links:
             self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
         self.session.commit()
+        for dataset in self.datasets:
+            Dataset(dataset).create_revision()
         return Collection(revision_collection)
 
     def tombstone_collection(self):
@@ -200,7 +213,9 @@ class Collection(Entity):
             Geneset.get(self.session, geneset.id).delete()
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
-            ds.dataset_and_asset_deletion()
+            ds.asset_deletion()
+            ds.deployment_directories_deletion()
+            ds.tombstone_dataset_and_delete_child_objects()
 
     def update(self, links: list = None, **kwargs) -> None:
         """
@@ -219,3 +234,12 @@ class Collection(Entity):
         self.session.flush()
 
         super().update(**kwargs)
+
+    def delete(self):
+        for dataset in self.datasets:
+            ds = Dataset(dataset)
+            if not ds.published:
+                ds.asset_deletion()
+                ds.deployment_directories_deletion()
+            ds.delete()
+        super().delete()

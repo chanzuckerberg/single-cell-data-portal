@@ -1,0 +1,37 @@
+name: "Dataset Download Metrics"
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+
+jobs:
+  aggregate-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Configure Prod AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Run metrics aggregation script
+        run: |
+          python3 scripts/athena.py | tee dataset_metrics.txt
+      - name: Write to Slack on success
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          DOWNLOAD_STATS=$(cat dataset_metrics.txt)
+          METRICS_MSG="\`\`\`PROD DATASET DOWNLOAD METRICS: \n${DOWNLOAD_STATS}\`\`\`"
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'${METRICS_MSG}'}" $SLACK_WEBHOOK
+

@@ -2,7 +2,6 @@ import json
 import typing
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
-from backend.corpora.common.entities import Collection
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
@@ -16,7 +15,7 @@ class TestPublish(BaseAuthAPITest):
         response = self.app.post(path, headers=headers)
         self.assertEqual(202, response.status_code)
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
-        self.addCleanup(Collection.get(self.session, [collection_id, "PUBLIC"]).delete)
+        self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # cannot call twice
         response = self.app.post(path, headers=headers)

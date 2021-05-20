@@ -74,7 +74,12 @@ def delete_dataset(dataset_uuid: str, user: str):
     if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
     if dataset.tombstone is False:
-        dataset.dataset_and_asset_deletion()
+        if dataset.published:
+            dataset.tombstone_dataset_and_delete_child_objects()
+        else:
+            dataset.asset_deletion()
+            dataset.deployment_directories_deletion()
+            dataset.delete()
     return "", 202
 
 

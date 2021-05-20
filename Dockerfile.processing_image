@@ -1,29 +1,6 @@
-FROM rocker/r-ver:4.0.3
+ARG BASE_TAG=branch-main
 
-# Most of these are required for SCE
-RUN apt-get update && apt-get -yq install \
-      cpio \
-      git \
-      jq \
-      python3-pip \
-      zlib1g-dev \
-      libbz2-dev \
-      liblzma-dev \
-      libcurl4-openssl-dev \
-      libglpk-dev \
-      libxml2-dev \
-      wget \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
-# Install R dependencies
-RUN R -e "install.packages('BiocManager')"
-RUN R -e "BiocManager::install('SingleCellExperiment')"
-RUN R -e "BiocManager::install('LoomExperiment')"
-RUN R -e "install.packages(c('devtools', 'igraph'));"
-RUN R -e "library(devtools); devtools::install_github('cellgeni/sceasy')"
-RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-
+FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 \

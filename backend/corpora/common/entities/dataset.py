@@ -1,8 +1,9 @@
+from urllib.parse import urlparse
+
 import csv
+import logging
 import os
 import typing
-
-import boto3
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
@@ -15,7 +16,13 @@ from ..corpora_orm import (
     UploadStatus,
     ProcessingStatus,
     DbGenesetDatasetLink,
+    CollectionVisibility,
+    generate_uuid,
 )
+from ..utils.s3_buckets import cxg_bucket
+from ..utils.db_helpers import clone
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -123,15 +130,34 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
-    def delete(self):
+    def create_revision(self) -> "Dataset":
         """
-        Delete the Dataset and all child objects.
+        Generate a dataset revision from a dataset in a public collection
+        :return: dataset revision.
+
         """
-        super().delete()
+        revision_dataset_uuid = generate_uuid()
+        revision_dataset = clone(
+            self.db_object,
+            id=revision_dataset_uuid,
+            collection_id=self.collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE,
+            original_id=self.id,
+        )
+        self.session.add(revision_dataset)
+        for artifact in self.artifacts:
+            self.session.add(clone(artifact, dataset_id=revision_dataset.id))
+        if self.processing_status:
+            self.session.add(clone(self.processing_status, dataset_id=revision_dataset.id))
+        for deployment in self.deployment_directories:
+            self.session.add(clone(deployment, dataset_id=revision_dataset.id))
+        self.session.commit()
+        return Dataset(revision_dataset)
 
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True)
-        self.session.delete(self.processing_status)
+        if self.processing_status:
+            self.session.delete(self.processing_status)
         for dd in self.deployment_directories:
             self.session.delete(dd)
         for af in self.artifacts:
@@ -141,35 +167,38 @@ class Dataset(Entity):
         )
         self.session.commit()
 
-    def dataset_and_asset_deletion(self):
+    def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
             asset.delete_from_s3()
-        self.tombstone_dataset_and_delete_child_objects()
+            asset.delete()
+
+    def deployment_directories_deletion(self):
+        for deployment_directory in self.deployment_directories:
+            object_names = get_cxg_bucket_path(deployment_directory)
+            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
+            cxg_bucket.objects.filter(Prefix=object_names).delete()
 
     @staticmethod
-    def new_processing_status():
+    def new_processing_status() -> dict:
         return {
             "upload_status": UploadStatus.WAITING,
             "upload_progress": 0,
             "processing_status": ProcessingStatus.PENDING,
         }
 
-    def copy_csv_to_s3(self, csv_file):
-        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-        cellxgene_bucket = os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
-        s3.meta.client.upload_file(csv_file, cellxgene_bucket, csv_file)
+    def copy_csv_to_s3(self, csv_file: str) -> str:
+        s3_file = f"{get_cxg_bucket_path(self.deployment_directories[0])}-genesets.csv"
+        cxg_bucket.upload_file(csv_file, s3_file)
+        return s3_file
 
-    def generate_tidy_csv_for_all_linked_genesets(self, csv_file=None):
-        if csv_file is None:
-            base, ext = os.path.splitext(self.deployment_directories[0].url)
-            if ext is not None:  # strip extension, if any
-                csv_file = f"{base}-genesets.csv"
+    def generate_tidy_csv_for_all_linked_genesets(self, csv_file_path: str) -> str:
+        csv_file = os.path.join(csv_file_path, "geneset.csv")
         fieldnames = ["GENE_SET_NAME", "GENE_SET_DESCRIPTION", "GENE_SYMBOL", "GENE_DESCRIPTION"]
         genesets = []
         max_additional_params = 0
         for geneset in self.genesets:
-            geneset_entity = Geneset.get(session=self.session, key=geneset.id)
+            geneset_entity = Geneset(geneset)
             gene_rows, gene_max = geneset_entity.convert_geneset_to_gene_dicts()
             if gene_max > max_additional_params:
                 max_additional_params = gene_max
@@ -185,3 +214,13 @@ class Dataset(Entity):
             for gene in genesets:
                 writer.writerow(gene)
         return csv_file
+
+
+def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:
+    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
+    deployment directory URL"""
+    object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
+    if object_name.endswith("/"):
+        object_name = object_name[:-1]
+    base, _ = os.path.splitext(object_name)
+    return base

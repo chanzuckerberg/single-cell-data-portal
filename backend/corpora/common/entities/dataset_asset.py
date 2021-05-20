@@ -1,4 +1,6 @@
 import logging
+from os.path import basename, join
+
 import os
 import typing
 from urllib.parse import urlparse
@@ -94,3 +96,26 @@ class DatasetAsset(Entity):
         session.add(db_object)
         session.commit()
         return cls(db_object)
+
+    def get_bucket_path(self):
+        return "/".join(self.s3_uri.split("/")[-2:])
+
+    @staticmethod
+    def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
+        return join("s3://", artifact_bucket, bucket_prefix, file_name)
+
+    @classmethod
+    def upload(
+        cls,
+        file_name: str,
+        bucket_prefix: str,
+        artifact_bucket: str,
+    ) -> str:
+        file_base = basename(file_name)
+        cls.s3_client().upload_file(
+            file_name,
+            artifact_bucket,
+            join(bucket_prefix, file_base),
+            ExtraArgs={"ACL": "bucket-owner-full-control"},
+        )
+        return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
