@@ -86,8 +86,8 @@ class Dataset(Entity):
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
          be removed and replaced with new entries. If an empty list is provided, all dataset artifacts will be deleted.
         :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
-         existing attached entries will be removed and replaced with new entries. If an empty list is provided, all dataset
-         deployment_directories will be deleted.
+         existing attached entries will be removed and replaced with new entries. If an empty list is provided, all
+         dataset deployment_directories will be deleted.
         :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
          existing attached entries will be removed and replaced with new entries. If an empty dictionary is provided the
          processing_status will be deleted.
