@@ -11,7 +11,8 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DatasetArtifactType,
 )
-from backend.corpora.common.utils.db_session import processing_status_updater
+
+from backend.corpora.common.utils.db_helpers import processing_status_updater
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS

@@ -11,18 +11,18 @@ from flask import g
 from flask_cors import CORS
 from urllib.parse import urlparse
 
-import backend
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.aws import AwsSecret
 
+DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
+APP_NAME = os.environ["APP_NAME"]
+
 
 def create_flask_app():
-    app = connexion.FlaskApp(f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_STAGE']}")
+    app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
     app.app.url_map.strict_slashes = False
-    swagger_spec_path = os.path.join(
-        os.path.abspath(os.path.join(os.path.dirname(backend.__file__))), "config", f"{os.environ['APP_NAME']}.yml"
-    )
+    swagger_spec_path = f"{APP_NAME}.yml"
     app.add_api(swagger_spec_path, validate_responses=True)
     return app.app
 
