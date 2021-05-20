@@ -84,11 +84,13 @@ class Dataset(Entity):
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
-         be removed and replaced with new entries.
+         be removed and replaced with new entries. If an empty list is provided, all dataset artifacts will be deleted.
         :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
-         existing attached entries will be removed and replaced with new entries.
+         existing attached entries will be removed and replaced with new entries. If an empty list is provided, all dataset
+         deployment_directories will be deleted.
         :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
-         existing attached entries will be removed and replaced with new entries.
+         existing attached entries will be removed and replaced with new entries. If an empty dictionary is provided the
+         processing_status will be deleted.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
         if any([i is not None for i in [artifacts, deployment_directories, processing_status]]):
@@ -105,9 +107,9 @@ class Dataset(Entity):
             if processing_status is not None:
                 if self.processing_status:
                     self.session.delete(self.processing_status)
-                new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
-                self.session.add(new_obj)
-
+                if processing_status:
+                    new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
+                    self.session.add(new_obj)
             self.session.flush()
 
         super().update(**kwargs)
@@ -155,9 +157,7 @@ class Dataset(Entity):
         return Dataset(revision_dataset)
 
     def tombstone_dataset_and_delete_child_objects(self):
-        self.update(tombstone=True, deployment_directories=[], artifacts=[])
-        if self.processing_status:
-            self.session.delete(self.processing_status)
+        self.update(tombstone=True, deployment_directories=[], artifacts=[], processing_status={})
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
