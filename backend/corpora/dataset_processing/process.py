@@ -132,7 +132,8 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
+from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.dataset_processing.download import download
 
 logger = logging.getLogger(__name__)

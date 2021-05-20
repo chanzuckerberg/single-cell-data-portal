@@ -5,7 +5,7 @@ from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility
 from .....common import upload_sfn
 from .....common.entities import Collection, Dataset
-from .....common.utils.db_session import dbconnect
+from .....api_server.db import dbconnect
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, TooLargeHTTPException
 from .....common.utils.math_utils import GB

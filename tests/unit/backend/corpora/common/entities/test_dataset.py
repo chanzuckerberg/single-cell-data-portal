@@ -17,7 +17,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
-from backend.corpora.common.utils.db_session import processing_status_updater
+from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.utils import BogusDatasetParams, BogusProcessingStatusParams

@@ -6,7 +6,7 @@ from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
-from ..utils.db_session import clone
+from ..utils.db_helpers import clone
 
 
 class Collection(Entity):
