@@ -25,7 +25,7 @@ def create_flask_app():
 
 def configure_flask_app(flask_app):
     # configure logging
-    gunicorn_logger = logging.getLogger('gunicorn.error')
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     flask_app.logger.handlers = gunicorn_logger.handlers
     flask_app.logger.setLevel(gunicorn_logger.level)
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True

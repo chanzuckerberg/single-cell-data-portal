@@ -26,6 +26,7 @@ def relink(collection_uuid: str, body: dict, user: str):
     dataset_id = upload_from_link(collection_uuid, user, body["url"], body["id"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
+
 @dbconnect
 def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str = None):
     db_session = g.db_session
