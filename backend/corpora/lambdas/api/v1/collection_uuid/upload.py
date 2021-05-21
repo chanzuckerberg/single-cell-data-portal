@@ -17,20 +17,18 @@ from .....common.utils.exceptions import (
 from .....common.utils.math_utils import GB
 
 
-@dbconnect
 def link(collection_uuid: str, body: dict, user: str):
-    db_session = g.db_session
-    dataset_id = upload_from_link(db_session, collection_uuid, user, body["url"])
+    dataset_id = upload_from_link(collection_uuid, user, body["url"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
 def relink(collection_uuid: str, body: dict, user: str):
-    db_session = g.db_session
-    dataset_id = upload_from_link(db_session, collection_uuid, user, body["url"], body["id"])
+    dataset_id = upload_from_link(collection_uuid, user, body["url"], body["id"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
-
-def upload_from_link(db_session, collection_uuid: str, user: str, url: dict, dataset_id: str = None):
+@dbconnect
+def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str = None):
+    db_session = g.db_session
     # Verify Dropbox URL
     valid_link = from_url(url)
     if not valid_link:
