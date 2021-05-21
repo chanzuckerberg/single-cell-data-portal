@@ -120,7 +120,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-    @patch("corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
     def test__reupload_published_dataset_during_revision__202(self, mocked):
         """reupload a published dataset during a revision"""
         pub_collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
@@ -139,12 +139,12 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             response = self.app.put(path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
-            new_datset_id = json.loads(response.body)["dataset_uuid"]
+            new_datset_id = json.loads(response.data)["dataset_uuid"]
             self.assertEqual(pub_dataset.id, Dataset.get(self.session, new_datset_id).original_id)
             for s3_object in pub_s3_objects:
                 self.assertS3FileExists(*s3_object)
 
-    @patch("corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self, mocked):
         """reupload a unpublished dataset, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
@@ -163,12 +163,12 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             response = self.app.put(path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
-            actual_body = json.loads(response.body)
+            actual_body = json.loads(response.data)
             self.assertEqual(dataset_id, actual_body["dataset_uuid"])
             for s3_object in s3_objects:
                 self.assertS3FileDoesNotExist(*s3_object)
 
-    @patch("corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
     def test__reupload_unpublished_dataset_during_revision_202(self, mock):
         """reupload a unpublished dataset during a revision, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session)
