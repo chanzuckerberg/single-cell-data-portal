@@ -20,7 +20,7 @@ paths:
       summary: List published collections in Corpora
       security:
         - cxguserCookie: []
-        - dummyAuth: []
+        - { }
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
@@ -124,7 +124,7 @@ paths:
       summary: Get a collection's full details
       security:
         - cxguserCookie: []
-        - dummyAuth: []
+        - { }
       description: >-
         This will return all datasets and associated attributes.
       operationId: corpora.lambdas.api.v1.collection.get_collection_details
@@ -150,7 +150,7 @@ paths:
       summary: Start a revision of a public collection,
       security:
         - cxguserCookie: []
-        - dummyAuth: []
+        - { }
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
@@ -978,8 +978,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_info_func
-    dummyAuth:
-      type: apiKey
-      in: header
-      name: cxgpublic
-      x-apikeyInfoFunc: corpora.lambdas.api.v1.authentication.apikey_dummy_info_func
