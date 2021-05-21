@@ -15,15 +15,21 @@ APP_NAME = os.environ["APP_NAME"]
 
 
 def create_flask_app():
-    app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
+    connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
-    app.app.url_map.strict_slashes = False
+    connexion_app.app.url_map.strict_slashes = False
     swagger_spec_path = f"{APP_NAME}.yml"
-    app.add_api(swagger_spec_path, validate_responses=True)
-    return app.app
+    connexion_app.add_api(swagger_spec_path, validate_responses=True)
+    return connexion_app.app
 
 
 def configure_flask_app(flask_app):
+    # configure logging
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    flask_app.logger.handlers = gunicorn_logger.handlers
+    flask_app.logger.setLevel(gunicorn_logger.level)
+    flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
+
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
     allowed_origins = []
@@ -55,8 +61,6 @@ def configure_flask_app(flask_app):
         SESSION_COOKIE_SAMESITE="Lax",
     )
     flask_app.json_encoder = CustomJSONEncoder
-    flask_app.debug = True
-    flask_app.logger.setLevel(logging.DEBUG)
     return flask_app
 
 
