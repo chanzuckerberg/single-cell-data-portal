@@ -18,7 +18,7 @@ def assert_authorized_token(token: str) -> dict:
     try:
         unverified_header = jwt.get_unverified_header(token)
     except JWTError:
-        raise UnauthorizedError(msg="Unable to parse authentication token.")
+        raise UnauthorizedError(detail="Unable to parse authentication token.")
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
     audience = auth_config.audience
@@ -41,13 +41,13 @@ def assert_authorized_token(token: str) -> dict:
         except ExpiredSignatureError:
             raise
         except JWTClaimsError:
-            raise UnauthorizedError(msg="Incorrect claims, please check the audience and issuer.")
+            raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
         except Exception:
-            raise UnauthorizedError(msg="Unable to parse authentication token.")
+            raise UnauthorizedError(detail="Unable to parse authentication token.")
 
         return payload
 
-    raise UnauthorizedError(msg="Unable to find appropriate key")
+    raise UnauthorizedError(detail="Unable to find appropriate key")
 
 
 def assert_authorized(headers: dict) -> dict:
@@ -60,7 +60,7 @@ def assert_authorized(headers: dict) -> dict:
         token = get_token_auth_header(headers)
         return assert_authorized_token(token)
     except ExpiredSignatureError:
-        raise UnauthorizedError(msg="Token is expired.")
+        raise UnauthorizedError(detail="Token is expired.")
 
 
 def get_token_auth_header(headers: dict) -> str:
@@ -68,16 +68,16 @@ def get_token_auth_header(headers: dict) -> str:
 
     auth_header = headers.get("Authorization", None)
     if not auth_header:
-        raise UnauthorizedError(msg="Authorization header is expected")
+        raise UnauthorizedError(detail="Authorization header is expected")
 
     parts = auth_header.split()
 
     if parts[0].lower() != "bearer":
-        raise UnauthorizedError(msg="Authorization header must start with Bearer")
+        raise UnauthorizedError(detail="Authorization header must start with Bearer")
     elif len(parts) == 1:
-        raise UnauthorizedError(msg="Token not found")
+        raise UnauthorizedError(detail="Token not found")
     elif len(parts) > 2:
-        raise UnauthorizedError(msg="Authorization header must be Bearer token")
+        raise UnauthorizedError(detail="Authorization header must be Bearer token")
 
     token = parts[1]
     return token
