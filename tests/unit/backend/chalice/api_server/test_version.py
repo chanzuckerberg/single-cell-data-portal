@@ -9,4 +9,4 @@ class TestVersion(BaseAuthAPITest):
     @patch.dict(os.environ, {"COMMIT_SHA": "test"})
     def test_get(self):
         response = self.app.get("/dp/v1/deployed_version")
-        self.assertEqual("test", json.loads(response.data)["Data Portal"])
+        self.assertEqual("test", json.loads(response.body)["Data Portal"])
