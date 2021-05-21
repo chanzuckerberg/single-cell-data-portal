@@ -104,7 +104,7 @@ def transfer_collections(ctx, curr_owner, new_owner):
 
     with db_session_manager() as session:
         collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
-
+        new_owner_collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
         if collections is not None:
             click.confirm(
                 f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections)>1 else ''} from {curr_owner} to "
@@ -116,7 +116,10 @@ def transfer_collections(ctx, curr_owner, new_owner):
                 .filter(DbCollection.owner == curr_owner)
                 .update({DbCollection.owner: new_owner})
             )
+            session.commit()
             if updated > 0:
+                collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
+                click.echo(f"{new_owner} previously owned {len(new_owner_collections)}, they now own {len(collections)}. {updated} collections were updated")
                 click.echo(f"Updated owner of collection for {updated} collections. {new_owner} is now the owner")
                 exit(0)
             else:
