@@ -827,6 +827,8 @@ components:
           $ref: "#/components/schemas/visibility"
         cell_count:
           type: integer
+        tombstone:
+          type: boolean
     dataset_asset:
       type: object
       properties:
