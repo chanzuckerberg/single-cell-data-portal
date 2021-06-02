@@ -50,22 +50,12 @@ class testToDict(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         DataPortalTestCase.setUpClass()
-        session_maker = DBSessionMaker()
-        cls.database_name = __name__.split(".")[-1]
-        new_database_uri = f"{session_maker.database_uri}/{cls.database_name}"
-        session_maker.engine.execution_options(isolation_level="AUTOCOMMIT").execute(
-            f"CREATE DATABASE {cls.database_name}"
-        )
-        DBSessionMaker.reset()
-        engine = DBSessionMaker(new_database_uri).engine
+        engine = DBSessionMaker().engine
         Test_Base.metadata.drop_all(engine)
         Test_Base.metadata.create_all(engine)
 
     @classmethod
     def tearDownClass(cls):
-        DBSessionMaker.reset()
-        engine = DBSessionMaker().engine
-        engine.execution_options(isolation_level="AUTOCOMMIT").execute(f"DROP DATABASE IF EXISTS {cls.database_name}")
         cls.reinitialize_database()
         DataPortalTestCase.tearDownClass()
 

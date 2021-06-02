@@ -26,13 +26,6 @@ class DBSessionMaker:
     def session(self, **kwargs) -> session.Session:
         return self._session_make(**kwargs)
 
-    @classmethod
-    def reset(cls):
-        cls._session_make = None
-        if cls.engine:
-            cls.engine.dispose()
-        cls.engine = None
-
 
 def clone(model: Base, primary_key: dict = None, **kwargs) -> Base:
     """Clone an arbitrary sqlalchemy model object with new primary keys.
