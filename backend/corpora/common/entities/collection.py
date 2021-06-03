@@ -147,8 +147,7 @@ class Collection(Entity):
         datasets = []
         for dataset in result["datasets"]:
             dataset.pop("explorer_s3_uri", None)
-            if dataset.get("explorer_url", None):
-                dataset["dataset_deployments"] = [{"url": dataset.pop("explorer_url")}]
+            dataset["dataset_deployments"] = [{"url": dataset.pop("explorer_url", None)}]
             dataset["dataset_assets"] = dataset.pop("artifacts")
             tombstone = dataset.pop("tombstone", False)
             if tombstone:
