@@ -15,16 +15,15 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
-        self.generate_dataset_with_s3_resources(
-            self.session, collection_visibility="PUBLIC", collection_id=pub_collection.id, published=True
-        )
+        self.generate_dataset_with_s3_resources(self.session, collection_visibility="PUBLIC",
+                                                collection_id=pub_collection.id, published=True)
         self.pub_collection = pub_collection
         self.rev_collection = pub_collection.revision()
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
     def assertPublishedCollectionOK(self, expected_body, s3_objects):
         """Checks that the published collection is as expected and S3 Objects exist"""
-        with self.subTest("published artifacts and deployment_directories ok"):
+        with self.subTest("published artifacts and explorer s3 object ok"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileExists(bucket, file_name)
         with self.subTest("publish collection ok"):
@@ -40,12 +39,8 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for dataset in self.rev_collection.datasets:
             Dataset(dataset).delete()
         for dataset in self.pub_collection.datasets:
-            self.generate_dataset_with_s3_resources(
-                self.session,
-                collection_visibility="PRIVATE",
-                collection_id=self.rev_collection.id,
-                original_id=dataset.id,
-            )
+            self.generate_dataset_with_s3_resources(self.session, collection_visibility="PRIVATE",
+                                                    collection_id=self.rev_collection.id, original_id=dataset.id)
 
     def get_s3_objects_from_collections(self) -> typing.Tuple[typing.List, typing.List]:
         """
@@ -178,16 +173,12 @@ class TestDeleteRevision(BaseRevisionTest):
     def test__revision_deleted_with_new_datasets(self):
         """The new datasets should be deleted when the revison is deleted."""
         # Generate revision dataset
-        rev_dataset = self.generate_dataset_with_s3_resources(
-            self.session,
-            collection_visibility="PRIVATE",
-            collection_id=self.rev_collection.id,
-            published=False,
-        )
+        rev_dataset = self.generate_dataset_with_s3_resources(self.session, collection_visibility="PRIVATE",
+                                                              collection_id=self.rev_collection.id, published=False)
         s3_objects = self.get_s3_object_paths_from_dataset(rev_dataset)
 
         # Check resources exist
-        with self.subTest("new artifacts and deployment_directories exist"):
+        with self.subTest("new artifacts and explorer s3 objects exist"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileExists(bucket, file_name)
 
@@ -195,7 +186,7 @@ class TestDeleteRevision(BaseRevisionTest):
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         resp.raise_for_status()
 
-        with self.subTest("new artifacts and deployment_directories deleted"):
+        with self.subTest("new artifacts and explorer s3 objects deleted"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileDoesNotExist(bucket, file_name)
 
@@ -215,7 +206,7 @@ class TestDeleteRevision(BaseRevisionTest):
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         resp.raise_for_status()
 
-        with self.subTest("refreshed artifacts and deployment_directories deleted"):
+        with self.subTest("refreshed artifacts and explorer s3 objects deleted"):
             for bucket, file_name in rev_s3_objects:
                 self.assertS3FileDoesNotExist(bucket, file_name)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)

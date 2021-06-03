@@ -1,4 +1,4 @@
--- Generated via: pg_dump -Fp --no-privileges --no-owner --no-comments --schema-only 
+-- Generated via: pg_dump -Fp --no-privileges --no-owner --no-comments --schema-only
 --
 -- PostgreSQL database dump
 --
@@ -183,18 +183,6 @@ CREATE TABLE public.dataset_processing_status (
 );
 
 
---
--- Name: deployment_directory; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.deployment_directory (
-    id character varying NOT NULL,
-    dataset_id character varying NOT NULL,
-    url character varying,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
-);
-
 
 --
 -- Name: project; Type: TABLE; Schema: public; Owner: -
@@ -309,14 +297,6 @@ ALTER TABLE ONLY public.dataset
 
 ALTER TABLE ONLY public.dataset_processing_status
     ADD CONSTRAINT dataset_processing_status_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES public.dataset(id);
-
-
---
--- Name: deployment_directory deployment_directory_dataset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.deployment_directory
-    ADD CONSTRAINT deployment_directory_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES public.dataset(id);
 
 
 --

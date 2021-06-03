@@ -807,10 +807,6 @@ components:
           items:
             type: object
             properties:
-              id:
-                type: string
-              environment:
-                type: string
               url:
                 type: string
         linked_genesets:
