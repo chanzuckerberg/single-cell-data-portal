@@ -661,6 +661,13 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
+  /dp/v1/deployed_version:
+    get:
+      summary: Returns version information
+      operationId: corpora.lambdas.api.v1.version.get
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
 components:
   schemas:
     user_uuid:
