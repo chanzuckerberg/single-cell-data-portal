@@ -185,7 +185,6 @@ class TestDatabase:
             collection_visibility=CollectionVisibility.PRIVATE.name,
             explorer_url="test_url",
             explorer_s3_uri=f"s3://{cxg_bucket.name}/{test_dataset_id}.cxg/",
-
         )
         self.session.add(dataset)
         self.session.commit()

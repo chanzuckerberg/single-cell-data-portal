@@ -153,9 +153,7 @@ class TestCollection(BaseAuthAPITest):
                             "user_submitted": True,
                         }
                     ],
-                    "dataset_deployments": [{"url": "test_url"}
-                    ],
-                    'dataset_deployments': [{'url': 'test_url'}],
+                    "dataset_deployments": [{"url": "test_url"}],
                     "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
                     "disease": [
                         {"label": "test_disease", "ontology_term_id": "test_obo"},
@@ -491,10 +489,12 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_1 = self.generate_dataset_with_s3_resources(self.session, collection=collection,
-                                                            processing_status=processing_status_1)
-        dataset_2 = self.generate_dataset_with_s3_resources(self.session, collection=collection,
-                                                            processing_status=processing_status_2)
+        dataset_1 = self.generate_dataset_with_s3_resources(
+            self.session, collection=collection, processing_status=processing_status_1
+        )
+        dataset_2 = self.generate_dataset_with_s3_resources(
+            self.session, collection=collection, processing_status=processing_status_2
+        )
 
         s3_objects = self.get_s3_object_paths_from_dataset(dataset_1) + self.get_s3_object_paths_from_dataset(dataset_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}

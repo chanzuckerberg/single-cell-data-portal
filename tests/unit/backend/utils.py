@@ -54,7 +54,7 @@ class BogusDatasetParams:
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
-            explorer_s3_uri=f"s3://{cxg_bucket.name}/some_uuid.cxg/"
+            explorer_s3_uri=f"s3://{cxg_bucket.name}/some_uuid.cxg/",
         )
 
         bogus_data.update(**kwargs)
