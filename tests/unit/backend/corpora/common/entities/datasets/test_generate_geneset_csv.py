@@ -9,9 +9,7 @@ from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 class TestDatasetGenesetCSV(TestDataset):
     def test__generate_tidy_csv_for_all_linked_genesets__correctly_creates_csv(self):
         collection = self.generate_collection(self.session)
-        dataset = self.generate_dataset(
-            self.session, collection=collection
-        )
+        dataset = self.generate_dataset(self.session, collection=collection)
         genes0 = [
             {"gene_symbol": "HBB", "gene_description": "gene 1", "additional_params": {}},
             {"gene_symbol": "HBA1", "gene_description": "gene 2", "additional_params": {}},
@@ -67,7 +65,10 @@ class TestDatasetGenesetCSV(TestDataset):
     def test__generate_tidy_csv_for_all_linked_genesets__stores_file_in_correct_location(self):
         collection = self.generate_collection(self.session)
         dataset = self.generate_dataset(self.session, collection=collection)
-        dataset.update(explorer_url=f"http://test_domain.example/e/{dataset.id}.cxg/",  explorer_s3_uri=f"s3://{cxg_bucket.name}/{dataset.id}.cxg/" )
+        dataset.update(
+            explorer_url=f"http://test_domain.example/e/{dataset.id}.cxg/",
+            explorer_s3_uri=f"s3://{cxg_bucket.name}/{dataset.id}.cxg/",
+        )
         genes0 = [
             {"gene_symbol": "HBB", "gene_description": "gene 1", "additional_params": {}},
             {"gene_symbol": "HBA1", "gene_description": "gene 2", "additional_params": {}},

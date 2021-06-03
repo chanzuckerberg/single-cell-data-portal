@@ -72,9 +72,7 @@ class Dataset(Entity):
 
         return cls(dataset)
 
-    def update(
-        self, artifacts: list = None, processing_status: dict = None, **kwargs
-    ) -> None:
+    def update(self, artifacts: list = None, processing_status: dict = None, **kwargs) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
@@ -154,7 +152,7 @@ class Dataset(Entity):
             asset.delete()
 
     def delete_explorer_cxg_object_from_s3(self):
-        object_name = self.explorer_s3_uri.split("/")[3].split('.')[0]
+        object_name = self.explorer_s3_uri.split("/")[3].split(".")[0]
         logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_name}.")
         cxg_bucket.objects.filter(Prefix=object_name).delete()
 
@@ -167,7 +165,9 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:
-        cxg_object_name = self.explorer_s3_uri.split("/")[3].split('.')[0] # grab the object name without the cxg suffix
+        cxg_object_name = self.explorer_s3_uri.split("/")[3].split(".")[
+            0
+        ]  # grab the object name without the cxg suffix
         s3_file = f"{cxg_object_name}-genesets.csv"
         cxg_bucket.upload_file(csv_file, s3_file)
         return s3_file

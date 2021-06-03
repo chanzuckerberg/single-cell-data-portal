@@ -271,7 +271,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
         fake_env.start()
 
-        process.update_db(dataset_id, metadata={"sex": ["male", "female"], "explorer_url":"https://cellxgene.com/data"})
+        process.update_db(
+            dataset_id, metadata={"sex": ["male", "female"], "explorer_url": "https://cellxgene.com/data"}
+        )
         self.session.expire(dataset)
         self.assertListEqual(Dataset.get(self.session, dataset_id).sex, ["male", "female"])
 
@@ -286,9 +288,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.session.expire(dataset)
         self.assertEqual(len(Dataset.get(self.session, dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(self.session, dataset_id).artifacts[0].filename, "test_filename")
-        self.assertEqual(
-            Dataset.get(self.session, dataset_id).explorer_url, "https://cellxgene.com/data"
-        )
+        self.assertEqual(Dataset.get(self.session, dataset_id).explorer_url, "https://cellxgene.com/data")
 
         process.update_db(
             dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5}

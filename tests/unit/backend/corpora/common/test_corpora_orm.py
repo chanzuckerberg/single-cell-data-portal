@@ -9,12 +9,7 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 Test_Base = declarative_base(cls=TransformingBase)
 
 
-<<<<<<< HEAD
-
 class DbParent(Test_Base):
-=======
-class DbParent(Base):
->>>>>>> 2f2f6fb1 (lint)
     __tablename__ = "parent"
 
     name = Column(String)

@@ -25,9 +25,7 @@ class TestCreateDataset(TestDataset):
 
         for i in range(3):
             with self.subTest(i):
-                dataset = self.create_dataset_with_artifacts(
-                    artifact_count=i, artifact_params=artifact_params
-                )
+                dataset = self.create_dataset_with_artifacts(artifact_count=i, artifact_params=artifact_params)
 
                 expected_dataset_id = dataset.id
                 expected_artifacts = [art.to_dict() for art in dataset.artifacts]
