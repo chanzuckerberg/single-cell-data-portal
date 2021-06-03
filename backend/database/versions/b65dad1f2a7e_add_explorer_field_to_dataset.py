@@ -23,6 +23,7 @@ def upgrade():
     op.create_index(op.f('ix_dataset_explorer_url'), 'dataset', ['explorer_url'], unique=False)
     op.execute("UPDATE dataset SET explorer_url=deployment_directory.url FROM deployment_directory WHERE deployment_directory.dataset_id=dataset.id;")
     op.execute("UPDATE dataset SET explorer_s3_uri=CONCAT('s3://hosted-cellxgene-', split_part(explorer_url, '.', 2), '/', split_part(explorer_url, '/', 5), '/') WHERE dataset.explorer_url is not null")
+    op.drop_constraint("deployment_directory_dataset_id_fkey", "deployment_directory")
     op.drop_table('deployment_directory')
     # ### end Alembic commands ###
 

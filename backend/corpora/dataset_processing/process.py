@@ -207,7 +207,7 @@ def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         dataset.asset_deletion()
-        dataset.deployment_directories_deletion()
+        dataset.delete_explorer_cxg_object_from_s3()
         dataset.delete()
         logger.info("Upload Canceled.")
 
@@ -390,11 +390,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
     if cxg_dir:
         copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
-        metadata = {
-            "deployment_directories": [
-                {"url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")}
-            ]
-        }
+        metadata = {"explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")}
     else:
         metadata = None
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))

@@ -20,7 +20,6 @@ class TestUpdateDataset(TestDataset):
             user_submitted=True,
             s3_uri="some_uri",
         )
-        deployment_directory_params = dict(url="test_url")
         processing_status = BogusProcessingStatusParams.get()
         dataset_params = BogusDatasetParams.get()
 
@@ -28,7 +27,6 @@ class TestUpdateDataset(TestDataset):
             self.session,
             **dataset_params,
             artifacts=[artifact_params],
-            deployment_directories=[deployment_directory_params],
             processing_status=processing_status,
         )
 
@@ -43,7 +41,6 @@ class TestUpdateDataset(TestDataset):
 
         dataset.update(
             artifacts=[new_artifact_params],
-            deployment_directories=[deployment_directory_params],
             processing_status=new_processing_status,
             sex=["other"],
         )
