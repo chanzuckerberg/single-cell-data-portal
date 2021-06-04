@@ -101,7 +101,7 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha, dry_run):
     print("Deployment successful")
 
 def validate_sha(ctx, param, value):
-    if len(value) < 8:
+    if value and len(value) < 8:
         raise click.BadParameter("Github SHA must be at least 8 characters!")
     return value
 
