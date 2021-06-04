@@ -1,12 +1,15 @@
 from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from backend.corpora.common.corpora_orm import Base
+from backend.corpora.common.corpora_orm import TransformingBase
 from backend.corpora.common.utils.db_session import DBSessionMaker, db_session_manager
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
+Test_Base = declarative_base(cls=TransformingBase)
 
-class DbParent(Base):
+
+class DbParent(Test_Base):
     __tablename__ = "parent"
 
     name = Column(String)
@@ -15,7 +18,7 @@ class DbParent(Base):
     properties = relationship("DbProperty", back_populates="parent")
 
 
-class DbChild(Base):
+class DbChild(Test_Base):
     __tablename__ = "child"
 
     name = Column(String)
@@ -24,7 +27,7 @@ class DbChild(Base):
     properties = relationship("DbProperty", secondary="associate_property_owner", back_populates="children")
 
 
-class DbProperty(Base):
+class DbProperty(Test_Base):
     __tablename__ = "property"
     name = Column(String)
     children = relationship("DbChild", secondary="associate_property_owner", back_populates="properties")
@@ -32,7 +35,7 @@ class DbProperty(Base):
     parent = relationship("DbParent", uselist=False, back_populates="properties")
 
 
-class AssociatePropertyOwner(Base):
+class AssociatePropertyOwner(Test_Base):
     __tablename__ = "associate_property_owner"
     child_id = Column(String, ForeignKey("child.id"), index=True)
     property_id = Column(String, ForeignKey("property.id"), index=True)
@@ -48,8 +51,8 @@ class testToDict(DataPortalTestCase):
     def setUpClass(cls):
         DataPortalTestCase.setUpClass()
         engine = DBSessionMaker().engine
-        Base.metadata.drop_all(engine)
-        Base.metadata.create_all(engine)
+        Test_Base.metadata.drop_all(engine)
+        Test_Base.metadata.create_all(engine)
 
     @classmethod
     def tearDownClass(cls):
