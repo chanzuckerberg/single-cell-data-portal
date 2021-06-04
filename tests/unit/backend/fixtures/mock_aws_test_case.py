@@ -9,7 +9,7 @@ from boto.s3.bucket import Bucket
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType, DbDeploymentDirectory
+from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset, Dataset
 from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from tests.unit.backend.fixtures import config
@@ -90,31 +90,29 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             session, dataset_id, file_name, artifact_type, DatasetArtifactType.REMIX, False, s3_uri
         )
 
-    def generate_deployment_directory(self, session, dataset_id, upload=False) -> DbDeploymentDirectory:
+    def create_explorer_s3_object(self, session, dataset_id, upload=False):
         if upload:
             file_name = f"{dataset_id}.cxg/"
             content = "".join(random.choices("abcdef", k=16))
             self.cellxgene_bucket.Object(file_name).put(Body=content, ContentType="application/octet-stream")
-        deployment_directory = DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/")
-        session.add(DbDeploymentDirectory(dataset_id=dataset_id, url=f"http://bogus.url/d/{dataset_id}.cxg/"))
-        session.commit()
-        return deployment_directory
+        dataset = Dataset.get(session, dataset_id)
+        explorer_url = f"http://bogus.url/d/{dataset_id}.cxg/"
+        explorer_s3_uri = f"s3://{self.cellxgene_bucket}/{dataset_id}.cxg/"
+        dataset.update(explorer_url=explorer_url, explorer_s3_uri=explorer_s3_uri)
 
-    def generate_dataset_with_s3_resources(
-        self, session, artifacts=True, deployment_directories=True, **params
-    ) -> Dataset:
+    def generate_dataset_with_s3_resources(self, session, artifacts=True, explorer_s3_object=True, **params) -> Dataset:
         dataset = self.generate_dataset(session, **params)
         if artifacts:
             for ext in DatasetArtifactFileType:
                 self.generate_artifact(session, dataset.id, ext, upload=True)
-        if deployment_directories:
-            self.generate_deployment_directory(session, dataset.id, upload=True)
+        if explorer_s3_object:
+            self.create_explorer_s3_object(session, dataset.id, upload=True)
         return dataset
 
     def get_s3_object_paths_from_dataset(self, dataset: Dataset) -> typing.List[typing.Tuple[Bucket, str]]:
-        s3_objects = [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset.artifacts] + [
-            (self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset.deployment_directories[0])}.cxg/")
-        ]
+        s3_objects = [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset.artifacts]
+        if dataset.explorer_url:
+            s3_objects + [(self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset.explorer_url)}.cxg/")]
         return s3_objects
 
     def assertS3FileExists(self, bucket: Bucket, file_name: str):
