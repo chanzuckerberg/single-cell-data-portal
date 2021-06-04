@@ -103,9 +103,9 @@ def transfer_collections(ctx, curr_owner, new_owner):
     deployment using `make db/tunnel` before running."""
 
     with db_session_manager() as session:
-        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
+        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner)
         new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
-        if collections is not None:
+        if collections.all():
             click.confirm(
                 f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections)>1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
