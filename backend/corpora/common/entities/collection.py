@@ -180,15 +180,19 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            if dataset.original_id:
-                original = Dataset.get(self.session, dataset.original_id)
+            ds = Dataset(dataset)
+            ds_original_id = ds.original_id
+            if ds_original_id:
+                original = Dataset.get(self.session, ds_original_id)
+                ds_tombstone = ds.tombstone
+                ds_revision = ds.revision
                 if (public_collection.id, public_collection.visibility) == (
                     original.collection_id,
                     original.collection_visibility,
-                ) and (dataset.tombstone or dataset.revision > original.revision):
-                    original.deployment_directories_deletion()
+                ) and (ds_tombstone or ds_revision > original.revision):
+                    original.delete_explorer_cxg_object_from_s3()
                     original.asset_deletion()
-                    updates = dataset.to_dict(
+                    updates = ds.to_dict(
                         remove_attr=[
                             "update_at",
                             "created_at",
@@ -199,13 +203,11 @@ class Collection(Entity):
                         ],
                         remove_relationships=True,
                     )
-                    if dataset.revision > original.revision:
-                        for artifact in dataset.artifacts:
+                    if ds_revision > original.revision:
+                        for artifact in ds.artifacts:
                             artifact.dataset_id = original.id
-                        for deployed_directory in dataset.deployment_directories:
-                            deployed_directory.dataset_id = original.id
-                    elif dataset.tombstone:
-                        dataset.tombstone_dataset_and_delete_child_objects()
+                    elif ds_tombstone:
+                        ds.tombstone_dataset_and_delete_child_objects()
                     original.update(**updates)
             else:
                 dataset.collection_visibility = CollectionVisibility.PUBLIC
