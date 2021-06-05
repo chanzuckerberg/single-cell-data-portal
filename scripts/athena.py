@@ -175,6 +175,7 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
 
 if __name__ == "__main__":
     client = boto3.client("athena", region_name="us-west-2")
+    query_id = str(uuid4())
 
     # Construct dataset id -> collection id and dataset id -> dataset name indices
     (
