@@ -3,6 +3,8 @@ name: "Dataset Download Metrics"
 on:
   schedule:
     - cron: "0 0 * * 1"
+  pull_request:
+    branches: "*"
 
 jobs:
   aggregate-metrics:
@@ -27,11 +29,21 @@ jobs:
       - name: Run metrics aggregation script
         run: |
           python3 scripts/athena.py | tee dataset_metrics.txt
+      - name: Send email with metrics specifics
+        uses: dawidd6/action-send-mail@v3
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: cellxgene Dataset Download Weekly Metrics
+          to: cellxgene@chanzuckerberg.com
+          from: cellxgene Metrics Github Action
+          attachments: results.csv
       - name: Write to Slack on success
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
           DOWNLOAD_STATS=$(cat dataset_metrics.txt)
-          METRICS_MSG="\`\`\`PROD DATASET DOWNLOAD METRICS: \n${DOWNLOAD_STATS}\`\`\`"
+          METRICS_MSG="PROD DATASET DOWNLOAD METRICS: \n${DOWNLOAD_STATS}"
           curl -X POST -H 'Content-type: application/json' --data "{'text':'${METRICS_MSG}'}" $SLACK_WEBHOOK
 
