@@ -31,6 +31,7 @@ jobs:
           python3 scripts/athena.py | tee dataset_metrics.txt
       - name: Send email with metrics specifics
         uses: dawidd6/action-send-mail@v3
+        with:
           server_address: smtp.gmail.com
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
