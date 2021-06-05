@@ -3,8 +3,6 @@ name: "Dataset Download Metrics"
 on:
   schedule:
     - cron: "0 0 * * 1"
-  pull_request:
-    branches: "*"
 
 jobs:
   aggregate-metrics:
