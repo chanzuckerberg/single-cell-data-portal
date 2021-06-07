@@ -117,8 +117,6 @@ export interface DatasetAsset {
 }
 
 export interface DatasetDeployment {
-  id: string;
-  environment: string;
   url: string;
 }
 

@@ -58,10 +58,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617747596.248937,
         dataset_id: "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
-        id: "ade78799-4a83-4ccf-bb2f-1925dd8edfb9",
-        updated_at: 1617747596.248945,
         url:
           "https://cellxgene.cziscience.com/e/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e.cxg/",
       },
@@ -216,10 +213,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617748094.127792,
         dataset_id: "572f3f3e-d3e4-4d13-8e2b-88215e508481",
-        id: "073bc87b-2be9-41b7-9468-7b083850f83b",
-        updated_at: 1617748094.127799,
         url:
           "https://cellxgene.cziscience.com/e/572f3f3e-d3e4-4d13-8e2b-88215e508481.cxg/",
       },
@@ -374,10 +368,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617747882.236048,
         dataset_id: "78fd69d2-75e4-4207-819a-563139f273c6",
-        id: "20268a47-6e73-49a0-8bfb-3159877b0dc2",
-        updated_at: 1617747882.236056,
         url:
           "https://cellxgene.cziscience.com/e/78fd69d2-75e4-4207-819a-563139f273c6.cxg/",
       },
@@ -524,10 +515,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617747311.541257,
         dataset_id: "84f1a631-910b-4fbb-9f76-d915a07316d2",
-        id: "47221480-e75c-4d31-80cc-dc203df5d7f9",
-        updated_at: 1617747311.541264,
         url:
           "https://cellxgene.cziscience.com/e/84f1a631-910b-4fbb-9f76-d915a07316d2.cxg/",
       },
@@ -666,9 +654,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617747615.886028,
         dataset_id: "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
-        id: "028cb391-dd36-4ad0-a5fa-35d0a4fad430",
         updated_at: 1617747615.886036,
         url:
           "https://cellxgene.cziscience.com/e/9d584fcb-a28a-4b91-a886-ceb66a88ef81.cxg/",
@@ -824,10 +810,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617320955.669642,
         dataset_id: "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
-        id: "6fb21706-8512-4851-8c09-9084c81f534d",
-        updated_at: 1617320955.66965,
         url:
           "https://cellxgene.cziscience.com/e/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e.cxg/",
       },
@@ -982,10 +965,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617747689.526393,
         dataset_id: "ed852810-a003-4386-9846-1638362cee39",
-        id: "04ba403e-2d6d-4316-857b-5a2d4fe12882",
-        updated_at: 1617747689.526401,
         url:
           "https://cellxgene.cziscience.com/e/ed852810-a003-4386-9846-1638362cee39.cxg/",
       },
@@ -1140,10 +1120,7 @@ const datasets = [
     ],
     dataset_deployments: [
       {
-        created_at: 1617739448.822603,
         dataset_id: "f75f2ff4-2884-4c2d-b375-70de37a34507",
-        id: "08f53119-9bff-4d21-acd7-da82ebed0015",
-        updated_at: 1617739448.822609,
         url:
           "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/",
       },
