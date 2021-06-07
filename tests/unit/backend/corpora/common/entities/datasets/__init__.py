@@ -17,9 +17,9 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         self.uuid = "test_dataset_id"
         self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
 
-    def create_dataset_with_artifacts(self, artifact_count=1, deployment_dir_count=1, artifact_params=None):
+    def create_dataset_with_artifacts(self, artifact_count=1, artifact_params=None):
         """
-        Create a dataset with a variable number of artifacts, and deployment_directories
+        Create a dataset with a variable number of artifacts
         """
         if not artifact_params:
             artifact_params = dict(
@@ -30,14 +30,11 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
                 s3_uri="some_uri",
             )
 
-        deployment_directory_params = dict(url="test_url")
-
         dataset_params = BogusDatasetParams.get()
         dataset = self.generate_dataset(
             self.session,
             **dataset_params,
             artifacts=[artifact_params] * artifact_count,
-            deployment_directories=[deployment_directory_params] * deployment_dir_count,
             processing_status={
                 "upload_progress": 9 / 13,
                 "upload_status": UploadStatus.UPLOADING,
