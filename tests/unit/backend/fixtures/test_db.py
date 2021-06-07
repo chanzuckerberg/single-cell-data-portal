@@ -162,7 +162,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
             explorer_url="test_url",
-            explorer_s3_uri=f"s3://{cxg_bucket.name}/{test_dataset_id}.cxg/",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.session.add(dataset)
@@ -184,7 +183,6 @@ class TestDatabase:
             collection_id="test_collection_id_not_owner",
             collection_visibility=CollectionVisibility.PRIVATE.name,
             explorer_url="test_url",
-            explorer_s3_uri=f"s3://{cxg_bucket.name}/{test_dataset_id}.cxg/",
         )
         self.session.add(dataset)
         self.session.commit()

@@ -74,7 +74,6 @@ def delete_dataset(dataset_uuid: str, user: str):
             dataset.update(tombstone=True)
         else:
             dataset.asset_deletion()
-            dataset.delete_explorer_cxg_object_from_s3()
             dataset.delete()
     return "", 202
 

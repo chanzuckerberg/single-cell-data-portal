@@ -152,7 +152,7 @@ class Dataset(Entity):
             asset.delete()
 
     def delete_explorer_cxg_object_from_s3(self):
-        object_name = self.explorer_s3_uri.split("/")[3].split(".")[0]
+        object_name = get_cxg_bucket_path(self.explorer_url)
         logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_name}.")
         cxg_bucket.objects.filter(Prefix=object_name).delete()
 
@@ -165,10 +165,8 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:
-        cxg_object_name = self.explorer_s3_uri.split("/")[3].split(".")[
-            0
-        ]  # grab the object name without the cxg suffix
-        s3_file = f"{cxg_object_name}-genesets.csv"
+        object_name = get_cxg_bucket_path(self.explorer_url)
+        s3_file = f"{object_name}-genesets.csv"
         cxg_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
@@ -198,7 +196,6 @@ class Dataset(Entity):
     def reprocess(self):
         if not self.published:
             self.asset_deletion()
-            self.delete_explorer_cxg_object_from_s3()
         self.update(
             name="",
             organism=None,
@@ -210,15 +207,13 @@ class Dataset(Entity):
             development_stage=None,
             published=False,
             revision=self.revision + 1,
-            explorer_s3_uri=None,
             explorer_url=None,
             artifacts=[],
         )
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:
-    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
-    deployment directory URL"""
+    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the explorer_url"""
     object_name = urlparse(explorer_url).path.split("/", 2)[2]
     if object_name.endswith("/"):
         object_name = object_name[:-1]
