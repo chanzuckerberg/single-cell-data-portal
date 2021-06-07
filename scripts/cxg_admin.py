@@ -71,10 +71,12 @@ def delete_dataset(ctx, uuid):
 @click.pass_context
 def update_collection_owner(ctx, collection_uuid, new_owner):
     """Update the owner of a cellxgene collection. You must first SSH into the target deployment using
-    `make db/tunnel` before running."""
+    `make db/tunnel` before running.
+    To run (from repo root)
+    ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
+    """
 
     with db_session_manager() as session:
-
         key = (collection_uuid, CollectionVisibility.PUBLIC.name)
         collection = Collection.get(session, key)
         collection_name = collection.to_dict()["name"]
@@ -100,12 +102,16 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 @click.pass_context
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
-    deployment using `make db/tunnel` before running."""
+    deployment using `make db/tunnel` before running.
+    Retrieve user ids from auth0 before running or ping an engineer on the team to check the id of the owner in the database
+    To run (from repo root)
+    ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
+    """
 
     with db_session_manager() as session:
-        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner)
+        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
         new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
-        if collections.all():
+        if len(collections):
             click.confirm(
                 f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections) > 1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
@@ -120,11 +126,11 @@ def transfer_collections(ctx, curr_owner, new_owner):
             if updated > 0:
                 collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
                 click.echo(
-                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}.)
+                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}")
                 click.echo(
-                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[x for x in updated]}")
+                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[[x.name, x.id] for x in collections]}")
                 exit(0)
-                else:
+            else:
                 click.echo(
                     f"Failed to update owner for collections. {curr_owner} is still the owner of {len(collections)} "
                     f"collections"
