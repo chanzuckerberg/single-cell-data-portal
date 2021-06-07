@@ -72,7 +72,7 @@ def delete_dataset(ctx, uuid):
 def update_collection_owner(ctx, collection_uuid, new_owner):
     """Update the owner of a cellxgene collection. You must first SSH into the target deployment using
     `make db/tunnel` before running.
-    To run
+    To run (from repo root)
     ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
     """
 
@@ -103,7 +103,7 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
     deployment using `make db/tunnel` before running.
-    To run
+    To run (from repo root)
     ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
     """
 
