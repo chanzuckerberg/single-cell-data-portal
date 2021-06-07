@@ -103,23 +103,28 @@ def transfer_collections(ctx, curr_owner, new_owner):
     deployment using `make db/tunnel` before running."""
 
     with db_session_manager() as session:
-        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
-
-        if collections is not None:
+        collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner)
+        new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
+        if collections.all():
             click.confirm(
-                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections)>1 else ''} from {curr_owner} to "
+                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections) > 1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
                 abort=True,
             )
             updated = (
                 session.query(DbCollection)
-                .filter(DbCollection.owner == curr_owner)
-                .update({DbCollection.owner: new_owner})
+                    .filter(DbCollection.owner == curr_owner)
+                    .update({DbCollection.owner: new_owner})
             )
+            session.commit()
             if updated > 0:
-                click.echo(f"Updated owner of collection for {updated} collections. {new_owner} is now the owner")
+                collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
+                click.echo(
+                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}.)
+                click.echo(
+                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[x for x in updated]}")
                 exit(0)
-            else:
+                else:
                 click.echo(
                     f"Failed to update owner for collections. {curr_owner} is still the owner of {len(collections)} "
                     f"collections"
