@@ -43,7 +43,7 @@ def downgrade():
         sa.PrimaryKeyConstraint("id", name="deployment_directory_pkey"),
     )
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
-    op.execute("INSERT into deployment_directory (id, dataset_id, url, created_at, updated_at) SELECT uuid_generate_v4(), id, explorer_url, NOW(), NOW() FROM dataset WHERE dataset.explorer_url is not null;")   # noqa E501
+    op.execute("INSERT into deployment_directory (id, dataset_id, url, created_at, updated_at) SELECT uuid_generate_v4(), id, explorer_url, NOW(), NOW() FROM dataset WHERE dataset.explorer_url is not null;")  # noqa E501
     op.drop_index(op.f("ix_dataset_explorer_url"), table_name="dataset")
     op.drop_column("dataset", "explorer_url")
     # ### end Alembic commands ###

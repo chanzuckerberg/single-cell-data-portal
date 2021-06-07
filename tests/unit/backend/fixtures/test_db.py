@@ -15,7 +15,6 @@ from backend.corpora.common.corpora_orm import (
     DbGeneset,
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
-from backend.corpora.common.utils.s3_buckets import cxg_bucket
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
 

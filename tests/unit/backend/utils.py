@@ -2,7 +2,6 @@ import random
 import string
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus
-from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 
 class BogusProcessingStatusParams:
