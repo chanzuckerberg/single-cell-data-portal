@@ -247,13 +247,11 @@ class DbDataset(Base, AuditMixin):
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
+    explorer_url = Column(String, index=True)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
     artifacts = relationship("DbDatasetArtifact", back_populates="dataset", cascade="all, delete-orphan")
-    deployment_directories = relationship(
-        "DbDeploymentDirectory", back_populates="dataset", cascade="all, delete-orphan"
-    )
     processing_status = relationship(
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
@@ -289,21 +287,6 @@ class DbDatasetArtifact(Base, AuditMixin):
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="artifacts")
-
-
-class DbDeploymentDirectory(Base, AuditMixin):
-    """
-    Represents the deployment of a dataset to a Corpora application.
-    This entity only supports cellxgene deployments.
-    """
-
-    __tablename__ = "deployment_directory"
-
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
-    url = Column(String)
-
-    # Relationships
-    dataset = relationship("DbDataset", uselist=False, back_populates="deployment_directories")
 
 
 class UploadStatus(enum.Enum):
