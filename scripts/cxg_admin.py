@@ -103,6 +103,7 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
     deployment using `make db/tunnel` before running.
+    Retrieve user ids from auth0 before running or ping an engineer on the team to check the id of the owner in the database
     To run (from repo root)
     ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
     """
@@ -110,7 +111,7 @@ def transfer_collections(ctx, curr_owner, new_owner):
     with db_session_manager() as session:
         collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
         new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
-        if len(collections) > 0:
+        if len(collections):
             click.confirm(
                 f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections) > 1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
