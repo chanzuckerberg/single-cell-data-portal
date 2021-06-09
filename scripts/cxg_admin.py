@@ -13,8 +13,14 @@ sys.path.insert(0, pkg_root)  # noqa
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection, DbDataset, DatasetArtifactFileType, \
-    DatasetArtifactType, DbDatasetArtifact
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    DbCollection,
+    DbDataset,
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    DbDatasetArtifact,
+)
 from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
@@ -123,16 +129,18 @@ def transfer_collections(ctx, curr_owner, new_owner):
             )
             updated = (
                 session.query(DbCollection)
-                    .filter(DbCollection.owner == curr_owner)
-                    .update({DbCollection.owner: new_owner})
+                .filter(DbCollection.owner == curr_owner)
+                .update({DbCollection.owner: new_owner})
             )
             session.commit()
             if updated > 0:
                 collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
                 click.echo(
-                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}")
+                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}"
+                )
                 click.echo(
-                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[[x.name, x.id] for x in collections]}")
+                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[[x.name, x.id] for x in collections]}"
+                )
                 exit(0)
             else:
                 click.echo(
@@ -147,11 +155,11 @@ def transfer_collections(ctx, curr_owner, new_owner):
 def create_cxg_artifacts(ctx):
     with db_session_manager() as session:
         datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
-        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype==DatasetArtifactFileType.CXG).delete()
+        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG).delete()
         session.commit()
         for dataset in datasets:
             if dataset.explorer_url:
-                object_key = dataset.explorer_url.split('/')[-2]
+                object_key = dataset.explorer_url.split("/")[-2]
                 s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
                 print(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
@@ -161,8 +169,9 @@ def create_cxg_artifacts(ctx):
                     filetype=DatasetArtifactFileType.CXG,
                     type_enum=DatasetArtifactType.REMIX,
                     user_submitted=True,
-                    s3_uri=s3_uri
+                    s3_uri=s3_uri,
                 )
+
 
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)

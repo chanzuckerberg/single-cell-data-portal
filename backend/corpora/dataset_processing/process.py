@@ -345,7 +345,7 @@ def make_cxg(local_filename):
 
 def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
     command = ["aws"]
-    s3_uri = f"s3://{cellxgene_bucket}/{object_key}.cxg/",
+    s3_uri = (f"s3://{cellxgene_bucket}/{object_key}.cxg/",)
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
 
@@ -405,7 +405,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 filetype=DatasetArtifactFileType.CXG,
                 type_enum=DatasetArtifactType.REMIX,
                 user_submitted=True,
-                s3_uri=s3_uri
+                s3_uri=s3_uri,
             )
     else:
         metadata = None
