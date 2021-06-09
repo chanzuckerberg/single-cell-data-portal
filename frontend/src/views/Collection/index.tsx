@@ -111,7 +111,10 @@ const Collection: FC = () => {
     );
   };
 
-  const datasets = collection.datasets;
+  let datasets = collection.datasets;
+
+  // Filter out tombstoned datasets if we're not looking at revision
+  if (!isRevision) datasets = datasets.filter((dataset) => !dataset.tombstone);
 
   // (thuang): `isFetching` is used to prevent incorrectly enabling "Publish"
   // when React Query is fetching cached `collection` and its outdated

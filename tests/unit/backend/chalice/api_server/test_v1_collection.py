@@ -184,6 +184,7 @@ class TestCollection(BaseAuthAPITest):
                         "conversion_cxg_status": "NA",
                     },
                     "published": False,
+                    "tombstone": False,
                 }
             ],
             "description": "test_description",
