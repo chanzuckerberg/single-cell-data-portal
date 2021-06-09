@@ -539,6 +539,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             @classmethod
             def file_info(self):
                 return {"size": 12}
+
             @property
             def url(self):
                 return "url.com"
