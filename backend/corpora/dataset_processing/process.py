@@ -343,16 +343,18 @@ def make_cxg(local_filename):
     return cxg_dir
 
 
-def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket):
+def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
     command = ["aws"]
+    s3_uri = f"s3://{cellxgene_bucket}/{object_key}.cxg/",
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
+
     command.extend(
         [
             "s3",
             "cp",
             cxg_dir,
-            f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/",
+            s3_uri,
             "--recursive",
             "--acl",
             "bucket-owner-full-control",
@@ -362,6 +364,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket):
         command,
         check=True,
     )
+    return s3_uri
 
 
 def convert_file_ignore_exceptions(
@@ -389,10 +392,21 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
     cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
     if cxg_dir:
-        copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
+        s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
         metadata = {
             "explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")
         }
+        with db_session_manager() as session:
+            logger.info(f"Updating database with  {DatasetArtifactFileType.CXG}.")
+            DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename="explorer_cxg",
+                filetype=DatasetArtifactFileType.CXG,
+                type_enum=DatasetArtifactType.REMIX,
+                user_submitted=True,
+                s3_uri=s3_uri
+            )
     else:
         metadata = None
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))

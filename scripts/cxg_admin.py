@@ -6,15 +6,19 @@ import logging
 import os
 import sys
 
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection
+from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection, DbDataset, DatasetArtifactFileType, \
+    DatasetArtifactType, DbDatasetArtifact
+from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
+from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 from urllib.parse import urlparse
 
@@ -137,6 +141,28 @@ def transfer_collections(ctx, curr_owner, new_owner):
                 )
                 exit(0)
 
+
+@cli.command()
+@click.pass_context
+def create_cxg_artifacts(ctx):
+    with db_session_manager() as session:
+        datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
+        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype==DatasetArtifactFileType.CXG).delete()
+        session.commit()
+        for dataset in datasets:
+            if dataset.explorer_url:
+                object_key = dataset.explorer_url.split('/')[-2]
+                s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
+                print(dataset.explorer_url, s3_uri)
+                DatasetAsset.create(
+                    session,
+                    dataset_id=dataset.id,
+                    filename="explorer_cxg",
+                    filetype=DatasetArtifactFileType.CXG,
+                    type_enum=DatasetArtifactType.REMIX,
+                    user_submitted=True,
+                    s3_uri=s3_uri
+                )
 
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)

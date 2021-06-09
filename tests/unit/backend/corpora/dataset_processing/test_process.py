@@ -325,6 +325,27 @@ class TestDatasetProcessing(DataPortalTestCase):
         with self.assertRaises(ProcessingCancelled):
             process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
 
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.subprocess.run")
+    def test_create_explorer_cxg(self, mock_subprocess, mock_cxg):
+        mock_cxg.return_value = str(self.cxg_filename)
+        dataset = self.generate_dataset(self.session)
+        dataset_id = dataset.id
+        fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
+        fake_env.start()
+
+        explorer_bucket = "CELLXGENE-HOSTED-TEST"
+
+        process.process_cxg(str(self.h5ad_filename), dataset_id, explorer_bucket)
+
+        dataset = Dataset.get(self.session, dataset_id)
+        artifacts = dataset.artifacts
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0].dataset_id, dataset_id)
+        self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{dataset_id}.cxg/")
+        self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
+
     @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     def test_create_artifacts(self, make_seurat, make_loom):
@@ -512,12 +533,18 @@ class TestDatasetProcessing(DataPortalTestCase):
             time.sleep(3)
 
     @patch("backend.corpora.dataset_processing.download.downloader")
-    @patch("backend.corpora.dataset_processing.process.get_file_info")
-    @patch("backend.corpora.dataset_processing.process.get_download_url_from_shared_link")
-    def test__dataset_tombstoned_while_uploading(self, mock_get_link, mock_get_size, mock_downloader):
+    @patch("backend.corpora.dataset_processing.process.from_url")
+    def test__dataset_tombstoned_while_uploading(self, mock_from_url, mock_downloader):
+        class file_info:
+            @classmethod
+            def file_info(self):
+                return {"size": 12}
+            @property
+            def url(self):
+                return "url.com"
+
         mock_downloader.side_effect = self.mock_downloader_function
-        mock_get_link.return_value = "url.com"
-        mock_get_size.return_value = {"size": 12}
+        mock_from_url.return_value = file_info
         self.dataset_id = self.generate_dataset(self.session).id
         start = time.time()
         # check that changing the db status leads to an exception being raised
