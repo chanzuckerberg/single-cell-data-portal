@@ -349,7 +349,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
     returns the s3_uri where the cxg is stored
     """
     command = ["aws"]
-    s3_uri = (f"s3://{cellxgene_bucket}/{object_key}.cxg/",)
+    s3_uri = f"s3://{cellxgene_bucket}/{object_key}.cxg/"
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
 
