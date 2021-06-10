@@ -435,7 +435,7 @@ paths:
     get:
       tags:
         - datasets
-      summary: Given an explorer url information identifying the dataset it represents
+      summary: Given an explorer url return information identifying the dataset it represents
       description: >-
         Given an explorer url return the s3_uri of the dataset, its tombstone status and the associated dataset and
         collection ids.
