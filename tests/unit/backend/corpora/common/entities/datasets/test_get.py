@@ -1,4 +1,4 @@
-from backend.corpora.common.corpora_orm import DbDatasetArtifact, DbDeploymentDirectory, DbDatasetProcessingStatus
+from backend.corpora.common.corpora_orm import DbDatasetArtifact, DbDatasetProcessingStatus
 from backend.corpora.common.entities import Dataset
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 
@@ -13,10 +13,6 @@ class TestGetDataset(TestDataset):
         # Verify Artifact relationship
         self.assertIsInstance(dataset.artifacts[0], DbDatasetArtifact)
         self.assertEqual(dataset.artifacts[0].id, "test_dataset_artifact_id")
-
-        # Verify Deployment Directory relationship
-        self.assertIsInstance(dataset.deployment_directories[0], DbDeploymentDirectory)
-        self.assertEqual(dataset.deployment_directories[0].id, "test_deployment_directory_id")
 
         # Verify Processing Status relationship
         self.assertIsInstance(dataset.processing_status, DbDatasetProcessingStatus)

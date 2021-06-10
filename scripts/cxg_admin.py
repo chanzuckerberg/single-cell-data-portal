@@ -12,9 +12,18 @@ sys.path.insert(0, pkg_root)  # noqa
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    DbCollection,
+    DbDataset,
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+    DbDatasetArtifact,
+)
+from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
+from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 from urllib.parse import urlparse
 
@@ -71,10 +80,12 @@ def delete_dataset(ctx, uuid):
 @click.pass_context
 def update_collection_owner(ctx, collection_uuid, new_owner):
     """Update the owner of a cellxgene collection. You must first SSH into the target deployment using
-    `make db/tunnel` before running."""
+    `make db/tunnel` before running.
+    To run (from repo root)
+    ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
+    """
 
     with db_session_manager() as session:
-
         key = (collection_uuid, CollectionVisibility.PUBLIC.name)
         collection = Collection.get(session, key)
         collection_name = collection.to_dict()["name"]
@@ -100,24 +111,35 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 @click.pass_context
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
-    deployment using `make db/tunnel` before running."""
+    deployment using `make db/tunnel` before running.
+    Retrieve user ids from auth0 before running or ping an engineer on the team to check the id of the owner in the database
+    To run (from repo root)
+    ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
+    """
 
     with db_session_manager() as session:
         collections = session.query(DbCollection).filter(DbCollection.owner == curr_owner).all()
-
-        if collections is not None:
+        new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
+        if len(collections):
             click.confirm(
-                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections)>1 else ''} from {curr_owner} to "
+                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections) > 1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
                 abort=True,
             )
             updated = (
                 session.query(DbCollection)
-                .filter(DbCollection.owner == curr_owner)
-                .update({DbCollection.owner: new_owner})
+                    .filter(DbCollection.owner == curr_owner)
+                    .update({DbCollection.owner: new_owner})
             )
+            session.commit()
             if updated > 0:
-                click.echo(f"Updated owner of collection for {updated} collections. {new_owner} is now the owner")
+                collections = session.query(DbCollection).filter(DbCollection.owner == new_owner).all()
+                click.echo(
+                    f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}"
+                )
+                click.echo(
+                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[[x.name, x.id] for x in collections]}"
+                )
                 exit(0)
             else:
                 click.echo(
@@ -125,6 +147,43 @@ def transfer_collections(ctx, curr_owner, new_owner):
                     f"collections"
                 )
                 exit(0)
+
+
+@cli.command()
+@click.pass_context
+def create_cxg_artifacts(ctx):
+    """
+    Create cxg artifacts for all datasets in the database based on their explorer_url
+    DO NOT run/use once dataset updates have shipped -- the s3 location will no longer be
+    based on the explorer_url in all cases.
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deployment prod create-cxg-artifacts
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will delete all of the current cxg artifacts and create new "
+            f"ones based on the explorer_url?",
+            abort=True,
+        )
+        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG).delete()
+        session.commit()
+        datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
+        for dataset in datasets:
+            if dataset.explorer_url:
+                object_key = dataset.explorer_url.split("/")[-2]
+                s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
+                print(dataset.explorer_url, s3_uri)
+                DatasetAsset.create(
+                    session,
+                    dataset_id=dataset.id,
+                    filename="explorer_cxg",
+                    filetype=DatasetArtifactFileType.CXG,
+                    type_enum=DatasetArtifactType.REMIX,
+                    user_submitted=True,
+                    s3_uri=s3_uri,
+                )
 
 
 def get_database_uri() -> str:

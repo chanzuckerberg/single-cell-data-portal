@@ -24,7 +24,7 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def assertPublishedCollectionOK(self, expected_body, s3_objects):
         """Checks that the published collection is as expected and S3 Objects exist"""
-        with self.subTest("published artifacts and deployment_directories ok"):
+        with self.subTest("published artifacts and explorer s3 object ok"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileExists(bucket, file_name)
         with self.subTest("publish collection ok"):
@@ -179,15 +179,12 @@ class TestDeleteRevision(BaseRevisionTest):
         """The new datasets should be deleted when the revison is deleted."""
         # Generate revision dataset
         rev_dataset = self.generate_dataset_with_s3_resources(
-            self.session,
-            collection_visibility="PRIVATE",
-            collection_id=self.rev_collection.id,
-            published=False,
+            self.session, collection_visibility="PRIVATE", collection_id=self.rev_collection.id, published=False
         )
         s3_objects = self.get_s3_object_paths_from_dataset(rev_dataset)
 
         # Check resources exist
-        with self.subTest("new artifacts and deployment_directories exist"):
+        with self.subTest("new artifacts and explorer s3 objects exist"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileExists(bucket, file_name)
 
@@ -195,7 +192,7 @@ class TestDeleteRevision(BaseRevisionTest):
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         self.assertEqual(204, resp.status_code)
 
-        with self.subTest("new artifacts and deployment_directories deleted"):
+        with self.subTest("new artifacts and explorer s3 objects deleted"):
             for bucket, file_name in s3_objects:
                 self.assertS3FileDoesNotExist(bucket, file_name)
 
@@ -215,7 +212,7 @@ class TestDeleteRevision(BaseRevisionTest):
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         self.assertEqual(204, resp.status_code)
 
-        with self.subTest("refreshed artifacts and deployment_directories deleted"):
+        with self.subTest("refreshed artifacts and explorer s3 objects deleted"):
             for bucket, file_name in rev_s3_objects:
                 self.assertS3FileDoesNotExist(bucket, file_name)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)

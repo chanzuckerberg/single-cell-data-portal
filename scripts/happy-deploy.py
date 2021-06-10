@@ -43,6 +43,7 @@ def get_latest_successful_deployment(github_api_token, stage):
         resp = requests.post(url=github_graphql_endpoint, json=query, headers=headers)
         if resp.status_code != 200:
             print("Error: Unexpected response {}".format(resp))
+            print(resp.text)
             return None
     except requests.exceptions.RequestException as e:
         print("Error: {}".format(e))
@@ -91,6 +92,7 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha, dry_run):
         resp = requests.post(github_deployment_endpoint, headers=headers, json=params)
         if resp.status_code != 201:
             print("Error: Unexpected response {}".format(resp))
+            print(resp.text)
             return
     except requests.exceptions.RequestException as e:
         print("Error: {}".format(e))
@@ -98,11 +100,15 @@ def trigger_deploy(github_api_token, deployment_stage, github_sha, dry_run):
 
     print("Deployment successful")
 
+def validate_sha(ctx, param, value):
+    if value and len(value) < 8:
+        raise click.BadParameter("Github SHA must be at least 8 characters!")
+    return value
 
 @click.command()
 @click.argument("deployment_stage")
-@click.option("--github_sha", help="github sha to be deployed", default=None)
-@click.option("--dry_run", help="do not perform actual deployment", default=False, is_flag=True)
+@click.option("--github-sha", callback=validate_sha, help="github sha to be deployed", default=None)
+@click.option("--dry-run", help="do not perform actual deployment", default=False, is_flag=True)
 def happy_deploy(deployment_stage, github_sha, dry_run):
     api_token = os.getenv("GITHUB_TOKEN")
     if api_token is None:

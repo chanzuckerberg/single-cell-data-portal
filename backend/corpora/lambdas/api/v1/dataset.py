@@ -78,7 +78,6 @@ def delete_dataset(dataset_uuid: str, user: str):
             dataset.update(tombstone=True)
         else:
             dataset.asset_deletion()
-            dataset.deployment_directories_deletion()
             dataset.delete()
     return "", 202
 

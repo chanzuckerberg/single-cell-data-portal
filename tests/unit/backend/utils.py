@@ -52,6 +52,7 @@ class BogusDatasetParams:
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            explorer_url="test_url",
         )
 
         bogus_data.update(**kwargs)
