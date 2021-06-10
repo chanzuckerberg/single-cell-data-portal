@@ -1,6 +1,6 @@
 .PHONY: db/migrate
 db/migrate:
-	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
 .PHONY: db/remote_migration_init
 db/remote_migration_init:
@@ -26,7 +26,7 @@ db/init_remote_dev: db/remote_migration_init
 			python -m scripts.populate_db --populate-data --skip-recreate-db; \
 		fi
 
-	alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
 
 .PHONY: db/delete_remote_dev
 db/delete_remote_dev: db/remote_migration_init
@@ -36,15 +36,15 @@ db/delete_remote_dev: db/remote_migration_init
 		python -m scripts.populate_db --drop-db
 
 db/rollback:
-	alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
 
 db/new_migration:
 	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
-	alembic -c=./config/database.ini revision --message $(MESSAGE)
+	PYTHONPATH=.. alembic -c=./config/database.ini revision --message $(MESSAGE)
 
 db/new_migration_auto:
 	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
-	alembic -c=./config/database.ini revision --autogenerate --message $(MESSAGE)
+	PYTHONPATH=.. alembic -c=./config/database.ini revision --autogenerate --message $(MESSAGE)
 
 db/connect:
 	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
