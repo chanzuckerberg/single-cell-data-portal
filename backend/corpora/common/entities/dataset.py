@@ -219,10 +219,8 @@ class Dataset(Entity):
 
     def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
         filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
-        hold = self.session.query(DbGenesetDatasetLink).filter(filters).order_by(DbDatasetArtifact.created_at.desc()).limit(1).all()[0]
-        import pdb
-        pdb.set_trace()
-
+        artifact = self.session.query(DbDatasetArtifact).filter(*filters).order_by(DbDatasetArtifact.created_at.desc()).limit(1).all()
+        return DatasetAsset(artifact[0]) if artifact else None
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

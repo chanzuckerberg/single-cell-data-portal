@@ -229,6 +229,89 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 401)
 
+    def test__dataset_meta__ok(self):
+        public_collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
+        private_collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
+        )
+
+        test_uri_0 = "some_uri_0"
+        test_uri_1 = "some_uri_1"
+        artifact_params_0 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.CXG,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=test_uri_0,
+        )
+        artifact_params_1 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.CXG,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=test_uri_1,
+        )
+
+        public_dataset = self.generate_dataset(self.session, collection=public_collection, explorer_url="test_url_0",
+                                               artifacts=[artifact_params_0])
+        private_dataset = self.generate_dataset(self.session, collection=private_collection, explorer_url="test_url_1",
+                                                artifacts=[artifact_params_1])
+        dataset_without_artifacts = self.generate_dataset(self.session, collection=public_collection,
+                                                          explorer_url="test_url_2")
+
+        test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
+        test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
+        test_url_404 = f"/dp/v1/datasets/meta?url=not_real"
+        test_url_no_cxg_artifact = f"/dp/v1/datasets/meta?url={dataset_without_artifacts.explorer_url}"
+
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+
+        with self.subTest("dataset is public"):
+            response = self.app.get(test_url_public, headers)
+            response.raise_for_status()
+
+            expected_identifiers = {
+                's3_uri': test_uri_0,
+                'dataset_id': public_dataset.id,
+                'collection_id': public_collection.id,
+                'tombstoned': False
+            }
+
+            self.assertEqual(json.loads(response.body), expected_identifiers)
+
+        with self.subTest("dataset is private"):
+            response = self.app.get(test_url_private, headers)
+            response.raise_for_status()
+
+            expected_identifiers = {
+                's3_uri': test_uri_1,
+                'dataset_id': private_dataset.id,
+                'collection_id': private_collection.id,
+                'tombstoned': False
+            }
+
+            self.assertEqual(json.loads(response.body), expected_identifiers)
+
+        with self.subTest("explorer_url does not exist"):
+            response = self.app.get(test_url_404, headers)
+            with self.assertRaises(HTTPError):
+                response.raise_for_status()
+
+        with self.subTest("dataset does not have an associated cxg artifact"):
+            response = self.app.get(test_url_no_cxg_artifact, headers)
+            response.raise_for_status()
+
+            expected_identifiers = {
+                's3_uri': None,
+                'dataset_id': dataset_without_artifacts.id,
+                'collection_id': public_collection.id,
+                'tombstoned': False
+            }
+
+            self.assertEqual(json.loads(response.body), expected_identifiers)
+
 
 class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
@@ -379,85 +462,6 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
             response = self.app.post(test_url, headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 202)
 
-    def test__dataset_meta__ok(self):
-        public_collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
-        )
-        private_collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
-        )
-
-        test_uri_0 = "some_uri_0"
-        test_uri_1 = "some_uri_1"
-        artifact_params_0 = dict(
-            filename="filename_x",
-            filetype=DatasetArtifactFileType.CXG,
-            type=DatasetArtifactType.ORIGINAL,
-            user_submitted=True,
-            s3_uri=test_uri_0,
-        )
-        artifact_params_1 = dict(
-            filename="filename_x",
-            filetype=DatasetArtifactFileType.CXG,
-            type=DatasetArtifactType.ORIGINAL,
-            user_submitted=True,
-            s3_uri=test_uri_1,
-        )
-
-        public_dataset = self.generate_dataset(self.session, collection=public_collection, explorer_url="test_url_0", artifacts=[artifact_params_0])
-        private_dataset = self.generate_dataset(self.session, collection=private_collection, explorer_url="test_url_1", artifacts=[artifact_params_1])
-        dataset_without_artifacts = self.generate_dataset(self.session, collection=public_collection, explorer_url="test_url_2")
-
-        test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
-        test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
-        test_url_404 = f"/dp/v1/datasets/meta?url=not_real"
-        test_url_no_cxg_artifact = f"/dp/v1/datasets/meta?url={dataset_without_artifacts.explorer_url}"
-
-        headers = {"host": "localhost", "Content-Type": "application/json"}
-
-        with self.subTest("dataset is public"):
-            response = self.app.get(test_url_public, headers)
-            response.raise_for_status()
-
-            expected_identifiers = {
-                's3_uri': test_uri_0,
-                'dataset_id': public_dataset.id,
-                'collection_id': public_dataset.colletion_id,
-                'tombstoned': False
-            }
-
-            self.assertEqual(json.loads(response.body), expected_identifiers)
-
-        with self.subTest("dataset is private"):
-            response = self.app.get(test_url_private, headers)
-            response.raise_for_status()
-
-            expected_identifiers = {
-                's3_uri': test_uri_1,
-                'dataset_id': private_dataset.id,
-                'collection_id': private_collection.colletion_id,
-                'tombstoned': False
-            }
-
-            self.assertEqual(json.loads(response.body), expected_identifiers)
-
-        with self.subTest("explorer_url does not exist"):
-            response = self.app.get(test_url_404, headers)
-            with self.assertRaises(HTTPError):
-                response.raise_for_status()
-
-        with self.subTest("dataset does not have an associated cxg artifact"):
-            response = self.app.get(test_url_no_cxg_artifact, headers)
-            response.raise_for_status()
-
-            expected_identifiers = {
-                's3_uri': None,
-                'dataset_id': private_dataset.id,
-                'collection_id': private_collection.colletion_id,
-                'tombstoned': False
-            }
-
-            self.assertEqual(json.loads(response.body), expected_identifiers)
 
 
 

@@ -16,8 +16,7 @@ class TestGetDatasetByExplorerUrl(TestDataset):
 
     def test__get__url_associated_with_most_recently_created_datasets(self):
         url = "some_url"
-
-        dataset_0 = self.generate_dataset(self.session, name="older", explorer_url=url)
+        self.generate_dataset(self.session, name="older", explorer_url=url)
         sleep(.01)
         dataset_1 = self.generate_dataset(self.session, name="younger", explorer_url=url)
         dataset = Dataset.get_by_explorer_url(self.session, url)
