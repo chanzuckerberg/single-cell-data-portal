@@ -6,7 +6,6 @@ import logging
 import os
 import sys
 
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -129,8 +128,8 @@ def transfer_collections(ctx, curr_owner, new_owner):
             )
             updated = (
                 session.query(DbCollection)
-                .filter(DbCollection.owner == curr_owner)
-                .update({DbCollection.owner: new_owner})
+                    .filter(DbCollection.owner == curr_owner)
+                    .update({DbCollection.owner: new_owner})
             )
             session.commit()
             if updated > 0:
@@ -153,10 +152,24 @@ def transfer_collections(ctx, curr_owner, new_owner):
 @cli.command()
 @click.pass_context
 def create_cxg_artifacts(ctx):
+    """
+    Create cxg artifacts for all datasets in the database based on their explorer_url
+    DO NOT run/use once dataset updates have shipped -- the s3 location will no longer be
+    based on the explorer_url in all cases.
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deployment prod create-cxg-artifacts
+    """
     with db_session_manager() as session:
-        datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
+        click.confirm(
+            f"Are you sure you want to run this script? It will delete all of the current cxg artifacts and create new "
+            f"ones based on the explorer_url?",
+            abort=True,
+        )
         session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG).delete()
         session.commit()
+        datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
         for dataset in datasets:
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]

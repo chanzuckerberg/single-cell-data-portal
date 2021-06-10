@@ -344,6 +344,10 @@ def make_cxg(local_filename):
 
 
 def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
+    """
+    Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
+    returns the s3_uri where the cxg is stored
+    """
     command = ["aws"]
     s3_uri = (f"s3://{cellxgene_bucket}/{object_key}.cxg/",)
     if os.getenv("BOTO_ENDPOINT_URL"):
@@ -397,7 +401,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
             "explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")
         }
         with db_session_manager() as session:
-            logger.info(f"Updating database with  {DatasetArtifactFileType.CXG}.")
+            logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
             DatasetAsset.create(
                 session,
                 dataset_id=dataset_id,
