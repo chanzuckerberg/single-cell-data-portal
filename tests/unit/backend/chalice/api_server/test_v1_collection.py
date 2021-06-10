@@ -295,10 +295,10 @@ class TestCollection(BaseAuthAPITest):
                 explorer_url=None,
             )
             expected_body = {
-                'access_type': 'READ',
-                'contact_email': '',
-                'contact_name': '',
-                'data_submission_policy_version': '0',
+                "access_type": "READ",
+                "contact_email": "",
+                "contact_name": "",
+                "data_submission_policy_version": "0",
                 "datasets": [
                     {
                         "collection_id": collection.id,
@@ -320,7 +320,7 @@ class TestCollection(BaseAuthAPITest):
                 "links": [],
                 "name": "",
                 "obfuscated_uuid": "",
-                'visibility': 'PUBLIC'
+                "visibility": "PUBLIC",
             }
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
 
