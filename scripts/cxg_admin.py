@@ -12,7 +12,6 @@ sys.path.insert(0, pkg_root)  # noqa
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     DbCollection,
