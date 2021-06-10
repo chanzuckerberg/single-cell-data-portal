@@ -16,7 +16,8 @@ from ..corpora_orm import (
     ProcessingStatus,
     DbGenesetDatasetLink,
     CollectionVisibility,
-    generate_uuid, DatasetArtifactFileType,
+    generate_uuid,
+    DatasetArtifactFileType,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_session import clone
@@ -32,20 +33,20 @@ class Dataset(Entity):
 
     @classmethod
     def create(
-            cls,
-            session,
-            revision: int = 0,
-            name: str = "",
-            organism: dict = None,
-            tissue: list = None,
-            assay: list = None,
-            disease: list = None,
-            sex: list = None,
-            ethnicity: list = None,
-            development_stage: list = None,
-            artifacts: list = None,
-            processing_status: dict = None,
-            **kwargs,
+        cls,
+        session,
+        revision: int = 0,
+        name: str = "",
+        organism: dict = None,
+        tissue: list = None,
+        assay: list = None,
+        disease: list = None,
+        sex: list = None,
+        ethnicity: list = None,
+        development_stage: list = None,
+        artifacts: list = None,
+        processing_status: dict = None,
+        **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -219,7 +220,13 @@ class Dataset(Entity):
 
     def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
         filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
-        artifact = self.session.query(DbDatasetArtifact).filter(*filters).order_by(DbDatasetArtifact.created_at.desc()).limit(1).all()
+        artifact = (
+            self.session.query(DbDatasetArtifact)
+            .filter(*filters)
+            .order_by(DbDatasetArtifact.created_at.desc())
+            .limit(1)
+            .all()
+        )
         return DatasetAsset(artifact[0]) if artifact else None
 
 

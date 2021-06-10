@@ -154,4 +154,3 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         )
         artifact = dataset.get_most_recent_artifact(DatasetArtifactFileType.CXG)
         self.assertEqual(artifact.s3_uri, second_uri)
-

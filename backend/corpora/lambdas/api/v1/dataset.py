@@ -90,7 +90,7 @@ def get_dataset_identifiers(url: str):
         "s3_uri": s3_uri,
         "dataset_id": dataset.id,
         "collection_id": dataset.collection_id,
-        "tombstoned": dataset.tombstone
+        "tombstoned": dataset.tombstone,
     }
     return make_response(jsonify(dataset_identifiers), 200)
 

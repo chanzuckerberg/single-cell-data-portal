@@ -5,8 +5,13 @@ from requests import HTTPError
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import UploadStatus, CollectionVisibility, generate_uuid, \
-    DatasetArtifactFileType, DatasetArtifactType
+from backend.corpora.common.corpora_orm import (
+    UploadStatus,
+    CollectionVisibility,
+    generate_uuid,
+    DatasetArtifactFileType,
+    DatasetArtifactType,
+)
 from backend.corpora.common.utils.db_session import processing_status_updater
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.chalice.api_server.mock_auth import get_auth_token
@@ -254,16 +259,19 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             s3_uri=test_uri_1,
         )
 
-        public_dataset = self.generate_dataset(self.session, collection=public_collection, explorer_url="test_url_0",
-                                               artifacts=[artifact_params_0])
-        private_dataset = self.generate_dataset(self.session, collection=private_collection, explorer_url="test_url_1",
-                                                artifacts=[artifact_params_1])
-        dataset_without_artifacts = self.generate_dataset(self.session, collection=public_collection,
-                                                          explorer_url="test_url_2")
+        public_dataset = self.generate_dataset(
+            self.session, collection=public_collection, explorer_url="test_url_0", artifacts=[artifact_params_0]
+        )
+        private_dataset = self.generate_dataset(
+            self.session, collection=private_collection, explorer_url="test_url_1", artifacts=[artifact_params_1]
+        )
+        dataset_without_artifacts = self.generate_dataset(
+            self.session, collection=public_collection, explorer_url="test_url_2"
+        )
 
         test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
         test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
-        test_url_404 = f"/dp/v1/datasets/meta?url=not_real"
+        test_url_404 = "/dp/v1/datasets/meta?url=not_real"
         test_url_no_cxg_artifact = f"/dp/v1/datasets/meta?url={dataset_without_artifacts.explorer_url}"
 
         headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -273,10 +281,10 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             response.raise_for_status()
 
             expected_identifiers = {
-                's3_uri': test_uri_0,
-                'dataset_id': public_dataset.id,
-                'collection_id': public_collection.id,
-                'tombstoned': False
+                "s3_uri": test_uri_0,
+                "dataset_id": public_dataset.id,
+                "collection_id": public_collection.id,
+                "tombstoned": False,
             }
 
             self.assertEqual(json.loads(response.body), expected_identifiers)
@@ -286,10 +294,10 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             response.raise_for_status()
 
             expected_identifiers = {
-                's3_uri': test_uri_1,
-                'dataset_id': private_dataset.id,
-                'collection_id': private_collection.id,
-                'tombstoned': False
+                "s3_uri": test_uri_1,
+                "dataset_id": private_dataset.id,
+                "collection_id": private_collection.id,
+                "tombstoned": False,
             }
 
             self.assertEqual(json.loads(response.body), expected_identifiers)
@@ -304,10 +312,10 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             response.raise_for_status()
 
             expected_identifiers = {
-                's3_uri': None,
-                'dataset_id': dataset_without_artifacts.id,
-                'collection_id': public_collection.id,
-                'tombstoned': False
+                "s3_uri": None,
+                "dataset_id": dataset_without_artifacts.id,
+                "collection_id": public_collection.id,
+                "tombstoned": False,
             }
 
             self.assertEqual(json.loads(response.body), expected_identifiers)
@@ -461,7 +469,3 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             response = self.app.post(test_url, headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 202)
-
-
-
-
