@@ -282,7 +282,7 @@ class TestCollection(BaseAuthAPITest):
 
         with self.subTest("With a minimal dataset"):
             collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-            self.generate_dataset(
+            dataset = self.generate_dataset(
                 self.session,
                 collection_id=collection.id,
                 organism=None,
@@ -294,17 +294,40 @@ class TestCollection(BaseAuthAPITest):
                 development_stage=None,
                 explorer_url=None,
             )
+            expected_body = {
+                'access_type': 'READ',
+                'contact_email': '',
+                'contact_name': '',
+                'data_submission_policy_version': '0',
+                "datasets": [
+                    {
+                        "collection_id": collection.id,
+                        "collection_visibility": "PUBLIC",
+                        "dataset_assets": [],
+                        "dataset_deployments": [],
+                        "linked_genesets": [],
+                        "name": dataset.name,
+                        "id": dataset.id,
+                        "is_valid": False,
+                        "published": False,
+                        "revision": 0,
+                        "tombstone": False,
+                    }
+                ],
+                "description": "",
+                "genesets": [],
+                "id": collection.id,
+                "links": [],
+                "name": "",
+                "obfuscated_uuid": "",
+                'visibility': 'PUBLIC'
+            }
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
 
             resp = self.app.get(test_url.url)
             resp.raise_for_status()
             actual_body = self.remove_timestamps(json.loads(resp.body))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
-            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
-            self.assertEqual(
-                expected_body["datasets"][0].pop("collection_visibility").name,
-                actual_body["datasets"][0].pop("collection_visibility"),
-            )
+            actual_body["datasets"][0].pop("processing_status")
             self.assertEqual(expected_body, actual_body)
 
     def test__get_collection__ok(self):

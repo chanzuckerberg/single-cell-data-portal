@@ -146,9 +146,10 @@ class Collection(Entity):
         ]
         datasets = []
         for dataset in result["datasets"]:
+            dataset["dataset_deployments"] = []
             explorer_url = dataset.pop("explorer_url", None)
             if explorer_url:
-                dataset["dataset_deployments"] = [{"url": explorer_url}]
+                dataset["dataset_deployments"].append({"url": explorer_url})
             dataset["dataset_assets"] = dataset.pop("artifacts")
             if dataset.get("tombstone"):
                 if tombstoned_datasets:
