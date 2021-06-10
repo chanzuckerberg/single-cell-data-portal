@@ -110,6 +110,9 @@ class Dataset(Entity):
 
     @classmethod
     def get_by_explorer_url(cls, session, explorer_url):
+        """
+        Return the most recently created dataset with the given explorer_url or None
+        """
         filters = [cls.table.explorer_url == explorer_url]
         dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
         return cls(dataset[0]) if dataset else None
