@@ -437,8 +437,9 @@ paths:
         - datasets
       summary: Given an explorer url return information identifying the dataset it represents
       description: >-
-        Given an explorer url return the s3_uri of the dataset, its tombstone status and the associated dataset and
-        collection ids.
+        Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
+        Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
+        the associated parent collection ID.
       operationId: corpora.lambdas.api.v1.dataset.get_dataset_identifiers
       parameters:
         - in: query
@@ -456,8 +457,6 @@ paths:
                 type: object
                 items:
                   $ref: "#/components/schemas/dataset_identifiers"
-        "403":
-          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
@@ -917,6 +916,10 @@ components:
     dataset_identifiers:
       type: object
       description: Information for identifying and accessing a datatset
+      required:
+        - dataset_id
+        - collection_id
+        - tombstoned
       properties:
         dataset_id:
           type: string
