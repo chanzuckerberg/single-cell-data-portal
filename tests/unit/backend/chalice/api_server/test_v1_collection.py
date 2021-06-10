@@ -292,6 +292,7 @@ class TestCollection(BaseAuthAPITest):
                 sex=None,
                 ethnicity=None,
                 development_stage=None,
+                explorer_url=None,
             )
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
 
