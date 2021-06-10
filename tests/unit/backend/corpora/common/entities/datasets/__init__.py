@@ -42,6 +42,7 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             },
         )
         return dataset
+
     def assertRowsDeleted(self, tests: typing.List[typing.Tuple[str, Base]]):
         """
         Verify if rows have been deleted from the database.

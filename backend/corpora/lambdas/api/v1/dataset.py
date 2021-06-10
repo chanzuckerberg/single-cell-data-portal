@@ -78,15 +78,17 @@ def delete_dataset(dataset_uuid: str, user: str):
     return "", 202
 
 
-def get_dataset_identifiers(explorer_url: str):
+def get_dataset_identifiers(url: str):
     db_session = g.db_session
-    dataset = Dataset.get_by_explorer_url(db_session, explorer_url)
+    dataset = Dataset.get_by_explorer_url(db_session, url)
     if not dataset:
         raise NotFoundHTTPException()
     s3_uri = None
+    created_at = None
     for artifact in dataset.artifacts:
         if artifact.filetype == DatasetArtifactFileType.CXG:
             s3_uri = artifact.s3_uri
+
     dataset_identifiers = {
         "s3_uri": s3_uri,
         "dataset_id": dataset.id,
