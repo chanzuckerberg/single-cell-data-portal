@@ -110,8 +110,8 @@ class Dataset(Entity):
     @classmethod
     def get_by_explorer_url(cls, session, explorer_url):
         filters = [cls.table.explorer_url == explorer_url]
-        dataset = session.query(cls.table).filter(*filters).one_or_none()
-        return cls(dataset) if dataset else None
+        dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
+        return cls(dataset[0]) if dataset else None
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -217,9 +217,12 @@ class Dataset(Entity):
             artifacts=[],
         )
 
-    def get_most_recent_artifact_of_particular_type(self, filetype=DatasetArtifactFileType.CXG):
+    def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
         filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
-        self.session.query(DbGenesetDatasetLink).filter(filters).order_by(DbDatasetArtifact.created_at)
+        hold = self.session.query(DbGenesetDatasetLink).filter(filters).order_by(DbDatasetArtifact.created_at.desc()).limit(1).all()[0]
+        import pdb
+        pdb.set_trace()
+
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

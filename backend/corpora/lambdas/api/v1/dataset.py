@@ -83,11 +83,7 @@ def get_dataset_identifiers(url: str):
     dataset = Dataset.get_by_explorer_url(db_session, url)
     if not dataset:
         raise NotFoundHTTPException()
-    s3_uri = None
-    created_at = None
-    for artifact in dataset.artifacts:
-        if artifact.filetype == DatasetArtifactFileType.CXG:
-            s3_uri = artifact.s3_uri
+    s3_uri = dataset.get_most_recent_artifact(filetype=DatasetArtifactFileType.CXG)
 
     dataset_identifiers = {
         "s3_uri": s3_uri,
