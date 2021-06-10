@@ -107,6 +107,12 @@ class Dataset(Entity):
                 return None
         return dataset
 
+    @classmethod
+    def get_by_explorer_url(cls, session, explorer_url):
+        filters = [cls.table.explorer_url == explorer_url]
+        dataset = session.query(cls.table).filter(*filters).one_or_none()
+        return cls(dataset) if dataset else None
+
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.
