@@ -2,7 +2,6 @@ import random
 import string
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus
-from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 
 class BogusProcessingStatusParams:
@@ -54,7 +53,6 @@ class BogusDatasetParams:
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
-            explorer_s3_uri=f"s3://{cxg_bucket.name}/some_uuid.cxg/",
         )
 
         bogus_data.update(**kwargs)

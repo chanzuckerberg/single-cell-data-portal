@@ -146,10 +146,12 @@ class Collection(Entity):
         ]
         datasets = []
         for dataset in result["datasets"]:
-            dataset.pop("explorer_s3_uri", None)
-            dataset["dataset_deployments"] = [{"url": dataset.pop("explorer_url", None)}]
+            dataset["dataset_deployments"] = []
+            explorer_url = dataset.pop("explorer_url", None)
+            if explorer_url:
+                dataset["dataset_deployments"].append({"url": explorer_url})
             dataset["dataset_assets"] = dataset.pop("artifacts")
-            if dataset["tombstone"]:
+            if dataset.get("tombstone"):
                 if tombstoned_datasets:
                     datasets.append(dataset)
                 else:
@@ -240,7 +242,6 @@ class Collection(Entity):
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.asset_deletion()
-            ds.delete_explorer_cxg_object_from_s3()
             ds.tombstone_dataset_and_delete_child_objects()
 
     def update(self, links: list = None, **kwargs) -> None:
@@ -266,6 +267,5 @@ class Collection(Entity):
             ds = Dataset(dataset)
             if not ds.published:
                 ds.asset_deletion()
-                ds.delete_explorer_cxg_object_from_s3()
             ds.delete()
         super().delete()

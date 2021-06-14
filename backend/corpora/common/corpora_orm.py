@@ -247,7 +247,6 @@ class DbDataset(Base, AuditMixin):
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
-    explorer_s3_uri = Column(String)
     explorer_url = Column(String, index=True)
 
     # Relationships

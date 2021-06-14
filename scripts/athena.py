@@ -53,14 +53,24 @@ def construct_map_of_dataset_assets_to_collection_and_dataset_information_from_a
                 else:
                     collection_id_by_s3_uri[uri] = collection_id
 
-    print("Finished construction metadata maps from APIs!")
-
     return dataset_name_by_s3_uri, collection_id_by_s3_uri
 
 
-def create_query(client, query_id):
-    today = datetime.date.today().strftime("%Y-%m-%d:%H:%M:%S")
-    one_week_ago = (datetime.datetime.now() - datetime.timedelta(days=7)).date().strftime("%Y-%m-%d:%H:%M:%S")
+def create_query(client, query_id, today_datestring=None):
+    if today_datestring is None:
+        today = datetime.date.today().strftime("%Y-%m-%d:%H:%M:%S")
+        one_week_ago = (datetime.datetime.now() - datetime.timedelta(days=7)).date().strftime("%Y-%m-%d:%H:%M:%S")
+    else:
+        today_datetime = datetime.date.fromisoformat(today_datestring)
+        today = today_datetime.strftime("%Y-%m-%d:%H:%M:%S")
+        one_week_ago = (
+            (datetime.datetime.fromisoformat(today_datestring) - datetime.timedelta(days=7))
+            .date()
+            .strftime("%Y-%m-%d:%H:%M:%S")
+        )
+
+    print(f"Starting date is: {one_week_ago}. Ending date is: {today}.")
+
     query_string = (
         "SELECT key, requestdatetime, remoteip, operation, bytessent, useragent FROM "
         "cellxgene_portal_dataset_download_logs_db.dataset_download_logs WHERE operation like "
@@ -80,7 +90,6 @@ def create_query(client, query_id):
             "OutputLocation": "s3://corpora-data-prod-logs-queries",
         },
     )
-    print("Sent off query to logs!")
     return response.get("QueryExecutionId")
 
 
@@ -92,13 +101,12 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
             response = client.get_query_execution(QueryExecutionId=query_id)
             status = response.get("QueryExecution").get("Status").get("State")
             if status == "SUCCEEDED":
-                print("Query completed executing! Now aggregating results!")
                 results_have_not_been_calculated = False
         except:
             print(f"Wasn't able to get query information for query ID {query_id} yet. Please be patient!")
             time.sleep(1)
 
-    response = client.get_query_results(QueryExecutionId=query_id, MaxResults=123)
+    response = client.get_query_results(QueryExecutionId=query_id)
     rows = response.get("ResultSet").get("Rows")
 
     # Structure that will hold all the metrics
@@ -147,7 +155,7 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
                     dataset_metrics["seurat_downloads"] += 1
 
             if index == 2:
-                ip_address = ips.add(metadata.get("VarCharValue"))
+                ips.add(metadata.get("VarCharValue"))
 
             if index == 5:
                 type_of_download = metadata.get("VarCharValue")
@@ -159,9 +167,8 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
         metadata_by_dataset[dataset_index] = dataset_metrics
 
     dataset_metrics_df = DataFrame.from_dict(metadata_by_dataset, orient="index")
+    dataset_metrics_df.to_csv("results.csv")
 
-    print(dataset_metrics_df)
-    print()
     print(f"Total number of downloads of all datasets: {total_downloads}")
     print(f"Total number of unique IP addresses: {len(ips)}")
 
