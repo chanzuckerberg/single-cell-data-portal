@@ -98,14 +98,14 @@ export function renderContact(
 
 export function getIsPublishable(datasets: Collection["datasets"]) {
   return (
-    Boolean(datasets?.length) &&
+    datasets?.length > 0 &&
     datasets.every((dataset) => {
       const numOfAssets = dataset.dataset_assets.length;
       const numOfDeployments = dataset.dataset_deployments.length;
 
       return (
-        numOfAssets + numOfDeployments ===
-        Object.keys(DATASET_ASSET_FORMAT).length
+        numOfDeployments === 1 &&
+        numOfAssets === Object.keys(DATASET_ASSET_FORMAT).length
       );
     })
   );
