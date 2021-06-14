@@ -1,6 +1,6 @@
 from flask import make_response, jsonify, g
 
-from ....common.corpora_orm import CollectionVisibility
+from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
 from ....api_server.db import dbconnect
@@ -80,6 +80,24 @@ def delete_dataset(dataset_uuid: str, user: str):
             dataset.asset_deletion()
             dataset.delete()
     return "", 202
+
+
+@dbconnect
+def get_dataset_identifiers(url: str):
+    db_session = g.db_session
+    dataset = Dataset.get_by_explorer_url(db_session, url)
+    if not dataset:
+        raise NotFoundHTTPException()
+    artifact = dataset.get_most_recent_artifact(filetype=DatasetArtifactFileType.CXG)
+    s3_uri = artifact.s3_uri if artifact else None
+
+    dataset_identifiers = {
+        "s3_uri": s3_uri,
+        "dataset_id": dataset.id,
+        "collection_id": dataset.collection_id,
+        "tombstoned": dataset.tombstone,
+    }
+    return make_response(jsonify(dataset_identifiers), 200)
 
 
 @dbconnect

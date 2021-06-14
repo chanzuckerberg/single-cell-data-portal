@@ -17,6 +17,7 @@ from ..corpora_orm import (
     DbGenesetDatasetLink,
     CollectionVisibility,
     generate_uuid,
+    DatasetArtifactFileType,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_helpers import clone
@@ -106,6 +107,15 @@ class Dataset(Entity):
             if dataset and dataset.tombstone is True:
                 return None
         return dataset
+
+    @classmethod
+    def get_by_explorer_url(cls, session, explorer_url):
+        """
+        Return the most recently created dataset with the given explorer_url or None
+        """
+        filters = [cls.table.explorer_url == explorer_url]
+        dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
+        return cls(dataset[0]) if dataset else None
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -210,6 +220,17 @@ class Dataset(Entity):
             explorer_url=None,
             artifacts=[],
         )
+
+    def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
+        filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
+        artifact = (
+            self.session.query(DbDatasetArtifact)
+            .filter(*filters)
+            .order_by(DbDatasetArtifact.created_at.desc())
+            .limit(1)
+            .all()
+        )
+        return DatasetAsset(artifact[0]) if artifact else None
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

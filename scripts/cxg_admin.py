@@ -128,8 +128,8 @@ def transfer_collections(ctx, curr_owner, new_owner):
             )
             updated = (
                 session.query(DbCollection)
-                    .filter(DbCollection.owner == curr_owner)
-                    .update({DbCollection.owner: new_owner})
+                .filter(DbCollection.owner == curr_owner)
+                .update({DbCollection.owner: new_owner})
             )
             session.commit()
             if updated > 0:

@@ -132,3 +132,26 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         )
         dataset = self.generate_dataset(self.session, artifacts=[artifact_params])
         return dataset.get_asset(dataset.artifacts[0].id)
+
+    def test_get_most_recent_artifact(self):
+        first_uri = "some_uri_0"
+        second_uri = "some_uri_1"
+        artifact_params_0 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.CXG,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=first_uri,
+        )
+        dataset = self.generate_dataset(self.session, artifacts=[artifact_params_0])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        artifact = dataset.get_most_recent_artifact(DatasetArtifactFileType.CXG)
+        self.assertEqual(artifact.s3_uri, second_uri)
