@@ -372,7 +372,6 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-
   /dp/v1/collections/{collection_uuid}/publish:
     post:
       tags:
@@ -431,6 +430,35 @@ paths:
           $ref: "#/components/responses/403"
         "405":
           $ref: "#/components/responses/405"
+
+  /dp/v1/datasets/meta:
+    get:
+      tags:
+        - datasets
+      summary: Given an explorer url return information identifying the dataset it represents
+      description: >-
+        Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
+        Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
+        the associated parent collection ID.
+      operationId: corpora.lambdas.api.v1.dataset.get_dataset_identifiers
+      parameters:
+        - in: query
+          required: true
+          name: url
+          schema:
+            type: string
+          description: The url used to access this dataset in the explorer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/dataset_identifiers"
+        "404":
+          $ref: "#/components/responses/404"
 
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
@@ -807,10 +835,6 @@ components:
           items:
             type: object
             properties:
-              id:
-                type: string
-              environment:
-                type: string
               url:
                 type: string
         linked_genesets:
@@ -827,6 +851,8 @@ components:
           $ref: "#/components/schemas/visibility"
         cell_count:
           type: integer
+        tombstone:
+          type: boolean
     dataset_asset:
       type: object
       properties:
@@ -887,6 +913,22 @@ components:
                 type: string
               additional_params:
                 type: object
+    dataset_identifiers:
+      type: object
+      description: Information for identifying and accessing a datatset
+      required:
+        - dataset_id
+        - collection_id
+        - tombstoned
+      properties:
+        dataset_id:
+          type: string
+        collection_id:
+          type: string
+        explorer_s3_uri:
+          type: string
+        tombstoned:
+          type: boolean
 
 
   parameters:

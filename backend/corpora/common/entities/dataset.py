@@ -11,13 +11,13 @@ from .geneset import Geneset
 from ..corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
-    DbDeploymentDirectory,
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
     DbGenesetDatasetLink,
     CollectionVisibility,
     generate_uuid,
+    DatasetArtifactFileType,
 )
 from ..utils.s3_buckets import cxg_bucket
 from ..utils.db_session import clone
@@ -45,7 +45,6 @@ class Dataset(Entity):
         ethnicity: list = None,
         development_stage: list = None,
         artifacts: list = None,
-        deployment_directories: list = None,
         processing_status: dict = None,
         **kwargs,
     ) -> "Dataset":
@@ -67,10 +66,6 @@ class Dataset(Entity):
         )
         if artifacts:
             dataset.artifacts = [DbDatasetArtifact(dataset_id=dataset.id, **art) for art in artifacts]
-        if deployment_directories:
-            dataset.deployment_directories = [
-                DbDeploymentDirectory(dataset_id=dataset.id, **dd) for dd in deployment_directories
-            ]
         processing_status = processing_status if processing_status else {}
         dataset.processing_status = DbDatasetProcessingStatus(dataset_id=dataset.id, **processing_status)
         session.add(dataset)
@@ -78,31 +73,21 @@ class Dataset(Entity):
 
         return cls(dataset)
 
-    def update(
-        self, artifacts: list = None, deployment_directories: list = None, processing_status: dict = None, **kwargs
-    ) -> None:
+    def update(self, artifacts: list = None, processing_status: dict = None, **kwargs) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
          be removed and replaced with new entries. If an empty list is provided, all dataset artifacts will be deleted.
-        :param deployment_directories: Deployment directories to create and connect to the dataset. If present, the
-         existing attached entries will be removed and replaced with new entries. If an empty list is provided, all
-         dataset deployment_directories will be deleted.
         :param processing_status: A Processing status entity to create and connect to the dataset. If present, the
          existing attached entries will be removed and replaced with new entries. If an empty dictionary is provided the
          processing_status will be deleted.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
-        if any([i is not None for i in [artifacts, deployment_directories, processing_status]]):
+        if any([i is not None for i in [artifacts, processing_status]]):
             if artifacts is not None:
                 for af in self.artifacts:
                     self.session.delete(af)
                 new_objs = [DbDatasetArtifact(dataset_id=self.id, **art) for art in artifacts]
-                self.session.add_all(new_objs)
-            if deployment_directories is not None:
-                for dd in self.deployment_directories:
-                    self.session.delete(dd)
-                new_objs = [DbDeploymentDirectory(dataset_id=self.id, **dd) for dd in deployment_directories]
                 self.session.add_all(new_objs)
             if processing_status is not None:
                 if self.processing_status:
@@ -122,6 +107,15 @@ class Dataset(Entity):
             if dataset and dataset.tombstone is True:
                 return None
         return dataset
+
+    @classmethod
+    def get_by_explorer_url(cls, session, explorer_url):
+        """
+        Return the most recently created dataset with the given explorer_url or None
+        """
+        filters = [cls.table.explorer_url == explorer_url]
+        dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
+        return cls(dataset[0]) if dataset else None
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -151,13 +145,11 @@ class Dataset(Entity):
             self.session.add(clone(artifact, dataset_id=revision_dataset.id))
         if self.processing_status:
             self.session.add(clone(self.processing_status, dataset_id=revision_dataset.id))
-        for deployment in self.deployment_directories:
-            self.session.add(clone(deployment, dataset_id=revision_dataset.id))
         self.session.commit()
         return Dataset(revision_dataset)
 
     def tombstone_dataset_and_delete_child_objects(self):
-        self.update(tombstone=True, deployment_directories=[], artifacts=[], processing_status={})
+        self.update(tombstone=True, artifacts=[], processing_status={})
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
@@ -169,12 +161,10 @@ class Dataset(Entity):
             asset.delete_from_s3()
             asset.delete()
 
-    def deployment_directories_deletion(self):
-        for deployment_directory in self.deployment_directories:
-            object_names = get_cxg_bucket_path(deployment_directory)
-            logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_names}.")
-            cxg_bucket.objects.filter(Prefix=object_names).delete()
-            self.session.delete(deployment_directory)
+    def delete_explorer_cxg_object_from_s3(self):
+        object_name = get_cxg_bucket_path(self.explorer_url)
+        logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_name}.")
+        cxg_bucket.objects.filter(Prefix=object_name).delete()
 
     @staticmethod
     def new_processing_status() -> dict:
@@ -185,7 +175,8 @@ class Dataset(Entity):
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:
-        s3_file = f"{get_cxg_bucket_path(self.deployment_directories[0])}-genesets.csv"
+        object_name = get_cxg_bucket_path(self.explorer_url)
+        s3_file = f"{object_name}-genesets.csv"
         cxg_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
@@ -215,7 +206,6 @@ class Dataset(Entity):
     def reprocess(self):
         if not self.published:
             self.asset_deletion()
-            self.deployment_directories_deletion()
         self.update(
             name="",
             organism=None,
@@ -227,15 +217,25 @@ class Dataset(Entity):
             development_stage=None,
             published=False,
             revision=self.revision + 1,
-            deployment_directories=[],
+            explorer_url=None,
             artifacts=[],
         )
 
+    def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
+        filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
+        artifact = (
+            self.session.query(DbDatasetArtifact)
+            .filter(*filters)
+            .order_by(DbDatasetArtifact.created_at.desc())
+            .limit(1)
+            .all()
+        )
+        return DatasetAsset(artifact[0]) if artifact else None
 
-def get_cxg_bucket_path(deployment_directory: DbDeploymentDirectory) -> str:
-    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the
-    deployment directory URL"""
-    object_name = urlparse(deployment_directory.url).path.split("/", 2)[2]
+
+def get_cxg_bucket_path(explorer_url: str) -> str:
+    """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the explorer_url"""
+    object_name = urlparse(explorer_url).path.split("/", 2)[2]
     if object_name.endswith("/"):
         object_name = object_name[:-1]
     base, _ = os.path.splitext(object_name)

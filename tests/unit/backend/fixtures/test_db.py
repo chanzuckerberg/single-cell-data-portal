@@ -8,7 +8,6 @@ from backend.corpora.common.corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
     DbDatasetProcessingStatus,
-    DbDeploymentDirectory,
     UploadStatus,
     ValidationStatus,
     ConversionStatus,
@@ -159,8 +158,9 @@ class TestDatabase:
             ],
             sex=["test_sex", "test_sex2"],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
-            development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
+            development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
+            explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
         )
         self.session.add(dataset)
@@ -178,17 +178,12 @@ class TestDatabase:
             ],
             sex=["test_sex", "test_sex2"],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
-            development_stage=[{"ontology_term_id": "test_obo", "label": "test_develeopment_stage"}],
+            development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_not_owner",
             collection_visibility=CollectionVisibility.PRIVATE.name,
+            explorer_url="test_url",
         )
         self.session.add(dataset)
-        self.session.commit()
-
-        deployment_directory = DbDeploymentDirectory(
-            id="test_deployment_directory_id", dataset_id=test_dataset_id, url="test_url"
-        )
-        self.session.add(deployment_directory)
         self.session.commit()
 
     def _create_test_dataset_artifacts(self):

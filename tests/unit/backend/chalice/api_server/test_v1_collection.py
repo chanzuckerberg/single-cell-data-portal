@@ -153,14 +153,8 @@ class TestCollection(BaseAuthAPITest):
                             "user_submitted": True,
                         }
                     ],
-                    "dataset_deployments": [
-                        {
-                            "dataset_id": "test_dataset_id",
-                            "id": "test_deployment_directory_id",
-                            "url": "test_url",
-                        }
-                    ],
-                    "development_stage": [{"label": "test_develeopment_stage", "ontology_term_id": "test_obo"}],
+                    "dataset_deployments": [{"url": "test_url"}],
+                    "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
                     "disease": [
                         {"label": "test_disease", "ontology_term_id": "test_obo"},
                         {"label": "test_disease2", "ontology_term_id": "test_obp"},
@@ -190,6 +184,7 @@ class TestCollection(BaseAuthAPITest):
                         "conversion_cxg_status": "NA",
                     },
                     "published": False,
+                    "tombstone": False,
                 }
             ],
             "description": "test_description",
@@ -287,7 +282,7 @@ class TestCollection(BaseAuthAPITest):
 
         with self.subTest("With a minimal dataset"):
             collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-            self.generate_dataset(
+            dataset = self.generate_dataset(
                 self.session,
                 collection_id=collection.id,
                 organism=None,
@@ -297,18 +292,42 @@ class TestCollection(BaseAuthAPITest):
                 sex=None,
                 ethnicity=None,
                 development_stage=None,
+                explorer_url=None,
             )
+            expected_body = {
+                "access_type": "READ",
+                "contact_email": "",
+                "contact_name": "",
+                "data_submission_policy_version": "0",
+                "datasets": [
+                    {
+                        "collection_id": collection.id,
+                        "collection_visibility": "PUBLIC",
+                        "dataset_assets": [],
+                        "dataset_deployments": [],
+                        "linked_genesets": [],
+                        "name": dataset.name,
+                        "id": dataset.id,
+                        "is_valid": False,
+                        "published": False,
+                        "revision": 0,
+                        "tombstone": False,
+                    }
+                ],
+                "description": "",
+                "genesets": [],
+                "id": collection.id,
+                "links": [],
+                "name": "",
+                "obfuscated_uuid": "",
+                "visibility": "PUBLIC",
+            }
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
 
             resp = self.app.get(test_url.url)
             resp.raise_for_status()
             actual_body = self.remove_timestamps(json.loads(resp.body))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
-            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
-            self.assertEqual(
-                expected_body["datasets"][0].pop("collection_visibility").name,
-                actual_body["datasets"][0].pop("collection_visibility"),
-            )
+            actual_body["datasets"][0].pop("processing_status")
             self.assertEqual(expected_body, actual_body)
 
     def test__get_collection__ok(self):
@@ -359,12 +378,13 @@ class TestCollection(BaseAuthAPITest):
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
     def test_collection_with_tombstoned_dataset(self):
-        dataset_id = self.generate_dataset(self.session, tombstone=True).id
+        dataset = self.generate_dataset(self.session, tombstone=True)
         test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
+
         response.raise_for_status()
         actual_dataset_ids = [d_id["id"] for d_id in json.loads(response.body)["datasets"]]
-        self.assertNotIn(dataset_id, actual_dataset_ids)
+        self.assertNotIn(dataset.id, actual_dataset_ids)
 
     def test__get_collection_uuid__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
@@ -495,21 +515,17 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
         dataset_1 = self.generate_dataset_with_s3_resources(
-            self.session,
-            collection=collection,
-            processing_status=processing_status_1,
+            self.session, collection=collection, processing_status=processing_status_1
         )
         dataset_2 = self.generate_dataset_with_s3_resources(
-            self.session,
-            collection=collection,
-            processing_status=processing_status_2,
+            self.session, collection=collection, processing_status=processing_status_2
         )
 
         s3_objects = self.get_s3_object_paths_from_dataset(dataset_1) + self.get_s3_object_paths_from_dataset(dataset_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
-
         response = self.app.get(test_url.url, headers=headers)
+
         response.raise_for_status()
 
         body = json.loads(response.body)
