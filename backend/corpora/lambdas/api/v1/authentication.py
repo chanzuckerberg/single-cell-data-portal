@@ -209,19 +209,6 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     return payload
 
 
-def apikey_dummy_info_func(tokenstr: str, required_scopes: list) -> dict:
-    """Function used by connexion in the securitySchemes.
-    This acts as a NOOP when the user is not logged in.
-
-    The return dictionary must contains a "sub" key.
-
-    :params tokenstr:  A string representation of the token
-    :params required_scopes: List of required scopes (currently not used).
-    :return: The token dictionary.
-    """
-    return {"sub": None}
-
-
 def userinfo() -> Response:
     """API call: retrieve the user info from the id token stored in the cookie"""
     config = CorporaAuthConfig()
