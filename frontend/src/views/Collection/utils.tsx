@@ -104,7 +104,7 @@ export function getIsPublishable(datasets: Collection["datasets"]) {
       const numOfDeployments = dataset.dataset_deployments.length;
 
       return (
-        numOfDeployments > 1 &&
+        numOfDeployments === 1 &&
         numOfAssets === Object.keys(DATASET_ASSET_FORMAT).length
       );
     })
