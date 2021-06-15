@@ -64,6 +64,22 @@ jobs:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
         run: |
           ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
+      - name: Invalidate CloudFront
+        env:
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            DOMAIN_NAME=public-frontend.stage.single-cell.czi.technology
+            ALIAS=cellxgene.staging.single-cell.czi.technology
+          elif [ "${DEPLOYMENT_STAGE}" == "prod" ]; then
+            DOMAIN_NAME=public-frontend.production.single-cell.czi.technology
+            ALIAS=cellxgene.cziscience.com
+          else
+            DOMAIN_NAME=public-frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+            ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+          fi
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
+          aws create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
