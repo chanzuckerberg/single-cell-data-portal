@@ -41,6 +41,7 @@ interface Props {
   datasetId?: string;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
+  isLoading: boolean;
 }
 
 const StyledMenu = styled(RawMenu)`
@@ -56,12 +57,13 @@ const Menu = ({
   datasetId = "",
   revisionsEnabled,
   onUploadFile,
+  isLoading,
 }: Props) => {
   return (
     <StyledMenu>
       {revisionsEnabled && (
         <DropboxChooser onUploadFile={onUploadFile}>
-          <UpdateButton />
+          <UpdateButton disabled={isLoading} />
         </DropboxChooser>
       )}
       <DeleteDataset
