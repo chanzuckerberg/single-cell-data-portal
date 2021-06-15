@@ -76,7 +76,7 @@ const Input: FC<Props> = ({
 
     const errors = validation.filter((error) => error !== true) as string[];
 
-    const result = Boolean(value?.length) && isSyncValid;
+    const result = isSyncValid;
 
     handleChange({ isValid: result, name, value });
 
