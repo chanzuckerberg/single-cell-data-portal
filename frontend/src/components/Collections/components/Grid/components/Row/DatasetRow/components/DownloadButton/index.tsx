@@ -1,4 +1,4 @@
-import { Button, Intent } from "@blueprintjs/core";
+import { Button, Classes, Intent } from "@blueprintjs/core";
 import React from "react";
 import DownloadSVG from "src/common/images/download.svg";
 
@@ -7,7 +7,11 @@ function DownloadButton({ ...props }) {
     <Button
       minimal
       intent={Intent.PRIMARY}
-      icon={<img alt="Download" src={String(DownloadSVG)} />}
+      icon={
+        <span className={Classes.ICON}>
+          <img src={String(DownloadSVG)} alt="Download" />
+        </span>
+      }
       {...props}
     ></Button>
   );

@@ -1,4 +1,4 @@
-import { AnchorButton, Intent, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import React, { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
@@ -218,7 +218,11 @@ const DatasetRow: FC<Props> = ({
                 <AnchorButton
                   minimal
                   intent={Intent.PRIMARY}
-                  icon={<img alt="Explore" src={String(ExploreSVG)} />}
+                  icon={
+                    <span className={Classes.ICON}>
+                      <img alt="Explore" src={String(ExploreSVG)} />
+                    </span>
+                  }
                   href={dataset?.dataset_deployments[0]?.url}
                   target="_blank"
                   rel="noopener"
