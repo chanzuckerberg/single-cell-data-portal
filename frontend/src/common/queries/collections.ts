@@ -314,6 +314,7 @@ const reuploadDataset = async function ({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
     method: "PUT",
   });
