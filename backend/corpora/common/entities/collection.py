@@ -188,10 +188,13 @@ class Collection(Entity):
                 original = Dataset.get(self.session, ds_original_id)
                 ds_tombstone = ds.tombstone
                 ds_revision = ds.revision
-                if (public_collection.id, public_collection.visibility) == (
-                    original.collection_id,
-                    original.collection_visibility,
-                ) and (ds_tombstone or ds_revision > original.revision):
+                if all(
+                    [
+                        public_collection.id == original.collection_id,
+                        public_collection.visibility == original.collection_visibility,
+                        ds_tombstone or ds_revision > original.revision,
+                    ]
+                ):
                     original.delete_explorer_cxg_object_from_s3()
                     original.asset_deletion()
                     updates = ds.to_dict(
