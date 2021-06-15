@@ -23,9 +23,9 @@ const RevisionStatusTag = ({ dataset }: Props): ReactElement | null => {
   let revisionStatus = REVISION_STATUS.NEW;
   const isPublished = dataset.published;
   if (!isPublished) {
-    if (dataset.original_uuid) {
+    if (dataset.original_id) {
       revisionStatus = REVISION_STATUS.UPDATED;
-    } else if (!dataset.original_uuid) {
+    } else if (!dataset.original_id) {
       revisionStatus = REVISION_STATUS.NEW;
     }
   } else if (dataset.tombstone) {
