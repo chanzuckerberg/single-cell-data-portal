@@ -199,6 +199,7 @@ const DatasetRow: FC<Props> = ({
                   datasetId={dataset.id}
                   revisionsEnabled={revisionsEnabled}
                   onUploadFile={onUploadFile}
+                  isLoading={isLoading}
                 />
               )}
           </ActionButton>
