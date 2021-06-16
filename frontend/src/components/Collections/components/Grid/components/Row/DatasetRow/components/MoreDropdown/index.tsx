@@ -32,7 +32,7 @@ const MoreDropdown = ({
       ),
       position: Position.BOTTOM,
     };
-  }, [collectionId, datasetId, revisionsEnabled]);
+  }, [collectionId, datasetId, revisionsEnabled, isLoading, onUploadFile]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };
