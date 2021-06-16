@@ -318,7 +318,6 @@ class TestPublishRevision(BaseRevisionTest):
 
     def test__with_revision_with_refreshed_datasets__OK(self):
         """"publish a revision with refreshed datasets"""
-        """publish a revision with delete datasets"""
         self.refresh_datasets()
         actual_body = self.publish_collection(self.rev_collection.id)
         self.verify_datasets(actual_body, [self.pub_collection.datasets[0].id])
