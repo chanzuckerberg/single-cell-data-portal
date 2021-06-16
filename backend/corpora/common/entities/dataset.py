@@ -73,7 +73,7 @@ class Dataset(Entity):
 
         return cls(dataset)
 
-    def update(self, artifacts: list = None, processing_status: dict = None, **kwargs) -> None:
+    def update(self, artifacts: list = None, processing_status: dict = None, commit=True, **kwargs) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
@@ -97,8 +97,7 @@ class Dataset(Entity):
                     self.session.add(new_obj)
             self.session.flush()
 
-        super().update(**kwargs)
-        self.session.commit()
+        super().update(commit=commit, **kwargs)
 
     @classmethod
     def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
@@ -232,15 +231,21 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
-    def publish_new(self):
-        self.collection_visibility = CollectionVisibility.PUBLIC
-        self.published = True
+    def publish_new(self, commit=False):
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=commit)
 
-    def publish_revision(self, revision: "Dataset"):
+    def publish_revision(self, revision: "Dataset", commit=False):
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
             self.delete_explorer_cxg_object_from_s3()
             self.asset_deletion()
+            if revision.revision > self.revision:
+                # connect revised artifacts with published dataset
+                for artifact in revision.artifacts:
+                    artifact.dataset_id = self.id
+            elif revision.tombstone:
+                # tombstone
+                revision.tombstone_dataset_and_delete_child_objects()
             updates = revision.to_dict(
                 remove_attr=[
                     "update_at",
@@ -252,12 +257,7 @@ class Dataset(Entity):
                 ],
                 remove_relationships=True,
             )
-            if revision.revision > self.revision:
-                for artifact in revision.artifacts:
-                    artifact.dataset_id = self.id
-            elif revision.tombstone:
-                revision.tombstone_dataset_and_delete_child_objects()
-            self.update(**updates)
+            self.update(commit=commit, **updates)
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

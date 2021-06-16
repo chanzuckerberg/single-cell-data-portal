@@ -71,8 +71,9 @@ class Entity:
         self.session.delete(self.db_object)
         self.session.commit()
 
-    def update(self, **kwargs):
+    def update(self, commit=True, **kwargs):
         for key, value in kwargs.items():
             if hasattr(self.db_object, key):
                 setattr(self.db_object, key, value)
-        self.session.commit()
+        if commit:
+            self.session.commit()
