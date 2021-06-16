@@ -188,13 +188,8 @@ class Collection(Entity):
                 original = Dataset.get(self.session, ds_original_id)
                 ds_tombstone = ds.tombstone
                 ds_revision = ds.revision
-                if all(
-                    [
-                        public_collection.id == original.collection_id,
-                        public_collection.visibility == original.collection_visibility,
-                        ds_tombstone or ds_revision > original.revision,
-                    ]
-                ):
+                is_modified = ds_tombstone or ds_revision > original.revision
+                if self.check_has_dataset(original) and is_modified:
                     original.delete_explorer_cxg_object_from_s3()
                     original.asset_deletion()
                     updates = ds.to_dict(
@@ -272,3 +267,7 @@ class Collection(Entity):
                 ds.asset_deletion()
             ds.delete()
         super().delete()
+
+    def check_has_dataset(self, dataset: Dataset) -> bool:
+        """Check that a dataset is part of the collection"""
+        return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
