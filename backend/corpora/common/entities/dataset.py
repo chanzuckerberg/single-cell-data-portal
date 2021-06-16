@@ -232,6 +232,33 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
+    def publish_new(self):
+        self.collection_visibility = CollectionVisibility.PUBLIC
+        self.published = True
+
+    def publish_revision(self, revision: "Dataset"):
+        if revision.tombstone or revision.revision > self.revision:
+            # If the revision is different from the original
+            self.delete_explorer_cxg_object_from_s3()
+            self.asset_deletion()
+            updates = revision.to_dict(
+                remove_attr=[
+                    "update_at",
+                    "created_at",
+                    "collection_visibility",
+                    "id",
+                    "original_id",
+                    "published",
+                ],
+                remove_relationships=True,
+            )
+            if revision.revision > self.revision:
+                for artifact in revision.artifacts:
+                    artifact.dataset_id = self.id
+            elif revision.tombstone:
+                revision.tombstone_dataset_and_delete_child_objects()
+            self.update(**updates)
+
 
 def get_cxg_bucket_path(explorer_url: str) -> str:
     """Parses the S3 cellxgene bucket object prefix for all resources related to this dataset from the explorer_url"""

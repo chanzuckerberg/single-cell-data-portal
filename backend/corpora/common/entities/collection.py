@@ -182,36 +182,13 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            ds = Dataset(dataset)
-            ds_original_id = ds.original_id
-            if ds_original_id:
-                original = Dataset.get(self.session, ds_original_id)
-                ds_tombstone = ds.tombstone
-                ds_revision = ds.revision
-                is_modified = ds_tombstone or ds_revision > original.revision
-                if self.check_has_dataset(original) and is_modified:
-                    original.delete_explorer_cxg_object_from_s3()
-                    original.asset_deletion()
-                    updates = ds.to_dict(
-                        remove_attr=[
-                            "update_at",
-                            "created_at",
-                            "collection_visibility",
-                            "id",
-                            "original_id",
-                            "published",
-                        ],
-                        remove_relationships=True,
-                    )
-                    if ds_revision > original.revision:
-                        for artifact in ds.artifacts:
-                            artifact.dataset_id = original.id
-                    elif ds_tombstone:
-                        ds.tombstone_dataset_and_delete_child_objects()
-                    original.update(**updates)
+            revision = Dataset(dataset)
+            if revision.original_id:
+                original = Dataset.get(self.session, revision.original_id)
+                if public_collection.check_has_dataset(original):
+                    original.publish_revision(revision)
             else:
-                dataset.collection_visibility = CollectionVisibility.PUBLIC
-                dataset.published = True
+                revision.publish_new()
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
