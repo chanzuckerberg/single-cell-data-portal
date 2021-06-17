@@ -152,7 +152,7 @@ class Collection(Entity):
                 dataset["dataset_deployments"].append({"url": explorer_url})
             dataset["dataset_assets"] = dataset.pop("artifacts")
             if dataset.get("tombstone"):
-                if tombstoned_datasets:
+                if tombstoned_datasets and not dataset["published"]:
                     datasets.append(dataset)
                 else:
                     continue

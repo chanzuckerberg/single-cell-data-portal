@@ -13,9 +13,10 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
-        self.generate_dataset_with_s3_resources(
-            self.session, collection_visibility="PUBLIC", collection_id=pub_collection.id, published=True
-        )
+        for i in range(2):
+            self.generate_dataset_with_s3_resources(
+                self.session, collection_visibility="PUBLIC", collection_id=pub_collection.id, published=True
+            )
         self.pub_collection = pub_collection
         self.rev_collection = pub_collection.revision()
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -221,6 +222,7 @@ class TestDeleteRevision(BaseRevisionTest):
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
         # Delete a published dataset in the revision
+        rev_dataset_count = len(self.rev_collection.datasets)
         rev_dataset_id = self.rev_collection.datasets[0].id
         test_dataset_url = f"/dp/v1/datasets/{rev_dataset_id}"
         resp = self.app.delete(test_dataset_url, headers=self.headers)
@@ -229,19 +231,17 @@ class TestDeleteRevision(BaseRevisionTest):
         # Get the revision authenticated
         resp = self.app.get(self.test_url_collect_private, headers=self.headers)
         resp.raise_for_status()
-        # The dataset is a tombstone in the revision
-        self.assertTrue(json.loads(resp.body)["datasets"][0]["tombstone"])
 
         # Get the revision unauthenticated
         resp = self.app.get(self.test_url_collect_private)
         resp.raise_for_status()
         # The dataset is a tombstone in the revision
-        self.assertEqual(json.loads(resp.body)["datasets"], [])
+        self.assertEqual(rev_dataset_count - 1, len(json.loads(resp.body)["datasets"]))
 
         self.session.expire_all()
         for dataset in self.rev_collection.datasets:
             if dataset.id == rev_dataset_id:
-                self.assertTrue(self.rev_collection.datasets[0].tombstone)
+                self.assertTrue(dataset.tombstone)
                 break
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
@@ -316,11 +316,19 @@ class TestPublishRevision(BaseRevisionTest):
         for s3_object in published_s3_objects:
             self.assertS3FileDoesNotExist(*s3_object)
 
+    def test__with_revision_with_all_tombstoned_datasets__409(self):
+        """unable to publish a revision with no datasets"""
+        for dataset in self.rev_collection.datasets:
+            self.app.delete(f"/dp/v1/datasets/{dataset.id}", self.headers)
+        path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
+        response = self.app.post(path, self.headers)
+        self.assertEqual(409, response.status_code)
+
     def test__with_revision_with_refreshed_datasets__OK(self):
         """"publish a revision with refreshed datasets"""
         self.refresh_datasets()
         actual_body = self.publish_collection(self.rev_collection.id)
-        self.verify_datasets(actual_body, [self.pub_collection.datasets[0].id])
+        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
 
     def test__publish_revision_with_collection_info_updated__201(self):
         expected_body = {
