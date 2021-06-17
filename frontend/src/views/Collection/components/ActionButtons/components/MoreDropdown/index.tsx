@@ -14,7 +14,7 @@ const MoreDropdown = ({ id = "", isRevision }: Props) => {
       content: <Menu id={id} isRevision={isRevision} />,
       position: Position.BOTTOM,
     };
-  }, [id]);
+  }, [id, isRevision]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };
