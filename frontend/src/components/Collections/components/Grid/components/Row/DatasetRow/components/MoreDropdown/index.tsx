@@ -9,6 +9,7 @@ interface Props {
   datasetId?: string;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
+  isLoading: boolean;
 }
 
 const MoreDropdown = ({
@@ -16,6 +17,7 @@ const MoreDropdown = ({
   datasetId = "",
   revisionsEnabled,
   onUploadFile,
+  isLoading,
 }: Props) => {
   const popoverProps = useMemo(() => {
     return {
@@ -25,11 +27,12 @@ const MoreDropdown = ({
           datasetId={datasetId}
           revisionsEnabled={revisionsEnabled}
           onUploadFile={onUploadFile}
+          isLoading={isLoading}
         />
       ),
       position: Position.BOTTOM,
     };
-  }, [collectionId, datasetId, revisionsEnabled]);
+  }, [collectionId, datasetId, revisionsEnabled, isLoading, onUploadFile]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };

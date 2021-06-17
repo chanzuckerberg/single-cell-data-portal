@@ -53,6 +53,8 @@ const AddLinkButton = () => (
   </Button>
 );
 
+const requiredValidator = (value: string) => value.length > 0 || "Required";
+
 const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
@@ -120,6 +122,7 @@ const Content: FC<Props> = (props) => {
             text="Collection Name"
             handleChange={handleInputChange}
             placeholder={REQUIRED_FIELD_TEXT}
+            syncValidation={[requiredValidator]}
             defaultValue={name}
           />
           <StyledLabel htmlFor="description">
@@ -140,6 +143,7 @@ const Content: FC<Props> = (props) => {
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
               defaultValue={contact_name}
+              syncValidation={[requiredValidator]}
             />
             <StyledInput
               name={FIELD_NAMES.CONTACT_EMAIL}
@@ -147,6 +151,7 @@ const Content: FC<Props> = (props) => {
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
               defaultValue={contact_email}
+              syncValidation={[requiredValidator]}
             />
           </ContactWrapper>
           {links.map(({ linkType, id, url, linkName, isValid }, index) => (
