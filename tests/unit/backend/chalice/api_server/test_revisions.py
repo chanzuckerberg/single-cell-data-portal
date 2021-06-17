@@ -231,6 +231,7 @@ class TestDeleteRevision(BaseRevisionTest):
         # Get the revision authenticated
         resp = self.app.get(self.test_url_collect_private, headers=self.headers)
         resp.raise_for_status()
+        self.assertEqual(rev_dataset_count, len(json.loads(resp.body)["datasets"]))
 
         # Get the revision unauthenticated
         resp = self.app.get(self.test_url_collect_private)

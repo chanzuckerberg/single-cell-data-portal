@@ -183,10 +183,9 @@ class Collection(Entity):
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
             revision = Dataset(dataset)
-            if revision.original_id:
-                original = Dataset.get(self.session, revision.original_id)
-                if public_collection.check_has_dataset(original):
-                    original.publish_revision(revision)
+            original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
+            if original and public_collection.check_has_dataset(original):
+                original.publish_revision(revision)
             else:
                 revision.publish_new()
         self.session.commit()
