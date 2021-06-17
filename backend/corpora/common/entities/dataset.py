@@ -160,11 +160,6 @@ class Dataset(Entity):
             asset.delete_from_s3()
             asset.delete()
 
-    def delete_explorer_cxg_object_from_s3(self):
-        object_name = get_cxg_bucket_path(self.explorer_url)
-        logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_name}.")
-        cxg_bucket.objects.filter(Prefix=object_name).delete()
-
     @staticmethod
     def new_processing_status() -> dict:
         return {
@@ -237,7 +232,6 @@ class Dataset(Entity):
     def publish_revision(self, revision: "Dataset", commit=False):
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
-            self.delete_explorer_cxg_object_from_s3()
             self.asset_deletion()
             if revision.revision > self.revision:
                 # connect revised artifacts with published dataset

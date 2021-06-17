@@ -64,6 +64,7 @@ class TestDatasetGenesetCSV(TestDataset):
     def test__generate_tidy_csv_for_all_linked_genesets__stores_file_in_correct_location(self):
         collection = self.generate_collection(self.session)
         dataset = self.generate_dataset(self.session, collection=collection)
+        self.create_explorer_s3_object(self.session, dataset.id)
         dataset.update(explorer_url=f"http://test_domain.example/e/{dataset.id}.cxg/")
         genes0 = [
             {"gene_symbol": "HBB", "gene_description": "gene 1", "additional_params": {}},
@@ -93,6 +94,5 @@ class TestDatasetGenesetCSV(TestDataset):
         self.assertIn(s3_file, stored_files)
 
         # Delete all geneset files.
-
-        dataset.delete_explorer_cxg_object_from_s3()
+        dataset.asset_deletion()
         self.assertFalse([x.key for x in self.cellxgene_bucket.objects.all()])

@@ -207,7 +207,6 @@ def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         dataset.asset_deletion()
-        dataset.delete_explorer_cxg_object_from_s3()
         dataset.delete()
         logger.info("Upload Canceled.")
 

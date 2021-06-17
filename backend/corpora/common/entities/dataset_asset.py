@@ -17,17 +17,26 @@ logger = logging.getLogger(__name__)
 class DatasetAsset(Entity):
     table = DbDatasetArtifact
 
-    _s3 = None
+    _s3_client = None
+    _s3_resource = None
 
     @classmethod
     def s3_client(cls):
-        if not cls._s3:
-            cls._s3 = boto3.client(
+        if not cls._s3_client:
+            cls._s3_client = boto3.client(
                 "s3",
                 endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None,
                 config=boto3.session.Config(signature_version="s3v4"),
             )
-        return cls._s3
+        return cls._s3_client
+
+    @classmethod
+    def s3_resource(cls):
+        if not cls._s3_resource:
+            cls._s3_resource = boto3.resource(
+                "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
+            )
+        return cls._s3_resource
 
     def __init__(self, db_object: DbDatasetArtifact):
         super().__init__(db_object)
@@ -68,10 +77,16 @@ class DatasetAsset(Entity):
 
     def delete_from_s3(self):
         try:
-            self.s3_client().delete_object(Bucket=self.bucket_name, Key=self.key_name)
+            if self.key_name.endswith("/"):
+                # This path should only be taken when deleting from the cellxgene bucket
+                logger.info(f"Deleting all files in bucket {self.bucket_name} under {self.dataset_id}.")
+                self.s3_resource().Bucket(self.bucket_name).objects.filter(Prefix=self.dataset_id).delete()
+                # using dataset_id rather than the key_name because we also need to delete the genesets if they exist.
+            else:
+                logger.info(f"Deleting file {self.key_name} in bucket {self.bucket_name}.")
+                self.s3_client().delete_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to delete artifact '{self.url}'.")
-            return None
 
     @classmethod
     def create(

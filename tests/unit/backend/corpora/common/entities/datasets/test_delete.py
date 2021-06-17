@@ -72,7 +72,7 @@ class TestDeleteDataset(TestDataset):
         cxg_bucket_path = f"{get_cxg_bucket_path(dataset.explorer_url)}.cxg/"
         self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
 
-        dataset.delete_explorer_cxg_object_from_s3()
+        dataset.asset_deletion()
         self.assertS3FileDoesNotExist(self.cellxgene_bucket, cxg_bucket_path)
 
     def test__dataset_delete(self):
