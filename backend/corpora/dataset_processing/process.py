@@ -133,6 +133,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
 from backend.corpora.dataset_processing.download import download
+from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -328,19 +329,20 @@ def make_seurat(local_filename):
 
 
 def make_cxg(local_filename):
-    cxg_dir = local_filename.replace(".h5ad", ".cxg")
+    """
+    Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
+    """
+
+    cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        subprocess.run(
-            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename],
-            capture_output=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as ex:
+        h5ad_data_file = H5ADDataFile(local_filename)
+        h5ad_data_file.to_cxg(cxg_output_container, 10.0)
+    except Exception as ex:
         msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
         logger.exception(msg)
         raise RuntimeError(msg) from ex
 
-    return cxg_dir
+    return cxg_output_container
 
 
 def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):

@@ -7,6 +7,13 @@ class CorporaException(Exception):
         super().__init__(*args, **kwargs)
 
 
+class ColorFormatException(CorporaException):
+    def __init__(
+        self, detail: str = "Color conversion helper function encountered an unknown color format.", *args, **kwargs
+    ) -> None:
+        super().__init__(status=400, title="Bad Request", detail=detail, *args, **kwargs)
+
+
 class ServerErrorHTTPException(ProblemException):
     def __init__(
         self, detail: str = "An internal server error has occurred. Please try again later.", *args, **kwargs
