@@ -7,7 +7,7 @@ class CorporaException(Exception):
         super().__init__(*args, **kwargs)
 
 
-class ColorFormatException(CorporaException):
+class ColorFormatException(ProblemException):
     def __init__(
         self, detail: str = "Color conversion helper function encountered an unknown color format.", *args, **kwargs
     ) -> None:
