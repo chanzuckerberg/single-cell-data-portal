@@ -14,12 +14,12 @@ from backend.corpora.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from tests.unit.backend import PROJECT_ROOT
+from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
 
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
-        self.testing_cxg_temp_directory = f"{PROJECT_ROOT}/tests/unit/backend/corpora/fixtures/{uuid4()}"
+        self.testing_cxg_temp_directory = fixture_file_path(uuid4())
         mkdir(self.testing_cxg_temp_directory)
 
     def tearDown(self):

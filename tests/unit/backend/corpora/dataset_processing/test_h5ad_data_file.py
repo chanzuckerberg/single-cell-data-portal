@@ -1,6 +1,5 @@
 import json
 import unittest
-from glob import glob
 from os import remove, path
 from shutil import rmtree
 from uuid import uuid4
@@ -14,7 +13,6 @@ from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
-from tests.unit.backend import PROJECT_ROOT
 
 
 class TestH5ADDataFile(unittest.TestCase):

@@ -7,11 +7,11 @@ from backend.corpora.common.utils.color_conversion_utils import (
     convert_anndata_category_colors_to_cxg_category_colors,
 )
 from backend.corpora.common.utils.exceptions import ColorFormatException
-from tests.unit.backend import PROJECT_ROOT
+from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
 
-class ColorsTest(unittest.TestCase):
-    """ Test color helper functions """
+class TestColorConversionUtils(unittest.TestCase):
+    """ Test color conversion helper functions """
 
     def test_convert_color_to_hex_format(self):
         self.assertEqual(convert_color_to_hex_format("wheat"), "#f5deb3")
@@ -54,4 +54,4 @@ class ColorsTest(unittest.TestCase):
         self.assertEqual(convert_anndata_category_colors_to_cxg_category_colors(adata), {})
 
     def _get_h5ad(self):
-        return anndata.read_h5ad(f"{PROJECT_ROOT}/tests/unit/backend/corpora/fixtures/pbmc3k.h5ad")
+        return anndata.read_h5ad(fixture_file_path("pbmc3k.h5ad"))
