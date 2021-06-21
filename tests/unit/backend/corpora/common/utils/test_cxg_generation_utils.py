@@ -19,7 +19,7 @@ from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_p
 
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
-        self.testing_cxg_temp_directory = fixture_file_path(uuid4())
+        self.testing_cxg_temp_directory = fixture_file_path(str(uuid4()))
         mkdir(self.testing_cxg_temp_directory)
 
     def tearDown(self):
