@@ -13,6 +13,7 @@ import tiledb
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 
+from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 from tests.unit.backend import PROJECT_ROOT
 
 
@@ -238,7 +239,7 @@ class TestH5ADDataFile(unittest.TestCase):
             self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _write_anndata_to_file(self, anndata):
-        temporary_filename = f"{PROJECT_ROOT}/tests/unit/backend/corpora/fixtures/{uuid4()}.h5ad"
+        temporary_filename = fixture_file_path(f"{uuid4()}.h5ad")
         anndata.write(temporary_filename)
 
         return temporary_filename
