@@ -338,7 +338,7 @@ def make_cxg(local_filename):
         h5ad_data_file = H5ADDataFile(local_filename)
         h5ad_data_file.to_cxg(cxg_output_container, 10.0)
     except Exception as ex:
-        msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
+        msg = f"CXG conversion failed."
         logger.exception(msg)
         raise RuntimeError(msg) from ex
 
