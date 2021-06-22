@@ -152,13 +152,12 @@ class Dataset(Entity):
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
-        self.session.commit()
 
     def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
-            asset.delete_from_s3()
-            asset.delete()
+            asset.queue_s3_asset_for_deletion()
+            asset.delete(commit=False)
 
     @staticmethod
     def new_processing_status() -> dict:
@@ -226,10 +225,10 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
-    def publish_new(self, commit=False):
-        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=commit)
+    def publish_new(self):
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=False)
 
-    def publish_revision(self, revision: "Dataset", commit=False):
+    def publish_revision(self, revision: "Dataset"):
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
             self.asset_deletion()
@@ -251,7 +250,7 @@ class Dataset(Entity):
                 ],
                 remove_relationships=True,
             )
-            self.update(commit=commit, **updates)
+            self.update(commit=False, **updates)
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

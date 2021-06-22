@@ -170,7 +170,8 @@ class Collection(Entity):
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         if public_collection:
             public_collection.update(
-                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True)
+                commit=False,
+                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
         else:
             public_collection = Collection(
@@ -210,13 +211,14 @@ class Collection(Entity):
         return Collection(revision_collection)
 
     def tombstone_collection(self):
-        self.update(tombstone=True)
+        self.update(tombstone=True, commit=False)
         for geneset in self.genesets:
-            Geneset.get(self.session, geneset.id).delete()
+            Geneset.get(self.session, geneset.id).delete(commit=False)
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.asset_deletion()
             ds.tombstone_dataset_and_delete_child_objects()
+        self.session.commit()
 
     def update(self, links: list = None, **kwargs) -> None:
         """

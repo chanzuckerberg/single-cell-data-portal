@@ -50,6 +50,7 @@ class TestDeleteDataset(TestDataset):
         self.assertFalse(dataset.tombstone)
 
         dataset.tombstone_dataset_and_delete_child_objects()
+        self.session.commit()
         self.assertEqual(len(dataset.artifacts), 0)
         self.assertEqual(len(dataset.genesets), 0)
         self.assertTrue(dataset.tombstone)
@@ -63,6 +64,7 @@ class TestDeleteDataset(TestDataset):
         art_bucket_path = artifact.get_bucket_path()
         self.assertS3FileExists(self.bucket, art_bucket_path)
         dataset.asset_deletion()
+        self.session.commit()
         self.assertEqual(len(dataset.artifacts), 0)
         self.assertS3FileDoesNotExist(self.bucket, art_bucket_path)
 
@@ -73,6 +75,7 @@ class TestDeleteDataset(TestDataset):
         self.assertS3FileExists(self.cellxgene_bucket, cxg_bucket_path)
 
         dataset.asset_deletion()
+        self.session.commit()
         self.assertS3FileDoesNotExist(self.cellxgene_bucket, cxg_bucket_path)
 
     def test__dataset_delete(self):

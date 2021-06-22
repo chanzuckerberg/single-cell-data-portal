@@ -64,12 +64,13 @@ class Entity:
         """
         return self.db_object.__getattribute__(name)
 
-    def delete(self):
+    def delete(self, commit=True):
         """
         Delete an object from the database.
         """
         self.session.delete(self.db_object)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
     def update(self, commit=True, **kwargs):
         for key, value in kwargs.items():
