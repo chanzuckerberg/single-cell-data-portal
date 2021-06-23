@@ -110,9 +110,11 @@ Once all conversion are compelete, the conversion status for each file will be e
     conversion_anndata_status = ConversionStatus.FAILED
 }
 """
+import json
 
 import logging
 import os
+import requests
 import subprocess
 import typing
 from os.path import join
@@ -121,6 +123,7 @@ import numpy
 import scanpy
 import sys
 
+from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
@@ -492,6 +495,7 @@ def main():
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
         logger.exception("An Error occured while processing.")
+        notify_slack_failure()
         return_value = 1
     except Exception:
         message = "An unexpect error occured while processing the data set."
@@ -499,9 +503,23 @@ def main():
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
         )
+        notify_slack_failure()
         return_value = 1
 
     return return_value
+
+
+def notify_slack_failure():
+    if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        aws_region = os.getenv("AWS_BATCH_JQ_NAME").split(":")[3]
+        job_id = os.getenv("AWS_BATCH_JOB_ID")
+        slack_webhook = CorporaConfig().slack_webhook
+        job_url = f"https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
+        requests.post(
+            slack_webhook,
+            headers={"Content-type": "application/json"},
+            data=json.dumps({"text": f"Processing Job Failed! {job_url}"}),
+        )
 
 
 if __name__ == "__main__":
