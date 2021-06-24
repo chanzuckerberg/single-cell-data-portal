@@ -509,12 +509,38 @@ def main():
     return return_value
 
 
-def notify_slack_failure():
+def notify_slack_failure(dataset_id):
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        with db_session_manager() as session:
+            dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+            collection = dataset.collection
+            collection_id, collection_owner = collection.id, collection.owner
         aws_region = os.getenv("AWS_BATCH_JQ_NAME").split(":")[3]
         job_id = os.getenv("AWS_BATCH_JOB_ID")
         slack_webhook = CorporaConfig().slack_webhook
         job_url = f"https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
+        data = {
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Dataset failed to process:fire:",
+                        "emoji": True,
+                    },
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Dataset processing job failed!\n"
+                        f"*Batch Job ID*:<{job_url}|{job_id}>\n"
+                        f"*Owner*: {collection_owner}\n"
+                        f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n",
+                    },
+                },
+            ]
+        }
         requests.post(
             slack_webhook,
             headers={"Content-type": "application/json"},
