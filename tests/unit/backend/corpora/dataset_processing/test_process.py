@@ -567,7 +567,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
     def test_format_slack_message(self):
         dataset = self.generate_dataset(self.session)
-        os.environ["AWS_BATCH_JQ_NAME"] ="aws:single-cell:batch:us-west-2"
-        os.environ["AWS_BATCH_JOB_ID"] ="test_job_id"
+        os.environ["AWS_BATCH_JQ_NAME"] = "aws:single-cell:batch:us-west-2"
+        os.environ["AWS_BATCH_JOB_ID"] = "test_job_id"
         message = format_slack_message(dataset.id)
         json.loads(message)

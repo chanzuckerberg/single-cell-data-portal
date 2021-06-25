@@ -125,6 +125,7 @@ import sys
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.utils.dl_sources.url import from_url
+from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
@@ -549,7 +550,7 @@ def format_slack_message(dataset_id):
             },
         ]
     }
-    return json.dumps(data)
+    return json.dumps(data, cls=CustomJSONEncoder)
 
 
 def notify_slack_failure(dataset_id):
