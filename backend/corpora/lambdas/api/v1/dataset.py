@@ -73,7 +73,11 @@ def delete_dataset(dataset_uuid: str, user: str):
         if dataset.published:
             dataset.update(tombstone=True, published=False)
         else:
-            dataset.asset_deletion()
+            if dataset.original_id:
+                original = Dataset.get(dataset.original_id)
+                original.create_revision()
+            else:
+                dataset.asset_deletion()
             dataset.delete()
     return "", 202
 
