@@ -544,13 +544,13 @@ def format_slack_message(dataset_id):
                 "type": "section",
                 "text": {
                     "type": "plain_text",
-                    "text": json.dumps(processing_status, indent=2, sort_keys=True),
+                    "text": json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True),
                     "emoji": False,
                 },
             },
         ]
     }
-    return json.dumps(data, cls=CustomJSONEncoder)
+    return json.dumps(data)
 
 
 def notify_slack_failure(dataset_id):
