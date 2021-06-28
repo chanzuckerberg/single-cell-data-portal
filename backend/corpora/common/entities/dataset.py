@@ -95,7 +95,6 @@ class Dataset(Entity):
                 if processing_status:
                     new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
                     self.session.add(new_obj)
-            self.session.flush()
 
         super().update(commit=commit, **kwargs)
 

@@ -1,8 +1,13 @@
 import json
 import typing
+from unittest import mock
+
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities import Dataset, Collection
+from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from tests.unit.backend.chalice.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -316,6 +321,34 @@ class TestPublishRevision(BaseRevisionTest):
         self.assertTrue(dataset.tombstone)
         for s3_object in published_s3_objects:
             self.assertS3FileDoesNotExist(*s3_object)
+
+    def test__with_revision_with_tombstoned_datasets_rollback__OK(self):
+        """revision state is restored and s3 assets are unchanged, if the database transactions fails."""
+        rev_dataset_id = self.rev_collection.datasets[0].id
+        pub_dataset = self.pub_collection.datasets[0]
+        published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
+
+        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
+        self.session.expire_all()
+
+        expect_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
+        expect_datasets = expect_collection.pop("datasets")
+        expect_datasets.sort(key=lambda x: x["id"])
+        with self.assertRaises(CorporaException):
+            with db_session_manager() as session:
+                rev_collection = Collection.get(session, (self.rev_collection.id, self.rev_collection.visibility))
+                with mock.patch.object(rev_collection.session, "commit", side_effect=SQLAlchemyError):
+                    rev_collection.publish()
+        self.session.expire_all()
+        actual_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
+        actual_datasets = actual_collection.pop("datasets")
+        actual_datasets.sort(key=lambda x: x["id"])
+        self.assertEqual(expect_collection, actual_collection)
+        self.assertEqual(expect_datasets, actual_datasets)
+        dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
+        self.assertFalse(dataset.tombstone)
+        for s3_object in published_s3_objects:
+            self.assertS3FileExists(*s3_object)
 
     def test__with_revision_with_all_tombstoned_datasets__409(self):
         """unable to publish a revision with no datasets"""

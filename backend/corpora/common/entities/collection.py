@@ -234,7 +234,6 @@ class Collection(Entity):
             DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
         ]
         self.session.add_all(new_objs)
-        self.session.flush()
 
         super().update(**kwargs)
 
