@@ -127,6 +127,7 @@ class Dataset(Entity):
     def create_revision(self) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
+        :param dataset_id: specify the uuid if the revision, otherwise one is generated.
         :return: dataset revision.
 
         """

@@ -40,17 +40,20 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for keys in expected_body.keys():
                 self.assertEqual(expected_body[keys], actual_body[keys])
 
-    def refresh_datasets(self):
+    def refresh_datasets(self) -> typing.List[Dataset]:
         for dataset in self.rev_collection.datasets:
             Dataset(dataset).delete()
+        refreshed_datasets = []
         for dataset in self.pub_collection.datasets:
-            self.generate_dataset_with_s3_resources(
+            ds = self.generate_dataset_with_s3_resources(
                 self.session,
                 collection_visibility="PRIVATE",
                 collection_id=self.rev_collection.id,
                 original_id=dataset.id,
                 revision=dataset.revision + 1,
             )
+            refreshed_datasets.append(ds)
+        return refreshed_datasets
 
     def get_s3_objects_from_collections(self) -> typing.Tuple[typing.List, typing.List]:
         """
@@ -221,6 +224,38 @@ class TestDeleteRevision(BaseRevisionTest):
             for bucket, file_name in rev_s3_objects:
                 self.assertS3FileDoesNotExist(bucket, file_name)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+
+    def test__delete_refreshed_dataset_in_a_revision(self):
+        """The refreshed datasets should be deleted and the published dataset restored in the revision."""
+        expected_pub_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
+        expected_rev_body = self.remove_timestamps(
+            json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
+            remove=["id", "dataset_id"],
+        )
+        refreshed_datasets = self.refresh_datasets()
+        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
+
+        # Refreshed datasets do not point to the published resources in s3.
+        for s3_object in rev_s3_objects:
+            self.assertNotIn(s3_object, pub_s3_objects)
+
+        # Delete the refreshed_datasets
+        for ds in refreshed_datasets:
+            resp = self.app.delete(f"/dp/v1/datasets/{ds.id}", headers=self.headers)
+            resp.raise_for_status()
+
+        with self.subTest("refreshed artifacts and explorer s3 objects deleted"):
+            for bucket, file_name in rev_s3_objects:
+                self.assertS3FileDoesNotExist(bucket, file_name)
+        self.assertPublishedCollectionOK(expected_pub_body, pub_s3_objects)
+
+        # Check that the original datasets info has been restored to the revision dataset.
+        self.session.expire_all()
+        actual_rev_body = self.remove_timestamps(
+            json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
+            remove=["id", "dataset_id"],
+        )
+        self.assertEqual(expected_rev_body, actual_rev_body)
 
     def test__delete_published_dataset_during_revision(self):
         """The dataset is tombstone in the revision. The published artifacts are intact"""
