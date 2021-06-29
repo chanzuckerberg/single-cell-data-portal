@@ -73,7 +73,7 @@ class Dataset(Entity):
 
         return cls(dataset)
 
-    def update(self, artifacts: list = None, processing_status: dict = None, **kwargs) -> None:
+    def update(self, artifacts: list = None, processing_status: dict = None, commit=True, **kwargs) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
         :param artifacts: Artifacts to create and connect to the dataset. If present, the existing attached entries will
@@ -95,13 +95,11 @@ class Dataset(Entity):
                 if processing_status:
                     new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
                     self.session.add(new_obj)
-            self.session.flush()
 
-        super().update(**kwargs)
-        self.session.commit()
+        super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session, dataset_uuid, include_tombstones=False):
+    def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
         dataset = super().get(session, dataset_uuid)
         if not include_tombstones:
             if dataset and dataset.tombstone is True:
@@ -129,6 +127,7 @@ class Dataset(Entity):
     def create_revision(self) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
+        :param dataset_id: specify the uuid if the revision, otherwise one is generated.
         :return: dataset revision.
 
         """
@@ -153,18 +152,12 @@ class Dataset(Entity):
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
-        self.session.commit()
 
     def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
-            asset.delete_from_s3()
-            asset.delete()
-
-    def delete_explorer_cxg_object_from_s3(self):
-        object_name = get_cxg_bucket_path(self.explorer_url)
-        logger.info(f"Deleting all files in bucket {cxg_bucket.name} under {object_name}.")
-        cxg_bucket.objects.filter(Prefix=object_name).delete()
+            asset.queue_s3_asset_for_deletion()
+            asset.delete(commit=False)
 
     @staticmethod
     def new_processing_status() -> dict:
@@ -231,6 +224,33 @@ class Dataset(Entity):
             .all()
         )
         return DatasetAsset(artifact[0]) if artifact else None
+
+    def publish_new(self):
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=False)
+
+    def publish_revision(self, revision: "Dataset"):
+        if revision.tombstone or revision.revision > self.revision:
+            # If the revision is different from the original
+            self.asset_deletion()
+            if revision.revision > self.revision:
+                # connect revised artifacts with published dataset
+                for artifact in revision.artifacts:
+                    artifact.dataset_id = self.id
+            elif revision.tombstone:
+                # tombstone
+                revision.tombstone_dataset_and_delete_child_objects()
+            updates = revision.to_dict(
+                remove_attr=[
+                    "update_at",
+                    "created_at",
+                    "collection_visibility",
+                    "id",
+                    "original_id",
+                    "published",
+                ],
+                remove_relationships=True,
+            )
+            self.update(commit=False, **updates)
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:
