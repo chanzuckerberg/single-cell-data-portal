@@ -63,6 +63,7 @@ export interface Collection {
   obfuscated_uuid: string;
   created_at: number;
   updated_at: number;
+  is_revision: boolean;
 }
 
 export type Ontology = {
