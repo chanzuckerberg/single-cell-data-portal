@@ -31,7 +31,6 @@ from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_dropbox_url,
-    format_slack_message,
 )
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -564,10 +563,3 @@ class TestDatasetProcessing(DataPortalTestCase):
         end = time.time()
         # check that tombstoning ends the download thread early
         self.assertLess(end - start, 11)
-
-    def test_format_slack_message(self):
-        dataset = self.generate_dataset(self.session)
-        os.environ["AWS_BATCH_JQ_NAME"] = "aws:single-cell:batch:us-west-2"
-        os.environ["AWS_BATCH_JOB_ID"] = "test_job_id"
-        message = format_slack_message(dataset.id)
-        json.loads(message)

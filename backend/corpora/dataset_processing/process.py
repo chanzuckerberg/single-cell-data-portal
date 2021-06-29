@@ -110,7 +110,6 @@ Once all conversion are compelete, the conversion status for each file will be e
     conversion_anndata_status = ConversionStatus.FAILED
 }
 """
-import json
 
 import logging
 import os
@@ -125,7 +124,6 @@ import sys
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
@@ -138,6 +136,7 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager, processing_status_updater
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.corpora.dataset_processing.slack import format_slack_message
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -509,53 +508,11 @@ def main():
     return return_value
 
 
-def format_slack_message(dataset_id):
-    with db_session_manager() as session:
-        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
-        collection = dataset.collection
-        collection_id, collection_owner = collection.id, collection.owner
-        processing_status = dataset.processing_status.to_dict(remove_relationships=True)
-    aws_region = os.getenv("AWS_BATCH_JQ_NAME").split(":")[3]
-    job_id = os.getenv("AWS_BATCH_JOB_ID")
-    job_url = f"https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
-    data = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Dataset failed to process:fire:",
-                    "emoji": True,
-                },
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"Dataset processing job failed!\n"
-                    f"*Batch Job ID*:<{job_url}|{job_id}>\n"
-                    f"*Owner*: {collection_owner}\n"
-                    f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
-                    f"*Processing Status*:\n",
-                },
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "plain_text",
-                    "text": json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True),
-                    "emoji": False,
-                },
-            },
-        ]
-    }
-    return json.dumps(data)
-
-
 def notify_slack_failure(dataset_id):
+    data = format_slack_message(dataset_id)
+    logger.info(data)
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
         slack_webhook = CorporaConfig().slack_webhook
-        data = format_slack_message(dataset_id)
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
