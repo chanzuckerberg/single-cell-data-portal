@@ -506,7 +506,7 @@ def main():
         return_value = 1
 
     if return_value > 0:
-        notify_slack_failure()
+        notify_slack_failure(dataset_id)
     return return_value
 
 
