@@ -37,12 +37,26 @@ export interface RevisionResponse extends CollectionResponse {
   revision: REVISION_STATUS;
 }
 
-async function fetchCollections(): Promise<CollectionResponse[]> {
+export type CollectionResponsesMap = Map<
+  CollectionResponse["id"],
+  CollectionResponse[]
+>;
+
+// if we return as a object it will be easier to fetch collections by id
+async function fetchCollections(): Promise<CollectionResponsesMap> {
   const json = await (
     await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
   ).json();
 
-  return json.collections;
+  const collectionsMap: CollectionResponsesMap = new Map();
+
+  for (const collection of json.collections as CollectionResponse[]) {
+    const collectionsWithId = collectionsMap.get(collection.id) || [];
+    collectionsWithId.push(collection);
+    collectionsMap.set(collection.id, collectionsWithId);
+  }
+
+  return collectionsMap;
 }
 
 export function useCollections() {
@@ -91,9 +105,34 @@ export function useCollection({
   id = "",
   visibility = VISIBILITY_TYPE.PUBLIC,
 }) {
+  const { data: collections } = useCollections();
+  const queryCache = useQueryCache();
+
   return useQuery<Collection | null>(
     [USE_COLLECTION, id, visibility],
-    fetchCollection
+    fetchCollection,
+    {
+      onSuccess: (data) => {
+        // Check if there are multiple collections with this ID and that this collection is private\
+        // (is this collection a revision)
+        if (
+          collections &&
+          data &&
+          visibility === VISIBILITY_TYPE.PRIVATE &&
+          (collections?.get(data.id)?.length ?? 0) > 1
+        ) {
+          // Set is_revision to true
+          queryCache.setQueryData(
+            [USE_COLLECTION, id, visibility],
+            (oldData: Collection | undefined) => {
+              const newData = oldData || ({} as Collection);
+              newData.is_revision = true;
+              return newData;
+            }
+          );
+        }
+      },
+    }
   );
 }
 
