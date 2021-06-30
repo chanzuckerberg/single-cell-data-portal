@@ -329,6 +329,7 @@ class TestPublishRevision(BaseRevisionTest):
         self.assertTrue(all([d["published"] for d in actual_body["datasets"]]))
         for dataset_id in expected_dataset_ids:
             dataset = Dataset.get(self.session, dataset_id)
+            self.assertIn(dataset.id, dataset.explorer_url)
             for s3_object in self.get_s3_object_paths_from_dataset(dataset):
                 if dataset.tombstone:
                     self.assertS3FileDoesNotExist(*s3_object)
@@ -353,6 +354,7 @@ class TestPublishRevision(BaseRevisionTest):
         self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
         self.publish_collection(self.rev_collection.id)
         dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
+        self.assertIn(pub_dataset.id, dataset.explorer_url)
         self.assertTrue(dataset.tombstone)
         for s3_object in published_s3_objects:
             self.assertS3FileDoesNotExist(*s3_object)
