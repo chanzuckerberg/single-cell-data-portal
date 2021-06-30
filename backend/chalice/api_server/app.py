@@ -42,7 +42,7 @@ def get_chalice_app(flask_app):
     if deployment not in ["prod"]:
         allowed_origins.extend(
             [
-                "https://*.dev.single-cell.czi.technology",
+                "https://*.dev.single-cell.czi.technology",  # remove once contract work is completed.
                 r"http://.*\.corporanet\.local:\d+",
                 r"^http://localhost:\d+",
             ]
