@@ -247,6 +247,7 @@ class Dataset(Entity):
                     "id",
                     "original_id",
                     "published",
+                    "explorer_url",
                 ],
                 remove_relationships=True,
             )
