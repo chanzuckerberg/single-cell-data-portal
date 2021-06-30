@@ -40,7 +40,13 @@ def get_chalice_app(flask_app):
     deployment = os.environ["DEPLOYMENT_STAGE"]
     allowed_origins = []
     if deployment not in ["prod"]:
-        allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
+        allowed_origins.extend(
+            [
+                "https://*.dev.single-cell.czi.technology",
+                r"http://.*\.corporanet\.local:\d+",
+                r"^http://localhost:\d+",
+            ]
+        )
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment != "test":  # pragma: no cover
