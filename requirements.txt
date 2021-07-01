@@ -20,5 +20,6 @@ requests>=2.22.0
 s3fs==0.4.2
 scanpy
 tiledb<0.9
+commitizen
 -r ./backend/chalice/api_server/requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
