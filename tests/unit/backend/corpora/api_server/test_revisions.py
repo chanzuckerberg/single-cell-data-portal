@@ -351,8 +351,9 @@ class TestPublishRevision(BaseRevisionTest):
         rev_dataset_id = self.rev_collection.datasets[0].id
         pub_dataset = self.pub_collection.datasets[0]
         published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
+        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", headers=self.headers)
         self.publish_collection(self.rev_collection.id)
+        self.session.expire_all()
         dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
         self.assertIn(pub_dataset.id, dataset.explorer_url)
         self.assertTrue(dataset.tombstone)
@@ -392,7 +393,7 @@ class TestPublishRevision(BaseRevisionTest):
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", self.headers)
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, self.headers)
+        response = self.app.post(path, headers=self.headers)
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
