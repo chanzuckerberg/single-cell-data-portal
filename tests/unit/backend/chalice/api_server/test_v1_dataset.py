@@ -264,7 +264,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 "s3_uri": test_uri_0,
                 "dataset_id": public_dataset.id,
                 "collection_id": public_collection.id,
-                'collection_visibility': public_collection.visibility.name,
+                "collection_visibility": public_collection.visibility.name,
                 "tombstoned": False,
             }
 
@@ -287,7 +287,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 "s3_uri": test_uri_1,
                 "dataset_id": private_dataset.id,
                 "collection_id": private_collection.id,
-                'collection_visibility': private_collection.visibility.name,
+                "collection_visibility": private_collection.visibility.name,
                 "tombstoned": False,
             }
 
@@ -304,7 +304,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 "s3_uri": None,
                 "dataset_id": dataset_without_artifacts.id,
                 "collection_id": public_collection.id,
-                'collection_visibility': 'PUBLIC',
+                "collection_visibility": "PUBLIC",
                 "tombstoned": False,
             }
 
