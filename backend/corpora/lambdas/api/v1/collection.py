@@ -111,6 +111,6 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     if not collection:
         raise ForbiddenHTTPException()
     collection.update(**body)
-    result = collection.reshape_for_api()
+    result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 200)

@@ -171,6 +171,7 @@ class TestCollection(BaseAuthAPITest):
                     "revision": 0,
                     "sex": ["test_sex", "test_sex2"],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
+                    "tombstone": False,
                     "processing_status": {
                         "id": "test_dataset_processing_status_id",
                         "dataset_id": "test_dataset_id",

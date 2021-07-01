@@ -46,10 +46,11 @@ class TestPublish(BaseAuthAPITest):
             self.assertListEqual(link_names, actual_links)
 
     def test__OK(self):
-        collection_id = self.generate_collection(
+        collection = self.generate_collection(
             self.session,
-        ).id
-        self.verify_publish_collection(collection_id)
+        )
+        self.generate_dataset(self.session, collection_id=collection.id, collection_visibility=collection.visibility)
+        self.verify_publish_collection(collection.id)
 
     def test__with_datasets__OK(self):
         collection_id = self.generate_collection(

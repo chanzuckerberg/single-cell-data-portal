@@ -11,7 +11,6 @@ from moto import mock_s3
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset, Dataset
-from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -91,14 +90,22 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         )
 
     def create_explorer_s3_object(self, session, dataset_id, upload=False):
+        file_name = f"{dataset_id}.cxg/"
         if upload:
-            file_name = f"{dataset_id}.cxg/"
-            content = "".join(random.choices("abcdef", k=16))
-            self.cellxgene_bucket.Object(file_name).put(Body=content, ContentType="application/octet-stream")
+            with tempfile.TemporaryDirectory() as temp_path:
+                for i in range(3):
+                    temp_file = f"{temp_path}/temp{i}.dat"
+                    content = "".join(random.choices("abcdef", k=16))
+                    with open(temp_file, "w") as fp:
+                        fp.write(content)
+                    DatasetAsset.upload(temp_file, file_name, self.cellxgene_bucket.name)
         dataset = Dataset.get(session, dataset_id)
-        explorer_url = f"http://bogus.url/d/{dataset_id}.cxg/"
-        # explorer_s3_uri = f"s3://{self.cellxgene_bucket}/{dataset_id}.cxg/" TODO use line once cxg in DatasetArtifact
+        explorer_url = f"http://bogus.url/d/{file_name}"
         dataset.update(explorer_url=explorer_url)
+        s3_uri = f"s3://{self.cellxgene_bucket.name}/{file_name}"
+        return DatasetAsset.create(
+            session, dataset_id, file_name, DatasetArtifactFileType.CXG, DatasetArtifactType.REMIX, False, s3_uri
+        )
 
     def generate_dataset_with_s3_resources(self, session, artifacts=True, explorer_s3_object=True, **params) -> Dataset:
         dataset = self.generate_dataset(session, **params)
@@ -110,15 +117,24 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         return dataset
 
     def get_s3_object_paths_from_dataset(self, dataset: Dataset) -> typing.List[typing.Tuple[Bucket, str]]:
-        s3_objects = [(self.bucket, DatasetAsset(art).get_bucket_path()) for art in dataset.artifacts]
-        if dataset.explorer_url:
-            s3_objects + [(self.cellxgene_bucket, f"{get_cxg_bucket_path(dataset.explorer_url)}.cxg/")]
+        s3_objects = []
+        for art in dataset.artifacts:
+            artifact = DatasetAsset(art)
+            s3_objects.append((artifact.bucket_name, artifact.get_bucket_path()))
         return s3_objects
 
-    def assertS3FileExists(self, bucket: Bucket, file_name: str):
-        self.assertGreater(bucket.Object(file_name).content_length, 1)
+    def assertS3FileExists(self, bucket: typing.Union[Bucket, str], file_name: str):
+        bucket = self.s3_resource.Bucket(bucket) if isinstance(bucket, str) else bucket
+        if file_name.endswith("/"):
+            self.assertGreater(len([*bucket.objects.filter(Prefix=file_name)]), 0)
+        else:
+            self.assertGreater(bucket.Object(file_name).content_length, 1)
 
-    def assertS3FileDoesNotExist(self, bucket: Bucket, file_name: str, msg: str = None):
+    def assertS3FileDoesNotExist(self, bucket: typing.Union[Bucket, str], file_name: str, msg: str = None):
+        bucket = self.s3_resource.Bucket(bucket) if isinstance(bucket, str) else bucket
         msg = msg if msg else f"s3://{bucket.name}/{file_name} found."
-        with self.assertRaises(botocore.exceptions.ClientError, msg=msg):
-            bucket.Object(file_name).content_length
+        if file_name.endswith("/"):
+            self.assertEqual(len([*bucket.objects.filter(Prefix=file_name)]), 0)
+        else:
+            with self.assertRaises(botocore.exceptions.ClientError, msg=msg):
+                bucket.Object(file_name).content_length

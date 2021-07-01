@@ -314,12 +314,15 @@ const reuploadDataset = async function ({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
     method: "PUT",
   });
 
   const result = await response.json();
   if (!response.ok) throw result;
+
+  return result.dataset_uuid;
 };
 
 export function useReuploadDataset(collectionId: string) {

@@ -113,6 +113,7 @@ Once all conversion are compelete, the conversion status for each file will be e
 
 import logging
 import os
+import requests
 import subprocess
 import typing
 from os.path import join
@@ -121,6 +122,7 @@ import numpy
 import scanpy
 import sys
 
+from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
@@ -134,6 +136,8 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.dataset_processing.download import download
+from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.corpora.dataset_processing.slack import format_slack_message
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -208,7 +212,6 @@ def cancel_dataset(dataset_id):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         dataset.asset_deletion()
-        dataset.delete_explorer_cxg_object_from_s3()
         dataset.delete()
         logger.info("Upload Canceled.")
 
@@ -329,19 +332,20 @@ def make_seurat(local_filename):
 
 
 def make_cxg(local_filename):
-    cxg_dir = local_filename.replace(".h5ad", ".cxg")
+    """
+    Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
+    """
+
+    cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        subprocess.run(
-            ["cellxgene", "convert", "-o", cxg_dir, "-s", "10.0", local_filename],
-            capture_output=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as ex:
-        msg = f"CXG conversion failed: {ex.output} {ex.stderr}"
+        h5ad_data_file = H5ADDataFile(local_filename)
+        h5ad_data_file.to_cxg(cxg_output_container, 10.0)
+    except Exception as ex:
+        msg = "CXG conversion failed."
         logger.exception(msg)
         raise RuntimeError(msg) from ex
 
-    return cxg_dir
+    return cxg_output_container
 
 
 def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
@@ -500,7 +504,17 @@ def main():
         )
         return_value = 1
 
+    if return_value > 0:
+        notify_slack_failure(dataset_id)
     return return_value
+
+
+def notify_slack_failure(dataset_id):
+    data = format_slack_message(dataset_id)
+    logger.info(data)
+    if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        slack_webhook = CorporaConfig().slack_webhook
+        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 if __name__ == "__main__":

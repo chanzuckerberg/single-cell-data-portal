@@ -57,7 +57,7 @@ const DatasetTab: FC<Props> = ({
     return (newFile: UploadingFile) => {
       if (!newFile.link) return;
 
-      const payload = JSON.stringify({ url: newFile.link, uuid: originalId });
+      const payload = JSON.stringify({ id: originalId, url: newFile.link });
       mutationFunction(
         { collectionId: collectionId, payload },
         {

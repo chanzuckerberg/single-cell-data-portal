@@ -79,7 +79,7 @@ jobs:
             ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
-          aws create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
+          aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -121,3 +121,11 @@ jobs:
           state: failure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: 'here'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'

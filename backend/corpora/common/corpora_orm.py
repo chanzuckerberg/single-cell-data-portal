@@ -272,6 +272,7 @@ class DbDatasetArtifact(Base, AuditMixin):
     """
 
     __tablename__ = "dataset_artifact"
+    __mapper_args__ = {"confirm_deleted_rows": False}
 
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)

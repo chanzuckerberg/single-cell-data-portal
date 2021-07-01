@@ -1,4 +1,5 @@
 import os
+import typing
 
 from backend.corpora.api_server.app import app
 from backend.corpora.common.corpora_config import CorporaAuthConfig
@@ -21,27 +22,30 @@ class BaseAPITest(DataPortalTestCase):
             self.app = app.test_client(use_cookies=False)
 
     @staticmethod
-    def remove_timestamps(body: dict) -> dict:
+    def remove_timestamps(body: dict, remove: typing.List[str] = None) -> dict:
         """
         A helper function to remove timestamps from the response body.
         :param body: The decoded json response body
+        :param remove: Additional attributes to remove.
         :return: The decode json response body with timestamps removed.
         """
+        defaults = ["created_at", "updated_at"]
+        remove_attributes = remove + defaults if remove else defaults
 
-        def _remove_timestamps(jrb):
+        def _remove_timestamps(jrb, removing):
             if not isinstance(jrb, dict):
                 return
-            jrb.pop("created_at", None)
-            jrb.pop("updated_at", None)
+            for rm in removing:
+                jrb.pop(rm, None)
             for value in jrb.values():
                 if isinstance(value, dict):
-                    _remove_timestamps(value)
+                    _remove_timestamps(value, removing)
                 elif isinstance(value, list):
                     for list_value in value:
-                        _remove_timestamps(list_value)
+                        _remove_timestamps(list_value, removing)
             return jrb
 
-        return _remove_timestamps(body)
+        return _remove_timestamps(body, remove_attributes)
 
 
 class BaseAuthAPITest(BaseAPITest):

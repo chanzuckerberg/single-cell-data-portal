@@ -152,7 +152,7 @@ class Collection(Entity):
                 dataset["dataset_deployments"].append({"url": explorer_url})
             dataset["dataset_assets"] = dataset.pop("artifacts")
             if dataset.get("tombstone"):
-                if tombstoned_datasets:
+                if tombstoned_datasets and not dataset["published"]:
                     datasets.append(dataset)
                 else:
                     continue
@@ -170,7 +170,8 @@ class Collection(Entity):
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         if public_collection:
             public_collection.update(
-                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True)
+                commit=False,
+                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
         else:
             public_collection = Collection(
@@ -182,12 +183,12 @@ class Collection(Entity):
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
         for dataset in self.datasets:
-            if dataset.original_id:
-                "skip modified datasets"
-                continue  # TODO: expand to support tombstone and refresh corpora-data-portal/1177
+            revision = Dataset(dataset)
+            original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
+            if original and public_collection.check_has_dataset(original):
+                original.publish_revision(revision)
             else:
-                dataset.collection_visibility = CollectionVisibility.PUBLIC
-                dataset.published = True
+                revision.publish_new()
         self.session.commit()
         self.delete()
         self.db_object = public_collection.db_object
@@ -210,13 +211,14 @@ class Collection(Entity):
         return Collection(revision_collection)
 
     def tombstone_collection(self):
-        self.update(tombstone=True)
+        self.update(tombstone=True, commit=False)
         for geneset in self.genesets:
-            Geneset.get(self.session, geneset.id).delete()
+            Geneset.get(self.session, geneset.id).delete(commit=False)
         for dataset in self.datasets:
             ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.asset_deletion()
             ds.tombstone_dataset_and_delete_child_objects()
+        self.session.commit()
 
     def update(self, links: list = None, **kwargs) -> None:
         """
@@ -232,7 +234,6 @@ class Collection(Entity):
             DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
         ]
         self.session.add_all(new_objs)
-        self.session.flush()
 
         super().update(**kwargs)
 
@@ -243,3 +244,7 @@ class Collection(Entity):
                 ds.asset_deletion()
             ds.delete()
         super().delete()
+
+    def check_has_dataset(self, dataset: Dataset) -> bool:
+        """Check that a dataset is part of the collection"""
+        return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
