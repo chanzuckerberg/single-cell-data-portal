@@ -9,6 +9,9 @@ ifeq ($(AWS_ACCESS_KEY_ID),)
 endif
 export DEPLOYMENT_STAGE ?= test
 
+.PHONY: bump
+bump:
+	cz bump --changelogs
 
 .PHONY: fmt
 fmt:
