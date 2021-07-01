@@ -416,6 +416,50 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertEqual(201, response.status_code)
 
+    def test__post_collection_fails_with_extra_fields(self):
+        test_url = furl(path="/dp/v1/collections/")
+        test_data = [
+            {
+                "name": "extra field in collection",
+                "owner": "someone else",
+                "description": "This is a test collection",
+                "contact_name": "person human",
+                "contact_email": "person@human.com",
+                "data_submission_policy_version": "0.0.1",
+                "links": [
+                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                    {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+                ],
+            },
+            {
+                "name": "extra field in link",
+                "description": "This is a test collection",
+                "contact_name": "person human",
+                "contact_email": "person@human.com",
+                "data_submission_policy_version": "0.0.1",
+                "links": [
+                    {
+                        "link_name": "DOI Link",
+                        "link_url": "http://doi.org/10.1017",
+                        "link_type": "DOI",
+                        "collection_id": "1235",
+                    },
+                ],
+            },
+        ]
+        for data in test_data:
+            with self.subTest(data["name"]):
+                response = self.app.post(
+                    test_url.url,
+                    headers={
+                        "host": "localhost",
+                        "Content-Type": "application/json",
+                        "Cookie": get_auth_token(self.app),
+                    },
+                    data=json.dumps(data),
+                )
+                self.assertEqual(400, response.status_code)
+
     def test__post_collection_fails_if_data_missing(self):
         test_url = furl(path="/dp/v1/collections/")
         data = json.dumps({"name": "bkjbjbjmbjm"})
