@@ -5,7 +5,6 @@ import time
 import unittest
 import requests
 from requests import HTTPError
-
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
@@ -89,6 +88,7 @@ class TestApi(unittest.TestCase):
             self.assertIsInstance(collection["id"], str)
             self.assertIsInstance(collection["created_at"], float)
 
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_collection_flow(self):
         # create collection
         data = {
@@ -134,10 +134,10 @@ class TestApi(unittest.TestCase):
             for key in updated_data.keys():
                 self.assertEqual(updated_data[key], data[key])
 
+        self.upload_and_wait(collection_uuid)
+
         # make collection public
         with self.subTest("Test make collection public"):
-            if self.deployment_stage == "prod":
-                self.skipTest("Do not make test collections public in prod")
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
@@ -153,8 +153,6 @@ class TestApi(unittest.TestCase):
             self.assertIn(collection_uuid, public_collection_uuids)
 
         with self.subTest("Test everyone can retrieve a public collection"):
-            if self.deployment_stage == "prod":
-                self.skipTest("Do not make test collections public in prod")
             no_auth_headers = {"Content-Type": "application/json"}
             res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
             data = json.loads(res.content)
@@ -163,8 +161,6 @@ class TestApi(unittest.TestCase):
 
         # cannot delete public collection
         with self.subTest("Test a public collection can not be deleted"):
-            if self.deployment_stage == "prod":
-                self.skipTest("Do not make test collections public in prod")
             res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, requests.codes.not_allowed)
 
@@ -284,7 +280,7 @@ class TestApi(unittest.TestCase):
                     raise TimeoutError(
                         f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
                     )
-                time.sleep(30)
+                time.sleep(10)
 
         with self.subTest("test non owner cant retrieve status"):
             no_auth_headers = {"Content-Type": "application/json"}
@@ -300,3 +296,41 @@ class TestApi(unittest.TestCase):
             # Check that the dataset is gone
             res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
             self.assertEqual(res.status_code, requests.codes.forbidden)
+
+    def upload_and_wait(self, collection_uuid):
+        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        body = {"url": "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0"}
+
+        res = requests.post(
+            f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
+        )
+        res.raise_for_status()
+        dataset_uuid = json.loads(res.content)["dataset_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
+
+        keep_trying = True
+        timer = time.time()
+        while keep_trying:
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+            res.raise_for_status()
+            data = json.loads(res.content)
+            upload_status = data["upload_status"]
+            if upload_status == "UPLOADED":
+                conversion_cxg_status = data["conversion_cxg_status"]
+                conversion_loom_status = data["conversion_loom_status"]
+                conversion_rds_status = data["conversion_rds_status"]
+                conversion_anndata_status = data["conversion_anndata_status"]
+                if (
+                    conversion_cxg_status
+                    == conversion_loom_status
+                    == conversion_rds_status
+                    == conversion_anndata_status
+                    == "CONVERTED"
+                ):
+                    keep_trying = False
+            if time.time() >= timer + 300:
+                raise TimeoutError(
+                    f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                )
+            time.sleep(10)
+        return dataset_uuid
