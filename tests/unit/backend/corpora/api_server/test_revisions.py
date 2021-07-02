@@ -389,7 +389,7 @@ class TestPublishRevision(BaseRevisionTest):
     def test__with_revision_with_all_tombstoned_datasets__409(self):
         """unable to publish a revision with no datasets"""
         for dataset in self.rev_collection.datasets:
-            self.app.delete(f"/dp/v1/datasets/{dataset.id}", self.headers)
+            self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
         response = self.app.post(path, headers=self.headers)
         self.assertEqual(409, response.status_code)
