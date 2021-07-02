@@ -86,6 +86,25 @@ def delete_dataset(dataset_uuid: str, user: str):
 
 
 @dbconnect
+def get_dataset_identifiers(url: str):
+    db_session = g.db_session
+    dataset = Dataset.get_by_explorer_url(db_session, url)
+    if not dataset:
+        raise NotFoundHTTPException()
+    artifact = dataset.get_most_recent_artifact(filetype=DatasetArtifactFileType.CXG)
+    s3_uri = artifact.s3_uri if artifact else None
+
+    dataset_identifiers = {
+        "s3_uri": s3_uri,
+        "dataset_id": dataset.id,
+        "collection_id": dataset.collection_id,
+        "collection_visibility": dataset.collection_visibility,
+        "tombstoned": dataset.tombstone,
+    }
+    return make_response(jsonify(dataset_identifiers), 200)
+
+
+@dbconnect
 def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
