@@ -6,7 +6,6 @@ import React, { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
-  REVISION_STATUS,
   useCollection,
   useCreateRevision,
 } from "src/common/queries/collections";
@@ -24,7 +23,7 @@ interface Props {
   id: string;
   accessType?: ACCESS_TYPE;
   visibility: VISIBILITY_TYPE;
-  revisionStatus?: REVISION_STATUS;
+  revisionsEnabled?: boolean;
 }
 
 const AsyncPopover = loadable(
@@ -54,7 +53,7 @@ const CollectionRow: FC<Props> = (props) => {
   const [mutate] = useCreateRevision(navigateToRevision);
 
   const handleRevisionClick = () => {
-    if (props.revisionStatus === REVISION_STATUS.NOT_STARTED) {
+    if (collection?.is_revision === false) {
       mutate(id);
     } else {
       navigateToRevision();
@@ -101,7 +100,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionStatus === REVISION_STATUS.STARTED && (
+            {props.revisionsEnabled && collection.is_revision && (
               <Tag minimal intent={Intent.PRIMARY}>
                 Revision Pending
               </Tag>
@@ -114,9 +113,9 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(disease)}
       {conditionalPopover(organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-      {props.revisionStatus !== REVISION_STATUS.DISABLED && !isPrivate ? (
+      {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          revisionStatus={props.revisionStatus}
+          isRevision={collection.is_revision}
           handleRevisionClick={handleRevisionClick}
         />
       ) : (
@@ -127,18 +126,16 @@ const CollectionRow: FC<Props> = (props) => {
 };
 
 const RevisionCell = ({
-  revisionStatus,
+  isRevision,
   handleRevisionClick,
 }: {
-  revisionStatus?: REVISION_STATUS;
+  isRevision?: boolean;
   handleRevisionClick: () => void;
 }) => {
   return (
     <RightAlignedDetailsCell>
       <Button intent={Intent.PRIMARY} minimal onClick={handleRevisionClick}>
-        {revisionStatus === REVISION_STATUS.STARTED
-          ? "Continue"
-          : "Start Revision"}
+        {isRevision ? "Continue" : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
   );

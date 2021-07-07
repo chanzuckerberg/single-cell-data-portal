@@ -9,14 +9,10 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import {
-  RevisionResponse,
-  REVISION_STATUS,
   useCollection,
-  useCollections,
   useCollectionUploadLinks,
   USE_COLLECTION,
 } from "src/common/queries/collections";
-import { generateRevisionMap } from "src/components/Collections/util";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
@@ -65,18 +61,8 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const { data: collections } = useCollections();
   const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
-  let isRevision = false;
-
-  if (revisionsEnabled && isPrivate && collection && collections) {
-    const revisionMap = generateRevisionMap(
-      collections,
-      revisionsEnabled
-    ) as Map<string, RevisionResponse>;
-    isRevision =
-      revisionMap.get(collection.id)?.revision === REVISION_STATUS.STARTED;
-  }
+  const isRevision = revisionsEnabled && !!collection?.is_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
