@@ -79,6 +79,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               required:
                 - name
                 - description
@@ -731,6 +732,7 @@ components:
       type: array
       items:
         type: object
+        additionalProperties: false
         required:
           - link_url
           - link_type
