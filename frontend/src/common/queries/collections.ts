@@ -114,18 +114,15 @@ function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
         // (is this collection a revision)
         if (collections && data) {
           // Set is_revision to true or false
-          queryCache.setQueryData(
-            [USE_COLLECTION, id, visibility],
-            (oldData: Collection | undefined) => {
-              const newData = oldData || ({} as Collection);
-              if (visibility === VISIBILITY_TYPE.PUBLIC) {
-                const collectionsWithID = collections.get(data.id);
-                newData.is_revision =
-                  !!collectionsWithID && collectionsWithID.size > 1;
-              }
-              return newData;
+          queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
+            const newData = data;
+            if (visibility === VISIBILITY_TYPE.PUBLIC) {
+              const collectionsWithID = collections.get(data.id);
+              newData.is_revision =
+                !!collectionsWithID && collectionsWithID.size > 1;
             }
-          );
+            return newData;
+          });
         }
       },
     }
