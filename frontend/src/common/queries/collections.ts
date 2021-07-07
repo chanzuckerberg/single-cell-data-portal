@@ -159,16 +159,24 @@ function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
                     newData[collectionKey];
                 }
               }
+              if (revisionChange) {
+                newData.revision_diff = true;
+                return newData;
+              }
               publishedCollection.datasets.forEach((publishedDataset) => {
-                if (revisionChange) return newData;
-                let datasetKey = "" as keyof Dataset;
-                for (datasetKey in publishedDataset) {
-                  if (
-                    revisionChange &&
-                    ignoredDatasetFields.includes(datasetKey)
-                  ) {
-                    revisionChange =
-                      publishedDataset[datasetKey] !== newDataset[datasetKey];
+                if (!revisionChange) {
+                  const newDataset =
+                    newData.datasets.get(publishedDataset.id) ||
+                    ({} as Dataset);
+                  let datasetKey = "" as keyof Dataset;
+                  for (datasetKey in publishedDataset) {
+                    if (
+                      !revisionChange &&
+                      ignoredDatasetFields.includes(datasetKey)
+                    ) {
+                      revisionChange =
+                        publishedDataset[datasetKey] !== newDataset[datasetKey];
+                    }
                   }
                 }
               });
