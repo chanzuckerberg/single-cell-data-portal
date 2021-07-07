@@ -57,7 +57,7 @@ export interface Collection {
   name: string;
   owner: string;
   visibility: VISIBILITY_TYPE;
-  datasets: Dataset[];
+  datasets: Map<Dataset["id"], Dataset>;
   links: Link[];
   data_submission_policy_version: string;
   obfuscated_uuid: string;

@@ -92,13 +92,18 @@ async function fetchCollection(
       : baseUrl;
 
   const response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
-  const result = await response.json();
+  const json = await response.json();
 
   if (!response.ok) {
-    throw result;
+    throw json;
   }
 
-  return result;
+  const datasetMap = new Map() as Collection["datasets"];
+  for (const dataset of json.datasets) {
+    datasetMap.set(dataset.id, dataset);
+  }
+
+  return { ...json, datasets: datasetMap };
 }
 
 const ignoredCollectionFields = [
