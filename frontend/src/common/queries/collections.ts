@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryCache } from "react-query";
-import { Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -101,6 +101,20 @@ async function fetchCollection(
   return result;
 }
 
+const ignoredCollectionFields = [
+  "visibility",
+  "created_at",
+  "updated_at",
+  "is_revision",
+  "revision_diff",
+] as Array<keyof Collection>;
+const ignoredDatasetFields = [
+  "created_at",
+  "updated_at",
+  "collection_visibility",
+  "original_uuid",
+] as Array<keyof Dataset>;
+
 function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
   const { data: collections } = useCollections();
   const queryCache = useQueryCache();
@@ -110,17 +124,51 @@ function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
     fetchCollection,
     {
       onSuccess: (data) => {
-        // Check if there are multiple collections with this ID and that this collection is private\
-        // (is this collection a revision)
+        // Check if there are multiple collections with this ID
         if (collections && data) {
           // Set is_revision to true or false
           queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
             const newData = data;
-            if (visibility === VISIBILITY_TYPE.PUBLIC) {
-              const collectionsWithID = collections.get(data.id);
-              newData.is_revision =
-                !!collectionsWithID && collectionsWithID.size > 1;
+            const collectionsWithID = collections.get(data.id);
+            if (!collectionsWithID) return newData;
+            newData.is_revision = collectionsWithID.size > 1;
+            if (newData.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+              const publishedCollection = queryCache.getQueryData([
+                USE_COLLECTION,
+                id,
+                visibility,
+                VISIBILITY_TYPE.PUBLIC,
+              ]) as Collection;
+              if (!publishCollection) return newData;
+              let revisionChange = false;
+
+              // For some reason key would be typed as "string" if I didn't explicitly type it here
+              let collectionKey = "" as keyof Collection;
+              for (collectionKey in publishedCollection) {
+                if (
+                  !revisionChange &&
+                  !ignoredCollectionFields.includes(collectionKey)
+                ) {
+                  revisionChange =
+                    publishedCollection[collectionKey] !==
+                    newData[collectionKey];
+                }
+              }
+              publishedCollection.datasets.forEach((publishedDataset) => {
+                if (revisionChange) return newData;
+                let datasetKey = "" as keyof Dataset;
+                for (datasetKey in publishedDataset) {
+                  if (
+                    revisionChange &&
+                    ignoredDatasetFields.includes(datasetKey)
+                  ) {
+                    revisionChange =
+                      publishedDataset[datasetKey] !== newDataset[datasetKey];
+                  }
+                }
+              });
             }
+
             return newData;
           });
         }
