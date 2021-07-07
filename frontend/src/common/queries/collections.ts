@@ -100,7 +100,8 @@ async function fetchCollection(
 
   const datasetMap = new Map() as Collection["datasets"];
   for (const dataset of json.datasets) {
-    datasetMap.set(dataset.id, dataset);
+    if (dataset.original_uuid) datasetMap.set(dataset.uuid, dataset);
+    else datasetMap.set(dataset.id, dataset);
   }
 
   return { ...json, datasets: datasetMap };
@@ -118,6 +119,7 @@ const ignoredDatasetFields = [
   "updated_at",
   "collection_visibility",
   "original_uuid",
+  "id",
 ] as Array<keyof Dataset>;
 
 function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {

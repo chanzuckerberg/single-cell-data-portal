@@ -64,6 +64,7 @@ export interface Collection {
   created_at: number;
   updated_at: number;
   is_revision: boolean;
+  revision_diff: boolean;
 }
 
 export type Ontology = {
