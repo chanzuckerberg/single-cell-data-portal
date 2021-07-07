@@ -55,8 +55,13 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         super().tearDown()
         self.bucket.objects.all().delete()
         self.cellxgene_bucket.objects.all().delete()
-        self.cellxgene_bucket.delete()
-        self.bucket.delete()
+        try:
+            self.cellxgene_bucket.delete()
+            self.bucket.delete()
+        except Exception as e:
+            import pdb
+            pdb.set_trace()
+            print(e)
         if not os.getenv("BOTO_ENDPOINT_URL"):
             self.s3_mock.stop()
 

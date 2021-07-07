@@ -5,9 +5,8 @@ import json
 import logging
 import os
 
-import flask
 from connexion import FlaskApi, ProblemException, problem
-from flask import g
+from flask import g, Response
 from flask_cors import CORS
 from urllib.parse import urlparse
 

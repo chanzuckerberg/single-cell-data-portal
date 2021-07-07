@@ -441,7 +441,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: corpora.lambdas.api.v1.dataset.get_dataset_identifiers
+      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_identifiers
       parameters:
         - in: query
           required: true

@@ -1,4 +1,7 @@
 import os
+
+import typing
+
 from backend.corpora.api_server.app import app
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
