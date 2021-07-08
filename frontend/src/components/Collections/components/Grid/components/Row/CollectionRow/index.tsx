@@ -67,8 +67,8 @@ const CollectionRow: FC<Props> = (props) => {
     return null;
   }
 
-  const { id, visibility, name, datasets } = collection;
-
+  const { id, visibility, name } = collection;
+  const datasets = Array.from(collection.datasets.values());
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
   const {

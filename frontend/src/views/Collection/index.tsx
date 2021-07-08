@@ -97,7 +97,7 @@ const Collection: FC = () => {
     );
   };
 
-  let datasets = collection.datasets;
+  let datasets = Array.from(collection.datasets.values());
 
   // Filter out tombstoned datasets if we're not looking at revision
   if (!isRevision) datasets = datasets.filter((dataset) => !dataset.tombstone);

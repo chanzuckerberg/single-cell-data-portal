@@ -96,7 +96,7 @@ export function renderContact(
   );
 }
 
-export function getIsPublishable(datasets: Collection["datasets"]) {
+export function getIsPublishable(datasets: Array<Dataset>) {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {
