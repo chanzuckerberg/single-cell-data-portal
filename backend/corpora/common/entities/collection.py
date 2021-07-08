@@ -190,7 +190,9 @@ class Collection(Entity):
             else:
                 revision.publish_new()
         self.session.commit()
-        self.delete()
+        # commit expires the session, need to retrieve the original private collection to delete it
+        private_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PRIVATE)
+        private_collection.delete()
         self.db_object = public_collection.db_object
 
     def revision(self) -> "Collection":

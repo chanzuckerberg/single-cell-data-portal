@@ -86,9 +86,11 @@ def get_collection_dataset(dataset_uuid: str):
     raise NotImplementedError
 
 
-
 @dbconnect
-def delete_collection(collection_uuid: str, user: str):
+def delete_collection(collection_uuid: str, visibility: str, user: str):
+    if visibility != CollectionVisibility.PRIVATE.name:
+        # Only allowed to delete private collections
+        return "", 405
     db_session = g.db_session
     priv_collection = Collection.get_collection(
         db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user, include_tombstones=True

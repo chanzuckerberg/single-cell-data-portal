@@ -1,5 +1,4 @@
 import os
-import sys
 import typing
 
 from backend.corpora.api_server.app import app

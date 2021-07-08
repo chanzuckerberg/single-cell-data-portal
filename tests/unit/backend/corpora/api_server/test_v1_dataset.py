@@ -258,7 +258,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
 
             response = self.app.get(test_url_public, headers)
-            response.raise_for_status()
+            self.assertEqual(response.status_code, 200)
 
             expected_identifiers = {
                 "s3_uri": test_uri_0,
@@ -268,7 +268,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 "tombstoned": False,
             }
 
-            self.assertEqual(json.loads(response.body), expected_identifiers)
+            self.assertEqual(json.loads(response.data), expected_identifiers)
 
         with self.subTest("dataset is private"):
             test_uri_1 = "some_uri_1"
@@ -292,8 +292,9 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             }
 
             response = self.app.get(test_url_private, headers)
-            response.raise_for_status()
-            self.assertEqual(json.loads(response.body), expected_identifiers)
+            self.assertEqual(response.status_code, 200)
+
+            self.assertEqual(json.loads(response.data), expected_identifiers)
 
         with self.subTest("dataset does not have an associated cxg artifact"):
             dataset_without_artifacts = self.generate_dataset(
@@ -309,16 +310,16 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             }
 
             response = self.app.get(test_url_no_cxg_artifact, headers)
-            response.raise_for_status()
-            self.assertEqual(json.loads(response.body), expected_identifiers)
+            self.assertEqual(response.status_code, 200)
+
+            self.assertEqual(json.loads(response.data), expected_identifiers)
 
     def test__dataset_meta__404(self):
         headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url_404 = "/dp/v1/datasets/meta?url=not_real"
 
         response = self.app.get(test_url_404, headers)
-        with self.assertRaises(HTTPError):
-            response.raise_for_status()
+        self.assertEqual(response.status_code, 404)
 
 
 class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
