@@ -1,4 +1,3 @@
-# Chalice dockerfile
 FROM ubuntu:focal-20210119
 
 ENV APP_NAME=corpora-api
@@ -17,25 +16,16 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /corpora-data-portal
 ADD requirements.txt /corpora-data-portal/requirements.txt
-ADD backend/chalice/api_server/requirements.txt /corpora-data-portal/requirements-api.txt
+ADD backend/corpora/api_server/requirements.txt /corpora-data-portal/requirements-api.txt
 RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && cat requirements-api.txt >> reqs.txt \
     && python3 -m pip install -r reqs.txt
+EXPOSE 5000
 
 # Install utilities to /corpora-data-portal so we can run db migrations.
 ADD tests /corpora-data-portal/tests
 ADD scripts /corpora-data-portal/scripts
 ADD backend /corpora-data-portal/backend
-
-# Add our api server code as a chalice package in /chalice.
-# NOTE: we're relying on .dockerignore to exclude some files
-WORKDIR /chalice
-ADD backend/chalice/api_server /chalice
-RUN mv .chalice/config.json.dev .chalice/config.json
-
-RUN mkdir -p chalicelib config vendor
-ADD backend/corpora chalicelib/corpora
-ADD backend/config/corpora-api.yml chalicelib/config/corpora-api.yml
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -44,4 +34,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "/chalice/run_local_server.py"]
+CMD gunicorn --worker-class gevent --workers 8 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 30 --keep-alive 5 --log-level info

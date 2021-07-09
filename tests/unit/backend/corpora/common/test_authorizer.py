@@ -3,10 +3,10 @@ import os
 import unittest
 
 import requests
-from chalice import UnauthorizedError
 
 from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws import AwsSecret
+from backend.corpora.common.utils.exceptions import UnauthorizedError
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 
@@ -22,6 +22,7 @@ These test may start failing if the monthly allowance of Auth0 machine to machin
 class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         secret_name = "corpora/cicd/test/auth0-secret"  # using the same secret for all non production stages.
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"

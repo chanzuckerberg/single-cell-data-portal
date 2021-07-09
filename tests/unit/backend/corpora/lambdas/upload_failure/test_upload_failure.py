@@ -11,6 +11,7 @@ from backend.corpora.common.utils.aws import delete_many_from_s3
 
 class TestUploadFailureHandling(TestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.tmp_dir = tempfile.mkdtemp()
         self.h5ad_filename = pathlib.Path(self.tmp_dir, "test.h5ad")
         self.seurat_filename = pathlib.Path(self.tmp_dir, "test.rds")
@@ -57,6 +58,7 @@ class TestUploadFailureHandling(TestCase):
         if not os.getenv("BOTO_ENDPOINT_URL"):
             self.mock.stop()
         shutil.rmtree(self.tmp_dir)
+        super().tearDown()
 
     def test_delete_from_s3_deletes_all_files(self):
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)

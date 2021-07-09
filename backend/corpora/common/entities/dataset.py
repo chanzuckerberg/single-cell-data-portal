@@ -19,8 +19,8 @@ from ..corpora_orm import (
     generate_uuid,
     DatasetArtifactFileType,
 )
+from ..utils.db_helpers import clone
 from ..utils.s3_buckets import cxg_bucket
-from ..utils.db_session import clone
 
 logger = logging.getLogger(__name__)
 

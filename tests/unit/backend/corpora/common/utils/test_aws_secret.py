@@ -16,6 +16,7 @@ class TestAwsSecret(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
         cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
         cls.patcher = patch("backend.corpora.common.utils.aws.boto3.client")
@@ -25,6 +26,7 @@ class TestAwsSecret(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.patcher.stop()
+        super().tearDownClass()
 
     def test_init_of_unknown_secret_does_not_set_secret_metadata(self):
         secret = AwsSecret(name=self.UNKNOWN_SECRET)

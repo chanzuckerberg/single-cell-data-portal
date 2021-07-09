@@ -4,4 +4,3 @@ extend-ignore =
     # See https://github.com/PyCQA/pycodestyle/issues/373
     E203,
     E402
-exclude = backend/chalice/api_server/vendor*,backend/chalice/upload_failures/chalicelib,backend/chalice/upload_failures/vendor*
