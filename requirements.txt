@@ -21,3 +21,4 @@ tiledb<0.9
 click==7.1.2
 -r ./backend/corpora/api_server/requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
+networkx>=2.6 # not directly required, pinned by Snyk to avoid a vulnerability
