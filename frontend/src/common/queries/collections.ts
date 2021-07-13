@@ -113,6 +113,8 @@ const IGNORED_COLLECTION_FIELDS = [
   "updated_at",
   "is_revision",
   "revision_diff",
+  "datasets",
+  "genesets",
 ] as Array<keyof Collection>;
 const IGNORED_DATASET_FIELDS = [
   "created_at",
