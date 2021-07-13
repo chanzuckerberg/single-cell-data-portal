@@ -10,16 +10,17 @@ import DeleteCollection from "src/components/Collections/components/DeleteCollec
 import CreateCollection from "src/components/CreateCollectionModal";
 import styled from "styled-components";
 
-const DeleteButton = (
-  props: Partial<IMenuItemProps> & { isRevision: boolean }
-) => {
+const DeleteButton = ({
+  isRevision,
+  ...props
+}: Partial<IMenuItemProps> & { isRevision: boolean }) => {
   return (
     <MenuItem
       {...props}
       shouldDismissPopover={false}
       icon={IconNames.TRASH}
       intent={Intent.DANGER}
-      text={props.isRevision ? "Cancel Revision" : "Delete Collection"}
+      text={isRevision ? "Cancel Revision" : "Delete Collection"}
     />
   );
 };
