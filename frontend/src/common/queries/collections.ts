@@ -107,20 +107,54 @@ async function fetchCollection(
   return { ...json, datasets: datasetMap };
 }
 
-const ignoredCollectionFields = [
+const IGNORED_COLLECTION_FIELDS = [
   "visibility",
   "created_at",
   "updated_at",
   "is_revision",
   "revision_diff",
 ] as Array<keyof Collection>;
-const ignoredDatasetFields = [
+const IGNORED_DATASET_FIELDS = [
   "created_at",
   "updated_at",
   "collection_visibility",
   "original_uuid",
   "id",
 ] as Array<keyof Dataset>;
+
+async function checkForRevisionChange(
+  revision: Collection,
+  publishedCollection: Collection
+) {
+  // Check collection fields for differences
+  let collectionKey = "" as keyof Collection;
+  for (collectionKey in publishedCollection) {
+    if (
+      !IGNORED_COLLECTION_FIELDS.includes(collectionKey) &&
+      publishedCollection[collectionKey] !== revision[collectionKey]
+    )
+      return true;
+  }
+
+  // Check dataset fields for differences
+  if (publishedCollection.datasets) {
+    Array.from(publishedCollection.datasets.values()).forEach(
+      (publishedDataset) => {
+        const newDataset =
+          revision.datasets.get(publishedDataset.id) || ({} as Dataset);
+        let datasetKey = "" as keyof Dataset;
+        for (datasetKey in publishedDataset) {
+          if (
+            !IGNORED_DATASET_FIELDS.includes(datasetKey) &&
+            publishedDataset[datasetKey] !== newDataset[datasetKey]
+          )
+            return true;
+        }
+      }
+    );
+  }
+  return false;
+}
 
 function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
   const { data: collections } = useCollections();
@@ -131,61 +165,37 @@ function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
     fetchCollection,
     {
       onSuccess: (data) => {
-        // Check if there are multiple collections with this ID
         if (collections && data) {
-          // Set is_revision to true or false
-          queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
-            const newData = data;
-            const collectionsWithID = collections.get(data.id);
-            if (!collectionsWithID) return newData;
-            newData.is_revision = collectionsWithID.size > 1;
-            if (newData.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
-              const publishedCollection = queryCache.getQueryData([
-                USE_COLLECTION,
-                id,
-                visibility,
-                VISIBILITY_TYPE.PUBLIC,
-              ]) as Collection;
-              if (!publishCollection) return newData;
-              let revisionChange = false;
+          queryCache.setQueryData(
+            [USE_COLLECTION, id, visibility],
+            async () => {
+              const newData = data;
+              const collectionsWithID = collections.get(data.id);
+              if (!collectionsWithID) return newData;
+              newData.is_revision = collectionsWithID.size > 1;
 
-              // For some reason key would be typed as "string" if I didn't explicitly type it here
-              let collectionKey = "" as keyof Collection;
-              for (collectionKey in publishedCollection) {
-                if (
-                  !revisionChange &&
-                  !ignoredCollectionFields.includes(collectionKey)
-                ) {
-                  revisionChange =
-                    publishedCollection[collectionKey] !==
-                    newData[collectionKey];
+              // check for diffs between revision and published collection
+              if (
+                newData.is_revision &&
+                visibility === VISIBILITY_TYPE.PRIVATE
+              ) {
+                const publishedCollection = await queryCache.prefetchQuery(
+                  [USE_COLLECTION, newData.id, VISIBILITY_TYPE.PUBLIC, "FETCH"],
+                  fetchCollection
+                );
+                if (!publishedCollection) {
+                  throw Error("No published collection found");
                 }
+
+                newData.revision_diff = await checkForRevisionChange(
+                  newData,
+                  publishedCollection
+                );
               }
-              if (revisionChange) {
-                newData.revision_diff = true;
-                return newData;
-              }
-              publishedCollection.datasets.forEach((publishedDataset) => {
-                if (!revisionChange) {
-                  const newDataset =
-                    newData.datasets.get(publishedDataset.id) ||
-                    ({} as Dataset);
-                  let datasetKey = "" as keyof Dataset;
-                  for (datasetKey in publishedDataset) {
-                    if (
-                      !revisionChange &&
-                      ignoredDatasetFields.includes(datasetKey)
-                    ) {
-                      revisionChange =
-                        publishedDataset[datasetKey] !== newDataset[datasetKey];
-                    }
-                  }
-                }
-              });
+
+              return newData;
             }
-
-            return newData;
-          });
+          );
         }
       },
     }
