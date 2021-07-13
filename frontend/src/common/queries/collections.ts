@@ -124,7 +124,7 @@ const IGNORED_DATASET_FIELDS = [
   "id",
 ] as Array<keyof Dataset>;
 
-async function checkForRevisionChange(
+function checkForRevisionChange(
   revision: Collection,
   publishedCollection: Collection
 ) {
@@ -168,36 +168,32 @@ function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
     {
       onSuccess: (data) => {
         if (collections && data) {
-          queryCache.setQueryData(
-            [USE_COLLECTION, id, visibility],
-            async () => {
-              const newData = data;
-              const collectionsWithID = collections.get(data.id);
-              if (!collectionsWithID) return newData;
-              newData.is_revision = collectionsWithID.size > 1;
+          queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
+            const newData = data;
+            const collectionsWithID = collections.get(data.id);
+            if (!collectionsWithID) return newData;
+            newData.is_revision = collectionsWithID.size > 1;
 
-              // check for diffs between revision and published collection
-              if (
-                newData.is_revision &&
-                visibility === VISIBILITY_TYPE.PRIVATE
-              ) {
-                const publishedCollection = await queryCache.prefetchQuery(
-                  [USE_COLLECTION, newData.id, VISIBILITY_TYPE.PUBLIC, "FETCH"],
+            // check for diffs between revision and published collection
+            if (newData.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+              queryCache
+                .prefetchQuery(
+                  [USE_COLLECTION, newData.id, VISIBILITY_TYPE.PUBLIC],
                   fetchCollection
-                );
-                if (!publishedCollection) {
-                  throw Error("No published collection found");
-                }
+                )
+                .then((publishedCollection) => {
+                  if (!publishedCollection) {
+                    throw Error("No published collection found");
+                  }
 
-                newData.revision_diff = await checkForRevisionChange(
-                  newData,
-                  publishedCollection
-                );
-              }
-
-              return newData;
+                  newData.revision_diff = checkForRevisionChange(
+                    newData,
+                    publishedCollection
+                  );
+                });
             }
-          );
+            return newData;
+          });
         }
       },
     }
@@ -209,7 +205,7 @@ export function useCollection({
   visibility = VISIBILITY_TYPE.PUBLIC,
 }) {
   useCollectionFetch({ id, visibility });
-  return useQuery<Collection | null>([USE_COLLECTION, id, visibility, "FETCH"]);
+  return useQuery<Collection>([USE_COLLECTION, id, visibility]);
 }
 
 export async function createCollection(payload: string): Promise<string> {
@@ -373,14 +369,15 @@ const editCollection = async function ({
   return result;
 };
 
-export function useEditCollection() {
+export function useEditCollection(oldCollection: Collection) {
   const queryCache = useQueryCache();
 
   return useMutation(editCollection, {
     onSuccess: (collection: Collection) => {
+      console.log({ ...oldCollection, ...collection });
       return queryCache.setQueryData(
         [USE_COLLECTION, collection.id, collection.visibility],
-        collection
+        { ...oldCollection, ...collection }
       );
     },
   });

@@ -74,13 +74,14 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const [mutateCreateCollection] = useCreateCollection();
-  const [mutateEditCollection] = useEditCollection();
-
   const { data } = useCollection({
     id: props.id,
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
+
+  const [mutateCreateCollection] = useCreateCollection();
+  const [mutateEditCollection] = useEditCollection(data ?? ({} as Collection));
+
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
