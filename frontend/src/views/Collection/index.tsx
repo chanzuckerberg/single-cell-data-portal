@@ -115,6 +115,9 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
+  if (collection.revision_diff)
+    console.log("THERE IS A DIFF BETWEEN PUBLISHED COLLECTION AND REVISION");
+
   return (
     <>
       <Head>
