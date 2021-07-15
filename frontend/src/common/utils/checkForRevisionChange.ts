@@ -1,4 +1,6 @@
-import { isEqual } from "lodash";
+import isEmpty from "lodash/isEmpty";
+import isEqual from "lodash/isEqual";
+import xorWith from "lodash/xorWith";
 import { Collection, Dataset } from "../entities";
 
 const IGNORED_COLLECTION_FIELDS = [
@@ -18,33 +20,22 @@ const IGNORED_DATASET_FIELDS = [
   "original_uuid",
   "id",
   "processing_status",
-  "dataset_assets",
 ] as Array<keyof Dataset>;
 
 function checkListForChanges(
   revisedList: Array<unknown>,
   publishedList: Array<unknown>
-) {
-  if (!revisedList || publishedList.length !== revisedList.length) {
-    return true;
-  }
-  if (publishedList.length > 0 && publishedList[0] instanceof Object) {
-    for (let index = 0; index < publishedList.length; index++) {
-      const publishedObj = publishedList[index] as Record<string, unknown>;
-      if (!isEqual(publishedObj, revisedList[index])) {
-        return true;
-      }
-    }
-  }
+): boolean {
+  return !isEmpty(xorWith(revisedList, publishedList, isEqual));
 }
 
 function checkDatasetsForChanges(
   revisedDatasets: Map<Dataset["id"], Dataset>,
   publishedDatasets: Map<Dataset["id"], Dataset>
-) {
+): boolean {
   if (publishedDatasets.size !== revisedDatasets.size) return true;
   // Check dataset fields for differences
-  Array.from(publishedDatasets.values()).forEach((publishedDataset) => {
+  return Array.from(publishedDatasets.values()).some((publishedDataset) => {
     const revisedDataset =
       revisedDatasets.get(publishedDataset.id) || ({} as Dataset);
     let datasetKey = "" as keyof Dataset;
@@ -74,6 +65,7 @@ function checkDatasetsForChanges(
         return true;
       }
     }
+    return false;
   });
 }
 
@@ -99,8 +91,10 @@ export default function checkForRevisionChange(
     }
   });
 
-  if (checkDatasetsForChanges(revision.datasets, publishedCollection.datasets))
+  if (
+    checkDatasetsForChanges(revision.datasets, publishedCollection.datasets)
+  ) {
     return true;
-
+  }
   return false;
 }

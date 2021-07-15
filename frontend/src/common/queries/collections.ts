@@ -80,10 +80,12 @@ async function fetchCollection(
   _: unknown,
   id: string,
   visibility: VISIBILITY_TYPE
-): Promise<Collection | null> {
+): Promise<Map<VISIBILITY_TYPE, Collection> | null> {
   if (!id) {
     return null;
   }
+
+  const collections = new Map<VISIBILITY_TYPE, Collection>();
 
   const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
@@ -92,54 +94,61 @@ async function fetchCollection(
       ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
       : baseUrl;
 
-  const response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
-  const json = await response.json();
+  let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
+  let json = await response.json();
 
   if (!response.ok) {
     throw json;
   }
 
-  const datasetMap = new Map() as Collection["datasets"];
+  let datasetMap = new Map() as Collection["datasets"];
   for (const dataset of json.datasets) {
     datasetMap.set(dataset.original_id || dataset.id, dataset);
   }
 
-  return { ...json, datasets: datasetMap };
+  collections.set(visibility, { ...json, datasets: datasetMap });
+  if (visibility === VISIBILITY_TYPE.PRIVATE) {
+    response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
+    json = await response.json();
+
+    if (!response.ok) {
+      throw json;
+    }
+    datasetMap = new Map() as Collection["datasets"];
+    for (const dataset of json.datasets) {
+      datasetMap.set(dataset.original_id || dataset.id, dataset);
+    }
+
+    collections.set(VISIBILITY_TYPE.PUBLIC, { ...json, datasets: datasetMap });
+  }
+
+  return collections;
 }
 
 function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
   const { data: collections } = useCollections();
   const queryCache = useQueryCache();
-
-  return useQuery<Collection | null>(
+  return useQuery<Map<VISIBILITY_TYPE, Collection> | null>(
     [USE_COLLECTION, id, visibility, "FETCH"],
     fetchCollection,
     {
       onSuccess: (data) => {
         if (collections && data) {
           queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
-            const newData = data;
-            const collectionsWithID = collections.get(data.id);
+            const newData = data.get(visibility) || ({} as Collection);
+            const collectionsWithID = collections.get(newData.id);
             if (!collectionsWithID) return newData;
             newData.is_revision = collectionsWithID.size > 1;
 
             // check for diffs between revision and published collection
             if (newData.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
-              queryCache
-                .prefetchQuery(
-                  [USE_COLLECTION, newData.id, VISIBILITY_TYPE.PUBLIC],
-                  fetchCollection
-                )
-                .then((publishedCollection) => {
-                  if (!publishedCollection) {
-                    throw Error("No published collection found");
-                  }
+              const publishedCollection =
+                data.get(VISIBILITY_TYPE.PUBLIC) || ({} as Collection);
 
-                  newData.revision_diff = checkForRevisionChange(
-                    newData,
-                    publishedCollection
-                  );
-                });
+              newData.revision_diff = checkForRevisionChange(
+                newData,
+                publishedCollection
+              );
             }
             return newData;
           });
@@ -318,15 +327,15 @@ const editCollection = async function ({
   return result;
 };
 
-export function useEditCollection() {
+export function useEditCollection(collectionID: Collection["id"]) {
   const queryCache = useQueryCache();
 
   return useMutation(editCollection, {
-    onSuccess: (collection: Collection) => {
-      return queryCache.invalidateQueries([
+    onSuccess: () => {
+      queryCache.invalidateQueries([
         USE_COLLECTION,
-        collection.id,
-        collection.visibility,
+        collectionID,
+        VISIBILITY_TYPE.PRIVATE,
       ]);
     },
   });

@@ -248,7 +248,7 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    await mutateEditCollection({
+    mutateEditCollection({
       id: props.id ?? "",
       payload: JSON.stringify(payload),
     });
