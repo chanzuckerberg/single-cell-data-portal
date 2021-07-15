@@ -95,6 +95,7 @@ export interface Dataset {
   original_id?: string;
   published?: boolean;
   tombstone?: boolean;
+  collection_visibility: Collection["visibility"];
 }
 
 export enum DATASET_ASSET_FORMAT {

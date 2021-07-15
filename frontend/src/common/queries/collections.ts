@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { useMutation, useQuery, useQueryCache } from "react-query";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
@@ -100,8 +101,7 @@ async function fetchCollection(
 
   const datasetMap = new Map() as Collection["datasets"];
   for (const dataset of json.datasets) {
-    if (dataset.original_uuid) datasetMap.set(dataset.uuid, dataset);
-    else datasetMap.set(dataset.id, dataset);
+    datasetMap.set(dataset.original_id || dataset.id, dataset);
   }
 
   return { ...json, datasets: datasetMap };
@@ -115,6 +115,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "revision_diff",
   "datasets",
   "genesets",
+  "links",
 ] as Array<keyof Collection>;
 const IGNORED_DATASET_FIELDS = [
   "created_at",
@@ -122,6 +123,8 @@ const IGNORED_DATASET_FIELDS = [
   "collection_visibility",
   "original_uuid",
   "id",
+  "processing_status",
+  "dataset_assets",
 ] as Array<keyof Dataset>;
 
 function checkForRevisionChange(
@@ -134,27 +137,93 @@ function checkForRevisionChange(
     if (
       !IGNORED_COLLECTION_FIELDS.includes(collectionKey) &&
       publishedCollection[collectionKey] !== revision[collectionKey]
-    )
+    ) {
+      console.log(
+        "DIFF FOUND",
+        "(",
+        collectionKey,
+        "):",
+        publishedCollection[collectionKey],
+        revision[collectionKey]
+      );
       return true;
+    }
   }
+  if (publishedCollection.links.length !== revision.links.length) return true;
+  //Check links for differences
+  publishedCollection.links.forEach((link, index) => {
+    if (link !== revision.links[index]) {
+      console.log("DIFF FOUND:", link);
+    }
+  });
 
+  if (publishedCollection.datasets.size !== revision.datasets.size) return true;
   // Check dataset fields for differences
-  if (publishedCollection.datasets) {
-    Array.from(publishedCollection.datasets.values()).forEach(
-      (publishedDataset) => {
-        const newDataset =
-          revision.datasets.get(publishedDataset.id) || ({} as Dataset);
-        let datasetKey = "" as keyof Dataset;
-        for (datasetKey in publishedDataset) {
-          if (
-            !IGNORED_DATASET_FIELDS.includes(datasetKey) &&
-            publishedDataset[datasetKey] !== newDataset[datasetKey]
-          )
+
+  Array.from(publishedCollection.datasets.values()).forEach(
+    (publishedDataset) => {
+      const revisionDataset =
+        revision.datasets.get(publishedDataset.id) || ({} as Dataset);
+      let datasetKey = "" as keyof Dataset;
+      for (datasetKey in publishedDataset) {
+        if (!IGNORED_DATASET_FIELDS.includes(datasetKey)) {
+          if (publishedDataset[datasetKey] instanceof Array) {
+            const publishedList = publishedDataset[datasetKey] as Array<
+              unknown
+            >;
+            const revisionList = revisionDataset[datasetKey] as Array<unknown>;
+            if (!revisionList) return true;
+            if (publishedList.length !== revisionList.length) {
+              return true;
+            }
+            if (
+              publishedList.length > 0 &&
+              publishedList[0] instanceof Object
+            ) {
+              publishedList.forEach((publishedObj, index) => {
+                if (!_.isEqual(publishedObj, revisionList[index])) {
+                  console.log(
+                    "DIFF FOUND (dataset list>obj:'",
+                    datasetKey,
+                    "'):",
+                    publishedObj,
+                    revisionList[index]
+                  );
+                  return true;
+                }
+              });
+            }
+          } else if (publishedDataset[datasetKey] instanceof Object) {
+            if (
+              !_.isEqual(
+                publishedDataset[datasetKey],
+                revisionDataset[datasetKey]
+              )
+            ) {
+              console.log(
+                "DIFF FOUND (dataset obj: ",
+                datasetKey,
+                "):",
+                publishedDataset[datasetKey],
+                revisionDataset[datasetKey]
+              );
+              return true;
+            }
+          } else if (
+            publishedDataset[datasetKey] !== revisionDataset[datasetKey]
+          ) {
+            console.log("DIFF FOUND (dataset):", datasetKey);
+            console.log(
+              publishedDataset[datasetKey],
+              revisionDataset[datasetKey]
+            );
             return true;
+          }
         }
       }
-    );
-  }
+    }
+  );
+
   return false;
 }
 
@@ -369,16 +438,16 @@ const editCollection = async function ({
   return result;
 };
 
-export function useEditCollection(oldCollection: Collection) {
+export function useEditCollection() {
   const queryCache = useQueryCache();
 
   return useMutation(editCollection, {
     onSuccess: (collection: Collection) => {
-      console.log({ ...oldCollection, ...collection });
-      return queryCache.setQueryData(
-        [USE_COLLECTION, collection.id, collection.visibility],
-        { ...oldCollection, ...collection }
-      );
+      return queryCache.invalidateQueries([
+        USE_COLLECTION,
+        collection.id,
+        collection.visibility,
+      ]);
     },
   });
 }

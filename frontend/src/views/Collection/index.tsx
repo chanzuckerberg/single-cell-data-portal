@@ -115,6 +115,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
+  // TEMPORARY(seve): until there is UI counterpart for this feature
   if (collection.revision_diff)
     console.log("THERE IS A DIFF BETWEEN PUBLISHED COLLECTION AND REVISION");
 
