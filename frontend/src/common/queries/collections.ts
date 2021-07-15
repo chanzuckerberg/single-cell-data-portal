@@ -1,9 +1,9 @@
-import _ from "lodash";
 import { useMutation, useQuery, useQueryCache } from "react-query";
-import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
+import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
+import checkForRevisionChange from "../utils/checkForRevisionChange";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
@@ -105,126 +105,6 @@ async function fetchCollection(
   }
 
   return { ...json, datasets: datasetMap };
-}
-
-const IGNORED_COLLECTION_FIELDS = [
-  "visibility",
-  "created_at",
-  "updated_at",
-  "is_revision",
-  "revision_diff",
-  "datasets",
-  "genesets",
-  "links",
-] as Array<keyof Collection>;
-const IGNORED_DATASET_FIELDS = [
-  "created_at",
-  "updated_at",
-  "collection_visibility",
-  "original_uuid",
-  "id",
-  "processing_status",
-  "dataset_assets",
-] as Array<keyof Dataset>;
-
-function checkForRevisionChange(
-  revision: Collection,
-  publishedCollection: Collection
-) {
-  // Check collection fields for differences
-  let collectionKey = "" as keyof Collection;
-  for (collectionKey in publishedCollection) {
-    if (
-      !IGNORED_COLLECTION_FIELDS.includes(collectionKey) &&
-      publishedCollection[collectionKey] !== revision[collectionKey]
-    ) {
-      console.log(
-        "DIFF FOUND",
-        "(",
-        collectionKey,
-        "):",
-        publishedCollection[collectionKey],
-        revision[collectionKey]
-      );
-      return true;
-    }
-  }
-  if (publishedCollection.links.length !== revision.links.length) return true;
-  //Check links for differences
-  publishedCollection.links.forEach((link, index) => {
-    if (link !== revision.links[index]) {
-      console.log("DIFF FOUND:", link);
-    }
-  });
-
-  if (publishedCollection.datasets.size !== revision.datasets.size) return true;
-  // Check dataset fields for differences
-
-  Array.from(publishedCollection.datasets.values()).forEach(
-    (publishedDataset) => {
-      const revisionDataset =
-        revision.datasets.get(publishedDataset.id) || ({} as Dataset);
-      let datasetKey = "" as keyof Dataset;
-      for (datasetKey in publishedDataset) {
-        if (!IGNORED_DATASET_FIELDS.includes(datasetKey)) {
-          if (publishedDataset[datasetKey] instanceof Array) {
-            const publishedList = publishedDataset[datasetKey] as Array<
-              unknown
-            >;
-            const revisionList = revisionDataset[datasetKey] as Array<unknown>;
-            if (!revisionList) return true;
-            if (publishedList.length !== revisionList.length) {
-              return true;
-            }
-            if (
-              publishedList.length > 0 &&
-              publishedList[0] instanceof Object
-            ) {
-              publishedList.forEach((publishedObj, index) => {
-                if (!_.isEqual(publishedObj, revisionList[index])) {
-                  console.log(
-                    "DIFF FOUND (dataset list>obj:'",
-                    datasetKey,
-                    "'):",
-                    publishedObj,
-                    revisionList[index]
-                  );
-                  return true;
-                }
-              });
-            }
-          } else if (publishedDataset[datasetKey] instanceof Object) {
-            if (
-              !_.isEqual(
-                publishedDataset[datasetKey],
-                revisionDataset[datasetKey]
-              )
-            ) {
-              console.log(
-                "DIFF FOUND (dataset obj: ",
-                datasetKey,
-                "):",
-                publishedDataset[datasetKey],
-                revisionDataset[datasetKey]
-              );
-              return true;
-            }
-          } else if (
-            publishedDataset[datasetKey] !== revisionDataset[datasetKey]
-          ) {
-            console.log("DIFF FOUND (dataset):", datasetKey);
-            console.log(
-              publishedDataset[datasetKey],
-              revisionDataset[datasetKey]
-            );
-            return true;
-          }
-        }
-      }
-    }
-  );
-
-  return false;
 }
 
 function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
