@@ -404,11 +404,11 @@ export function useReuploadDataset(collectionId: string) {
 
   return useMutation(reuploadDataset, {
     onSuccess: () => {
-      queryCache.invalidateQueries([
-        USE_COLLECTION,
-        collectionId,
-        VISIBILITY_TYPE.PRIVATE,
-      ]);
+      // queryCache.invalidateQueries([
+      //   USE_COLLECTION,
+      //   collectionId,
+      //   VISIBILITY_TYPE.PRIVATE,
+      // ]);
     },
   });
 }
