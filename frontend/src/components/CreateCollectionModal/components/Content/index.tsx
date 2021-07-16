@@ -80,7 +80,7 @@ const Content: FC<Props> = (props) => {
   });
 
   const [mutateCreateCollection] = useCreateCollection();
-  const [mutateEditCollection] = useEditCollection();
+  const [mutateEditCollection] = useEditCollection(props.id);
 
   const { name, description, contact_email, contact_name } = data || {};
 

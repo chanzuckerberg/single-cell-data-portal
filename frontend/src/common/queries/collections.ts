@@ -239,12 +239,7 @@ async function collectionUploadLinks({
   return json.dataset_uuid;
 }
 
-export function useCollectionUploadLinks(
-  id: string,
-  visibility: VISIBILITY_TYPE
-) {
-  const queryCache = useQueryCache();
-
+export function useCollectionUploadLinks() {
   return useMutation(collectionUploadLinks, {
     onMutate: () => {
       // queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
@@ -331,7 +326,7 @@ const editCollection = async function ({
   return result;
 };
 
-export function useEditCollection(collectionID: Collection["id"]) {
+export function useEditCollection(collectionID?: Collection["id"]) {
   const queryCache = useQueryCache();
 
   return useMutation(editCollection, {
@@ -399,9 +394,7 @@ const reuploadDataset = async function ({
   return result.dataset_uuid;
 };
 
-export function useReuploadDataset(collectionId: string) {
-  const queryCache = useQueryCache();
-
+export function useReuploadDataset() {
   return useMutation(reuploadDataset, {
     onSuccess: () => {
       // queryCache.invalidateQueries([

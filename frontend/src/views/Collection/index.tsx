@@ -3,7 +3,6 @@ import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
-import { useQueryCache } from "react-query";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -49,7 +48,7 @@ const Collection: FC = () => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadLink] = useCollectionUploadLinks(id, visibility);
+  const [uploadLink] = useCollectionUploadLinks();
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -58,14 +57,12 @@ const Collection: FC = () => {
     visibility,
   });
 
-  const { data: collection, isError, isFetching, error } = collectionState;
+  const { data: collection, isError, isFetching } = collectionState;
 
   const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
   const isRevision = revisionsEnabled && !!collection?.is_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
-
-  const queryCache = useQueryCache();
 
   if (!collection || isError) {
     return null;

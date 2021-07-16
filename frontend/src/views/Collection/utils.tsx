@@ -4,6 +4,7 @@ import {
   Collection,
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
+  Dataset,
   DATASET_ASSET_FORMAT,
   Link,
 } from "src/common/entities";

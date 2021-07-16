@@ -33,8 +33,8 @@ const DatasetTab: FC<Props> = ({
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
-  const [uploadLink] = useCollectionUploadLinks(collectionId, visibility);
-  const [reuploadDataset] = useReuploadDataset(collectionId);
+  const [uploadLink] = useCollectionUploadLinks();
+  const [reuploadDataset] = useReuploadDataset();
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
   const { data: collection } = useCollection({ id: collectionId, visibility });
 
