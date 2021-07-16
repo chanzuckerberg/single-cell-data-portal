@@ -21,6 +21,7 @@ import {
   CollectionInfo,
   Description,
   LinkContainer,
+  StyledCallout,
   TabWrapper,
 } from "./style";
 import { getIsPublishable, renderContact, renderLinks } from "./utils";
@@ -109,16 +110,19 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
-  // TEMPORARY(seve): until there is UI counterpart for this feature
-  if (collection.revision_diff)
-    console.log("THERE IS A DIFF BETWEEN PUBLISHED COLLECTION AND REVISION");
-
   return (
     <>
       <Head>
         <title>cellxgene | {collection.name}</title>
       </Head>
       <ViewGrid>
+        {collection.is_revision && (
+          <StyledCallout intent={Intent.PRIMARY} icon={null}>
+            {collection.revision_diff
+              ? "This collection has changed since you last published it."
+              : "This is a private revision of a public collection."}
+          </StyledCallout>
+        )}
         <CollectionInfo>
           <H3>{collection.name}</H3>
           <Description>{collection.description}</Description>
