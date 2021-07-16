@@ -112,7 +112,8 @@ async function fetchCollection(
     json = await response.json();
 
     if (!response.ok) {
-      throw json;
+      // There is no published counterpart
+      return collections;
     }
     datasetMap = new Map() as Collection["datasets"];
     for (const dataset of json.datasets) {
