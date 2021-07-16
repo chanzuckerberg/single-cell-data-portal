@@ -30,6 +30,39 @@ function checkListForChanges(
   return !isEmpty(xorWith(revisedList, publishedList, isEqual));
 }
 
+function checkDatasetKeyForDifference(
+  datasetKey: keyof Dataset,
+  revisedDataset: Dataset,
+  publishedDataset: Dataset
+) {
+  if (publishedDataset[datasetKey] instanceof Array) {
+    // Dataset entry is an array
+    if (
+      checkListForChanges(
+        publishedDataset[datasetKey] as Array<unknown>,
+        revisedDataset[datasetKey] as Array<unknown>
+      )
+    ) {
+      console.log(datasetKey);
+      return true;
+    }
+  } else if (
+    // Dataset entry is an object
+    publishedDataset[datasetKey] instanceof Object
+  ) {
+    if (!isEqual(publishedDataset[datasetKey], revisedDataset[datasetKey])) {
+      console.log(datasetKey);
+      return true;
+    }
+  } else if (
+    // scalar value
+    publishedDataset[datasetKey] !== revisedDataset[datasetKey]
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function checkDatasetsForChanges(
   revisedDatasets: Map<Dataset["id"], Dataset>,
   publishedDatasets: Map<Dataset["id"], Dataset>
@@ -43,32 +76,17 @@ function checkDatasetsForChanges(
     for (datasetKey in publishedDataset) {
       if (IGNORED_DATASET_FIELDS.includes(datasetKey)) {
         continue; // ignore these fields (I hate using continue, but sonarjs considers this best)
-      } else if (publishedDataset[datasetKey] instanceof Array) {
-        // Dataset entry is an array
-        if (
-          checkListForChanges(
-            publishedDataset[datasetKey] as Array<unknown>,
-            revisedDataset[datasetKey] as Array<unknown>
-          )
-        ) {
-          return true;
-        }
-      } else if (
-        // Dataset entry is an object
-        publishedDataset[datasetKey] instanceof Object
-      ) {
-        if (
-          !isEqual(publishedDataset[datasetKey], revisedDataset[datasetKey])
-        ) {
-          return true;
-        }
-      } else if (
-        // scalar value
-        publishedDataset[datasetKey] !== revisedDataset[datasetKey]
-      ) {
-        return true;
       }
+      if (
+        checkDatasetKeyForDifference(
+          datasetKey,
+          revisedDataset,
+          publishedDataset
+        )
+      )
+        return true;
     }
+
     return false;
   });
 }
