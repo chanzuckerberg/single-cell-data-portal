@@ -20,6 +20,7 @@ const IGNORED_DATASET_FIELDS = [
   "original_uuid",
   "id",
   "processing_status",
+  "dataset_assets",
 ] as Array<keyof Dataset>;
 
 function checkListForChanges(
@@ -54,10 +55,13 @@ function checkDatasetsForChanges(
         }
       } else if (
         // Dataset entry is an object
-        publishedDataset[datasetKey] instanceof Object &&
-        !isEqual(publishedDataset[datasetKey], revisedDataset[datasetKey])
+        publishedDataset[datasetKey] instanceof Object
       ) {
-        return true;
+        if (
+          !isEqual(publishedDataset[datasetKey], revisedDataset[datasetKey])
+        ) {
+          return true;
+        }
       } else if (
         // scalar value
         publishedDataset[datasetKey] !== revisedDataset[datasetKey]

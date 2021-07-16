@@ -11,7 +11,6 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
-  USE_COLLECTION,
 } from "src/common/queries/collections";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -59,7 +58,7 @@ const Collection: FC = () => {
     visibility,
   });
 
-  const { data: collection, isError, isFetching } = collectionState;
+  const { data: collection, isError, isFetching, error } = collectionState;
 
   const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
   const isRevision = revisionsEnabled && !!collection?.is_revision;
@@ -91,7 +90,7 @@ const Collection: FC = () => {
               "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
 
-          queryCache.invalidateQueries(USE_COLLECTION);
+          // queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
     );

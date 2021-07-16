@@ -119,7 +119,10 @@ async function fetchCollection(
       datasetMap.set(dataset.original_id || dataset.id, dataset);
     }
 
-    collections.set(VISIBILITY_TYPE.PUBLIC, { ...json, datasets: datasetMap });
+    collections.set(VISIBILITY_TYPE.PUBLIC, {
+      ...json,
+      datasets: datasetMap,
+    });
   }
 
   return collections;
@@ -242,8 +245,8 @@ export function useCollectionUploadLinks(
   const queryCache = useQueryCache();
 
   return useMutation(collectionUploadLinks, {
-    onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+    onMutate: () => {
+      // queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
     },
   });
 }

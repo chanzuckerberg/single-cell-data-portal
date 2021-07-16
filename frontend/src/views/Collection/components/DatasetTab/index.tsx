@@ -70,7 +70,7 @@ const DatasetTab: FC<Props> = ({
                 "Your file is being uploaded which will continue in the background, even if you close this window.",
             });
             setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
-            queryCache.invalidateQueries(USE_COLLECTION);
+            invalidateCollectionQuery();
           },
         }
       );
