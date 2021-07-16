@@ -101,7 +101,11 @@ const Collection: FC = () => {
   // when React Query is fetching cached `collection` and its outdated
   // `datasets`
   const isPublishable =
-    getIsPublishable(datasets) && !isUploadingLink && !isFetching;
+    getIsPublishable(datasets) &&
+    !isUploadingLink &&
+    !isFetching &&
+    isRevision &&
+    collection.revision_diff;
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
