@@ -107,6 +107,7 @@ export function getIsPublishable(datasets: Collection["datasets"]) {
         numOfDeployments === 1 &&
         numOfAssets === Object.keys(DATASET_ASSET_FORMAT).length
       );
-    })
+    }) &&
+    datasets.some((dataset) => !dataset.tombstone)
   );
 }
