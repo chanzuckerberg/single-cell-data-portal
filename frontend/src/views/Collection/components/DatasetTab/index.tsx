@@ -14,7 +14,7 @@ import DatasetsGrid from "src/components/Collections/components/Grid/components/
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
-import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
+import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 
 interface Props {
@@ -63,7 +63,7 @@ const DatasetTab: FC<Props> = ({
         {
           onSuccess: (datasetID: Dataset["id"]) => {
             newFile.id = datasetID;
-            DatasetUploadToast.show({
+            Toast.show({
               icon: IconNames.TICK,
               intent: Intent.PRIMARY,
               message:

@@ -2,7 +2,7 @@ import { IToaster, IToastProps, Position, Toaster } from "@blueprintjs/core";
 
 let toaster: IToaster | null = null;
 
-const DatasetUploadToast = {
+const Toast = {
   show(props: IToastProps) {
     if (!toaster) {
       toaster = Toaster.create({
@@ -14,4 +14,4 @@ const DatasetUploadToast = {
   },
 };
 
-export default DatasetUploadToast;
+export default Toast;

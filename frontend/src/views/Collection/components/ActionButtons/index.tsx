@@ -30,7 +30,11 @@ const ActionButtons = ({
       <MoreDropdown id={id} isRevision={isRevision} />
 
       <AddButton addNewFile={addNewFile} />
-      <PublishCollection id={id} isPublishable={isPublishable} />
+      <PublishCollection
+        id={id}
+        isPublishable={isPublishable}
+        isRevision={isRevision}
+      />
     </Wrapper>
   );
 };

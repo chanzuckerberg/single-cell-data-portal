@@ -21,8 +21,8 @@ import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
-import DatasetUploadToast from "./components/DatasetUploadToast";
 import GeneSetTab from "./components/GeneSetTab";
+import Toast from "./components/Toast";
 import {
   CollectionInfo,
   Description,
@@ -98,7 +98,7 @@ const Collection: FC = () => {
       {
         onSettled: () => setIsUploadingLink(false),
         onSuccess: () => {
-          DatasetUploadToast.show({
+          Toast.show({
             icon: IconNames.TICK,
             intent: Intent.PRIMARY,
             message:
