@@ -11,7 +11,7 @@ import {
   VALIDATION_STATUS,
 } from "src/common/entities";
 import { USE_DATASET_STATUS } from "src/common/queries/datasets";
-import DatasetUploadToast from "src/views/Collection/components/DatasetUploadToast";
+import Toast from "src/views/Collection/components/Toast";
 
 export enum FAILED_RETURN_TYPE {
   UPLOAD = "UPLOAD",
@@ -301,7 +301,7 @@ export function hasCXGFile(dataset: Dataset) {
 }
 
 function successToast(message: string) {
-  DatasetUploadToast.show({
+  Toast.show({
     icon: IconNames.TICK,
     intent: Intent.SUCCESS,
     message,

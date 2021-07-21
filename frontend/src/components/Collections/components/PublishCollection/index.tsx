@@ -1,10 +1,12 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";
+import Toast from "src/views/Collection/components/Toast";
 
 const AsyncAlert = loadable(
   () =>
@@ -14,9 +16,14 @@ const AsyncAlert = loadable(
 interface Props {
   id: Collection["id"];
   isPublishable: boolean;
+  isRevision: boolean;
 }
 
-const PublishCollection: FC<Props> = ({ id = "", isPublishable }) => {
+const PublishCollection: FC<Props> = ({
+  id = "",
+  isPublishable,
+  isRevision,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [publish, { isSuccess, isLoading }] = usePublishCollection();
   const router = useRouter();
@@ -28,7 +35,19 @@ const PublishCollection: FC<Props> = ({ id = "", isPublishable }) => {
   const toggleAlert = () => setIsOpen(!isOpen);
 
   const handleConfirm = async () => {
-    await publish(id);
+    await publish(id, {
+      onSuccess: () => {
+        //if revision show  revision toast
+        if (isRevision) {
+          Toast.show({
+            icon: IconNames.TICK,
+            intent: Intent.SUCCESS,
+            message: "New version published",
+          });
+        }
+      },
+    });
+
     toggleAlert();
   };
 
@@ -53,20 +72,38 @@ const PublishCollection: FC<Props> = ({ id = "", isPublishable }) => {
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
-          confirmButtonText={"Publish Collection"}
+          confirmButtonText={
+            isRevision ? "Publish Revision" : "Publish Collection"
+          }
           intent={Intent.PRIMARY}
           isOpen={isOpen}
           onCancel={toggleAlert}
           onConfirm={handleConfirm}
           loading={isLoading}
         >
-          <H6>Are you sure you want to publish this collection?</H6>
-          <p>
-            The datasets, related metadata, and CXG(s) in this collection will
-            be viewable and downloadable by all portal users. External sites may
-            directly link to the CXG(s).
-          </p>
-          <p>This action cannot be undone without manual intervention.</p>
+          {isRevision ? (
+            <>
+              <H6>
+                Are you sure you want to publish a revision to this collection?
+              </H6>
+              <p>
+                Any datasets you’ve removed will no longer be accessible to
+                portal users. Links to deleted datasets from external sites will
+                display a message that the dataset has been withdrawn by the
+                publisher.
+              </p>
+            </>
+          ) : (
+            <>
+              <H6>Are you sure you want to publish this collection?</H6>
+              <p>
+                The datasets, related metadata, and CXG(s) in this collection
+                will be viewable and downloadable by all portal users. External
+                sites may directly link to the CXG(s).
+              </p>
+              <p>This action cannot be undone without manual intervention.</p>
+            </>
+          )}
         </AsyncAlert>
       )}
     </>
