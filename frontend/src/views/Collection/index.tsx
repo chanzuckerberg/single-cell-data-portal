@@ -104,8 +104,7 @@ const Collection: FC = () => {
     getIsPublishable(datasets) &&
     !isUploadingLink &&
     !isFetching &&
-    isRevision &&
-    collection.revision_diff;
+    (!isRevision || collection.revision_diff);
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
