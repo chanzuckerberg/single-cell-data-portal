@@ -150,7 +150,11 @@ export function useCollection({
 }) {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
-  return useQuery<Collection | null>([USE_COLLECTION, id, visibility], queryFn);
+  return useQuery<Collection | null>(
+    [USE_COLLECTION, id, visibility, collections],
+    queryFn,
+    { enabled: !!collections }
+  );
 }
 
 export async function createCollection(payload: string): Promise<string> {
@@ -256,7 +260,10 @@ export function useDeleteCollection(id = "") {
 
   return useMutation(deleteCollection, {
     onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTIONS]);
+      return Promise.all([
+        queryCache.invalidateQueries([USE_COLLECTIONS]),
+        queryCache.invalidateQueries([USE_COLLECTION, id]),
+      ]);
     },
   });
 }
