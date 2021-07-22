@@ -76,6 +76,14 @@ export type CollectionError = {
   type: string;
 };
 
+function generateDatasetMap(json: any) {
+  const datasetMap = new Map() as Collection["datasets"];
+  for (const dataset of json.datasets) {
+    datasetMap.set(dataset.original_id || dataset.id, dataset);
+  }
+  return datasetMap;
+}
+
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
     _: unknown,
@@ -100,16 +108,11 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       throw json;
     }
 
-    let datasetMap = new Map() as Collection["datasets"];
-    for (const dataset of json.datasets) {
-      datasetMap.set(dataset.original_id || dataset.id, dataset);
-    }
-
-    const collection = { ...json, datasets: datasetMap };
+    const collection = { ...json, datasets: generateDatasetMap(json) };
 
     let publishedCounterpart;
 
-    if (allCollections && allCollections.has(id)) {
+    if (allCollections) {
       const collectionsWithID = allCollections.get(id) as Map<
         VISIBILITY_TYPE,
         Collection
@@ -123,14 +126,9 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       json = await response.json();
 
       if (response.ok) {
-        datasetMap = new Map() as Collection["datasets"];
-        for (const dataset of json.datasets) {
-          datasetMap.set(dataset.original_id || dataset.id, dataset);
-        }
-
         publishedCounterpart = {
           ...json,
-          datasets: datasetMap,
+          datasets: generateDatasetMap(json),
         };
       }
     }
