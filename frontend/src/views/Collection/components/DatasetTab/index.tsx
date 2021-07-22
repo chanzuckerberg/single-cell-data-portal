@@ -33,8 +33,8 @@ const DatasetTab: FC<Props> = ({
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
 
-  const [uploadLink] = useCollectionUploadLinks();
-  const [reuploadDataset] = useReuploadDataset();
+  const [uploadLink] = useCollectionUploadLinks(collectionId, visibility);
+  const [reuploadDataset] = useReuploadDataset(collectionId);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
   const { data: collection } = useCollection({ id: collectionId, visibility });
 
@@ -70,7 +70,6 @@ const DatasetTab: FC<Props> = ({
                 "Your file is being uploaded which will continue in the background, even if you close this window.",
             });
             setUploadedFiles({ ...uploadedFiles, [newFile.id]: newFile });
-            invalidateCollectionQuery();
           },
         }
       );

@@ -76,98 +76,83 @@ export type CollectionError = {
   type: string;
 };
 
-async function fetchCollection(
-  _: unknown,
-  id: string,
-  visibility: VISIBILITY_TYPE
-): Promise<Map<VISIBILITY_TYPE, Collection> | null> {
-  if (!id) {
-    return null;
-  }
+function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
+  return async function (
+    _: unknown,
+    id: string,
+    visibility: VISIBILITY_TYPE
+  ): Promise<Collection | null> {
+    if (!id) {
+      return null;
+    }
 
-  const collections = new Map<VISIBILITY_TYPE, Collection>();
+    const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+    const finalUrl =
+      visibility === VISIBILITY_TYPE.PRIVATE
+        ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
+        : baseUrl;
 
-  const finalUrl =
-    visibility === VISIBILITY_TYPE.PRIVATE
-      ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
-      : baseUrl;
-
-  let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
-  let json = await response.json();
-
-  if (!response.ok) {
-    throw json;
-  }
-
-  let datasetMap = new Map() as Collection["datasets"];
-  for (const dataset of json.datasets) {
-    datasetMap.set(dataset.original_id || dataset.id, dataset);
-  }
-
-  collections.set(visibility, { ...json, datasets: datasetMap });
-  if (visibility === VISIBILITY_TYPE.PRIVATE) {
-    response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
-    json = await response.json();
+    let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
+    let json = await response.json();
 
     if (!response.ok) {
-      // There is no published counterpart
-      return collections;
+      throw json;
     }
-    datasetMap = new Map() as Collection["datasets"];
+
+    let datasetMap = new Map() as Collection["datasets"];
     for (const dataset of json.datasets) {
       datasetMap.set(dataset.original_id || dataset.id, dataset);
     }
 
-    collections.set(VISIBILITY_TYPE.PUBLIC, {
-      ...json,
-      datasets: datasetMap,
-    });
-  }
+    const collection = { ...json, datasets: datasetMap };
 
-  return collections;
-}
+    let publishedCounterpart;
 
-function useCollectionFetch({ id = "", visibility = VISIBILITY_TYPE.PUBLIC }) {
-  const { data: collections } = useCollections();
-  const queryCache = useQueryCache();
-  return useQuery<Map<VISIBILITY_TYPE, Collection> | null>(
-    [USE_COLLECTION, id, visibility, "FETCH"],
-    fetchCollection,
-    {
-      onSuccess: (data) => {
-        if (collections && data) {
-          queryCache.setQueryData([USE_COLLECTION, id, visibility], () => {
-            const newData = data.get(visibility) || ({} as Collection);
-            const collectionsWithID = collections.get(newData.id);
-            if (!collectionsWithID) return newData;
-            newData.is_revision = collectionsWithID.size > 1;
+    if (allCollections && allCollections.has(id)) {
+      const collectionsWithID = allCollections.get(id) as Map<
+        VISIBILITY_TYPE,
+        Collection
+      >;
 
-            // check for diffs between revision and published collection
-            if (newData.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
-              const publishedCollection =
-                data.get(VISIBILITY_TYPE.PUBLIC) || ({} as Collection);
-
-              newData.revision_diff = checkForRevisionChange(
-                newData,
-                publishedCollection
-              );
-            }
-            return newData;
-          });
-        }
-      },
+      collection.is_revision = collectionsWithID.size > 1;
     }
-  );
+
+    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.is_revision) {
+      response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
+      json = await response.json();
+
+      if (response.ok) {
+        datasetMap = new Map() as Collection["datasets"];
+        for (const dataset of json.datasets) {
+          datasetMap.set(dataset.original_id || dataset.id, dataset);
+        }
+
+        publishedCounterpart = {
+          ...json,
+          datasets: datasetMap,
+        };
+      }
+    }
+
+    // check for diffs between revision and published collection
+    if (collection.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+      collection.revision_diff = checkForRevisionChange(
+        collection,
+        publishedCounterpart
+      );
+    }
+    return collection;
+  };
 }
 
 export function useCollection({
   id = "",
   visibility = VISIBILITY_TYPE.PUBLIC,
 }) {
-  useCollectionFetch({ id, visibility });
-  return useQuery<Collection>([USE_COLLECTION, id, visibility]);
+  const { data: collections } = useCollections();
+  const queryFn = fetchCollection(collections);
+  return useQuery<Collection | null>([USE_COLLECTION, id, visibility], queryFn);
 }
 
 export async function createCollection(payload: string): Promise<string> {
@@ -239,10 +224,14 @@ async function collectionUploadLinks({
   return json.dataset_uuid;
 }
 
-export function useCollectionUploadLinks() {
+export function useCollectionUploadLinks(
+  id: string,
+  visibility: VISIBILITY_TYPE
+) {
+  const queryCache = useQueryCache();
   return useMutation(collectionUploadLinks, {
     onMutate: () => {
-      // queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
     },
   });
 }
@@ -329,13 +318,19 @@ const editCollection = async function ({
 export function useEditCollection(collectionID?: Collection["id"]) {
   const queryCache = useQueryCache();
 
+  const { data: collection } = useCollection({
+    id: collectionID,
+    visibility: VISIBILITY_TYPE.PRIVATE,
+  });
+
   return useMutation(editCollection, {
-    onSuccess: () => {
-      queryCache.invalidateQueries([
-        USE_COLLECTION,
-        collectionID,
-        VISIBILITY_TYPE.PRIVATE,
-      ]);
+    onSuccess: (newCollection) => {
+      queryCache.setQueryData(
+        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
+        () => {
+          return { ...collection, ...newCollection };
+        }
+      );
     },
   });
 }
@@ -394,14 +389,15 @@ const reuploadDataset = async function ({
   return result.dataset_uuid;
 };
 
-export function useReuploadDataset() {
+export function useReuploadDataset(collectionId: string) {
+  const queryCache = useQueryCache();
   return useMutation(reuploadDataset, {
     onSuccess: () => {
-      // queryCache.invalidateQueries([
-      //   USE_COLLECTION,
-      //   collectionId,
-      //   VISIBILITY_TYPE.PRIVATE,
-      // ]);
+      queryCache.invalidateQueries([
+        USE_COLLECTION,
+        collectionId,
+        VISIBILITY_TYPE.PRIVATE,
+      ]);
     },
   });
 }

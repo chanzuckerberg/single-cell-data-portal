@@ -48,7 +48,7 @@ const Collection: FC = () => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadLink] = useCollectionUploadLinks();
+  const [uploadLink] = useCollectionUploadLinks(id, visibility);
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -86,8 +86,6 @@ const Collection: FC = () => {
             message:
               "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
-
-          // queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
     );
