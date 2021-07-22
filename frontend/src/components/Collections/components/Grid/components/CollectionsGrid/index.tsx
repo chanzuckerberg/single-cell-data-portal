@@ -84,11 +84,10 @@ function sortByCreatedAtDescendingAndFormat(
   return (
     Array.from(collectionsMap.values())
       .map((collectionsWithIDMap) => {
-        return (
-          collectionsWithIDMap.get(VISIBILITY_TYPE.PUBLIC) ||
-          collectionsWithIDMap.get(VISIBILITY_TYPE.PRIVATE) ||
-          ({} as CollectionResponse)
-        );
+        return (collectionsWithIDMap.get(VISIBILITY_TYPE.PUBLIC) ||
+          collectionsWithIDMap.get(
+            VISIBILITY_TYPE.PRIVATE
+          )) as CollectionResponse;
       })
       .sort((a, b) => b.created_at - a.created_at) || []
   );

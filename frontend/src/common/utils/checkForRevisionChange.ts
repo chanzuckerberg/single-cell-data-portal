@@ -70,8 +70,7 @@ function checkDatasetsForChanges(
   if (publishedDatasets.size !== revisedDatasets.size) return true;
   // Check dataset fields for differences
   return Array.from(publishedDatasets.values()).some((publishedDataset) => {
-    const revisedDataset =
-      revisedDatasets.get(publishedDataset.id) || ({} as Dataset);
+    const revisedDataset = revisedDatasets.get(publishedDataset.id) as Dataset;
     let datasetKey = "" as keyof Dataset;
     for (datasetKey in publishedDataset) {
       if (IGNORED_DATASET_FIELDS.includes(datasetKey)) {
