@@ -321,12 +321,21 @@ export function useEditCollection(collectionID?: Collection["id"]) {
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
+  const { data: publishedCollection } = useCollection({
+    id: collectionID,
+    visibility: VISIBILITY_TYPE.PUBLIC,
+  });
+
   return useMutation(editCollection, {
     onSuccess: (newCollection) => {
       queryCache.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
         () => {
-          return { ...collection, ...newCollection };
+          const revision_diff =
+            collection?.is_revision && publishedCollection
+              ? checkForRevisionChange(newCollection, publishedCollection)
+              : null;
+          return { ...collection, ...newCollection, revision_diff };
         }
       );
     },
