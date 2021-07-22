@@ -352,15 +352,17 @@ const createRevision = async function (id: string) {
   });
 
   if (!response.ok) throw await response.json();
+  return response.json();
 };
 
 export function useCreateRevision(callback: () => void) {
   const queryCache = useQueryCache();
 
   return useMutation(createRevision, {
-    onSuccess: () => {
+    onSuccess: (collection: Collection) => {
       callback();
-      return queryCache.invalidateQueries([USE_COLLECTIONS]);
+      queryCache.invalidateQueries([USE_COLLECTIONS]);
+      queryCache.invalidateQueries([USE_COLLECTION, collection.id]);
     },
   });
 }
