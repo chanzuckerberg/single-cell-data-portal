@@ -335,7 +335,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
 
   return useMutation(editCollection, {
     onSuccess: (newCollection) => {
-      queryCache.setQueryData(
+      return queryCache.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
         () => {
           const revision_diff =
