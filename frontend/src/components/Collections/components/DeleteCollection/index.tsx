@@ -21,13 +21,14 @@ const DeleteCollection: FC<Props> = ({
   Button = RawButton,
   isRevision,
 }) => {
-  const [deleteMutation, { isSuccess }] = useDeleteCollection(id);
+  const [deleteMutation] = useDeleteCollection(id);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  if (isSuccess) router.push(ROUTES.MY_COLLECTIONS);
-
-  const handleDelete = () => {
-    deleteMutation(id);
+  const handleDelete = async () => {
+    setIsLoading(true);
+    await deleteMutation(id);
+    router.push(ROUTES.MY_COLLECTIONS);
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -57,10 +58,8 @@ const DeleteCollection: FC<Props> = ({
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}
-          onConfirm={() => {
-            handleDelete();
-            toggleAlert();
-          }}
+          onConfirm={handleDelete}
+          loading={isLoading}
         >
           <H6>
             Are you sure you want to {isRevision ? "cancel" : "delete"} this{" "}

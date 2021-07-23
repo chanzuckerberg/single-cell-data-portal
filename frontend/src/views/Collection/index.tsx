@@ -3,20 +3,14 @@ import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useState } from "react";
-import { useQueryCache } from "react-query";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import {
-  RevisionResponse,
-  REVISION_STATUS,
   useCollection,
-  useCollections,
   useCollectionUploadLinks,
-  USE_COLLECTION,
 } from "src/common/queries/collections";
-import { generateRevisionMap } from "src/components/Collections/util";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
@@ -65,22 +59,10 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const { data: collections } = useCollections();
   const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
-  let isRevision = false;
-
-  if (revisionsEnabled && isPrivate && collection && collections) {
-    const revisionMap = generateRevisionMap(
-      collections,
-      revisionsEnabled
-    ) as Map<string, RevisionResponse>;
-    isRevision =
-      revisionMap.get(collection.id)?.revision === REVISION_STATUS.STARTED;
-  }
+  const isRevision = revisionsEnabled && !!collection?.is_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
-
-  const queryCache = useQueryCache();
 
   if (!collection || isError) {
     return null;
@@ -104,14 +86,12 @@ const Collection: FC = () => {
             message:
               "Your file is being uploaded which will continue in the background, even if you close this window.",
           });
-
-          queryCache.invalidateQueries(USE_COLLECTION);
         },
       }
     );
   };
 
-  let datasets = collection.datasets;
+  let datasets = Array.from(collection.datasets.values());
 
   // Filter out tombstoned datasets if we're not looking at revision
   if (!isRevision) datasets = datasets.filter((dataset) => !dataset.tombstone);
@@ -128,6 +108,10 @@ const Collection: FC = () => {
 
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
+
+  // TEMPORARY(seve): until there is UI counterpart for this feature
+  if (collection.revision_diff)
+    console.log("THERE IS A DIFF BETWEEN PUBLISHED COLLECTION AND REVISION");
 
   return (
     <>

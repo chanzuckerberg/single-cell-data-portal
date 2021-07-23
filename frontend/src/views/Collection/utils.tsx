@@ -4,6 +4,7 @@ import {
   Collection,
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
+  Dataset,
   DATASET_ASSET_FORMAT,
   Link,
 } from "src/common/entities";
@@ -96,7 +97,7 @@ export function renderContact(
   );
 }
 
-export function getIsPublishable(datasets: Collection["datasets"]) {
+export function getIsPublishable(datasets: Array<Dataset>) {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {

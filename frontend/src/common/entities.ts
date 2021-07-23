@@ -57,12 +57,14 @@ export interface Collection {
   name: string;
   owner: string;
   visibility: VISIBILITY_TYPE;
-  datasets: Dataset[];
+  datasets: Map<Dataset["id"], Dataset>;
   links: Link[];
   data_submission_policy_version: string;
   obfuscated_uuid: string;
   created_at: number;
   updated_at: number;
+  is_revision: boolean;
+  revision_diff: boolean;
 }
 
 export type Ontology = {
@@ -93,6 +95,7 @@ export interface Dataset {
   original_id?: string;
   published?: boolean;
   tombstone?: boolean;
+  collection_visibility: Collection["visibility"];
 }
 
 export enum DATASET_ASSET_FORMAT {
