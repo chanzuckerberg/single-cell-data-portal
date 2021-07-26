@@ -1,5 +1,5 @@
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.corpora_orm import UploadStatus, DbDatasetProcessingStatus, ProcessingStatus
+from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, ProcessingStatus
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 

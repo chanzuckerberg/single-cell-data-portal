@@ -2,7 +2,8 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetProcessingStatus,
-    UploadStatus, ProcessingStatus,
+    UploadStatus,
+    ProcessingStatus,
 )
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_helpers import processing_status_updater
@@ -67,7 +68,6 @@ class TestUpdateDataset(TestDataset):
         dataset = Dataset.get(self.session, self.uuid)
         self.assertEqual(dataset.processing_status.processing_status, ProcessingStatus.FAILURE)
         self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING)
-
 
     def test__update_processing_status__no_dataset__ok(self):
         update_dataset_processing_status_to_failed("fake_uuid")
