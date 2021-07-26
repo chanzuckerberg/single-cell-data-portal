@@ -54,7 +54,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
   [FAILED_RETURN_TYPE.UPLOAD + UPLOAD_STATUS.FAILED]: {
     color: RED.C,
     content: (
-      <span>There was a problem uploading your file. Please try again.</span>
+      <span>There was a problem uploading your file.</span>
     ),
     intent: Intent.DANGER,
   },
