@@ -1,7 +1,41 @@
+from typing import Union, Tuple
 import logging
 
 import numpy as np
 import pandas as pd
+
+"""
+These routines drive all type inference for the schema generation and the 
+FBS (REST OTA) encoding. They are also used for CXG generation.
+
+
+H5AD Type                       REST              REST
+(ndarray, Series, Index)        FBS encoding      schema type       ERROR/exceptions
+----------------------------    --------------    ---------------   ----------------------
+bool_/bool                      uint8             boolean
+(u)int8, (u)int16, int32        int32             int32
+uint32, (u)it64                 int32             int32             CHECKS value bounds
+float16, float32, float64       float32           float32[0]
+
+categorical[T is numeric[4]]:
+    hasna = False               T                 categorical[1]
+    hasna = True                float32           categorical[1]    CHECKS value bounds
+
+categorical[T not numeric]      JSON/str          categorical[1,2]
+
+(other object)                  JSON/str          string
+
+(all other)                                                         Always an ERROR[3]
+
+
+Notes:
+[0] IEEE format, includes non-finite numbers (NaN, Inf, ...)
+[1] with NO categories enumerated (client side does it to handle rounding)
+[2] NA (undefined) categories are assigned a JSON null value
+[3] Includes all other numpy types:  datetime, complex, etc.
+[4] means float, int, uint (dtype.kind in ['i','u','f'])
+
+"""
 
 
 def get_dtypes_and_schemas_of_dataframe(dataframe: pd.DataFrame):
@@ -17,129 +51,132 @@ def get_dtypes_and_schemas_of_dataframe(dataframe: pd.DataFrame):
     return dtypes_by_column_name, schema_type_hints_by_column_name
 
 
-def get_dtype_of_array(array: pd.Series):
-    return get_dtype_and_schema_of_array(array)[0]
+def get_encoding_dtype_of_array(array: Union[np.ndarray, pd.Series]) -> np.dtype:
+    return _get_type_info(array)[0]
 
 
-def get_schema_type_hint_of_array(array: pd.Series):
-    return get_dtype_and_schema_of_array(array)[1]
+def get_schema_type_hint_of_array(array: Union[np.ndarray, pd.Series]) -> dict:
+    return _get_type_info(array)[1]
 
 
-def get_dtype_and_schema_of_array(array: pd.Series):
-    return (
-        get_dtype_from_dtype(array.dtype, array_values=array),
-        get_schema_type_hint_from_dtype(array.dtype, array_values=array),
-    )
+def get_dtype_and_schema_of_array(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]:
+    """Return tuple (encoding_dtype, schema_type_hint)"""
+    return _get_type_info(array)
 
 
-def get_dtype_from_dtype(dtype, array_values=None):
+def get_schema_type_hint_from_dtype(dtype) -> dict:
+    res = _get_type_info_from_dtype(dtype)
+    if res is None:
+        raise TypeError(f"Annotations of type {dtype} are unsupported.")
+    else:
+        return res[1]
+
+
+def _get_type_info_from_dtype(dtype) -> Union[Tuple[np.dtype, dict], None]:
     """
-    Given a data type, finds the equivalent data type that the array should be encoded as. Notably, this is relevant
-    for 64 bit values which will get downcast to 32 bit.
+    Best-effort to determine encoding type and schema hint from a dtype.
+    If this is not possible, or the type is unsupported, return None.
     """
+    if dtype.kind == "b":
+        return (np.uint8, {"type": "boolean"})
 
-    dtype_name = dtype.name
-    dtype_kind = dtype.kind
+    if dtype.kind == "U":
+        return (np.dtype(str), {"type": "string"})
 
-    if dtype_name == "bool":
-        return np.uint8
-    if dtype_name == "object" and dtype_kind == "O":
-        return str
-    if dtype_name == "category":
-        return get_dtype_from_dtype(dtype.categories.dtype, array_values)
-
-    if can_cast_to_int32(dtype, array_values):
-        return np.int32
-    if can_cast_to_float32(dtype, array_values):
-        return np.float32
-    if not can_cast_to_float32(dtype, array_values):
-        return np.float64
-
-    raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-
-def get_schema_type_hint_from_dtype(dtype, array_values=None):
-    """
-    Returns a dictionary that contains type hints about the data type given, especially if the data type is 64 bit
-    and will be downcast to 32 bit.
-    """
-
-    dtype_name = dtype.name
-    dtype_kind = dtype.kind
-
-    if dtype == np.float32 or dtype == np.int32:
-        return {"type": dtype_name}
-    if dtype_name == "bool":
-        return {"type": "boolean"}
-    if dtype_name == "object" and dtype_kind == "O":
-        return {"type": "string"}
-    if dtype_name == "category":
-        return {"type": "categorical", "categories": dtype.categories.tolist()}
-
-    if can_cast_to_int32(dtype, array_values):
-        return {"type": "int32"}
-    if can_cast_to_float32(dtype, array_values):
-        return {"type": "float32"}
-    if dtype_kind == "f" and not can_cast_to_float32(dtype, array_values):
-        return {"type": "float64"}
-
-    raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-
-def can_cast_to_float32(dtype, array_values):
-    """
-    Optimistically returns True signifying that a type downcast to float32 is possible whenever the incoming type is
-    a float.
-
-    We also handle a special case here where the array is a Series object with integer categorical values AND NaNs.
-    Since NaNs are floating points in numpy, we upcast the integer array to float32 and return True.
-    """
+    if dtype.kind in ["i", "u"]:
+        if np.can_cast(dtype, np.int32):
+            return (np.int32, {"type": "int32"})
 
     if dtype.kind == "f":
-        if not np.can_cast(dtype, np.float32):
-            logging.warning(f"Type {dtype.name} will be converted to 32 bit float and may lose precision.")
+        if np.can_cast(dtype, np.float32):
+            return (np.float32, {"type": "float32"})
 
-        return True
+    return None
 
-    if dtype.kind == "O" and array_values.hasnans:
+
+def _get_type_info(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]:
+    """
+    Determine encoding type and schema hint from an array.  This allows more
+    flexible casting than may be possible by using just the dtype, as it can
+    account for category types and array values.
+    """
+    if (
+        not isinstance(array, np.ndarray)
+        and not isinstance(array, pd.Series)
+        and not isinstance(array, pd.Index)
+        and not hasattr(array, "dtype")
+    ):
+        raise TypeError("Unsupported data type.")
+
+    dtype = array.dtype
+
+    res = _get_type_info_from_dtype(dtype)
+    if res is not None:
+        return res
+
+    if dtype.kind == "O":
+        if dtype.name == "category":
+            # Sometimes CategoricalDType can be encoded as int or float without further fuss.
+            # Do not specify the categories in the schema - let the client-side figure it out
+            # on its own.  Utilize Series.to_numpy() to do casting that handles categorical
+            # NA/NaN (missing or undefined) categories.
+            if dtype.categories.dtype.kind in ["f", "i", "u"]:
+                return (
+                    _get_type_info(array.to_numpy())[0],
+                    {"type": "categorical"},
+                )
+            else:
+                return (np.dtype(str), {"type": "categorical", "categories": dtype.categories.to_list()})
+
+        # all other extension types are str-encoded
+        return (np.dtype(str), {"type": "string"})
+
+    if dtype.kind in ["i", "u"] and can_cast_to_int(array, np.int32):
+        return (np.int32, {"type": "int32"})
+
+    if dtype.kind == "f" and can_cast_to_float32(array):
+        return (np.float32, {"type": "float32"})
+
+    raise TypeError(f"Annotations of type {dtype} are unsupported.")
+
+
+def can_cast_to_float32(array: Union[np.ndarray, pd.Series]) -> bool:
+    """
+    Returns True if the underlying type is float, of any width.
+    Else, returns False
+    """
+    # Accept any float as long as magnitude can still be represented.
+    if array.dtype.kind == "f":
+        if not np.can_cast(array.dtype, np.float32):
+            logging.warning(f"Type {array.dtype.name} will be converted to 32 bit float and may lose precision.")
         return True
 
     return False
 
 
-def can_cast_to_int32(dtype, array_values=None):
+def can_cast_to_int(array: Union[np.ndarray, pd.Series], target: np.dtype) -> bool:
     """
-    A type can be cast to 32 bit, overriding the numpy `cast_cast` function if the values in the array that are of
-    the higher precision type has values that are entirely within the range of the downcast type.
+    Return true if the dtype can be safely cast to int dtype.  We allow size reducing casts
+    (ie, int64 to int32) if no actual values require the larger size (ie, actual values
+    can be represented by the smaller type).
     """
-
-    # Since a NaN is technically a float, any array that contains NaNs cannot be cast to an integer so immediately
-    # return False.
-    if array_values.hasnans:
-        return False
-
-    # If the array is categorical, then we need to order the array values so that functions min and max that occur
-    # later, can function. They do not function on unordered categories.
-    ordered_array_values = array_values
-    if array_values.dtype.name == "category" and not array_values.cat.ordered:
-        ordered_array_values = array_values.cat.as_ordered()
-
-    if dtype.kind in ["i", "u"]:
-        if np.can_cast(dtype, np.int32):
+    if array.dtype.kind in ["u", "i"]:
+        if np.can_cast(array.dtype, target):
             return True
-        ii32 = np.iinfo(np.int32)
-        if (
-            not ordered_array_values.empty
-            and (ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max)
-            or ordered_array_values.empty
-        ):
+
+        if array.size == 0:
             return True
+
+        ii = np.iinfo(target)
+        if array.min() >= ii.min and array.max() <= ii.max:
+            return True
+
     return False
 
 
 def convert_pandas_series_to_numpy(series_to_convert: pd.Series, dtype):
     if series_to_convert.hasnans and dtype == np.int32:
-        logging.error("Cannot convert a pandas Series object to an integer dtype if it contains NaNs.")
+        logging.error("Cannot convert a pandas Series object to an integer dtype if it contains NA values.")
 
     return series_to_convert.to_numpy(dtype)
 
