@@ -24,7 +24,12 @@ import {
   StyledCallout,
   TabWrapper,
 } from "./style";
-import { getIsPublishable, renderContact, renderLinks } from "./utils";
+import {
+  getIsPublishable,
+  renderContact,
+  renderLinks,
+  revisionIsPublishable,
+} from "./utils";
 
 enum TABS {
   GENE_SETS = "gene-sets-tab",
@@ -104,7 +109,7 @@ const Collection: FC = () => {
     getIsPublishable(datasets) &&
     !isUploadingLink &&
     !isFetching &&
-    (!isRevision || collection.revision_diff);
+    revisionIsPublishable(collection, revisionsEnabled);
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
