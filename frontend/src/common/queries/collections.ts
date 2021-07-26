@@ -3,6 +3,7 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
+import checkForRevisionChange from "../utils/checkForRevisionChange";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
@@ -37,12 +38,26 @@ export interface RevisionResponse extends CollectionResponse {
   revision: REVISION_STATUS;
 }
 
-async function fetchCollections(): Promise<CollectionResponse[]> {
+// if we return as a Map it will be easier to fetch collections by id
+export type CollectionResponsesMap = Map<
+  CollectionResponse["id"],
+  Map<VISIBILITY_TYPE, CollectionResponse>
+>;
+
+async function fetchCollections(): Promise<CollectionResponsesMap> {
   const json = await (
     await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
   ).json();
 
-  return json.collections;
+  const collectionsMap: CollectionResponsesMap = new Map();
+
+  for (const collection of json.collections as CollectionResponse[]) {
+    const collectionsWithId = collectionsMap.get(collection.id) || new Map();
+    collectionsWithId.set(collection.visibility, collection);
+    collectionsMap.set(collection.id, collectionsWithId);
+  }
+
+  return collectionsMap;
 }
 
 export function useCollections() {
@@ -61,39 +76,84 @@ export type CollectionError = {
   type: string;
 };
 
-async function fetchCollection(
-  _: unknown,
-  id: string,
-  visibility: VISIBILITY_TYPE
-): Promise<Collection | null> {
-  if (!id) {
-    return null;
+function generateDatasetMap(json: any) {
+  const datasetMap = new Map() as Collection["datasets"];
+  for (const dataset of json.datasets) {
+    datasetMap.set(dataset.original_id || dataset.id, dataset);
   }
+  return datasetMap;
+}
 
-  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
+  return async function (
+    _: unknown,
+    id: string,
+    visibility: VISIBILITY_TYPE
+  ): Promise<Collection | null> {
+    if (!id) {
+      return null;
+    }
 
-  const finalUrl =
-    visibility === VISIBILITY_TYPE.PRIVATE
-      ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
-      : baseUrl;
+    const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-  const response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
-  const result = await response.json();
+    const finalUrl =
+      visibility === VISIBILITY_TYPE.PRIVATE
+        ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
+        : baseUrl;
 
-  if (!response.ok) {
-    throw result;
-  }
+    let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
+    let json = await response.json();
 
-  return result;
+    if (!response.ok) {
+      throw json;
+    }
+
+    const collection = { ...json, datasets: generateDatasetMap(json) };
+
+    let publishedCounterpart;
+
+    if (allCollections) {
+      const collectionsWithID = allCollections.get(id) as Map<
+        VISIBILITY_TYPE,
+        Collection
+      >;
+
+      collection.is_revision = collectionsWithID.size > 1;
+    }
+
+    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.is_revision) {
+      response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
+      json = await response.json();
+
+      if (response.ok) {
+        publishedCounterpart = {
+          ...json,
+          datasets: generateDatasetMap(json),
+        };
+      }
+    }
+
+    // check for diffs between revision and published collection
+    if (collection.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+      collection.revision_diff = checkForRevisionChange(
+        collection,
+        publishedCounterpart
+      );
+    }
+    return collection;
+  };
 }
 
 export function useCollection({
   id = "",
   visibility = VISIBILITY_TYPE.PUBLIC,
 }) {
+  const { data: collections } = useCollections();
+  const queryFn = fetchCollection(collections);
   return useQuery<Collection | null>(
-    [USE_COLLECTION, id, visibility],
-    fetchCollection
+    [USE_COLLECTION, id, visibility, collections],
+    queryFn,
+    { enabled: !!collections }
   );
 }
 
@@ -171,9 +231,8 @@ export function useCollectionUploadLinks(
   visibility: VISIBILITY_TYPE
 ) {
   const queryCache = useQueryCache();
-
   return useMutation(collectionUploadLinks, {
-    onSuccess: () => {
+    onMutate: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
     },
   });
@@ -201,7 +260,10 @@ export function useDeleteCollection(id = "") {
 
   return useMutation(deleteCollection, {
     onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTIONS]);
+      return Promise.all([
+        queryCache.invalidateQueries([USE_COLLECTIONS]),
+        queryCache.invalidateQueries([USE_COLLECTION, id]),
+      ]);
     },
   });
 }
@@ -258,14 +320,30 @@ const editCollection = async function ({
   return result;
 };
 
-export function useEditCollection() {
+export function useEditCollection(collectionID?: Collection["id"]) {
   const queryCache = useQueryCache();
 
+  const { data: collection } = useCollection({
+    id: collectionID,
+    visibility: VISIBILITY_TYPE.PRIVATE,
+  });
+
+  const { data: publishedCollection } = useCollection({
+    id: collectionID,
+    visibility: VISIBILITY_TYPE.PUBLIC,
+  });
+
   return useMutation(editCollection, {
-    onSuccess: (collection: Collection) => {
+    onSuccess: (newCollection) => {
       return queryCache.setQueryData(
-        [USE_COLLECTION, collection.id, collection.visibility],
-        collection
+        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
+        () => {
+          const revision_diff =
+            collection?.is_revision && publishedCollection
+              ? checkForRevisionChange(newCollection, publishedCollection)
+              : null;
+          return { ...collection, ...newCollection, revision_diff };
+        }
       );
     },
   });
@@ -281,15 +359,17 @@ const createRevision = async function (id: string) {
   });
 
   if (!response.ok) throw await response.json();
+  return response.json();
 };
 
 export function useCreateRevision(callback: () => void) {
   const queryCache = useQueryCache();
 
   return useMutation(createRevision, {
-    onSuccess: () => {
+    onSuccess: (collection: Collection) => {
       callback();
-      return queryCache.invalidateQueries([USE_COLLECTIONS]);
+      queryCache.invalidateQueries([USE_COLLECTIONS]);
+      queryCache.invalidateQueries([USE_COLLECTION, collection.id]);
     },
   });
 }
@@ -327,7 +407,6 @@ const reuploadDataset = async function ({
 
 export function useReuploadDataset(collectionId: string) {
   const queryCache = useQueryCache();
-
   return useMutation(reuploadDataset, {
     onSuccess: () => {
       queryCache.invalidateQueries([

@@ -8,6 +8,7 @@ from backend.corpora.common.utils.dl_sources.url import from_url, DropBoxURL, Mi
 
 class TestDropbox(unittest.TestCase):
     def setUp(self):
+        super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
         RegisteredSources.add(DropBoxURL)

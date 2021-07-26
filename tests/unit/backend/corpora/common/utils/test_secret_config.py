@@ -24,6 +24,7 @@ class BogoComponentConfig(SecretConfig):
 class TestSecretConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         # AwsSecret.debug_logging = True
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
         cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
@@ -35,8 +36,10 @@ class TestSecretConfig(unittest.TestCase):
     def tearDownClass(cls):
         AwsSecret.debug_logging = False
         cls.patcher.stop()
+        super().tearDownClass()
 
     def setUp(self):
+        super().setUp()
         self.deployment_env = "bogo_env_{}".format(uuid.uuid4())
         self.secret_name = f"corpora/bogo_component/{self.deployment_env}/secrets"
         BogoComponentConfig.reset()

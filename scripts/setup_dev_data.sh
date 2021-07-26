@@ -16,8 +16,8 @@ export OIDC_INTERNAL_URL=http://oidc.corporanet.local
 # How a web browser can reach the OIDC idp
 export OIDC_BROWSER_URL=https://oidc.corporanet.local:8443
 
-# Get test credentials from oauth/user.json
-oauth_file="./users.json"
+# Get test credentials from oauth/users.json
+oauth_file="oauth/users.json"
 oauth_user=$(cat ${oauth_file} | jq '.[0]')
 
 export TEST_ACCOUNT_USERNAME=$(jq '.Username' <<< "${oauth_user}")
@@ -82,7 +82,8 @@ rm fake-h5ad-file.h5ad
 echo "Populating test db"
 export CORPORA_LOCAL_DEV=true
 export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
-python3 $(dirname ${BASH_SOURCE[0]})/populate_db.py
+cd $(dirname ${BASH_SOURCE[0]})/..
+python3 -m scripts.populate_db
 echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"

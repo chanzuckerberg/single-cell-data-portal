@@ -2,11 +2,13 @@ from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import CollectionVisibility
 from ....common.entities.geneset import Geneset
+from ....api_server.db import dbconnect
 from ....common.utils.exceptions import (
     ForbiddenHTTPException,
 )
 
 
+@dbconnect
 def delete(geneset_uuid: str, user: str):
     """
     Deletes an existing geneset

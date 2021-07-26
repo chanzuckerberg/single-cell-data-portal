@@ -15,7 +15,8 @@ jobs:
           SEVE="@seve"
           MADISON="@madison.dunitz"
           TRENT="@trent.smith"
-          ENGINEERS=($SEVE $MADISON $TRENT)
+          TIMMY="@thuang"
+          ENGINEERS=($SEVE $MADISON $TIMMY)
           ENGINEER_COUNT=${#ENGINEERS[@]}
           SLACK_MESSAGE="Standup this week!\n"
           i=0

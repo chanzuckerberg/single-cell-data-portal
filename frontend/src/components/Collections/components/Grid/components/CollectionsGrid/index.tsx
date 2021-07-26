@@ -2,9 +2,8 @@ import React, { FC, ReactChild } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   CollectionResponse,
-  RevisionResponse,
+  CollectionResponsesMap,
 } from "src/common/queries/collections";
-import { generateRevisions } from "src/components/Collections/util";
 import {
   CollectionHeaderCell,
   LeftAlignedHeaderCell,
@@ -14,7 +13,7 @@ import {
 import CollectionRow from "../Row/CollectionRow";
 
 interface Props {
-  collections: CollectionResponse[];
+  collections: CollectionResponsesMap;
   accessType?: ACCESS_TYPE;
   displayVisibility?: VISIBILITY_TYPE;
   revisionsEnabled?: boolean;
@@ -54,15 +53,14 @@ const CollectionsGrid: FC<Props> = ({
 };
 
 function renderCollections(
-  collections: CollectionResponse[],
+  collections: CollectionResponsesMap,
   displayVisibility?: VISIBILITY_TYPE,
   accessType?: ACCESS_TYPE,
   revisionsEnabled = false
 ) {
   const collectionElements = [] as Array<ReactChild>;
-  const revisions = generateRevisions(collections, revisionsEnabled);
-  sortByCreatedAtDescending(revisions).forEach(
-    ({ id, visibility, revision }) => {
+  sortByCreatedAtDescendingAndFormat(collections).forEach(
+    ({ id, visibility }) => {
       if (!displayVisibility || visibility === displayVisibility) {
         collectionElements.push(
           <CollectionRow
@@ -70,7 +68,7 @@ function renderCollections(
             key={id + visibility}
             visibility={visibility}
             accessType={accessType}
-            revisionStatus={revision}
+            revisionsEnabled={revisionsEnabled}
           />
         );
       }
@@ -80,10 +78,19 @@ function renderCollections(
   return collectionElements;
 }
 
-function sortByCreatedAtDescending(
-  collections: RevisionResponse[]
-): RevisionResponse[] {
-  return collections?.sort((a, b) => b.created_at - a.created_at) || [];
+function sortByCreatedAtDescendingAndFormat(
+  collectionsMap: CollectionResponsesMap
+): CollectionResponse[] {
+  return (
+    Array.from(collectionsMap.values())
+      .map((collectionsWithIDMap) => {
+        return (collectionsWithIDMap.get(VISIBILITY_TYPE.PUBLIC) ||
+          collectionsWithIDMap.get(
+            VISIBILITY_TYPE.PRIVATE
+          )) as CollectionResponse;
+      })
+      .sort((a, b) => b.created_at - a.created_at) || []
+  );
 }
 
 export default CollectionsGrid;
