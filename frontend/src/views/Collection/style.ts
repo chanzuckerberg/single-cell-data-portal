@@ -1,4 +1,4 @@
-import { Classes } from "@blueprintjs/core";
+import { Callout, Classes } from "@blueprintjs/core";
 import { BLUE, GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
@@ -58,4 +58,12 @@ export const TabWrapper = styled.div`
   & .${Classes.TAB_INDICATOR} {
     bottom: -6px;
   }
+`;
+
+export const StyledCallout = styled(Callout)`
+  color: ${BLUE.A};
+  grid-column: 1/4;
+  width: fit-content;
+  padding: ${PT_GRID_SIZE_PX}px ${PT_GRID_SIZE_PX * 1.5}px;
+  margin-bottom: ${PT_GRID_SIZE_PX * 2}px;
 `;
