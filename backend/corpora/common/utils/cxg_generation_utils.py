@@ -3,7 +3,10 @@ import json
 import numpy as np
 import tiledb
 
-from backend.corpora.common.utils.type_conversion_utils import get_encoding_dtype_of_array, get_dtype_and_schema_of_array
+from backend.corpora.common.utils.type_conversion_utils import (
+    get_encoding_dtype_of_array,
+    get_dtype_and_schema_of_array
+)
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata"):
