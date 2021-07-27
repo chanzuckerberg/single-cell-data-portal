@@ -66,7 +66,7 @@ const Collection: FC = () => {
   const { data: collection, isError, isFetching } = collectionState;
 
   const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
-  const isRevision = revisionsEnabled && !!collection?.is_revision;
+  const isRevision = revisionsEnabled && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
@@ -124,7 +124,7 @@ const Collection: FC = () => {
         <title>cellxgene | {collection.name}</title>
       </Head>
       <ViewGrid>
-        {collection.is_revision && (
+        {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
           <StyledCallout intent={Intent.PRIMARY} icon={null}>
             {collection.revision_diff
               ? "This collection has changed since you last published it."
