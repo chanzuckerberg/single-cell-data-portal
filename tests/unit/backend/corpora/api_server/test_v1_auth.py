@@ -63,6 +63,7 @@ class TestAuth(BaseAuthAPITest):
             # check userinfo
             response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
+
             body = json.loads(response.data)
             self.check_user_info(body)
             self.assertNotIn("Set-Cookie", response.headers)  # no cookie expected
