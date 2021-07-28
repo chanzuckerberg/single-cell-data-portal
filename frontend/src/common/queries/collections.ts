@@ -113,12 +113,9 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     let publishedCounterpart;
 
     if (allCollections) {
-      const collectionsWithID = allCollections.get(id) as Map<
-        VISIBILITY_TYPE,
-        Collection
-      >;
+      const collectionsWithID = allCollections.get(id);
 
-      collection.has_revision = collectionsWithID.size > 1;
+      collection.has_revision = collectionsWithID && collectionsWithID.size > 1;
     }
 
     if (visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision) {
