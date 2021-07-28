@@ -53,7 +53,7 @@ const CollectionRow: FC<Props> = (props) => {
   const [mutate] = useCreateRevision(navigateToRevision);
 
   const handleRevisionClick = () => {
-    if (collection?.is_revision === false) {
+    if (collection?.has_revision === false) {
       mutate(id);
     } else {
       navigateToRevision();
@@ -100,7 +100,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.is_revision && (
+            {props.revisionsEnabled && collection.has_revision && (
               <Tag minimal intent={Intent.PRIMARY}>
                 Revision Pending
               </Tag>
@@ -115,7 +115,7 @@ const CollectionRow: FC<Props> = (props) => {
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          isRevision={collection.is_revision}
+          isRevision={collection.has_revision}
           handleRevisionClick={handleRevisionClick}
         />
       ) : (

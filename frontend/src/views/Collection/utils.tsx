@@ -112,3 +112,11 @@ export function getIsPublishable(datasets: Array<Dataset>) {
     datasets.some((dataset) => !dataset.tombstone)
   );
 }
+// check if revision meets publishing criteria
+export function revisionIsPublishable(
+  collection: Collection,
+  revisionsEnabled: boolean
+): boolean {
+  if (!revisionsEnabled) return true;
+  return collection.revision_diff;
+}
