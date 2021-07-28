@@ -113,15 +113,12 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     let publishedCounterpart;
 
     if (allCollections) {
-      const collectionsWithID = allCollections.get(id) as Map<
-        VISIBILITY_TYPE,
-        Collection
-      >;
+      const collectionsWithID = allCollections.get(id);
 
-      collection.is_revision = collectionsWithID.size > 1;
+      collection.has_revision = collectionsWithID && collectionsWithID.size > 1;
     }
 
-    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.is_revision) {
+    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision) {
       response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
       json = await response.json();
 
@@ -134,7 +131,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     }
 
     // check for diffs between revision and published collection
-    if (collection.is_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+    if (collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
       collection.revision_diff = checkForRevisionChange(
         collection,
         publishedCounterpart
@@ -339,7 +336,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
         () => {
           const revision_diff =
-            collection?.is_revision && publishedCollection
+            collection?.has_revision && publishedCollection
               ? checkForRevisionChange(newCollection, publishedCollection)
               : null;
           return { ...collection, ...newCollection, revision_diff };
