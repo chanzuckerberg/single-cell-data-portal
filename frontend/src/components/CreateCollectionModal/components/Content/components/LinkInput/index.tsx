@@ -66,6 +66,9 @@ const LinkInput: FC<Props> = ({
       <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
       <Input
         name="Name"
+        // (thuang): `noNameAttr` removes this input field from the FormData and
+        // the payload
+        noNameAttr
         text="Name (optional)"
         placeholder="Name"
         handleChange={handleNameChange}
@@ -73,6 +76,9 @@ const LinkInput: FC<Props> = ({
         percentage={25}
       />
       <StyledURLInput
+        // (thuang): `noNameAttr` removes this input field from the FormData and
+        // the payload
+        noNameAttr
         name={value}
         text="URL"
         syncValidation={[isValidHttpUrl, isDOILink(value)]}
