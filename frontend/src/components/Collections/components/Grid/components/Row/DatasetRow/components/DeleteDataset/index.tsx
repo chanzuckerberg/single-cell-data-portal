@@ -39,8 +39,8 @@ const DeleteDataset: FC<Props> = ({
       {isOpen && (
         <AsyncAlert
           loading={isLoading}
-          cancelButtonText={"Cancel"}
-          confirmButtonText={"Delete Dataset"}
+          cancelButtonText="Cancel"
+          confirmButtonText="Delete Dataset"
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}

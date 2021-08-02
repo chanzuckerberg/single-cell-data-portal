@@ -46,11 +46,14 @@ const CollectionRow: FC<Props> = (props) => {
     id: props.id,
     visibility: props.visibility,
   });
+
   const router = useRouter();
+
   const navigateToRevision = () => {
     router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
   };
-  const [mutate] = useCreateRevision(navigateToRevision);
+
+  const [mutate, { isLoading }] = useCreateRevision(navigateToRevision);
 
   const handleRevisionClick = () => {
     if (collection?.has_revision === false) {
@@ -117,6 +120,7 @@ const CollectionRow: FC<Props> = (props) => {
         <RevisionCell
           isRevision={collection.has_revision}
           handleRevisionClick={handleRevisionClick}
+          isLoading={isLoading}
         />
       ) : (
         <RightAlignedDetailsCell />
@@ -128,13 +132,20 @@ const CollectionRow: FC<Props> = (props) => {
 const RevisionCell = ({
   isRevision,
   handleRevisionClick,
+  isLoading,
 }: {
   isRevision?: boolean;
   handleRevisionClick: () => void;
+  isLoading: boolean;
 }) => {
   return (
     <RightAlignedDetailsCell>
-      <Button intent={Intent.PRIMARY} minimal onClick={handleRevisionClick}>
+      <Button
+        loading={isLoading}
+        intent={Intent.PRIMARY}
+        minimal
+        onClick={handleRevisionClick}
+      >
         {isRevision ? "Continue" : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
