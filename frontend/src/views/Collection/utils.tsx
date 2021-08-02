@@ -7,6 +7,7 @@ import {
   Dataset,
   DATASET_ASSET_FORMAT,
   Link,
+  VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { StyledLink } from "./common/style";
@@ -118,5 +119,16 @@ export function revisionIsPublishable(
   revisionsEnabled: boolean
 ): boolean {
   if (!revisionsEnabled) return true;
-  return collection.revision_diff;
+
+  if (isPrivateRevision(collection)) {
+    return collection.revision_diff;
+  }
+
+  return true;
+}
+
+function isPrivateRevision(collection: Collection) {
+  return (
+    collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision
+  );
 }
