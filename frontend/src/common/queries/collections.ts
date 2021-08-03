@@ -148,7 +148,7 @@ export function useCollection({
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
   return useQuery<Collection | null>(
-    [USE_COLLECTION, id, visibility, collections],
+    [USE_COLLECTION, id, visibility],
     queryFn,
     { enabled: !!collections }
   );
