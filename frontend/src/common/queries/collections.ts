@@ -363,10 +363,10 @@ export function useCreateRevision(callback: () => void) {
   const queryCache = useQueryCache();
 
   return useMutation(createRevision, {
-    onSuccess: (collection: Collection) => {
+    onSuccess: async (collection: Collection) => {
+      await queryCache.invalidateQueries([USE_COLLECTIONS]);
+      await queryCache.invalidateQueries([USE_COLLECTION, collection.id]);
       callback();
-      queryCache.invalidateQueries([USE_COLLECTIONS]);
-      queryCache.invalidateQueries([USE_COLLECTION, collection.id]);
     },
   });
 }
