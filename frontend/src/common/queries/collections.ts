@@ -229,7 +229,7 @@ export function useCollectionUploadLinks(
 ) {
   const queryCache = useQueryCache();
   return useMutation(collectionUploadLinks, {
-    onMutate: () => {
+    onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
     },
   });
