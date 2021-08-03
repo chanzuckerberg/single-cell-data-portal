@@ -200,6 +200,7 @@ const DatasetRow: FC<Props> = ({
                   revisionsEnabled={revisionsEnabled}
                   onUploadFile={onUploadFile}
                   isLoading={isLoading}
+                  disabled={dataset.tombstone ?? false}
                 />
               )}
           </ActionButton>
@@ -209,12 +210,13 @@ const DatasetRow: FC<Props> = ({
               name={dataset?.name || ""}
               dataAssets={dataset?.dataset_assets}
               Button={DownloadButton}
+              isDisabled={dataset.tombstone}
             />
           </ActionButton>
 
           <ActionButton>
             {hasCXGFile(dataset) && (
-              <Tooltip content="Explore">
+              <Tooltip content="Explore" disabled={dataset.tombstone ?? false}>
                 <AnchorButton
                   minimal
                   intent={Intent.PRIMARY}
@@ -227,6 +229,7 @@ const DatasetRow: FC<Props> = ({
                   target="_blank"
                   rel="noopener"
                   data-test-id="view-dataset-link"
+                  disabled={dataset.tombstone ?? false}
                 />
               </Tooltip>
             )}

@@ -31,7 +31,7 @@ const DownloadDataset: FC<Props> = ({
 
   return (
     <>
-      <Tooltip content="Download">
+      <Tooltip content="Download" disabled={isDisabled}>
         <Button
           disabled={isDisabled || !dataAssets.length}
           onClick={toggleOpen}

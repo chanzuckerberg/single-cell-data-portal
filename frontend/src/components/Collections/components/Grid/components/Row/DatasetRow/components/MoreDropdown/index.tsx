@@ -10,6 +10,7 @@ interface Props {
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
   isLoading: boolean;
+  disabled: boolean;
 }
 
 const MoreDropdown = ({
@@ -18,6 +19,7 @@ const MoreDropdown = ({
   revisionsEnabled,
   onUploadFile,
   isLoading,
+  disabled,
 }: Props) => {
   const popoverProps = useMemo(() => {
     return {
@@ -30,11 +32,21 @@ const MoreDropdown = ({
           isLoading={isLoading}
         />
       ),
+      disabled,
       position: Position.BOTTOM,
     };
-  }, [collectionId, datasetId, revisionsEnabled, isLoading, onUploadFile]);
+  }, [
+    collectionId,
+    datasetId,
+    revisionsEnabled,
+    isLoading,
+    onUploadFile,
+    disabled,
+  ]);
 
-  return <RawMoreDropdown popoverProps={popoverProps} />;
+  return (
+    <RawMoreDropdown popoverProps={popoverProps} buttonProps={{ disabled }} />
+  );
 };
 
 export default MoreDropdown;
