@@ -148,7 +148,7 @@ export function useCollection({
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
   return useQuery<Collection | null>(
-    [USE_COLLECTION, id, visibility],
+    [USE_COLLECTION, id, visibility, collections],
     queryFn,
     { enabled: !!collections }
   );
@@ -320,6 +320,8 @@ const editCollection = async function ({
 export function useEditCollection(collectionID?: Collection["id"]) {
   const queryCache = useQueryCache();
 
+  const { data: collections } = useCollections();
+
   const { data: collection } = useCollection({
     id: collectionID,
     visibility: VISIBILITY_TYPE.PRIVATE,
@@ -333,7 +335,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
   return useMutation(editCollection, {
     onSuccess: (newCollection) => {
       return queryCache.setQueryData(
-        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
+        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
           const revision_diff =
             collection?.has_revision && publishedCollection
