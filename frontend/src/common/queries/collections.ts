@@ -229,7 +229,7 @@ export function useCollectionUploadLinks(
 ) {
   const queryCache = useQueryCache();
   return useMutation(collectionUploadLinks, {
-    onMutate: () => {
+    onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
     },
   });
@@ -320,6 +320,8 @@ const editCollection = async function ({
 export function useEditCollection(collectionID?: Collection["id"]) {
   const queryCache = useQueryCache();
 
+  const { data: collections } = useCollections();
+
   const { data: collection } = useCollection({
     id: collectionID,
     visibility: VISIBILITY_TYPE.PRIVATE,
@@ -333,7 +335,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
   return useMutation(editCollection, {
     onSuccess: (newCollection) => {
       return queryCache.setQueryData(
-        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE],
+        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
           const revision_diff =
             collection?.has_revision && publishedCollection
