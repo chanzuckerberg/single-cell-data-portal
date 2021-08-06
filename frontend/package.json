@@ -17,7 +17,7 @@
     "next-images": "^1.7.0",
     "next-secure-headers": "^2.1.0",
     "node-fetch": "^2.6.1",
-    "node-sass": "^4.14.1",
+    "node-sass": "^5.0.0",
     "papaparse": "^5.3.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
