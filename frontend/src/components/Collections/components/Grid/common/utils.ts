@@ -31,11 +31,11 @@ export const aggregateDatasetsMetadata = memoize(function (
   );
 
   return {
-    assay: unique(result.assay),
+    assay: caseInsensitiveSort(unique(result.assay)),
     cell_count: result.cell_count,
-    disease: unique(result.disease),
-    organism: unique(result.organism),
-    tissue: unique(result.tissue),
+    disease: caseInsensitiveSort(unique(result.disease)),
+    organism: caseInsensitiveSort(unique(result.organism)),
+    tissue: caseInsensitiveSort(unique(result.tissue)),
   };
 },
 hashFn);
@@ -74,4 +74,15 @@ function uniqueOntologies(ontologies: Ontology[]) {
 function unique(items: string[]) {
   if (!items) return [];
   return Array.from(new Set(items));
+}
+
+function caseInsensitiveSort(items: string[]): string[] {
+  // (thuang): Intl.Collator is used for performance
+  // https://stackoverflow.com/a/52369951
+  const collator = new Intl.Collator("en", {
+    numeric: true,
+    sensitivity: "base",
+  });
+
+  return items.sort((a, b) => collator.compare(a, b));
 }
