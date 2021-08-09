@@ -473,13 +473,13 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     )
 
     validate_h5ad_file(dataset_id, local_filename)
-    process_cxg(local_filename, dataset_id, cellxgene_bucket)
 
     # Process metadata
     metadata = extract_metadata(local_filename)
     update_db(dataset_id, metadata)
 
     # create artifacts
+    process_cxg(local_filename, dataset_id, cellxgene_bucket)
     create_artifacts(local_filename, dataset_id, artifact_bucket)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
