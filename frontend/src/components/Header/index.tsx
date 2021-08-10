@@ -14,12 +14,11 @@ const Header: FC = () => {
   // (thuang): FEATURES.AUTH and FEATURES.CREATE_COLLECTION are being deprecated
   const isAuth = get(FEATURES.AUTH) === BOOLEAN.TRUE;
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const isCreateCollection = get(FEATURES.CREATE_COLLECTION) === BOOLEAN.TRUE;
 
   const { data: userInfo } = useUserInfo(isAuth || isCurator);
 
   const isMyCollectionsShown =
-    userInfo?.name && (isCreateCollection || isCurator);
+    userInfo?.name && isCurator;
 
   return (
     <Wrapper>
