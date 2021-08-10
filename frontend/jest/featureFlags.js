@@ -5,9 +5,9 @@ module.exports = {
   origins: [
     {
       localStorage: [
-        { name: "cxg-ff-auth", value: "yes" },
-        { name: "cxg-ff-cc", value: "yes" },
         { name: "cxg-ff-gs", value: "yes" },
+        { name: "cxg-ff-curator", value: "yes" },
+        { name: "cxg-ff-rc", value: "yes" },
       ],
       origin: TEST_URL,
     },
