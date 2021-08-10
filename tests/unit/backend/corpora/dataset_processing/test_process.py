@@ -562,3 +562,26 @@ class TestDatasetProcessing(DataPortalTestCase):
         end = time.time()
         # check that tombstoning ends the download thread early
         self.assertLess(end - start, 11)
+
+    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
+    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file")
+    @patch("backend.corpora.dataset_processing.process.extract_metadata")
+    def test__cxg_not_created_when_metadata_extraction_fails(
+        self, mock_metadata_extraction, mock_validate_h5ad, mock_dropbox_download, mock_cxg
+    ):
+        mock_metadata_extraction.side_effect = RuntimeError("metadata extraction failed")
+        mock_dropbox_download.return_value = self.h5ad_filename
+        mock_cxg.return_value = str(self.cxg_filename)
+        dataset = self.generate_dataset(self.session)
+        dataset_id = dataset.id
+
+        explorer_bucket = "CELLXGENE-HOSTED-TEST"
+        artifact_bucket = "test-artifact-bucket"
+
+        with self.assertRaises(RuntimeError):
+            process.process(dataset_id, str(self.h5ad_filename), explorer_bucket, artifact_bucket)
+
+        dataset = Dataset.get(self.session, dataset_id)
+        processing_status = dataset.processing_status
+        self.assertEqual(None, processing_status.conversion_cxg_status)

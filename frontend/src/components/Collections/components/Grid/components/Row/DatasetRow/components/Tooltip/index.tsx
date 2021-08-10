@@ -60,7 +60,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
 
 const DEFAULT_CONTENT: Content = {
   color: RED.C,
-  content: <span>There was an unexpected problem. Please try again.</span>,
+  content: <span>There was an unexpected problem.</span>,
   intent: Intent.DANGER,
 };
 
