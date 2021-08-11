@@ -12,11 +12,9 @@ import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-
   const { data: userInfo } = useUserInfo(isCurator);
 
-  const isMyCollectionsShown =
-    userInfo?.name && isCurator;
+  const isMyCollectionsShown = userInfo?.name && isCurator;
 
   return (
     <Wrapper>
