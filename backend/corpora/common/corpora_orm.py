@@ -114,6 +114,18 @@ class CollectionVisibility(enum.Enum):
     PUBLIC = "Public"
     PRIVATE = "Private"
 
+class XApproximateDistribution(enum.Enum):
+    """
+    Describes a DbDataset's X_approximate_distribution.
+
+    COUNT - for data whose distributions are best approximated by counting distributions 
+            like Poisson, Binomial, or Negative Binomial.
+    PRIVATE - for data whose distributions are best approximated by the Gaussian distribution.
+    """
+
+    COUNT = "count"
+    NORMAL = "normal"
+
 
 class ProjectLinkType(enum.Enum):
     """
@@ -235,14 +247,19 @@ class DbDataset(Base, AuditMixin):
     sex = Column(JSONB)
     ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
+    cell_type = Column(JSONB)
     cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
+    is_primary_data = Column(Boolean, default=False)
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
     explorer_url = Column(String, index=True)
+    X_normalization = Column(String)
+    X_approximate_distribution = Column(Enum(XApproximateDistribution))
+    schema_version = Column(String)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
