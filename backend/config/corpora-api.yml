@@ -819,9 +819,7 @@ components:
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
-          type: array
-          items:
-            type: string
+          $ref: "#/components/schemas/ontology_element_array"
         ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:
@@ -853,8 +851,16 @@ components:
           $ref: "#/components/schemas/visibility"
         is_primary_data:
           type: boolean
+        cell_type:
+          $ref: "#/components/schemas/ontology_element_array"
         cell_count:
           type: integer
+        X_normalization:
+          type: string
+        X_approximate_distribution:
+          $ref: "#/components/schemas/X_approximate_distribution"
+        schema_version:
+          type: string
         tombstone:
           type: boolean
     dataset_asset:
