@@ -194,15 +194,21 @@ def migrate_schema_version(ctx):
     which contains the version. This is a one-off procedure since new datasets will have
     the version already set.
     """
+
+    import requests as rq
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign schema_version to all the"
+            f"Are you sure you want to run this script? It will assign schema_version to all the "
             f"datasets",
             abort=True,
         )
-        print("TESTTEST")
         for record in session.query(DbDataset):
-            print(record)
+            dataset_id = record.id
+            url = f"https://api.cellxgene.cziscience.com/cellxgene/e/{dataset_id}.cxg/api/v0.2/config"
+            res = rq.get(url).json()
+            version = res['config']['corpora_props']['version']['corpora_schema_version']
+            logger.info(f"Setting version for dataset {dataset_id} to {version}")
+            record.schema_version = version
 
 
 def get_database_uri() -> str:
