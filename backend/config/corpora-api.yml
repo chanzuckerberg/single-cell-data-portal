@@ -851,6 +851,8 @@ components:
           $ref: "#/components/schemas/collection_uuid"
         collection_visibility:
           $ref: "#/components/schemas/visibility"
+        is_primary_data:
+          type: boolean
         cell_count:
           type: integer
         tombstone:
