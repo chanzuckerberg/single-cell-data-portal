@@ -78,7 +78,8 @@ def delete_dataset(ctx, uuid):
 @click.argument("uuid")
 @click.pass_context
 def tombstone_dataset(ctx, uuid):
-    """Remove a dataset from Cellxgene. This will delete its artifacts/genesets and mark the dataset as tombsstoned so
+    """
+    Remove a dataset from Cellxgene. This will delete its artifacts/genesets and mark the dataset as tombsstoned so
      it no longer shows up in the data portal.
      You must first SSH into the target deployment using `make db/tunnel` before running.
       ./scripts/cxg_admin.py --deployment staging tombstone-dataset "57cf1b53-af10-49e5-9a86-4bc70d0c92b6"
