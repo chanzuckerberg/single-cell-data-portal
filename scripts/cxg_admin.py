@@ -185,6 +185,25 @@ def create_cxg_artifacts(ctx):
                     s3_uri=s3_uri,
                 )
 
+@cli.command()
+@click.pass_context
+def migrate_schema_version(ctx):
+    """
+    Populates `schema_version` for each existing dataset. Since the schema version only exists
+    in the cxg file and we don't want to open them, we will call the cellxgene explorer endpoint
+    which contains the version. This is a one-off procedure since new datasets will have
+    the version already set.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign schema_version to all the"
+            f"datasets",
+            abort=True,
+        )
+        print("TESTTEST")
+        for record in session.query(DbDataset):
+            print(record)
+
 
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
