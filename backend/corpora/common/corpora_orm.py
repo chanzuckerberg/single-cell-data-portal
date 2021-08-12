@@ -114,11 +114,12 @@ class CollectionVisibility(enum.Enum):
     PUBLIC = "Public"
     PRIVATE = "Private"
 
+
 class XApproximateDistribution(enum.Enum):
     """
     Describes a DbDataset's X_approximate_distribution.
 
-    COUNT - for data whose distributions are best approximated by counting distributions 
+    COUNT - for data whose distributions are best approximated by counting distributions
             like Poisson, Binomial, or Negative Binomial.
     PRIVATE - for data whose distributions are best approximated by the Gaussian distribution.
     """

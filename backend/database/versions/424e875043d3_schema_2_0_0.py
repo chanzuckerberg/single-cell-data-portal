@@ -11,10 +11,11 @@ from sqlalchemy.dialects.postgresql import JSONB, ENUM
 
 
 # revision identifiers, used by Alembic.
-revision = '424e875043d3'
-down_revision = 'b65dad1f2a7e'
+revision = "424e875043d3"
+down_revision = "b65dad1f2a7e"
 branch_labels = None
 depends_on = None
+
 
 def create_enum(name: str, values: list):
     values.sort()
@@ -22,8 +23,8 @@ def create_enum(name: str, values: list):
     _enum.create(op.get_bind(), checkfirst=True)
     return _enum
 
+
 def upgrade():
-    
     X_approximate_distribution_enum = create_enum("X_approximate_distribution", ["count", "normal"])
 
     op.add_column("dataset", sa.Column("cell_type", JSONB, nullable=True))
