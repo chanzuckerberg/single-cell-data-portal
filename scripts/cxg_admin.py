@@ -206,7 +206,7 @@ def migrate_schema_version(ctx):
         for record in session.query(DbDataset):
             dataset_id = record.id
             explorer_url = urlparse(record.explorer_url)
-            url = f"https://api.cellxgene.cziscience.com/cellxgene{explorer_url.path}api/v0.2/config"
+            url = f"https://api.{explorer_url.netloc}/cellxgene{explorer_url.path}api/v0.2/config"
             res = rq.get(url).json()
             version = res['config']['corpora_props']['version']['corpora_schema_version']
             logger.info(f"Setting version for dataset {dataset_id} to {version}")
