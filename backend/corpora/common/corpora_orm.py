@@ -121,7 +121,7 @@ class XApproximateDistribution(enum.Enum):
 
     COUNT - for data whose distributions are best approximated by counting distributions
             like Poisson, Binomial, or Negative Binomial.
-    PRIVATE - for data whose distributions are best approximated by the Gaussian distribution.
+    NORMAL - for data whose distributions are best approximated by the Gaussian distribution.
     """
 
     COUNT = "count"
