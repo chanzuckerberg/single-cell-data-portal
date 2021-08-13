@@ -284,15 +284,20 @@ def extract_metadata(filename):
 
     metadata = {
         "name": adata.uns["title"],
-        "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
+        "organism": {"label": adata.obs["organism"], "ontology_term_id": adata.obs["organism_ontology_term_id"]},
         "tissue": _get_term_pairs("tissue"),
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
-        "sex": list(adata.obs.sex.unique()),
+        "sex": _get_term_pairs("sex"),
         "ethnicity": _get_term_pairs("ethnicity"),
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
+        "is_primary_data": adata.obs['is_primary_data'],
+        "cell_type": _get_term_pairs("cell_type"),
+        'X_normalization': adata.uns["X_normalization"],
+        "X_approximate_distribution": adata.uns["X_approximate_distribution"],
+
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
