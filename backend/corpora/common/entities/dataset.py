@@ -37,13 +37,6 @@ class Dataset(Entity):
         session,
         revision: int = 0,
         name: str = "",
-        organism: dict = None,
-        tissue: list = None,
-        assay: list = None,
-        disease: list = None,
-        sex: list = None,
-        ethnicity: list = None,
-        development_stage: list = None,
         artifacts: list = None,
         processing_status: dict = None,
         **kwargs,
@@ -55,13 +48,6 @@ class Dataset(Entity):
         dataset = DbDataset(
             revision=revision,
             name=name,
-            organism=organism,
-            tissue=tissue,
-            assay=assay,
-            disease=disease,
-            sex=sex,
-            ethnicity=ethnicity,
-            development_stage=development_stage,
             **kwargs,
         )
         if artifacts:
@@ -199,6 +185,7 @@ class Dataset(Entity):
     def reprocess(self):
         if not self.published:
             self.asset_deletion()
+        # TODO: any other schema 2.0 changes needed?
         self.update(
             name="",
             organism=None,
@@ -208,6 +195,7 @@ class Dataset(Entity):
             sex=None,
             ethnicity=None,
             development_stage=None,
+            cell_type=None,
             published=False,
             revision=self.revision + 1,
             explorer_url=None,
