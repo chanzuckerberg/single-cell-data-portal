@@ -27,6 +27,8 @@ from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 from urllib.parse import urlparse
 
+import requests as rq
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
@@ -195,7 +197,6 @@ def migrate_schema_version(ctx):
     the version already set.
     """
 
-    import requests as rq
     with db_session_manager() as session:
         click.confirm(
             f"Are you sure you want to run this script? It will assign schema_version to all the "
@@ -204,7 +205,8 @@ def migrate_schema_version(ctx):
         )
         for record in session.query(DbDataset):
             dataset_id = record.id
-            url = f"https://api.cellxgene.cziscience.com/cellxgene/e/{dataset_id}.cxg/api/v0.2/config"
+            explorer_url = urlparse(record.explorer_url)
+            url = f"https://api.cellxgene.cziscience.com/cellxgene{explorer_url.path}api/v0.2/config"
             res = rq.get(url).json()
             version = res['config']['corpora_props']['version']['corpora_schema_version']
             logger.info(f"Setting version for dataset {dataset_id} to {version}")
