@@ -1,8 +1,13 @@
 import random
 import string
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus, \
-    XApproximateDistribution
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    ConversionStatus,
+    UploadStatus,
+    ValidationStatus,
+    XApproximateDistribution,
+)
 
 
 class BogusProcessingStatusParams:
@@ -55,9 +60,7 @@ class BogusDatasetParams:
             ],
             ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
-            cell_type=[
-                {"ontology_term_id": "Hepatic-1A", "label": "liver"}
-            ],
+            cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
             is_primary_data=True,
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,

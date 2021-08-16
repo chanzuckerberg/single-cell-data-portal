@@ -335,9 +335,10 @@ class TestCollection(BaseAuthAPITest):
             actual_body = self.remove_timestamps(json.loads(resp.data))
             expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
 
-            # Remove `visibility`, `collection_visibility` and `X_approximate_distribution` from the bodies, since one will be an Enum 
-            # and the other will be a string. That's expected since internal objects should keep stricter data types, but JSON
-            # doesn't support Enums and therefore have to be converted as strings.
+            # Remove `visibility`, `collection_visibility` and `X_approximate_distribution` from the bodies,
+            # since one will be an Enum and the other will be a string. That's expected since internal objects
+            # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
+            # as strings.
             self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
             self.assertEqual(
                 expected_body["datasets"][0].pop("collection_visibility").name,
