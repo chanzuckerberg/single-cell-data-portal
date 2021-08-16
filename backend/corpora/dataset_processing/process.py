@@ -254,24 +254,22 @@ def extract_metadata(filename):
 
     adata = scanpy.read_h5ad(filename, backed="r")
 
-    try:
-        raw_layer_name = [k for k, v in adata.uns["layer_descriptions"].items() if v == "raw"][0]
-    except (KeyError, IndexError):
-        raise RuntimeError("Raw layer not found in layer descriptions!")
-
-    if raw_layer_name == "X":
-        raw_layer = adata.X
-    elif raw_layer_name == "raw.X":
-        raw_layer = adata.raw.X
+    # TODO: Concern with respect to previous use of raising error when there is no raw layer.
+    # This new way defaults to adata.X.
+    if adata.raw and adata.raw.X:
+        layer_for_mean_genes_per_cell = adata.raw.X
     else:
-        raw_layer = adata.layers[raw_layer_name]
+        layer_for_mean_genes_per_cell = adata.X
 
     # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
     # into memory, so we need to chunk it to be safe.
     stride = 50000
     numerator, denominator = 0, 0
-    for bounds in zip(range(0, raw_layer.shape[0], stride), range(stride, raw_layer.shape[0] + stride, stride)):
-        chunk = raw_layer[bounds[0] : bounds[1], :]
+    for bounds in zip(
+        range(0, layer_for_mean_genes_per_cell.shape[0], stride), 
+        range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride)
+    ):
+        chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
@@ -284,7 +282,7 @@ def extract_metadata(filename):
 
     metadata = {
         "name": adata.uns["title"],
-        "organism": {"label": adata.obs["organism"], "ontology_term_id": adata.obs["organism_ontology_term_id"]},
+        "organism": _get_term_pairs("organism"),
         "tissue": _get_term_pairs("tissue"),
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
@@ -293,9 +291,9 @@ def extract_metadata(filename):
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
-        "is_primary_data": adata.obs['is_primary_data'],
+        "is_primary_data": adata.obs["is_primary_data"],
         "cell_type": _get_term_pairs("cell_type"),
-        'X_normalization': adata.uns["X_normalization"],
+        "X_normalization": adata.uns["X_normalization"],
         "X_approximate_distribution": adata.uns["X_approximate_distribution"],
 
     }

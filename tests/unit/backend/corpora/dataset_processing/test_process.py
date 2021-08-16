@@ -108,6 +108,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         assay = numpy.random.choice([0, 1, 2], size=(50001))
         eth = numpy.random.choice([0, 1], size=(50001))
         dev = numpy.random.choice([0, 1, 2], size=(50001))
+        sx = dev = numpy.random.choice([0, 1, 2], size=(50001))
 
         obs = pandas.DataFrame(
             numpy.hstack(
@@ -118,8 +119,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
                     numpy.random.choice(["healthy"], size=(50001, 1)),
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
-                    numpy.random.choice(["male", "female", "fixed"], size=(50001, 1)),
-                    numpy.random.choice(["M", "F", "MF"], size=(50001, 1)),
+                    numpy.array([["male", "female", "fixed"][i] for i in sx]).reshape(50001, 1),
+                    numpy.array([["M", "F", "MF"][i] for i in sx]).reshape(50001, 1),
                     numpy.array([["solomon islander", "orcadian"][i] for i in eth]).reshape(50001, 1),
                     numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in eth]).reshape(50001, 1),
                     numpy.array([["adult", "baby", "tween"][i] for i in dev]).reshape(50001, 1),
@@ -159,13 +160,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         }
 
         adata = anndata.AnnData(X=df, obs=obs, uns=uns)
-        print('xxxxxxxxxxx adata: ', adata)
         mock_read_h5ad.return_value = adata
 
         extracted_metadata = process.extract_metadata("dummy")
         lab, ont = "label", "ontology_term_id"
-
-        self.assertDictEqual(extracted_metadata["organism"], {lab: "Homo sapiens", ont: "NCBITaxon:8505"})
 
         def list_equal(list1, list2, cmp_func):
             self.assertEqual(len(list1), len(list2))
@@ -174,6 +172,12 @@ class TestDatasetProcessing(DataPortalTestCase):
                 el2 = list2[list2.index(el1)]
                 if cmp_func:
                     cmp_func(el1, el2)
+
+        list_equal(
+            extracted_metadata["organism"], 
+            [{lab: "Homo sapiens", ont: "NCBITaxon:8505"}], 
+            self.assertDictEqual
+        )
 
         list_equal(
             extracted_metadata["tissue"],
@@ -189,7 +193,11 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         list_equal(extracted_metadata["disease"], [{lab: "healthy", ont: "MONDO:123"}], self.assertDictEqual)
 
-        self.assertListEqual(sorted(extracted_metadata["sex"]), sorted(["male", "female"]))
+        list_equal(
+            extracted_metadata["sex"],
+            [{lab: "male", ont: "M"}, {lab: "female", ont: "F"}, {lab: "fixed", ont: "MF"}],
+            self.assertDictEqual,
+        )
 
         list_equal(
             extracted_metadata["ethnicity"],
