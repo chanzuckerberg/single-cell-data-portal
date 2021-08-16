@@ -330,10 +330,16 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(200, resp.status_code)
             actual_body = self.remove_timestamps(json.loads(resp.data))
             expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
+            print("COLLECTION")
+            print(collection.reshape_for_api())
             self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
             self.assertEqual(
                 expected_body["datasets"][0].pop("collection_visibility").name,
                 actual_body["datasets"][0].pop("collection_visibility"),
+            )
+            self.assertEqual(
+                expected_body["datasets"][0].pop("X_approximate_distribution").name,
+                actual_body["datasets"][0].pop("X_approximate_distribution"),
             )
             self.assertEqual(expected_body, actual_body)
 
