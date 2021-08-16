@@ -236,7 +236,12 @@ class TestDatasetProcessing(DataPortalTestCase):
                     ).reshape(11, 1),
                     numpy.random.choice(["healthy"], size=(11, 1)),
                     numpy.random.choice(["MONDO:123"], size=(11, 1)),
-                    numpy.random.choice(["male", "female"], size=(11, 1)),
+                    numpy.array(
+                        [["male", "female", "fixed"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
+                    numpy.array(
+                        [["M", "F", "MF"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
+                    ).reshape(11, 1),
                     numpy.array(
                         [["solomon islander", "orcadian"][i] for i in numpy.random.choice([0, 1], size=(11))]
                     ).reshape(11, 1),
@@ -249,6 +254,11 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array(
                         [["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
                     ).reshape(11, 1),
+                    numpy.random.choice(["Homo sapiens"], size=(11, 1)),
+                    numpy.random.choice(["NCBITaxon:8505"], size=(11, 1)),
+                    numpy.random.choice([0], size=(11, 1)),
+                    numpy.random.choice(["liver"], size=(11, 1)),
+                    numpy.random.choice(["Hepatic-1A"], size=(11, 1)),
                 ]
             ),
             columns=[
@@ -259,22 +269,33 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
+                "sex_ontology_term_id",
                 "ethnicity",
                 "ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
+                "organism",
+                "organism_ontology_term_id",
+                "is_primary_data",
+                "cell_type",
+                "cell_type_ontology_term_id"
             ],
             index=(str(i) for i in range(11)),
         )
         uns = {
             "title": "my test dataset",
-            "organism": "Homo sapiens",
-            "organism_ontology_term_id": "NCBITaxon:8505",
-            "layer_descriptions": {"my_awesome_wonky_layer": "raw"},
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
+
         adata = anndata.AnnData(
             X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
         )
+        adata_raw = anndata.AnnData(
+            X=zeros_layer_df, obs=obs, uns=uns
+        )
+        adata.raw = adata_raw
+        
         mock_read_h5ad.return_value = adata
 
         # Run the extraction method

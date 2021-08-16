@@ -256,7 +256,7 @@ def extract_metadata(filename):
 
     # TODO: Concern with respect to previous use of raising error when there is no raw layer.
     # This new way defaults to adata.X.
-    if adata.raw and adata.raw.X:
+    if adata.raw is not None and adata.raw.X is not None:
         layer_for_mean_genes_per_cell = adata.raw.X
     else:
         layer_for_mean_genes_per_cell = adata.X
