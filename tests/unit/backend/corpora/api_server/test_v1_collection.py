@@ -168,6 +168,9 @@ class TestCollection(BaseAuthAPITest):
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "collection_id": "test_collection_id",
                     "collection_visibility": "PUBLIC",
+                    "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+                    "X_normalization": "test_X_normalization",
+                    "X_approximate_distribution": "NORMAL",
                     "is_valid": False,
                     "revision": 0,
                     "sex": [
@@ -190,6 +193,7 @@ class TestCollection(BaseAuthAPITest):
                     },
                     "published": False,
                     "tombstone": False,
+                    "schema_version": "2.0.0",
                 }
             ],
             "description": "test_description",
