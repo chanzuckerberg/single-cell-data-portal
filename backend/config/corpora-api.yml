@@ -734,7 +734,7 @@ components:
         calculate statistical properties of the data. This field enables the curator to override this heuristic
         and specify the data distribution explicitly.
       type: string
-      enum: [count, normal]
+      enum: [COUNT, NORMAL]
     links:
       type: array
       items:

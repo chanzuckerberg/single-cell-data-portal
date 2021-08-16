@@ -156,7 +156,10 @@ class TestDatabase:
                 {"ontology_term_id": "test_obp", "label": "test_disease2"},
                 {"ontology_term_id": "test_obq", "label": "test_disease3"},
             ],
-            sex=["test_sex", "test_sex2"],
+            sex=[
+                    {"label": "test_sex", "ontology_term_id": "test_obo"},
+                    {"label": "test_sex2", "ontology_term_id": "test_obp"},
+            ],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
@@ -176,7 +179,10 @@ class TestDatabase:
                 {"ontology_term_id": "test_obp", "label": "test_disease2"},
                 {"ontology_term_id": "test_obq", "label": "test_disease3"},
             ],
-            sex=["test_sex", "test_sex2"],
+            sex=[
+                {"label": "test_sex", "ontology_term_id": "test_obo"},
+                {"label": "test_sex2", "ontology_term_id": "test_obp"},
+            ],
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_not_owner",
