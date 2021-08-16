@@ -13,6 +13,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     ProcessingStatus,
     DbGeneset,
+    XApproximateDistribution,
 )
 from backend.corpora.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
@@ -165,6 +166,11 @@ class TestDatabase:
             collection_id="test_collection_id",
             explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+            is_primary_data=True,
+            X_normalization="test_X_normalization",
+            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -188,6 +194,11 @@ class TestDatabase:
             collection_id="test_collection_id_not_owner",
             collection_visibility=CollectionVisibility.PRIVATE.name,
             explorer_url="test_url",
+            cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+            is_primary_data=True,
+            X_normalization="test_X_normalization",
+            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         self.session.commit()
