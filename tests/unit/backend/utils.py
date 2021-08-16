@@ -1,7 +1,13 @@
 import random
 import string
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, UploadStatus, ValidationStatus
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    ConversionStatus,
+    UploadStatus,
+    ValidationStatus,
+    XApproximateDistribution,
+)
 
 
 class BogusProcessingStatusParams:
@@ -47,12 +53,21 @@ class BogusDatasetParams:
                 {"ontology_term_id": "MONDO:0000789"},
                 {"label": "lung disease"},
             ],
-            sex=["male", "female", "mixed"],
+            sex=[
+                {"ontology_term_id": "M", "label": "male"},
+                {"ontology_term_id": "F", "label": "female"},
+                {"ontology_term_id": "MF", "label": "mixed"},
+            ],
             ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
+            cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
+            is_primary_data=True,
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
+            X_normalization="normal",
+            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            schema_version="2.0.0",
         )
 
         bogus_data.update(**kwargs)
