@@ -185,7 +185,6 @@ class Dataset(Entity):
     def reprocess(self):
         if not self.published:
             self.asset_deletion()
-        # TODO: any other schema 2.0 changes needed?
         self.update(
             name="",
             organism=None,
