@@ -728,6 +728,13 @@ components:
         sites or only viewable through obfuscated URLs.
       type: string
       enum: [PUBLIC, PRIVATE]
+    distribution:
+      description: >-
+        Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
+        calculate statistical properties of the data. This field enables the curator to override this heuristic
+        and specify the data distribution explicitly.
+      type: string
+      enum: [COUNT, NORMAL]
     links:
       type: array
       items:
@@ -819,9 +826,7 @@ components:
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
-          type: array
-          items:
-            type: string
+          $ref: "#/components/schemas/ontology_element_array"
         ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:
@@ -851,8 +856,18 @@ components:
           $ref: "#/components/schemas/collection_uuid"
         collection_visibility:
           $ref: "#/components/schemas/visibility"
+        is_primary_data:
+          type: boolean
+        cell_type:
+          $ref: "#/components/schemas/ontology_element_array"
         cell_count:
           type: integer
+        X_normalization:
+          type: string
+        X_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+        schema_version:
+          type: string
         tombstone:
           type: boolean
     dataset_asset:

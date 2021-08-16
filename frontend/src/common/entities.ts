@@ -47,6 +47,11 @@ export enum VISIBILITY_TYPE {
   PRIVATE = "PRIVATE",
 }
 
+export enum X_APPROXIMATE_DISTRIBUTION {
+  COUNT = "count",
+  NORMAL = "normal",
+}
+
 export interface Collection {
   access_type: ACCESS_TYPE;
   contact_email: string;
@@ -82,6 +87,11 @@ export interface Dataset {
   ethnicity: Ontology;
   organism: Ontology;
   name: string;
+  cell_type: Ontology[];
+  is_primary_data: boolean;
+  X_normalization: string;
+  X_approximate_distribution: X_APPROXIMATE_DISTRIBUTION;
+  schema_version: string;
   // source_data_location: string;
   // revision: number;
   dataset_deployments: DatasetDeployment[];

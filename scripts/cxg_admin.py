@@ -27,6 +27,8 @@ from backend.corpora.common.utils.s3_buckets import cxg_bucket
 
 from urllib.parse import urlparse
 
+import requests as rq
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
@@ -184,6 +186,31 @@ def create_cxg_artifacts(ctx):
                     user_submitted=True,
                     s3_uri=s3_uri,
                 )
+
+@cli.command()
+@click.pass_context
+def migrate_schema_version(ctx):
+    """
+    Populates `schema_version` for each existing dataset. Since the schema version only exists
+    in the cxg file and we don't want to open them, we will call the cellxgene explorer endpoint
+    which contains the version. This is a one-off procedure since new datasets will have
+    the version already set.
+    """
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign schema_version to all the "
+            f"datasets",
+            abort=True,
+        )
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+            explorer_url = urlparse(record.explorer_url)
+            url = f"https://api.{explorer_url.netloc}/cellxgene{explorer_url.path}api/v0.2/config"
+            res = rq.get(url).json()
+            version = res['config']['corpora_props']['version']['corpora_schema_version']
+            logger.info(f"Setting version for dataset {dataset_id} to {version}")
+            record.schema_version = version
 
 
 def get_database_uri() -> str:
