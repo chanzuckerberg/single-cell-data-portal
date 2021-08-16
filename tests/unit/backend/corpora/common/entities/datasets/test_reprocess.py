@@ -9,7 +9,6 @@ class TestReprocessDataset(TestDataset):
             dataset.reprocess()
             self.assertEqual(previous_dataset_id, dataset.id)
             self.assertLess(previous_revision, dataset.revision)
-            # self.assertIsNone(dataset.rev)
 
         with self.subTest("published_dataset"):
             dataset = self.generate_dataset_with_s3_resources(
