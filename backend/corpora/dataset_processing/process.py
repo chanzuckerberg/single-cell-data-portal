@@ -266,8 +266,8 @@ def extract_metadata(filename):
     stride = 50000
     numerator, denominator = 0, 0
     for bounds in zip(
-        range(0, layer_for_mean_genes_per_cell.shape[0], stride), 
-        range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride)
+        range(0, layer_for_mean_genes_per_cell.shape[0], stride),
+        range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
     ):
         chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
@@ -295,7 +295,6 @@ def extract_metadata(filename):
         "cell_type": _get_term_pairs("cell_type"),
         "X_normalization": adata.uns["X_normalization"],
         "X_approximate_distribution": adata.uns["X_approximate_distribution"],
-
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata

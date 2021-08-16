@@ -104,11 +104,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             numpy.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
 
-        tissue = numpy.random.choice([0, 1], size=(50001))
-        assay = numpy.random.choice([0, 1, 2], size=(50001))
-        eth = numpy.random.choice([0, 1], size=(50001))
-        dev = numpy.random.choice([0, 1, 2], size=(50001))
-        sx = dev = numpy.random.choice([0, 1, 2], size=(50001))
+        eth = tissue = numpy.random.choice([0, 1], size=(50001))
+        assay = dev = sx = numpy.random.choice([0, 1, 2], size=(50001))
 
         obs = pandas.DataFrame(
             numpy.hstack(
@@ -149,7 +146,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "organism_ontology_term_id",
                 "is_primary_data",
                 "cell_type",
-                "cell_type_ontology_term_id"
+                "cell_type_ontology_term_id",
             ],
             index=(str(i) for i in range(50001)),
         )
@@ -173,11 +170,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 if cmp_func:
                     cmp_func(el1, el2)
 
-        list_equal(
-            extracted_metadata["organism"], 
-            [{lab: "Homo sapiens", ont: "NCBITaxon:8505"}], 
-            self.assertDictEqual
-        )
+        list_equal(extracted_metadata["organism"], [{lab: "Homo sapiens", ont: "NCBITaxon:8505"}], self.assertDictEqual)
 
         list_equal(
             extracted_metadata["tissue"],
@@ -221,39 +214,24 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         zeros_layer_df = pandas.DataFrame(numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
 
+        eth = tissue = numpy.random.choice([0, 1], size=(11))
+        assay = dev = sx = numpy.random.choice([0, 1, 2], size=(11))
+
         obs = pandas.DataFrame(
             numpy.hstack(
                 [
-                    numpy.array([["lung", "liver"][i] for i in numpy.random.choice([0, 1], size=(11))]).reshape(11, 1),
-                    numpy.array(
-                        [["UBERON:01", "UBERON:10"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["10x", "smartseq", "cite-seq"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["EFO:001", "EFO:010", "EFO:011"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
+                    numpy.array([["lung", "liver"][i] for i in tissue]).reshape(11, 1),
+                    numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
+                    numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
+                    numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
                     numpy.random.choice(["healthy"], size=(11, 1)),
                     numpy.random.choice(["MONDO:123"], size=(11, 1)),
-                    numpy.array(
-                        [["male", "female", "fixed"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["M", "F", "MF"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["solomon islander", "orcadian"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["HANCESTRO:321", "HANCESTRO:456"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["adult", "baby", "tween"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
+                    numpy.array([["male", "female", "fixed"][i] for i in sx]).reshape(11, 1),
+                    numpy.array([["M", "F", "MF"][i] for i in sx]).reshape(11, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in eth]).reshape(11, 1),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in eth]).reshape(11, 1),
+                    numpy.array([["adult", "baby", "tween"][i] for i in dev]).reshape(11, 1),
+                    numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in dev]).reshape(11, 1),
                     numpy.random.choice(["Homo sapiens"], size=(11, 1)),
                     numpy.random.choice(["NCBITaxon:8505"], size=(11, 1)),
                     numpy.random.choice([0], size=(11, 1)),
@@ -278,7 +256,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "organism_ontology_term_id",
                 "is_primary_data",
                 "cell_type",
-                "cell_type_ontology_term_id"
+                "cell_type_ontology_term_id",
             ],
             index=(str(i) for i in range(11)),
         )
@@ -291,11 +269,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         adata = anndata.AnnData(
             X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
         )
-        adata_raw = anndata.AnnData(
-            X=zeros_layer_df, obs=obs, uns=uns
-        )
+        adata_raw = anndata.AnnData(X=zeros_layer_df, obs=obs, uns=uns)
         adata.raw = adata_raw
-        
+
         mock_read_h5ad.return_value = adata
 
         # Run the extraction method
