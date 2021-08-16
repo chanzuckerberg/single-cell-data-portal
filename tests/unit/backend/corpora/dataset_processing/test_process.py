@@ -118,11 +118,17 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
                     numpy.random.choice(["healthy"], size=(50001, 1)),
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
-                    numpy.random.choice(["male", "female"], size=(50001, 1)),
+                    numpy.random.choice(["male", "female", "fixed"], size=(50001, 1)),
+                    numpy.random.choice(["M", "F", "MF"], size=(50001, 1)),
                     numpy.array([["solomon islander", "orcadian"][i] for i in eth]).reshape(50001, 1),
                     numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in eth]).reshape(50001, 1),
                     numpy.array([["adult", "baby", "tween"][i] for i in dev]).reshape(50001, 1),
                     numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in dev]).reshape(50001, 1),
+                    numpy.random.choice(["Homo sapiens"], size=(50001, 1)),
+                    numpy.random.choice(["NCBITaxon:8505"], size=(50001, 1)),
+                    numpy.random.choice([0], size=(50001, 1)),
+                    numpy.random.choice(["liver"], size=(50001, 1)),
+                    numpy.random.choice(["Hepatic-1A"], size=(50001, 1)),
                 ]
             ),
             columns=[
@@ -133,21 +139,27 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
+                "sex_ontology_term_id",
                 "ethnicity",
                 "ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
+                "organism",
+                "organism_ontology_term_id",
+                "is_primary_data",
+                "cell_type",
+                "cell_type_ontology_term_id"
             ],
             index=(str(i) for i in range(50001)),
         )
         uns = {
             "title": "my test dataset",
-            "organism": "Homo sapiens",
-            "organism_ontology_term_id": "NCBITaxon:8505",
-            "layer_descriptions": {"X": "raw"},
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
 
         adata = anndata.AnnData(X=df, obs=obs, uns=uns)
+        print('xxxxxxxxxxx adata: ', adata)
         mock_read_h5ad.return_value = adata
 
         extracted_metadata = process.extract_metadata("dummy")
