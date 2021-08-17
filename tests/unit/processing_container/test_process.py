@@ -18,8 +18,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         super().setUpClass()
         cls.tmp_dir = tempfile.mkdtemp()
         cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
-        # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/1354
-        # Reupload this dataset once 2.0.0 migration is complete.
+        # TODO: Reupload this dataset once 2.0.0 migration is complete.
+        # https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/
+        # corpora-data-portal/1354
         cls.presigned_url = cls.get_presigned_url(
             "79dfc1fe-cc7a-454a-ba26-4c72f0876436", "c1f00b2e-fe42-4dd0-a035-7b7f3cefd055"
         )
