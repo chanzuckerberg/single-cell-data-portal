@@ -2,6 +2,7 @@ import pathlib
 import requests
 import shutil
 import tempfile
+from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -54,12 +55,12 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     def test_make_loom(self):
         make_loom(str(self.real_h5ad_filename))
 
+    # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.
+    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file")
     def test_main(self):
         url = self.presigned_url
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
         self.bucket
-        print("URL")
-        print(url)
         process.process(dataset.id, url, self.corpora_config.bucket_name, self.corpora_config.bucket_name)
