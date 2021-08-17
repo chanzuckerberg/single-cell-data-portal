@@ -273,7 +273,7 @@ class TestH5ADDataFile(unittest.TestCase):
             uns[metadata_field] = json.dumps({"random_key": "random_value"})
 
         # Need to carefully set the corpora schema versions in order for tests to pass.
-        uns["version"] = {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"}
+        uns["schema_version"] = "2.0.0"
 
         # Set project links to be a dictionary
         uns["project_links"] = json.dumps(
