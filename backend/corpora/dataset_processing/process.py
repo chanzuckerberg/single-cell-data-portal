@@ -131,6 +131,7 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ProcessingStatus,
     DatasetArtifactType,
+    XApproximateDistribution,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
@@ -291,10 +292,10 @@ def extract_metadata(filename):
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
-        "is_primary_data": adata.obs["is_primary_data"],
+        "is_primary_data": adata.obs["is_primary_data"].unique()[0],
         "cell_type": _get_term_pairs("cell_type"),
         "X_normalization": adata.uns["X_normalization"],
-        "X_approximate_distribution": adata.uns["X_approximate_distribution"],
+        "X_approximate_distribution": XApproximateDistribution(adata.uns["X_approximate_distribution"]),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
