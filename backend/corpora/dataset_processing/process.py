@@ -474,7 +474,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
         "local.h5ad",
     )
 
-    validate_h5ad_file(dataset_id, local_filename)
+    # validate_h5ad_file(dataset_id, local_filename)
 
     # Process metadata
     metadata = extract_metadata(local_filename)
