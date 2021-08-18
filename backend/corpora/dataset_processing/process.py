@@ -131,7 +131,6 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     ProcessingStatus,
     DatasetArtifactType,
-    XApproximateDistribution,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
