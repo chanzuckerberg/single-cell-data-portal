@@ -142,7 +142,6 @@ class IsPrimaryData(enum.Enum):
     BOTH = "both"
 
 
-
 class ProjectLinkType(enum.Enum):
     """
     Enumerates DbCollection external web link types.
