@@ -52,6 +52,12 @@ export enum X_APPROXIMATE_DISTRIBUTION {
   NORMAL = "normal",
 }
 
+export enum IS_PRIMARY_DATA {
+  PRIMARY = "primary",
+  SECONDARY = "secondary",
+  BOTH = "both",
+}
+
 export interface Collection {
   access_type: ACCESS_TYPE;
   contact_email: string;
@@ -88,7 +94,7 @@ export interface Dataset {
   organism: Ontology;
   name: string;
   cell_type: Ontology[];
-  is_primary_data: boolean;
+  is_primary_data: IS_PRIMARY_DATA;
   X_normalization: string;
   X_approximate_distribution: X_APPROXIMATE_DISTRIBUTION;
   schema_version: string;
