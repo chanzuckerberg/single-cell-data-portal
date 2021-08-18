@@ -224,7 +224,6 @@ def update_db(dataset_id, metadata=None, processing_status=None):
 
         if metadata:
             # TODO: Delete this line once mean_genes_per_cell is in the db
-            metadata.pop("mean_genes_per_cell", None)
             logger.debug("Updating metadata.")
             dataset.update(**metadata)
 
@@ -261,6 +260,10 @@ def extract_metadata(filename):
     else:
         layer_for_mean_genes_per_cell = adata.X
 
+    # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
+    # as opposed to `spike-in`
+    filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
+
     # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
     # into memory, so we need to chunk it to be safe.
     stride = 50000
@@ -269,7 +272,7 @@ def extract_metadata(filename):
         range(0, layer_for_mean_genes_per_cell.shape[0], stride),
         range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
     ):
-        chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :]
+        chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], filter_gene_vars]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
