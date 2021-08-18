@@ -295,7 +295,7 @@ def extract_metadata(filename):
         "is_primary_data": adata.obs["is_primary_data"].unique()[0],
         "cell_type": _get_term_pairs("cell_type"),
         "X_normalization": adata.uns["X_normalization"],
-        "X_approximate_distribution": XApproximateDistribution(adata.uns["X_approximate_distribution"]),
+        "X_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata

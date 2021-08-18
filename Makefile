@@ -174,6 +174,12 @@ _unit_test:
 #	TODO: uncomment below after https://github.com/chanzuckerberg/corpora-data-portal/issues/1129
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing bash -c "cd /corpora-data-portal && make processing-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
 
+.PHONY: ut
+ut:
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing bash -c "cd /corpora-data-portal && make processing-unittest && if [ "$${CI}" = "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+
+	
+
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
 # Note that there is a distinction between BOTO_ENDPOINT_URL being
