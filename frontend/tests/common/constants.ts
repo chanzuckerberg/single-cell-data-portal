@@ -27,3 +27,6 @@ export const TEST_USERNAME =
 export const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASS || "";
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
+
+export const COOKIE_SESSION = process.env.COOKIE_SESSION || "";
+export const COOKIE_CXG_USER = process.env.COOKIE_CXG_USER || "";

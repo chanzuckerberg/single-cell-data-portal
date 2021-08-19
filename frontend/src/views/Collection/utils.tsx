@@ -21,7 +21,7 @@ const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
   COLLECTION_LINK_TYPE.OTHER,
 ];
 
-export function renderLinks(links: Link[]) {
+export function renderLinks(links: Link[]): (JSX.Element | null)[] {
   const linkTypesToLinks = createLinkTypesToLinks(links);
 
   const orderedLinks: Link[] = [];
@@ -41,7 +41,9 @@ export function renderLinks(links: Link[]) {
       const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
 
       if (!linkTypeOption) return null;
+
       let urlName: string | null = name;
+
       if (!urlName) {
         if (linkTypeOption === COLLECTION_LINK_TYPE_OPTIONS["DOI"]) {
           urlName = new URL(url).pathname.substring(1);
@@ -57,7 +59,12 @@ export function renderLinks(links: Link[]) {
       return (
         <React.Fragment key={`${type}+${url}`}>
           <span className={Classes.TEXT_MUTED}>{text}</span>
-          <StyledLink target="_blank" rel="noopener" href={url}>
+          <StyledLink
+            data-test-id="collection-link"
+            target="_blank"
+            rel="noopener"
+            href={url}
+          >
             {urlName}
           </StyledLink>
         </React.Fragment>
@@ -87,18 +94,23 @@ function createLinkTypesToLinks(links: Link[]) {
 export function renderContact(
   contact_name?: Collection["contact_name"],
   contact_email?: Collection["contact_email"]
-) {
+): JSX.Element | null {
   if (!contact_name || !contact_email) return null;
 
   return (
     <>
       <span className={Classes.TEXT_MUTED}>Contact</span>
-      <StyledLink href={"mailto:" + contact_email}>{contact_name}</StyledLink>
+      <StyledLink
+        data-test-id="collection-contact"
+        href={"mailto:" + contact_email}
+      >
+        {contact_name}
+      </StyledLink>
     </>
   );
 }
 
-export function getIsPublishable(datasets: Array<Dataset>) {
+export function getIsPublishable(datasets: Array<Dataset>): boolean {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {

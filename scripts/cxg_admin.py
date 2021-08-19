@@ -84,7 +84,7 @@ def tombstone_dataset(ctx, uuid):
      You must first SSH into the target deployment using `make db/tunnel` before running.
       ./scripts/cxg_admin.py --deployment staging tombstone-dataset "57cf1b53-af10-49e5-9a86-4bc70d0c92b6"
 
-     """
+    """
 
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
