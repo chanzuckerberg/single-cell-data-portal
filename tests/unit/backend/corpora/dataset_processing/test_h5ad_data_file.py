@@ -149,6 +149,12 @@ class TestH5ADDataFile(unittest.TestCase):
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
+    def test__to_cxg__simple_anndata_with_corpora_and_dense_using_feature_name_var_index(self):
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, vars_index_column_name="feature_name")
+        h5ad_file.to_cxg(self.sample_output_directory, 0)
+
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
+
     def test__to_cxg__with_sparse_column_encoding(self):
         anndata = self._create_sample_anndata_dataset()
         anndata.X = np.ones((3, 4))
@@ -257,7 +263,15 @@ class TestH5ADDataFile(unittest.TestCase):
         # Create vars
         random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int32)
         random_bool_category = Series(data=[True, True, False, True], dtype=np.bool_)
-        var_dataframe = DataFrame(data={"int_category": random_int_category, "bool_category": random_bool_category})
+        feature_name = Series(data=["a", "b", "c", "d"])
+        var_dataframe = DataFrame(
+            data={
+                "int_category": random_int_category.values,
+                "bool_category": random_bool_category.values,
+                "feature_name": feature_name.values,
+            },
+            index=feature_name,
+        )
         var = var_dataframe
 
         # Create embeddings
