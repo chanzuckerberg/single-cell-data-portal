@@ -259,7 +259,10 @@ export function useDeleteCollection(id = "") {
     onSuccess: () => {
       return Promise.all([
         queryCache.invalidateQueries([USE_COLLECTIONS]),
-        queryCache.invalidateQueries([USE_COLLECTION, id]),
+        queryCache.invalidateQueries([USE_COLLECTION, id], {
+          // (thuang): No need to refetch a deleted private collection
+          refetchActive: false,
+        }),
       ]);
     },
   });
