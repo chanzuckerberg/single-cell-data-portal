@@ -154,6 +154,7 @@ class TestH5ADDataFile(unittest.TestCase):
         h5ad_file.to_cxg(self.sample_output_directory, 0)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
+        self._validate_cxg_var_index_column_match(self.sample_h5ad_filename, self.sample_output_directory, "feature_name")
 
     def test__to_cxg__with_sparse_column_encoding(self):
         anndata = self._create_sample_anndata_dataset()
@@ -241,6 +242,13 @@ class TestH5ADDataFile(unittest.TestCase):
                 x_array = tiledb.DenseArray(main_x_array_location, mode="r")
                 actual_x_data = x_array[:, :]
             self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
+
+    def _validate_cxg_var_index_column_match(self, h5ad_filename, cxg_directory, expected_index_name):
+        anndata_object = anndata.read_h5ad(h5ad_filename)
+        var_array_location = f"{cxg_directory}/var"
+        var_array = tiledb.DenseArray(var_array_location, mode="r")
+        actual_index_name = json.loads(var_array.meta["cxg_schema"])["index"]
+        self.assertEqual(actual_index_name, expected_index_name)
 
     def _write_anndata_to_file(self, anndata):
         temporary_filename = fixture_file_path(f"{uuid4()}.h5ad")
