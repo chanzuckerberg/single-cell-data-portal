@@ -223,7 +223,6 @@ def update_db(dataset_id, metadata=None, processing_status=None):
             raise ProcessingCancelled
 
         if metadata:
-            # TODO: Delete this line once mean_genes_per_cell is in the db
             logger.debug("Updating metadata.")
             dataset.update(**metadata)
 
