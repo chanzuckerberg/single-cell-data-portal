@@ -282,6 +282,15 @@ def extract_metadata(filename):
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
 
+    def _get_is_primary_data():
+        is_primary_data = adata.obs["is_primary_data"]
+        if all(is_primary_data):
+            return "PRIMARY"
+        elif not any(is_primary_data):
+            return "SECONDARY"
+        else:
+            return "BOTH"
+
     metadata = {
         "name": adata.uns["title"],
         "organism": _get_term_pairs("organism"),
@@ -293,7 +302,7 @@ def extract_metadata(filename):
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
-        "is_primary_data": adata.obs["is_primary_data"].unique()[0],
+        "is_primary_data": _get_is_primary_data(),
         "cell_type": _get_term_pairs("cell_type"),
         "X_normalization": adata.uns["X_normalization"],
         "X_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
