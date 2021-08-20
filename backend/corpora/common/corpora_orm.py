@@ -128,6 +128,20 @@ class XApproximateDistribution(enum.Enum):
     NORMAL = "normal"
 
 
+class IsPrimaryData(enum.Enum):
+    """
+    Describes a DbDataset's is_primary_data.
+
+    PRIMARY - when all observation values are True.
+    SECONDARY - when all observation values are False.
+    BOTH - when observation values are either True or False.
+    """
+
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    BOTH = "both"
+
+
 class ProjectLinkType(enum.Enum):
     """
     Enumerates DbCollection external web link types.
@@ -251,7 +265,7 @@ class DbDataset(Base, AuditMixin):
     cell_type = Column(JSONB)
     cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
-    is_primary_data = Column(Boolean, default=False)
+    is_primary_data = Column(Enum(IsPrimaryData))
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
