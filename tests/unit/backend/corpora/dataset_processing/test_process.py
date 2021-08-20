@@ -156,7 +156,11 @@ class TestDatasetProcessing(DataPortalTestCase):
             "X_approximate_distribution": "normal",
         }
 
-        adata = anndata.AnnData(X=df, obs=obs, uns=uns)
+        var = pandas.DataFrame(
+            data=["gene", "spike-in", "gene", "gene", "gene"], columns=["feature_biotype"], index=df.columns
+        )
+
+        adata = anndata.AnnData(X=df, obs=obs, uns=uns, var=var)
         mock_read_h5ad.return_value = adata
 
         extracted_metadata = process.extract_metadata("dummy")
@@ -208,7 +212,11 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(extracted_metadata["X_approximate_distribution"], "NORMAL")
 
         self.assertEqual(extracted_metadata["cell_count"], 50001)
-        self.assertAlmostEqual(extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(df) / 50001)
+
+        filter = numpy.where(adata.var.feature_biotype == "gene")[0]
+        self.assertAlmostEqual(
+            extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(adata.X[:, filter]) / 50001
+        )
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
@@ -270,8 +278,12 @@ class TestDatasetProcessing(DataPortalTestCase):
             "X_approximate_distribution": "normal",
         }
 
+        var = pandas.DataFrame(
+            data=["gene", "spike-in", "gene"], columns=["feature_biotype"], index=non_zeros_X_layer_df.columns
+        )
+
         adata = anndata.AnnData(
-            X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
+            X=non_zeros_X_layer_df, obs=obs, uns=uns, var=var, layers={"my_awesome_wonky_layer": zeros_layer_df}
         )
         adata_raw = anndata.AnnData(X=zeros_layer_df, obs=obs, uns=uns)
         adata.raw = adata_raw

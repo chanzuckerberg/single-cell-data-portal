@@ -33,9 +33,11 @@ def upgrade():
     op.add_column("dataset", sa.Column("X_normalization", sa.String, nullable=True))
     op.add_column("dataset", sa.Column("X_approximate_distribution", X_approximate_distribution_enum, nullable=True))
     op.add_column("dataset", sa.Column("schema_version", sa.String, nullable=True))
+    op.add_column("dataset", sa.Column("mean_genes_per_cell", sa.Float, server_default="0"))
 
 
 def downgrade():
+    op.drop_column("dataset", "mean_genes_per_cell")
     op.drop_column("dataset", "schema_version")
     op.drop_column("dataset", "X_approximate_distribution")
     op.drop_column("dataset", "X_normalization")

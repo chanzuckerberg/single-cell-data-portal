@@ -164,6 +164,7 @@ class TestCollection(BaseAuthAPITest):
                     "linked_genesets": ["test_geneset_with_dataset"],
                     "id": "test_dataset_id",
                     "is_primary_data": "PRIMARY",
+                    "mean_genes_per_cell": 0.0,
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "collection_id": "test_collection_id",
