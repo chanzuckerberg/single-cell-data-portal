@@ -158,6 +158,10 @@ class Collection(Entity):
                     continue
             else:
                 datasets.append(dataset)
+            if 'sex' in dataset:
+                del dataset['sex']
+            # if isinstance(dataset['sex'], list):
+
         result["datasets"] = datasets
         return result
 
