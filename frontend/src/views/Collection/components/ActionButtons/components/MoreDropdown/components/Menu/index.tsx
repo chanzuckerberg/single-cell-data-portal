@@ -21,6 +21,9 @@ const DeleteButton = ({
       icon={IconNames.TRASH}
       intent={Intent.DANGER}
       text={isRevision ? "Cancel Revision" : "Delete Collection"}
+      data-test-id={
+        isRevision ? "dropdown-cancel-revision" : "dropdown-delete-collection"
+      }
     />
   );
 };
@@ -33,6 +36,7 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
       icon={IconNames.EDIT}
       intent={Intent.NONE}
       text="Edit Details"
+      data-test-id="dropdown-edit-details"
     />
   );
 };

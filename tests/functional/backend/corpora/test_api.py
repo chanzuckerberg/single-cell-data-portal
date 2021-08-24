@@ -318,10 +318,10 @@ class TestApi(unittest.TestCase):
             data = json.loads(res.content)
             upload_status = data["upload_status"]
             if upload_status == "UPLOADED":
-                conversion_cxg_status = data["conversion_cxg_status"]
-                conversion_loom_status = data["conversion_loom_status"]
-                conversion_rds_status = data["conversion_rds_status"]
-                conversion_anndata_status = data["conversion_anndata_status"]
+                conversion_cxg_status = data.get("conversion_cxg_status")
+                conversion_loom_status = data.get("conversion_loom_status")
+                conversion_rds_status = data.get("conversion_rds_status")
+                conversion_anndata_status = data.get("conversion_anndata_status")
                 if (
                     conversion_cxg_status
                     == conversion_loom_status
