@@ -438,7 +438,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     val_proc = subprocess.run(["cellxgene-schema", "validate", local_filename], capture_output=True)
-    if False: #val_proc.returncode != 0:
+    if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
         logger.error(f"stderr: {val_proc.stderr}")
