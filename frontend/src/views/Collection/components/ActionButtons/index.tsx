@@ -24,7 +24,7 @@ const ActionButtons = ({
   id,
   isPublishable,
   isRevision,
-}: Props) => {
+}: Props): JSX.Element => {
   return (
     <Wrapper>
       <MoreDropdown id={id} isRevision={isRevision} />

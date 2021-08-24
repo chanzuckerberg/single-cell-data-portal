@@ -113,7 +113,10 @@ const Content: FC<Props> = (props) => {
   const { onClose } = props;
   return (
     <>
-      <div className={Classes.DIALOG_BODY}>
+      <div
+        data-test-id="collection-form-content"
+        className={Classes.DIALOG_BODY}
+      >
         {/* (thuang): turn off autocomplete seems to be the safest bet for now
          * https://github.com/facebook/react/issues/1159
          */}

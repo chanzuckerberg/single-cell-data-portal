@@ -83,7 +83,7 @@ const CollectionRow: FC<Props> = (props) => {
   } = aggregateDatasetsMetadata(datasets);
 
   return (
-    <StyledRow>
+    <StyledRow data-test-id="collection-row">
       <StyledCell>
         <Link
           href={`/collections/${id}${isPrivate ? "/private" : ""}`}
@@ -104,7 +104,7 @@ const CollectionRow: FC<Props> = (props) => {
               {isPrivate ? "Private" : "Published"}
             </Tag>
             {props.revisionsEnabled && collection.has_revision && (
-              <Tag minimal intent={Intent.PRIMARY}>
+              <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
                 Revision Pending
               </Tag>
             )}
@@ -145,6 +145,7 @@ const RevisionCell = ({
         intent={Intent.PRIMARY}
         minimal
         onClick={handleRevisionClick}
+        data-test-id="revision-action-button"
       >
         {isRevision ? "Continue" : "Start Revision"}
       </Button>

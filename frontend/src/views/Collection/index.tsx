@@ -126,14 +126,18 @@ const Collection: FC = () => {
       <ViewGrid>
         {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
           <StyledCallout intent={Intent.PRIMARY} icon={null}>
-            {collection.revision_diff
-              ? "This collection has changed since you last published it."
-              : "This is a private revision of a public collection."}
+            <span data-test-id="revision-status">
+              {collection.revision_diff
+                ? "This collection has changed since you last published it."
+                : "This is a private revision of a public collection."}
+            </span>
           </StyledCallout>
         )}
         <CollectionInfo>
-          <H3>{collection.name}</H3>
-          <Description>{collection.description}</Description>
+          <H3 data-test-id="collection-name">{collection.name}</H3>
+          <Description data-test-id="collection-description">
+            {collection.description}
+          </Description>
           <LinkContainer>
             {/*
              * (thuang): Contact and Links order defined here:
