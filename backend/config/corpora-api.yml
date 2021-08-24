@@ -832,7 +832,9 @@ components:
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
-          $ref: "#/components/schemas/ontology_element_array"
+          type: array
+          items:
+            type: string
         ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:

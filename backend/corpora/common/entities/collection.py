@@ -158,9 +158,13 @@ class Collection(Entity):
                     continue
             else:
                 datasets.append(dataset)
-            if 'sex' in dataset:
-                del dataset['sex']
-            # if isinstance(dataset['sex'], list):
+
+            # `sex` and `organism` need to be converted to their 1.1.0 equivalents
+            if dataset.get('schema_version') == '2.0.0':
+                if 'sex' in dataset: 
+                    dataset['sex'] = [e['label'] for e in dataset['sex']]
+                if isinstance(dataset.get('organism'), list):
+                    dataset['organism'] = dataset['organism'][0]
 
         result["datasets"] = datasets
         return result
