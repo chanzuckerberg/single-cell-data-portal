@@ -71,7 +71,7 @@ export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
 export function checkIfMetadataLoading(
   dataset: Dataset,
   datasetStatus: DatasetUploadStatus
-) {
+): boolean {
   const isFailed = checkIfFailed(datasetStatus).isFailed;
   const isNamePopulated = Boolean(dataset.name);
 
@@ -116,7 +116,7 @@ export function useCheckCollectionPopulated({
   isFailed: boolean;
   isNamePopulated: boolean;
   validationStatus: VALIDATION_STATUS;
-}) {
+}): void {
   useCheckCollection({
     invalidateCollectionQuery,
     shouldFetch:
@@ -147,7 +147,7 @@ export function useCheckCollectionFormatsPopulated({
   invalidateCollectionQuery: () => void;
   dataset: Dataset;
   datasetUploadStatus: DatasetUploadStatus;
-}) {
+}): void {
   let numOfConvertedFormats = 0;
 
   for (const key of CONVERSION_STATUS_FORMAT_KEYS) {
@@ -156,13 +156,7 @@ export function useCheckCollectionFormatsPopulated({
     numOfConvertedFormats += 1;
   }
 
-  let numOfAvailableFormats = 0;
-
-  if (dataset.dataset_deployments.length > 0) {
-    numOfAvailableFormats += 1;
-  }
-
-  numOfAvailableFormats = numOfAvailableFormats + dataset.dataset_assets.length;
+  const numOfAvailableFormats = dataset.dataset_assets.length;
 
   useCheckCollection({
     invalidateCollectionQuery,
@@ -206,7 +200,7 @@ export function useCancelDatasetStatusQuery({
   isFailed: boolean;
   isLoading: boolean;
   queryCache: QueryCache;
-}) {
+}): void {
   useEffect(() => {
     if (isFailed || !isLoading) {
       queryCache.cancelQueries([USE_DATASET_STATUS, datasetId]);
@@ -220,7 +214,7 @@ export function useUploadProgress({
 }: {
   initProgress: number;
   progress: number;
-}) {
+}): void {
   useProgress({
     initProgress,
     progress,
@@ -235,7 +229,9 @@ function useUploadProgressSuccessCallback() {
   );
 }
 
-export function getConversionStatus(datasetStatus?: DatasetUploadStatus) {
+export function getConversionStatus(
+  datasetStatus?: DatasetUploadStatus
+): CONVERSION_STATUS {
   if (!datasetStatus) return CONVERSION_STATUS.NA;
 
   const {
@@ -273,7 +269,7 @@ export function useConversionProgress({
 }: {
   initDatasetStatus: DatasetUploadStatus;
   datasetStatus?: DatasetUploadStatus;
-}) {
+}): void {
   const initProgress = isConverted(initDatasetStatus);
   const progress = isConverted(datasetStatus);
 
@@ -292,7 +288,7 @@ function isConverted(status?: DatasetUploadStatus): 0 | 1 {
   return getConversionStatus(status) === CONVERSION_STATUS.CONVERTED ? 1 : 0;
 }
 
-export function hasCXGFile(dataset: Dataset) {
+export function hasCXGFile(dataset: Dataset): boolean {
   const deployments = dataset.dataset_deployments;
 
   if (!deployments || !deployments.length) return false;
