@@ -117,7 +117,7 @@ class CollectionVisibility(enum.Enum):
 
 class XApproximateDistribution(enum.Enum):
     """
-    Describes a DbDataset's X_approximate_distribution.
+    Describes a DbDataset's x_approximate_distribution.
 
     COUNT - for data whose distributions are best approximated by counting distributions
             like Poisson, Binomial, or Negative Binomial.
@@ -273,7 +273,7 @@ class DbDataset(Base, AuditMixin):
     published = Column(Boolean, default=False)
     explorer_url = Column(String, index=True)
     x_normalization = Column(String)
-    X_approximate_distribution = Column(Enum(XApproximateDistribution))
+    x_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
 

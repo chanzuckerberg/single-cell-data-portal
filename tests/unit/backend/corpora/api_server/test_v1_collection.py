@@ -171,7 +171,7 @@ class TestCollection(BaseAuthAPITest):
                     "collection_visibility": "PUBLIC",
                     "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                     "x_normalization": "test_x_normalization",
-                    "X_approximate_distribution": "NORMAL",
+                    "x_approximate_distribution": "NORMAL",
                     "is_valid": False,
                     "revision": 0,
                     "sex": [
@@ -340,7 +340,7 @@ class TestCollection(BaseAuthAPITest):
             actual_body = self.remove_timestamps(json.loads(resp.data))
             expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
 
-            # Remove `visibility`, `collection_visibility` and `X_approximate_distribution` from the bodies,
+            # Remove `visibility`, `collection_visibility` and `x_approximate_distribution` from the bodies,
             # since one will be an Enum and the other will be a string. That's expected since internal objects
             # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
             # as strings.
@@ -350,8 +350,8 @@ class TestCollection(BaseAuthAPITest):
                 actual_body["datasets"][0].pop("collection_visibility"),
             )
             self.assertEqual(
-                expected_body["datasets"][0].pop("X_approximate_distribution").name,
-                actual_body["datasets"][0].pop("X_approximate_distribution"),
+                expected_body["datasets"][0].pop("x_approximate_distribution").name,
+                actual_body["datasets"][0].pop("x_approximate_distribution"),
             )
             self.assertEqual(
                 expected_body["datasets"][0].pop("is_primary_data").name,

@@ -67,7 +67,7 @@ class BogusDatasetParams:
             collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
             x_normalization="normal",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
 

@@ -83,7 +83,7 @@ class CorporaConstants(object):
         "schema_version",
         "title",
         "x_normalization",
-        "X_approximate_distribution",
+        "x_approximate_distribution",
     ]
 
     # The Corpora specification requires some values encoded as JSON due to the inability of AnnData to store complex

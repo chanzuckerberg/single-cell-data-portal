@@ -870,7 +870,7 @@ components:
           type: integer
         x_normalization:
           type: string
-        X_approximate_distribution:
+        x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
         schema_version:
           type: string

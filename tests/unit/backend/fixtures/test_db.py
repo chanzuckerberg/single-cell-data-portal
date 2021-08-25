@@ -192,7 +192,7 @@ class TestDatabase:
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -266,7 +266,7 @@ class TestDatabase:
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)

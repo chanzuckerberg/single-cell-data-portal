@@ -96,7 +96,7 @@ export interface Dataset {
   cell_type: Ontology[];
   is_primary_data: IS_PRIMARY_DATA;
   x_normalization: string;
-  X_approximate_distribution: X_APPROXIMATE_DISTRIBUTION;
+  x_approximate_distribution: X_APPROXIMATE_DISTRIBUTION;
   schema_version: string;
   // source_data_location: string;
   // revision: number;
