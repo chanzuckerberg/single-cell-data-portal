@@ -217,6 +217,7 @@ class TestDatabase:
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -240,6 +241,7 @@ class TestDatabase:
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
