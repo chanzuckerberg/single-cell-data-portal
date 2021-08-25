@@ -113,7 +113,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -270,7 +270,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -427,7 +427,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -576,7 +576,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -718,7 +718,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -875,7 +875,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -1032,7 +1032,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
@@ -1189,7 +1189,7 @@ const datasets = [
       {
         label: "Homo sapiens",
         ontology_term_id: "NCBITaxon:9606",
-      }
+      },
     ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
