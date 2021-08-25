@@ -4,7 +4,7 @@ import { isDOILink } from "src/components/CreateCollectionModal/components/Conte
 import { BLUEPRINT_SAFE_TYPE_OPTIONS } from "tests/common/constants";
 import { describeIfDeployed, login, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
-import datasets from "./fixtures/datasets";
+import datasets from "../fixtures/datasets";
 
 const TEST_COLLECTION = {
   contactEmail: "TEST@example.com",
@@ -36,6 +36,7 @@ describe("Collection", () => {
       expect(validator("http://doi.org/")).toBeTruthy();
     });
   });
+
   describeIfDeployed("Logged In Tests", () => {
     it("creates and deletes a collection", async () => {
       const timestamp = Date.now();
