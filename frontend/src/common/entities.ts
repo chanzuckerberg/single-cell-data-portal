@@ -88,7 +88,7 @@ export interface Dataset {
   assay: Ontology[];
   tissue: Ontology[];
   disease: Ontology[];
-  cell_count: number;
+  cell_count: number | null;
   // sex: string;
   ethnicity: Ontology;
   organism: Ontology[];
