@@ -82,7 +82,7 @@ class CorporaConstants(object):
     REQUIRED_SIMPLE_METADATA_FIELDS = [
         "schema_version",
         "title",
-        "X_normalization",
+        "x_normalization",
         "X_approximate_distribution",
     ]
 

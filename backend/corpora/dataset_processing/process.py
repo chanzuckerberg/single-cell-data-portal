@@ -304,7 +304,7 @@ def extract_metadata(filename):
         "mean_genes_per_cell": numerator / denominator,
         "is_primary_data": _get_is_primary_data(),
         "cell_type": _get_term_pairs("cell_type"),
-        "X_normalization": adata.uns["X_normalization"],
+        "x_normalization": adata.uns["x_normalization"],
         "X_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
     }
     logger.info(f"Extract metadata: {metadata}")

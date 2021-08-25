@@ -868,7 +868,7 @@ components:
           $ref: "#/components/schemas/ontology_element_array"
         cell_count:
           type: integer
-        X_normalization:
+        x_normalization:
           type: string
         X_approximate_distribution:
           $ref: "#/components/schemas/distribution"

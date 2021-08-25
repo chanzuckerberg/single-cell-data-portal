@@ -272,7 +272,7 @@ class DbDataset(Base, AuditMixin):
     original_id = Column(String)
     published = Column(Boolean, default=False)
     explorer_url = Column(String, index=True)
-    X_normalization = Column(String)
+    x_normalization = Column(String)
     X_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
