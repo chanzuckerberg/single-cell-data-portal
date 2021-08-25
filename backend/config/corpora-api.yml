@@ -838,7 +838,7 @@ components:
         ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:
-          $ref: "#/components/schemas/ontology_element"
+          $ref: "#/components/schemas/ontology_element_array"
         development_stage:
           $ref: "#/components/schemas/ontology_element_array"
         name:

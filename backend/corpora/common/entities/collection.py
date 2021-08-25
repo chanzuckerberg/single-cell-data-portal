@@ -159,12 +159,14 @@ class Collection(Entity):
             else:
                 datasets.append(dataset)
 
-            # `sex` and `organism` need to be converted to their 1.1.0 equivalents
+            # Convert sex to a simple array
             if dataset.get('schema_version') == '2.0.0':
                 if 'sex' in dataset: 
                     dataset['sex'] = [e['label'] for e in dataset['sex']]
-                if isinstance(dataset.get('organism'), list):
-                    dataset['organism'] = dataset['organism'][0]
+
+            # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
+            if isinstance(dataset.get('organism'), object):
+                dataset['organism'] = [dataset['organism']]
 
         result["datasets"] = datasets
         return result

@@ -15,9 +15,7 @@ export const aggregateDatasetsMetadata = memoize(function (
         assay: [...assay, ...metadata.assay],
         cell_count: cell_count + Number(metadata.cell_count),
         disease: [...disease, ...metadata.disease],
-        organism: metadata.organism
-          ? [...organism, metadata.organism]
-          : organism,
+        organism: [...organism, ...metadata.organism],
         tissue: [...tissue, ...metadata.tissue],
       };
     },
@@ -55,7 +53,7 @@ function extractDatasetMetadata(dataset: Dataset) {
     assay: uniqueOntologies(assay),
     cell_count,
     disease: uniqueOntologies(disease),
-    organism: organism?.label,
+    organism: uniqueOntologies(organism),
     tissue: uniqueOntologies(tissue),
   };
 }

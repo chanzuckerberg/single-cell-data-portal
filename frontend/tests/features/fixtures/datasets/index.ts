@@ -109,10 +109,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Neuronal \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -264,10 +266,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Vascular \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -419,10 +423,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Ventricular cardiomyocytes \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -566,10 +572,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Atrial cardiomyocytes \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -706,10 +714,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Fibroblasts \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -861,10 +871,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "All \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -1016,10 +1028,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Immune \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
@@ -1171,10 +1185,12 @@ const datasets = [
     is_valid: false,
     linked_genesets: [],
     name: "Adipocytes \u2014 Cells of the adult human heart",
-    organism: {
-      label: "Homo sapiens",
-      ontology_term_id: "NCBITaxon:9606",
-    },
+    organism: [
+      {
+        label: "Homo sapiens",
+        ontology_term_id: "NCBITaxon:9606",
+      }
+    ],
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
