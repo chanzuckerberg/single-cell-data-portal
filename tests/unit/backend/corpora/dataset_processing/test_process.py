@@ -152,8 +152,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         uns = {
             "title": "my test dataset",
-            "x_normalization": "normal",
-            "x_approximate_distribution": "normal",
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
 
         var = pandas.DataFrame(
@@ -274,8 +274,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         uns = {
             "title": "my test dataset",
-            "x_normalization": "normal",
-            "x_approximate_distribution": "normal",
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
 
         var = pandas.DataFrame(

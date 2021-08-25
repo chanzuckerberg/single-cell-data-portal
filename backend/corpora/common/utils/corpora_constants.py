@@ -82,8 +82,8 @@ class CorporaConstants(object):
     REQUIRED_SIMPLE_METADATA_FIELDS = [
         "schema_version",
         "title",
-        "x_normalization",
-        "x_approximate_distribution",
+        "X_normalization",
+        "X_approximate_distribution",
     ]
 
     # The Corpora specification requires some values encoded as JSON due to the inability of AnnData to store complex
