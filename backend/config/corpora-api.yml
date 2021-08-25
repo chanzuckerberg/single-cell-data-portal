@@ -735,6 +735,12 @@ components:
         and specify the data distribution explicitly.
       type: string
       enum: [COUNT, NORMAL]
+    is_primary_data:
+      description: >-
+        Describes whether cellular observations for this dataset are all canonical (PRIMARY), 
+        all non-canonical (SECONDARY), or contain a mixture (BOTH).
+      type: string
+      enum: [PRIMARY, SECONDARY, BOTH]
     links:
       type: array
       items:
@@ -857,7 +863,7 @@ components:
         collection_visibility:
           $ref: "#/components/schemas/visibility"
         is_primary_data:
-          type: boolean
+          $ref: "#/components/schemas/is_primary_data"
         cell_type:
           $ref: "#/components/schemas/ontology_element_array"
         cell_count:

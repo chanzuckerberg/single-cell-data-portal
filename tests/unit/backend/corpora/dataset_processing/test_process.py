@@ -104,10 +104,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             numpy.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
 
-        tissue = numpy.random.choice([0, 1], size=(50001))
-        assay = numpy.random.choice([0, 1, 2], size=(50001))
-        eth = numpy.random.choice([0, 1], size=(50001))
-        dev = numpy.random.choice([0, 1, 2], size=(50001))
+        ethnicity = tissue = numpy.random.choice([0, 1], size=(50001))
+        assay = development_stage = sex = numpy.random.choice([0, 1, 2], size=(50001))
 
         obs = pandas.DataFrame(
             numpy.hstack(
@@ -118,11 +116,17 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
                     numpy.random.choice(["healthy"], size=(50001, 1)),
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
-                    numpy.random.choice(["male", "female"], size=(50001, 1)),
-                    numpy.array([["solomon islander", "orcadian"][i] for i in eth]).reshape(50001, 1),
-                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in eth]).reshape(50001, 1),
-                    numpy.array([["adult", "baby", "tween"][i] for i in dev]).reshape(50001, 1),
-                    numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in dev]).reshape(50001, 1),
+                    numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
+                    numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(50001, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(50001, 1),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(50001, 1),
+                    numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(50001, 1),
+                    numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(50001, 1),
+                    numpy.random.choice(["Homo sapiens"], size=(50001, 1)),
+                    numpy.random.choice(["NCBITaxon:8505"], size=(50001, 1)),
+                    numpy.random.choice([0], size=(50001, 1)),
+                    numpy.random.choice(["liver"], size=(50001, 1)),
+                    numpy.random.choice(["Hepatic-1A"], size=(50001, 1)),
                 ]
             ),
             columns=[
@@ -133,27 +137,34 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
+                "sex_ontology_term_id",
                 "ethnicity",
                 "ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
+                "organism",
+                "organism_ontology_term_id",
+                "is_primary_data",
+                "cell_type",
+                "cell_type_ontology_term_id",
             ],
             index=(str(i) for i in range(50001)),
         )
         uns = {
             "title": "my test dataset",
-            "organism": "Homo sapiens",
-            "organism_ontology_term_id": "NCBITaxon:8505",
-            "layer_descriptions": {"X": "raw"},
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
 
-        adata = anndata.AnnData(X=df, obs=obs, uns=uns)
+        var = pandas.DataFrame(
+            data=["gene", "spike-in", "gene", "gene", "gene"], columns=["feature_biotype"], index=df.columns
+        )
+
+        adata = anndata.AnnData(X=df, obs=obs, uns=uns, var=var)
         mock_read_h5ad.return_value = adata
 
         extracted_metadata = process.extract_metadata("dummy")
         lab, ont = "label", "ontology_term_id"
-
-        self.assertDictEqual(extracted_metadata["organism"], {lab: "Homo sapiens", ont: "NCBITaxon:8505"})
 
         def list_equal(list1, list2, cmp_func):
             self.assertEqual(len(list1), len(list2))
@@ -162,6 +173,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 el2 = list2[list2.index(el1)]
                 if cmp_func:
                     cmp_func(el1, el2)
+
+        list_equal(extracted_metadata["organism"], [{lab: "Homo sapiens", ont: "NCBITaxon:8505"}], self.assertDictEqual)
 
         list_equal(
             extracted_metadata["tissue"],
@@ -177,7 +190,11 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         list_equal(extracted_metadata["disease"], [{lab: "healthy", ont: "MONDO:123"}], self.assertDictEqual)
 
-        self.assertListEqual(sorted(extracted_metadata["sex"]), sorted(["male", "female"]))
+        list_equal(
+            extracted_metadata["sex"],
+            [{lab: "male", ont: "M"}, {lab: "female", ont: "F"}, {lab: "fixed", ont: "MF"}],
+            self.assertDictEqual,
+        )
 
         list_equal(
             extracted_metadata["ethnicity"],
@@ -190,8 +207,16 @@ class TestDatasetProcessing(DataPortalTestCase):
             [{lab: "adult", ont: "HsapDv:0"}, {lab: "baby", ont: "HsapDv:1"}, {lab: "tween", ont: "HsapDv:2"}],
             self.assertDictEqual,
         )
+
+        self.assertEqual(extracted_metadata["X_normalization"], "normal")
+        self.assertEqual(extracted_metadata["X_approximate_distribution"], "NORMAL")
+
         self.assertEqual(extracted_metadata["cell_count"], 50001)
-        self.assertAlmostEqual(extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(df) / 50001)
+
+        filter = numpy.where(adata.var.feature_biotype == "gene")[0]
+        self.assertAlmostEqual(
+            extracted_metadata["mean_genes_per_cell"], numpy.count_nonzero(adata.X[:, filter]) / 50001
+        )
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
@@ -201,34 +226,29 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         zeros_layer_df = pandas.DataFrame(numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
 
+        ethnicity = tissue = numpy.random.choice([0, 1], size=(11))
+        assay = development_stage = sex = numpy.random.choice([0, 1, 2], size=(11))
+
         obs = pandas.DataFrame(
             numpy.hstack(
                 [
-                    numpy.array([["lung", "liver"][i] for i in numpy.random.choice([0, 1], size=(11))]).reshape(11, 1),
-                    numpy.array(
-                        [["UBERON:01", "UBERON:10"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["10x", "smartseq", "cite-seq"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["EFO:001", "EFO:010", "EFO:011"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
+                    numpy.array([["lung", "liver"][i] for i in tissue]).reshape(11, 1),
+                    numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
+                    numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
+                    numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
                     numpy.random.choice(["healthy"], size=(11, 1)),
                     numpy.random.choice(["MONDO:123"], size=(11, 1)),
-                    numpy.random.choice(["male", "female"], size=(11, 1)),
-                    numpy.array(
-                        [["solomon islander", "orcadian"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["HANCESTRO:321", "HANCESTRO:456"][i] for i in numpy.random.choice([0, 1], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["adult", "baby", "tween"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
-                    numpy.array(
-                        [["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in numpy.random.choice([0, 1, 2], size=(11))]
-                    ).reshape(11, 1),
+                    numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(11, 1),
+                    numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(11, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(11, 1),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(11, 1),
+                    numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(11, 1),
+                    numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(11, 1),
+                    numpy.random.choice(["Homo sapiens"], size=(11, 1)),
+                    numpy.random.choice(["NCBITaxon:8505"], size=(11, 1)),
+                    numpy.random.choice([0], size=(11, 1)),
+                    numpy.random.choice(["liver"], size=(11, 1)),
+                    numpy.random.choice(["Hepatic-1A"], size=(11, 1)),
                 ]
             ),
             columns=[
@@ -239,22 +259,35 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
+                "sex_ontology_term_id",
                 "ethnicity",
                 "ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
+                "organism",
+                "organism_ontology_term_id",
+                "is_primary_data",
+                "cell_type",
+                "cell_type_ontology_term_id",
             ],
             index=(str(i) for i in range(11)),
         )
         uns = {
             "title": "my test dataset",
-            "organism": "Homo sapiens",
-            "organism_ontology_term_id": "NCBITaxon:8505",
-            "layer_descriptions": {"my_awesome_wonky_layer": "raw"},
+            "X_normalization": "normal",
+            "X_approximate_distribution": "normal",
         }
-        adata = anndata.AnnData(
-            X=non_zeros_X_layer_df, obs=obs, uns=uns, layers={"my_awesome_wonky_layer": zeros_layer_df}
+
+        var = pandas.DataFrame(
+            data=["gene", "spike-in", "gene"], columns=["feature_biotype"], index=non_zeros_X_layer_df.columns
         )
+
+        adata = anndata.AnnData(
+            X=non_zeros_X_layer_df, obs=obs, uns=uns, var=var, layers={"my_awesome_wonky_layer": zeros_layer_df}
+        )
+        adata_raw = anndata.AnnData(X=zeros_layer_df, obs=obs, uns=uns)
+        adata.raw = adata_raw
+
         mock_read_h5ad.return_value = adata
 
         # Run the extraction method
