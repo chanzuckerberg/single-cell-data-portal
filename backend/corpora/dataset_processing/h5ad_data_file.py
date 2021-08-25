@@ -1,4 +1,3 @@
-import collections
 import json
 import logging
 from os import path
@@ -259,14 +258,13 @@ class H5ADDataFile:
         Extract out the Corpora dataset properties from the H5AD file.
         """
 
-        versions = self.get_corpora_versions()
+        schema_version = self.get_corpora_schema_version()
 
-        if versions is None:
+        if schema_version is None:
             return None
 
-        [corpora_schema_version, corpora_encoding_version] = versions
-        version_is_supported = self.corpora_is_version_supported(corpora_schema_version, corpora_encoding_version)
-        if not version_is_supported:
+        schema_version_is_supported = self.corpora_is_schema_version_supported(schema_version)
+        if not schema_version_is_supported:
             raise ValueError("Unsupported Corpora schema version")
 
         corpora_props = {}
@@ -289,34 +287,22 @@ class H5ADDataFile:
 
         return corpora_props
 
-    def get_corpora_versions(self):
+    def get_corpora_schema_version(self):
         """
         Given an AnnData object, return:
             * None - if not a Corpora object
-            * [ corpora_schema_version, corpora_encoding_version ] - if a Corpora object
+            * schema_version (str) - if a Corpora object
 
         Implements the identification protocol defined in the specification.
         """
 
         # Per Corpora AnnData spec, this is a Corpora file if the following is true
-        if "version" not in self.anndata.uns_keys():
+        if "schema_version" not in self.anndata.uns_keys():
             return None
 
-        version = self.anndata.uns["version"]
-        if not isinstance(version, collections.abc.Mapping) or "corpora_schema_version" not in version:
-            return None
+        schema_version = self.anndata.uns["schema_version"]
+        if validate_version_str(schema_version):
+            return schema_version
 
-        corpora_schema_version = version.get("corpora_schema_version")
-        corpora_encoding_version = version.get("corpora_encoding_version")
-
-        # Validate that each of the version numbers adhere to SEMVAR format.
-        if validate_version_str(corpora_schema_version) and validate_version_str(corpora_encoding_version):
-            return [corpora_schema_version, corpora_encoding_version]
-
-    def corpora_is_version_supported(self, corpora_schema_version, corpora_encoding_version):
-        return (
-            corpora_schema_version
-            and corpora_encoding_version
-            and corpora_schema_version.startswith("1.")
-            and corpora_encoding_version.startswith("0.1.")
-        )
+    def corpora_is_schema_version_supported(self, schema_version):
+        return schema_version and schema_version.startswith("2.")

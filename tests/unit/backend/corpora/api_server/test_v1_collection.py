@@ -163,7 +163,8 @@ class TestCollection(BaseAuthAPITest):
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
                     "linked_genesets": ["test_geneset_with_dataset"],
                     "id": "test_dataset_id",
-                    "is_primary_data": False,
+                    "is_primary_data": "PRIMARY",
+                    "mean_genes_per_cell": 0.0,
                     "name": "test_dataset_name",
                     "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
                     "collection_id": "test_collection_id",
@@ -351,6 +352,10 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(
                 expected_body["datasets"][0].pop("X_approximate_distribution").name,
                 actual_body["datasets"][0].pop("X_approximate_distribution"),
+            )
+            self.assertEqual(
+                expected_body["datasets"][0].pop("is_primary_data").name,
+                actual_body["datasets"][0].pop("is_primary_data"),
             )
 
             self.assertEqual(expected_body, actual_body)

@@ -149,6 +149,16 @@ class TestH5ADDataFile(unittest.TestCase):
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
+    def test__to_cxg__simple_anndata_with_corpora_and_dense_using_feature_name_var_index(self):
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, vars_index_column_name="feature_name")
+        h5ad_file.to_cxg(self.sample_output_directory, 0)
+
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
+        self._validate_cxg_var_index_column_match(
+            self.sample_output_directory,
+            "feature_name",
+        )
+
     def test__to_cxg__with_sparse_column_encoding(self):
         anndata = self._create_sample_anndata_dataset()
         anndata.X = np.ones((3, 4))
@@ -236,6 +246,12 @@ class TestH5ADDataFile(unittest.TestCase):
                 actual_x_data = x_array[:, :]
             self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
+    def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
+        var_array_location = f"{cxg_directory}/var"
+        var_array = tiledb.DenseArray(var_array_location, mode="r")
+        actual_index_name = json.loads(var_array.meta["cxg_schema"])["index"]
+        self.assertEqual(actual_index_name, expected_index_name)
+
     def _write_anndata_to_file(self, anndata):
         temporary_filename = fixture_file_path(f"{uuid4()}.h5ad")
         anndata.write(temporary_filename)
@@ -257,7 +273,15 @@ class TestH5ADDataFile(unittest.TestCase):
         # Create vars
         random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int32)
         random_bool_category = Series(data=[True, True, False, True], dtype=np.bool_)
-        var_dataframe = DataFrame(data={"int_category": random_int_category, "bool_category": random_bool_category})
+        feature_name = Series(data=["a", "b", "c", "d"])
+        var_dataframe = DataFrame(
+            data={
+                "int_category": random_int_category.values,
+                "bool_category": random_bool_category.values,
+                "feature_name": feature_name.values,
+            },
+            index=feature_name,
+        )
         var = var_dataframe
 
         # Create embeddings
@@ -273,7 +297,7 @@ class TestH5ADDataFile(unittest.TestCase):
             uns[metadata_field] = json.dumps({"random_key": "random_value"})
 
         # Need to carefully set the corpora schema versions in order for tests to pass.
-        uns["version"] = {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"}
+        uns["schema_version"] = "2.0.0"
 
         # Set project links to be a dictionary
         uns["project_links"] = json.dumps(

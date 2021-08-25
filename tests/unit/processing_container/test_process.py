@@ -2,6 +2,7 @@ import pathlib
 import requests
 import shutil
 import tempfile
+from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -17,8 +18,11 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         super().setUpClass()
         cls.tmp_dir = tempfile.mkdtemp()
         cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
+        # TODO: Reupload this dataset once 2.0.0 migration is complete.
+        # https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/
+        # corpora-data-portal/1354
         cls.presigned_url = cls.get_presigned_url(
-            "5e486133-cdc6-4da2-a46d-fadebbf45762", "43e498b2-4037-441a-8a58-89ff680a0a39"
+            "79dfc1fe-cc7a-454a-ba26-4c72f0876436", "c1f00b2e-fe42-4dd0-a035-7b7f3cefd055"
         )
         cls.download(cls.presigned_url, cls.real_h5ad_filename)
 
@@ -52,7 +56,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     def test_make_loom(self):
         make_loom(str(self.real_h5ad_filename))
 
-    def test_main(self):
+    # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.
+    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file")
+    def test_main(self, mock_validate_h5ad):
         url = self.presigned_url
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
