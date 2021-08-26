@@ -13,9 +13,8 @@ export const aggregateDatasetsMetadata = memoize(function (
 
       return {
         assay: [...assay, ...metadata.assay],
-        cell_count: (
-          cell_count === null ? 0 : cell_count
-        ) + Number(metadata.cell_count),
+        cell_count:
+          (cell_count === null ? 0 : cell_count) + Number(metadata.cell_count),
         disease: [...disease, ...metadata.disease],
         organism: [...organism, ...metadata.organism],
         tissue: [...tissue, ...metadata.tissue],
