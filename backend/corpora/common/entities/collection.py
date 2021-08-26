@@ -141,7 +141,7 @@ class Collection(Entity):
         # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
         if "organism" in dataset and isinstance(dataset.get("organism"), object):
             return [dataset["organism"]]
-        return dataset["organism"]
+        return dataset.get("organism")
 
     def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
