@@ -134,14 +134,14 @@ class Collection(Entity):
         # If schema_version is 1.1.0, convert sex to the new API format
         if dataset.get("schema_version") != "2.0.0":
             return [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset.get("sex")]
-        return dataset
+        return dataset.get("sex")
 
     @staticmethod
     def transform_organism_for_schema_2_0_0(dataset):
         # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
         if "organism" in dataset and isinstance(dataset.get("organism"), object):
             return [dataset["organism"]]
-        return dataset
+        return dataset["organism"]
 
     def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
