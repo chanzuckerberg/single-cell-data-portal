@@ -1,3 +1,4 @@
+from backend.corpora.lambdas.api.v1.authorization import requires_auth, requires_scope
 import sqlalchemy
 from typing import Optional
 
@@ -65,6 +66,8 @@ def post_collection_revision(collection_uuid: str, user: str):
 
 
 @dbconnect
+@requires_auth
+@requires_scope("write:collections")
 def create_collection(body: object, user: str):
     db_session = g.db_session
     collection = Collection.create(

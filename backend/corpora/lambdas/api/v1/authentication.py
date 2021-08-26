@@ -10,6 +10,7 @@ from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
 from jose.exceptions import ExpiredSignatureError
 
+
 from ....common.authorizer import get_userinfo, assert_authorized_token
 from ....common.corpora_config import CorporaAuthConfig
 
@@ -47,7 +48,8 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         refresh_token_url=config.api_token_url,
         access_token_url=config.api_token_url,
         authorize_url=config.api_authorize_url,
-        client_kwargs={"scope": "openid profile email offline_access"},
+        client_kwargs={"scope": "openid profile email offline_access read:collections write:collections"},
+        authorize_params={"audience": config.audience2}
     )
     return oauth_client
 
@@ -177,7 +179,7 @@ def check_token(token: dict) -> dict:
     :param token: a dictionary that contains the token information.
     """
     try:
-        payload = assert_authorized_token(token.get("id_token"))
+        payload = assert_authorized_token(token.get("access_token"))
     except ExpiredSignatureError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
@@ -185,7 +187,7 @@ def check_token(token: dict) -> dict:
             token = refresh_expired_token(token)
             if token is None:
                 raise
-            payload = assert_authorized_token(token.get("id_token"))
+            payload = assert_authorized_token(token.get("access_token"))
             # update the cookie with then refreshed token
             save_token(auth_config.cookie_name, token)
         except ExpiredSignatureError:

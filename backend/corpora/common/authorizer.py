@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import lru_cache
 
@@ -9,7 +10,7 @@ from .corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils.exceptions import UnauthorizedError
 
 
-def assert_authorized_token(token: str) -> dict:
+def assert_authorized_token(token: str, audience: str = None) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param token: The token
@@ -21,7 +22,9 @@ def assert_authorized_token(token: str) -> dict:
         raise UnauthorizedError(detail="Unable to parse authentication token.")
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
-    audience = auth_config.audience
+    # If we're using an id_token (for userinfo), we need a difference audience, which gets passed in.
+    # Otherwise use auth_config.audience2
+    use_audience = audience or auth_config.audience2
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
@@ -36,12 +39,12 @@ def assert_authorized_token(token: str) -> dict:
             options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
         try:
             payload = jwt.decode(
-                token, public_key, algorithms=algorithms, audience=audience, issuer=issuer, options=options
+                token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
             )
         except ExpiredSignatureError:
             raise
         except JWTClaimsError:
-            raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
+            raise UnauthorizedError(detail=f"Incorrect claims, please check the audience and issuer.")
         except Exception:
             raise UnauthorizedError(detail="Unable to parse authentication token.")
 
@@ -88,7 +91,8 @@ def get_userinfo(token: str) -> dict:
         userinfo = dict(is_authenticated=False)
         return userinfo
 
-    payload = assert_authorized_token(token)
+    auth_config = CorporaAuthConfig()
+    payload = assert_authorized_token(token, auth_config.audience)
 
     userinfo = dict(
         is_authenticated=True,

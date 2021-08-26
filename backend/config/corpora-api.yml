@@ -69,8 +69,6 @@ paths:
       tags:
         - collections
       summary: Create a collection
-      security:
-        - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
       operationId: backend.corpora.lambdas.api.v1.collection.create_collection
