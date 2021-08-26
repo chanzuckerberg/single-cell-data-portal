@@ -23,8 +23,8 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
     # If we're using an id_token (for userinfo), we need a difference audience, which gets passed in.
-    # Otherwise use auth_config.audience2
-    use_audience = audience or auth_config.audience2
+    # Otherwise use auth_config.api_audience
+    use_audience = audience or auth_config.api_audience
     public_keys = get_public_keys(auth0_domain)
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
