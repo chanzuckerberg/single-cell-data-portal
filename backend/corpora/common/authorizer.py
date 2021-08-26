@@ -1,4 +1,3 @@
-import logging
 import os
 from functools import lru_cache
 
@@ -44,7 +43,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         except ExpiredSignatureError:
             raise
         except JWTClaimsError:
-            raise UnauthorizedError(detail=f"Incorrect claims, please check the audience and issuer.")
+            raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
         except Exception:
             raise UnauthorizedError(detail="Unable to parse authentication token.")
 

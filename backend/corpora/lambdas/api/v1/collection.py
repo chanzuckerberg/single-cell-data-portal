@@ -1,4 +1,3 @@
-from backend.corpora.lambdas.api.v1.authorization import requires_auth, requires_scope
 import sqlalchemy
 from typing import Optional
 

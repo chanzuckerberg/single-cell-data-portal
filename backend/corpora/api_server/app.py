@@ -98,6 +98,7 @@ def handle_auth_error(ex):
     response.status_code = ex.status_code
     return response
 
+
 @app.errorhandler(ProblemException)
 def handle_corpora_error(exception):
     return FlaskApi.get_response(

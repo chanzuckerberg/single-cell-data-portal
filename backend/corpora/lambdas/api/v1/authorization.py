@@ -1,19 +1,12 @@
-import json
-from six.moves.urllib.request import urlopen
 from functools import wraps
 
-import requests
-
-from flask import Flask, request, jsonify, _request_ctx_stack, session
-from flask_cors import cross_origin
+from flask import _request_ctx_stack
 from jose import jwt
 
-from ....common.authorizer import assert_authorized_token
 from ....common.corpora_config import CorporaAuthConfig
-
 from .authentication import get_token
-
 from backend.corpora.common import authorizer
+
 
 # Error handler
 class AuthError(Exception):
@@ -26,16 +19,13 @@ def get_token_from_session():
     config = CorporaAuthConfig()
     try:
         token = get_token(config.cookie_name)
-        return token['access_token']
+        return token["access_token"]
     except Exception:
-        raise AuthError({"code": "authorization_header_missing",
-                        "description":
-                            "Authorization header is expected"}, 401)
+        raise AuthError({"code": "token_missing", "description": "Cannot extract access token"}, 401)
 
 
 def requires_auth(f):
-    """Determines if the Access Token is valid
-    """
+    """Determines if the Access Token is valid"""
 
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -55,13 +45,11 @@ def requires_scope(required_scope):
             token = get_token_from_session()
             unverified_claims = jwt.get_unverified_claims(token)
             if unverified_claims.get("scope"):
-                    token_scopes = unverified_claims["scope"].split()
-                    for token_scope in token_scopes:
-                        if token_scope == required_scope:
-                            payload = authorizer.assert_authorized_token(token)
-                            return f(user = payload['sub'], *args, **kwargs)
-            raise AuthError({"code": "invalid_header",
-                        "description": "Missing permissions"}, 401)
+                token_scopes = unverified_claims["scope"].split()
+                for token_scope in token_scopes:
+                    if token_scope == required_scope:
+                        payload = authorizer.assert_authorized_token(token)
+                        return f(user=payload["sub"], *args, **kwargs)
+            raise AuthError({"code": "invalid_header", "description": "Missing permissions"}, 401)
         return wrapper
     return actual_decorator
-
