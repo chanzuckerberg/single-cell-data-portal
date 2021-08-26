@@ -51,5 +51,7 @@ def requires_scope(required_scope):
                         payload = authorizer.assert_authorized_token(token)
                         return f(user=payload["sub"], *args, **kwargs)
             raise AuthError({"code": "invalid_header", "description": "Missing permissions"}, 401)
+
         return wrapper
+
     return actual_decorator
