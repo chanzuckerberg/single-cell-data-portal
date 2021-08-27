@@ -512,6 +512,36 @@ class TestCollection(BaseAuthAPITest):
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
+    def test__create_collection_strip_string_fields(self):
+        test_url = furl(path="/dp/v1/collections/")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        data = {
+            "name": "   another collection name   ",
+            "description": "    This is a test collection  ",
+            "contact_name": " person human   ",
+            "contact_email": "person@human.com  ",
+            "data_submission_policy_version": " 0.0.1",
+            "links": [
+                {"link_url": "http://doi.org/10.1016", "link_type": "OTHER"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
+        }
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
+        self.assertEqual(201, response.status_code)
+        collection_uuid = json.loads(response.data)["collection_uuid"]
+
+        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url.add(query_params=dict(visibility="PRIVATE"))
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        self.assertEqual(body["description"], data["description"].strip())
+        self.assertEqual(body["name"], data["name"].strip())
+        self.assertEqual(body["contact_name"], body["contact_name"].strip())
+        self.assertEqual(body["contact_email"], body["contact_email"].strip())
+        self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+
     def test__list_collection__check_owner(self):
 
         # Generate test collection
