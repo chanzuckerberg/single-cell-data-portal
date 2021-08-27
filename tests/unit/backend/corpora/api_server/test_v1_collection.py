@@ -166,7 +166,7 @@ class TestCollection(BaseAuthAPITest):
                     "is_primary_data": "PRIMARY",
                     "mean_genes_per_cell": 0.0,
                     "name": "test_dataset_name",
-                    "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
+                    "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
                     "collection_id": "test_collection_id",
                     "collection_visibility": "PUBLIC",
                     "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],

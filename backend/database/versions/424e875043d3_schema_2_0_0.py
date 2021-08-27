@@ -25,8 +25,8 @@ def create_enum(name: str, values: list):
 
 
 def upgrade():
-    x_approximate_distribution_enum = create_enum("x_approximate_distribution", ["count", "normal"])
-    is_primary_data_enum = create_enum("is_primary_data", ["primary", "secondary", "both"])
+    x_approximate_distribution_enum = create_enum("x_approximate_distribution", ["COUNT", "NORMAL"])
+    is_primary_data_enum = create_enum("is_primary_data", ["PRIMARY", "SECONDARY", "BOTH"])
 
     op.add_column("dataset", sa.Column("cell_type", JSONB, nullable=True))
     op.add_column("dataset", sa.Column("is_primary_data", is_primary_data_enum, nullable=True))

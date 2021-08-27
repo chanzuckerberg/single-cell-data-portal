@@ -154,6 +154,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "title": "my test dataset",
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
+            "schema_version": "2.0.0",
         }
 
         var = pandas.DataFrame(
@@ -210,6 +211,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         self.assertEqual(extracted_metadata["x_normalization"], "normal")
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
+        self.assertEqual(extracted_metadata["schema_version"], "2.0.0")
 
         self.assertEqual(extracted_metadata["cell_count"], 50001)
 
@@ -276,6 +278,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "title": "my test dataset",
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
+            "schema_version": "2.0.0",
         }
 
         var = pandas.DataFrame(

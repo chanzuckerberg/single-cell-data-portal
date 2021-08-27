@@ -306,6 +306,7 @@ def extract_metadata(filename):
         "cell_type": _get_term_pairs("cell_type"),
         "x_normalization": adata.uns["X_normalization"],
         "x_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
+        "schema_version": adata.uns["schema_version"],
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
