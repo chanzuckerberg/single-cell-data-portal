@@ -138,7 +138,7 @@ class Collection(Entity):
     @staticmethod
     def transform_organism_for_schema_2_0_0(dataset):
         # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
-        if "organism" in dataset and isinstance(dataset.get("organism"), object):
+        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
             dataset["organism"] = [dataset["organism"]]
 
     def reshape_for_api(self, tombstoned_datasets=False) -> dict:
