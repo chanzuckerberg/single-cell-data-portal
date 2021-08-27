@@ -164,6 +164,10 @@ class TestH5ADDataFile(unittest.TestCase):
         # Clean up
         remove(sparse_with_column_shift_filename)
 
+    def test__to_cxg__h5ad_with_slashes_in_obs(self):
+        h5ad_file = H5ADDataFile(fixture_file_path("slashes_in_obs.h5ad"))
+        h5ad_file.to_cxg(self.sample_output_directory, 10)
+
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
 
@@ -250,7 +254,7 @@ class TestH5ADDataFile(unittest.TestCase):
         random_string_category = Series(data=["a", "b", "b"], dtype="category")
         random_float_category = Series(data=[3.2, 1.1, 2.2], dtype=np.float32)
         obs_dataframe = DataFrame(
-            data={"string_category": random_string_category, "float_category": random_float_category}
+            data={"BEST4/OTOP2 Cells": random_string_category, "float_category": random_float_category}
         )
         obs = obs_dataframe
 
