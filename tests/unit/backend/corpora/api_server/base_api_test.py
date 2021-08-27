@@ -68,6 +68,7 @@ class BaseAuthAPITest(BaseAPITest):
             "client_id": cls.auth_config.client_id,
             "client_secret": cls.auth_config.client_secret,
             "audience": cls.auth_config.audience,
+            "api_audience": cls.auth_config.api_audience,
             "cookie_name": cls.auth_config.cookie_name,
         }
         cls.auth_config.set(authconfig)

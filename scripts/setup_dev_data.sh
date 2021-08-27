@@ -49,6 +49,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "client_id": "local-client-id",
     "client_secret": "local-client-secret",
     "audience": "local-client-id",
+    "api_audience": "local-client-id",
     "code_challenge_method": "S256",
     "api_authorize_url": "'"${OIDC_BROWSER_URL}"'/connect/authorize",
     "api_base_url": "'"${OIDC_BROWSER_URL}"'",

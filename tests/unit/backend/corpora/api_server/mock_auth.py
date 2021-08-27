@@ -39,7 +39,7 @@ class MockOauthApp:
 
         jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
         r = {
-            "access_token": f"access-{time.time()}",
+            "access_token": jwt,
             "id_token": jwt,
             "refresh_token": f"random-{time.time()}",
             "scope": "openid profile email offline",
