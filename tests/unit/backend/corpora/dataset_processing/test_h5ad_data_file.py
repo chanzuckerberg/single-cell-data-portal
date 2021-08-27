@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from os import remove, path
 from shutil import rmtree
@@ -168,6 +169,15 @@ class TestH5ADDataFile(unittest.TestCase):
         h5ad_file = H5ADDataFile(fixture_file_path("slashes_in_obs.h5ad"))
         h5ad_file.to_cxg(self.sample_output_directory, 10)
 
+        self._dump_dir_listing(self.sample_output_directory)
+
+    def _dump_dir_listing(self, dir):
+        for root, dirs, files in os.walk(dir):
+            path = root.split(os.sep)
+            print((len(path) - 1) * '+', os.path.basename(root))
+            for file in files:
+                print(len(path) * '-', file)
+
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
 
@@ -254,7 +264,7 @@ class TestH5ADDataFile(unittest.TestCase):
         random_string_category = Series(data=["a", "b", "b"], dtype="category")
         random_float_category = Series(data=[3.2, 1.1, 2.2], dtype=np.float32)
         obs_dataframe = DataFrame(
-            data={"BEST4/OTOP2 Cells": random_string_category, "float_category": random_float_category}
+            data={"string_category": random_string_category, "float_category": random_float_category}
         )
         obs = obs_dataframe
 
