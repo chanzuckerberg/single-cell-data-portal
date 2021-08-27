@@ -132,8 +132,8 @@ class Collection(Entity):
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
         # If schema_version is 1.1.0, convert sex to the new API format
-        if dataset.get("schema_version") != "2.0.0":
-            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset.get("sex")]
+        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
 
     @staticmethod
     def transform_organism_for_schema_2_0_0(dataset):
