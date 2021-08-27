@@ -42,7 +42,9 @@ class BogusDatasetParams:
     def get(cls, **kwargs):
         bogus_data = dict(
             name="create_dataset",
-            organism={"ontology_term_id": "123", "label": "organism"},
+            organism=[
+                {"ontology_term_id": "123", "label": "organism"}
+            ],
             tissue=[
                 {"ontology_term_id": "UBERON:1111", "label": "brain"},
                 {"ontology_term_id": "UBERON:2222", "label": "something unusual"},
