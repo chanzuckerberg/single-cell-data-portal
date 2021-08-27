@@ -172,9 +172,7 @@ class TestDatabase:
             id=test_dataset_id,
             revision=0,
             name="test_dataset_name",
-            organism=[
-                {"ontology_term_id": "test_obo", "label": "test_organism"}
-            ],
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -202,9 +200,7 @@ class TestDatabase:
             id="test_dataset_for_revisions_one",
             revision=0,
             name="test_dataset_name",
-            organism=[
-                {"ontology_term_id": "test_obo", "label": "test_organism"}
-            ],
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -228,9 +224,7 @@ class TestDatabase:
             id="test_dataset_for_revisions_two",
             revision=0,
             name="test_dataset_name",
-            organism=[
-                {"ontology_term_id": "test_obo", "label": "test_organism"}
-            ],
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -254,9 +248,7 @@ class TestDatabase:
             id="test_dataset_id_not_owner",
             revision=0,
             name="test_dataset_name_not_owner",
-            organism=[
-                {"ontology_term_id": "test_obo", "label": "test_organism"}
-            ],
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
