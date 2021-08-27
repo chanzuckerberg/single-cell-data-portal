@@ -191,8 +191,8 @@ class TestDatabase:
             collection_visibility=CollectionVisibility.PUBLIC.name,
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            X_normalization="test_X_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_normalization="test_x_normalization",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -267,8 +267,8 @@ class TestDatabase:
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            X_normalization="test_X_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_normalization="test_x_normalization",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)

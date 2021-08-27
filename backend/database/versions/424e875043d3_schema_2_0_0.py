@@ -25,13 +25,13 @@ def create_enum(name: str, values: list):
 
 
 def upgrade():
-    X_approximate_distribution_enum = create_enum("X_approximate_distribution", ["COUNT", "NORMAL"])
+    x_approximate_distribution_enum = create_enum("x_approximate_distribution", ["COUNT", "NORMAL"])
     is_primary_data_enum = create_enum("is_primary_data", ["PRIMARY", "SECONDARY", "BOTH"])
 
     op.add_column("dataset", sa.Column("cell_type", JSONB, nullable=True))
     op.add_column("dataset", sa.Column("is_primary_data", is_primary_data_enum, nullable=True))
-    op.add_column("dataset", sa.Column("X_normalization", sa.String, nullable=True))
-    op.add_column("dataset", sa.Column("X_approximate_distribution", X_approximate_distribution_enum, nullable=True))
+    op.add_column("dataset", sa.Column("x_normalization", sa.String, nullable=True))
+    op.add_column("dataset", sa.Column("x_approximate_distribution", x_approximate_distribution_enum, nullable=True))
     op.add_column("dataset", sa.Column("schema_version", sa.String, nullable=True))
     op.add_column("dataset", sa.Column("mean_genes_per_cell", sa.Float, server_default="0"))
 
@@ -39,7 +39,7 @@ def upgrade():
 def downgrade():
     op.drop_column("dataset", "mean_genes_per_cell")
     op.drop_column("dataset", "schema_version")
-    op.drop_column("dataset", "X_approximate_distribution")
-    op.drop_column("dataset", "X_normalization")
+    op.drop_column("dataset", "x_approximate_distribution")
+    op.drop_column("dataset", "x_normalization")
     op.drop_column("dataset", "is_primary_data")
     op.drop_column("dataset", "cell_type")

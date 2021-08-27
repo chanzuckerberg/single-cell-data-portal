@@ -209,8 +209,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertDictEqual,
         )
 
-        self.assertEqual(extracted_metadata["X_normalization"], "normal")
-        self.assertEqual(extracted_metadata["X_approximate_distribution"], "NORMAL")
+        self.assertEqual(extracted_metadata["x_normalization"], "normal")
+        self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["schema_version"], "2.0.0")
 
         self.assertEqual(extracted_metadata["cell_count"], 50001)
