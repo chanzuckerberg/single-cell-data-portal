@@ -29,7 +29,7 @@ def generate_uuid():
 
 class StrippedString(types.TypeDecorator):
     """
-    Returns a string with spaces stripped
+    Returns a string with spaces stripped.
     """
 
     impl = types.String
@@ -38,12 +38,14 @@ class StrippedString(types.TypeDecorator):
         """
         Strip the trailing spaces on resulting values.
         If value is false, we return it as-is; it might be none
-        for nullable columns
+        for nullable columns.
         """
         return value.strip() if value else value
 
     def copy(self):
-        "Make a copy of this type"
+        """
+        Make a copy of this type.
+        """
         return StrippedString(self.impl.length)
 
 
