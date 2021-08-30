@@ -12,7 +12,7 @@
             "http://backend.corporanet.local:5000/dp/v1/oauth2/callback"
         ],
         "AllowedScopes": [
-           "openid", "profile", "email", "offline_access"
+           "openid", "profile", "email", "offline_access", "read:collections", "write:collections"
         ],
 	"AllowAccessTokensViaBrowser": true,
 	"AlwaysIncludeUserClaimsInIdToken": true,

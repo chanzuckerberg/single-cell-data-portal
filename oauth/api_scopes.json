@@ -1,5 +1,11 @@
 [
   {
     "Name": "test_scope"
+  },
+  {
+    "Name": "read:collections"
+  },
+  {
+    "Name": "write:collections"
   }
 ]
