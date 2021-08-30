@@ -522,8 +522,8 @@ class TestCollection(BaseAuthAPITest):
             "contact_email": "person@human.com  ",
             "data_submission_policy_version": " 0.0.1",
             "links": [
-                {"link_url": "http://doi.org/10.1016", "link_type": "OTHER"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+                {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
+                {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
             ],
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
