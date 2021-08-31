@@ -172,7 +172,7 @@ class TestDatabase:
             id=test_dataset_id,
             revision=0,
             name="test_dataset_name",
-            organism={"ontology_term_id": "test_obo", "label": "test_organism"},
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -191,8 +191,8 @@ class TestDatabase:
             collection_visibility=CollectionVisibility.PUBLIC.name,
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            X_normalization="test_X_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_normalization="test_x_normalization",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -200,7 +200,7 @@ class TestDatabase:
             id="test_dataset_for_revisions_one",
             revision=0,
             name="test_dataset_name",
-            organism={"ontology_term_id": "test_obo", "label": "test_organism"},
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -217,13 +217,14 @@ class TestDatabase:
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
             id="test_dataset_for_revisions_two",
             revision=0,
             name="test_dataset_name",
-            organism={"ontology_term_id": "test_obo", "label": "test_organism"},
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -240,13 +241,14 @@ class TestDatabase:
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
             collection_visibility=CollectionVisibility.PUBLIC.name,
+            schema_version="2.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
             id="test_dataset_id_not_owner",
             revision=0,
             name="test_dataset_name_not_owner",
-            organism={"ontology_term_id": "test_obo", "label": "test_organism"},
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
             tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
             assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
             disease=[
@@ -265,8 +267,8 @@ class TestDatabase:
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            X_normalization="test_X_normalization",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_normalization="test_x_normalization",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)

@@ -42,7 +42,7 @@ class BogusDatasetParams:
     def get(cls, **kwargs):
         bogus_data = dict(
             name="create_dataset",
-            organism={"ontology_term_id": "123", "label": "organism"},
+            organism=[{"ontology_term_id": "123", "label": "organism"}],
             tissue=[
                 {"ontology_term_id": "UBERON:1111", "label": "brain"},
                 {"ontology_term_id": "UBERON:2222", "label": "something unusual"},
@@ -66,8 +66,8 @@ class BogusDatasetParams:
             collection_id="test_collection_id",
             collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
-            X_normalization="normal",
-            X_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            x_normalization="normal",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
 
