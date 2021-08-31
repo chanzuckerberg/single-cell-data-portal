@@ -222,8 +222,8 @@ class DbProjectLink(Base, AuditMixin):
 
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
-    link_name = Column(String)
-    link_url = Column(String)
+    link_name = Column(StrippedString)
+    link_url = Column(StrippedString)
     link_type = Column(Enum(CollectionLinkType))
 
     # Relationships
