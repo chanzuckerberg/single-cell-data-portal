@@ -39,15 +39,18 @@ def requires_auth(f):
 
 
 def has_scope(required_scope):
-    token = get_token_from_session()
-    authorizer.assert_authorized_token(token)
-    unverified_claims = jwt.get_unverified_claims(token)
-    if unverified_claims.get("scope"):
-        token_scopes = unverified_claims["scope"].split()
-        for token_scope in token_scopes:
-            if token_scope == required_scope:
-                return True
-        return False
+    try:
+        token = get_token_from_session()
+        authorizer.assert_authorized_token(token)
+        unverified_claims = jwt.get_unverified_claims(token)
+        if unverified_claims.get("scope"):
+            token_scopes = unverified_claims["scope"].split()
+            for token_scope in token_scopes:
+                if token_scope == required_scope:
+                    return True
+            return False
+    except AuthError:
+        return False 
 
 
 def requires_scope(required_scope):
