@@ -541,6 +541,9 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(body["contact_name"], body["contact_name"].strip())
         self.assertEqual(body["contact_email"], body["contact_email"].strip())
         self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+        
+        for link in body["links"]:
+            self.assertEqual(link["link_url"], link["link_url"].strip())
 
     def test__list_collection__check_owner(self):
 
