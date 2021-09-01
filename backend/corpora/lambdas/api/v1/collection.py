@@ -10,7 +10,16 @@ from ....common.utils.exceptions import ForbiddenHTTPException, ConflictExceptio
 from ....api_server.db import dbconnect
 
 def _is_user_owner_or_allowed(user, owner):
+    """
+    Check if the user has ownership on a collection, or if it has superuser permissions
+    """
     return (user and user == owner) or (has_scope("read:collections"))
+
+def _owner_or_allowed(user):
+    """
+    Returns None if the user is superuser, `user` otherwise. Used for where conditions
+    """
+    return (None if has_scope("read:collections") else user)
 
 
 @dbconnect
@@ -54,7 +63,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 @dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=_owner_or_allowed(user))
     if not collection:
         raise ForbiddenHTTPException()
     try:
@@ -97,7 +106,7 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
         return "", 405
     db_session = g.db_session
     priv_collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user, include_tombstones=True
+        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=_owner_or_allowed(user), include_tombstones=True
     )
     if priv_collection:
         if not priv_collection.tombstone:
@@ -110,7 +119,7 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=_owner_or_allowed(user))
     if not collection:
         raise ForbiddenHTTPException()
     collection.update(**body)
