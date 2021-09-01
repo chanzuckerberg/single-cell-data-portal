@@ -138,8 +138,14 @@ class TestRevisions(unittest.TestCase):
 
         dataset_id = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()['datasets'][0]["id"]
         explorer_url = self.create_explorer_url(dataset_id)
-        dataset_meta_payload_before_revision = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-        dataset_schema_before_revision = requests.get(f"{self.api}/cellxgene/e/{dataset_id}/api/v0.2/schema").json()
+
+        dataset_meta_payload_before_revision_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
+        dataset_meta_payload_before_revision_res.raise_for_status()
+        dataset_meta_payload_before_revision = dataset_meta_payload_before_revision_res.json()
+
+        dataset_schema_before_revision_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema")
+        dataset_schema_before_revision_res.raise_for_status()
+        dataset_schema_before_revision = dataset_schema_before_revision_res.json()
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
@@ -153,7 +159,7 @@ class TestRevisions(unittest.TestCase):
             # Check that the published dataset is still the same
             dataset_meta_payload_after_revision = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertDictEqual(dataset_meta_payload_before_revision, dataset_meta_payload_after_revision)
-            dataset_schema_after_revision = requests.get(f"{self.api}/cellxgene/e/{dataset_id}/api/v0.2/schema").json()
+            dataset_schema_after_revision = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
             self.assertDictEqual(dataset_schema_before_revision, dataset_schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
@@ -163,11 +169,9 @@ class TestRevisions(unittest.TestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             dataset_meta_payload = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-            self.assertEqual(dataset_meta_payload["s3_uri"], f"s3://hosted-cellxgene-staging/{new_dataset_id}.cxg/") # TODO
+            self.assertEqual(dataset_meta_payload["s3_uri"], f"s3://hosted-cellxgene-staging/{new_dataset_id}.cxg/")
 
-            dataset_schema_old_dataset = requests.get(f"{self.api}/cellxgene/e/{dataset_id}/api/v0.2/schema").json()
-            dataset_schema_new_dataset = requests.get(f"{self.api}/cellxgene/e/{new_dataset_id}/api/v0.2/schema").json()
-            self.assertDictEqual(dataset_schema_old_dataset, dataset_schema_new_dataset)
+            # TODO: add `And the explorer url redirects appropriately`
 
         with self.subTest("Adding a dataset to a revision does not impact public datasets in that collection"):
 
@@ -203,8 +207,8 @@ class TestRevisions(unittest.TestCase):
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
 
-            # Pick a random dataset to delete
-            dataset_to_delete = res.json()['datasets'][0]
+            # This only works if you pick the non replaced dataset.
+            dataset_to_delete = res.json()['datasets'][1]
             deleted_dataset_id = dataset_to_delete['id']
             original_dataset_id = dataset_to_delete['original_id']
             original_explorer_url = self.create_explorer_url(original_dataset_id)
@@ -217,8 +221,7 @@ class TestRevisions(unittest.TestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
             self.assertEqual(res.status_code, 200)
 
-            # TODO: This fails
-            res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}/api/v0.2/schema")
+            res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
             self.assertEqual(res.status_code, 200)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
@@ -231,19 +234,15 @@ class TestRevisions(unittest.TestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
             self.assertEqual(res.status_code, 404)
 
-            # TODO: should also check original_dataset_id, but it returns 200
-
-            # TODO: add `And the explorer url redirects appropriately`
-
-
-            # Publishing a revised dataset replaces the original dataset
-            #     Check the metadata api to ensure the s3_uri has changed
-            #     Check the the explorer/schema endpoint to ensure the explorer is accessing the correct dataset
-            # Deleting a dataset does not effect the published dataset
-            # Publishing a revision that deletes a dataset removes it from the data portal (And the explorer url redirects appropriately)
-            # Adding a dataset to a revision does not impact public datasets in that collection
-            # Publishing a revision that contains a new dataset updates the collections page for the data portal (with the new dataset)
-
+            # Deletion happens with eventual consistency, so keeps retrying for 20 seconds
+            (final_status_code, desired_status_code) = (None, 404)
+            for i in range(20):
+                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
+                final_status_code = res.status_code
+                if final_status_code == desired_status_code:
+                    break
+                time.sleep(1)
+            self.assertEqual(final_status_code, desired_status_code)
 
     def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id = None):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
