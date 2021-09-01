@@ -1,11 +1,9 @@
-from backend.corpora.lambdas.api.v1.collection import create_collection
 import base64
 import json
 import os
 import time
 import unittest
 import requests
-from requests import HTTPError
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
@@ -60,7 +58,6 @@ class TestRevisions(unittest.TestCase):
         token = {"id_token": id_token}
         cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
-
     def test_version(self):
         res = requests.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
@@ -106,10 +103,9 @@ class TestRevisions(unittest.TestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         collection_uuid = data["collection_uuid"]
-        # Doesn't work since the collection is published. 
-        # See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1375
+
+        # Doesn't work since the collection is published. See issue #1375
         self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-        print(f"Collection id: {collection_uuid}")
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
         return collection_uuid
@@ -136,31 +132,35 @@ class TestRevisions(unittest.TestCase):
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
-        dataset_id = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()['datasets'][0]["id"]
+        dataset_id = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"][0]["id"]
         explorer_url = self.create_explorer_url(dataset_id)
 
-        dataset_meta_payload_before_revision_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
-        dataset_meta_payload_before_revision_res.raise_for_status()
-        dataset_meta_payload_before_revision = dataset_meta_payload_before_revision_res.json()
+        meta_payload_before_revision_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
+        meta_payload_before_revision_res.raise_for_status()
+        meta_payload_before_revision = meta_payload_before_revision_res.json()
 
-        dataset_schema_before_revision_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema")
-        dataset_schema_before_revision_res.raise_for_status()
-        dataset_schema_before_revision = dataset_schema_before_revision_res.json()
+        schema_before_revision_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema")
+        schema_before_revision_res.raise_for_status()
+        schema_before_revision = schema_before_revision_res.json()
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
-            private_dataset_id = res.json()['datasets'][0]['id']
+            private_dataset_id = res.json()["datasets"][0]["id"]
 
             # Upload a new dataset
-            new_dataset_id = self.upload_and_wait(collection_uuid, dataset_2_dropbox_url, existing_dataset_id=private_dataset_id)
+            new_dataset_id = self.upload_and_wait(
+                collection_uuid,
+                dataset_2_dropbox_url,
+                existing_dataset_id=private_dataset_id,
+            )
 
             # Check that the published dataset is still the same
-            dataset_meta_payload_after_revision = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-            self.assertDictEqual(dataset_meta_payload_before_revision, dataset_meta_payload_after_revision)
-            dataset_schema_after_revision = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
-            self.assertDictEqual(dataset_schema_before_revision, dataset_schema_after_revision)
+            meta_payload_after_revision = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
+            self.assertDictEqual(meta_payload_before_revision, meta_payload_after_revision)
+            schema_after_revision = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
+            self.assertDictEqual(schema_before_revision, schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
             # Publish the revision
@@ -189,7 +189,10 @@ class TestRevisions(unittest.TestCase):
             public_datasets_after = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"]
             self.assertCountEqual(public_datasets_before, public_datasets_after)
 
-        with self.subTest("Publishing a revision that contains a new dataset updates the collection page for the data portal (with the new dataset)"):
+        with self.subTest(
+            "Publishing a revision that contains a new dataset updates "
+            "the collection page for the data portal (with the new dataset)"
+        ):
             # Publish the revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
             res.raise_for_status()
@@ -208,9 +211,9 @@ class TestRevisions(unittest.TestCase):
             self.assertEqual(res.status_code, 201)
 
             # This only works if you pick the non replaced dataset.
-            dataset_to_delete = res.json()['datasets'][1]
-            deleted_dataset_id = dataset_to_delete['id']
-            original_dataset_id = dataset_to_delete['original_id']
+            dataset_to_delete = res.json()["datasets"][1]
+            deleted_dataset_id = dataset_to_delete["id"]
+            original_dataset_id = dataset_to_delete["original_id"]
             original_explorer_url = self.create_explorer_url(original_dataset_id)
 
             # Delete a dataset within the revision
@@ -244,7 +247,7 @@ class TestRevisions(unittest.TestCase):
                 time.sleep(1)
             self.assertEqual(final_status_code, desired_status_code)
 
-    def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id = None):
+    def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id=None):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
         body = {"url": dropbox_url}
 
