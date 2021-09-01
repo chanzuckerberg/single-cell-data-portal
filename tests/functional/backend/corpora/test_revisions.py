@@ -224,8 +224,17 @@ class TestRevisions(unittest.TestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
             self.assertEqual(res.status_code, 200)
 
-            res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
-            self.assertEqual(res.status_code, 200)
+            time.sleep(20)
+
+            # Endpoint is eventually consistent
+            (final_status_code, desired_status_code) = (None, 200)
+            for i in range(20):
+                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
+                final_status_code = res.status_code
+                if final_status_code == desired_status_code:
+                    break
+                time.sleep(1)
+            self.assertEqual(final_status_code, desired_status_code)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
@@ -237,7 +246,7 @@ class TestRevisions(unittest.TestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
             self.assertEqual(res.status_code, 404)
 
-            # Deletion happens with eventual consistency, so keeps retrying for 20 seconds
+            # Endpoint is eventually consistent
             (final_status_code, desired_status_code) = (None, 404)
             for i in range(20):
                 res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
