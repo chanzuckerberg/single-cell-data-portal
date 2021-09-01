@@ -77,3 +77,33 @@ class BaseAuthAPITest(BaseAPITest):
     def tearDownClass(cls):
         super().tearDownClass()
         cls.mock_oauth_server.terminate()
+
+class BasicAuthAPITestCurator(BaseAPITest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.mock_oauth_server = MockOauthServer("read:collections")
+        cls.mock_oauth_server.start()
+        assert cls.mock_oauth_server.server_okay
+
+        # Use the CorporaAuthConfig used by the app
+        cls.auth_config = CorporaAuthConfig()
+
+        os.environ["API_BASE_URL"] = f"http://localhost:{cls.mock_oauth_server.port}"
+        # Overwrite the environment's auth config with our oidc server's config.
+        authconfig = {
+            "api_base_url": f"http://localhost:{cls.mock_oauth_server.port}",
+            "callback_base_url": cls.auth_config.callback_base_url,
+            "redirect_to_frontend": cls.auth_config.redirect_to_frontend,
+            "client_id": cls.auth_config.client_id,
+            "client_secret": cls.auth_config.client_secret,
+            "audience": cls.auth_config.audience,
+            "api_audience": cls.auth_config.api_audience,
+            "cookie_name": cls.auth_config.cookie_name,
+        }
+        cls.auth_config.set(authconfig)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.mock_oauth_server.terminate()
