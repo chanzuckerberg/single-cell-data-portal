@@ -1,93 +1,15 @@
-import base64
 import json
 import os
+from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 import time
 import unittest
 import requests
-from backend.corpora.common.corpora_config import CorporaAuthConfig
-
-API_URL = {
-    "prod": "https://api.cellxgene.cziscience.com",
-    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
-    "test": "http://localhost:5000",
-}
-
-AUDIENCE = {
-    "prod": "cellxgene.cziscience.com/",
-    "staging": "cellxgene.staging.single-cell.czi.technology/",
-    "test": "cellxgene.dev.single-cell.czi.technology/",
-    "dev": "cellxgene.dev.single-cell.czi.technology/",
-}
 
 
-class TestRevisions(unittest.TestCase):
+class TestRevisions(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
-
-    def setUp(self):
-        super().setUp()
-        self.get_auth_token()
-        self.api = API_URL.get(self.deployment_stage)
-        self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
-        self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
-        self.bad_collection_id = "DNE"
-        self.bad_file_id = "DNE"
-
-    @classmethod
-    def get_auth_token(cls):
-        config = CorporaAuthConfig()
-
-        response = requests.post(
-            "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
-            headers={"content-type": "application/x-www-form-urlencoded"},
-            data=dict(
-                grant_type="password",
-                username=config.test_account_username,
-                password=config.test_account_password,
-                audience=AUDIENCE.get(cls.deployment_stage),
-                scope="openid profile email offline",
-                client_id=config.client_id,
-                client_secret=config.client_secret,
-            ),
-        )
-
-        id_token = response.json()["id_token"]
-        token = {"id_token": id_token}
-        cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
-
-    def test_version(self):
-        res = requests.get(f"{self.api}/dp/v1/deployed_version")
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
-        self.assertIsNotNone(res.json()["Data Portal"])
-
-    def test_auth(self):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/userinfo", headers=headers)
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
-        data = json.loads(res.content)
-        self.assertEqual(data["email"], "user@example.com")
-        self.assertTrue(data["is_authenticated"])
-
-    def test_root_route(self):
-        res = requests.get(f"{self.api}/")
-
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
-
-    def test_get_collections(self):
-        res = requests.get(f"{self.api}/dp/v1/collections")
-
-        res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
-        data = json.loads(res.content)
-        for collection in data["collections"]:
-            self.assertIsInstance(collection["id"], str)
-            self.assertIsInstance(collection["created_at"], float)
 
     def create_collection(self, headers):
         data = {
@@ -204,7 +126,6 @@ class TestRevisions(unittest.TestCase):
             ids = [dataset["id"] for dataset in public_datasets]
             self.assertIn(another_dataset_id, ids)
 
-        # deleted_dataset_id = None
         with self.subTest("Deleting a dataset does not effect the published dataset"):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
@@ -223,8 +144,6 @@ class TestRevisions(unittest.TestCase):
             # Check if the dataset is still available
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
             self.assertEqual(res.status_code, 200)
-
-            time.sleep(20)
 
             # Endpoint is eventually consistent
             (final_status_code, desired_status_code) = (None, 200)
@@ -255,48 +174,3 @@ class TestRevisions(unittest.TestCase):
                     break
                 time.sleep(1)
             self.assertEqual(final_status_code, desired_status_code)
-
-    def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id=None):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
-        body = {"url": dropbox_url}
-
-        if existing_dataset_id is None:
-            res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
-            )
-        else:
-            body["id"] = existing_dataset_id
-            res = requests.put(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
-            )
-
-        res.raise_for_status()
-        dataset_uuid = json.loads(res.content)["dataset_uuid"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
-
-        keep_trying = True
-        timer = time.time()
-        while keep_trying:
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
-            res.raise_for_status()
-            data = json.loads(res.content)
-            upload_status = data["upload_status"]
-            if upload_status == "UPLOADED":
-                conversion_cxg_status = data.get("conversion_cxg_status")
-                conversion_loom_status = data.get("conversion_loom_status")
-                conversion_rds_status = data.get("conversion_rds_status")
-                conversion_anndata_status = data.get("conversion_anndata_status")
-                if (
-                    conversion_cxg_status
-                    == conversion_loom_status
-                    == conversion_rds_status
-                    == conversion_anndata_status
-                    == "CONVERTED"
-                ):
-                    keep_trying = False
-            if time.time() >= timer + 300:
-                raise TimeoutError(
-                    f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
-                )
-            time.sleep(10)
-        return dataset_uuid
