@@ -13,7 +13,7 @@ TOKEN_EXPIRES = 2
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
-    def __init__(self, port, additional_scope = None):
+    def __init__(self, port, additional_scope=None):
         self.port = port
         self.additional_scope = additional_scope
 
@@ -35,7 +35,12 @@ class MockOauthApp:
         expires_at = time.time()
         headers = dict(alg="RS256", kid="fake_kid")
         payload = dict(
-            name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True, exp=expires_at, scope=self.additional_scope
+            name="Fake User",
+            sub="test_user_id",
+            email="fake_user@email.com",
+            email_verified=True,
+            exp=expires_at,
+            scope=self.additional_scope,
         )
 
         jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
@@ -69,7 +74,7 @@ class MockOauthApp:
 
 
 class MockOauthServer:
-    def __init__(self, additional_scope = None):
+    def __init__(self, additional_scope=None):
         self.process = None
         self.port = None
         self.server_okay = False

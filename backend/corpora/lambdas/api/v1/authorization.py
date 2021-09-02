@@ -49,8 +49,8 @@ def has_scope(required_scope):
                 if token_scope == required_scope:
                     return True
         return False
-    except AuthError:
-        return False 
+    except Exception:
+        return False
 
 
 def requires_scope(required_scope):

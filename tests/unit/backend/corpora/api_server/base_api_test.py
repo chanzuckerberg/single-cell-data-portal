@@ -49,9 +49,8 @@ class BaseAPITest(DataPortalTestCase):
 
 
 class BaseAuthAPITest(BaseAPITest):
-
     @staticmethod
-    def get_mock_server_and_auth_config(additional_scope = None):
+    def get_mock_server_and_auth_config(additional_scope=None):
         mock_oauth_server = MockOauthServer(additional_scope)
         mock_oauth_server.start()
         assert mock_oauth_server.server_okay
@@ -85,7 +84,7 @@ class BaseAuthAPITest(BaseAPITest):
     def tearDownClass(cls):
         super().tearDownClass()
         cls.mock_oauth_server.terminate()
-        
+
 
 class BasicAuthAPITestCurator(BaseAPITest):
     @classmethod

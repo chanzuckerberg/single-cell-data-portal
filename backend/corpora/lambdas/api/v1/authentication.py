@@ -213,6 +213,18 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     return payload
 
 
+def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
+    """
+    Lenient version that allows endpoints to work even if authentication fails.
+    Use this for endpoints that also require public access, so if users end up with a bad token,
+    they won't be locked out.
+    """
+    try:
+        return apikey_info_func(tokenstr, required_scopes)
+    except Exception:
+        return {}
+
+
 def userinfo() -> Response:
     """API call: retrieve the user info from the id token stored in the cookie"""
     config = CorporaAuthConfig()

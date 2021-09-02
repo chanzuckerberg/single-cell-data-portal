@@ -891,14 +891,15 @@ class TestCollectionsCurators(BasicAuthAPITestCurator):
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-        data = json.dumps({
+        modified_collection = {
             "name": "new name",
             "description": collection.description,
             "contact_name": collection.contact_name,
             "contact_email": collection.contact_email,
             "data_submission_policy_version": collection.data_submission_policy_version,
             "links": collection.links,
-            })
+        }
+        data = json.dumps(modified_collection)
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
 
