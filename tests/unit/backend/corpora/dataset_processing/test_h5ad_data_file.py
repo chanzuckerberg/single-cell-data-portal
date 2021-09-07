@@ -9,6 +9,7 @@ import anndata
 import numpy as np
 from pandas import Series, DataFrame
 import tiledb
+from tiledb.libtiledb import TileDBError
 
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
@@ -167,8 +168,11 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def test__to_cxg__h5ad_with_slashes_in_obs(self):
         h5ad_file = H5ADDataFile(fixture_file_path("slashes_in_obs.h5ad"))
-        h5ad_file.to_cxg(self.sample_output_directory, 10)
 
+        with self.assertRaises(TileDBError) as exception_context:
+            h5ad_file.to_cxg(self.sample_output_directory, 10)
+
+        self.assertIn("Failed to open file", str(exception_context.exception))
         self._dump_dir_listing(self.sample_output_directory)
 
     def _dump_dir_listing(self, dir):
