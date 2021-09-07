@@ -1,10 +1,11 @@
 import json
 import os
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 import time
 import unittest
 import requests
 from requests import HTTPError
+
+from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 
 
 class TestApi(BaseFunctionalTestCase):

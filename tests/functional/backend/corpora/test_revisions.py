@@ -1,9 +1,10 @@
 import json
 import os
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 import time
 import unittest
 import requests
+
+from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 
 
 class TestRevisions(BaseFunctionalTestCase):

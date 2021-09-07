@@ -1,10 +1,11 @@
 import unittest
 import os
-from backend.corpora.common.corpora_config import CorporaAuthConfig
 import requests
 import base64
 import json
 import time
+
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -56,7 +57,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
         id_token = response.json()["id_token"]
         token = {"id_token": id_token}
-        cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
+        cls.cookie = base64.b64encode(json.dumps(token).encode("utf-8")).decode()
 
     def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id=None):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
