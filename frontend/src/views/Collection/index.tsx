@@ -11,6 +11,7 @@ import {
   useCollection,
   useCollectionUploadLinks,
 } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
@@ -58,9 +59,6 @@ const Collection: FC = () => {
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
-  const isTombstonedDataset = tombstoned_dataset_id ? true : false;
-  const [hasTombstonedToastBeenShown, setHasTombestonedToastBeenShown] = useState(false);
-
   const collectionState = useCollection({
     id,
     visibility,
@@ -76,6 +74,17 @@ const Collection: FC = () => {
   if (!collection || isError) {
     return null;
   }
+
+  const showTombstonedDatasetToast = () => {
+    Toast.show({
+      icon: IconNames.ISSUE,
+      intent: Intent.PRIMARY,
+      message: `A dataset was withdrawn by ${collection.contact_name}. You've been redirected to the parent collection.`,
+    });
+    removeParams("tombstoned_dataset_id");
+  };
+
+  if (tombstoned_dataset_id) showTombstonedDatasetToast();
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -121,16 +130,6 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
-  const showTombstonedDatasetToast = () => {
-    Toast.show({
-      icon: IconNames.ISSUE,
-      intent: Intent.PRIMARY,
-      message:
-        `A dataset was withdrawn by ${collection.contact_name}. You've been redirected to the parent collection.`,
-    });
-    setHasTombestonedToastBeenShown(true)
-  };
-
   return (
     <>
       <Head>
@@ -147,8 +146,6 @@ const Collection: FC = () => {
           </StyledCallout>
         )}
 
-        {isTombstonedDataset && !hasTombstonedToastBeenShown && showTombstonedDatasetToast()}
-        
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>
           <Description data-test-id="collection-description">
