@@ -38,6 +38,21 @@ def requires_auth(f):
     return decorated
 
 
+def has_scope(required_scope):
+    try:
+        token = get_token_from_session()
+        authorizer.assert_authorized_token(token)
+        unverified_claims = jwt.get_unverified_claims(token)
+        if unverified_claims.get("scope"):
+            token_scopes = unverified_claims["scope"].split()
+            for token_scope in token_scopes:
+                if token_scope == required_scope:
+                    return True
+        return False
+    except Exception:
+        return False
+
+
 def requires_scope(required_scope):
     def actual_decorator(f):
         @wraps(f)

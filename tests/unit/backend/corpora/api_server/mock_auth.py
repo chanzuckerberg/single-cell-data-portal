@@ -13,8 +13,9 @@ TOKEN_EXPIRES = 2
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
-    def __init__(self, port):
+    def __init__(self, port, additional_scope=None):
         self.port = port
+        self.additional_scope = additional_scope
 
         # mock flask app
         self.app = Flask("mock_oauth_app")
@@ -34,7 +35,12 @@ class MockOauthApp:
         expires_at = time.time()
         headers = dict(alg="RS256", kid="fake_kid")
         payload = dict(
-            name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True, exp=expires_at
+            name="Fake User",
+            sub="test_user_id",
+            email="fake_user@email.com",
+            email_verified=True,
+            exp=expires_at,
+            scope=self.additional_scope,
         )
 
         jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
@@ -42,7 +48,7 @@ class MockOauthApp:
             "access_token": jwt,
             "id_token": jwt,
             "refresh_token": f"random-{time.time()}",
-            "scope": "openid profile email offline",
+            "scope": "openid profile email offline read:collections",
             "expires_in": TOKEN_EXPIRES,
             "token_type": "Bearer",
             "expires_at": expires_at,
@@ -68,14 +74,18 @@ class MockOauthApp:
 
 
 class MockOauthServer:
-    def __init__(self):
+    def __init__(self, additional_scope=None):
         self.process = None
         self.port = None
         self.server_okay = False
+        self.additional_scope = additional_scope
 
     def start(self):
         self.port = random.randint(10000, 20000)
-        self.process = subprocess.Popen([sys.executable, __file__, str(self.port)])
+        params = [sys.executable, __file__, str(self.port)]
+        if self.additional_scope:
+            params.append(self.additional_scope)
+        self.process = subprocess.Popen(params)
         # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
         self.server_okay = False
         for _ in range(5):
@@ -114,5 +124,5 @@ def get_auth_token(app):
 
 if __name__ == "__main__":
     port = int(sys.argv[1])
-    mock_app = MockOauthApp(port)
+    mock_app = MockOauthApp(port, *sys.argv[2:])
     mock_app.app.run(port=port, debug=True)

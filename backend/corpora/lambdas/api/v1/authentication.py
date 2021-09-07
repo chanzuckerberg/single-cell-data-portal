@@ -178,6 +178,8 @@ def check_token(token: dict) -> dict:
 
     :param token: a dictionary that contains the token information.
     """
+    if "access_token" not in token:
+        return {}
     try:
         payload = assert_authorized_token(token.get("access_token"))
     except ExpiredSignatureError:
@@ -209,6 +211,18 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     token = decode_token(tokenstr)
     payload = check_token(token)
     return payload
+
+
+def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
+    """
+    Lenient version that allows endpoints to work even if authentication fails.
+    Use this for endpoints that also require public access, so if users end up with a bad token,
+    they won't be locked out.
+    """
+    try:
+        return apikey_info_func(tokenstr, required_scopes)
+    except Exception:
+        return {}
 
 
 def userinfo() -> Response:
