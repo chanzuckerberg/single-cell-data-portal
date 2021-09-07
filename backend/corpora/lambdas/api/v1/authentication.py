@@ -48,7 +48,7 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         refresh_token_url=config.api_token_url,
         access_token_url=config.api_token_url,
         authorize_url=config.api_authorize_url,
-        client_kwargs={"scope": "openid profile email offline_access read:collections write:collections"},
+        client_kwargs={"scope": "openid profile email offline_access write:collections"},
         authorize_params={"audience": config.api_audience},
     )
     return oauth_client
