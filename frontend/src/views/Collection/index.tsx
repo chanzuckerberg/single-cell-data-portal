@@ -2,7 +2,7 @@ import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -38,24 +38,17 @@ enum TABS {
 
 const Collection: FC = () => {
   const router = useRouter();
-  const [hasTombstoneToastBeenShown, setHasTombestoneToastBeenShow] = useState(false);
-  const { params } = router.query;
+  const { params, tombstoned_dataset_id } = router.query;
 
   let id = "";
   let isPrivate = false;
-  let tombstonedDatasetId;
 
   if (Array.isArray(params)) {
     id = params[0];
-    isPrivate = params[1] === "private";  // Is this always passed in?
-    tombstonedDatasetId = params[2];  // Need to verify this indexing
+    isPrivate = params[1] === "private";
   } else if (params) {
     id = params;
   }
-
-  useEffect(() => {
-    setHasTombestoneToastBeenShow(true)
-  }, [])
 
   const visibility = isPrivate
     ? VISIBILITY_TYPE.PRIVATE
@@ -64,6 +57,9 @@ const Collection: FC = () => {
   const [uploadLink] = useCollectionUploadLinks(id, visibility);
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
+
+  const isTombstonedDataset = tombstoned_dataset_id ? true : false;
+  const [hasTombstonedToastBeenShown, setHasTombestonedToastBeenShown] = useState(false);
 
   const collectionState = useCollection({
     id,
@@ -125,14 +121,15 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
-  // const showTombstoneToast = () => {
-  //   Toast.show({
-  //     icon: IconNames.TICK,
-  //     intent: Intent.PRIMARY,
-  //     message:
-  //       "Your file is being uploaded which will continue in the background, even if you close this window.",
-  //   });
-  // };
+  const showTombstonedDatasetToast = () => {
+    Toast.show({
+      icon: IconNames.ISSUE,
+      intent: Intent.PRIMARY,
+      message:
+        `A dataset was withdrawn by ${collection.contact_name}. You've been redirected to the parent collection.`,
+    });
+    setHasTombestonedToastBeenShown(true)
+  };
 
   return (
     <>
@@ -149,13 +146,9 @@ const Collection: FC = () => {
             </span>
           </StyledCallout>
         )}
-        {!hasTombstoneToastBeenShown &&
-          Toast.show({
-          icon: IconNames.TICK,
-          intent: Intent.PRIMARY,
-          message:
-            "Your file is being uploaded which will continue in the background, even if you close this window.",
-        })}
+
+        {isTombstonedDataset && !hasTombstonedToastBeenShown && showTombstonedDatasetToast()}
+        
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>
           <Description data-test-id="collection-description">
@@ -170,15 +163,6 @@ const Collection: FC = () => {
             {renderLinks(collection.links)}
           </LinkContainer>
         </CollectionInfo>
-
-        {/* {tombstonedDatasetId && (
-          Toast.show({
-            icon: IconNames.TICK,
-            intent: Intent.PRIMARY,
-            message:
-              "Your file is being uploaded which will continue in the background, even if you close this window.",
-          })
-        )} */}
 
         {shouldShowPrivateWriteAction && (
           <ActionButtons
