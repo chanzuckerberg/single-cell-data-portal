@@ -1,4 +1,3 @@
-from backend.corpora.lambdas.api.v1.authorization import has_scope
 import sqlalchemy
 from typing import Optional
 
@@ -8,6 +7,7 @@ from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
 from ....api_server.db import dbconnect
+from backend.corpora.lambdas.api.v1.authorization import has_scope
 
 
 def _is_user_owner_or_allowed(user, owner):
