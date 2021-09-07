@@ -183,22 +183,25 @@ class TestH5ADDataFile(unittest.TestCase):
                 print(len(path) * '-', file)
 
     def test__slash_in_attribute_name(self):
-        col_name = "fo/o"
+        with self.assertRaises(TileDBError) as exception_context:
+            col_name = "fo/o"
 
-        attrs = [tiledb.Attr(name=col_name, dtype=np.int)]
-        domain = tiledb.Domain(tiledb.Dim(domain=(0, 99), tile=100, dtype=np.uint32))
-        schema = tiledb.ArraySchema(domain=domain, sparse=False, attrs=attrs, cell_order="row-major",
-                                    tile_order="row-major")
-        tiledb.DenseArray.create("foo", schema)
+            attrs = [tiledb.Attr(name=col_name, dtype=np.int)]
+            domain = tiledb.Domain(tiledb.Dim(domain=(0, 99), tile=100, dtype=np.uint32))
+            schema = tiledb.ArraySchema(domain=domain, sparse=False, attrs=attrs, cell_order="row-major",
+                                        tile_order="row-major")
+            tiledb.DenseArray.create("foo", schema)
 
-        with tiledb.DenseArray("foo", mode="w") as A:
-            value = {}
-            value[col_name] = np.zeros((100,), dtype=np.int)
-            A[:] = value
+            with tiledb.DenseArray("foo", mode="w") as A:
+                value = {}
+                value[col_name] = np.zeros((100,), dtype=np.int)
+                A[:] = value
 
-        tiledb.consolidate("foo")
+            tiledb.consolidate("foo")
 
-        print("done")
+            print("done")
+
+        self.assertIn("Error: Cannot open file", str(exception_context.exception))
 
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
