@@ -13,7 +13,7 @@ ENV PIP_NO_CACHE_DIR=1
 # The no-op npm touches some files that are the cellxgene install script expects to exist
 RUN git clone https://github.com/chanzuckerberg/single-cell-explorer.git \
  && echo '#!/bin/sh\nmkdir -p build/static && touch build/static/.gitignore build/index.html build/csp-hashes.json' > /usr/bin/npm && chmod 755 /usr/bin/npm \
- && cd cellxgene \
+ && cd single-cell-explorer \
  && make pydist-czi-hosted \
  && make install-dist \
  && make dev-env-czi-hosted \
