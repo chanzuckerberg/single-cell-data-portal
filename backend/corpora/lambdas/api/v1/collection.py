@@ -14,14 +14,14 @@ def _is_user_owner_or_allowed(user, owner):
     """
     Check if the user has ownership on a collection, or if it has superuser permissions
     """
-    return (user and user == owner) or (has_scope("read:collections"))
+    return (user and user == owner) or (has_scope("write:collections"))
 
 
 def _owner_or_allowed(user):
     """
     Returns None if the user is superuser, `user` otherwise. Used for where conditions
     """
-    return None if has_scope("read:collections") else user
+    return None if has_scope("write:collections") else user
 
 
 @dbconnect

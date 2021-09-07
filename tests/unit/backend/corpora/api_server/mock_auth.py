@@ -48,7 +48,7 @@ class MockOauthApp:
             "access_token": jwt,
             "id_token": jwt,
             "refresh_token": f"random-{time.time()}",
-            "scope": "openid profile email offline read:collections",
+            "scope": "openid profile email offline read:collections write:collections",
             "expires_in": TOKEN_EXPIRES,
             "token_type": "Bearer",
             "expires_at": expires_at,

@@ -90,7 +90,7 @@ class BasicAuthAPITestCurator(BaseAPITest):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("read:collections")
+        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("write:collections")
         cls.mock_oauth_server = mock_oauth_server
         cls.auth_config = auth_config
 
