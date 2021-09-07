@@ -171,9 +171,9 @@ class TestH5ADDataFile(unittest.TestCase):
 
         with self.assertRaises(TileDBError) as exception_context:
             h5ad_file.to_cxg(self.sample_output_directory, 10)
+            self._dump_dir_listing(self.sample_output_directory)
 
-        self.assertIn("Failed to open file", str(exception_context.exception))
-        self._dump_dir_listing(self.sample_output_directory)
+        self.assertIn("Error: Cannot open file", str(exception_context.exception))
 
     def _dump_dir_listing(self, dir):
         for root, dirs, files in os.walk(dir):
