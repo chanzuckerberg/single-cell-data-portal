@@ -11,6 +11,7 @@ import {
   useCollection,
   useCollectionUploadLinks,
 } from "src/common/queries/collections";
+import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -39,7 +40,14 @@ enum TABS {
 
 const Collection: FC = () => {
   const router = useRouter();
-  const { params, tombstoned_dataset_id } = router.query;
+  const { params } = router.query;
+
+  let tombstoned_dataset_id;
+  if (!isSSR()) {
+    const urlParams = new URLSearchParams(window.location.search);
+    tombstoned_dataset_id = urlParams.get('tombstoned_dataset_id');
+    console.log('tombstoned_dataset_id: ', tombstoned_dataset_id)
+  }
 
   let id = "";
   let isPrivate = false;
