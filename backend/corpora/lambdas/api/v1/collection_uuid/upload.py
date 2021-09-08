@@ -15,6 +15,7 @@ from .....common.utils.exceptions import (
     NotFoundHTTPException,
 )
 from .....common.utils.math_utils import GB
+from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
 
 
 def link(collection_uuid: str, body: dict, user: str):
@@ -48,7 +49,7 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
 
     # Create dataset
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=user)
+    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=_owner_or_allowed(user))
     if not collection:
         raise ForbiddenHTTPException
     if dataset_id:
