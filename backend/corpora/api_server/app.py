@@ -1,9 +1,10 @@
+from backend.corpora.lambdas.api.v1.authorization import AuthError
 import connexion
 import json
 import logging
 import os
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, Response
+from flask import g, Response, jsonify
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -89,6 +90,13 @@ with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_f
 @app.route("/", methods=["GET", "HEAD"])
 def serve_swagger_ui():
     return Response(swagger_ui_html, mimetype="text/html")
+
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
 
 
 @app.errorhandler(ProblemException)

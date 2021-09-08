@@ -257,11 +257,11 @@ class TestApi(unittest.TestCase):
                 self.assertIn(upload_status, upload_statuses)
                 # conversion statuses only returned once uploaded
                 if upload_status == "UPLOADED":
-                    conversion_cxg_status = data["conversion_cxg_status"]
-                    conversion_loom_status = data["conversion_loom_status"]
-                    conversion_rds_status = data["conversion_rds_status"]
-                    conversion_anndata_status = data["conversion_anndata_status"]
-                    self.assertIn(data["conversion_cxg_status"], conversion_statuses)
+                    conversion_cxg_status = data.get("conversion_cxg_status")
+                    conversion_loom_status = data.get("conversion_loom_status")
+                    conversion_rds_status = data.get("conversion_rds_status")
+                    conversion_anndata_status = data.get("conversion_anndata_status")
+                    self.assertIn(data.get("conversion_cxg_status"), conversion_statuses)
                     if conversion_cxg_status == "FAILED":
                         self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if conversion_loom_status == "FAILED":
