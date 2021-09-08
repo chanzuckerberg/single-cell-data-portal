@@ -55,8 +55,9 @@ class TestApi(unittest.TestCase):
             ),
         )
 
+        access_token = response.json()["access_token"]
         id_token = response.json()["id_token"]
-        token = {"id_token": id_token}
+        token = {"access_token": access_token, "id_token": id_token}
         cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
     def test_version(self):
