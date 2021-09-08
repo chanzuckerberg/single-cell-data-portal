@@ -83,7 +83,7 @@ const Collection: FC = () => {
     } else {
       message =
         "A dataset was withdrawn. You've been redirected to the parent collection.";
-    };
+    }
 
     Toast.show({
       icon: IconNames.ISSUE,
