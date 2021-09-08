@@ -2,7 +2,7 @@ import json
 import typing
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
 
@@ -92,3 +92,21 @@ class TestPublish(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post(path, headers=headers)
         self.assertEqual(403, response.status_code)
+
+
+class TestPublishCurators(BasicAuthAPITestCurator):
+    def test__can_publish_owned_collection(self):
+        collection_id = self.generate_collection(self.session).id
+        self.generate_dataset(self.session, collection_id=collection_id, collection_visibility="PRIVATE")
+        path = f"/dp/v1/collections/{collection_id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(path, headers=headers)
+        self.assertEqual(202, response.status_code)
+
+    def test__can_publish_non_owned_collection(self):
+        collection_id = self.generate_collection(self.session, owner="someone_else").id
+        self.generate_dataset(self.session, collection_id=collection_id, collection_visibility="PRIVATE")
+        path = f"/dp/v1/collections/{collection_id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post(path, headers=headers)
+        self.assertEqual(202, response.status_code)
