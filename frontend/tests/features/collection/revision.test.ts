@@ -42,7 +42,10 @@ describeIfDeployed("Collection Revision", () => {
       getTestID("revision-tag")
     );
 
-    expect(revisionTag).not.toBe(null);
+    await tryUntil(
+      async () =>
+      await expect(revisionTag).not.toBe(null)
+    );
 
     await expect(revisionTag).toMatchText("Revision Pending");
 
