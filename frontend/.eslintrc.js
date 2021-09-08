@@ -42,6 +42,8 @@ module.exports = {
     camelcase: "off",
     "react/jsx-no-target-blank": 0,
     "react/prop-types": "off",
+    // (thuang): We use nested template literals extensively
+    "sonarjs/no-nested-template-literals": "off",
     "sort-keys": [
       "error",
       "asc",
