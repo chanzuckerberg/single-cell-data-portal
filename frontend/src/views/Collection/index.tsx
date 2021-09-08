@@ -77,7 +77,7 @@ const Collection: FC = () => {
       return;
 
     let message = "";
-    // TODO: Verify that contact_name is required and won't be the default empty string.
+    // TODO: Remove empty string check after re-curation is complete. Contact name should always be populated.
     if (collectionContactName) {
       message = `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`;
     } else {
