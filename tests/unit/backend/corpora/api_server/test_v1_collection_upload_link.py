@@ -265,22 +265,18 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 
 class TestCollectionPostUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
-
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
-
     @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
     def test__can_upload_dataset_to_non_owned_collection(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            collection = self.generate_collection(
-                self.session, visibility=CollectionVisibility.PRIVATE.name
-            )
+            collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             path = f"/dp/v1/collections/{collection.id}/upload-links"
             body = {"url": self.good_link}
-            
+
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             print(response.data)
@@ -307,5 +303,3 @@ class TestCollectionPostUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestC
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             response = self.app.put(path, headers=headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
-
-

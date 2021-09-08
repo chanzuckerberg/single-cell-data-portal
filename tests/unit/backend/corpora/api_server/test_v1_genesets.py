@@ -141,7 +141,6 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 
 class TestGenesetsCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
-
     def _get_geneset_ids(self, collection_id, headers, public=False):
         if public:
             rsp = self.app.get(f"/dp/v1/collections/{collection_id}", headers=headers)
