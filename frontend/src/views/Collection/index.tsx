@@ -76,11 +76,19 @@ const Collection: FC = () => {
     if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
       return;
 
+    let message = "";
     // TODO: Verify that contact_name is required and won't be the default empty string.
+    if (collectionContactName) {
+      message = `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`;
+    } else {
+      message =
+        "A dataset was withdrawn. You've been redirected to the parent collection.";
+    };
+
     Toast.show({
       icon: IconNames.ISSUE,
       intent: Intent.PRIMARY,
-      message: `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`,
+      message,
     });
   }, [tombstoned_dataset_id, collectionContactName]);
 
