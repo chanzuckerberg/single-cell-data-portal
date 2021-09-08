@@ -7,6 +7,21 @@ from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
 from ....api_server.db import dbconnect
+from backend.corpora.lambdas.api.v1.authorization import has_scope
+
+
+def _is_user_owner_or_allowed(user, owner):
+    """
+    Check if the user has ownership on a collection, or if it has superuser permissions
+    """
+    return (user and user == owner) or (has_scope("write:collections"))
+
+
+def _owner_or_allowed(user):
+    """
+    Returns None if the user is superuser, `user` otherwise. Used for where conditions
+    """
+    return None if has_scope("write:collections") else user
 
 
 @dbconnect
@@ -23,7 +38,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     for coll_dict in all_collections:
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
-        if visibility == CollectionVisibility.PUBLIC or (user and user == owner):
+        if visibility == CollectionVisibility.PUBLIC or _is_user_owner_or_allowed(user, owner):
             collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
 
     result = {"collections": collections}
@@ -41,16 +56,23 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(db_session, collection_uuid, visibility)
     if not collection:
         raise ForbiddenHTTPException()
-    get_tombstone_datasets = user == collection.owner and collection.visibility == CollectionVisibility.PRIVATE
+    get_tombstone_datasets = (
+        _is_user_owner_or_allowed(user, collection.owner) and collection.visibility == CollectionVisibility.PRIVATE
+    )
     result = collection.reshape_for_api(get_tombstone_datasets)
-    result["access_type"] = "WRITE" if user == collection.owner else "READ"
+    result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
     return make_response(jsonify(result), 200)
 
 
 @dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PUBLIC.name, owner=user)
+    collection = Collection.get_collection(
+        db_session,
+        collection_uuid,
+        CollectionVisibility.PUBLIC.name,
+        owner=_owner_or_allowed(user),
+    )
     if not collection:
         raise ForbiddenHTTPException()
     try:
@@ -93,7 +115,11 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
         return "", 405
     db_session = g.db_session
     priv_collection = Collection.get_collection(
-        db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user, include_tombstones=True
+        db_session,
+        collection_uuid,
+        CollectionVisibility.PRIVATE.name,
+        owner=_owner_or_allowed(user),
+        include_tombstones=True,
     )
     if priv_collection:
         if not priv_collection.tombstone:
@@ -106,7 +132,12 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE.name, owner=user)
+    collection = Collection.get_collection(
+        db_session,
+        collection_uuid,
+        CollectionVisibility.PRIVATE.name,
+        owner=_owner_or_allowed(user),
+    )
     if not collection:
         raise ForbiddenHTTPException()
     collection.update(**body)
