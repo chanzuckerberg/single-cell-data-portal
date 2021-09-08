@@ -2,7 +2,7 @@ import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -58,9 +58,6 @@ const Collection: FC = () => {
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
-  const isTombstonedDataset = tombstoned_dataset_id ? true : false;
-  const [hasTombstonedToastBeenShown, setHasTombestonedToastBeenShown] = useState(false);
-
   const collectionState = useCollection({
     id,
     visibility,
@@ -72,6 +69,20 @@ const Collection: FC = () => {
   const isRevision = revisionsEnabled && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
+
+  const collectionContactName = collection?.contact_name;
+  useEffect(() => {
+    // collectionContactName would be undefined in the case where collection is undefined.
+    if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
+      return;
+
+    // TODO: Verify that contact_name is required and won't be the default empty string.
+    Toast.show({
+      icon: IconNames.ISSUE,
+      intent: Intent.PRIMARY,
+      message: `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`,
+    });
+  }, [tombstoned_dataset_id, collectionContactName]);
 
   if (!collection || isError) {
     return null;
@@ -121,16 +132,6 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
 
-  const showTombstonedDatasetToast = () => {
-    Toast.show({
-      icon: IconNames.ISSUE,
-      intent: Intent.PRIMARY,
-      message:
-        `A dataset was withdrawn by ${collection.contact_name}. You've been redirected to the parent collection.`,
-    });
-    setHasTombestonedToastBeenShown(true)
-  };
-
   return (
     <>
       <Head>
@@ -147,8 +148,6 @@ const Collection: FC = () => {
           </StyledCallout>
         )}
 
-        {isTombstonedDataset && !hasTombstonedToastBeenShown && showTombstonedDatasetToast()}
-        
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>
           <Description data-test-id="collection-description">
