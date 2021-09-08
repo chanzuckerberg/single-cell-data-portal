@@ -178,9 +178,7 @@ function useCheckCollection({
 
     if (!intervalId && shouldFetch) {
       intervalId = window?.setInterval(() => {
-        if (shouldFetch) {
-          invalidateCollectionQuery();
-        }
+        invalidateCollectionQuery();
       }, FETCH_COLLECTION_INTERVAL_MS);
     }
 
