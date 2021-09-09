@@ -11,14 +11,14 @@ ENV PIP_NO_CACHE_DIR=1
 
 # HACK: Create a no-op npm; npm build not needed for backend-only operations
 # The no-op npm touches some files that are the cellxgene install script expects to exist
-RUN git clone https://github.com/chanzuckerberg/cellxgene.git \
+RUN git clone https://github.com/chanzuckerberg/single-cell-explorer.git \
  && echo '#!/bin/sh\nmkdir -p build/static && touch build/static/.gitignore build/index.html build/csp-hashes.json' > /usr/bin/npm && chmod 755 /usr/bin/npm \
- && cd cellxgene \
+ && cd single-cell-explorer \
  && make pydist-czi-hosted \
  && make install-dist \
  && make dev-env-czi-hosted \
  && cd .. \
- && rm -rf cellxgene client build/client /usr/bin/npm
+ && rm -rf single-cell-explorer client build/client /usr/bin/npm
 
 # Install python dependencies
 RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 tiledb==0.7.4 cellxgene-schema awscli
