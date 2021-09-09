@@ -10,11 +10,6 @@ repos:
       - id: flake8
         stages: [commit]
         files: ^(backend|tests|scripts)/
-  - repo: https://github.com/awslabs/git-secrets
-    rev: 1.3.0
-    hooks:
-      - id: git-secrets
-        stages: [ commit ]
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.3.2
     hooks:
@@ -25,8 +20,3 @@ repos:
           - prettier@2.3.2
           - prettier-plugin-organize-imports@2.2.0
           - typescript@3.9.9
-  - repo: https://github.com/awslabs/git-secrets
-    rev: 80230afa8c8bdeac766a0fece36f95ffaa0be778
-    hooks:
-      - id: git-secrets
-        stages: [commit]
