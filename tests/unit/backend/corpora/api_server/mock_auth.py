@@ -32,7 +32,8 @@ class MockOauthApp:
         return redirect(callback + f"?code=fakecode&state={state}")
 
     def api_oauth_token(self):
-        expires_at = time.time() + 60 # Test tokens should last at least one minute
+        # Test tokens should last at least one minute
+        expires_at = time.time() + 60
         headers = dict(alg="RS256", kid="fake_kid")
         payload = dict(
             name="Fake User",
