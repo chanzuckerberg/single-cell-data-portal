@@ -21,7 +21,7 @@ describeIfDeployed("Collection Revision", () => {
 
     await expect(publishButton).toBeDisabled();
 
-    await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS);
+    await page.click(getText("My Collections"));
 
     const COLLECTION_ROW_SELECTOR_CONTINUE = `*${getTestID(
       COLLECTION_ROW_ID
@@ -33,18 +33,20 @@ describeIfDeployed("Collection Revision", () => {
     );
 
     const collectionRowContinue = await page.$(
-      `*${getTestID(COLLECTION_ROW_ID)} >> text="${collectionName}"`
+      COLLECTION_ROW_SELECTOR_CONTINUE
     );
 
     expect(collectionRowContinue).not.toBe(null);
 
-    const revisionTag = await collectionRowContinue?.$(
-      getTestID("revision-tag")
-    );
+    await tryUntil(async () => {
+      const revisionTag = await collectionRowContinue?.$(
+        getTestID("revision-tag")
+      );
 
-    expect(revisionTag).not.toBe(null);
+      await expect(revisionTag).not.toBe(null);
 
-    await expect(revisionTag).toMatchText("Revision Pending");
+      await expect(revisionTag).toMatchText("Revision Pending");
+    });
 
     const actionButtonContinue = await collectionRowContinue?.$(
       getTestID("revision-action-button")

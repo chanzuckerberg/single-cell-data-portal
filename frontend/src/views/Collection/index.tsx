@@ -2,7 +2,7 @@ import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -38,7 +38,7 @@ enum TABS {
 
 const Collection: FC = () => {
   const router = useRouter();
-  const { params } = router.query;
+  const { params, tombstoned_dataset_id } = router.query;
 
   let id = "";
   let isPrivate = false;
@@ -69,6 +69,28 @@ const Collection: FC = () => {
   const isRevision = revisionsEnabled && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
+
+  const collectionContactName = collection?.contact_name;
+  useEffect(() => {
+    // collectionContactName would be undefined in the case where collection is undefined.
+    if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
+      return;
+
+    let message = "";
+    // TODO: Remove empty string check after re-curation is complete. Contact name should always be populated.
+    if (collectionContactName) {
+      message = `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`;
+    } else {
+      message =
+        "A dataset was withdrawn. You've been redirected to the parent collection.";
+    }
+
+    Toast.show({
+      icon: IconNames.ISSUE,
+      intent: Intent.PRIMARY,
+      message,
+    });
+  }, [tombstoned_dataset_id, collectionContactName]);
 
   if (!collection || isError) {
     return null;
@@ -133,6 +155,7 @@ const Collection: FC = () => {
             </span>
           </StyledCallout>
         )}
+
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>
           <Description data-test-id="collection-description">

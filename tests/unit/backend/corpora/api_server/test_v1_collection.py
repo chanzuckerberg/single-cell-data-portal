@@ -11,7 +11,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.corpora.common.entities import Collection
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
 
@@ -535,6 +535,39 @@ class TestCollection(BaseAuthAPITest):
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
+    def test__create_collection_strip_string_fields(self):
+        test_url = furl(path="/dp/v1/collections/")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        data = {
+            "name": "   another collection name   ",
+            "description": "    This is a test collection  ",
+            "contact_name": " person human   ",
+            "contact_email": "person@human.com  ",
+            "data_submission_policy_version": " 0.0.1",
+            "links": [
+                {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
+                {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
+            ],
+        }
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
+        self.assertEqual(201, response.status_code)
+        collection_uuid = json.loads(response.data)["collection_uuid"]
+
+        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url.add(query_params=dict(visibility="PRIVATE"))
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        self.assertEqual(body["description"], data["description"].strip())
+        self.assertEqual(body["name"], data["name"].strip())
+        self.assertEqual(body["contact_name"], body["contact_name"].strip())
+        self.assertEqual(body["contact_email"], body["contact_email"].strip())
+        self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+
+        for link in body["links"]:
+            self.assertEqual(link["link_url"], link["link_url"].strip())
+
     def test__list_collection__check_owner(self):
 
         # Generate test collection
@@ -856,3 +889,54 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
+
+
+class TestCollectionsCurators(BasicAuthAPITestCurator):
+    def test_view_non_owned_private_collection__ok(self):
+        # Generate test collection
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
+        )
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
+        response = self.app.get(test_url.url, headers=headers)
+
+        # This will pass even for non curators.
+        # Why are users allowed to view private collections that they don't own?
+        self.assertEqual(response.status_code, 200)
+
+        body = json.loads(response.data)
+        self.assertEqual(body["access_type"], "WRITE")
+
+    def test_update_non_owned_private_collection__ok(self):
+        # Generate test collection
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
+        )
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        modified_collection = {
+            "name": "new name",
+            "description": collection.description,
+            "contact_name": collection.contact_name,
+            "contact_email": collection.contact_email,
+            "data_submission_policy_version": collection.data_submission_policy_version,
+            "links": collection.links,
+        }
+        data = json.dumps(modified_collection)
+        response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+    def test_delete_non_owned_private_collection__ok(self):
+        # Generate test collection
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
+        )
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
+        response = self.app.delete(test_url.url, headers=headers)
+        self.assertEqual(204, response.status_code)

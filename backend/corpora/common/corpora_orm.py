@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    types,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -24,6 +25,28 @@ from .utils.exceptions import CorporaException
 
 def generate_uuid():
     return str(uuid4())
+
+
+class StrippedString(types.TypeDecorator):
+    """
+    Returns a string with spaces stripped.
+    """
+
+    impl = types.String
+
+    def process_result_value(self, value, dialect):
+        """
+        Strip the trailing spaces on resulting values.
+        If value is false, we return it as-is; it might be none
+        for nullable columns.
+        """
+        return value.strip() if value else value
+
+    def copy(self):
+        """
+        Make a copy of this type.
+        """
+        return StrippedString(self.impl.length)
 
 
 class TransformingBase(object):
@@ -201,13 +224,13 @@ class DbCollection(Base, AuditMixin):
     __tablename__ = "project"
 
     visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
-    owner = Column(String, nullable=False)
-    name = Column(String)
-    description = Column(String)
+    owner = Column(StrippedString, nullable=False)
+    name = Column(StrippedString)
+    description = Column(StrippedString)
     obfuscated_uuid = Column(String, default="")
-    contact_name = Column(String, default="")
-    contact_email = Column(String, default="")
-    data_submission_policy_version = Column(String, nullable=False)
+    contact_name = Column(StrippedString, default="")
+    contact_email = Column(StrippedString, default="")
+    data_submission_policy_version = Column(StrippedString, nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
@@ -226,8 +249,8 @@ class DbProjectLink(Base, AuditMixin):
 
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
-    link_name = Column(String)
-    link_url = Column(String)
+    link_name = Column(StrippedString)
+    link_url = Column(StrippedString)
     link_type = Column(Enum(CollectionLinkType))
 
     # Relationships

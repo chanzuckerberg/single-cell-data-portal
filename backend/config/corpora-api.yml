@@ -19,7 +19,7 @@ paths:
         - collections
       summary: List published collections in Corpora
       security:
-        - cxguserCookie: []
+        - cxguserCookieLenient: []
         - { }
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
@@ -124,7 +124,7 @@ paths:
         - collections
       summary: Get a collection's full details
       security:
-        - cxguserCookie: []
+        - cxguserCookieLenient: []
         - { }
       description: >-
         This will return all datasets and associated attributes.
@@ -1050,6 +1050,11 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func
+    cxguserCookieLenient:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
     dummyAuth:
       type: apiKey
       in: header

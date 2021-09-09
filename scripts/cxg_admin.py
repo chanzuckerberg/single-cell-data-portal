@@ -224,6 +224,7 @@ def create_cxg_artifacts(ctx):
                     s3_uri=s3_uri,
                 )
 
+
 @cli.command()
 @click.pass_context
 def migrate_schema_version(ctx):
@@ -248,6 +249,41 @@ def migrate_schema_version(ctx):
             version = res['config']['corpora_props']['version']['corpora_schema_version']
             logger.info(f"Setting version for dataset {dataset_id} to {version}")
             record.schema_version = version
+
+
+@cli.command()
+@click.pass_context
+def strip_all_collection_fields(ctx):
+    """
+    Strip all the `collection` string fields, so whitespace at the beginning and the end are removed.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will strip whitespaces to all the string"
+            "fields in the `collection` table",
+            abort=True,
+        )
+
+        query = """
+            update project 
+            set 
+            owner=TRIM(owner), 
+            name=TRIM(name), 
+            description=TRIM(description), 
+            contact_name=TRIM(contact_name), 
+            contact_email=TRIM(contact_email), 
+            data_submission_policy_version=TRIM(data_submission_policy_version)
+            where
+            owner != TRIM(owner) OR
+            name != TRIM(name) OR
+            description != TRIM(description) OR
+            contact_name != TRIM(contact_name) OR
+            contact_email != TRIM(contact_email) OR
+            data_submission_policy_version != TRIM(data_submission_policy_version)
+            """
+            
+        session.execute(query)
+        session.commit()
 
 
 def get_database_uri() -> str:
