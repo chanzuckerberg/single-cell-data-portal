@@ -264,7 +264,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.assertEqual(404, response.status_code)
 
 
-class TestCollectionPostUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
+class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"

@@ -50,8 +50,8 @@ class BaseAPITest(DataPortalTestCase):
 
 class BaseAuthAPITest(BaseAPITest):
     @staticmethod
-    def get_mock_server_and_auth_config(additional_scope=None):
-        mock_oauth_server = MockOauthServer(additional_scope)
+    def get_mock_server_and_auth_config(additional_scope=None, token_duration=0):
+        mock_oauth_server = MockOauthServer(additional_scope, token_duration)
         mock_oauth_server.start()
         assert mock_oauth_server.server_okay
 
@@ -90,7 +90,7 @@ class BasicAuthAPITestCurator(BaseAPITest):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("write:collections")
+        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("write:collections", 60)
         cls.mock_oauth_server = mock_oauth_server
         cls.auth_config = auth_config
 
