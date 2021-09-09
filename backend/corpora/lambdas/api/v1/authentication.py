@@ -10,6 +10,7 @@ from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
 from jose.exceptions import ExpiredSignatureError
 
+
 from ....common.authorizer import get_userinfo, assert_authorized_token
 from ....common.corpora_config import CorporaAuthConfig
 
@@ -47,7 +48,8 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         refresh_token_url=config.api_token_url,
         access_token_url=config.api_token_url,
         authorize_url=config.api_authorize_url,
-        client_kwargs={"scope": "openid profile email offline_access"},
+        client_kwargs={"scope": "openid profile email offline_access write:collections"},
+        authorize_params={"audience": config.api_audience},
     )
     return oauth_client
 
@@ -177,7 +179,7 @@ def check_token(token: dict) -> dict:
     :param token: a dictionary that contains the token information.
     """
     try:
-        payload = assert_authorized_token(token.get("id_token"))
+        payload = assert_authorized_token(token.get("access_token"))
     except ExpiredSignatureError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
@@ -185,7 +187,7 @@ def check_token(token: dict) -> dict:
             token = refresh_expired_token(token)
             if token is None:
                 raise
-            payload = assert_authorized_token(token.get("id_token"))
+            payload = assert_authorized_token(token.get("access_token"))
             # update the cookie with then refreshed token
             save_token(auth_config.cookie_name, token)
         except ExpiredSignatureError:
@@ -207,6 +209,18 @@ def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     token = decode_token(tokenstr)
     payload = check_token(token)
     return payload
+
+
+def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
+    """
+    Lenient version that allows endpoints to work even if authentication fails.
+    Use this for endpoints that also require public access, so if users end up with a bad token,
+    they won't be locked out.
+    """
+    try:
+        return apikey_info_func(tokenstr, required_scopes)
+    except Exception:
+        return {}
 
 
 def userinfo() -> Response:
