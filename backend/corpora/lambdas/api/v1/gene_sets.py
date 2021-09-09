@@ -6,6 +6,7 @@ from ....api_server.db import dbconnect
 from ....common.utils.exceptions import (
     ForbiddenHTTPException,
 )
+from backend.corpora.lambdas.api.v1.collection import _is_user_owner_or_allowed
 
 
 @dbconnect
@@ -18,7 +19,7 @@ def delete(geneset_uuid: str, user: str):
     accepted_response = "", 202
     if not geneset:
         return accepted_response
-    if geneset.collection.owner != user:
+    if not _is_user_owner_or_allowed(user, geneset.collection.owner):
         raise ForbiddenHTTPException()
     if geneset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Cannot delete a public geneset"), 405)
