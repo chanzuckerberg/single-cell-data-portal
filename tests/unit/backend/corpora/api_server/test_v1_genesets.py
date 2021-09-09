@@ -2,7 +2,7 @@ import json
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities.geneset import GenesetDatasetLink
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -138,3 +138,35 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         # get geneset
         actual_geneset_ids = self._get_geneset_ids(collection.id, headers, True)
         self.assertIn(geneset.id, actual_geneset_ids)
+
+
+class TestGenesetsCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
+    def _get_geneset_ids(self, collection_id, headers, public=False):
+        if public:
+            rsp = self.app.get(f"/dp/v1/collections/{collection_id}", headers=headers)
+        else:
+            rsp = self.app.get(f"/dp/v1/collections/{collection_id}?visibility=PRIVATE", headers=headers)
+        self.assertEqual(200, rsp.status_code)
+        bdy = json.loads(rsp.data)
+        return [g["id"] for g in bdy.get("genesets", [])]
+
+    def test__delete_gene_set__200(self):
+        headers = dict(host="localhost", Cookie=get_auth_token(self.app))
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE, owner="some_one_else"
+        )
+
+        # create a geneset
+        geneset = self.generate_geneset(
+            self.session, collection_id=collection.id, collection_visibility=collection.visibility
+        )
+
+        # get geneset
+        actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
+        self.assertIn(geneset.id, actual_geneset_ids)
+
+        # delete the geneset
+        actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
+        self.assertIn(geneset.id, actual_geneset_ids)
+        response = self.app.delete(f"/dp/v1/genesets/{geneset.id}", headers=headers)
+        self.assertEqual(202, response.status_code)
