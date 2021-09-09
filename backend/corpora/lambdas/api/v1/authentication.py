@@ -178,8 +178,6 @@ def check_token(token: dict) -> dict:
 
     :param token: a dictionary that contains the token information.
     """
-    if "access_token" not in token:
-        return {}
     try:
         payload = assert_authorized_token(token.get("access_token"))
     except ExpiredSignatureError:

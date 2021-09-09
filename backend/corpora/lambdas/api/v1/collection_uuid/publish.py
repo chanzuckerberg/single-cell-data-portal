@@ -6,12 +6,18 @@ from .....common.utils.exceptions import ConflictException
 
 from .....api_server.db import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException
+from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
 
 
 @dbconnect
 def post(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, CollectionVisibility.PRIVATE, owner=user)
+    collection = Collection.get_collection(
+        db_session,
+        collection_uuid,
+        CollectionVisibility.PRIVATE,
+        owner=_owner_or_allowed(user),
+    )
     if not collection:
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
