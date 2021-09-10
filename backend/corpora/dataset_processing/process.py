@@ -435,9 +435,10 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
-def validate_h5ad_file(dataset_id, local_filename):
+def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    val_proc = subprocess.run(["cellxgene-schema", "validate", local_filename], capture_output=True)
+    output_filename = f"withlabels.{local_filename}"
+    val_proc = subprocess.run(["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename], capture_output=True)
     if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
@@ -459,6 +460,11 @@ def validate_h5ad_file(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
+        return output_filename
+
+
+def clean_up_local_file(local_filename):
+    os.remove(local_filename)
 
 
 def log_batch_environment():
@@ -486,16 +492,19 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
         "local.h5ad",
     )
 
-    validate_h5ad_file(dataset_id, local_filename)
+    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
 
     # Process metadata
-    metadata = extract_metadata(local_filename)
+    metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
     # create artifacts
-    process_cxg(local_filename, dataset_id, cellxgene_bucket)
-    create_artifacts(local_filename, dataset_id, artifact_bucket)
+    process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+
+    clean_up_local_file(file_with_labels)
+    clean_up_local_file(local_filename)
 
 
 def main():
