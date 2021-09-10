@@ -601,7 +601,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
-    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file")
+    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
         self, mock_metadata_extraction, mock_validate_h5ad, mock_dropbox_download, mock_cxg

@@ -438,7 +438,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = f"withlabels.{local_filename}"
-    val_proc = subprocess.run(["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename], capture_output=True)
+    commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
+    val_proc = subprocess.run(commands, capture_output=True)
     if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
@@ -464,7 +465,10 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
 
 
 def clean_up_local_file(local_filename):
-    os.remove(local_filename)
+    try:
+        os.remove(local_filename)
+    except Exception:
+        pass
 
 
 def log_batch_environment():
