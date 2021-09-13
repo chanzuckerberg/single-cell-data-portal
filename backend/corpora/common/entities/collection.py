@@ -129,6 +129,18 @@ class Collection(Entity):
 
         return results
 
+    @staticmethod
+    def transform_sex_for_schema_2_0_0(dataset):
+        # If schema_version is 1.1.0, convert sex to the new API format
+        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
+
+    @staticmethod
+    def transform_organism_for_schema_2_0_0(dataset):
+        # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
+        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["organism"] = [dataset["organism"]]
+
     def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
         Reshape the collection to match the expected api output.
@@ -158,6 +170,10 @@ class Collection(Entity):
                     continue
             else:
                 datasets.append(dataset)
+
+            self.transform_sex_for_schema_2_0_0(dataset)
+            self.transform_organism_for_schema_2_0_0(dataset)
+
         result["datasets"] = datasets
         return result
 

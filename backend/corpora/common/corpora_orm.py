@@ -138,6 +138,33 @@ class CollectionVisibility(enum.Enum):
     PRIVATE = "Private"
 
 
+class XApproximateDistribution(enum.Enum):
+    """
+    Describes a DbDataset's x_approximate_distribution.
+
+    COUNT - for data whose distributions are best approximated by counting distributions
+            like Poisson, Binomial, or Negative Binomial.
+    NORMAL - for data whose distributions are best approximated by the Gaussian distribution.
+    """
+
+    COUNT = "count"
+    NORMAL = "normal"
+
+
+class IsPrimaryData(enum.Enum):
+    """
+    Describes a DbDataset's is_primary_data.
+
+    PRIMARY - when all observation values are True.
+    SECONDARY - when all observation values are False.
+    BOTH - when observation values are either True or False.
+    """
+
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    BOTH = "both"
+
+
 class ProjectLinkType(enum.Enum):
     """
     Enumerates DbCollection external web link types.
@@ -258,14 +285,20 @@ class DbDataset(Base, AuditMixin):
     sex = Column(JSONB)
     ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
+    cell_type = Column(JSONB)
     cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
+    is_primary_data = Column(Enum(IsPrimaryData))
     collection_id = Column(String, nullable=False)
     collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
     explorer_url = Column(String, index=True)
+    x_normalization = Column(String)
+    x_approximate_distribution = Column(Enum(XApproximateDistribution))
+    mean_genes_per_cell = Column(Float, default=0.0)
+    schema_version = Column(String)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")

@@ -223,8 +223,6 @@ def update_db(dataset_id, metadata=None, processing_status=None):
             raise ProcessingCancelled
 
         if metadata:
-            # TODO: Delete this line once mean_genes_per_cell is in the db
-            metadata.pop("mean_genes_per_cell", None)
             logger.debug("Updating metadata.")
             dataset.update(**metadata)
 
@@ -254,24 +252,26 @@ def extract_metadata(filename):
 
     adata = scanpy.read_h5ad(filename, backed="r")
 
-    try:
-        raw_layer_name = [k for k, v in adata.uns["layer_descriptions"].items() if v == "raw"][0]
-    except (KeyError, IndexError):
-        raise RuntimeError("Raw layer not found in layer descriptions!")
-
-    if raw_layer_name == "X":
-        raw_layer = adata.X
-    elif raw_layer_name == "raw.X":
-        raw_layer = adata.raw.X
+    # TODO: Concern with respect to previous use of raising error when there is no raw layer.
+    # This new way defaults to adata.X.
+    if adata.raw is not None and adata.raw.X is not None:
+        layer_for_mean_genes_per_cell = adata.raw.X
     else:
-        raw_layer = adata.layers[raw_layer_name]
+        layer_for_mean_genes_per_cell = adata.X
+
+    # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
+    # as opposed to `spike-in`
+    filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
 
     # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
     # into memory, so we need to chunk it to be safe.
     stride = 50000
     numerator, denominator = 0, 0
-    for bounds in zip(range(0, raw_layer.shape[0], stride), range(stride, raw_layer.shape[0] + stride, stride)):
-        chunk = raw_layer[bounds[0] : bounds[1], :]
+    for bounds in zip(
+        range(0, layer_for_mean_genes_per_cell.shape[0], stride),
+        range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
+    ):
+        chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], filter_gene_vars]
         numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
         denominator += chunk.shape[0]
 
@@ -282,17 +282,31 @@ def extract_metadata(filename):
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
 
+    def _get_is_primary_data():
+        is_primary_data = adata.obs["is_primary_data"]
+        if all(is_primary_data):
+            return "PRIMARY"
+        elif not any(is_primary_data):
+            return "SECONDARY"
+        else:
+            return "BOTH"
+
     metadata = {
         "name": adata.uns["title"],
-        "organism": {"label": adata.uns["organism"], "ontology_term_id": adata.uns["organism_ontology_term_id"]},
+        "organism": _get_term_pairs("organism"),
         "tissue": _get_term_pairs("tissue"),
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
-        "sex": list(adata.obs.sex.unique()),
+        "sex": _get_term_pairs("sex"),
         "ethnicity": _get_term_pairs("ethnicity"),
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
+        "is_primary_data": _get_is_primary_data(),
+        "cell_type": _get_term_pairs("cell_type"),
+        "x_normalization": adata.uns["X_normalization"],
+        "x_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
+        "schema_version": adata.uns["schema_version"],
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
@@ -338,7 +352,7 @@ def make_cxg(local_filename):
 
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        h5ad_data_file = H5ADDataFile(local_filename)
+        h5ad_data_file = H5ADDataFile(local_filename, vars_index_column_name="feature_name")
         h5ad_data_file.to_cxg(cxg_output_container, 10.0)
     except Exception as ex:
         msg = "CXG conversion failed."
@@ -421,9 +435,11 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
 
 
-def validate_h5ad_file(dataset_id, local_filename):
+def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    val_proc = subprocess.run(["cellxgene-schema", "validate", local_filename], capture_output=True)
+    output_filename = f"withlabels.{local_filename}"
+    commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
+    val_proc = subprocess.run(commands, capture_output=True)
     if val_proc.returncode != 0:
         logger.error("Validation failed!")
         logger.error(f"stdout: {val_proc.stdout}")
@@ -445,6 +461,14 @@ def validate_h5ad_file(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
+        return output_filename
+
+
+def clean_up_local_file(local_filename):
+    try:
+        os.remove(local_filename)
+    except Exception:
+        pass
 
 
 def log_batch_environment():
@@ -472,15 +496,18 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
         "local.h5ad",
     )
 
-    validate_h5ad_file(dataset_id, local_filename)
+    # No file cleanup needed due to docker run-time environment.
+    # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
+    # will have to be modified since it relies on a shared local file
 
+    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
     # Process metadata
-    metadata = extract_metadata(local_filename)
+    metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
     # create artifacts
-    process_cxg(local_filename, dataset_id, cellxgene_bucket)
-    create_artifacts(local_filename, dataset_id, artifact_bucket)
+    process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
