@@ -10,8 +10,6 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 const SCRIPT_SRC = ["'self'"];
 
 module.exports = withImages({
-  future: { webpack5: true },
-
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
     // if COMMIT_SHA env is missing or empty.
