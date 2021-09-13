@@ -63,7 +63,7 @@
     "stylelint": "^13.9.0",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-standard": "^20.0.0",
-    "typescript": "^3.9.9",
+    "typescript": "^4.4.3",
     "webpack": "^5.21.2"
   },
   "keywords": [
