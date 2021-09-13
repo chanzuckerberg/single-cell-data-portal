@@ -22,7 +22,7 @@ RUN git clone https://github.com/chanzuckerberg/single-cell-explorer.git \
 
 # Install python dependencies
 RUN pip3 install loompy==3.0.6 scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 tiledb==0.7.4 awscli
-RUN pip3 install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene-schema==1.0.2
+RUN pip3 install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene-schema==2.0.0rc1
 
 ADD requirements.txt requirements.txt
 ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
