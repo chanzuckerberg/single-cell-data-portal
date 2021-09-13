@@ -1,5 +1,4 @@
 import { AppProps } from "next/app";
-import React from "react";
 import { QueryCache, ReactQueryCacheProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
 import { checkFeatureFlags } from "src/common/featureFlags";

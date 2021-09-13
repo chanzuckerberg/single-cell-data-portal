@@ -1,6 +1,6 @@
 import { H1, Text } from "@blueprintjs/core";
 import Head from "next/head";
-import React, { FC } from "react";
+import { FC } from "react";
 import { ACCESS_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";

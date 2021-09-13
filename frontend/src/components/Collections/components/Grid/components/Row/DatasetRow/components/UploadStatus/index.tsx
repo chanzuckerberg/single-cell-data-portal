@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import React, { FC } from "react";
+import { FC } from "react";
 import { DatasetStatusTag, StatusContainer, StyledSpinner } from "./style";
 
 interface Props {

@@ -1,6 +1,6 @@
 import loadable from "@loadable/component";
 import Head from "next/head";
-import React, { FC } from "react";
+import { FC } from "react";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";

@@ -1,4 +1,4 @@
-import React, { FC, ReactChild } from "react";
+import { FC, ReactChild } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   CollectionResponse,

@@ -1,5 +1,6 @@
 import { Tooltip } from "@blueprintjs/core";
-import React, { FC } from "react";
+import * as React from "react";
+import { FC } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Dataset } from "src/common/entities";
 import Modal from "src/components/common/Modal";

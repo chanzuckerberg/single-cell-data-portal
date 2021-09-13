@@ -1,7 +1,8 @@
 import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { useRouter } from "next/router";
-import React, { FC, useState } from "react";
+import * as React from "react";
+import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { useDeleteCollection } from "src/common/queries/collections";

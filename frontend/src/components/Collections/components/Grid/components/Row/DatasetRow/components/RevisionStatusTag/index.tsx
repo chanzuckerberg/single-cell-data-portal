@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 import { Dataset } from "src/common/entities";
 import { StyledTag } from "./style";
 

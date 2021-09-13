@@ -1,5 +1,4 @@
 import Head from "next/head";
-import React from "react";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
 import {

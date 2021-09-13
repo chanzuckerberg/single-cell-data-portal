@@ -1,5 +1,6 @@
 import loadable from "@loadable/component";
-import React, { useState } from "react";
+import * as React from "react";
+import { useState } from "react";
 import { Dataset } from "src/common/entities";
 
 declare global {

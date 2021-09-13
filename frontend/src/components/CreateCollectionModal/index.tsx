@@ -1,6 +1,7 @@
 import { Dialog, IButtonProps } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import React, { FC, useState } from "react";
+import * as React from "react";
+import { FC, useState } from "react";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
 import { Collection } from "src/common/entities";
 import { get } from "src/common/featureFlags";

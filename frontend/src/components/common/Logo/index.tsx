@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { FC } from "react";
+import { FC } from "react";
 import logo from "src/common/images/logo.svg";
 import { LogoWrapper } from "./style";
 

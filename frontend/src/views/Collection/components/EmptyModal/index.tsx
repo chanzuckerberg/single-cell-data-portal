@@ -1,5 +1,5 @@
 import { H4 } from "@blueprintjs/core";
-import React, { FC, ReactChild } from "react";
+import { FC, ReactChild } from "react";
 import { Border, CenterAlignedDiv } from "./style";
 
 interface Props {

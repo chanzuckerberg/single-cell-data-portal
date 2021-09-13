@@ -15,6 +15,7 @@ module.exports = {
     "react-app",
     "plugin:sonarjs/recommended",
     "plugin:jest-playwright/recommended",
+    "plugin:react/jsx-runtime",
   ],
   overrides: [
     // Override some TypeScript rules just for .js files
