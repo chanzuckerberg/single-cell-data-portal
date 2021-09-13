@@ -291,6 +291,12 @@ def extract_metadata(filename):
         else:
             return "BOTH"
 
+    def _get_x_approximate_distribution():
+        if "X_approximate_distribution" in adata.uns:
+            return adata.uns["X_approximate_distribution"].upper()
+        else:
+            return None
+
     metadata = {
         "name": adata.uns["title"],
         "organism": _get_term_pairs("organism"),
@@ -305,7 +311,7 @@ def extract_metadata(filename):
         "is_primary_data": _get_is_primary_data(),
         "cell_type": _get_term_pairs("cell_type"),
         "x_normalization": adata.uns["X_normalization"],
-        "x_approximate_distribution": adata.uns["X_approximate_distribution"].upper(),
+        "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
     }
     logger.info(f"Extract metadata: {metadata}")
