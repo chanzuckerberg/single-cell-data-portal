@@ -6,7 +6,7 @@ import { LogoWrapper } from "./style";
 export const Logo: FC = () => {
   return (
     <LogoWrapper data-test-id="logo">
-      <Image width="147px" height="35px" src={String(logo)} />
+      <Image width="147px" height="35px" src={logo} />
     </LogoWrapper>
   );
 };

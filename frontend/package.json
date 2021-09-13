@@ -14,7 +14,6 @@
     "jschardet": "^2.3.0",
     "lodash": "^4.17.20",
     "next": "^11.1.2",
-    "next-images": "^1.7.0",
     "next-secure-headers": "^2.1.0",
     "node-fetch": "^2.6.1",
     "node-sass": "^5.0.0",
