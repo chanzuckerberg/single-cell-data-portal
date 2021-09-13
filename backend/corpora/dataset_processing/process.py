@@ -496,19 +496,23 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
         "local.h5ad",
     )
 
-    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    try:
+        file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    finally:
+        clean_up_local_file(local_filename)
 
-    # Process metadata
-    metadata = extract_metadata(file_with_labels)
-    update_db(dataset_id, metadata)
+    try:
+        # Process metadata
+        metadata = extract_metadata(file_with_labels)
+        update_db(dataset_id, metadata)
 
-    # create artifacts
-    process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        # create artifacts
+        process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
+        create_artifacts(file_with_labels, dataset_id, artifact_bucket)
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
-    clean_up_local_file(file_with_labels)
-    clean_up_local_file(local_filename)
+    finally:
+        clean_up_local_file(file_with_labels)
 
 
 def main():
