@@ -56,7 +56,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     def test_make_loom(self):
         make_loom(str(self.real_h5ad_filename))
 
-    # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.`
+    # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     def test_main(self, mock_validate_h5ad):
         mock_validate_h5ad.return_value = "local.h5ad"
