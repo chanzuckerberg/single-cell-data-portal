@@ -1,5 +1,5 @@
 import loadable from "@loadable/component";
-import React, { FC } from "react";
+import { FC } from "react";
 import { LeftAlignedDetailsCell } from "../../../common/style";
 import { Skeleton } from "../common/Skeleton";
 

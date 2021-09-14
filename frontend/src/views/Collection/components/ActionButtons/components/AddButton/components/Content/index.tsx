@@ -1,5 +1,4 @@
 import { Menu, MenuItem } from "@blueprintjs/core";
-import React from "react";
 import DropboxChooser, {
   Props as DropboxChooserProps,
 } from "src/components/DropboxChooser";

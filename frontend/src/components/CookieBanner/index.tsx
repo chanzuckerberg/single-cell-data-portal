@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { LOCAL_STORAGE_KEYS } from "src/common/constants/localStorageKeys";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/localStorage/get";

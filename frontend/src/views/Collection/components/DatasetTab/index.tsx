@@ -1,7 +1,7 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import memoize from "lodash/memoize";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { MutateFunction, useQueryCache } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import {

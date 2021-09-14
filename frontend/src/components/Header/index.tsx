@@ -1,6 +1,6 @@
 import { Intent } from "@blueprintjs/core";
 import Link from "next/link";
-import React, { FC } from "react";
+import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";

@@ -1,5 +1,5 @@
 import { IconNames } from "@blueprintjs/icons";
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,

@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import dropins from "./dropins";
 
 // (thuang): Dropbox Business doesn't have shared account. So I'm using

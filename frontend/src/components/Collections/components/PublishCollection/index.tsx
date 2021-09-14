@@ -2,7 +2,7 @@ import { Button, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import { useRouter } from "next/router";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";

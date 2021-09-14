@@ -2,7 +2,7 @@ import { Button, Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { FC } from "react";
+import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
@@ -74,13 +74,8 @@ const CollectionRow: FC<Props> = (props) => {
   const datasets = Array.from(collection.datasets.values());
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
-  const {
-    tissue,
-    assay,
-    disease,
-    organism,
-    cell_count,
-  } = aggregateDatasetsMetadata(datasets);
+  const { tissue, assay, disease, organism, cell_count } =
+    aggregateDatasetsMetadata(datasets);
 
   return (
     <StyledRow data-test-id="collection-row">

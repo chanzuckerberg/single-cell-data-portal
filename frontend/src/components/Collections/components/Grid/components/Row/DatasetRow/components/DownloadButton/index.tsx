@@ -1,5 +1,4 @@
 import { Button, Classes, Intent } from "@blueprintjs/core";
-import React from "react";
 import DownloadSVG from "src/common/images/download.svg";
 
 function DownloadButton({ ...props }) {

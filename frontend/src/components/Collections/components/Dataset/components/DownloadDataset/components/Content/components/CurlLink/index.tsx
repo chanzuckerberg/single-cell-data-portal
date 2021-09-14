@@ -1,5 +1,5 @@
 import copy from "clipboard-copy";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Code, CodeMask, CodeWrapper, Tip } from "./style";
 
 interface Props {

@@ -1,4 +1,3 @@
-import React from "react";
 import { Collection } from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import {

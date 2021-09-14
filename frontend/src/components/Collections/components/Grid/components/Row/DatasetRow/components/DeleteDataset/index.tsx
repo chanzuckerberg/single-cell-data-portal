@@ -1,7 +1,8 @@
 import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import React, { FC, useState } from "react";
+import * as React from "react";
+import { FC, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
 
 const AsyncAlert = loadable(

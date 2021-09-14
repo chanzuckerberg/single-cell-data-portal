@@ -1,6 +1,6 @@
 import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import React, { FC } from "react";
+import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
   ACCESS_TYPE,
@@ -152,13 +152,8 @@ const DatasetRow: FC<Props> = ({
 
   if (checkIfCancelled(datasetStatus)) return null;
 
-  const {
-    tissue,
-    assay,
-    disease,
-    organism,
-    cell_count,
-  } = aggregateDatasetsMetadata([dataset]);
+  const { tissue, assay, disease, organism, cell_count } =
+    aggregateDatasetsMetadata([dataset]);
 
   return (
     <StyledRow>

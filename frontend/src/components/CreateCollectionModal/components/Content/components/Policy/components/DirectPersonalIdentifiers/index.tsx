@@ -4,7 +4,7 @@ import {
   PopoverPosition,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React, { FC } from "react";
+import { FC } from "react";
 import { StyledIcon } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
 import { BulletWrapper, ContentWrapper, FirstSentence, Text } from "./style";
