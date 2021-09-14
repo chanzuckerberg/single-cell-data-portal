@@ -1,5 +1,6 @@
 import { Radio, RadioGroup } from "@blueprintjs/core";
-import React, { FC } from "react";
+import * as React from "react";
+import { FC } from "react";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
 import { Section, Title } from "../common/style";
 

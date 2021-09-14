@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Section, Text, Title } from "../common/style";
 
 interface Props {

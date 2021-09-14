@@ -5,7 +5,6 @@ import RawDocument, {
   Main,
   NextScript,
 } from "next/document";
-import React from "react";
 import { ServerStyleSheet } from "styled-components";
 
 export default class Document extends RawDocument {

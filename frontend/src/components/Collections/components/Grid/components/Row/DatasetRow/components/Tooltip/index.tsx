@@ -5,7 +5,7 @@ import {
   Tooltip as TooltipRaw,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   CONVERSION_STATUS,
   UPLOAD_STATUS,

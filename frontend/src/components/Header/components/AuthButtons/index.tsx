@@ -7,7 +7,6 @@ import {
   Popover,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React from "react";
 import { API } from "src/common/API";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";

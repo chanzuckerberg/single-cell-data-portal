@@ -1,15 +1,14 @@
 import Head from "next/head";
-import React from "react";
+import Image from "next/image";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
 import {
-  CellxgeneLogo,
   CommonStyle,
   Layout,
   PrivacyStyle,
 } from "src/components/common/staticPages/style";
 
-const ToS = () => {
+const Privacy = (): JSX.Element => {
   return (
     <Layout>
       <CommonStyle>
@@ -18,10 +17,12 @@ const ToS = () => {
             <title>cellxgene | Privacy</title>
           </Head>
           <header>
-            <CellxgeneLogo
+            <Image
               data-test-id="cellxgene-logo"
-              src={String(rawCellxgeneLogo)}
+              src={rawCellxgeneLogo}
               alt="cellxgene logo"
+              width="119"
+              height="35"
             />
           </header>
 
@@ -474,4 +475,4 @@ const ToS = () => {
   );
 };
 
-export default ToS;
+export default Privacy;

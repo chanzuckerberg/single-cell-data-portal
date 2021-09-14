@@ -23,18 +23,6 @@ export const CommonStyle = styled.div`
   }
 `;
 
-export const CZILogo = styled.img`
-  height: 40px;
-  padding-right: 12px;
-  border-right-color: black;
-  border-right-style: solid;
-  border-right-width: 2px;
-`;
-
-export const CellxgeneLogo = styled.img`
-  height: 35px;
-`;
-
 export const PrivacyStyle = styled.div`
   h1,
   h2,

@@ -1,6 +1,6 @@
 import { Button, Checkbox, Collapse, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { GRAY } from "src/components/common/theme";
 import DirectIdentifiers from "./components/DirectPersonalIdentifiers";
 import {

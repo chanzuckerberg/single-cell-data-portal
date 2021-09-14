@@ -5,7 +5,6 @@ import {
   Popover,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React from "react";
 
 interface Props {
   popoverProps?: IPopoverProps;

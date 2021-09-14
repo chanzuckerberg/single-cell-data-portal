@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { RightAlignedDetailsCell } from "../../../common/style";
 import { Skeleton } from "../common/Skeleton";
 

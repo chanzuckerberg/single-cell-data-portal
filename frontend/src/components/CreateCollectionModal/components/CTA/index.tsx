@@ -1,5 +1,5 @@
 import { AnchorButton, Button, Classes, Intent } from "@blueprintjs/core";
-import React, { FC } from "react";
+import { FC } from "react";
 import { API } from "src/common/API";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
 import { BOOLEAN } from "src/common/localStorage/set";

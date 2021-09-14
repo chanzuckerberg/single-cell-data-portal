@@ -43,16 +43,13 @@ The benefits of this arrangement include:
    For example, `useCollection` in `/collections.ts` uses `USE_COLLECTION` object as its unique query key, which includes properties: `entities: string[]` and `id: string`.
 
    ```ts
-    export const USE_COLLECTION = {
-      entities: [ENTITIES.COLLECTION, ENTITIES.DATASET],
-      id: "collection",
-    };
+   export const USE_COLLECTION = {
+     entities: [ENTITIES.COLLECTION, ENTITIES.DATASET],
+     id: "collection",
+   };
 
-    export function useCollection(id: string) {
-      return useQuery<Collection>(
-        [USE_COLLECTION, id],
-        fetchCollection
-      );
+   export function useCollection(id: string) {
+     return useQuery<Collection>([USE_COLLECTION, id], fetchCollection);
    }
    ```
 
@@ -63,37 +60,37 @@ The benefits of this arrangement include:
    code to achieve that:
 
    ```ts
-      import { useMutation, useQueryCache } from 'react-query'
+   import { useMutation, useQueryCache } from "react-query";
 
-      const queryCache = useQueryCache();
+   const queryCache = useQueryCache();
 
-      const USE_CREATE_COLLECTION = {
-        entities: [ENTITIES.COLLECTION]
-      };
+   const USE_CREATE_COLLECTION = {
+     entities: [ENTITIES.COLLECTION],
+   };
 
-      function createCollection() {
-        // POST http call
-      }
+   function createCollection() {
+     // POST http call
+   }
 
-      // When this mutation succeeds, invalidate any queries with
-      // `ENTITIES.COLLECTION` in its query key's `entities` array
-      const [mutate] = useMutation(createCollection, {
-        onSuccess: () => {
-          queryCache.invalidateQueries((query) => {
-            const key = query.queryKey[0];
+   // When this mutation succeeds, invalidate any queries with
+   // `ENTITIES.COLLECTION` in its query key's `entities` array
+   const [mutate] = useMutation(createCollection, {
+     onSuccess: () => {
+       queryCache.invalidateQueries((query) => {
+         const key = query.queryKey[0];
 
-            return hasIntersection(key.entities, USE_CREATE_COLLECTION.entities)
-          })
-        },
-      })
+         return hasIntersection(key.entities, USE_CREATE_COLLECTION.entities);
+       });
+     },
+   });
 
-      function hasIntersection(array1, array2) {
-        const set2 = new Set(array2);
+   function hasIntersection(array1, array2) {
+     const set2 = new Set(array2);
 
-        const result = array1.filter(entity => set2.has(entity))
+     const result = array1.filter((entity) => set2.has(entity));
 
-        return Boolean(result.length)
-      }
+     return Boolean(result.length);
+   }
    ```
 
 ## Resources

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
