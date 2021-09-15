@@ -1,5 +1,6 @@
 import RawDocument, {
   DocumentContext,
+  DocumentInitialProps,
   Head,
   Html,
   Main,
@@ -8,16 +9,26 @@ import RawDocument, {
 import { ServerStyleSheet } from "styled-components";
 
 export default class Document extends RawDocument {
-  static async getInitialProps(context: DocumentContext) {
+  static async getInitialProps(
+    context: DocumentContext
+  ): Promise<DocumentInitialProps> {
     const sheet = new ServerStyleSheet();
     const originalRenderPage = context.renderPage;
 
     try {
-      context.renderPage = () =>
-        originalRenderPage({
-          enhanceApp: (App) => (props) =>
-            sheet.collectStyles(<App {...props} />),
+      context.renderPage = () => {
+        return originalRenderPage({
+          enhanceApp: (App) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const EnhancedApp = (props: any) =>
+              sheet.collectStyles(<App {...props} />);
+
+            EnhancedApp.displayName = "EnhancedApp";
+
+            return EnhancedApp;
+          },
         });
+      };
 
       const initialProps = await RawDocument.getInitialProps(context);
 
@@ -35,7 +46,7 @@ export default class Document extends RawDocument {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     return (
       <Html>
         <Head>
