@@ -17,7 +17,6 @@ const Collections: FC = () => {
       <TitleWrapper>
         <TitleAndDescription>
           <h1 data-test-id="collections-header">Collections</h1>
-          <p>Explore public collections of datasets or create your own.</p>
         </TitleAndDescription>
         <CreateCollection />
       </TitleWrapper>
