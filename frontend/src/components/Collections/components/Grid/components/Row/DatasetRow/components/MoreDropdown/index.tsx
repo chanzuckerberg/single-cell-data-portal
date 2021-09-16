@@ -20,7 +20,7 @@ const MoreDropdown = ({
   onUploadFile,
   isLoading,
   disabled,
-}: Props) => {
+}: Props): JSX.Element => {
   const popoverProps = useMemo(() => {
     return {
       content: (
