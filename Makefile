@@ -110,7 +110,7 @@ local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconf
 
 .PHONY: local-status
 local-status: ## Show the status of the containers in the dev environment.
-	docker ps -a | grep --color=no -e 'CONTAINER\|corpora-data-portal'
+	docker ps -a | grep --color=no -e 'CONTAINER\|single-cell-data-portal'
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
