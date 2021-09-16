@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import {
   DatasetHeaderCell,

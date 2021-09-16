@@ -3,7 +3,7 @@
  * This component is used temporarily for E2E testing and trying out different
  * CSV files
  */
-import React, { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import { GeneSet } from "src/common/entities";
 import parseGeneSetsCSV from "src/common/utils/parseGeneSetsCSV";
 

@@ -163,13 +163,21 @@ class TestCollection(BaseAuthAPITest):
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
                     "linked_genesets": ["test_geneset_with_dataset"],
                     "id": "test_dataset_id",
+                    "is_primary_data": "PRIMARY",
+                    "mean_genes_per_cell": 0.0,
                     "name": "test_dataset_name",
-                    "organism": {"label": "test_organism", "ontology_term_id": "test_obo"},
+                    "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
                     "collection_id": "test_collection_id",
                     "collection_visibility": "PUBLIC",
+                    "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+                    "x_normalization": "test_x_normalization",
+                    "x_approximate_distribution": "NORMAL",
                     "is_valid": False,
                     "revision": 0,
-                    "sex": ["test_sex", "test_sex2"],
+                    "sex": [
+                        {"label": "test_sex", "ontology_term_id": "test_obo"},
+                        {"label": "test_sex2", "ontology_term_id": "test_obp"},
+                    ],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
                     "tombstone": False,
                     "processing_status": {
@@ -186,6 +194,7 @@ class TestCollection(BaseAuthAPITest):
                     },
                     "published": False,
                     "tombstone": False,
+                    "schema_version": "2.0.0",
                 }
             ],
             "description": "test_description",
@@ -330,11 +339,25 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(200, resp.status_code)
             actual_body = self.remove_timestamps(json.loads(resp.data))
             expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
+
+            # Remove `visibility`, `collection_visibility` and `x_approximate_distribution` from the bodies,
+            # since one will be an Enum and the other will be a string. That's expected since internal objects
+            # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
+            # as strings.
             self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
             self.assertEqual(
                 expected_body["datasets"][0].pop("collection_visibility").name,
                 actual_body["datasets"][0].pop("collection_visibility"),
             )
+            self.assertEqual(
+                expected_body["datasets"][0].pop("x_approximate_distribution").name,
+                actual_body["datasets"][0].pop("x_approximate_distribution"),
+            )
+            self.assertEqual(
+                expected_body["datasets"][0].pop("is_primary_data").name,
+                actual_body["datasets"][0].pop("is_primary_data"),
+            )
+
             self.assertEqual(expected_body, actual_body)
 
     def test__get_collection__ok(self):

@@ -80,11 +80,9 @@ class CorporaConstants(object):
     ]
 
     REQUIRED_SIMPLE_METADATA_FIELDS = [
-        "version",
+        "schema_version",
         "title",
-        "layer_descriptions",
-        "organism",
-        "organism_ontology_term_id",
+        "X_normalization",
     ]
 
     # The Corpora specification requires some values encoded as JSON due to the inability of AnnData to store complex
@@ -99,6 +97,7 @@ class CorporaConstants(object):
         "tags",
         "project_name",
         "project_description",
+        "X_approximate_distribution",
     ]
 
     # Constants related to the dataset format of which a submission to Corpora must be.

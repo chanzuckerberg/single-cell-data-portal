@@ -1,5 +1,5 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
-import React, { FC } from "react";
+import { FC } from "react";
 import { StyledLink } from "../../common/style";
 import EmptyModal from "../EmptyModal";
 

@@ -1,5 +1,3 @@
-const withImages = require("next-images");
-
 const configs = require(__dirname + "/src/configs/configs.js");
 const nodeEnv = require(__dirname + "/src/common/constants/nodeEnv.js");
 
@@ -9,9 +7,7 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const SCRIPT_SRC = ["'self'"];
 
-module.exports = withImages({
-  future: { webpack5: true },
-
+module.exports = {
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
     // if COMMIT_SHA env is missing or empty.
@@ -59,4 +55,4 @@ module.exports = withImages({
       },
     ];
   },
-});
+};

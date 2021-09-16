@@ -1,5 +1,6 @@
 # Corpora Data Portal
 
+
 ![Push Tests](https://github.com/chanzuckerberg/corpora-data-portal/workflows/Push%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/main/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
 [![Maintainability](https://api.codeclimate.com/dp/v1/badges/9416c313de4d0457a5cc/maintainability)](https://codeclimate.com/github/chanzuckerberg/corpora-data-portal/maintainability)
@@ -14,12 +15,14 @@ well-labeled repository of interoperable datasets.
 ## Developers
 
 ### Development quickstart
+
 See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 
 See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
 
 ### Pre-requisites
 
+1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
 1. [Install and configure awscli](docs/awscli.md)
 1. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
 
@@ -48,6 +51,7 @@ See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
 1. [Deploy Frontend](frontend/README.md#Deployment)
 
 ### Database Procedures
+
 see [Data Portal Database Procedures](backend/database/README.md)
 
 ### Running unittests
@@ -56,6 +60,7 @@ see [Data Portal Database Procedures](backend/database/README.md)
 1. Run the tests `$ make unit-test`
 
 ### Installing Chamber
+
 For running functional tests below, you will need to install Chamber on your machine. Chamber
 is a tool for reading secrets stored in AWS Secret Store and Parameter Store.
 
@@ -63,6 +68,7 @@ On Linux, go to https://github.com/segmentio/chamber/releases to download the la
 and add it somewhere on your path.
 
 On Mac, run
+
 ```
 brew install chamber
 ```
@@ -81,6 +87,7 @@ brew install chamber
 1. Run `make functional-test`
 
 ### Upload processing container
+
 The upload processing container is split into 2 parts: a base container that contains R
 libraries, and the Data Portal upload application code that build on top of this.
 
@@ -88,6 +95,7 @@ Because the base container takes a long time to build and is expected to change
 infrequently, the container is built separately from the standard release process.
 
 #### Building the image
+
 The base image is built using Github actions. It is built both nightly, and whenever
 the Dockerfile.processing_base file is changed.
 

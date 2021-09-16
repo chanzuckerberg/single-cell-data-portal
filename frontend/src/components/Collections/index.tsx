@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { VISIBILITY_TYPE } from "src/common/entities";
 import { useCollections } from "src/common/queries/collections";
 import CreateCollection from "../CreateCollectionModal";
@@ -17,7 +17,6 @@ const Collections: FC = () => {
       <TitleWrapper>
         <TitleAndDescription>
           <h1 data-test-id="collections-header">Collections</h1>
-          <p>Explore public collections of datasets or create your own.</p>
         </TitleAndDescription>
         <CreateCollection />
       </TitleWrapper>

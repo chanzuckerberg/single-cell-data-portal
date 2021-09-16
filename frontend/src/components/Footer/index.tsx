@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { MainWrapper, StyledAnchor, Wrapper } from "./style";
 

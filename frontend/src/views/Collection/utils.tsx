@@ -1,5 +1,5 @@
 import { Classes } from "@blueprintjs/core";
-import React from "react";
+import { Fragment } from "react";
 import {
   Collection,
   COLLECTION_LINK_TYPE,
@@ -57,7 +57,7 @@ export function renderLinks(links: Link[]): (JSX.Element | null)[] {
       if (!urlName) return null;
 
       return (
-        <React.Fragment key={`${type}+${url}`}>
+        <Fragment key={`${type}+${url}`}>
           <span className={Classes.TEXT_MUTED}>{text}</span>
           <StyledLink
             data-test-id="collection-link"
@@ -67,7 +67,7 @@ export function renderLinks(links: Link[]): (JSX.Element | null)[] {
           >
             {urlName}
           </StyledLink>
-        </React.Fragment>
+        </Fragment>
       );
     }
   );

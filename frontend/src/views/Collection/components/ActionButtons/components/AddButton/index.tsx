@@ -1,5 +1,4 @@
 import { Button, Intent, Popover, Position } from "@blueprintjs/core";
-import React from "react";
 import {
   Props as DropboxChooserProps,
   UploadingFile,

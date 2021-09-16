@@ -8,13 +8,12 @@ module.exports = {
   // Specifies the ESLint parser
   extends: [
     "eslint:recommended",
-    "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
+    "prettier",
     "plugin:prettier/recommended",
-    "react-app",
     "plugin:sonarjs/recommended",
     "plugin:jest-playwright/recommended",
+    "next",
   ],
   overrides: [
     // Override some TypeScript rules just for .js files
@@ -34,7 +33,7 @@ module.exports = {
     // Allows for the parsing of modern ECMAScript features
     sourceType: "module", // Allows for the use of imports
   },
-  plugins: ["@typescript-eslint", "react", "sonarjs", "@blueprintjs"],
+  plugins: ["@typescript-eslint", "sonarjs", "@blueprintjs"],
   rules: {
     "@typescript-eslint/camelcase": 0,
     // Disable prop-types as we use TypeScript for type checking
@@ -42,6 +41,8 @@ module.exports = {
     camelcase: "off",
     "react/jsx-no-target-blank": 0,
     "react/prop-types": "off",
+    // (thuang): We use nested template literals extensively
+    "sonarjs/no-nested-template-literals": "off",
     "sort-keys": [
       "error",
       "asc",

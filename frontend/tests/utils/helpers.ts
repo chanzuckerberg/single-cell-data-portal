@@ -54,7 +54,7 @@ export async function tryUntil(
       break;
     } catch (error) {
       retry += 1;
-      savedError = error;
+      savedError = error as Error;
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }

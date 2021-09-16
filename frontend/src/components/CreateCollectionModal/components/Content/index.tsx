@@ -1,6 +1,6 @@
 import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
-import React, { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import {
   Collection,
