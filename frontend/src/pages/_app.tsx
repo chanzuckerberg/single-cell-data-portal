@@ -12,7 +12,7 @@ const queryCache = new QueryCache();
 
 checkFeatureFlags();
 
-function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps): JSX.Element {
   return (
     <ReactQueryCacheProvider queryCache={queryCache}>
       <Layout>

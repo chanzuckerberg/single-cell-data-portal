@@ -1,8 +1,8 @@
-import { Button, Classes, Intent } from "@blueprintjs/core";
+import { Button, Classes, IButtonProps, Intent } from "@blueprintjs/core";
 import Image from "next/image";
 import DownloadSVG from "src/common/images/download.svg";
 
-function DownloadButton({ ...props }): JSX.Element {
+function DownloadButton(props: IButtonProps): JSX.Element {
   return (
     <Button
       minimal
