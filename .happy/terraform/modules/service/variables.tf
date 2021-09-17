@@ -1,116 +1,116 @@
-variable vpc {
+variable "vpc" {
   type        = string
   description = "The VPC that the ECS cluster is deployed to"
 }
 
-variable custom_stack_name {
+variable "custom_stack_name" {
   type        = string
   description = "Please provide the stack name"
 }
 
-variable remote_dev_prefix {
+variable "remote_dev_prefix" {
   type        = string
   description = "S3 storage path / db schema prefix"
   default     = ""
 }
 
-variable app_name {
+variable "app_name" {
   type        = string
   description = "Please provide the ECS service name"
 }
 
-variable cluster {
+variable "cluster" {
   type        = string
   description = "Please provide the ECS Cluster ID that this service should run on"
 }
 
-variable image {
+variable "image" {
   type        = string
   description = "Image name"
 }
 
-variable service_port {
+variable "service_port" {
   type        = number
   description = "What port does this service run on?"
   default     = 80
 }
 
-variable desired_count {
+variable "desired_count" {
   type        = number
   description = "How many instances of this task should we run across our cluster?"
   default     = 2
 }
 
-variable listener {
+variable "listener" {
   type        = string
   description = "The Application Load Balancer listener to register with"
 }
 
-variable host_match {
+variable "host_match" {
   type        = string
   description = "Host header to match for target rule. Leave empty to match all requests"
 }
 
-variable security_groups {
+variable "security_groups" {
   type        = list(string)
   description = "Security groups for ECS tasks"
 }
 
-variable subnets {
+variable "subnets" {
   type        = list(string)
   description = "Subnets for ecs tasks"
 }
 
-variable task_role_arn {
+variable "task_role_arn" {
   type        = string
   description = "ARN for the role assumed by tasks"
 }
 
-variable path {
+variable "path" {
   type        = string
   description = "The path to register with the Application Load Balancer"
   default     = "/*"
 }
 
-variable cmd {
+variable "cmd" {
   type        = list(string)
   description = "The path to register with the Application Load Balancer"
   default     = []
 }
 
-variable api_url {
+variable "api_url" {
   type        = string
   description = "URL for the backend api."
 }
 
-variable frontend_url {
+variable "frontend_url" {
   type        = string
   description = "URL for the frontend app."
 }
 
-variable deployment_stage {
+variable "deployment_stage" {
   type        = string
   description = "The name of the deployment stage of the Application"
   default     = "test"
 }
 
-variable step_function_arn {
+variable "step_function_arn" {
   type        = string
   description = "ARN for the step function called by the uploader"
 }
 
-variable priority {
+variable "priority" {
   type        = number
   description = "Listener rule priority number within the given listener"
 }
 
-variable memory {
+variable "memory" {
   type        = number
   description = "Amount of memory to allocate to each task"
-  default     = 768
+  default     = 2048
 }
 
-variable wait_for_steady_state {
+variable "wait_for_steady_state" {
   type        = bool
   description = "Whether Terraform should block until the service is in a steady state before exiting"
   default     = false
