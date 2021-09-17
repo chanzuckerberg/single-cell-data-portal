@@ -38,6 +38,10 @@ describeIfDeployed("Collection Revision", () => {
 
     expect(collectionRowContinue).not.toBe(null);
 
+    // (thuang): Staging is slow due to the amount of collections we fetch,
+    // so upping this for avoid flakiness
+    const RETRY_TIMES = 100;
+
     await tryUntil(async () => {
       const revisionTag = await collectionRowContinue?.$(
         getTestID("revision-tag")
@@ -46,7 +50,7 @@ describeIfDeployed("Collection Revision", () => {
       await expect(revisionTag).not.toBe(null);
 
       await expect(revisionTag).toMatchText("Revision Pending");
-    });
+    }, RETRY_TIMES);
 
     const actionButtonContinue = await collectionRowContinue?.$(
       getTestID("revision-action-button")

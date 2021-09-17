@@ -57,7 +57,7 @@ const Menu = ({
   revisionsEnabled,
   onUploadFile,
   isLoading,
-}: Props) => {
+}: Props): JSX.Element => {
   return (
     <StyledMenu>
       {revisionsEnabled && (
