@@ -98,7 +98,7 @@ If a conversion fails the processing_status will indicated it as follow:
     conversion_anndata_status = ConversionStatus.CONVERTING
 }
 
-Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
+Once all conversion are complete, the conversion status for each file will be either CONVERTED or FAILED:
 {
     processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
