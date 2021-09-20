@@ -209,7 +209,9 @@ class TestApi(BaseFunctionalTestCase):
                 res.raise_for_status()
                 data = json.loads(res.content)
                 upload_status = data["upload_status"]
-                self.assertIn(upload_status, expected_upload_statuses)
+                if upload_status:
+                    self.assertIn(upload_status, expected_upload_statuses)
+
                 # conversion statuses only returned once uploaded
                 if upload_status == "UPLOADED":
                     conversion_cxg_status = data.get("conversion_cxg_status")
