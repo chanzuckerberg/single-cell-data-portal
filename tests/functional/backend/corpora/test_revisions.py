@@ -43,8 +43,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         collection_uuid = self.create_collection(headers)
 
-        dataset_1_dropbox_url = "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0"
-        dataset_2_dropbox_url = "https://www.dropbox.com/s/ogempho8wixdlvw/local.h5ad?dl=0"
+        dataset_1_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
+        dataset_2_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
 
         # Uploads a dataset
         self.upload_and_wait(collection_uuid, dataset_1_dropbox_url)
