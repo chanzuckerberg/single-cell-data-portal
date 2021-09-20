@@ -90,7 +90,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data.keys():
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_uuid, "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0")
+        self.upload_and_wait(collection_uuid, "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0")
 
         # make collection public
         with self.subTest("Test make collection public"):
