@@ -199,8 +199,9 @@ class TestApi(BaseFunctionalTestCase):
 
         with self.subTest("Test dataset conversion"):
             keep_trying = True
-            upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-            conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED"]
+            expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
+            # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
+            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", None]
             timer = time.time()
             while keep_trying:
                 data = None
@@ -208,14 +209,16 @@ class TestApi(BaseFunctionalTestCase):
                 res.raise_for_status()
                 data = json.loads(res.content)
                 upload_status = data["upload_status"]
-                self.assertIn(upload_status, upload_statuses)
+                if upload_status:
+                    self.assertIn(upload_status, expected_upload_statuses)
+
                 # conversion statuses only returned once uploaded
                 if upload_status == "UPLOADED":
                     conversion_cxg_status = data.get("conversion_cxg_status")
                     conversion_loom_status = data.get("conversion_loom_status")
                     conversion_rds_status = data.get("conversion_rds_status")
                     conversion_anndata_status = data.get("conversion_anndata_status")
-                    self.assertIn(data.get("conversion_cxg_status"), conversion_statuses)
+                    self.assertIn(data.get("conversion_cxg_status"), expected_conversion_statuses)
                     if conversion_cxg_status == "FAILED":
                         self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if conversion_loom_status == "FAILED":
