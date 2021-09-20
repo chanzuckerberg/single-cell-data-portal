@@ -5,6 +5,7 @@ import { FC, useState } from "react";
 import { MutateFunction, useQueryCache } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import {
+  ReuploadLink,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
@@ -51,7 +52,11 @@ const DatasetTab: FC<Props> = ({
   );
 
   const addNewFile = (
-    mutationFunction = uploadLink as MutateFunction<string, unknown, unknown>,
+    mutationFunction = uploadLink as MutateFunction<
+      string,
+      unknown,
+      ReuploadLink
+    >,
     originalId?: string
   ) => {
     return (newFile: UploadingFile) => {

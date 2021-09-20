@@ -180,7 +180,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
-        body = {"url": "https://www.dropbox.com/s/ib9pth7jr5fvaa8/7MB.h5ad?dl=0"}
+        body = {"url": "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"}
 
         res = requests.post(
             f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
