@@ -11,7 +11,10 @@ interface Props {
   buttonProps?: IButtonProps;
 }
 
-const MoreDropdown = ({ popoverProps = {}, buttonProps = {} }: Props) => {
+const MoreDropdown = ({
+  popoverProps = {},
+  buttonProps = {},
+}: Props): JSX.Element => {
   return (
     <Popover {...popoverProps}>
       <Button

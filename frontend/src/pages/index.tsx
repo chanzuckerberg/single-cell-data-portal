@@ -1,5 +1,5 @@
 import Homepage from "src/views/Homepage";
 
-const Page = () => <Homepage />;
+const Page = (): JSX.Element => <Homepage />;
 
 export default Page;

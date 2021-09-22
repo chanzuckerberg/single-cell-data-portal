@@ -38,7 +38,7 @@ export interface Props {
   children: React.ReactElement;
 }
 
-const DropboxChooser = ({ children, onUploadFile }: Props) => {
+const DropboxChooser = ({ children, onUploadFile }: Props): JSX.Element => {
   if (!React.Children.only(children)) {
     throw Error("DropboxChooser expects only one child");
   }

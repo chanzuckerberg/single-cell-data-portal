@@ -43,6 +43,39 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       setFileSize,
       setIsLoading,
     });
+
+    async function getDownloadLink({
+      assetId,
+      datasetId,
+      setFileName,
+      setFileSize,
+      setIsLoading,
+    }: GetDownloadLinkArgs) {
+      setIsLoading(true);
+
+      const replace = {
+        asset_uuid: assetId,
+        dataset_uuid: datasetId,
+      };
+
+      const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, replace);
+
+      try {
+        const result = await (
+          await fetch(`${API_URL}${url}`, { method: "POST" })
+        ).json();
+
+        const { file_size, presigned_url, file_name } = result;
+
+        setFileSize(file_size);
+        setDownloadLink(presigned_url);
+        setFileName(file_name);
+      } catch (error) {
+        console.error("Please try again");
+      }
+
+      setIsLoading(false);
+    }
   }, [format, dataAssets]);
 
   const handleChange = (format: DATASET_ASSET_FORMAT) => {
@@ -100,39 +133,6 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsLoading: (value: boolean) => void;
-  }
-
-  async function getDownloadLink({
-    assetId,
-    datasetId,
-    setFileName,
-    setFileSize,
-    setIsLoading,
-  }: GetDownloadLinkArgs) {
-    setIsLoading(true);
-
-    const replace = {
-      asset_uuid: assetId,
-      dataset_uuid: datasetId,
-    };
-
-    const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, replace);
-
-    try {
-      const result = await (
-        await fetch(`${API_URL}${url}`, { method: "POST" })
-      ).json();
-
-      const { file_size, presigned_url, file_name } = result;
-
-      setFileSize(file_size);
-      setDownloadLink(presigned_url);
-      setFileName(file_name);
-    } catch (error) {
-      console.error("Please try again");
-    }
-
-    setIsLoading(false);
   }
 };
 

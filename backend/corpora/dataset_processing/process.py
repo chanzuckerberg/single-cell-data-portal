@@ -98,7 +98,7 @@ If a conversion fails the processing_status will indicated it as follow:
     conversion_anndata_status = ConversionStatus.CONVERTING
 }
 
-Once all conversion are compelete, the conversion status for each file will be either CONVERTED or FAILED:
+Once all conversion are complete, the conversion status for each file will be either CONVERTED or FAILED:
 {
     processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
@@ -443,7 +443,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    output_filename = f"withlabels.{local_filename}"
+    output_filename = "local.h5ad"
     commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
     val_proc = subprocess.run(commands, capture_output=True)
     if val_proc.returncode != 0:
@@ -499,7 +499,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     local_filename = download_from_dropbox_url(
         dataset_id,
         dropbox_url,
-        "local.h5ad",
+        "raw.h5ad",
     )
 
     # No file cleanup needed due to docker run-time environment.
