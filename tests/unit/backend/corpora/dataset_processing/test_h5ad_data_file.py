@@ -182,15 +182,16 @@ class TestH5ADDataFile(unittest.TestCase):
 
         attrs = [tiledb.Attr(name=col_name, dtype=np.int)]
         domain = tiledb.Domain(tiledb.Dim(domain=(0, 99), tile=100, dtype=np.uint32))
-        schema = tiledb.ArraySchema(domain=domain, sparse=False, attrs=attrs, cell_order="row-major",
-                                    tile_order="row-major")
+        schema = tiledb.ArraySchema(
+            domain=domain, sparse=False, attrs=attrs, cell_order="row-major", tile_order="row-major"
+        )
         tiledb.DenseArray.create("foo", schema)
 
         try:
             with tiledb.DenseArray("foo", mode="w") as A:
                 value = {}
                 value[col_name] = np.zeros((100,), dtype=np.int)
-                A[:] = value        # if there's a regression, this statement will throw a TileDBError
+                A[:] = value  # if there's a regression, this statement will throw a TileDBError
                 # if we get here we're good
         finally:
             rmtree("foo")
