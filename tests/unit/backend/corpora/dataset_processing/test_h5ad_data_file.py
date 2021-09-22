@@ -174,6 +174,27 @@ class TestH5ADDataFile(unittest.TestCase):
         # Clean up
         remove(sparse_with_column_shift_filename)
 
+    def test__slash_in_attribute_name(self):
+        # tiledb failure repro code from https://github.com/TileDB-Inc/TileDB-Py/issues/294
+        # this fails (throws a TileDBError) for 0.8.0 and below but works for 0.8.1+
+        import numpy as np
+        import tiledb
+
+        col_name = "fo/o"
+
+        attrs = [tiledb.Attr(name=col_name, dtype=np.int)]
+        domain = tiledb.Domain(tiledb.Dim(domain=(0, 99), tile=100, dtype=np.uint32))
+        schema = tiledb.ArraySchema(domain=domain, sparse=False, attrs=attrs, cell_order="row-major",
+                                    tile_order="row-major")
+        tiledb.DenseArray.create("foo", schema)
+
+        with tiledb.DenseArray("foo", mode="w") as A:
+            value = {}
+            value[col_name] = np.zeros((100,), dtype=np.int)
+            A[:] = value        # if there's a regression, this statement will throw a TileDBError
+
+        # if we get here we're good
+
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
 
