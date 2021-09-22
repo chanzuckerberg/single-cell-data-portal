@@ -177,8 +177,6 @@ class TestH5ADDataFile(unittest.TestCase):
     def test__slash_in_attribute_name(self):
         # tiledb failure repro code from https://github.com/TileDB-Inc/TileDB-Py/issues/294
         # this fails (throws a TileDBError) for 0.8.0 and below but works for 0.8.1+
-        import numpy as np
-        import tiledb
 
         col_name = "fo/o"
 
@@ -188,13 +186,14 @@ class TestH5ADDataFile(unittest.TestCase):
                                     tile_order="row-major")
         tiledb.DenseArray.create("foo", schema)
 
-        with tiledb.DenseArray("foo", mode="w") as A:
-            value = {}
-            value[col_name] = np.zeros((100,), dtype=np.int)
-            A[:] = value        # if there's a regression, this statement will throw a TileDBError
-
-        rmtree("foo")
-        # if we get here we're good
+        try:
+            with tiledb.DenseArray("foo", mode="w") as A:
+                value = {}
+                value[col_name] = np.zeros((100,), dtype=np.int)
+                A[:] = value        # if there's a regression, this statement will throw a TileDBError
+                # if we get here we're good
+        finally:
+            rmtree("foo")
 
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
