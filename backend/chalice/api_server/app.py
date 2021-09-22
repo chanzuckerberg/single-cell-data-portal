@@ -31,14 +31,18 @@ def create_flask_app():
 
 def get_chalice_app(flask_app):
     app = Chalice(app_name=flask_app.name)
-    flask_app.debug = True
-    app.debug = flask_app.debug
-    app.log.setLevel(logging.DEBUG)
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
     deployment = os.environ["DEPLOYMENT_STAGE"]
     allowed_origins = []
+
+    if deployment in ["dev"]:
+        flask_app.debug = True
+        app.debug = flask_app.debug
+        app.log.setLevel(logging.DEBUG)
+        app.log.debug("RUNNING IN DEBUG MODE. YAY!")
+
     if deployment not in ["prod"]:
         allowed_origins.extend(
             [
