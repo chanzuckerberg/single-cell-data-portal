@@ -241,7 +241,7 @@ paths:
 
   /dp/v1/collections/{collection_uuid}/upload-links:
     post:
-      summary: Start an dataset upload
+      summary: Start a dataset upload
       tags:
         - collections
         - datasets

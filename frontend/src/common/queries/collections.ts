@@ -409,6 +409,7 @@ const reuploadDataset = async function ({
 
 export function useReuploadDataset(collectionId: string) {
   const queryCache = useQueryCache();
+
   return useMutation(reuploadDataset, {
     onSuccess: () => {
       queryCache.invalidateQueries([
