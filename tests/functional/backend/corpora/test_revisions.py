@@ -166,10 +166,10 @@ class TestRevisions(BaseFunctionalTestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
             self.assertEqual(res.status_code, 404)
 
-            # Endpoint is eventually consistent
-            (final_status_code, desired_status_code) = (None, 404)
-            for i in range(20):
-                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
+            # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
+            (final_status_code, desired_status_code) = (None, 302)
+            for i in range(50):
+                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
                 final_status_code = res.status_code
                 if final_status_code == desired_status_code:
                     break
