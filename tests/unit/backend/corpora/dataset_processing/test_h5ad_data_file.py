@@ -193,6 +193,7 @@ class TestH5ADDataFile(unittest.TestCase):
             value[col_name] = np.zeros((100,), dtype=np.int)
             A[:] = value        # if there's a regression, this statement will throw a TileDBError
 
+        rmtree("foo")
         # if we get here we're good
 
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
