@@ -20,8 +20,7 @@ class TestDatasetRevision(TestDataset):
             rev_deployment = rev_dataset.pop("explorer_url")
             original_deployment = dataset.pop("explorer_url")
             self.assertIsNotNone(original_deployment)
-            # explorer_url isn't set until a new dataset is uploaded
-            self.assertIsNone(rev_deployment)
+            self.assertEqual(rev_deployment, f"http://bogus.url/d/{rev_dataset['id']}.cxg")
 
         with self.subTest("Test processing status copied over"):
             rev_processing_status = rev_dataset.pop("processing_status")
