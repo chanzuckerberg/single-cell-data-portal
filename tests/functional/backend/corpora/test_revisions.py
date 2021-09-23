@@ -169,7 +169,8 @@ class TestRevisions(BaseFunctionalTestCase):
             # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
             (final_status_code, desired_status_code) = (None, 302)
             for i in range(50):
-                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+                url = f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema"
+                res = requests.get(url, allow_redirects=False)
                 final_status_code = res.status_code
                 if final_status_code == desired_status_code:
                     break
