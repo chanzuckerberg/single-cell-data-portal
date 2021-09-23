@@ -3,7 +3,6 @@ import os
 import time
 import unittest
 import requests
-from requests.api import delete
 
 from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 
