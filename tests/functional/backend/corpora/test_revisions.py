@@ -3,6 +3,7 @@ import os
 import time
 import unittest
 import requests
+from requests.api import delete
 
 from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 
@@ -163,8 +164,12 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # Check that the dataset doesn't exist anymore
-            res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
-            self.assertEqual(res.status_code, 404)
+            res = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            res.raise_for_status()
+            datasets = [dataset["id"] for dataset in res.json()["datasets"]]
+            self.assertEqual(1, len(datasets))
+            self.assertNotIn(deleted_dataset_id, datasets)
+            self.assertNotIn(original_dataset_id, datasets)
 
             # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
             (final_status_code, desired_status_code) = (None, 302)
