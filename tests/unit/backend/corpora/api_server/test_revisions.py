@@ -230,7 +230,7 @@ class TestDeleteRevision(BaseRevisionTest):
         expected_pub_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         expected_rev_body = self.remove_timestamps(
             json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
-            remove=["id", "dataset_id"],
+            remove=["id", "dataset_id", "dataset_deployments"],
         )
         refreshed_datasets = self.refresh_datasets()
         pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
@@ -253,7 +253,7 @@ class TestDeleteRevision(BaseRevisionTest):
         self.session.expire_all()
         actual_rev_body = self.remove_timestamps(
             json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
-            remove=["id", "dataset_id"],
+            remove=["id", "dataset_id", "dataset_deployments"],
         )
         self.assertEqual(expected_rev_body, actual_rev_body)
 
