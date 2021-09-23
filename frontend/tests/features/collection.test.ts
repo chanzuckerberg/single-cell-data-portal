@@ -43,7 +43,7 @@ describe("Collection", () => {
 
       const collectionName = "TEST_COLLECTION" + timestamp;
 
-      await createCollection({ name: collectionName });
+      await createCollection({ name: collectionName }, true);
 
       // Try delete
       await page.click(getTestID("collection-more-button"));
@@ -86,7 +86,8 @@ describe("Collection", () => {
 });
 
 async function createCollection(
-  collection?: Partial<Collection>
+  collection?: Partial<Collection>,
+  tryBadEmail = false
 ): Promise<string> {
   await page.click(getText("Create Collection"));
 
@@ -103,11 +104,19 @@ async function createCollection(
     testCollection.contactName,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
+
+  if (tryBadEmail) {
+    await page.type("#contact-email", "bad email", BLUEPRINT_SAFE_TYPE_OPTIONS);
+    expect(page).toHaveSelector(getText("Invalid Email"));
+  }
+
   await page.type(
     "#contact-email",
     testCollection.contactEmail,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
+  expect(page).not.toHaveSelector(getText("Invalid Email"));
+
   await page.click(getText("I agree to cellxgene's data submission policies."));
   const [response] = await Promise.all([
     page.waitForEvent("response"),
