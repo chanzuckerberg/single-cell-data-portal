@@ -1,8 +1,7 @@
 import pathlib
-import requests
-import shutil
-import tempfile
 from unittest.mock import patch
+
+import requests
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -16,15 +15,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.tmp_dir = tempfile.mkdtemp()
-        cls.real_h5ad_filename = pathlib.Path(cls.tmp_dir, "real.h5ad")
-        # TODO: Reupload this dataset once 2.0.0 migration is complete.
-        # https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/
-        # corpora-data-portal/1354
-        cls.presigned_url = cls.get_presigned_url(
-            "79dfc1fe-cc7a-454a-ba26-4c72f0876436", "c1f00b2e-fe42-4dd0-a035-7b7f3cefd055"
-        )
-        cls.download(cls.presigned_url, cls.real_h5ad_filename)
+        cls.real_h5ad_filename = pathlib.Path("fixtures/example_valid.h5ad").absolute()
 
     @staticmethod
     def get_presigned_url(dataset_id, asset_id):
@@ -45,7 +36,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        shutil.rmtree(cls.tmp_dir)
 
     def test_make_cxg(self):
         make_cxg(str(self.real_h5ad_filename))
@@ -56,13 +46,17 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     def test_make_loom(self):
         make_loom(str(self.real_h5ad_filename))
 
-    # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.
-    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
-    def test_main(self, mock_validate_h5ad):
-        mock_validate_h5ad.return_value = "raw.h5ad"
-        url = self.presigned_url
+    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
+    def test_main(self, mock_download_from_dropbox):
+        """
+        Tests full pipeline for processing an uploaded H5AD file, including
+        file I/O and database updates, but excluding for the Dropbox download
+        functionality.
+        """
+        mock_download_from_dropbox.return_value = self.real_h5ad_filename
+
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
-        self.bucket
-        process.process(dataset.id, url, self.corpora_config.bucket_name, self.corpora_config.bucket_name)
+
+        process.process(dataset.id, "https://www.dropbox.com/IGNORED", self.corpora_config.bucket_name, self.corpora_config.bucket_name)
