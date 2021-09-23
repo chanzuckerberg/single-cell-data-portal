@@ -59,7 +59,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     # TODO: Remove mocking of validate_h5ad_file after validation process is updated to be 2.0 compliant.
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     def test_main(self, mock_validate_h5ad):
-        mock_validate_h5ad.return_value = "local.h5ad"
+        mock_validate_h5ad.return_value = "raw.h5ad"
         url = self.presigned_url
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name

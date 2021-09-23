@@ -593,7 +593,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             download_from_dropbox_url(
                 self.dataset_id,
                 "dropbox.com",
-                "local.h5ad",
+                "raw.h5ad",
             )
         end = time.time()
         # check that tombstoning ends the download thread early
