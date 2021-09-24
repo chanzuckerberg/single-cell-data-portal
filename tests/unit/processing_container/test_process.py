@@ -1,4 +1,5 @@
-import pathlib
+import os
+import shutil
 from unittest.mock import patch
 
 import requests
@@ -12,19 +13,15 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
+    @staticmethod
+    def fixture_file_path(relative_filename):
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_filename))
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.h5ad_with_labels = pathlib.Path("fixtures/2_0_0_with_labels.h5ad").absolute()
-        cls.h5ad_raw = pathlib.Path("fixtures/2_0_0_raw_valid.h5ad").absolute()
-
-    @staticmethod
-    def get_presigned_url(dataset_id, asset_id):
-        response = requests.post(
-            f"https://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/" f"{dataset_id}/asset/{asset_id}"
-        )
-        response.raise_for_status()
-        return response.json()["presigned_url"]
+        cls.h5ad_with_labels = cls.fixture_file_path("fixtures/2_0_0_with_labels.h5ad")
+        cls.h5ad_raw = cls.fixture_file_path("fixtures/2_0_0_raw_valid.h5ad")
 
     @staticmethod
     def download(url, local_filename):
@@ -37,6 +34,20 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
+        cls.clean_generated_files()
+
+    @classmethod
+    def clean_generated_files(cls):
+        if os.path.exists(d := cls.fixture_file_path("local.cxg")):
+            shutil.rmtree(d)
+        if os.path.exists(f := cls.fixture_file_path("local.h5ad")):
+            os.remove(f)
+        if os.path.exists(d := cls.fixture_file_path("fixtures/2_0_0_with_labels.cxg")):
+            shutil.rmtree(d)
+        if os.path.exists(f := cls.fixture_file_path("fixtures/2_0_0_with_labels.rds")):
+            os.remove(f)
+        if os.path.exists(f := cls.fixture_file_path("fixtures/2_0_0_with_labels.loom")):
+            os.remove(f)
 
     def test_make_cxg(self):
         make_cxg(str(self.h5ad_with_labels))
@@ -64,6 +75,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
 
         # TODO: add assertions:
         # 1. H5AD has annotation labels added and uploaded to S3
-        # 2. cxg, seurat, loom uploaded to s3
+        # 2. cxg, rds, loom uploaded to s3
         # 3. databases metadata updated and showing successful status
         # If we do the above, we can eliminate individual unit tests for #2, and the 2_0_0_with_labels.h5ad test fixture file
