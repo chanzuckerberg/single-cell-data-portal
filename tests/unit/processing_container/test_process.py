@@ -8,11 +8,18 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
 )
 from backend.corpora.dataset_processing import process
-from backend.corpora.dataset_processing.process import make_cxg, make_seurat, make_loom
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
-
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
+    """
+    This test class is intended to exercise the upload pipeline processing, running within
+    a "corpora-upload" (upload processing) Docker container. As the Docker container is configured
+    with all necessary software dependencies, manually running this test outside of Docker
+    (e.g. within an IDE when making changes to the test itself) will require you to:
+    * set env vars: CORPORA_LOCAL_DEV=1;BOTO_ENDPOINT_URL=http://localhost:4566
+    * Locally install latest cellxgene-schema (via pip)
+    * Install all the same Python dependencies at Dockerfile.processing_image:23 and Dockerfile.processing_base:19 (R software) to ensure Loom and Seurat artifacts can be generated. (These will only matter if we add test assertions to check these artifact's creation.)
+    """
     @staticmethod
     def fixture_file_path(relative_filename):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_filename))
@@ -20,8 +27,8 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.h5ad_with_labels = cls.fixture_file_path("fixtures/2_0_0_with_labels.h5ad")
         cls.h5ad_raw = cls.fixture_file_path("fixtures/2_0_0_raw_valid.h5ad")
+
 
     @staticmethod
     def download(url, local_filename):
@@ -38,32 +45,18 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
 
     @classmethod
     def clean_generated_files(cls):
-        if os.path.exists(d := cls.fixture_file_path("local.cxg")):
-            shutil.rmtree(d)
-        if os.path.exists(f := cls.fixture_file_path("local.h5ad")):
-            os.remove(f)
-        if os.path.exists(d := cls.fixture_file_path("fixtures/2_0_0_with_labels.cxg")):
-            shutil.rmtree(d)
-        if os.path.exists(f := cls.fixture_file_path("fixtures/2_0_0_with_labels.rds")):
-            os.remove(f)
-        if os.path.exists(f := cls.fixture_file_path("fixtures/2_0_0_with_labels.loom")):
-            os.remove(f)
-
-    def test_make_cxg(self):
-        make_cxg(str(self.h5ad_with_labels))
-
-    def test_make_seurat(self):
-        make_seurat(str(self.h5ad_with_labels))
-
-    def test_make_loom(self):
-        make_loom(str(self.h5ad_with_labels))
+        if os.path.exists('local.cxg'):
+            shutil.rmtree('local.cxg')
+        for f in ['local.h5ad', 'local.loom', 'local.rds']:
+            if os.path.exists(f):
+                os.remove(f)
 
     @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
     def test_main(self, mock_download_from_dropbox):
         """
-        Tests full pipeline for processing an uploaded H5AD file, including
-        file I/O and database updates, but excluding the Dropbox download
-        functionality.
+        Tests full pipeline for processing an uploaded H5AD file, including database updates
+        generation and upload of all artifacts to S3 (localstack), but excluding the Dropbox download
+        functionality.  Dropbox I/O is is mocked to prevent dependency on remote services (non-Dockerized).
         """
         mock_download_from_dropbox.return_value = self.h5ad_raw
 
