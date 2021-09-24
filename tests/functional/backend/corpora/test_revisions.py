@@ -66,6 +66,7 @@ class TestRevisions(BaseFunctionalTestCase):
         meta_payload_before_revision_res.raise_for_status()
         meta_payload_before_revision = meta_payload_before_revision_res.json()
 
+        # Endpoint is eventually consistent
         schema_before_revision = self.get_schema_with_retries(dataset_id).json()
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
@@ -168,6 +169,7 @@ class TestRevisions(BaseFunctionalTestCase):
             res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
             self.assertEqual(res.status_code, 404)
 
+            # Endpoint is eventually consistent
             res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=404)
             self.assertEqual(res.status_code, 404)
 
