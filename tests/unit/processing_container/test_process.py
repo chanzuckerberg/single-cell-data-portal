@@ -15,7 +15,8 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.real_h5ad_filename = pathlib.Path("fixtures/example_valid.h5ad").absolute()
+        cls.h5ad_with_labels = pathlib.Path("fixtures/2_0_0_with_labels.h5ad").absolute()
+        cls.h5ad_raw = pathlib.Path("fixtures/2_0_0_raw_valid.h5ad").absolute()
 
     @staticmethod
     def get_presigned_url(dataset_id, asset_id):
@@ -38,25 +39,31 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         super().tearDownClass()
 
     def test_make_cxg(self):
-        make_cxg(str(self.real_h5ad_filename))
+        make_cxg(str(self.h5ad_with_labels))
 
     def test_make_seurat(self):
-        make_seurat(str(self.real_h5ad_filename))
+        make_seurat(str(self.h5ad_with_labels))
 
     def test_make_loom(self):
-        make_loom(str(self.real_h5ad_filename))
+        make_loom(str(self.h5ad_with_labels))
 
     @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
     def test_main(self, mock_download_from_dropbox):
         """
         Tests full pipeline for processing an uploaded H5AD file, including
-        file I/O and database updates, but excluding for the Dropbox download
+        file I/O and database updates, but excluding the Dropbox download
         functionality.
         """
-        mock_download_from_dropbox.return_value = self.real_h5ad_filename
+        mock_download_from_dropbox.return_value = self.h5ad_raw
 
         dataset = self.generate_dataset(
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
 
         process.process(dataset.id, "https://www.dropbox.com/IGNORED", self.corpora_config.bucket_name, self.corpora_config.bucket_name)
+
+        # TODO: add assertions:
+        # 1. H5AD has annotation labels added and uploaded to S3
+        # 2. cxg, seurat, loom uploaded to s3
+        # 3. databases metadata updated and showing successful status
+        # If we do the above, we can eliminate individual unit tests for #2, and the 2_0_0_with_labels.h5ad test fixture file
