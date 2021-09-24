@@ -5,6 +5,8 @@ import logging
 import os
 import typing
 
+from pathlib import PurePosixPath
+
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
@@ -110,6 +112,12 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    def _create_new_explorer_url(self, new_uuid: str) -> str:
+        original_url = urlparse(self.explorer_url)
+        original_path = PurePosixPath(original_url.path)
+        new_path = str(original_path.parent / f"{new_uuid}.cxg")
+        return original_url._replace(path=new_path).geturl()
+
     def create_revision(self) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
@@ -118,12 +126,14 @@ class Dataset(Entity):
 
         """
         revision_dataset_uuid = generate_uuid()
+        revision_explorer_url = self._create_new_explorer_url(revision_dataset_uuid)
         revision_dataset = clone(
             self.db_object,
             id=revision_dataset_uuid,
             collection_id=self.collection_id,
             collection_visibility=CollectionVisibility.PRIVATE,
             original_id=self.id,
+            explorer_url=revision_explorer_url,
         )
         self.session.add(revision_dataset)
         for artifact in self.artifacts:
