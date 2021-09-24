@@ -10,6 +10,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.dataset_processing import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
+
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     """
     This test class is intended to exercise the upload pipeline processing, running within
@@ -18,8 +19,11 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     (e.g. within an IDE when making changes to the test itself) will require you to:
     * set env vars: CORPORA_LOCAL_DEV=1;BOTO_ENDPOINT_URL=http://localhost:4566
     * Locally install latest cellxgene-schema (via pip)
-    * Install all the same Python dependencies at Dockerfile.processing_image:23 and Dockerfile.processing_base:19 (R software) to ensure Loom and Seurat artifacts can be generated. (These will only matter if we add test assertions to check these artifact's creation.)
+    * Install all the same Python dependencies at Dockerfile.processing_image:23 and Dockerfile.processing_base:19
+      (R software) to ensure Loom and Seurat artifacts can be generated. (These will only matter if we add test
+      assertions to check these artifact's creation.)
     """
+
     @staticmethod
     def fixture_file_path(relative_filename):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_filename))
@@ -28,7 +32,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     def setUpClass(cls):
         super().setUpClass()
         cls.h5ad_raw = cls.fixture_file_path("fixtures/2_0_0_raw_valid.h5ad")
-
 
     @staticmethod
     def download(url, local_filename):
@@ -45,9 +48,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
 
     @classmethod
     def clean_generated_files(cls):
-        if os.path.exists('local.cxg'):
-            shutil.rmtree('local.cxg')
-        for f in ['local.h5ad', 'local.loom', 'local.rds']:
+        if os.path.exists("local.cxg"):
+            shutil.rmtree("local.cxg")
+        for f in ["local.h5ad", "local.loom", "local.rds"]:
             if os.path.exists(f):
                 os.remove(f)
 
@@ -64,10 +67,16 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
 
-        process.process(dataset.id, "https://www.dropbox.com/IGNORED", self.corpora_config.bucket_name, self.corpora_config.bucket_name)
+        process.process(
+            dataset.id,
+            "https://www.dropbox.com/IGNORED",
+            self.corpora_config.bucket_name,
+            self.corpora_config.bucket_name,
+        )
 
         # TODO: add assertions:
         # 1. H5AD has annotation labels added and uploaded to S3
         # 2. cxg, rds, loom uploaded to s3
         # 3. databases metadata updated and showing successful status
-        # If we do the above, we can eliminate individual unit tests for #2, and the 2_0_0_with_labels.h5ad test fixture file
+        # If we do the above, we can eliminate individual unit tests for #2, and the 2_0_0_with_labels.h5ad
+        # test fixture file
