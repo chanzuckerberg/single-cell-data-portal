@@ -78,5 +78,3 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         # 1. H5AD has annotation labels added and uploaded to S3
         # 2. cxg, rds, loom uploaded to s3
         # 3. databases metadata updated and showing successful status
-        # If we do the above, we can eliminate individual unit tests for #2, and the 2_0_0_with_labels.h5ad
-        # test fixture file
