@@ -18,6 +18,7 @@ pytest
 requests>=2.22.0
 s3fs==0.4.2
 scanpy
+tenacity
 tiledb==0.10.1
 click==7.1.2
 -r ./backend/corpora/api_server/requirements.txt
