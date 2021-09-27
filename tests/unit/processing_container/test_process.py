@@ -59,7 +59,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
         generation and upload of all artifacts to S3 (localstack), but excluding the Dropbox download
-        functionality.  Dropbox I/O is is mocked to prevent dependency on remote services (non-Dockerized).
+        functionality.  Dropbox I/O is mocked to prevent dependency on remote services (non-Dockerized).
         """
         mock_download_from_dropbox.return_value = self.h5ad_raw
 
@@ -74,7 +74,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             self.corpora_config.bucket_name,
         )
 
-        # TODO: add assertions:
+        # TODO: add assertions. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449
         # 1. H5AD has annotation labels added and uploaded to S3
         # 2. cxg, rds, loom uploaded to s3
         # 3. databases metadata updated and showing successful status
