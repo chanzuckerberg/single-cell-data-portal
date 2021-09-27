@@ -173,7 +173,7 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertNotIn(deleted_dataset_id, datasets)
             self.assertNotIn(original_dataset_id, datasets)
 
-            # Endpoint is eventually consistent
+            # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
             res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
             self.assertEqual(res.status_code, 302)
 
