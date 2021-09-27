@@ -106,8 +106,10 @@ async function createCollection(
   );
 
   if (tryBadEmail) {
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     await page.type("#contact-email", "bad email", BLUEPRINT_SAFE_TYPE_OPTIONS);
     expect(page).toHaveSelector(getText("Invalid Email"));
+    await page.fill("#contact-email", "");
   }
 
   await page.type(
