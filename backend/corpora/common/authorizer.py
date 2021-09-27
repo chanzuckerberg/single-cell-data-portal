@@ -2,7 +2,6 @@ import os
 from functools import lru_cache
 
 import requests
-from requests.api import head
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
