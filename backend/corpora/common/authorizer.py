@@ -2,6 +2,7 @@ import os
 from functools import lru_cache
 
 import requests
+from requests.api import head
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
@@ -101,6 +102,14 @@ def get_userinfo(token: str) -> dict:
         email_verified=payload.get("email_verified"),
     )
     return userinfo
+
+
+def get_userinfo_from_auth0(token: str) -> dict:
+    auth_config = CorporaAuthConfig()
+    auth0_domain = auth_config.internal_url
+    res = requests.get(f"{auth0_domain}/userinfo", headers={"Authorization": f"Bearer {token}"})
+    res.raise_for_status()
+    return res.json()
 
 
 @lru_cache(maxsize=32)

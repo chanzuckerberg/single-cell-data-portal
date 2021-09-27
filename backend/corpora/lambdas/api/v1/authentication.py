@@ -11,7 +11,7 @@ from flask import make_response, jsonify, current_app, request, redirect, after_
 from jose.exceptions import ExpiredSignatureError
 
 
-from ....common.authorizer import get_userinfo, assert_authorized_token
+from ....common.authorizer import get_userinfo, assert_authorized_token, get_userinfo_from_auth0
 from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
@@ -227,7 +227,7 @@ def userinfo() -> Response:
     """API call: retrieve the user info from the id token stored in the cookie"""
     config = CorporaAuthConfig()
     token = get_token(config.cookie_name)
-    userinfo = get_userinfo(token.get("id_token"))
+    userinfo = get_userinfo_from_auth0(token.get("access_token"))
     return make_response(jsonify(userinfo))
 
 
