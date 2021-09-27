@@ -1,10 +1,14 @@
 import json
 import os
-import time
 import unittest
 import requests
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+
+
+class UndesiredHttpStatusCodeError:
+    pass
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -62,9 +66,8 @@ class TestRevisions(BaseFunctionalTestCase):
         meta_payload_before_revision_res.raise_for_status()
         meta_payload_before_revision = meta_payload_before_revision_res.json()
 
-        schema_before_revision_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema")
-        schema_before_revision_res.raise_for_status()
-        schema_before_revision = schema_before_revision_res.json()
+        # Endpoint is eventually consistent
+        schema_before_revision = self.get_schema_with_retries(dataset_id).json()
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
@@ -153,14 +156,8 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, 200)
 
             # Endpoint is eventually consistent
-            (final_status_code, desired_status_code) = (None, 200)
-            for i in range(20):
-                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
-                final_status_code = res.status_code
-                if final_status_code == desired_status_code:
-                    break
-                time.sleep(1)
-            self.assertEqual(final_status_code, desired_status_code)
+            res = self.get_schema_with_retries(original_dataset_id)
+            self.assertEqual(res.status_code, 200)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
@@ -177,12 +174,14 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertNotIn(original_dataset_id, datasets)
 
             # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
-            (final_status_code, desired_status_code) = (None, 302)
-            for i in range(50):
-                url = f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema"
-                res = requests.get(url, allow_redirects=False)
-                final_status_code = res.status_code
-                if final_status_code == desired_status_code:
-                    break
-                time.sleep(1)
-            self.assertEqual(final_status_code, desired_status_code)
+            res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
+            self.assertEqual(res.status_code, 302)
+
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+    def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
+        schema_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+
+        if schema_res.status_code != desired_http_status_code:
+            raise UndesiredHttpStatusCodeError
+
+        return schema_res
