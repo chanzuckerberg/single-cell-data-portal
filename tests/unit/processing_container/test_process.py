@@ -74,7 +74,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             self.corpora_config.bucket_name,
         )
 
-        # TODO: add assertions. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449
+        # TODO: add assertions. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449 # noqa: E501
         # 1. H5AD has annotation labels added and uploaded to S3
         # 2. cxg, rds, loom uploaded to s3
         # 3. databases metadata updated and showing successful status
