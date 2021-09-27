@@ -19,7 +19,8 @@ class TestDatasetRevision(TestDataset):
         with self.subTest("deployment is correctly created and points to correct s3 uri "):
             rev_deployment = rev_dataset.pop("explorer_url")
             original_deployment = dataset.pop("explorer_url")
-            self.assertEqual(rev_deployment, original_deployment)
+            self.assertIsNotNone(original_deployment)
+            self.assertEqual(rev_deployment, f"http://bogus.url/d/{rev_dataset['id']}.cxg")
 
         with self.subTest("Test processing status copied over"):
             rev_processing_status = rev_dataset.pop("processing_status")

@@ -72,6 +72,12 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, 201)
             private_dataset_id = res.json()["datasets"][0]["id"]
 
+            meta_payload_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
+            meta_payload_res.raise_for_status()
+            meta_payload = meta_payload_res.json()
+
+            self.assertDictEqual(meta_payload_before_revision, meta_payload)
+
             # Upload a new dataset
             new_dataset_id = self.upload_and_wait(
                 collection_uuid,
