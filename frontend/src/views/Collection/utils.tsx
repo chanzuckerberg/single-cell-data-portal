@@ -119,7 +119,7 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
 
       return (
         numOfDeployments === 1 &&
-        numOfAssets === Object.keys(DATASET_ASSET_FORMAT).length
+        numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
       );
     }) &&
     datasets.some((dataset) => !dataset.tombstone)
