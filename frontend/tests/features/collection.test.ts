@@ -85,6 +85,8 @@ describe("Collection", () => {
   });
 });
 
+const EMAIL_ID = "#contact-email";
+
 async function createCollection(
   collection?: Partial<Collection>,
   tryBadEmail = false
@@ -106,14 +108,13 @@ async function createCollection(
   );
 
   if (tryBadEmail) {
-    // eslint-disable-next-line sonarjs/no-duplicate-string
-    await page.type("#contact-email", "bad email", BLUEPRINT_SAFE_TYPE_OPTIONS);
+    await page.type(EMAIL_ID, "bad email", BLUEPRINT_SAFE_TYPE_OPTIONS);
     expect(page).toHaveSelector(getText("Invalid Email"));
-    await page.fill("#contact-email", "");
+    await page.fill(EMAIL_ID, "");
   }
 
   await page.type(
-    "#contact-email",
+    EMAIL_ID,
     testCollection.contactEmail,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
