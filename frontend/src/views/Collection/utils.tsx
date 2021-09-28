@@ -117,6 +117,7 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
       // const numOfAssets = dataset.dataset_assets.length;
       const numOfDeployments = dataset.dataset_deployments.length;
 
+      // TODO(seve): uncomment old check when loom is no longer served from the backend
       // return (
       //   numOfDeployments === 1 &&
       //   numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
