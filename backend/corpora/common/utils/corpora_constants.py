@@ -1,5 +1,3 @@
-
-
 class CorporaConstants(object):
     REQUIRED_SIMPLE_METADATA_FIELDS = [
         "schema_version",
