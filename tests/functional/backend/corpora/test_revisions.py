@@ -7,7 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from tests.functional.backend.corpora.common import BaseFunctionalTestCase
 
 
-class UndesiredHttpStatusCodeError:
+class UndesiredHttpStatusCodeError(Exception):
     pass
 
 
@@ -101,7 +101,10 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             dataset_meta_payload = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-            self.assertEqual(dataset_meta_payload["s3_uri"], f"s3://hosted-cellxgene-staging/{new_dataset_id}.cxg/")
+            self.assertEqual(
+                dataset_meta_payload["s3_uri"],
+                f"s3://hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}/{new_dataset_id}.cxg/",
+            )
 
             # TODO: add `And the explorer url redirects appropriately`
 
