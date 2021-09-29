@@ -105,8 +105,7 @@ def get_userinfo(token: str) -> dict:
 
 def get_userinfo_from_auth0(token: str) -> dict:
     auth_config = CorporaAuthConfig()
-    auth0_domain = auth_config.internal_url
-    res = requests.get(f"{auth0_domain}/userinfo", headers={"Authorization": f"Bearer {token}"})
+    res = requests.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
     res.raise_for_status()
     return res.json()
 
