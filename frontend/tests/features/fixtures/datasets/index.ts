@@ -32,18 +32,6 @@ const datasets = [
         user_submitted: true,
       },
       {
-        created_at: 1617747607.988473,
-        dataset_id: "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "ee95acfc-d389-4c24-913e-d20dc14edbde",
-        s3_uri:
-          "s3://corpora-data-prod/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e/local.loom",
-        type: "REMIX",
-        updated_at: 1617747607.988477,
-        user_submitted: true,
-      },
-      {
         created_at: 1617747639.017621,
         dataset_id: "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
         filename: "local.rds",
@@ -117,7 +105,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746933.625826,
       dataset_id: "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
@@ -185,18 +172,6 @@ const datasets = [
           "s3://corpora-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.h5ad",
         type: "REMIX",
         updated_at: 1617748198.66594,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617748558.068067,
-        dataset_id: "572f3f3e-d3e4-4d13-8e2b-88215e508481",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "330e04ab-6d48-4f7d-842a-7808e919ac83",
-        s3_uri:
-          "s3://corpora-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.loom",
-        type: "REMIX",
-        updated_at: 1617748558.068074,
         user_submitted: true,
       },
       {
@@ -273,7 +248,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746940.678959,
       dataset_id: "572f3f3e-d3e4-4d13-8e2b-88215e508481",
@@ -341,18 +315,6 @@ const datasets = [
           "s3://corpora-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.h5ad",
         type: "REMIX",
         updated_at: 1617747955.808857,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617748214.063309,
-        dataset_id: "78fd69d2-75e4-4207-819a-563139f273c6",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "5a32db13-4306-4d88-b2a6-5ade525d560d",
-        s3_uri:
-          "s3://corpora-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.loom",
-        type: "REMIX",
-        updated_at: 1617748214.063315,
         user_submitted: true,
       },
       {
@@ -429,7 +391,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746880.074091,
       dataset_id: "78fd69d2-75e4-4207-819a-563139f273c6",
@@ -489,18 +450,6 @@ const datasets = [
           "s3://corpora-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.h5ad",
         type: "REMIX",
         updated_at: 1617747325.537073,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617747370.914178,
-        dataset_id: "84f1a631-910b-4fbb-9f76-d915a07316d2",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "ee44653e-2fd8-4cf5-8f11-cb1370436c2b",
-        s3_uri:
-          "s3://corpora-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.loom",
-        type: "REMIX",
-        updated_at: 1617747370.914184,
         user_submitted: true,
       },
       {
@@ -577,7 +526,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746868.294075,
       dataset_id: "84f1a631-910b-4fbb-9f76-d915a07316d2",
@@ -629,18 +577,6 @@ const datasets = [
           "s3://corpora-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.h5ad",
         type: "REMIX",
         updated_at: 1617747653.571765,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617747757.902494,
-        dataset_id: "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "6474321f-7298-486b-a3fe-fd1603b85543",
-        s3_uri:
-          "s3://corpora-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.loom",
-        type: "REMIX",
-        updated_at: 1617747757.9025,
         user_submitted: true,
       },
       {
@@ -718,7 +654,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746890.095562,
       dataset_id: "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
@@ -786,18 +721,6 @@ const datasets = [
           "s3://corpora-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.h5ad",
         type: "REMIX",
         updated_at: 1617321217.253226,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617321993.046416,
-        dataset_id: "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "a64519d3-8719-466f-8b17-00d5f6af33bd",
-        s3_uri:
-          "s3://corpora-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.loom",
-        type: "REMIX",
-        updated_at: 1617321993.046423,
         user_submitted: true,
       },
       {
@@ -874,7 +797,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617319340.176877,
       dataset_id: "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
@@ -942,18 +864,6 @@ const datasets = [
           "s3://corpora-data-prod/ed852810-a003-4386-9846-1638362cee39/local.h5ad",
         type: "REMIX",
         updated_at: 1617747713.055638,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617747790.780416,
-        dataset_id: "ed852810-a003-4386-9846-1638362cee39",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "42ab1fcf-5fd8-49ba-b763-a05b6e6b7e22",
-        s3_uri:
-          "s3://corpora-data-prod/ed852810-a003-4386-9846-1638362cee39/local.loom",
-        type: "REMIX",
-        updated_at: 1617747790.780421,
         user_submitted: true,
       },
       {
@@ -1030,7 +940,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617746898.171688,
       dataset_id: "ed852810-a003-4386-9846-1638362cee39",
@@ -1098,18 +1007,6 @@ const datasets = [
           "s3://corpora-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.h5ad",
         type: "REMIX",
         updated_at: 1617739451.659032,
-        user_submitted: true,
-      },
-      {
-        created_at: 1617739462.401474,
-        dataset_id: "f75f2ff4-2884-4c2d-b375-70de37a34507",
-        filename: "local.loom",
-        filetype: "LOOM",
-        id: "1745b4ad-4fa9-4195-ba94-f08333888ede",
-        s3_uri:
-          "s3://corpora-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.loom",
-        type: "REMIX",
-        updated_at: 1617739462.401479,
         user_submitted: true,
       },
       {
@@ -1186,7 +1083,6 @@ const datasets = [
     processing_status: {
       conversion_anndata_status: "CONVERTED",
       conversion_cxg_status: "CONVERTED",
-      conversion_loom_status: "CONVERTED",
       conversion_rds_status: "CONVERTED",
       created_at: 1617739319.909173,
       dataset_id: "f75f2ff4-2884-4c2d-b375-70de37a34507",

@@ -117,7 +117,6 @@ export interface Dataset {
 export enum DATASET_ASSET_FORMAT {
   H5AD = "H5AD",
   RDS = "RDS",
-  LOOM = "LOOM",
   CXG = "CXG",
 }
 
@@ -196,7 +195,6 @@ export interface DatasetUploadStatus {
   upload_progress: number;
   validation_status: VALIDATION_STATUS;
   validation_message: string;
-  conversion_loom_status: CONVERSION_STATUS;
   conversion_anndata_status: CONVERSION_STATUS;
   conversion_cxg_status: CONVERSION_STATUS;
   conversion_rds_status: CONVERSION_STATUS;

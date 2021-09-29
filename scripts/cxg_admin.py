@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import boto3
-import click
 import json
 import logging
 import os
 import sys
+
+import click
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -237,8 +237,7 @@ def migrate_schema_version(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign schema_version to all the "
-            f"datasets",
+            f"Are you sure you want to run this script? It will assign schema_version to all the datasets",
             abort=True,
         )
         for record in session.query(DbDataset):
@@ -246,7 +245,7 @@ def migrate_schema_version(ctx):
             explorer_url = urlparse(record.explorer_url)
             url = f"https://api.{explorer_url.netloc}/cellxgene{explorer_url.path}api/v0.2/config"
             res = rq.get(url).json()
-            version = res['config']['corpora_props']['version']['corpora_schema_version']
+            version = res["config"]["corpora_props"]["version"]["corpora_schema_version"]
             logger.info(f"Setting version for dataset {dataset_id} to {version}")
             record.schema_version = version
 
@@ -281,7 +280,7 @@ def strip_all_collection_fields(ctx):
             contact_email != TRIM(contact_email) OR
             data_submission_policy_version != TRIM(data_submission_policy_version)
             """
-            
+
         session.execute(query)
         session.commit()
 
