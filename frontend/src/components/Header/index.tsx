@@ -1,12 +1,11 @@
 import { Intent } from "@blueprintjs/core";
 import Link from "next/link";
 import { FC } from "react";
-import { ROUTES } from "src/common/constants/routes";
+import { EXTERNAL_LINKS, ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
-import { DOCS_HOME_PAGE } from "src/configs/common";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import {
@@ -28,7 +27,11 @@ const Header: FC = () => {
       <MainWrapper>
         <HomepageLink />
         <Right>
-          <a href={DOCS_HOME_PAGE} target="_blank">
+          <a
+            href={EXTERNAL_LINKS.DOCS_HOME_PAGE}
+            target="_blank"
+            rel="noopener"
+          >
             <LearnButton intent={Intent.PRIMARY} minimal>
               Learn
             </LearnButton>
