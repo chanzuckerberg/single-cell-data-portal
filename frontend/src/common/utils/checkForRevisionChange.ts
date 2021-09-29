@@ -21,6 +21,7 @@ const IGNORED_DATASET_FIELDS = [
   "id",
   "processing_status",
   "dataset_assets",
+  "dataset_deployments",
 ] as Array<keyof Dataset>;
 
 function checkListForChanges(

@@ -40,11 +40,6 @@ const DataFormat: FC<Props> = ({
           value={DATASET_ASSET_FORMAT.H5AD}
         />
         <Radio
-          disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.LOOM)}
-          label=".loom"
-          value={DATASET_ASSET_FORMAT.LOOM}
-        />
-        <Radio
           disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
           label=".rds (Seurat v3)"
           value={DATASET_ASSET_FORMAT.RDS}

@@ -1,10 +1,14 @@
 import json
 import os
-import time
 import unittest
 import requests
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+
+
+class UndesiredHttpStatusCodeError(Exception):
+    pass
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -62,15 +66,20 @@ class TestRevisions(BaseFunctionalTestCase):
         meta_payload_before_revision_res.raise_for_status()
         meta_payload_before_revision = meta_payload_before_revision_res.json()
 
-        schema_before_revision_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema")
-        schema_before_revision_res.raise_for_status()
-        schema_before_revision = schema_before_revision_res.json()
+        # Endpoint is eventually consistent
+        schema_before_revision = self.get_schema_with_retries(dataset_id).json()
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
             private_dataset_id = res.json()["datasets"][0]["id"]
+
+            meta_payload_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
+            meta_payload_res.raise_for_status()
+            meta_payload = meta_payload_res.json()
+
+            self.assertDictEqual(meta_payload_before_revision, meta_payload)
 
             # Upload a new dataset
             new_dataset_id = self.upload_and_wait(
@@ -92,7 +101,10 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             dataset_meta_payload = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-            self.assertEqual(dataset_meta_payload["s3_uri"], f"s3://hosted-cellxgene-staging/{new_dataset_id}.cxg/")
+            self.assertEqual(
+                dataset_meta_payload["s3_uri"],
+                f"s3://hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}/{new_dataset_id}.cxg/",
+            )
 
             # TODO: add `And the explorer url redirects appropriately`
 
@@ -147,14 +159,8 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, 200)
 
             # Endpoint is eventually consistent
-            (final_status_code, desired_status_code) = (None, 200)
-            for i in range(20):
-                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
-                final_status_code = res.status_code
-                if final_status_code == desired_status_code:
-                    break
-                time.sleep(1)
-            self.assertEqual(final_status_code, desired_status_code)
+            res = self.get_schema_with_retries(original_dataset_id)
+            self.assertEqual(res.status_code, 200)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
@@ -163,15 +169,22 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # Check that the dataset doesn't exist anymore
-            res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={self.create_explorer_url(deleted_dataset_id)}")
-            self.assertEqual(res.status_code, 404)
+            res = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            res.raise_for_status()
+            datasets = [dataset["id"] for dataset in res.json()["datasets"]]
+            self.assertEqual(1, len(datasets))
+            self.assertNotIn(deleted_dataset_id, datasets)
+            self.assertNotIn(original_dataset_id, datasets)
 
-            # Endpoint is eventually consistent
-            (final_status_code, desired_status_code) = (None, 404)
-            for i in range(20):
-                res = requests.get(f"{self.api}/cellxgene/e/{original_dataset_id}.cxg/api/v0.2/schema")
-                final_status_code = res.status_code
-                if final_status_code == desired_status_code:
-                    break
-                time.sleep(1)
-            self.assertEqual(final_status_code, desired_status_code)
+            # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
+            res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
+            self.assertEqual(res.status_code, 302)
+
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+    def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
+        schema_res = requests.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+
+        if schema_res.status_code != desired_http_status_code:
+            raise UndesiredHttpStatusCodeError
+
+        return schema_res
