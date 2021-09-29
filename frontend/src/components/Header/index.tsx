@@ -6,9 +6,10 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
+import { DOCS_HOME_PAGE } from "src/configs/common";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
+import { MainWrapper, MyCollectionsButton, LearnButton, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -21,6 +22,11 @@ const Header: FC = () => {
       <MainWrapper>
         <HomepageLink />
         <Right>
+          <a href={DOCS_HOME_PAGE} target="_blank">
+            <LearnButton intent={Intent.PRIMARY} minimal>
+              Learn
+            </LearnButton>
+          </a>
           {isMyCollectionsShown && (
             <Link href={ROUTES.MY_COLLECTIONS} passHref>
               <a href="passHref">
