@@ -15,13 +15,11 @@ class TestUploadFailureHandling(TestCase):
         self.tmp_dir = tempfile.mkdtemp()
         self.h5ad_filename = pathlib.Path(self.tmp_dir, "test.h5ad")
         self.seurat_filename = pathlib.Path(self.tmp_dir, "test.rds")
-        self.loom_filename = pathlib.Path(self.tmp_dir, "test.loom")
         self.cxg_filename = pathlib.Path(self.tmp_dir, "test.cxg")
 
         self.h5ad_filename.touch()
         self.cxg_filename.touch()
         self.seurat_filename.touch()
-        self.loom_filename.touch()
 
         # Mock S3 service if we don't have a mock api already running
         if os.getenv("BOTO_ENDPOINT_URL"):
@@ -38,7 +36,6 @@ class TestUploadFailureHandling(TestCase):
         cxg_file = f"{self.uuid}/remixed.cxg"
         h5ad_file = f"{self.uuid}/remixed.h5ad"
         rds_file = f"{self.uuid}/remixed.rds"
-        loom_file = f"{self.uuid}/remixed.loom"
 
         self.s3.create_bucket(
             Bucket=self.bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
@@ -47,7 +44,6 @@ class TestUploadFailureHandling(TestCase):
         self.s3.put_object(Bucket=self.bucket_name, Key=cxg_file, Body="words")
         self.s3.put_object(Bucket=self.bucket_name, Key=h5ad_file, Body="words")
         self.s3.put_object(Bucket=self.bucket_name, Key=rds_file, Body="words")
-        self.s3.put_object(Bucket=self.bucket_name, Key=loom_file, Body="words")
 
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
         assert len(resp["Contents"]) == 4

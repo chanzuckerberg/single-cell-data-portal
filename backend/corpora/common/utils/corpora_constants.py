@@ -101,6 +101,5 @@ class CorporaConstants(object):
     ]
 
     # Constants related to the dataset format of which a submission to Corpora must be.
-    LOOM_FILE_TYPE = ".loom"
     SEURAT_FILE_TYPE = ".rds"
     H5AD_FILE_TYPE = ".h5ad"

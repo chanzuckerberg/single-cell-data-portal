@@ -41,12 +41,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         cls.tmp_dir = tempfile.mkdtemp()
         cls.h5ad_filename = pathlib.Path(cls.tmp_dir, "test.h5ad")
         cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
-        cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
         cls.cxg_filename = pathlib.Path(cls.tmp_dir, "test.cxg")
 
         cls.h5ad_filename.touch()
         cls.seurat_filename.touch()
-        cls.loom_filename.touch()
         cls.cxg_filename.touch()
 
     @classmethod
@@ -386,10 +384,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{dataset_id}.cxg/")
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
-    @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_create_artifacts(self, make_seurat, make_loom):
-        make_loom.return_value = str(self.loom_filename)
+    def test_create_artifacts(self, make_seurat):
         make_seurat.return_value = str(self.seurat_filename)
         artifact_bucket = "test-artifact-bucket"
         test_dataset_id = self.generate_dataset(
@@ -404,7 +400,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
 
@@ -420,7 +415,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(len(s3_filenames), 3)
         self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
         self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
-        self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
@@ -484,39 +478,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
-        mock_loom.side_effect = RuntimeError("Loom conversion failed")
-        mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
-        test_dataset_id = self.generate_dataset(
-            self.session,
-        ).id
-        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
-        artifact_bucket = "test-artifact-bucket"
-        s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(self.session, test_dataset_id)
-        artifacts = dataset.artifacts
-        processing_status = dataset.processing_status
-
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
-
-        self.assertEqual(len(artifacts), 2)
-        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
-        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 2)
-        self.assertNotIn(str(self.loom_filename.parts[-1]), s3_filenames)
-
-        # cleanup
-        self.delete_s3_bucket(artifact_bucket)
-
-    @patch("backend.corpora.dataset_processing.process.make_loom")
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
-        mock_loom.return_value = str(self.loom_filename)
+    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat):
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
         test_dataset_id = self.generate_dataset(
             self.session,
@@ -529,7 +492,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
         self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_rds_status)
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
 
