@@ -110,13 +110,12 @@ const Privacy = (): JSX.Element => {
                     <h4>Data You Provide To Us.</h4> We collect certain
                     information from you when you provide it to us directly.
                     Specifically, this includes data you submit for display in
-                    cellxgene (ex: single-cell .loom matrix files), data you
-                    provide you us as part of submission or registering for an
-                    account (ex: name and email address), as well as if you
-                    contact us for support or with information about a dataset
-                    via email. This information is necessary in order to create
-                    your account and provide you with access to the services we
-                    offer on the Site.
+                    cellxgene, data you provide you us as part of submission or
+                    registering for an account (ex: name and email address), as
+                    well as if you contact us for support or with information
+                    about a dataset via email. This information is necessary in
+                    order to create your account and provide you with access to
+                    the services we offer on the Site.
                   </li>
                   <li>
                     <h4>Data From Your Browser or Device.</h4> Whenever you use

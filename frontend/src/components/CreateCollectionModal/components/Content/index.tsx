@@ -55,6 +55,14 @@ const AddLinkButton = () => (
 
 const requiredValidator = (value: string) => value.length > 0 || "Required";
 
+// checks if string value is a valid email
+const emailValidation = (value: string) => {
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  return emailRegex.test(value) || "Invalid email";
+};
+
 const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
@@ -155,7 +163,7 @@ const Content: FC<Props> = (props) => {
               handleChange={handleInputChange}
               placeholder={REQUIRED_FIELD_TEXT}
               defaultValue={contact_email}
-              syncValidation={[requiredValidator]}
+              syncValidation={[requiredValidator, emailValidation]}
             />
           </ContactWrapper>
           {links.map(({ linkType, id, url, linkName, isValid }, index) => (
