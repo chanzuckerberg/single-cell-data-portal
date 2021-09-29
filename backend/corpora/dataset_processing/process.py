@@ -527,10 +527,10 @@ def main():
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occured while processing.")
+        logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpect error occured while processing the data set."
+        message = "An unexpected error occurred while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
