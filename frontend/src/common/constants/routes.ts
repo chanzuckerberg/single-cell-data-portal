@@ -7,3 +7,7 @@ export enum ROUTES {
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",
 }
+
+export enum EXTERNAL_LINKS {
+  DOCS_HOME_PAGE = "https://docs.cellxgene.cziscience.com/",
+}
