@@ -9,7 +9,13 @@ import { useUserInfo } from "src/common/queries/auth";
 import { DOCS_HOME_PAGE } from "src/configs/common";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import { MainWrapper, MyCollectionsButton, LearnButton, Right, Wrapper } from "./style";
+import {
+  LearnButton,
+  MainWrapper,
+  MyCollectionsButton,
+  Right,
+  Wrapper,
+} from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
