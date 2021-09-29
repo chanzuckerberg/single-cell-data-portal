@@ -14,17 +14,22 @@ well-labeled repository of interoperable datasets.
 
 ## Developers
 
+### Pre-requisites
+
+1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
+2. [Install and configure awscli](docs/awscli.md)
+3. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
+4. [Install pyenv](https://github.com/pyenv/pyenv). Make sure you choose the most recent python version from `pyenv`. If `pyenv` is already installed on your machine, you might have to delete and reinstall it.
+5. Run `source venv/bin/activate` to start up a virtual environment.
+
+
 ### Development quickstart
+**Note:** Make sure you are running your virtual environment from Step 5 above before going through the development guides.
 
 See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 
 See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
 
-### Pre-requisites
-
-1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
-1. [Install and configure awscli](docs/awscli.md)
-1. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
 
 ### Environment variables
 
