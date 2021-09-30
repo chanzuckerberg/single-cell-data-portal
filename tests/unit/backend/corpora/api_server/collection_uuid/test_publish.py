@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+from mock import Mock, patch
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
@@ -17,17 +19,22 @@ class TestPublish(BaseAuthAPITest):
             "Cookie": get_auth_token(self.app),
         }
         self.headers_unauthed = {"host": "localhost", "Content-Type": "application/json"}
+        self.mock_published_on = datetime(2000, 12, 25, 0, 0)
 
-    def verify_publish_collection(self, collection_id: str) -> dict:
+    def verify_publish_collection(self, collection_id: str, mock_timestamp: datetime = None) -> dict:
         """
         Verify publish collection.
         Returns:
             response_json (dict): Jsonified response of GET collection/<collection_id>.
         """
+        if not mock_timestamp:
+            mock_timestamp = self.mock_published_on
 
         # Publish collection
         path = f"{self.base_path}/{collection_id}/publish"
-        response = self.app.post(path, headers=self.headers_authed)
+        with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
+            mock_dt.utcnow = Mock(return_value=mock_timestamp)
+            response = self.app.post(path, headers=self.headers_authed)
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
@@ -55,13 +62,40 @@ class TestPublish(BaseAuthAPITest):
 
         return response_json
 
-    def test__publish_collection__OK(self):
-        """Publish collection with a single dataset."""
-        collection = self.generate_collection(
-            self.session,
-        )
+    def test__publish_a_new_collection__OK(self):
+        """Publish a new collection with a single dataset."""
+        collection = self.generate_collection(self.session)
         self.generate_dataset(self.session, collection_id=collection.id, collection_visibility=collection.visibility)
-        self.verify_publish_collection(collection.id)
+
+        self.assertIsNone(collection.published_on)
+        response_json = self.verify_publish_collection(collection.id, self.mock_published_on)
+
+        # Check published_on
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
+
+    def test__published_on_not_updated_for_publish_a_collection_revision(self):
+        """Publish a collection revision should not update published_on timestamp."""
+        # Publish a new collection
+        collection = self.generate_collection(self.session)
+        self.generate_dataset(self.session, collection_id=collection.id, collection_visibility=collection.visibility)
+
+        self.assertIsNone(collection.published_on)
+        response_json = self.verify_publish_collection(collection.id, self.mock_published_on)
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
+
+        # Start a revision of the collection
+        response = self.app.post(f"{self.base_path}/{collection.id}", headers=self.headers_authed)
+        self.assertEqual(201, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("PRIVATE", response_json["visibility"])
+
+        # Publish revision
+        mock_revision_published_dt = datetime(2001, 1, 25, 0, 0)
+        response_json = self.verify_publish_collection(collection.id, mock_revision_published_dt)
+
+        # published_on should not be updated - only updates on initial publish
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
 
     def test__publish_collection_w_multiple_datasets__OK(self):
         """Publish collection with multiple datasets."""
@@ -76,6 +110,7 @@ class TestPublish(BaseAuthAPITest):
         ]
 
         response_json = self.verify_publish_collection(collection_id)
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
 
         # Check datasets
         res_datasets = response_json["datasets"]
@@ -100,6 +135,7 @@ class TestPublish(BaseAuthAPITest):
 
         response_json = self.verify_publish_collection(collection.id)
         self.assertEqual(dataset_id, response_json["datasets"][0]["id"])
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
 
         # Check links
         res_links = [link["link_name"] for link in response_json["links"]]
