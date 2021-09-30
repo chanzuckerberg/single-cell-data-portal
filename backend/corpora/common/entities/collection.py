@@ -180,8 +180,10 @@ class Collection(Entity):
     def publish(self):
         """
         Given a private collection, set the collection to public.
-
         """
+        # Timestamp for published_on
+        now = datetime.utcnow()
+
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         if public_collection:
@@ -189,9 +191,16 @@ class Collection(Entity):
                 commit=False,
                 **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
+        # A published collection with the same uuid does not already exist.
+        # This is a new collection.
         else:
             public_collection = Collection(
-                clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
+                clone(
+                    self.db_object,
+                    primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
+                    # We want to update published_on only when the collection is first published.
+                    published_on=now,
+                )
             )
             self.session.add(public_collection)
 
