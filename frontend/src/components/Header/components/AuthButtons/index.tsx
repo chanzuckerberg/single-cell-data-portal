@@ -15,7 +15,7 @@ import { useUserInfo } from "src/common/queries/auth";
 import { API_URL } from "src/configs/configs";
 import { ButtonWrapper, Initial } from "./style";
 
-const AuthButtons = () => {
+const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
   const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);

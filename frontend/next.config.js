@@ -5,7 +5,9 @@ const { createSecureHeaders } = require("next-secure-headers");
 
 const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
-const SCRIPT_SRC = ["'self'"];
+const PLAUSIBLE_URL = "https://plausible.io";
+
+const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL];
 
 module.exports = {
   async generateBuildId() {
@@ -24,6 +26,7 @@ module.exports = {
               connectSrc: [
                 "'self'",
                 "sentry.prod.si.czi.technology",
+                PLAUSIBLE_URL,
                 configs.API_URL,
               ],
               defaultSrc: ["'self'"],
