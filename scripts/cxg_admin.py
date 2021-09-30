@@ -298,28 +298,18 @@ def backfill_processing_status_for_datasets(ctx):
     """
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign dataset_processing_status"
+            f"Are you sure you want to run this script? It will assign dataset_processing_status "
             "to all datasets that are missing it",
             abort=True,
         )
 
         for record in session.query(DbDataset):
             dataset_id = record.id
-            if record.processing_status is None:
-                processed = DbDatasetProcessingStatus(
-                    dataset_id = dataset_id,
-                    upload_status = UploadStatus.UPLOADED,
-                    upload_progress = 1.0,
-                    upload_message = "",
-                    validation_status = ValidationStatus.VALID,
-                    conversion_loom_status = ConversionStatus.CONVERTED,
-                    conversion_rds_status = ConversionStatus.CONVERTED,
-                    conversion_cxg_status = ConversionStatus.CONVERTED,
-                    conversion_anndata_status = ConversionStatus.CONVERTED,
-                    processing_status = ProcessingStatus.SUCCESS,
-                )
-                logger.info(f"Setting processing status for dataset {dataset_id}")
-                session.add(processed)
+            if record.processing_status.processing_status is None:
+                record.processing_status.processing_status = ProcessingStatus.SUCCESS
+                logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
+            else:
+                logger.warning(f"{dataset_id} processing status is fine")
             
 
 def get_database_uri() -> str:
