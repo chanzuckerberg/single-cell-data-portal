@@ -69,88 +69,133 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 
 class TestRevision(BaseRevisionTest):
-    def test__start_revision__201(self):
-        tests = [
-            {"visibility": CollectionVisibility.PUBLIC},
-            {
-                "visibility": CollectionVisibility.PUBLIC,
-                "links": [
-                    {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
-                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                ],
-            },
+    """Test case for starting a collection's revision."""
+
+    def verify_start_revision(self, collection_id: str) -> dict:
+        """
+        Verify start of a collection's revision. 
+        Returns:
+            response_json (dict): Jsonified response of POST collection/<collection_id>.
+        """
+        path = f"/dp/v1/collections/{collection_id}"
+        response = self.app.post(path, self.headers)
+        self.assertEqual(201, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("PRIVATE", response_json["visibility"])
+
+        return response_json
+
+    def verify_get_revision(self, collection_id: str, dataset_ids: typing.List[str] = None) -> dict:
+        """
+        Verify the contents of a collection under revision.
+        Returns:
+            response_json (dict): Jsonified response of GET 
+            collection/<collection_id>?visibility=PRIVATE.
+        """
+        path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
+        response = self.app.get(path, headers=self.headers)
+        response_json = json.loads(response.data)
+
+        with self.subTest("Test datasets in revised collection are not original datasets"):
+            new_dataset_ids = [x["id"] for x in response_json["datasets"]]
+            for dataset_id in dataset_ids:
+                self.assertNotIn(dataset_id, new_dataset_ids)
+
+        with self.subTest("Test revised datasets point at original datasets"):
+            original_dataset_ids = [x["original_id"] for x in response_json["datasets"]]
+            for dataset_id in dataset_ids:
+                self.assertIn(dataset_id, original_dataset_ids)
+
+        with self.subTest("Check assets point at revised dataset"):
+            for dataset in response_json["datasets"]:
+                dataset_id = dataset["id"]
+                asset_dataset_ids = {asset["dataset_id"] for asset in dataset["dataset_assets"]}
+                self.assertEqual(dataset_id, asset_dataset_ids.pop())
+
+        return response_json
+
+    def verify_unauthed_get_revision(self, collection_id: str, expected_body: dict) -> None:
+        """Verify unauthorized view of a collection under revision."""
+
+        path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("READ", response_json.pop("access_type"))
+        self.assertEqual(expected_body, response_json)
+
+    def test__start_revision_of_a_collection__201(self):
+        """Start a revision of a collection."""
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        dataset_ids = [
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
         ]
-        for test in tests:
-            with self.subTest(test):
-                collection = self.generate_collection(self.session, **test)
-                dataset_0 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
-                dataset_1 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
 
-                test_url = f"/dp/v1/collections/{collection.id}"
-                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        res_post_json = self.verify_start_revision(collection.id)
+        res_get_json = self.verify_get_revision(collection.id, dataset_ids)
+        self.assertEqual(res_post_json, res_get_json)
 
-                # Test post
-                response = self.app.post(test_url, headers=headers)
-                self.assertEqual(201, response.status_code)
-                post_body = json.loads(response.data)
-                for key in test.keys():
-                    if key == "visibility":
-                        self.assertEqual("PRIVATE", post_body[key])
-                    else:
-                        self.assertEqual(test[key], post_body[key])
-                # Test get
-                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
-                self.assertEqual(200, response.status_code)
-                get_body = json.loads(response.data)
-                self.assertEqual(post_body, get_body)
-                with self.subTest("Test datasets in revised collection are not original datasets"):
-                    new_dataset_ids = [x["id"] for x in get_body["datasets"]]
-                    self.assertNotIn(dataset_0.id, new_dataset_ids)
-                    self.assertNotIn(dataset_1.id, new_dataset_ids)
-                with self.subTest("Test revised datasets point at original datasets"):
-                    original_dataset_ids = [x["original_id"] for x in get_body["datasets"]]
-                    self.assertIn(dataset_0.id, original_dataset_ids)
-                    self.assertIn(dataset_1.id, original_dataset_ids)
-                with self.subTest("Check assets point at revised dataset"):
-                    assets_0 = get_body["datasets"][0]["dataset_assets"]
-                    assets_1 = get_body["datasets"][1]["dataset_assets"]
-                    revised_dataset_0 = get_body["datasets"][0]["id"]
-                    revised_dataset_1 = get_body["datasets"][1]["id"]
-                    for x in assets_0:
-                        self.assertEqual(revised_dataset_0, x["dataset_id"])
-                    for x in assets_1:
-                        self.assertEqual(revised_dataset_1, x["dataset_id"])
-                # Test unauthenticated get
-                get_body.pop("access_type")
-                expected_body = get_body
-                headers = {"host": "localhost", "Content-Type": "application/json"}
-                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
-                self.assertEqual(200, response.status_code)
-                actual_body = json.loads(response.data)
-                self.assertEqual("READ", actual_body.pop("access_type"))
-                self.assertEqual(expected_body, actual_body)
+        self.assertEqual("WRITE", res_get_json.pop("access_type"))
+        self.verify_unauthed_get_revision(collection.id, res_get_json)
+
+    def test__start_revision_of_a_collection_w_links__201(self):
+        """Start a revision of a collection with links."""
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC,
+            links=[
+                {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+            ],
+        )
+        dataset_ids = [
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+        ]
+        link_names = [link.link_name for link in collection.links]
+
+        res_post_json = self.verify_start_revision(collection.id)
+
+        # Check link names
+        res_links = [link["link_name"] for link in res_post_json["links"]]
+        self.assertListEqual(sorted(link_names), sorted(res_links))
+
+        res_get_json = self.verify_get_revision(collection.id, dataset_ids)
+        self.assertEqual(res_post_json, res_get_json)
+
+        self.assertEqual("WRITE", res_get_json.pop("access_type"))
+        self.verify_unauthed_get_revision(collection.id, res_get_json)
 
     def test__revision__409(self):
+        """Starting a revision on a revision."""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
         test_url = f"/dp/v1/collections/{collection.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers=headers)
+
+        # Start a revision
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(201, response.status_code)
-        response = self.app.post(test_url, headers=headers)
+
+        # Try to start a revision again
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(409, response.status_code)
 
     def test__revision_nonexistent__403(self):
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post("/dp/v1/collections/random", headers=headers)
+        """Start a revision on a non-existing collection."""
+        response = self.app.post("/dp/v1/collections/random", headers=self.headers)
         self.assertEqual(403, response.status_code)
 
     def test__revision_not_owner__403(self):
+        """Start a revision on a collection as a non-owner."""
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC, owner="someone else"
         )
         test_url = f"/dp/v1/collections/{collection.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers=headers)
+
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(403, response.status_code)
 
 
