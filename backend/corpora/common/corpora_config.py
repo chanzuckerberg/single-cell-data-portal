@@ -57,6 +57,7 @@ class CorporaAuthConfig(SecretConfig):
         template = {
             "api_authorize_url": "{api_base_url}/authorize",
             "api_token_url": "{api_base_url}/oauth/token",
+            "api_userinfo_url": "{api_base_url}/userinfo",
             "internal_url": "{api_base_url}",
             "issuer": [],
         }

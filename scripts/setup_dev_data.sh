@@ -54,6 +54,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "api_authorize_url": "'"${OIDC_BROWSER_URL}"'/connect/authorize",
     "api_base_url": "'"${OIDC_BROWSER_URL}"'",
     "api_token_url": "'"${OIDC_INTERNAL_URL}"'/connect/token",
+    "api_userinfo_url": "'"${OIDC_INTERNAL_URL}"'/connect/userinfo",
     "internal_url": "'"${OIDC_INTERNAL_URL}"'",
     "cookie_name": "cxguser",
     "callback_base_url": "'"${BACKEND_URL}"'",
