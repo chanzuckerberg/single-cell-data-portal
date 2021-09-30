@@ -12,9 +12,9 @@ The initial processing_status when the container first runs is:
     upload_message = ""
     validation_status = ValidationStatus
     validation_message = ""
-    conversion_rds_status = ConversionStatus
-    conversion_cxg_status = ConversionStatus
-    conversion_anndata_status = ConversionStatus
+    rds_status = ConversionStatus
+    cxg_status = ConversionStatus
+    anndata_status = ConversionStatus
 }
 
 ## Upload
@@ -58,9 +58,9 @@ If validation succeeds the process_status changes to:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTING
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTING
+    anndata_status = ConversionStatus.CONVERTING
 }
 
 If validation fails the processing_status change to:
@@ -68,19 +68,23 @@ If validation fails the processing_status change to:
     processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
-    validation_status = ValidationStatus.FAILED
+    validation_status = ValidationStatus.FAILED,
+    anndata_status = ConversionStatus.CONVERTED
 }
 
 ## Conversion
-After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
+As each conversion is started the status for the file format is set to CONVERTING then CONVERTED if the conversion
+completes successfully. The status is then set to UPLOADING while the file is copied to s3 and UPLOADED on success.
+ Cellxgene data is converted/uploaded first. The anndata_status is set to CONVERTED after validation/label writing is
+ complete.
 {
     processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.UPLOADED
+    anndata_status = ConversionStatus.CONVERTED
 }
 
 If a conversion fails the processing_status will indicated it as follow:
@@ -89,20 +93,23 @@ If a conversion fails the processing_status will indicated it as follow:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTED
+    anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.FAILED
+    cxg_status = ConversionStatus.UPLOADED
+    anndata_status = ConversionStatus.UPLOADED
 }
 
-Once all conversion are complete, the conversion status for each file will be either CONVERTED or FAILED:
+Once all conversion are complete, the conversion status for each file will be either UPLOADED or FAILED:
 {
     processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_rds_status = ConversionStatus.CONVERTED
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.FAILED
+    rds_status = ConversionStatus.FAILED
+    cxg_status = ConversionStatus.UPLOADED
+    anndata_status = ConversionStatus.UPLOADED
 }
 """
 
@@ -160,38 +167,51 @@ def check_env():
 
 
 def create_artifact(
-    file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
+    file_name: str,
+    artifact_type: DatasetArtifactFileType,
+    bucket_prefix: str,
+    dataset_id: str,
+    artifact_bucket: str,
+    processing_status_type: str,
 ):
+    update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADING})
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
-    s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
-    with db_session_manager() as session:
-        logger.info(f"Updating database with  {artifact_type}.")
-        DatasetAsset.create(
-            session,
-            dataset_id=dataset_id,
-            filename=file_name,
-            filetype=artifact_type,
-            type_enum=DatasetArtifactType.REMIX,
-            user_submitted=True,
-            s3_uri=s3_uri,
-        )
+    try:
+        s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
+        with db_session_manager() as session:
+            logger.info(f"Updating database with  {artifact_type}.")
+            DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename=file_name,
+                filetype=artifact_type,
+                type_enum=DatasetArtifactType.REMIX,
+                user_submitted=True,
+                s3_uri=s3_uri,
+            )
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADED})
+
+    except Exception as e:
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
+        raise e
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info("Creating Artifacts.")
     # upload AnnData
-    create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
+    create_artifact(
+        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "anndata_status"
     )
 
-    # Process seurat
-    seurat_filename, status = convert_file_ignore_exceptions(make_seurat, local_filename, "Issue creating seurat.")
+    # Process and upload seurat
+    seurat_filename = convert_file_ignore_exceptions(
+        make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
+    )
     if seurat_filename:
-        create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
+        create_artifact(
+            seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+        )
 
 
 def cancel_dataset(dataset_id):
@@ -367,16 +387,18 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
 
 
 def convert_file_ignore_exceptions(
-    converter: typing.Callable, local_filename: str, error_message: str
+    converter: typing.Callable, local_filename: str, error_message: str, dataset_id: str, processing_status_type: str
 ) -> typing.Tuple[str, ConversionStatus]:
+    logger.info(f"Converting {converter}")
     try:
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTING})
         file_dir = converter(local_filename)
-        status = ConversionStatus.CONVERTED
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTED})
     except Exception:
         file_dir = None
-        status = ConversionStatus.FAILED
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
         logger.exception(error_message)
-    return file_dir, status
+    return file_dir
 
 
 def get_bucket_prefix(dataset_id):
@@ -389,8 +411,9 @@ def get_bucket_prefix(dataset_id):
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
+    cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
         s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
         metadata = {
             "explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")
@@ -406,9 +429,11 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
+
     else:
         metadata = None
-    update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
+    update_db(dataset_id, metadata)
 
 
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
@@ -430,9 +455,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     else:
         logger.info("Validation complete")
         status = dict(
-            conversion_cxg_status=ConversionStatus.CONVERTING,
-            conversion_rds_status=ConversionStatus.CONVERTING,
-            conversion_anndata_status=ConversionStatus.CONVERTING,
+            anndata_status=ConversionStatus.CONVERTED,
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)

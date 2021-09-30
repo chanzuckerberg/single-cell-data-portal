@@ -122,11 +122,19 @@ const HEADER_ROW_KEYS = {
 };
 
 function getHeaderRow({ row }: RowInfo) {
-  const { GENE_DESCRIPTION, GENE_SET_DESCRIPTION, GENE_SET_NAME, GENE_SYMBOL } =
-    HEADER_ROW_KEYS;
+  const {
+    GENE_DESCRIPTION,
+    GENE_SET_DESCRIPTION,
+    GENE_SET_NAME,
+    GENE_SYMBOL,
+  } = HEADER_ROW_KEYS;
 
-  const [gene_set_name, gene_set_description, gene_symbol, gene_description] =
-    row;
+  const [
+    gene_set_name,
+    gene_set_description,
+    gene_symbol,
+    gene_description,
+  ] = row;
 
   if (
     gene_set_name === GENE_SET_NAME &&

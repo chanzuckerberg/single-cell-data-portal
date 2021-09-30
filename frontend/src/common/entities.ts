@@ -195,9 +195,9 @@ export interface DatasetUploadStatus {
   upload_progress: number;
   validation_status: VALIDATION_STATUS;
   validation_message: string;
-  conversion_anndata_status: CONVERSION_STATUS;
-  conversion_cxg_status: CONVERSION_STATUS;
-  conversion_rds_status: CONVERSION_STATUS;
+  anndata_status: CONVERSION_STATUS;
+  cxg_status: CONVERSION_STATUS;
+  rds_status: CONVERSION_STATUS;
 }
 
 export interface GeneSet {
