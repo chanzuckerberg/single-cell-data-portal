@@ -113,6 +113,14 @@ class TestRevision(BaseRevisionTest):
                 asset_dataset_ids = {asset["dataset_id"] for asset in dataset["dataset_assets"]}
                 self.assertEqual(dataset_id, asset_dataset_ids.pop())
 
+        with self.subTest("Test revised_on not updated under revision"):
+            # Collection revised_on
+            self.assertIsNone(response_json.get("revised_on"))
+
+            # Dataset revised_on
+            for dataset in response_json["datasets"]:
+                self.assertIsNone(dataset.get("revised_on"))
+
         return response_json
 
     def verify_unauthed_get_revision(self, collection_id: str, expected_body: dict) -> None:
