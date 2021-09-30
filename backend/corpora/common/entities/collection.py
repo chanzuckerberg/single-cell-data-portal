@@ -213,7 +213,8 @@ class Collection(Entity):
             if original and public_collection.check_has_dataset(original):
                 original.publish_revision(revision)
             else:
-                revision.publish_new()
+                # The dataset is new
+                revision.publish_new(now)
         self.session.commit()
         # commit expires the session, need to retrieve the original private collection to delete it
         private_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PRIVATE)

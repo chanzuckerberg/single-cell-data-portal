@@ -4,7 +4,7 @@ import csv
 import logging
 import os
 import typing
-
+from datetime import datetime
 from pathlib import PurePosixPath
 
 from .dataset_asset import DatasetAsset
@@ -222,8 +222,8 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
-    def publish_new(self):
-        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=False)
+    def publish_new(self, now: datetime):
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_on=now, commit=False)
 
     def publish_revision(self, revision: "Dataset"):
         if revision.tombstone or revision.revision > self.revision:
