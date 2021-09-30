@@ -103,6 +103,13 @@ def get_userinfo(token: str) -> dict:
     return userinfo
 
 
+def get_userinfo_from_auth0(token: str) -> dict:
+    auth_config = CorporaAuthConfig()
+    res = requests.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
+    res.raise_for_status()
+    return res.json()
+
+
 @lru_cache(maxsize=32)
 def get_openid_config(openid_provider: str):
     """
