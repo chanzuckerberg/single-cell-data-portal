@@ -73,7 +73,7 @@ class TestRevision(BaseRevisionTest):
 
     def verify_start_revision(self, collection_id: str) -> dict:
         """
-        Verify start of a collection's revision. 
+        Verify start of a collection's revision.
         Returns:
             response_json (dict): Jsonified response of POST collection/<collection_id>.
         """
@@ -90,7 +90,7 @@ class TestRevision(BaseRevisionTest):
         """
         Verify the contents of a collection under revision.
         Returns:
-            response_json (dict): Jsonified response of GET 
+            response_json (dict): Jsonified response of GET
             collection/<collection_id>?visibility=PRIVATE.
         """
         path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
@@ -208,6 +208,8 @@ class TestRevision(BaseRevisionTest):
 
 
 class TestDeleteRevision(BaseRevisionTest):
+    """Test case for deleting a collection or datasets under revision."""
+
     def setUp(self):
         super().setUp()
         url = f"/dp/v1/collections/{self.pub_collection.id}"
@@ -215,6 +217,7 @@ class TestDeleteRevision(BaseRevisionTest):
         self.test_url_collection_public = f"{url}?visibility=PUBLIC"
 
     def test__revision_deleted__204(self):
+        """Delete a collection under revision."""
         # Delete the revision
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         self.assertEqual(204, resp.status_code)
@@ -224,7 +227,10 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertEqual(403, resp.status_code)
 
     def test__revision_deleted_with_published_datasets(self):
-        """The published dataset artifacts should be intact after deleting a collection revision"""
+        """
+        The published dataset artifacts should be intact after deleting a
+        collection revision.
+        """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
 
@@ -258,8 +264,10 @@ class TestDeleteRevision(BaseRevisionTest):
                 self.assertS3FileDoesNotExist(bucket, file_name)
 
     def test__revision_deleted_with_refreshed_datasets(self):
-        """The refreshed datasets should be deleted and the published dataset intact. The published dataset artifacts should
-        be intact after deleting a collection revision
+        """
+        The refreshed datasets should be deleted and the published dataset
+        intact. The published dataset artifacts should be intact after
+        deleting a collection revision.
         """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         self.refresh_datasets()
@@ -279,7 +287,10 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
     def test__delete_refreshed_dataset_in_a_revision(self):
-        """The refreshed datasets should be deleted and the published dataset restored in the revision."""
+        """
+        The refreshed datasets should be deleted and the published dataset
+        restored in the revision.
+        """
         expected_pub_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         expected_rev_body = self.remove_timestamps(
             json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
@@ -311,9 +322,13 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertEqual(expected_rev_body, actual_rev_body)
 
     def test__delete_published_dataset_during_revision(self):
-        """The dataset is tombstone in the revision. The published artifacts are intact"""
+        """
+        The dataset is tombstone in the revision. The published artifacts are
+        intact.
+        """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
+        pub_s3_objects, _ = self.get_s3_objects_from_collections()
+
         # Delete a published dataset in the revision
         rev_dataset_count = len(self.rev_collection.datasets)
         rev_dataset_id = self.rev_collection.datasets[0].id
