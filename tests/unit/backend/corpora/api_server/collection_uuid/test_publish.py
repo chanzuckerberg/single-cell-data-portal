@@ -70,8 +70,11 @@ class TestPublish(BaseAuthAPITest):
         self.assertIsNone(collection.published_on)
         response_json = self.verify_publish_collection(collection.id, self.mock_published_on)
 
-        # Check published_on
+        # Check collection published_on
         self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
+
+        dataset = response_json["datasets"][0]
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(dataset["published_on"]))
 
     def test__published_on_not_updated_for_publish_a_collection_revision(self):
         """Publish a collection revision should not update published_on timestamp."""
@@ -97,6 +100,9 @@ class TestPublish(BaseAuthAPITest):
         # published_on should not be updated - only updates on initial publish
         self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
 
+        dataset = response_json["datasets"][0]
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(dataset["published_on"]))
+
     def test__publish_collection_w_multiple_datasets__OK(self):
         """Publish collection with multiple datasets."""
         collection_id = self.generate_collection(self.session).id
@@ -119,6 +125,7 @@ class TestPublish(BaseAuthAPITest):
         self.assertListEqual(sorted(dataset_ids), sorted(res_dataset_ids))
         for dataset in res_datasets:
             self.assertTrue(dataset["published"])
+            self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(dataset["published_on"]))
 
     def test__publish_collection_with_links__OK(self):
         """Publish collection with a link."""
@@ -134,8 +141,11 @@ class TestPublish(BaseAuthAPITest):
         ).id
 
         response_json = self.verify_publish_collection(collection.id)
-        self.assertEqual(dataset_id, response_json["datasets"][0]["id"])
         self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(response_json["published_on"]))
+
+        dataset = response_json["datasets"][0]
+        self.assertEqual(dataset_id, dataset["id"])
+        self.assertEqual(self.mock_published_on, datetime.utcfromtimestamp(dataset["published_on"]))
 
         # Check links
         res_links = [link["link_name"] for link in response_json["links"]]
