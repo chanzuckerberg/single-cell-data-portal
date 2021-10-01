@@ -225,7 +225,13 @@ class Dataset(Entity):
     def publish_new(self, now: datetime):
         self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_on=now, commit=False)
 
-    def publish_revision(self, revision: "Dataset"):
+    def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
+        """
+        Publish a revision of a dataset if the dataset under revision is
+        different from the existing dataset.
+        Returns:
+            True if revision differs from existing dataset, else False.
+        """
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
             self.asset_deletion()
@@ -236,19 +242,30 @@ class Dataset(Entity):
             elif revision.tombstone:
                 # tombstone
                 revision.tombstone_dataset_and_delete_child_objects()
+
             updates = revision.to_dict(
                 remove_attr=[
-                    "update_at",
+                    "updated_at",
                     "created_at",
                     "collection_visibility",
                     "id",
                     "original_id",
                     "published",
+                    "revised_on",
                     "explorer_url",
                 ],
                 remove_relationships=True,
             )
-            self.update(commit=False, **updates)
+
+            if revision.tombstone:
+                self.update(commit=False, **updates, remove_attr="published_on")
+            else:
+                # There was an update to a dataset, so update revised_on
+                self.update(commit=False, **updates, revised_on=now)
+
+            return True
+
+        return False
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

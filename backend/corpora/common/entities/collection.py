@@ -210,16 +210,19 @@ class Collection(Entity):
         # Copy over relationships
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
+
+        has_dataset_changes = False
         for dataset in self.datasets:
             revision = Dataset(dataset)
             original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
             if original and public_collection.check_has_dataset(original):
-                original.publish_revision(revision)
+                has_dataset_changes = original.publish_revision(revision, now)
             else:
                 # The dataset is new
                 revision.publish_new(now)
+                has_dataset_changes = True
 
-        if is_existing_collection:
+        if is_existing_collection and has_dataset_changes:
             public_collection.update(commit=False, remove_attr="revised_on", revised_on=now)
 
         self.session.commit()
