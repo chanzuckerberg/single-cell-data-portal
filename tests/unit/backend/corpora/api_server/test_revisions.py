@@ -1,5 +1,7 @@
 import json
 import typing
+from datetime import datetime
+from mock import Mock, patch
 from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -361,6 +363,7 @@ class TestPublishRevision(BaseRevisionTest):
     def setUp(self):
         super().setUp()
         self.base_path = "/dp/v1/collections"
+        self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
 
     def publish_collection(self, collection_id: str) -> dict:
         """
@@ -371,7 +374,9 @@ class TestPublishRevision(BaseRevisionTest):
         self.session.expire_all()
 
         path = f"{self.base_path}/{collection_id}/publish"
-        response = self.app.post(path, headers=self.headers)
+        with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
+            mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
+            response = self.app.post(path, headers=self.headers)
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
@@ -393,14 +398,14 @@ class TestPublishRevision(BaseRevisionTest):
         path = f"{self.base_path}/{collection_id}"
         response = self.app.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
-        
+
         response_json = json.loads(response.data)
         self.assertEqual("PUBLIC", response_json["visibility"])
         self.assertEqual(collection_id, response_json["id"])
 
         return response_json
 
-    def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.List[str]):
+    def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.List[str]) -> None:
         """Verify collection datasets."""
         actual_datasets = [d["id"] for d in actual_body["datasets"]]
         self.assertListEqual(expected_dataset_ids, actual_datasets)
@@ -422,8 +427,34 @@ class TestPublishRevision(BaseRevisionTest):
         ).id
         dataset_ids = [ds.id for ds in self.pub_collection.datasets]
         dataset_ids.append(new_dataset_id)
+
+        # Check initial published_on and revised_on. Since collection creation
+        # for the already published collection/datasets do not go through the
+        # normal user flow, no initial values for published_on and revised_on.
+        self.assertIsNone(self.pub_collection.published_on)
+        self.assertIsNone(self.pub_collection.revised_on)
+
+        for dataset in self.pub_collection.datasets:
+            self.assertIsNone(dataset.published_on)
+            self.assertIsNone(dataset.revised_on)
+
+        # Publish revision
         actual_body = self.publish_collection(self.rev_collection.id)
-        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+        self.verify_datasets(actual_body, dataset_ids)
+
+        # Check published_on and revised_on for collection - only revised_on
+        # should be updated.
+        self.assertIsNone(actual_body.get("published_on"))
+        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(actual_body["revised_on"]))
+
+        # Check published_on and revised_on for datasets - only the newly added
+        # dataset should have published_on updated.
+        for dataset in actual_body["datasets"]:
+            if dataset["id"] == new_dataset_id:
+                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_on"]))
+            else:
+                self.assertIsNone(dataset.get("published_on"))
+            self.assertIsNone(dataset.get("revised_on"))
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
         """Publish a revision with delete datasets."""

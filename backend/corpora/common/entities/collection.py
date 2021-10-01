@@ -181,16 +181,19 @@ class Collection(Entity):
         """
         Given a private collection, set the collection to public.
         """
-        # Timestamp for published_on
+        # Timestamp for published_on and revised_on
         now = datetime.utcnow()
 
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
+        is_existing_collection = False
+
         if public_collection:
             public_collection.update(
                 commit=False,
                 **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
+            is_existing_collection = True
         # A published collection with the same uuid does not already exist.
         # This is a new collection.
         else:
@@ -215,6 +218,10 @@ class Collection(Entity):
             else:
                 # The dataset is new
                 revision.publish_new(now)
+
+        if is_existing_collection:
+            public_collection.update(commit=False, remove_attr="revised_on", revised_on=now)
+
         self.session.commit()
         # commit expires the session, need to retrieve the original private collection to delete it
         private_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PRIVATE)
