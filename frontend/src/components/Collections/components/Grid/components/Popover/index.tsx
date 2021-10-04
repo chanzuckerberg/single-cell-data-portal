@@ -27,7 +27,7 @@ const Popover: FC<Props> = ({ values }) => {
       {values.length > 2 && (
         <PopoverRaw
           interactionKind={PopoverInteractionKind.HOVER}
-          position={Position.BOTTOM}
+          position={Position.RIGHT}
           boundary="window"
           modifiers={{
             hide: { enabled: false },
