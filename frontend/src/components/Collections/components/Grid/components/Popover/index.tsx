@@ -6,13 +6,17 @@ import {
 } from "@blueprintjs/core";
 import { FC } from "react";
 import { LeftAlignedDetailsCell } from "../Row/common/style";
-import { ContentWrapper, FieldValues } from "./style";
+import { ContentColumn, ContentWrapper, FieldValues } from "./style";
 
 interface Props {
   values: string[];
 }
-
+const CHUNK_SIZE = 25;
 const Popover: FC<Props> = ({ values }) => {
+  const chunkedValues = Array(Math.ceil(values.length / CHUNK_SIZE))
+    .fill("")
+    .map((_, index) => index * CHUNK_SIZE)
+    .map((begin) => values.slice(begin, begin + CHUNK_SIZE));
   return (
     <LeftAlignedDetailsCell>
       <FieldValues>
@@ -31,11 +35,15 @@ const Popover: FC<Props> = ({ values }) => {
           }}
           content={
             <ContentWrapper>
-              {values.map((val, idx) => (
-                <FieldValues key={val}>
-                  {val}
-                  {idx !== values.length - 1 && <br />}
-                </FieldValues>
+              {chunkedValues.map((chunk, index) => (
+                <ContentColumn key={index}>
+                  {chunk.map((val, idx) => (
+                    <FieldValues key={val}>
+                      {val}
+                      {idx !== chunk.length - 1 && <br />}
+                    </FieldValues>
+                  ))}
+                </ContentColumn>
               ))}
             </ContentWrapper>
           }
