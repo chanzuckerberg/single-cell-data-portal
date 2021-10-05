@@ -386,13 +386,17 @@ class ConversionStatus(enum.Enum):
     NA - No associated conversion with the dataset, perhaps because the uploaded dataset file
          was already in this format.
     CONVERTING = The conversion script is running
-    CONVERTED - Conversion completed and the file was copied to the portal's bucket
+    CONVERTED - Conversion completed
+    UPLOADING - The file is being copied to the correct bucket
+    UPLOADED - The file was successfully copied to the correct bucket and the dataset artifact was updated
     FAILED - Conversion failed
     """
 
     NA = "N/A"
     CONVERTING = "Converting"
     CONVERTED = "Converted"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
     FAILED = "Failed"
 
 
@@ -424,9 +428,9 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     validation_status = Column(Enum(ValidationStatus))
     validation_message = Column(String)
     conversion_loom_status = Column(Enum(ConversionStatus))
-    conversion_rds_status = Column(Enum(ConversionStatus))
-    conversion_cxg_status = Column(Enum(ConversionStatus))
-    conversion_anndata_status = Column(Enum(ConversionStatus))
+    rds_status = Column(Enum(ConversionStatus))
+    cxg_status = Column(Enum(ConversionStatus))
+    anndata_status = Column(Enum(ConversionStatus))
     processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships
