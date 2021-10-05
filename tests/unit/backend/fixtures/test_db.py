@@ -411,10 +411,10 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADING,
             upload_progress=4 / 9,
             validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
-            conversion_rds_status=ConversionStatus.NA,
-            conversion_cxg_status=ConversionStatus.NA,
-            conversion_anndata_status=ConversionStatus.NA,
+            loom_status=ConversionStatus.NA,
+            rds_status=ConversionStatus.NA,
+            cxg_status=ConversionStatus.NA,
+            anndata_status=ConversionStatus.NA,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -425,10 +425,10 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-            conversion_loom_status=ConversionStatus.CONVERTED,
-            conversion_rds_status=ConversionStatus.CONVERTED,
-            conversion_cxg_status=ConversionStatus.CONVERTED,
-            conversion_anndata_status=ConversionStatus.CONVERTED,
+            loom_status=ConversionStatus.CONVERTED,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            anndata_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -439,10 +439,10 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-            conversion_loom_status=ConversionStatus.CONVERTED,
-            conversion_rds_status=ConversionStatus.CONVERTED,
-            conversion_cxg_status=ConversionStatus.CONVERTED,
-            conversion_anndata_status=ConversionStatus.CONVERTED,
+            loom_status=ConversionStatus.CONVERTED,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            anndata_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()

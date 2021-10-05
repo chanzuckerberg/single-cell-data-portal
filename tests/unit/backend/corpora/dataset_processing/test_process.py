@@ -404,9 +404,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.loom_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.rds_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.anndata_status)
 
         self.assertEqual(len(artifacts), 3)
 
@@ -425,7 +425,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    def test__create_artifact__negative(self):
+    @patch('backend.corpora.dataset_processing.process.update_db')
+    def test__create_artifact__negative(self, mock_update_db):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset(
             self.session,
@@ -442,6 +443,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
+                "anndata_status"
             )
 
         with self.subTest("invalid artifact type"):
@@ -457,6 +459,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
+                "anndata_status"
             )
 
         with self.subTest("dataset does not exist"):
@@ -468,6 +471,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 process.get_bucket_prefix("1234"),
                 "1234",
                 artifact_bucket,
+                "anndata_status"
             )
 
         with self.subTest("bucket does not exist"):
@@ -479,6 +483,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 "fake-bucket",
+                "anndata_status"
             )
 
         # cleanup
@@ -500,9 +505,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.loom_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.rds_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.anndata_status)
 
         self.assertEqual(len(artifacts), 2)
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
@@ -529,9 +534,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.loom_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.rds_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.anndata_status)
 
         self.assertEqual(len(artifacts), 2)
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
@@ -552,16 +557,16 @@ class TestDatasetProcessing(DataPortalTestCase):
         process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
         dataset = Dataset.get(self.session, test_dataset_id)
         processing_status = dataset.processing_status
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_cxg_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.cxg_status)
 
-    def test__convert_file_ignore_exceptions__fail(self):
+    @patch('backend.corpora.dataset_processing.process.update_db')
+    def test__convert_file_ignore_exceptions__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")
 
         with self.assertLogs(process.logger, logging.ERROR):
-            filename, status = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error")
+            filename = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error", "fake_uuid", "anndata_status")
         self.assertIsNone(filename)
-        self.assertEqual(ConversionStatus.FAILED, status)
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):
         time.sleep(1)
@@ -620,4 +625,4 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         dataset = Dataset.get(self.session, dataset_id)
         processing_status = dataset.processing_status
-        self.assertEqual(None, processing_status.conversion_cxg_status)
+        self.assertEqual(None, processing_status.cxg_status)

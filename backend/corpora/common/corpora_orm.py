@@ -427,7 +427,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     upload_message = Column(String)
     validation_status = Column(Enum(ValidationStatus))
     validation_message = Column(String)
-    conversion_loom_status = Column(Enum(ConversionStatus))
+    loom_status = Column(Enum(ConversionStatus))
     rds_status = Column(Enum(ConversionStatus))
     cxg_status = Column(Enum(ConversionStatus))
     anndata_status = Column(Enum(ConversionStatus))

@@ -13,9 +13,9 @@ The initial processing_status when the container first runs is:
     validation_status = ValidationStatus
     validation_message = ""
     conversion_loom_status = ConversionStatus
-    conversion_rds_status = ConversionStatus
-    conversion_cxg_status = ConversionStatus
-    conversion_anndata_status = ConversionStatus
+    rds_status = ConversionStatus
+    cxg_status = ConversionStatus
+    anndata_status = ConversionStatus
 }
 
 ## Upload
@@ -59,10 +59,9 @@ If validation succeeds the process_status changes to:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
-    conversion_loom_status = ConversionStatus.CONVERTING
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTING
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTING
+    anndata_status = ConversionStatus.CONVERTING
 }
 
 If validation fails the processing_status change to:
@@ -80,10 +79,9 @@ After each conversion the processing_status change from CONVERTING to CONVERTED.
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.CONVERTING
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTED
+    anndata_status = ConversionStatus.CONVERTING
 }
 
 If a conversion fails the processing_status will indicated it as follow:
@@ -92,10 +90,9 @@ If a conversion fails the processing_status will indicated it as follow:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTED
+    anndata_status = ConversionStatus.CONVERTING
 }
 
 Once all conversion are complete, the conversion status for each file will be either CONVERTED or FAILED:
@@ -104,10 +101,9 @@ Once all conversion are complete, the conversion status for each file will be ei
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
-    conversion_rds_status = ConversionStatus.CONVERTED
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.FAILED
+    rds_status = ConversionStatus.CONVERTED
+    cxg_status = ConversionStatus.CONVERTED
+    anndata_status = ConversionStatus.FAILED
 }
 """
 
@@ -166,46 +162,50 @@ def check_env():
 
 def create_artifact(
         file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str,
-        artifact_bucket: str
+        artifact_bucket: str, processing_status_type: str
 ):
+    update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADING})
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
-    s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
-    with db_session_manager() as session:
-        logger.info(f"Updating database with  {artifact_type}.")
-        DatasetAsset.create(
-            session,
-            dataset_id=dataset_id,
-            filename=file_name,
-            filetype=artifact_type,
-            type_enum=DatasetArtifactType.REMIX,
-            user_submitted=True,
-            s3_uri=s3_uri,
-        )
+    try:
+        s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
+        with db_session_manager() as session:
+            logger.info(f"Updating database with  {artifact_type}.")
+            DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename=file_name,
+                filetype=artifact_type,
+                type_enum=DatasetArtifactType.REMIX,
+                user_submitted=True,
+                s3_uri=s3_uri,
+            )
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADED})
+
+    except Exception as e:
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
+        raise e
 
 
 def create_artifacts(local_filename, dataset_id, artifact_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info("Creating Artifacts.")
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTING),
-    )
     # upload AnnData
-    create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
-    )
+    create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket,
+                    "anndata_status")
 
-    # Process loom
-    loom_filename = convert_file_ignore_exceptions(make_loom, local_filename, "Issue creating loom.", dataset_id, "conversion_loom_status")
+    # Process and upload loom
+    loom_filename = convert_file_ignore_exceptions(make_loom, local_filename, "Issue creating loom.", dataset_id,
+                                                   "loom_status")
     if loom_filename:
-        create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
+        create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket,
+                        "loom_status")
 
-    # Process seurat
-    seurat_filename = convert_file_ignore_exceptions(make_seurat, local_filename, "Issue creating seurat.", dataset_id, "conversion_rds_status")
+    # Process and upload seurat
+    seurat_filename = convert_file_ignore_exceptions(make_seurat, local_filename, "Issue creating seurat.", dataset_id,
+                                                     "rds_status")
     if seurat_filename:
-        create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket)
+        create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket,
+                        "rds_status")
 
 
 def cancel_dataset(dataset_id):
@@ -422,8 +422,9 @@ def get_bucket_prefix(dataset_id):
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, 'conversion_cxg_status')
+    cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, 'cxg_status')
     if cxg_dir:
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
         s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
         metadata = {
             "explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")
@@ -439,9 +440,11 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
+
     else:
         metadata = None
-    update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
+    update_db(dataset_id, metadata)
 
 
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
@@ -463,7 +466,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     else:
         logger.info("Validation complete")
         status = dict(
-                conversion_anndata_status=ConversionStatus.NA,
+            anndata_status=ConversionStatus.NA,
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)

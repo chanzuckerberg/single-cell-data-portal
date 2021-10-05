@@ -127,14 +127,14 @@ export function useCheckCollectionPopulated({
 }
 
 type FORMAT_KEYS =
-  | "conversion_anndata_status"
-  | "conversion_cxg_status"
-  | "conversion_rds_status";
+  | "anndata_status"
+  | "cxg_status"
+  | "rds_status";
 
 const CONVERSION_STATUS_FORMAT_KEYS = [
-  "conversion_anndata_status",
-  "conversion_cxg_status",
-  "conversion_rds_status",
+  "anndata_status",
+  "cxg_status",
+  "rds_status",
 ] as FORMAT_KEYS[];
 
 export function useCheckCollectionFormatsPopulated({
@@ -231,15 +231,15 @@ export function getConversionStatus(
   if (!datasetStatus) return CONVERSION_STATUS.NA;
 
   const {
-    conversion_anndata_status,
-    conversion_cxg_status,
-    conversion_rds_status,
+    anndata_status,
+    cxg_status,
+    rds_status,
   } = datasetStatus;
 
   const statuses = [
-    conversion_anndata_status,
-    conversion_cxg_status,
-    conversion_rds_status,
+    anndata_status,
+    cxg_status,
+    rds_status,
   ];
 
   if (statuses.some((status) => status === CONVERSION_STATUS.CONVERTING)) {

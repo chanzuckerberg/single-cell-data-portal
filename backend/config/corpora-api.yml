@@ -588,16 +588,16 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
-                  conversion_loom_status:
+                  loom_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_anndata_status:
+                  anndata_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_cxg_status:
+                  cxg_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_rds_status:
+                  rds_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
         "400":
@@ -737,7 +737,7 @@ components:
       enum: [COUNT, NORMAL]
     is_primary_data:
       description: >-
-        Describes whether cellular observations for this dataset are all canonical (PRIMARY), 
+        Describes whether cellular observations for this dataset are all canonical (PRIMARY),
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
       enum: [PRIMARY, SECONDARY, BOTH]
