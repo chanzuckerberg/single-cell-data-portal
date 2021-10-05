@@ -76,8 +76,7 @@ class TestRevision(BaseRevisionTest):
     def verify_start_revision(self, collection_id: str) -> dict:
         """
         Verify start of a collection's revision.
-        Returns:
-            response_json (dict): Jsonified response of POST collection/<collection_id>.
+        :return: Jsonified response of POST collection/<collection_id>.
         """
         path = f"/dp/v1/collections/{collection_id}"
         response = self.app.post(path, self.headers)
@@ -91,9 +90,7 @@ class TestRevision(BaseRevisionTest):
     def verify_get_revision(self, collection_id: str, dataset_ids: typing.List[str] = None) -> dict:
         """
         Verify the contents of a collection under revision.
-        Returns:
-            response_json (dict): Jsonified response of GET
-            collection/<collection_id>?visibility=PRIVATE.
+        :return: Jsonified response of GET collection/<collection_id>?visibility=PRIVATE.
         """
         path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
         response = self.app.get(path, headers=self.headers)
@@ -368,8 +365,7 @@ class TestPublishRevision(BaseRevisionTest):
     def publish_collection(self, collection_id: str) -> dict:
         """
         Verify publish a collection under revision.
-        Returns:
-            response_json (dict): Jsonified response of GET collection/<collection_id>.
+        :return: Jsonified response of GET collection/<collection_id>.
         """
         # Check initial published_on and revised_on. Since collection creation
         # for the already published collection/datasets do not go through the

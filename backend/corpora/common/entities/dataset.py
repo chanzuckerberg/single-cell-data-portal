@@ -225,14 +225,18 @@ class Dataset(Entity):
         return DatasetAsset(artifact[0]) if artifact else None
 
     def publish_new(self, now: datetime):
+        """
+        Publish a new dataset with the published_on datetime populated
+        with the provided datetime.
+        :param now: Datetime to populate dataset's published_on.
+        """
         self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_on=now, commit=False)
 
     def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
         """
         Publish a revision of a dataset if the dataset under revision is
         different from the existing dataset.
-        Returns:
-            True if revision differs from existing dataset, else False.
+        :return: True if revision differs from existing dataset, else False.
         """
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original

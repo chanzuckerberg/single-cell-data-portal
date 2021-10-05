@@ -24,8 +24,7 @@ class TestPublish(BaseAuthAPITest):
     def verify_publish_collection(self, collection_id: str, mock_timestamp: datetime = None) -> dict:
         """
         Verify publish collection.
-        Returns:
-            response_json (dict): Jsonified response of GET collection/<collection_id>.
+        :return: Jsonified response of GET collection/<collection_id>.
         """
         if not mock_timestamp:
             mock_timestamp = self.mock_published_on
