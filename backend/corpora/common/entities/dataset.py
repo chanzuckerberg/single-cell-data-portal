@@ -226,11 +226,11 @@ class Dataset(Entity):
 
     def publish_new(self, now: datetime):
         """
-        Publish a new dataset with the published_on datetime populated
+        Publish a new dataset with the published_at datetime populated
         with the provided datetime.
-        :param now: Datetime to populate dataset's published_on.
+        :param now: Datetime to populate dataset's published_at.
         """
-        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_on=now, commit=False)
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_at=now, commit=False)
 
     def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
         """
@@ -257,17 +257,17 @@ class Dataset(Entity):
                     "id",
                     "original_id",
                     "published",
-                    "revised_on",
+                    "revised_at",
                     "explorer_url",
                 ],
                 remove_relationships=True,
             )
 
             if revision.tombstone:
-                self.update(commit=False, **updates, remove_attr="published_on")
+                self.update(commit=False, **updates, remove_attr="published_at")
             else:
-                # There was an update to a dataset, so update revised_on
-                self.update(commit=False, **updates, revised_on=now)
+                # There was an update to a dataset, so update revised_at
+                self.update(commit=False, **updates, revised_at=now)
 
             return True
 

@@ -181,7 +181,7 @@ class Collection(Entity):
         """
         Given a private collection, set the collection to public.
         """
-        # Timestamp for published_on and revised_on
+        # Timestamp for published_at and revised_at
         now = datetime.utcnow()
 
         # Create a public collection with the same uuid and same fields
@@ -201,8 +201,8 @@ class Collection(Entity):
                 clone(
                     self.db_object,
                     primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
-                    # We want to update published_on only when the collection is first published.
-                    published_on=now,
+                    # We want to update published_at only when the collection is first published.
+                    published_at=now,
                 )
             )
             self.session.add(public_collection)
@@ -223,7 +223,7 @@ class Collection(Entity):
                 has_dataset_changes = True
 
         if is_existing_collection and has_dataset_changes:
-            public_collection.update(commit=False, remove_attr="revised_on", revised_on=now)
+            public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
 
         self.session.commit()
         # commit expires the session, need to retrieve the original private collection to delete it

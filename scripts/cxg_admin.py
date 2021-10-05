@@ -252,34 +252,34 @@ def migrate_schema_version(ctx):
 
 @cli.command()
 @click.pass_context
-def migrate_published_on(ctx):
+def migrate_published_at(ctx):
     """
-    Populates `published_on` for each existing collection and dataset. This is a
-    one-off procedure since published_on will be set for collections and new
+    Populates `published_at` for each existing collection and dataset. This is a
+    one-off procedure since published_at will be set for collections and new
     datasets when they are first published.
     """
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign published_on to "
+            f"Are you sure you want to run this script? It will assign published_at to "
             f"all of the existing collections and datasets",
             abort=True,
         )
         # Collections
         for record in session.query(DbCollection):
             collection_id = record.id
-            logger.info(f"Setting published_on for collection {collection_id}")
+            logger.info(f"Setting published_at for collection {collection_id}")
 
             collection_created_at = record.created_at
-            record.published_on = collection_created_at
+            record.published_at = collection_created_at
 
         # Datasets
         for record in session.query(DbDataset):
             dataset_id = record.id
-            logger.info(f"Setting published_on for dataset {dataset_id}")
+            logger.info(f"Setting published_at for dataset {dataset_id}")
 
             dataset_created_at = record.created_at
-            record.published_on = dataset_created_at
+            record.published_at = dataset_created_at
 
 
 @cli.command()

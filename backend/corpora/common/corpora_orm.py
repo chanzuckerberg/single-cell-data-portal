@@ -123,8 +123,8 @@ class AuditMixin(object):
 
 
 class TimestampMixin(object):
-    published_on = Column(DateTime, nullable=True)
-    revised_on = Column(DateTime, nullable=True)
+    published_at = Column(DateTime, nullable=True)
+    revised_at = Column(DateTime, nullable=True)
 
 
 Base = declarative_base(cls=TransformingBase)
