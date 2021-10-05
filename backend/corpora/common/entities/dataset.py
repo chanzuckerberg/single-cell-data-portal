@@ -113,6 +113,8 @@ class Dataset(Entity):
         return None if not asset else DatasetAsset(asset[0])
 
     def _create_new_explorer_url(self, new_uuid: str) -> str:
+        if self.explorer_url is None:
+            return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
         new_path = str(original_path.parent / f"{new_uuid}.cxg")
