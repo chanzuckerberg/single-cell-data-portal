@@ -1079,6 +1079,11 @@ def addtags(ctx, images, source_tag, dest_tag):
         manifest = ecr_client.batch_get_image(
             registryId=registry_id, repositoryName=repo_name, imageIds=[{"imageTag": source_tag}]
         )
+
+        if not manifest["images"]:
+            print(f"Image for repo_name:{repo_name} and source_tag:{source_tag} doesn't exit. Skipping.")
+            continue
+
         manifest = manifest["images"][0]["imageManifest"]
         for tag in dest_tag:
             try:

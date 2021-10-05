@@ -9,5 +9,6 @@ export enum ROUTES {
 }
 
 export enum EXTERNAL_LINKS {
-  DOCS_HOME_PAGE = "https://docs.cellxgene.cziscience.com/",
+  DOCS_DATA_PORTAL = "https://docs.cellxgene.cziscience.com/portal/data-portal",
+  DOCS_ROADMAP = "https://docs.cellxgene.cziscience.com/roadmap",
 }
