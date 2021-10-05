@@ -6,6 +6,7 @@ export const ButtonWrapper = styled.div`
     margin-right: ${2 * PT_GRID_SIZE_PX}px;
   }
 
+  margin-left: ${PT_GRID_SIZE_PX}px;
   margin-right: ${3 * PT_GRID_SIZE_PX}px;
 `;
 
