@@ -252,45 +252,34 @@ def migrate_schema_version(ctx):
 
 @cli.command()
 @click.pass_context
-def migrate_dataset_published_on(ctx):
+def migrate_published_on(ctx):
     """
-    Populates `published_on` for each existing dataset. This is a one-off procedure since new 
-    datasets will have the published_on set when they are added to a collection or the parent
-    collection is published.
-    """
-
-    with db_session_manager() as session:
-        click.confirm(
-            f"Are you sure you want to run this script? It will assign published_on to all the "
-            f"datasets",
-            abort=True,
-        )
-        for record in session.query(DbDataset):
-            dataset_id = record.id
-            dataset_created_at = record.created_at
-            record.published_on = dataset_created_at
-            logger.info(f"Setting published_on for dataset {dataset_id}")
-
-
-@cli.command()
-@click.pass_context
-def migrate_collection_published_on(ctx):
-    """
-    Populates `published_on` for each existing collections. This is a one-off procedure since new 
-    collections will have the published_on set when they are published.
+    Populates `published_on` for each existing collection and dataset. This is a
+    one-off procedure since published_on will be set for collections and new
+    datasets when they are first published.
     """
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign published_on to all the "
-            f"collections",
+            f"Are you sure you want to run this script? It will assign published_on to "
+            f"all of the existing collections and datasets",
             abort=True,
         )
+        # Collections
         for record in session.query(DbCollection):
             collection_id = record.id
+            logger.info(f"Setting published_on for collection {collection_id}")
+
             collection_created_at = record.created_at
             record.published_on = collection_created_at
-            logger.info(f"Setting published_on for collection {collection_id}")
+
+        # Datasets
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+            logger.info(f"Setting published_on for dataset {dataset_id}")
+
+            dataset_created_at = record.created_at
+            record.published_on = dataset_created_at
 
 
 @cli.command()
