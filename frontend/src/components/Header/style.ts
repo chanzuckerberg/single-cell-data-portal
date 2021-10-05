@@ -35,7 +35,3 @@ export const Right = styled.span`
 export const MyCollectionsButton = styled(Button)`
   margin-right: ${PT_GRID_SIZE_PX}px;
 `;
-
-export const LearnButton = styled(Button)`
-  margin-right: ${PT_GRID_SIZE_PX}px;
-`;

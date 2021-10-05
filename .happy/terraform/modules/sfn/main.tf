@@ -27,7 +27,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "End": true,
-        "TimeoutSeconds": 10800,
+        "TimeoutSeconds": 36000,
         "Retry": [
           {
             "ErrorEquals": [
