@@ -34,7 +34,7 @@ def downgrade():
     op.execute("UPDATE dataset_processing_status SET loom_status = 'NA' WHERE loom_status in ('UPLOADING', 'UPLOADED');")
 
 
-    op.execute("ALTER TYPE conversionstatus RENAME TO old_conversionstatus;")
+    op.execute("ALTER TYPE conversionstatus RENAME TO conversionstatus_old;")
     op.execute("CREATE TYPE conversionstatus AS ENUM('NA', 'CONVERTING', 'CONVERTED', 'FAILED');")
     op.execute(
         "ALTER TABLE dataset_processing_status ALTER COLUMN cxg_status TYPE conversionstatus USING "
@@ -50,10 +50,10 @@ def downgrade():
     )
     op.execute(
         "ALTER TABLE dataset_processing_status ALTER COLUMN loom_status TYPE conversionstatus USING "
-        "cxg_status::text::conversionstatus"
+        "loom_status::text::conversionstatus"
     )
 
-    # op.execute("DROP TYPE old_conversionstatus") TODO uncomment out before merging
+    op.execute("DROP TYPE conversionstatus_old")
 
     op.alter_column('dataset_processing_status', 'anndata_status', new_column_name='conversion_anndata_status')
     op.alter_column('dataset_processing_status', 'rds_status', new_column_name='conversion_rds_status')
