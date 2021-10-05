@@ -157,7 +157,7 @@ const Collection: FC = () => {
           </StyledCallout>
         )}
 
-        {!isRevision && <Banner collection_id={collection.id} />}
+        {!isRevision && <Banner collectionId={collection.id} />}
 
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>

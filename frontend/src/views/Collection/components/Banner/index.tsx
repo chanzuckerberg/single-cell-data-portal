@@ -7,11 +7,11 @@ import {
 import { BannerHeader, BannerWrapper, Wrapper } from "./style";
 
 interface Props {
-  collection_id: string;
+  collectionId: string;
 }
 
-const Banner: FC<Props> = ({ collection_id }) => {
-  if (!INCOMPLETE_GENE_MIGRATIONS_COLLECTIONS.includes(collection_id))
+const Banner: FC<Props> = ({ collectionId }) => {
+  if (!INCOMPLETE_GENE_MIGRATIONS_COLLECTIONS.includes(collectionId))
     return null;
 
   const bannerHeader = INCOMPLETE_GENE_MIGRATIONS_HEADER;
