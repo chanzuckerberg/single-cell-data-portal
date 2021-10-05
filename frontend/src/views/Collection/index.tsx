@@ -140,7 +140,7 @@ const Collection: FC = () => {
 
   const shouldShowPrivateWriteAction =
     collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
-  
+
   return (
     <>
       <Head>
@@ -157,7 +157,7 @@ const Collection: FC = () => {
           </StyledCallout>
         )}
 
-        {!isRevision && (<Banner collection_id={collection.id} />)}
+        {!isRevision && <Banner collection_id={collection.id} />}
 
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>
