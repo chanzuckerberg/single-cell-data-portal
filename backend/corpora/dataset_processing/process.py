@@ -108,15 +108,17 @@ Once all conversion are complete, the conversion status for each file will be ei
 """
 
 import logging
+import numpy
 import os
 import requests
+import scanpy
 import subprocess
+import sys
 import typing
+
+from cellxgene_schema import validate
 from os.path import join
 
-import numpy
-import scanpy
-import sys
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.utils.dl_sources.url import from_url
@@ -450,15 +452,13 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = "local.h5ad"
-    commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
-    val_proc = subprocess.run(commands, capture_output=True)
-    if val_proc.returncode != 0:
+    is_valid, errors = validate(local_filename, output_filename)
+
+    if is_valid is False:
         logger.error("Validation failed!")
-        logger.error(f"stdout: {val_proc.stdout}")
-        logger.error(f"stderr: {val_proc.stderr}")
         status = dict(
             validation_status=ValidationStatus.INVALID,
-            validation_message=val_proc.stdout,
+            validation_message=errors,
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
