@@ -93,23 +93,33 @@ def delete_collections(ctx, collection_name):
     )
 
     with db_session_manager() as session:
-        collections = Collection.get(session, name=collection_name)
-        
+        collections = session.query(DbCollection).filter_by(name=collection_name).all()
+
         if not collections:
-            logger.info(f"There are no collections with the name {collection_name}. Aborting.")
+            logger.warning(f"There are no collections with the name {collection_name}. Aborting.")
             exit(0)
-    
-        for collection in collections:
-            logger.info(f"Starting deletion of collection | name: {collection_name} | id: {collection.id}")
+
+        logger.warning(f"There are {len(collections)} collections with the name {collection_name}")
+
+        for c in collections:
+            collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
+            if not collection:
+                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+
+            # Delete collection
+            logger.warning(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
             collection.delete()
 
-            collection = Collection.get(session, collection.id, name=collection_name)
-            if collection is None:
-                logger.info(f"Deleted collection | name: {collection_name} | id: {collection.id}")
+            # Get collection again to make sure it was deleted
+            collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
+            if not collection:
+                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+            if not collection:
+                logger.warning(f"Deleted collection | name: {collection_name} | id: {c.id}")
             else:
-                logger.info(f"Failed to delete collection | name: {collection_name} | id: {collection.id}")
+                logger.warning(f"Failed to delete collection | name: {collection_name} | id: {c.id}")
 
-        logger.info(f"Deletions complete!")
+        logger.warning(f"Deletions complete!")
 
 
 @cli.command()
