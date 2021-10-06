@@ -122,6 +122,11 @@ class AuditMixin(object):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
 
+class TimestampMixin(object):
+    published_at = Column(DateTime, nullable=True)
+    revised_at = Column(DateTime, nullable=True)
+
+
 Base = declarative_base(cls=TransformingBase)
 
 
@@ -214,7 +219,7 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbCollection(Base, AuditMixin):
+class DbCollection(Base, AuditMixin, TimestampMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
     DbCollections are associated with one or more single-cell datasets and links to external repositories.
@@ -267,7 +272,7 @@ class DbProjectLink(Base, AuditMixin):
 DbCollectionLink = DbProjectLink
 
 
-class DbDataset(Base, AuditMixin):
+class DbDataset(Base, AuditMixin, TimestampMixin):
     """
     Models a single experiment uploaded and processed by Corpora.
     Describes experiment metadata such as specimen and assay data.
