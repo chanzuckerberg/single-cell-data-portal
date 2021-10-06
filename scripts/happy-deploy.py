@@ -121,9 +121,14 @@ def happy_deploy(deployment_stage, github_sha, dry_run):
         read_deployment_stage = "stage"
     elif deployment_stage == "stage":
         read_deployment_stage = "dev"
+    elif deployment_stage == "dev":
+        # Note: dev deployments are _usually_ handled automatically via Github actions.
+        #       To override a dev deployment, specify a commit hash.
+        if github_sha is None:
+            print("Error: --github-sha must be specified for 'dev' deployments.")
+            return
     else:
-        # dev deployments are automatic via Github actions
-        print("Error: deployment_stage must be 'prod' or 'stage'.")
+        print("Error: deployment_stage must be 'dev', 'stage' or 'prod'.")
         return
 
     # If github sha is not provided, get the latest successful deployment
