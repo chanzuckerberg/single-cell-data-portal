@@ -37,19 +37,8 @@ class TestH5ADDataFile(unittest.TestCase):
 
         self.assertIn("File must be an H5AD", str(exception_context.exception))
 
-    def test__create_h5ad_data_file__assert_warning_outputted_if_dataset_title_or_about_given(self):
-        with self.assertLogs(level="WARN") as logger:
-            H5ADDataFile(
-                self.sample_h5ad_filename,
-                dataset_title="My Awesome Dataset",
-                dataset_about="http://www.awesomedataset.com",
-                use_corpora_schema=False,
-            )
-
-        self.assertIn("will override any metadata that is extracted", logger.output[0])
-
     def test__create_h5ad_data_file__reads_anndata_successfully(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
 
         self.assertTrue((h5ad_file.anndata.X == self.sample_anndata.X).all())
         self.assertEqual(
@@ -68,7 +57,7 @@ class TestH5ADDataFile(unittest.TestCase):
             self.assertTrue((h5ad_file.anndata.obsm[key] == self.sample_anndata.obsm[key]).all())
 
     def test__create_h5ad_data_file__copies_index_of_obs_and_var_to_column(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
 
         # The automatic name chosen for the index should be "name_0"
         self.assertNotIn("name_0", self.sample_anndata.obs.columns)
@@ -77,25 +66,20 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertNotIn("name_0", self.sample_anndata.var.columns)
         self.assertIn("name_0", h5ad_file.var.columns)
 
-    def test__create_h5ad_data_file__no_copy_if_obs_and_var_index_names_specified(self):
+    def test__create_h5ad_data_file__no_copy_if_var_index_name_specified(self):
         h5ad_file = H5ADDataFile(
             self.sample_h5ad_filename,
-            use_corpora_schema=False,
-            obs_index_column_name="float_category",
-            vars_index_column_name="int_category",
+            var_index_column_name="int_category",
         )
 
-        self.assertNotIn("name_0", h5ad_file.obs.columns)
         self.assertNotIn("name_0", h5ad_file.var.columns)
 
-    def test__create_h5ad_data_file__obs_and_var_index_names_specified_not_unique_raises_exception(self):
+    def test__create_h5ad_data_file__var_index_name_specified_not_unique_raises_exception(self):
 
         with self.assertRaises(Exception) as exception_context:
             H5ADDataFile(
                 self.sample_h5ad_filename,
-                use_corpora_schema=False,
-                obs_index_column_name="float_category",
-                vars_index_column_name="bool_category",
+                var_index_column_name="bool_category",
             )
 
         self.assertIn("Please prepare data to contain unique values", str(exception_context.exception))
@@ -104,29 +88,13 @@ class TestH5ADDataFile(unittest.TestCase):
         with self.assertRaises(Exception) as exception_context:
             H5ADDataFile(
                 self.sample_h5ad_filename,
-                use_corpora_schema=False,
-                obs_index_column_name="unknown_category",
-                vars_index_column_name="i_dont_exist",
+                var_index_column_name="i_dont_exist",
             )
 
         self.assertIn("does not exist", str(exception_context.exception))
 
-    def test__create_h5ad_data_file__extract_about_and_title_from_dataset(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
-
-        self.assertEqual(h5ad_file.dataset_title, "random_link_name")
-        self.assertEqual(h5ad_file.dataset_about, "www.link.com")
-
-    def test__create_h5ad_data_file__inputted_dataset_title_and_about_overrides_extracted(self):
-        h5ad_file = H5ADDataFile(
-            self.sample_h5ad_filename, dataset_about="override_about", dataset_title="override_title"
-        )
-
-        self.assertEqual(h5ad_file.dataset_title, "override_title")
-        self.assertEqual(h5ad_file.dataset_about, "override_about")
-
     def test__to_cxg__simple_anndata_no_corpora_and_sparse(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 100)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
@@ -138,7 +106,7 @@ class TestH5ADDataFile(unittest.TestCase):
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_no_corpora_and_dense(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 0)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
@@ -150,7 +118,7 @@ class TestH5ADDataFile(unittest.TestCase):
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
     def test__to_cxg__simple_anndata_with_corpora_and_dense_using_feature_name_var_index(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, vars_index_column_name="feature_name")
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, var_index_column_name="feature_name")
         h5ad_file.to_cxg(self.sample_output_directory, 0)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
@@ -315,15 +283,9 @@ class TestH5ADDataFile(unittest.TestCase):
         for metadata_field in CorporaConstants.REQUIRED_SIMPLE_METADATA_FIELDS:
             uns[metadata_field] = "random"
 
-        for metadata_field in CorporaConstants.OPTIONAL_JSON_ENCODED_METADATA_FIELD:
-            uns[metadata_field] = json.dumps({"random_key": "random_value"})
+        uns["batch_condition"] = np.array(["a", "b"], dtype="object")
 
         # Need to carefully set the corpora schema versions in order for tests to pass.
         uns["schema_version"] = "2.0.0"
-
-        # Set project links to be a dictionary
-        uns["project_links"] = json.dumps(
-            [{"link_name": "random_link_name", "link_url": "www.link.com", "link_type": "SUMMARY"}]
-        )
 
         return anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm, uns=uns)
