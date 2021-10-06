@@ -263,7 +263,7 @@ class Dataset(Entity):
                 remove_relationships=True,
             )
 
-            if revision.tombstone is not None:
+            if revision.tombstone is not False:
                 self.update(commit=False, **updates, remove_attr="published_at")
             else:
                 # There was an update to a dataset, so update revised_at
