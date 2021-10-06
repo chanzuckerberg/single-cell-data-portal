@@ -8,6 +8,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
+import LearnButton from "./components/LearnButton";
 import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
@@ -21,6 +22,7 @@ const Header: FC = () => {
       <MainWrapper>
         <HomepageLink />
         <Right>
+          <LearnButton />
           {isMyCollectionsShown && (
             <Link href={ROUTES.MY_COLLECTIONS} passHref>
               <a href="passHref">

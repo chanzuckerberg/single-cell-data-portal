@@ -15,6 +15,7 @@ import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
+import Banner from "./components/Banner";
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
 import {
@@ -155,6 +156,8 @@ const Collection: FC = () => {
             </span>
           </StyledCallout>
         )}
+
+        {!isRevision && <Banner collectionId={collection.id} />}
 
         <CollectionInfo>
           <H3 data-test-id="collection-name">{collection.name}</H3>

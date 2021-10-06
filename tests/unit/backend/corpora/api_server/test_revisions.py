@@ -1,5 +1,7 @@
 import json
 import typing
+from datetime import datetime
+from mock import Mock, patch
 from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -69,92 +71,144 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 
 class TestRevision(BaseRevisionTest):
-    def test__start_revision__201(self):
-        tests = [
-            {"visibility": CollectionVisibility.PUBLIC},
-            {
-                "visibility": CollectionVisibility.PUBLIC,
-                "links": [
-                    {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
-                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                ],
-            },
+    """Test case for starting a collection's revision."""
+
+    def verify_start_revision(self, collection_id: str) -> dict:
+        """
+        Verify start of a collection's revision.
+        :return: Jsonified response of POST collection/<collection_id>.
+        """
+        path = f"/dp/v1/collections/{collection_id}"
+        response = self.app.post(path, self.headers)
+        self.assertEqual(201, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("PRIVATE", response_json["visibility"])
+
+        return response_json
+
+    def verify_get_revision(self, collection_id: str, dataset_ids: typing.List[str] = None) -> dict:
+        """
+        Verify the contents of a collection under revision.
+        :return: Jsonified response of GET collection/<collection_id>?visibility=PRIVATE.
+        """
+        path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
+        response = self.app.get(path, headers=self.headers)
+        response_json = json.loads(response.data)
+
+        with self.subTest("Test datasets in revised collection are not original datasets"):
+            new_dataset_ids = [x["id"] for x in response_json["datasets"]]
+            for dataset_id in dataset_ids:
+                self.assertNotIn(dataset_id, new_dataset_ids)
+
+        with self.subTest("Test revised datasets point at original datasets"):
+            original_dataset_ids = [x["original_id"] for x in response_json["datasets"]]
+            for dataset_id in dataset_ids:
+                self.assertIn(dataset_id, original_dataset_ids)
+
+        with self.subTest("Check assets point at revised dataset"):
+            for dataset in response_json["datasets"]:
+                dataset_id = dataset["id"]
+                asset_dataset_ids = {asset["dataset_id"] for asset in dataset["dataset_assets"]}
+                self.assertEqual(dataset_id, asset_dataset_ids.pop())
+
+        with self.subTest("Test revised_at not updated under revision"):
+            # Collection revised_at
+            self.assertIsNone(response_json.get("revised_at"))
+
+            # Dataset revised_at
+            for dataset in response_json["datasets"]:
+                self.assertIsNone(dataset.get("revised_at"))
+
+        return response_json
+
+    def verify_unauthed_get_revision(self, collection_id: str, expected_body: dict) -> None:
+        """Verify unauthorized view of a collection under revision."""
+
+        path = f"/dp/v1/collections/{collection_id}?visibility=PRIVATE"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("READ", response_json.pop("access_type"))
+        self.assertEqual(expected_body, response_json)
+
+    def test__start_revision_of_a_collection__201(self):
+        """Start a revision of a collection."""
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
+        dataset_ids = [
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
         ]
-        for test in tests:
-            with self.subTest(test):
-                collection = self.generate_collection(self.session, **test)
-                dataset_0 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
-                dataset_1 = self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True)
 
-                test_url = f"/dp/v1/collections/{collection.id}"
-                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        res_post_json = self.verify_start_revision(collection.id)
+        res_get_json = self.verify_get_revision(collection.id, dataset_ids)
+        self.assertEqual(res_post_json, res_get_json)
 
-                # Test post
-                response = self.app.post(test_url, headers=headers)
-                self.assertEqual(201, response.status_code)
-                post_body = json.loads(response.data)
-                for key in test.keys():
-                    if key == "visibility":
-                        self.assertEqual("PRIVATE", post_body[key])
-                    else:
-                        self.assertEqual(test[key], post_body[key])
-                # Test get
-                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
-                self.assertEqual(200, response.status_code)
-                get_body = json.loads(response.data)
-                self.assertEqual(post_body, get_body)
-                with self.subTest("Test datasets in revised collection are not original datasets"):
-                    new_dataset_ids = [x["id"] for x in get_body["datasets"]]
-                    self.assertNotIn(dataset_0.id, new_dataset_ids)
-                    self.assertNotIn(dataset_1.id, new_dataset_ids)
-                with self.subTest("Test revised datasets point at original datasets"):
-                    original_dataset_ids = [x["original_id"] for x in get_body["datasets"]]
-                    self.assertIn(dataset_0.id, original_dataset_ids)
-                    self.assertIn(dataset_1.id, original_dataset_ids)
-                with self.subTest("Check assets point at revised dataset"):
-                    assets_0 = get_body["datasets"][0]["dataset_assets"]
-                    assets_1 = get_body["datasets"][1]["dataset_assets"]
-                    revised_dataset_0 = get_body["datasets"][0]["id"]
-                    revised_dataset_1 = get_body["datasets"][1]["id"]
-                    for x in assets_0:
-                        self.assertEqual(revised_dataset_0, x["dataset_id"])
-                    for x in assets_1:
-                        self.assertEqual(revised_dataset_1, x["dataset_id"])
-                # Test unauthenticated get
-                get_body.pop("access_type")
-                expected_body = get_body
-                headers = {"host": "localhost", "Content-Type": "application/json"}
-                response = self.app.get(f"{test_url}?visibility=PRIVATE", headers=headers)
-                self.assertEqual(200, response.status_code)
-                actual_body = json.loads(response.data)
-                self.assertEqual("READ", actual_body.pop("access_type"))
-                self.assertEqual(expected_body, actual_body)
+        self.assertEqual("WRITE", res_get_json.pop("access_type"))
+        self.verify_unauthed_get_revision(collection.id, res_get_json)
+
+    def test__start_revision_of_a_collection_w_links__201(self):
+        """Start a revision of a collection with links."""
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC,
+            links=[
+                {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+            ],
+        )
+        dataset_ids = [
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+        ]
+        link_names = [link.link_name for link in collection.links]
+
+        res_post_json = self.verify_start_revision(collection.id)
+
+        # Check link names
+        res_links = [link["link_name"] for link in res_post_json["links"]]
+        self.assertListEqual(sorted(link_names), sorted(res_links))
+
+        res_get_json = self.verify_get_revision(collection.id, dataset_ids)
+        self.assertEqual(res_post_json, res_get_json)
+
+        self.assertEqual("WRITE", res_get_json.pop("access_type"))
+        self.verify_unauthed_get_revision(collection.id, res_get_json)
 
     def test__revision__409(self):
+        """Starting a revision on a revision."""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
         test_url = f"/dp/v1/collections/{collection.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers=headers)
+
+        # Start a revision
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(201, response.status_code)
-        response = self.app.post(test_url, headers=headers)
+
+        # Try to start a revision again
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(409, response.status_code)
 
     def test__revision_nonexistent__403(self):
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post("/dp/v1/collections/random", headers=headers)
+        """Start a revision on a non-existing collection."""
+        response = self.app.post("/dp/v1/collections/random", headers=self.headers)
         self.assertEqual(403, response.status_code)
 
     def test__revision_not_owner__403(self):
+        """Start a revision on a collection as a non-owner."""
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC, owner="someone else"
         )
         test_url = f"/dp/v1/collections/{collection.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(test_url, headers=headers)
+
+        response = self.app.post(test_url, headers=self.headers)
         self.assertEqual(403, response.status_code)
 
 
 class TestDeleteRevision(BaseRevisionTest):
+    """Test case for deleting a collection or datasets under revision."""
+
     def setUp(self):
         super().setUp()
         url = f"/dp/v1/collections/{self.pub_collection.id}"
@@ -162,6 +216,7 @@ class TestDeleteRevision(BaseRevisionTest):
         self.test_url_collection_public = f"{url}?visibility=PUBLIC"
 
     def test__revision_deleted__204(self):
+        """Delete a collection under revision."""
         # Delete the revision
         resp = self.app.delete(self.test_url_collect_private, headers=self.headers)
         self.assertEqual(204, resp.status_code)
@@ -171,7 +226,10 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertEqual(403, resp.status_code)
 
     def test__revision_deleted_with_published_datasets(self):
-        """The published dataset artifacts should be intact after deleting a collection revision"""
+        """
+        The published dataset artifacts should be intact after deleting a
+        collection revision.
+        """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
 
@@ -205,8 +263,10 @@ class TestDeleteRevision(BaseRevisionTest):
                 self.assertS3FileDoesNotExist(bucket, file_name)
 
     def test__revision_deleted_with_refreshed_datasets(self):
-        """The refreshed datasets should be deleted and the published dataset intact. The published dataset artifacts should
-        be intact after deleting a collection revision
+        """
+        The refreshed datasets should be deleted and the published dataset
+        intact. The published dataset artifacts should be intact after
+        deleting a collection revision.
         """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         self.refresh_datasets()
@@ -226,7 +286,10 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
     def test__delete_refreshed_dataset_in_a_revision(self):
-        """The refreshed datasets should be deleted and the published dataset restored in the revision."""
+        """
+        The refreshed datasets should be deleted and the published dataset
+        restored in the revision.
+        """
         expected_pub_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
         expected_rev_body = self.remove_timestamps(
             json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
@@ -258,9 +321,13 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertEqual(expected_rev_body, actual_rev_body)
 
     def test__delete_published_dataset_during_revision(self):
-        """The dataset is tombstone in the revision. The published artifacts are intact"""
+        """
+        The dataset is tombstone in the revision. The published artifacts are
+        intact.
+        """
         expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
+        pub_s3_objects, _ = self.get_s3_objects_from_collections()
+
         # Delete a published dataset in the revision
         rev_dataset_count = len(self.rev_collection.datasets)
         rev_dataset_id = self.rev_collection.datasets[0].id
@@ -288,44 +355,68 @@ class TestDeleteRevision(BaseRevisionTest):
 
 
 class TestPublishRevision(BaseRevisionTest):
+    """Test case for publishing a revision."""
+
     def setUp(self):
         super().setUp()
-        self.test_url = f"/dp/v1/collections/{self.pub_collection.id}/publish"
+        self.base_path = "/dp/v1/collections"
+        self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
 
-    def publish_collection(self, collection_id: str):
+    def publish_collection(self, collection_id: str) -> dict:
+        """
+        Verify publish a collection under revision.
+        :return: Jsonified response of GET collection/<collection_id>.
+        """
+        # Check initial published_at and revised_at. Since collection creation
+        # for the already published collection/datasets do not go through the
+        # normal user flow, no initial values for published_at and revised_at
+        self.assertIsNone(self.pub_collection.published_at)
+        self.assertIsNone(self.pub_collection.revised_at)
+
+        for dataset in self.pub_collection.datasets:
+            self.assertIsNone(dataset.published_at)
+            self.assertIsNone(dataset.revised_at)
+
         self.session.expire_all()
-        path = f"/dp/v1/collections/{collection_id}/publish"
-        response = self.app.post(path, headers=self.headers)
+
+        path = f"{self.base_path}/{collection_id}/publish"
+        with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
+            mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
+            response = self.app.post(path, headers=self.headers)
         self.assertEqual(202, response.status_code)
+
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
-        # cannot call twice
+        # Cannot call publish for an already published collection
         response = self.app.post(path, headers=self.headers)
         self.assertEqual(403, response.status_code)
 
-        # check if the collection is listed
-        path = "/dp/v1/collections"
+        # Check that the published collection is listed in /collections
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        response = self.app.get(path, headers=headers)
+        response = self.app.get(self.base_path, headers=headers)
         self.assertEqual(200, response.status_code)
+
         ids = [col["id"] for col in json.loads(response.data)["collections"]]
         self.assertIn(collection_id, ids)
 
-        # check get collection_uuid
-        path = f"/dp/v1/collections/{collection_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json"}
+        # Check GET collection/<collection_id>
+        path = f"{self.base_path}/{collection_id}"
         response = self.app.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
-        actual = json.loads(response.data)
-        self.assertEqual("PUBLIC", actual["visibility"])
-        self.assertEqual(collection_id, actual["id"])
-        return actual
 
-    def verify_datasets(self, actual_body, expected_dataset_ids):
+        response_json = json.loads(response.data)
+        self.assertEqual("PUBLIC", response_json["visibility"])
+        self.assertEqual(collection_id, response_json["id"])
+
+        return response_json
+
+    def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.List[str]) -> None:
+        """Verify collection datasets."""
         actual_datasets = [d["id"] for d in actual_body["datasets"]]
         self.assertListEqual(expected_dataset_ids, actual_datasets)
         self.assertTrue(all([d["published"] for d in actual_body["datasets"]]))
+
         for dataset_id in expected_dataset_ids:
             dataset = Dataset.get(self.session, dataset_id)
             self.assertIn(dataset.id, dataset.explorer_url)
@@ -336,38 +427,76 @@ class TestPublishRevision(BaseRevisionTest):
                     self.assertS3FileExists(*s3_object)
 
     def test__with_revision_with_new_dataset__OK(self):
-        """publish a revision with new datasets"""
+        """Publish a revision with new datasets."""
         new_dataset_id = self.generate_dataset_with_s3_resources(
             self.session, collection_id=self.rev_collection.id, collection_visibility=CollectionVisibility.PRIVATE
         ).id
         dataset_ids = [ds.id for ds in self.pub_collection.datasets]
         dataset_ids.append(new_dataset_id)
-        actual_body = self.publish_collection(self.rev_collection.id)
-        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+
+        # Publish revision
+        response_json = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(response_json, dataset_ids)
+
+        # Check published_at and revised_at
+        # Collection: Only revised_at should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+
+        # Datasets: Only the newly added dataset should have published_at updated
+        for dataset in response_json["datasets"]:
+            if dataset["id"] == new_dataset_id:
+                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
+            else:
+                self.assertIsNone(dataset.get("published_at"))
+            self.assertIsNone(dataset.get("revised_at"))
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
-        """publish a revision with delete datasets"""
+        """Publish a revision with delete datasets."""
         rev_dataset_id = self.rev_collection.datasets[0].id
         pub_dataset = self.pub_collection.datasets[0]
         published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
+
+        # Delete a dataset under revision
         self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", headers=self.headers)
-        self.publish_collection(self.rev_collection.id)
+
+        # Publish the revision with the deleted dataset
+        response_json = self.publish_collection(self.rev_collection.id)
         self.session.expire_all()
+
         dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
+
         self.assertIn(pub_dataset.id, dataset.explorer_url)
         self.assertTrue(dataset.tombstone)
         for s3_object in published_s3_objects:
             self.assertS3FileDoesNotExist(*s3_object)
 
+        # Check published_at and revised_at
+        # Collection: Only revised_at should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+
+        # Datasets: None should be updated
+        self.assertIsNone(dataset.published_at)
+        self.assertIsNone(dataset.revised_at)
+        for dataset in response_json["datasets"]:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertIsNone(dataset.get("revised_at"))
+
     def test__with_revision_with_tombstoned_datasets_rollback__OK(self):
-        """revision state is restored and s3 assets are unchanged, if the database transactions fails."""
+        """
+        Revision state is restored and s3 assets are unchanged, if the database
+        transactions fails.
+        """
         rev_dataset_id = self.rev_collection.datasets[0].id
         pub_dataset = self.pub_collection.datasets[0]
         published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
 
+        # Delete a dataset under revision
         self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
         self.session.expire_all()
 
+        # Publish revision with database transaction failure
         expect_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
         expect_datasets = expect_collection.pop("datasets")
         expect_datasets.sort(key=lambda x: x["id"])
@@ -376,19 +505,34 @@ class TestPublishRevision(BaseRevisionTest):
                 rev_collection = Collection.get(session, (self.rev_collection.id, self.rev_collection.visibility))
                 with mock.patch.object(rev_collection.session, "commit", side_effect=SQLAlchemyError):
                     rev_collection.publish()
+
         self.session.expire_all()
+
         actual_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
         actual_datasets = actual_collection.pop("datasets")
         actual_datasets.sort(key=lambda x: x["id"])
         self.assertEqual(expect_collection, actual_collection)
         self.assertEqual(expect_datasets, actual_datasets)
+
         dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
         self.assertFalse(dataset.tombstone)
         for s3_object in published_s3_objects:
             self.assertS3FileExists(*s3_object)
 
+        # Check published_at and revised_at
+        # Collection: None should be updated
+        self.assertIsNone(actual_collection.get("published_at"))
+        self.assertIsNone(actual_collection.get("revised_at"))
+
+        # Datasets: None should be updated
+        self.assertIsNone(dataset.published_at)
+        self.assertIsNone(dataset.revised_at)
+        for dataset in actual_datasets:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertIsNone(dataset.get("revised_at"))
+
     def test__with_revision_with_all_tombstoned_datasets__409(self):
-        """unable to publish a revision with no datasets"""
+        """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
@@ -396,12 +540,24 @@ class TestPublishRevision(BaseRevisionTest):
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
-        """"publish a revision with refreshed datasets"""
+        """"Publish a revision with refreshed datasets."""
         self.refresh_datasets()
-        actual_body = self.publish_collection(self.rev_collection.id)
-        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+
+        response_json = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
+
+        # Check published_at and revised_at
+        # Collection: Only revised_at should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+
+        # Datatsets: None should be updated
+        for dataset in response_json["datasets"]:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
 
     def test__publish_revision_with_collection_info_updated__201(self):
+        """Publish a revision with collection detail changes."""
         expected_body = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -414,12 +570,35 @@ class TestPublishRevision(BaseRevisionTest):
             "data_submission_policy_version": "0",
         }
         self.rev_collection.update(**expected_body)
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
-        actual_body = self.publish_collection(self.rev_collection.id)
+        pub_s3_objects, _ = self.get_s3_objects_from_collections()
+
+        # Published revision with collection details updated
+        response_json = self.publish_collection(self.rev_collection.id)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
-        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
 
-    def test_with_revision_and_existing_datasets(self):
-        actual_body = self.publish_collection(self.rev_collection.id)
-        self.verify_datasets(actual_body, [ds.id for ds in self.pub_collection.datasets])
+        # Check published_at and revised_at
+        # Collection: None should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertIsNone(response_json.get("revised_at"))
+
+        # Datasets: None should be updated
+        for dataset in response_json["datasets"]:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertIsNone(dataset.get("revised_at"))
+
+    def test__with_revision_and_existing_datasets(self):
+        """Publish a revision with the same, existing datasets."""
+        response_json = self.publish_collection(self.rev_collection.id)
+        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
+
+        # Check published_at and revised_at
+        # Collection: None should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertIsNone(response_json.get("revised_at"))
+
+        # Datasets: None should be updated
+        for dataset in response_json["datasets"]:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertIsNone(dataset.get("revised_at"))
