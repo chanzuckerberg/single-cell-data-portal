@@ -80,7 +80,18 @@ def delete_dataset(ctx, uuid):
 @click.argument("collection_name")
 @click.pass_context
 def delete_collections(ctx, collection_name):
-    """Delete collections from data portal."""
+    """
+    Delete collections from data portal staging or dev by collection name.
+
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deploymen dev delete-collections <collection_name>
+
+    Examples of valid collection_name:
+        - String with no spaces: ThisCollection
+        - String with spaces: "This Collection"
+    """
 
     if ctx.obj['deployment'] == 'prod':
         logger.info(f"Cannot run this script for prod. Aborting.")
@@ -88,7 +99,7 @@ def delete_collections(ctx, collection_name):
 
     click.confirm(
         f"Are you sure you want to run this script? It will delete all of the "
-        f"collections with the name {collection_name}.",
+        f"collections with the name '{collection_name}'.",
         abort=True,
     )
 
@@ -96,10 +107,10 @@ def delete_collections(ctx, collection_name):
         collections = session.query(DbCollection).filter_by(name=collection_name).all()
 
         if not collections:
-            logger.warning(f"There are no collections with the name {collection_name}. Aborting.")
+            logger.info(f"There are no collections with the name {collection_name}. Aborting.")
             exit(0)
 
-        logger.warning(f"There are {len(collections)} collections with the name {collection_name}")
+        logger.info(f"There are {len(collections)} collections with the name {collection_name}")
 
         for c in collections:
             collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
@@ -107,19 +118,10 @@ def delete_collections(ctx, collection_name):
                 collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
 
             # Delete collection
-            logger.warning(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
+            logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
             collection.delete()
 
-            # Get collection again to make sure it was deleted
-            collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
-            if not collection:
-                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
-            if not collection:
-                logger.warning(f"Deleted collection | name: {collection_name} | id: {c.id}")
-            else:
-                logger.warning(f"Failed to delete collection | name: {collection_name} | id: {c.id}")
-
-        logger.warning(f"Deletions complete!")
+        logger.info(f"Deletions complete!")
 
 
 @cli.command()
