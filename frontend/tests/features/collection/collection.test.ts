@@ -79,9 +79,9 @@ describe("Collection", () => {
             const publishButton = await page.$(
               getTestID("publish-collection-button")
             );
-  
+
             expect(await publishButton?.getAttribute("disabled")).toBe("");
-          }, 100)
+          }, 100);
         });
       });
     });
