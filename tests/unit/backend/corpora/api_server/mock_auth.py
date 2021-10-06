@@ -24,6 +24,7 @@ class MockOauthApp:
         self.app.add_url_rule("/authorize", view_func=self.api_authorize)
         self.app.add_url_rule("/oauth/token", view_func=self.api_oauth_token, methods=["POST"])
         self.app.add_url_rule("/v2/logout", view_func=self.api_logout)
+        self.app.add_url_rule("/userinfo", view_func=self.api_userinfo)
         self.app.add_url_rule("/.well-known/openid-configuration", view_func=self.api_openid_configuration)
         self.app.add_url_rule("/.well-known/jwks.json", view_func=self.api_jwks)
 
@@ -31,6 +32,15 @@ class MockOauthApp:
         callback = request.args.get("redirect_uri")
         state = request.args.get("state")
         return redirect(callback + f"?code=fakecode&state={state}")
+
+    def api_userinfo(self):
+        return dict(
+            name="Fake User",
+            sub="test_user_id",
+            id="test_user_id",
+            email="fake_user@email.com",
+            email_verified=True,
+        )
 
     def api_oauth_token(self):
         expires_at = time.time() + self.token_duration

@@ -45,7 +45,6 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
     <>
       <Popover content={<Content />}>
         <Button
-          large
           outlined
           minimal
           intent={Intent.PRIMARY}

@@ -85,22 +85,11 @@ def get_token_auth_header(headers: dict) -> str:
     return token
 
 
-def get_userinfo(token: str) -> dict:
-    if token is None:
-        userinfo = dict(is_authenticated=False)
-        return userinfo
-
+def get_userinfo_from_auth0(token: str) -> dict:
     auth_config = CorporaAuthConfig()
-    payload = assert_authorized_token(token, auth_config.audience)
-
-    userinfo = dict(
-        is_authenticated=True,
-        id=payload.get("sub"),
-        name=payload.get("name"),
-        email=payload.get("email"),
-        email_verified=payload.get("email_verified"),
-    )
-    return userinfo
+    res = requests.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
+    res.raise_for_status()
+    return res.json()
 
 
 @lru_cache(maxsize=32)
