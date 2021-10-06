@@ -77,6 +77,42 @@ def delete_dataset(ctx, uuid):
 
 
 @cli.command()
+@click.argument("collection_name")
+@click.pass_context
+def delete_collections(ctx, collection_name):
+    """Delete collections from data portal."""
+
+    if ctx.obj['deployment'] == 'prod':
+        logger.info(f"Cannot run this script for prod. Aborting.")
+        exit(0)
+
+    click.confirm(
+        f"Are you sure you want to run this script? It will delete all of the "
+        f"collections with the name {collection_name}.",
+        abort=True,
+    )
+
+    with db_session_manager() as session:
+        collections = Collection.get(session, name=collection_name)
+        
+        if not collections:
+            logger.info(f"There are no collections with the name {collection_name}. Aborting.")
+            exit(0)
+    
+        for collection in collections:
+            logger.info(f"Starting deletion of collection | name: {collection_name} | id: {collection.id}")
+            collection.delete()
+
+            collection = Collection.get(session, collection.id, name=collection_name)
+            if collection is None:
+                logger.info(f"Deleted collection | name: {collection_name} | id: {collection.id}")
+            else:
+                logger.info(f"Failed to delete collection | name: {collection_name} | id: {collection.id}")
+
+        logger.info(f"Deletions complete!")
+
+
+@cli.command()
 @click.argument("uuid")
 @click.pass_context
 def tombstone_dataset(ctx, uuid):
