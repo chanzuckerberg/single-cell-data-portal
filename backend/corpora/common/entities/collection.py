@@ -191,7 +191,7 @@ class Collection(Entity):
         if public_collection:
             public_collection.update(
                 commit=False,
-                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
+                **self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
             is_existing_collection = True
         # A published collection with the same uuid does not already exist.
