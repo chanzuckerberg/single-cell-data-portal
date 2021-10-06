@@ -1,6 +1,7 @@
 import json
 import logging
 from os import path
+from typing import Dict, Optional
 
 import anndata
 import numpy as np
@@ -29,21 +30,14 @@ class H5ADDataFile:
     def __init__(
         self,
         input_filename,
-        backed=False,
-        dataset_title=None,
-        dataset_about=None,
-        obs_index_column_name=None,
-        vars_index_column_name=None,
-        use_corpora_schema=True,
+        var_index_column_name=None,
     ):
         self.input_filename = input_filename
-        self.backed = backed
-        self.dataset_title = dataset_title
-        self.dataset_about = dataset_about
-        self.obs_index_column_name = obs_index_column_name
-        self.vars_index_column_name = vars_index_column_name
-
-        self.use_corpora_schema = use_corpora_schema
+        # Set by self.extract_metadata_about_dataset
+        self.dataset_title = None
+        # These two are set by self.transform_dataframe_index_into_column
+        self.var_index_column_name = var_index_column_name
+        self.obs_index_column_name = None
 
         self.validate_input_file_type()
 
@@ -146,7 +140,7 @@ class H5ADDataFile:
 
         cxg_group_metadata = {
             "cxg_version": CxgConstants.CXG_VERSION,
-            "cxg_properties": json.dumps({"title": self.dataset_title, "about": self.dataset_about}),
+            "cxg_properties": json.dumps({"title": self.dataset_title, "about": None}),
         }
         if self.corpora_properties is not None:
             cxg_group_metadata["corpora"] = json.dumps(self.corpora_properties)
@@ -172,13 +166,6 @@ class H5ADDataFile:
         if not self.input_filename.endswith(".h5ad"):
             raise Exception(f"Cannot process input file {self.input_filename}. File must be an H5AD.")
 
-        if self.dataset_title or self.dataset_about:
-            logging.warning(
-                "If you convert this dataset into CXG and you explicit specify values for the dataset title metadata "
-                "or the dataset about metadata, it will override any metadata that is extracted as part of the "
-                "Corpora schema fields."
-            )
-
     def validate_anndata(self):
         if not self.var.index.is_unique:
             raise ValueError("Variable index in AnnData object is not unique.")
@@ -187,11 +174,11 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename, backed="r" if self.backed else None)
+        self.anndata = anndata.read_h5ad(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
-        self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.vars_index_column_name)
+        self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
 
     def extract_metadata_about_dataset(self):
         """
@@ -199,29 +186,18 @@ class H5ADDataFile:
         CXG that is generated. This metadata information includes Corpora schema properties, the dataset title and
         a link that details more information about the dataset.
         """
+        self.corpora_properties = self.get_corpora_properties()
 
-        self.corpora_properties = self.get_corpora_properties() if self.use_corpora_schema else None
-
-        if self.corpora_properties is None and self.use_corpora_schema:
+        if self.corpora_properties is None:
             # If the return value is None, this means that we were not able to figure out what version of the Corpora
             # schema the object is using and therefore cannot extract any properties.
             raise ValueError("Unknown source file schema version is unsupported.")
 
         # The title and about properties of the dataset are set by the following order: if they are explicitly defined
-        # then use the explicit value. If the dataset is a Corpora-schema based schema, then extract the title and about
-        # from the corpora_properties. Otherwise, use the input filename (only for title, about will be blank).
-        if self.corpora_properties:
-            corpora_project_links = self.corpora_properties.get("project_links", [])
-            corpora_about_link = next(
-                (link for link in corpora_project_links if (link.get("link_type", None) == "SUMMARY")), {}
-            )
-        else:
-            corpora_about_link = {}
+        # then use the explicit value. Otherwise, use the input filename (only for title, about will be blank).
 
         filename = path.splitext(path.basename(self.input_filename))[0]
-
-        self.dataset_title = self.dataset_title if self.dataset_title else corpora_about_link.get("link_name", filename)
-        self.dataset_about = self.dataset_about if self.dataset_about else corpora_about_link.get("link_url")
+        self.dataset_title = self.dataset_title or filename
 
     def transform_dataframe_index_into_column(self, dataframe, dataframe_name, index_column_name):
         """
@@ -253,7 +229,7 @@ class H5ADDataFile:
         setattr(self, f"{dataframe_name}_index_column_name", index_column_name)
         return dataframe
 
-    def get_corpora_properties(self):
+    def get_corpora_properties(self) -> Optional[Dict]:
         """
         Extract out the Corpora dataset properties from the H5AD file.
         """
@@ -273,13 +249,14 @@ class H5ADDataFile:
                 raise KeyError(f"missing Corpora schema field {key}")
             corpora_props[key] = self.anndata.uns[key]
 
-        for key in CorporaConstants.OPTIONAL_JSON_ENCODED_METADATA_FIELD:
+        for key in CorporaConstants.OPTIONAL_LIST_METADATA_FIELDS:
             if key not in self.anndata.uns:
                 continue
             try:
-                corpora_props[key] = json.loads(self.anndata.uns[key])
-            except json.JSONDecodeError:
-                raise json.JSONDecodeError(f"Corpora schema field {key} is expected to be a valid JSON string")
+                corpora_props[key] = self.anndata.uns[key].tolist()
+            except AttributeError as e:
+                logging.error(f"Corpora schema field {key} expected to be list, got {type(self.anndata.uns[key])}")
+                raise e
 
         for key in CorporaConstants.OPTIONAL_SIMPLE_METADATA_FIELDS:
             if key in self.anndata.uns:
