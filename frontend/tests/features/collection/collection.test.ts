@@ -75,11 +75,13 @@ describe("Collection", () => {
 
           await createCollection();
 
-          const publishButton = await page.$(
-            getTestID("publish-collection-button")
-          );
-
-          expect(await publishButton?.getAttribute("disabled")).toBe("");
+          await tryUntil(async () => {
+            const publishButton = await page.$(
+              getTestID("publish-collection-button")
+            );
+  
+            expect(await publishButton?.getAttribute("disabled")).toBe("");
+          }, 100)
         });
       });
     });
