@@ -4,7 +4,7 @@ import csv
 import logging
 import os
 import typing
-
+from datetime import datetime
 from pathlib import PurePosixPath
 
 from .dataset_asset import DatasetAsset
@@ -113,6 +113,8 @@ class Dataset(Entity):
         return None if not asset else DatasetAsset(asset[0])
 
     def _create_new_explorer_url(self, new_uuid: str) -> str:
+        if self.explorer_url is None:
+            return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
         new_path = str(original_path.parent / f"{new_uuid}.cxg")
@@ -222,10 +224,20 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
-    def publish_new(self):
-        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=False)
+    def publish_new(self, now: datetime):
+        """
+        Publish a new dataset with the published_at datetime populated
+        with the provided datetime.
+        :param now: Datetime to populate dataset's published_at.
+        """
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_at=now, commit=False)
 
-    def publish_revision(self, revision: "Dataset"):
+    def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
+        """
+        Publish a revision of a dataset if the dataset under revision is
+        different from the existing dataset.
+        :return: True if revision differs from existing dataset, else False.
+        """
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
             self.asset_deletion()
@@ -236,19 +248,30 @@ class Dataset(Entity):
             elif revision.tombstone:
                 # tombstone
                 revision.tombstone_dataset_and_delete_child_objects()
+
             updates = revision.to_dict(
                 remove_attr=[
-                    "update_at",
+                    "updated_at",
                     "created_at",
                     "collection_visibility",
                     "id",
                     "original_id",
                     "published",
+                    "revised_at",
                     "explorer_url",
                 ],
                 remove_relationships=True,
             )
-            self.update(commit=False, **updates)
+
+            if revision.tombstone is not False:
+                self.update(commit=False, **updates, remove_attr="published_at")
+            else:
+                # There was an update to a dataset, so update revised_at
+                self.update(commit=False, **updates, revised_at=now)
+
+            return True
+
+        return False
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

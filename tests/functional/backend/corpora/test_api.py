@@ -26,7 +26,6 @@ class TestApi(BaseFunctionalTestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
         self.assertEqual(data["email"], "user@example.com")
-        self.assertTrue(data["is_authenticated"])
 
     def test_root_route(self):
         res = requests.get(f"{self.api}/")
