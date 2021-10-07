@@ -129,8 +129,10 @@ class Dataset(Entity):
             return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
-        new_path = str(original_path.parent / f"{new_uuid}.cxg")
-        return original_url._replace(path=new_path).geturl()
+        new_path = str(original_path.parent / f"{new_uuid}.cxg/")
+        new_url = original_url._replace(path=new_path).geturl()
+        # Note: the final slash is mandatory, otherwise the explorer won't load this link
+        return f"{new_url}/"
 
     def create_revision(self) -> "Dataset":
         """
