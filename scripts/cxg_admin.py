@@ -107,7 +107,7 @@ def delete_collections(ctx, collection_name):
         collections = session.query(DbCollection).filter_by(name=collection_name).all()
 
         if not collections:
-            logger.info(f"There are no collections with the name {collection_name}. Aborting.")
+            logger.info(f"There are no collections with the name '{collection_name}'. Aborting.")
             exit(0)
 
         logger.info(f"There are {len(collections)} collections with the name {collection_name}")
