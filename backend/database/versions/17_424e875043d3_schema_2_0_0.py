@@ -1,7 +1,7 @@
 """schema-2.0.0
 
-Revision ID: 424e875043d3
-Revises: b65dad1f2a7e
+Revision ID: 17_424e875043d3
+Revises: 16_b65dad1f2a7e
 Create Date: 2021-08-12 10:22:45.891595
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects.postgresql import JSONB, ENUM
 
 
 # revision identifiers, used by Alembic.
-revision = "424e875043d3"
-down_revision = "b65dad1f2a7e"
+revision = "17_424e875043d3"
+down_revision = "16_b65dad1f2a7e"
 branch_labels = None
 depends_on = None
 
