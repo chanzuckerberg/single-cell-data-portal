@@ -107,11 +107,14 @@ export default function checkForRevisionChange(
   }
   if (publishedCollection.links.length !== revision.links.length) return true;
   //Check links for differences
-  publishedCollection.links.forEach((link, index) => {
-    if (link !== revision.links[index]) {
-      return true;
-    }
-  });
+  if (
+    publishedCollection.links.some((link, index) => {
+      if (link !== revision.links[index]) {
+        return true;
+      }
+    })
+  )
+    return true;
 
   if (
     checkDatasetsForChanges(revision.datasets, publishedCollection.datasets)
