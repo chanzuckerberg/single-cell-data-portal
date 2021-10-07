@@ -1,7 +1,7 @@
 """add_published_at_revised_at_fields
 
-Revision ID: a8cd0dc08805
-Revises: 424e875043d3
+Revision ID: 18_a8cd0dc08805
+Revises: 17_424e875043d3
 Create Date: 2021-09-16 13:41:09.534116
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a8cd0dc08805"
-down_revision = "424e875043d3"
+down_revision = "17_424e875043d3"
 branch_labels = None
 depends_on = None
 

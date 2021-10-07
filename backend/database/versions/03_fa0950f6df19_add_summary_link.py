@@ -1,7 +1,7 @@
 """add_summary_link
 
-Revision ID: fa0950f6df19
-Revises: 7968f161b60c
+Revision ID: 03_fa0950f6df19
+Revises: 02_7968f161b60c
 Create Date: 2020-08-24 11:04:30.640496
 
 """
@@ -10,8 +10,8 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 
 # revision identifiers, used by Alembic.
-revision = "fa0950f6df19"
-down_revision = "7968f161b60c"
+revision = "03_fa0950f6df19"
+down_revision = "02_7968f161b60c"
 branch_labels = None
 depends_on = None
 
