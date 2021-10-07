@@ -1,7 +1,7 @@
 """update_data_submission_policy_version
 
-Revision ID: 23bade351f23
-Revises: a8cd0dc08805
+Revision ID: 19_23bade351f23
+Revises: 18_a8cd0dc08805
 Create Date: 2021-09-24 16:41:33.297342
 
 """
