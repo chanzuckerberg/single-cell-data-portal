@@ -110,7 +110,7 @@ def delete_collections(ctx, collection_name):
             logger.info(f"There are no collections with the name '{collection_name}'. Aborting.")
             exit(0)
 
-        logger.info(f"There are {len(collections)} collections with the name {collection_name}")
+        logger.info(f"There are {len(collections)} collections with the name '{collection_name}'")
 
         for c in collections:
             collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
