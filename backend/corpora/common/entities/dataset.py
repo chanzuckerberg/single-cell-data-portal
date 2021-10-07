@@ -99,9 +99,21 @@ class Dataset(Entity):
         """
         Return the most recently created dataset with the given explorer_url or None
         """
-        filters = [cls.table.explorer_url == explorer_url]
-        dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
-        return cls(dataset[0]) if dataset else None
+
+        def _get_by_explorer_url_query(url):
+            filters = [cls.table.explorer_url == url]
+            dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
+            return cls(dataset[0]) if dataset else None
+
+        # If dataset cannot be found, look for the url with (or without) the final slash
+        dataset = _get_by_explorer_url_query(explorer_url)
+        if not dataset:
+            if explorer_url[-1] == "/":
+                dataset = _get_by_explorer_url_query(explorer_url[:-1])
+            else:
+                dataset = _get_by_explorer_url_query(f"{explorer_url}/")
+
+        return dataset
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -117,7 +129,7 @@ class Dataset(Entity):
             return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
-        new_path = str(original_path.parent / f"{new_uuid}.cxg")
+        new_path = str(original_path.parent / f"{new_uuid}.cxg/")
         return original_url._replace(path=new_path).geturl()
 
     def create_revision(self) -> "Dataset":
