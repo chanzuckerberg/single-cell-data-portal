@@ -14,6 +14,7 @@ module stack {
   backend_url                  = "https://api.cellxgene.staging.single-cell.czi.technology"
   stack_prefix                 = ""
   batch_container_memory_limit = 300000
+  backend_instance_count       = 4
 
   wait_for_steady_state        = var.wait_for_steady_state
 }
