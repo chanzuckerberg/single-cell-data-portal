@@ -1,7 +1,7 @@
 """harmonize_schema_state_staging
 
-Revision ID: b2b6ffe65512
-Revises: 4ddb19dcc4e8
+Revision ID: 04b_b2b6ffe65512
+Revises: 03_fa0950f6df19
 Create Date: 2020-08-28 12:52:59.416278
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "b2b6ffe65512"
-down_revision = "fa0950f6df19"
+revision = "04b_b2b6ffe65512"
+down_revision = "03_fa0950f6df19"
 branch_labels = None
 depends_on = None
 
