@@ -17,14 +17,10 @@ depends_on = None
 
 
 def upgrade():
-    op.alter_column('project', 'data_submission_policy_version',
-               existing_type=sa.VARCHAR(),
-               nullable=True)
+    op.alter_column('project', 'data_submission_policy_version', existing_type=sa.VARCHAR(), nullable=True)
 
 
 def downgrade():
     op.execute("UPDATE project SET data_submission_policy_version='' WHERE data_submission_policy_version=null")
 
-    op.alter_column('project', 'data_submission_policy_version',
-               existing_type=sa.VARCHAR(),
-               nullable=False)
+    op.alter_column('project', 'data_submission_policy_version', existing_type=sa.VARCHAR(), nullable=False)
