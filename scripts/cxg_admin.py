@@ -86,7 +86,7 @@ def delete_collections(ctx, collection_name):
     You must first SSH into the target deployment using `make db/tunnel` before running.
     You must first set DEPLOYMENT_STAGE as an env var before running
     To run
-    ./scripts/cxg_admin.py --deploymen dev delete-collections <collection_name>
+    ./scripts/cxg_admin.py --deployment dev delete-collections <collection_name>
 
     Examples of valid collection_name:
         - String with no spaces: ThisCollection
