@@ -99,7 +99,7 @@ def delete_collections(ctx, collection_name):
 
     click.confirm(
         f"Are you sure you want to run this script? It will delete all of the "
-        f"collections with the name '{collection_name}'.",
+        f"collections with the name '{collection_name}' from the {ctx.obj['deployment']} environment.",
         abort=True,
     )
 
