@@ -14,7 +14,6 @@ from tests.unit.backend.corpora.api_server.mock_auth import TOKEN_EXPIRES
 )
 class TestAuth(BaseAuthAPITest):
     def check_user_info(self, userinfo):
-        self.assertEqual(userinfo["is_authenticated"], True)
         self.assertEqual(userinfo["id"], "test_user_id")
         self.assertEqual(userinfo["name"], "Fake User")
         self.assertEqual(userinfo["email"], "fake_user@email.com")

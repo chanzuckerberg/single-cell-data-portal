@@ -358,7 +358,7 @@ def make_cxg(local_filename):
 
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        h5ad_data_file = H5ADDataFile(local_filename, vars_index_column_name="feature_name")
+        h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
         h5ad_data_file.to_cxg(cxg_output_container, 10.0)
     except Exception as ex:
         msg = "CXG conversion failed."
@@ -527,10 +527,10 @@ def main():
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occured while processing.")
+        logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpect error occured while processing the data set."
+        message = "An unexpected error occurred while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)

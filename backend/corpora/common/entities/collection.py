@@ -180,31 +180,51 @@ class Collection(Entity):
     def publish(self):
         """
         Given a private collection, set the collection to public.
-
         """
+        # Timestamp for published_at and revised_at
+        now = datetime.utcnow()
+
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
+        is_existing_collection = False
+
         if public_collection:
             public_collection.update(
                 commit=False,
-                **self.to_dict(remove_attr=("update_at", "created_at", "visibility", "id"), remove_relationships=True),
+                **self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True),
             )
+            is_existing_collection = True
+        # A published collection with the same uuid does not already exist.
+        # This is a new collection.
         else:
             public_collection = Collection(
-                clone(self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC))
+                clone(
+                    self.db_object,
+                    primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
+                    # We want to update published_at only when the collection is first published.
+                    published_at=now,
+                )
             )
             self.session.add(public_collection)
 
         # Copy over relationships
         for link in self.links:
             link.collection_visibility = CollectionVisibility.PUBLIC
+
+        has_dataset_changes = False
         for dataset in self.datasets:
             revision = Dataset(dataset)
             original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
             if original and public_collection.check_has_dataset(original):
-                original.publish_revision(revision)
+                has_dataset_changes = original.publish_revision(revision, now)
             else:
-                revision.publish_new()
+                # The dataset is new
+                revision.publish_new(now)
+                has_dataset_changes = True
+
+        if is_existing_collection and has_dataset_changes:
+            public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
+
         self.session.commit()
         # commit expires the session, need to retrieve the original private collection to delete it
         private_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PRIVATE)
