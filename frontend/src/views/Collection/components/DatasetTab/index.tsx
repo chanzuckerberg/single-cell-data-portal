@@ -32,7 +32,7 @@ const DatasetTab: FC<Props> = ({
   isRevision,
 }) => {
   const CLI_README_LINK =
-    "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
   const [uploadLink] = useCollectionUploadLinks(collectionId, visibility);
   const [reuploadDataset] = useReuploadDataset(collectionId);

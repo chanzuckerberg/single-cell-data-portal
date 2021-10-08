@@ -30,7 +30,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
         local CLI script to do this.{" "}
         <b>
           <StyledAnchor
-            href="https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md"
+            href="https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md"
             target="_blank"
           >
             Learn More
