@@ -84,10 +84,13 @@ def tombstone_collection(ctx: Context, uuid: str):
     """
     Tombstones the collection specified by UUID.
 
-    You must first SSH into the target deployment using `make db/tunnel` before running.
-    You must first set DEPLOYMENT_STAGE as an env var before running
-    To run
-    ./scripts/cxg_admin.py --deployment dev tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
+    Before running, create a tunnel to the database, e.g.:
+
+        AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod make db/tunnel
+
+    Then run as:
+
+        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
 
     :param ctx: command context
     :param uuid: UUID that identifies the collection to tombstone
