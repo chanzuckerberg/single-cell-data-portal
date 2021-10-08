@@ -79,6 +79,51 @@ def delete_dataset(ctx, uuid):
 @cli.command()
 @click.argument("uuid")
 @click.pass_context
+def tombstone_collection(ctx, uuid):
+    """
+    Tombstones the collection specified by UUID.
+
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deployment dev tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
+
+    """
+
+    with db_session_manager() as session:
+        collection = Collection.get_collection(session, uuid, include_tombstones=True)
+
+        if not collection:
+            click.echo(f"Collection:{uuid} not found!")
+            exit(0)
+        else:
+            print(
+                json.dumps(
+                    collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
+                    sort_keys=True,
+                    indent=2,
+                    cls=CustomJSONEncoder,
+                )
+            )
+            click.confirm(
+                f"Are you sure you want to tombstone the collection:{uuid} from cellxgene:{ctx.obj['deployment']}?",
+                abort=True,
+            )
+
+            collection.tombstone_collection()
+
+            tombstoned = Collection.get_collection(session, uuid, include_tombstones=True)
+            if tombstoned.tombstone:
+                click.echo(f"Tombstoned collection:{uuid}")
+                exit(0)
+            else:
+                click.echo(f"Failed to tombstone collection:{uuid}")
+                exit(1)
+
+
+@cli.command()
+@click.argument("uuid")
+@click.pass_context
 def tombstone_dataset(ctx, uuid):
     """
     Remove a dataset from Cellxgene. This will delete its artifacts/genesets and mark the dataset as tombstoned so
