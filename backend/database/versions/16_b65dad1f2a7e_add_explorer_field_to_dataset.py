@@ -1,7 +1,7 @@
 """add_explorer_field_to_dataset
 
-Revision ID: b65dad1f2a7e
-Revises: 600689e11cf4
+Revision ID: 16_b65dad1f2a7e
+Revises: 15_78103925d379
 Create Date: 2021-06-02 14:52:17.931804
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "b65dad1f2a7e"
-down_revision = "78103925d379"
+revision = "16_b65dad1f2a7e"
+down_revision = "15_78103925d379"
 branch_labels = None
 depends_on = None
 

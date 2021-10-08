@@ -1,7 +1,7 @@
 """harmonize_schema_state_dev
 
-Revision ID: 4ddb19dcc4e8
-Revises: fa0950f6df19
+Revision ID: 04a_4ddb19dcc4e8
+Revises: 03_fa0950f6df19
 Create Date: 2020-08-28 12:49:52.998722
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "4ddb19dcc4e8"
-down_revision = "fa0950f6df19"
+revision = "04a_4ddb19dcc4e8"
+down_revision = "03_fa0950f6df19"
 branch_labels = None
 depends_on = None
 

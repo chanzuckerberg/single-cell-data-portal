@@ -1,7 +1,7 @@
 """update_for_collections
 
-Revision ID: f6c4f66e8db6
-Revises: 9023d0bf61ab
+Revision ID: 07_f6c4f66e8db6
+Revises: 06_9023d0bf61ab
 Create Date: 2020-10-27 16:14:31.084060
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "f6c4f66e8db6"
-down_revision = "9023d0bf61ab"
+revision = "07_f6c4f66e8db6"
+down_revision = "06_9023d0bf61ab"
 branch_labels = None
 depends_on = None
 
