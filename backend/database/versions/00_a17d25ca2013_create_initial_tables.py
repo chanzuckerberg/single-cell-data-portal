@@ -1,6 +1,6 @@
 """create_initial_tables
 
-Revision ID: a17d25ca2013
+Revision ID: 00_a17d25ca2013
 Revises:
 Create Date: 2020-07-17 21:57:32.177139
 
@@ -11,7 +11,7 @@ from sqlalchemy import Column, String, Boolean, Integer, func, TIMESTAMP
 from sqlalchemy.dialects.postgresql import ENUM
 
 # revision identifiers, used by Alembic.
-revision = "a17d25ca2013"
+revision = "00_a17d25ca2013"
 down_revision = None
 branch_labels = None
 depends_on = None

@@ -1,7 +1,7 @@
 """harmonize_schema_state_prod
 
-Revision ID: 9023d0bf61ab
-Revises: d9fb29897244
+Revision ID: 06_9023d0bf61ab
+Revises: 05_d9fb29897244
 Create Date: 2020-08-28 15:00:56.262160
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "9023d0bf61ab"
-down_revision = "d9fb29897244"
+revision = "06_9023d0bf61ab"
+down_revision = "05_d9fb29897244"
 branch_labels = None
 depends_on = None
 

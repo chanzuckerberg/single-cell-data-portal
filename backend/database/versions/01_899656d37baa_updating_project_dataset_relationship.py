@@ -1,7 +1,7 @@
 """updating_project_dataset_relationship
 
-Revision ID: 899656d37baa
-Revises: a17d25ca2013
+Revision ID: 01_899656d37baa
+Revises: 00_a17d25ca2013
 Create Date: 2020-07-13 21:11:12.683976
 
 """
@@ -9,8 +9,8 @@ from alembic import op
 from sqlalchemy import Column, String, TIMESTAMP, func, INTEGER
 
 # revision identifiers, used by Alembic.
-revision = "899656d37baa"
-down_revision = "a17d25ca2013"
+revision = "01_899656d37baa"
+down_revision = "00_a17d25ca2013"
 branch_labels = None
 depends_on = None
 

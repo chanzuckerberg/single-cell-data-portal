@@ -1,7 +1,7 @@
 """add_processing_timestamps
 
-Revision ID: 7794b1ea430f
-Revises: 387b9dc01c4b
+Revision ID: 09_7794b1ea430f
+Revises: 08_387b9dc01c4b
 Create Date: 2020-11-17 04:39:00.759295
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision = "7794b1ea430f"
-down_revision = "387b9dc01c4b"
+revision = "09_7794b1ea430f"
+down_revision = "08_387b9dc01c4b"
 branch_labels = None
 depends_on = None
 

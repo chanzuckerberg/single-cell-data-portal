@@ -1,7 +1,7 @@
 """create_geneset_table
 
-Revision ID: bf83d170bb7f
-Revises: 5a363594dd06
+Revision ID: 12_bf83d170bb7f
+Revises: 11_5a363594dd06
 Create Date: 2021-02-22 20:32:01.329837
 
 """
@@ -12,8 +12,8 @@ from sqlalchemy.dialects import postgresql
 # revision identifiers, used by Alembic.
 from sqlalchemy.dialects.postgresql import ENUM
 
-revision = "bf83d170bb7f"
-down_revision = "5a363594dd06"
+revision = "12_bf83d170bb7f"
+down_revision = "11_5a363594dd06"
 branch_labels = None
 depends_on = None
 

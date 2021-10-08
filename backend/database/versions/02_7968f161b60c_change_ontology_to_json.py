@@ -1,7 +1,7 @@
 """change_ontology_to_json
 
-Revision ID: 7968f161b60c
-Revises: 899656d37baa
+Revision ID: 02_7968f161b60c
+Revises: 01_899656d37baa
 Create Date: 2020-08-20 08:58:21.531154
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 # revision identifiers, used by Alembic.
-revision = "7968f161b60c"
-down_revision = "899656d37baa"
+revision = "02_7968f161b60c"
+down_revision = "01_899656d37baa"
 branch_labels = None
 depends_on = None
 
