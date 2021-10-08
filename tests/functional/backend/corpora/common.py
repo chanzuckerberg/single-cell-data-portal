@@ -87,16 +87,9 @@ class BaseFunctionalTestCase(unittest.TestCase):
             upload_status = data["upload_status"]
             if upload_status == "UPLOADED":
                 conversion_cxg_status = data.get("conversion_cxg_status")
-                conversion_loom_status = data.get("conversion_loom_status")
                 conversion_rds_status = data.get("conversion_rds_status")
                 conversion_anndata_status = data.get("conversion_anndata_status")
-                if (
-                    conversion_cxg_status
-                    == conversion_loom_status
-                    == conversion_rds_status
-                    == conversion_anndata_status
-                    == "CONVERTED"
-                ):
+                if conversion_cxg_status == conversion_rds_status == conversion_anndata_status == "CONVERTED":
                     keep_trying = False
             if time.time() >= timer + 300:
                 raise TimeoutError(
