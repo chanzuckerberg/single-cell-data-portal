@@ -5,7 +5,7 @@ import EmptyModal from "../EmptyModal";
 
 // @seve TODO: Link needs to be replaced when we have the format
 const CLI_README_LINK =
-  "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
+  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
 const GeneSetTab: FC = () => {
   return (
