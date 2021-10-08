@@ -1,7 +1,5 @@
-import { Button } from "@blueprintjs/core";
 import styled from "styled-components";
 import { layout } from "../common/layout";
-import { PT_GRID_SIZE_PX } from "../common/theme";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -30,8 +28,4 @@ export const MainWrapper = styled.div`
 
 export const Right = styled.span`
   display: flex;
-`;
-
-export const MyCollectionsButton = styled(Button)`
-  margin-right: ${PT_GRID_SIZE_PX}px;
 `;
