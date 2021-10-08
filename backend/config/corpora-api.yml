@@ -20,7 +20,7 @@ paths:
       summary: List published collections in Corpora
       security:
         - cxguserCookieLenient: []
-        - { }
+        - {}
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
@@ -125,7 +125,7 @@ paths:
       summary: Get a collection's full details
       security:
         - cxguserCookieLenient: []
-        - { }
+        - {}
       description: >-
         This will return all datasets and associated attributes.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
@@ -151,7 +151,7 @@ paths:
       summary: Start a revision of a public collection,
       security:
         - cxguserCookie: []
-        - { }
+        - {}
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
@@ -225,7 +225,7 @@ paths:
         - collections
       summary: Delete a collection
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
@@ -506,7 +506,7 @@ paths:
         - genesets
       summary: Update links between a dataset and gene sets
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
         collection owner and the dataset and gene sets must all belong to the same private collection
@@ -588,9 +588,6 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
-                  conversion_loom_status:
-                    type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
                   conversion_anndata_status:
                     type: string
                     enum: [CONVERTING, CONVERTED, FAILED, NA]
@@ -613,7 +610,7 @@ paths:
         - genesets
       summary: Delete a genese
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Delete a gene by set removing it from a collection and any data sets it was linked to.
       operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
@@ -737,7 +734,7 @@ components:
       enum: [COUNT, NORMAL]
     is_primary_data:
       description: >-
-        Describes whether cellular observations for this dataset are all canonical (PRIMARY), 
+        Describes whether cellular observations for this dataset are all canonical (PRIMARY),
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
       enum: [PRIMARY, SECONDARY, BOTH]
@@ -885,7 +882,7 @@ components:
           type: string
         filetype:
           type: string
-          enum: [H5AD, RDS, LOOM, CXG]
+          enum: [H5AD, RDS, CXG]
         filename:
           type: string
         type:
@@ -952,7 +949,6 @@ components:
           type: string
         tombstoned:
           type: boolean
-
 
   parameters:
     path_collection_uuid:
