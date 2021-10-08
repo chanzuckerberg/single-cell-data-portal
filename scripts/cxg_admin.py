@@ -5,6 +5,7 @@ import os
 import sys
 
 import click
+from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -79,7 +80,7 @@ def delete_dataset(ctx, uuid):
 @cli.command()
 @click.argument("uuid")
 @click.pass_context
-def tombstone_collection(ctx, uuid):
+def tombstone_collection(ctx: Context, uuid: str):
     """
     Tombstones the collection specified by UUID.
 
@@ -88,6 +89,8 @@ def tombstone_collection(ctx, uuid):
     To run
     ./scripts/cxg_admin.py --deployment dev tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
 
+    :param ctx: command context
+    :param uuid: UUID that identifies the collection to tombstone
     """
 
     with db_session_manager() as session:
