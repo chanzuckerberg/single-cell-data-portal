@@ -1,7 +1,7 @@
 """revisions
 
-Revision ID: 78103925d379
-Revises: 7685265932f6
+Revision ID: 15_78103925d379
+Revises: 14_7685265932f6
 Create Date: 2021-04-26 15:19:30.660056
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "78103925d379"
-down_revision = "7685265932f6"
+revision = "15_78103925d379"
+down_revision = "14_7685265932f6"
 branch_labels = None
 depends_on = None
 

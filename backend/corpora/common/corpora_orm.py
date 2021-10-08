@@ -235,7 +235,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
-    data_submission_policy_version = Column(StrippedString, nullable=False)
+    data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships

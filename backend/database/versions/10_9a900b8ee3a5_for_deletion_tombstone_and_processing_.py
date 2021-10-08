@@ -1,7 +1,7 @@
 """For_deletion—tombstone_and_processing_status
 
-Revision ID: 9a900b8ee3a5
-Revises: 7794b1ea430f
+Revision ID: 10_9a900b8ee3a5
+Revises: 09_7794b1ea430f
 Create Date: 2021-01-25 15:44:47.054499
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 
 # revision identifiers, used by Alembic.
-revision = "9a900b8ee3a5"
-down_revision = "7794b1ea430f"
+revision = "10_9a900b8ee3a5"
+down_revision = "09_7794b1ea430f"
 branch_labels = None
 depends_on = None
 
