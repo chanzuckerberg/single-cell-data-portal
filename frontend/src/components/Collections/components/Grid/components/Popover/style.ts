@@ -17,7 +17,7 @@ export const ContentColumn = styled.div`
   display: flex;
   flex-direction: column;
   &:not(:last-child) {
-    margin-right: ${PT_GRID_SIZE_PX}px;
+    margin-right: ${PT_GRID_SIZE_PX * 3}px;
   }
-  width: 160px;
+  min-width: 160px;
 `;
