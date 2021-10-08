@@ -103,7 +103,7 @@ def tombstone_collection(ctx: Context, uuid: str):
             click.echo(f"Collection:{uuid} not found!")
             exit(0)
         else:
-            print(
+            click.echo(
                 json.dumps(
                     collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
                     sort_keys=True,
