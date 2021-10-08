@@ -5,9 +5,6 @@ export const INCOMPLETE_GENE_MIGRATIONS_COLLECTIONS = [
   "5d445965-6f1a-4b68-ba3a-b8f765155d3a",
   "a3c37598-b8e8-47db-92a9-eb91a77c9529",
   "2f75d249-1bec-459b-bf2b-b86221097ced",
-  // Rdev Test Collections:
-  "50b7e0d4-ecc8-4576-a815-6529e02c883c",
-  "423cdd2a-d096-4e87-a9a9-18e5168b45e7",
 ];
 
 export const INCOMPLETE_GENE_MIGRATIONS_HEADER = "Important Note";
