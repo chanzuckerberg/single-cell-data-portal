@@ -22,6 +22,6 @@ def downgrade():
     op.execute(
         """
         ALTER TABLE dataset_processing_status
-        ADD COLUMN conversion_loom_status conversionstatus DEFAULT 'N/A'
+        ADD COLUMN conversion_loom_status conversionstatus
     """
     )

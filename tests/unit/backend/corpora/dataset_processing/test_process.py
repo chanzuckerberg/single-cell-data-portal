@@ -403,16 +403,16 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
 
-        self.assertEqual(len(artifacts), 3)
+        self.assertEqual(len(artifacts), 2)
 
         self.assertTrue(all(a.user_submitted for a in artifacts))
         self.assertTrue(all(a.s3_uri.startswith(f"s3://{artifact_bucket}/{bucket_prefix}/") for a in artifacts))
-        self.assertEqual(len(set(a.filetype for a in artifacts)), 3)
+        self.assertEqual(len(set(a.filetype for a in artifacts)), 2)
         self.assertTrue(all(a.type == DatasetArtifactType.REMIX for a in artifacts))
 
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 3)
+        self.assertEqual(len(s3_filenames), 2)
         self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
         self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
 
@@ -495,10 +495,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_rds_status)
         self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
 
-        self.assertEqual(len(artifacts), 2)
+        self.assertEqual(len(artifacts), 1)
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 2)
+        self.assertEqual(len(s3_filenames), 1)
         self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
 
         # cleanup

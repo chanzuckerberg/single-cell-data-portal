@@ -46,7 +46,7 @@ class TestUploadFailureHandling(TestCase):
         self.s3.put_object(Bucket=self.bucket_name, Key=rds_file, Body="words")
 
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
-        assert len(resp["Contents"]) == 4
+        assert len(resp["Contents"]) == 3
         assert resp["Contents"][0]["Key"].split("/")[0] == self.uuid
 
     def tearDown(self) -> None:
