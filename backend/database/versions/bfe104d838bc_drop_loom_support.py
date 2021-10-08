@@ -6,8 +6,6 @@ Create Date: 2021-10-08 12:32:38.874124
 
 """
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision = 'bfe104d838bc'
@@ -17,8 +15,11 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.drop_column("dataset_processing_status", "conversion_loom_status")
 
 
 def downgrade():
-    pass
+    op.execute("""
+        ALTER TABLE dataset_processing_status
+        ADD COLUMN conversion_loom_status conversionstatus DEFAULT 'N/A'
+    """)
