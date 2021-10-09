@@ -187,7 +187,6 @@ class TestCollection(BaseAuthAPITest):
                         "upload_status": "UPLOADING",
                         "upload_progress": 4 / 9,
                         "validation_status": "NA",
-                        "conversion_loom_status": "NA",
                         "conversion_anndata_status": "NA",
                         "conversion_rds_status": "NA",
                         "conversion_cxg_status": "NA",
