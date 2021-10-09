@@ -108,29 +108,25 @@ Once all conversion are complete, the conversion status for each file will be ei
 
 import logging
 import os
-import requests
 import subprocess
+import sys
 import typing
 from os.path import join
 
 import numpy
+import requests
 import scanpy
-import sys
+from cellxgene_schema import validate
 
 from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
-from backend.corpora.common.corpora_orm import (
-    DatasetArtifactFileType,
-    ConversionStatus,
-    ValidationStatus,
-    ProcessingStatus,
-    DatasetArtifactType,
-)
+from backend.corpora.common.corpora_orm import (ConversionStatus, DatasetArtifactFileType, DatasetArtifactType,
+                                                ProcessingStatus, ValidationStatus)
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.db_helpers import processing_status_updater
+from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.download import download
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 from backend.corpora.dataset_processing.slack import format_slack_message
 
@@ -414,15 +410,13 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = "local.h5ad"
-    commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
-    val_proc = subprocess.run(commands, capture_output=True)
-    if val_proc.returncode != 0:
-        logger.error("Validation failed!")
-        logger.error(f"stdout: {val_proc.stdout}")
-        logger.error(f"stderr: {val_proc.stderr}")
+    is_valid, errors = validate.validate(local_filename, output_filename)
+
+    if not is_valid:
+        logger.error(f"Validation failed with {len(errors)} errors!")
         status = dict(
             validation_status=ValidationStatus.INVALID,
-            validation_message=val_proc.stdout,
+            validation_message=errors,
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
