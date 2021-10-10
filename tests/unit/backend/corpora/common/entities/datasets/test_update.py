@@ -33,7 +33,7 @@ class TestUpdateDataset(TestDataset):
 
         new_artifact_params = dict(
             filename="a_different_filename",
-            filetype=DatasetArtifactFileType.LOOM,
+            filetype=DatasetArtifactFileType.RDS,
             type=DatasetArtifactType.ORIGINAL,
             user_submitted=False,
             s3_uri="a_different_uri",

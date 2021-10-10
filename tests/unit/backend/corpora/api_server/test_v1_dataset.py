@@ -72,7 +72,6 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         expected_body = {
             "conversion_anndata_status": "NA",
             "conversion_cxg_status": "NA",
-            "conversion_loom_status": "NA",
             "conversion_rds_status": "NA",
             "processing_status": "PENDING",
             "dataset_id": "test_dataset_id",
