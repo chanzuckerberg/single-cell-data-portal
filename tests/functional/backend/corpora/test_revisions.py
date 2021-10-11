@@ -40,7 +40,6 @@ class TestRevisions(BaseFunctionalTestCase):
     def create_explorer_url(self, dataset_id):
         return f"https://cellxgene.{self.deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
-    @unittest.skip("Temporarily skipping this test to clear deployments")
     @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_revision_flow(self):
 
