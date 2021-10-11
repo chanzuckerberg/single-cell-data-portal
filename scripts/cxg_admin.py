@@ -5,6 +5,7 @@ import os
 import sys
 
 import click
+from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -54,7 +55,7 @@ def delete_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -127,6 +128,56 @@ def delete_collections(ctx, collection_name):
 @cli.command()
 @click.argument("uuid")
 @click.pass_context
+def tombstone_collection(ctx: Context, uuid: str):
+    """
+    Tombstones the collection specified by UUID.
+
+    Before running, create a tunnel to the database, e.g.:
+
+        AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod make db/tunnel
+
+    Then run as:
+
+        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
+
+    :param ctx: command context
+    :param uuid: UUID that identifies the collection to tombstone
+    """
+
+    with db_session_manager() as session:
+        collection = Collection.get_collection(session, uuid, include_tombstones=True)
+
+        if not collection:
+            click.echo(f"Collection:{uuid} not found!")
+            exit(0)
+
+        click.echo(
+            json.dumps(
+                collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
+                sort_keys=True,
+                indent=2,
+                cls=CustomJSONEncoder,
+            )
+        )
+        click.confirm(
+            f"Are you sure you want to tombstone the collection:{uuid} from cellxgene:{ctx.obj['deployment']}?",
+            abort=True,
+        )
+
+        collection.tombstone_collection()
+
+        tombstoned = Collection.get_collection(session, uuid, include_tombstones=True)
+        if tombstoned.tombstone:
+            click.echo(f"Tombstoned collection:{uuid}")
+            exit(0)
+        else:
+            click.echo(f"Failed to tombstone collection:{uuid}")
+            exit(1)
+
+
+@cli.command()
+@click.argument("uuid")
+@click.pass_context
 def tombstone_dataset(ctx, uuid):
     """
     Remove a dataset from Cellxgene. This will delete its artifacts/genesets and mark the dataset as tombstoned so
@@ -139,7 +190,7 @@ def tombstone_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -261,7 +312,7 @@ def create_cxg_artifacts(ctx):
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]
                 s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
-                print(dataset.explorer_url, s3_uri)
+                click.echo(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
                     session,
                     dataset_id=dataset.id,
