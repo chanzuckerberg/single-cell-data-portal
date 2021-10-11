@@ -269,10 +269,12 @@ def migrate_published_at(ctx):
         for record in session.query(DbCollection):
             collection_id = record.id
 
+            # Skip private collection, since published_at will be populated when published.
             if record.visibility == CollectionVisibility.PRIVATE:
                 logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
                 continue
 
+            # Skip if published_at already populated.
             if record.published_at is not None:
                 logger.info(f"SKIPPING - Collection already has published_at | collection.id: {collection_id}")
                 continue
@@ -287,10 +289,12 @@ def migrate_published_at(ctx):
         for record in session.query(DbDataset):
             dataset_id = record.id
 
+            # Skip private dataset, since published_at will be populated when published.
             if record.collection_visibility == CollectionVisibility.PRIVATE:
                 logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
                 continue
 
+            # Skip if published_at already populated.
             if record.published_at is not None:
                 logger.info(f"SKIPPING - Dataset already has published_at | dataset.id: {dataset_id}")
                 continue
