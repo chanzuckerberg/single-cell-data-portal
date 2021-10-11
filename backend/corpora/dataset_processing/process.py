@@ -116,7 +116,6 @@ from os.path import join
 import numpy
 import requests
 import scanpy
-from cellxgene_schema import validate
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
@@ -413,6 +412,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 
 
 def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
+    from cellxgene_schema import validate
+
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = "local.h5ad"
     is_valid, errors = validate.validate(local_filename, output_filename)
