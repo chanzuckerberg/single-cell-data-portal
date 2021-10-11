@@ -78,6 +78,54 @@ def delete_dataset(ctx, uuid):
 
 
 @cli.command()
+@click.argument("collection_name")
+@click.pass_context
+def delete_collections(ctx, collection_name):
+    """
+    Delete collections from data portal staging or dev by collection name.
+
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deployment dev delete-collections <collection_name>
+
+    Examples of valid collection_name:
+        - String with no spaces: ThisCollection
+        - String with spaces: "This Collection"
+    """
+
+    if ctx.obj['deployment'] == 'prod':
+        logger.info(f"Cannot run this script for prod. Aborting.")
+        exit(0)
+
+    click.confirm(
+        f"Are you sure you want to run this script? It will delete all of the "
+        f"collections with the name '{collection_name}' from the {ctx.obj['deployment']} environment.",
+        abort=True,
+    )
+
+    with db_session_manager() as session:
+        collections = session.query(DbCollection).filter_by(name=collection_name).all()
+
+        if not collections:
+            logger.info(f"There are no collections with the name '{collection_name}'. Aborting.")
+            exit(0)
+
+        logger.info(f"There are {len(collections)} collections with the name '{collection_name}'")
+
+        for c in collections:
+            collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
+            if not collection:
+                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+
+            # Delete collection
+            logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
+            collection.delete()
+
+        logger.info(f"Deletions complete!")
+
+
+@cli.command()
 @click.argument("uuid")
 @click.pass_context
 def tombstone_collection(ctx: Context, uuid: str):
