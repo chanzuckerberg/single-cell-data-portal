@@ -46,7 +46,6 @@ CREATE TYPE public.conversionstatus AS ENUM (
 CREATE TYPE public.datasetartifactfiletype AS ENUM (
     'H5AD',
     'RDS',
-    'LOOM',
     'CXG'
 );
 
@@ -174,7 +173,6 @@ CREATE TABLE public.dataset_processing_status (
     upload_message character varying,
     validation_status public.validationstatus,
     validation_message character varying,
-    conversion_loom_status public.conversionstatus,
     conversion_rds_status public.conversionstatus,
     conversion_cxg_status public.conversionstatus,
     conversion_anndata_status public.conversionstatus,

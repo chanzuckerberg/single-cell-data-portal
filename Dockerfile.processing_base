@@ -19,7 +19,6 @@ RUN apt-get update && apt-get -yq install \
 # Install R dependencies
 RUN R -e "install.packages('BiocManager')"
 RUN R -e "BiocManager::install('SingleCellExperiment')"
-RUN R -e "BiocManager::install('LoomExperiment')"
 RUN R -e "install.packages(c('devtools', 'igraph'));"
 RUN R -e "library(devtools); devtools::install_github('cellgeni/sceasy')"
 RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/')"
