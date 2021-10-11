@@ -1,4 +1,4 @@
-import { Intent } from "@blueprintjs/core";
+import { Button, Intent } from "@blueprintjs/core";
 import Link from "next/link";
 import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
@@ -9,7 +9,7 @@ import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
-import { MainWrapper, MyCollectionsButton, Right, Wrapper } from "./style";
+import { MainWrapper, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -26,9 +26,9 @@ const Header: FC = () => {
           {isMyCollectionsShown && (
             <Link href={ROUTES.MY_COLLECTIONS} passHref>
               <a href="passHref">
-                <MyCollectionsButton intent={Intent.PRIMARY} minimal>
+                <Button intent={Intent.PRIMARY} minimal>
                   My Collections
-                </MyCollectionsButton>
+                </Button>
               </a>
             </Link>
           )}

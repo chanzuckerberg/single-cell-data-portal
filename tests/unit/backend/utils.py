@@ -18,7 +18,6 @@ class BogusProcessingStatusParams:
             upload_status=UploadStatus.UPLOADING,
             upload_progress=1 / 9,
             validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
             conversion_rds_status=ConversionStatus.NA,
             conversion_cxg_status=ConversionStatus.NA,
             conversion_anndata_status=ConversionStatus.NA,

@@ -12,7 +12,6 @@ The initial processing_status when the container first runs is:
     upload_message = ""
     validation_status = ValidationStatus
     validation_message = ""
-    conversion_loom_status = ConversionStatus
     conversion_rds_status = ConversionStatus
     conversion_cxg_status = ConversionStatus
     conversion_anndata_status = ConversionStatus
@@ -59,7 +58,6 @@ If validation succeeds the process_status changes to:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
-    conversion_loom_status = ConversionStatus.CONVERTING
     conversion_rds_status = ConversionStatus.CONVERTING
     conversion_cxg_status = ConversionStatus.CONVERTING
     conversion_anndata_status = ConversionStatus.CONVERTING
@@ -80,7 +78,6 @@ After each conversion the processing_status change from CONVERTING to CONVERTED.
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.CONVERTING
     conversion_rds_status = ConversionStatus.CONVERTING
     conversion_cxg_status = ConversionStatus.CONVERTED
     conversion_anndata_status = ConversionStatus.CONVERTING
@@ -92,7 +89,6 @@ If a conversion fails the processing_status will indicated it as follow:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
     conversion_rds_status = ConversionStatus.CONVERTING
     conversion_cxg_status = ConversionStatus.CONVERTED
     conversion_anndata_status = ConversionStatus.CONVERTING
@@ -104,7 +100,6 @@ Once all conversion are complete, the conversion status for each file will be ei
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
     conversion_rds_status = ConversionStatus.CONVERTED
     conversion_cxg_status = ConversionStatus.CONVERTED
     conversion_anndata_status = ConversionStatus.FAILED
@@ -190,15 +185,6 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     update_db(
         dataset_id,
         processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
-    )
-
-    # Process loom
-    loom_filename, status = convert_file_ignore_exceptions(make_loom, local_filename, "Issue creating loom.")
-    if loom_filename:
-        create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_loom_status=status),
     )
 
     # Process seurat
@@ -318,22 +304,6 @@ def extract_metadata(filename):
     return metadata
 
 
-def make_loom(local_filename):
-    """Create a loom file from the AnnData file."""
-
-    adata = scanpy.read_h5ad(local_filename)
-    column_name_map = {}
-    for column in adata.obs.columns:
-        if "/" in column:
-            column_name_map[column] = column.replace("/", "-")
-    if column_name_map:
-        adata.obs = adata.obs.rename(columns=column_name_map)
-
-    loom_filename = local_filename.replace(".h5ad", ".loom")
-    adata.write_loom(loom_filename, True)
-    return loom_filename
-
-
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
@@ -358,7 +328,7 @@ def make_cxg(local_filename):
 
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        h5ad_data_file = H5ADDataFile(local_filename, vars_index_column_name="feature_name")
+        h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
         h5ad_data_file.to_cxg(cxg_output_container, 10.0)
     except Exception as ex:
         msg = "CXG conversion failed."
@@ -461,7 +431,6 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
         logger.info("Validation complete")
         status = dict(
             conversion_cxg_status=ConversionStatus.CONVERTING,
-            conversion_loom_status=ConversionStatus.CONVERTING,
             conversion_rds_status=ConversionStatus.CONVERTING,
             conversion_anndata_status=ConversionStatus.CONVERTING,
             validation_status=ValidationStatus.VALID,
@@ -527,10 +496,10 @@ def main():
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occured while processing.")
+        logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpect error occured while processing the data set."
+        message = "An unexpected error occurred while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)

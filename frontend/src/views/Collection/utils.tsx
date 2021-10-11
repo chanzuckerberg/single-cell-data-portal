@@ -114,21 +114,13 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {
-      // const numOfAssets = dataset.dataset_assets.length;
+      const numOfAssets = dataset.dataset_assets.length;
       const numOfDeployments = dataset.dataset_deployments.length;
 
-      // TODO(seve): uncomment old check when loom is no longer served from the backend
-      // return (
-      //   numOfDeployments === 1 &&
-      //   numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
-      // );
-
-      const assetTypes = dataset.dataset_assets.map((asset) => asset.filetype);
-
-      const hasAllFormats = Object.values(DATASET_ASSET_FORMAT).every(
-        (format) => assetTypes.includes(format)
+      return (
+        numOfDeployments === 1 &&
+        numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
       );
-      return numOfDeployments === 1 && hasAllFormats;
     }) &&
     datasets.some((dataset) => !dataset.tombstone)
   );

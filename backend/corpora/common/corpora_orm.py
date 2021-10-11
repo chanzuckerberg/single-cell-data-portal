@@ -197,13 +197,12 @@ class DatasetArtifactFileType(enum.Enum):
 
     H5AD - An AnnData object describing an expression matrix. Uses the .h5ad extension.
     RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
-    LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
+    LOOM - Removed. No longer supported. (#1427)
     CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
     """
 
     H5AD = "h5ad"
     RDS = "rds"
-    LOOM = "loom"
     CXG = "cxg"
 
 
@@ -235,7 +234,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
-    data_submission_policy_version = Column(StrippedString, nullable=False)
+    data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
@@ -428,7 +427,6 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     upload_message = Column(String)
     validation_status = Column(Enum(ValidationStatus))
     validation_message = Column(String)
-    conversion_loom_status = Column(Enum(ConversionStatus))
     conversion_rds_status = Column(Enum(ConversionStatus))
     conversion_cxg_status = Column(Enum(ConversionStatus))
     conversion_anndata_status = Column(Enum(ConversionStatus))
