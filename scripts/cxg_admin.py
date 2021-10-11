@@ -55,7 +55,7 @@ def delete_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -142,7 +142,7 @@ def tombstone_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -264,7 +264,7 @@ def create_cxg_artifacts(ctx):
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]
                 s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
-                print(dataset.explorer_url, s3_uri)
+                click.echo(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
                     session,
                     dataset_id=dataset.id,
