@@ -49,7 +49,7 @@ db/new_migration_auto:
 db/connect:
 	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
-	PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0
+	PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 $(ARGS)
 
 db/download:
     # Download the database to corpora_dev-<date>.sqlc
@@ -84,6 +84,9 @@ db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/after
 	diff /tmp/{before,after} # No news is good news.
 
+SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
+SSH_SERVER_ALIVE_COUNT_MAX?=60
 db/tunnel:
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
-	ssh -L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+	ssh -N -o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
+		-L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
