@@ -268,18 +268,38 @@ def migrate_published_at(ctx):
         # Collections
         for record in session.query(DbCollection):
             collection_id = record.id
-            logger.info(f"Setting published_at for collection {collection_id}")
 
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Collection already has published_at | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting published_at for collection {collection_id}")
             collection_created_at = record.created_at
             record.published_at = collection_created_at
+
+        logger.info(f"----- Finished migrating published_at for collections! -----")
 
         # Datasets
         for record in session.query(DbDataset):
             dataset_id = record.id
-            logger.info(f"Setting published_at for dataset {dataset_id}")
 
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Dataset already has published_at | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting published_at for dataset {dataset_id}")
             dataset_created_at = record.created_at
             record.published_at = dataset_created_at
+
+        logger.info(f"----- Finished migrating published_at for datasets! -----")
 
 
 @cli.command()
