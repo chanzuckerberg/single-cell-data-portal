@@ -102,29 +102,29 @@ def tombstone_collection(ctx: Context, uuid: str):
         if not collection:
             click.echo(f"Collection:{uuid} not found!")
             exit(0)
+
+        click.echo(
+            json.dumps(
+                collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
+                sort_keys=True,
+                indent=2,
+                cls=CustomJSONEncoder,
+            )
+        )
+        click.confirm(
+            f"Are you sure you want to tombstone the collection:{uuid} from cellxgene:{ctx.obj['deployment']}?",
+            abort=True,
+        )
+
+        collection.tombstone_collection()
+
+        tombstoned = Collection.get_collection(session, uuid, include_tombstones=True)
+        if tombstoned.tombstone:
+            click.echo(f"Tombstoned collection:{uuid}")
+            exit(0)
         else:
-            click.echo(
-                json.dumps(
-                    collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
-                    sort_keys=True,
-                    indent=2,
-                    cls=CustomJSONEncoder,
-                )
-            )
-            click.confirm(
-                f"Are you sure you want to tombstone the collection:{uuid} from cellxgene:{ctx.obj['deployment']}?",
-                abort=True,
-            )
-
-            collection.tombstone_collection()
-
-            tombstoned = Collection.get_collection(session, uuid, include_tombstones=True)
-            if tombstoned.tombstone:
-                click.echo(f"Tombstoned collection:{uuid}")
-                exit(0)
-            else:
-                click.echo(f"Failed to tombstone collection:{uuid}")
-                exit(1)
+            click.echo(f"Failed to tombstone collection:{uuid}")
+            exit(1)
 
 
 @cli.command()
