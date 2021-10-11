@@ -88,6 +88,7 @@ db/test_migration:
 
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
+# TODO: consider adding -M and -S options on ssh command when needed
 db/tunnel:
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
 	ssh -f -T -N \
