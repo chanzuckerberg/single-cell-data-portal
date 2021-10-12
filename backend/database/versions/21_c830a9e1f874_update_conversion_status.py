@@ -25,7 +25,8 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("UPDATE dataset_processing_status SET h5ad_status = 'NA' WHERE h5ad_status in ('UPLOADING', 'UPLOADED');") # noqa E501
+    op.execute(
+        "UPDATE dataset_processing_status SET h5ad_status = 'NA' WHERE h5ad_status in ('UPLOADING', 'UPLOADED');") # noqa E501
     op.execute("UPDATE dataset_processing_status SET rds_status = 'NA' WHERE rds_status in ('UPLOADING', 'UPLOADED');")
     op.execute("UPDATE dataset_processing_status SET cxg_status = 'NA' WHERE cxg_status in ('UPLOADING', 'UPLOADED');")
 

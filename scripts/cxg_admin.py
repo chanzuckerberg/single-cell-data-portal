@@ -94,7 +94,7 @@ def delete_collections(ctx, collection_name):
         - String with spaces: "This Collection"
     """
 
-    if ctx.obj['deployment'] == 'prod':
+    if ctx.obj["deployment"] == "prod":
         logger.info(f"Cannot run this script for prod. Aborting.")
         exit(0)
 
@@ -116,7 +116,9 @@ def delete_collections(ctx, collection_name):
         for c in collections:
             collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
             if not collection:
-                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+                collection = Collection.get_collection(
+                    session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True
+                )
 
             # Delete collection
             logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
@@ -461,7 +463,7 @@ def add_trailing_slash_to_explorer_urls(ctx):
             if record.explorer_url is None:
                 logger.info(f"SKIPPING - Dataset does not have an explorer_url | dataset_id {dataset_id}")
                 continue
-            
+
             explorer_url = record.explorer_url.strip()
             if explorer_url[-1] == "/":
                 logger.info(
@@ -475,7 +477,7 @@ def add_trailing_slash_to_explorer_urls(ctx):
             )
             explorer_url_w_slash = explorer_url + "/"
             record.explorer_url = explorer_url_w_slash
-        
+
         logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
 
 

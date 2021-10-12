@@ -400,7 +400,6 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-
             rds_status=ConversionStatus.CONVERTED,
             cxg_status=ConversionStatus.CONVERTED,
             h5ad_status=ConversionStatus.CONVERTED,
@@ -414,7 +413,6 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-
             rds_status=ConversionStatus.CONVERTED,
             cxg_status=ConversionStatus.CONVERTED,
             h5ad_status=ConversionStatus.CONVERTED,
