@@ -103,7 +103,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746933.625826,
@@ -246,7 +246,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746940.678959,
@@ -389,7 +389,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746880.074091,
@@ -524,7 +524,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746868.294075,
@@ -652,7 +652,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746890.095562,
@@ -795,7 +795,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617319340.176877,
@@ -938,7 +938,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617746898.171688,
@@ -1081,7 +1081,7 @@ const datasets = [
       },
     ],
     processing_status: {
-      anndata_status: "CONVERTED",
+      h5ad_status: "CONVERTED",
       cxg_status: "CONVERTED",
       rds_status: "CONVERTED",
       created_at: 1617739319.909173,

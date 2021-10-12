@@ -389,7 +389,7 @@ class TestDatabase:
             validation_status=ValidationStatus.NA,
             rds_status=ConversionStatus.NA,
             cxg_status=ConversionStatus.NA,
-            anndata_status=ConversionStatus.NA,
+            h5ad_status=ConversionStatus.NA,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -403,7 +403,7 @@ class TestDatabase:
 
             rds_status=ConversionStatus.CONVERTED,
             cxg_status=ConversionStatus.CONVERTED,
-            anndata_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -417,7 +417,7 @@ class TestDatabase:
 
             rds_status=ConversionStatus.CONVERTED,
             cxg_status=ConversionStatus.CONVERTED,
-            anndata_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()

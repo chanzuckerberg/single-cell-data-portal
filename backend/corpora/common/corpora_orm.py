@@ -392,7 +392,7 @@ class ConversionStatus(enum.Enum):
     CONVERTING = The conversion script is running
     CONVERTED - Conversion completed
     UPLOADING - The file is being uploaded to the S3 artifact bucket
-    UPLOADED - The file was successfully copied to the correct bucket and the dataset artifact was updated
+    UPLOADED - The file was successfully uploaded to the S3 artifact bucket and the dataset artifact was updated
     FAILED - Conversion failed
     """
 
@@ -433,7 +433,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     validation_message = Column(String)
     rds_status = Column(Enum(ConversionStatus))
     cxg_status = Column(Enum(ConversionStatus))
-    anndata_status = Column(Enum(ConversionStatus))
+    h5ad_status = Column(Enum(ConversionStatus))
     processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships

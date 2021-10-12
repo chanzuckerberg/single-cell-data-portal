@@ -401,7 +401,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         processing_status = dataset.processing_status
 
         self.assertEqual(ConversionStatus.UPLOADED, processing_status.rds_status)
-        self.assertEqual(ConversionStatus.UPLOADED, processing_status.anndata_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.h5ad_status)
 
         self.assertEqual(len(artifacts), 2)
 
@@ -437,7 +437,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
-                "anndata_status",
+                "h5ad_status",
             )
 
         with self.subTest("invalid artifact type"):
@@ -453,7 +453,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
-                "anndata_status",
+                "h5ad_status",
             )
 
         with self.subTest("dataset does not exist"):
@@ -465,7 +465,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 process.get_bucket_prefix("1234"),
                 "1234",
                 artifact_bucket,
-                "anndata_status",
+                "h5ad_status",
             )
 
         with self.subTest("bucket does not exist"):
@@ -477,7 +477,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 "fake-bucket",
-                "anndata_status",
+                "h5ad_status",
             )
 
         # cleanup
@@ -498,7 +498,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         processing_status = dataset.processing_status
 
         self.assertEqual(ConversionStatus.FAILED, processing_status.rds_status)
-        self.assertEqual(ConversionStatus.UPLOADED, processing_status.anndata_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.h5ad_status)
 
         self.assertEqual(len(artifacts), 1)
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
@@ -528,7 +528,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         with self.assertLogs(process.logger, logging.ERROR):
             filename = convert_file_ignore_exceptions(
-                converter, self.h5ad_filename, "error", "fake_uuid", "anndata_status"
+                converter, self.h5ad_filename, "error", "fake_uuid", "h5ad_status"
             )
         self.assertIsNone(filename)
 

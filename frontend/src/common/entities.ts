@@ -195,7 +195,7 @@ export interface DatasetUploadStatus {
   upload_progress: number;
   validation_status: VALIDATION_STATUS;
   validation_message: string;
-  anndata_status: CONVERSION_STATUS;
+  h5ad_status: CONVERSION_STATUS;
   cxg_status: CONVERSION_STATUS;
   rds_status: CONVERSION_STATUS;
 }

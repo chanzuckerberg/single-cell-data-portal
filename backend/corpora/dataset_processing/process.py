@@ -14,7 +14,7 @@ The initial processing_status when the container first runs is:
     validation_message = ""
     rds_status = ConversionStatus
     cxg_status = ConversionStatus
-    anndata_status = ConversionStatus
+    h5ad_status = ConversionStatus
 }
 
 ## Upload
@@ -60,7 +60,7 @@ If validation succeeds the process_status changes to:
     validation_status = ValidationStatus.VALID
     rds_status = ConversionStatus.CONVERTING
     cxg_status = ConversionStatus.CONVERTING
-    anndata_status = ConversionStatus.CONVERTING
+    h5ad_status = ConversionStatus.CONVERTING
 }
 
 If validation fails the processing_status change to:
@@ -69,13 +69,13 @@ If validation fails the processing_status change to:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.FAILED,
-    anndata_status = ConversionStatus.CONVERTED
+    h5ad_status = ConversionStatus.CONVERTED
 }
 
 ## Conversion
 As each conversion is started the status for the file format is set to CONVERTING then CONVERTED if the conversion
 completes successfully. The status is then set to UPLOADING while the file is copied to s3 and UPLOADED on success.
- Cellxgene data is converted/uploaded first. The anndata_status is set to CONVERTED after validation/label writing is
+ Cellxgene data is converted/uploaded first. The h5ad_status is set to CONVERTED after validation/label writing is
  complete.
 {
     processing_status = ProcessingStatus.PENDING
@@ -84,7 +84,7 @@ completes successfully. The status is then set to UPLOADING while the file is co
     validation_status = ValidationStatus
     rds_status = ConversionStatus.CONVERTING
     cxg_status = ConversionStatus.UPLOADED
-    anndata_status = ConversionStatus.CONVERTED
+    h5ad_status = ConversionStatus.CONVERTED
 }
 
 If a conversion fails the processing_status will indicated it as follow:
@@ -93,12 +93,9 @@ If a conversion fails the processing_status will indicated it as follow:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    rds_status = ConversionStatus.CONVERTING
-    cxg_status = ConversionStatus.CONVERTED
-    anndata_status = ConversionStatus.CONVERTING
     rds_status = ConversionStatus.FAILED
     cxg_status = ConversionStatus.UPLOADED
-    anndata_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.UPLOADED
 }
 
 Once all conversion are complete, the conversion status for each file will be either UPLOADED or FAILED:
@@ -109,7 +106,7 @@ Once all conversion are complete, the conversion status for each file will be ei
     validation_status = ValidationStatus
     rds_status = ConversionStatus.FAILED
     cxg_status = ConversionStatus.UPLOADED
-    anndata_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.UPLOADED
 }
 """
 
@@ -118,6 +115,7 @@ import os
 import subprocess
 import sys
 import typing
+from datetime import datetime
 from os.path import join
 
 import numpy
@@ -201,7 +199,7 @@ def create_artifacts(local_filename, dataset_id, artifact_bucket):
     logger.info("Creating Artifacts.")
     # upload AnnData
     create_artifact(
-        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "anndata_status"
+        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
 
     # Process and upload seurat
@@ -388,12 +386,14 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
 
 def convert_file_ignore_exceptions(
     converter: typing.Callable, local_filename: str, error_message: str, dataset_id: str, processing_status_type: str
-) -> typing.Tuple[str, ConversionStatus]:
+) -> str:
     logger.info(f"Converting {converter}")
+    start = datetime.now()
     try:
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTING})
         file_dir = converter(local_filename)
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTED})
+        logger.info(f"Finished converting {converter} in {datetime.now()- start}")
     except Exception:
         file_dir = None
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
@@ -455,7 +455,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     else:
         logger.info("Validation complete")
         status = dict(
-            anndata_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)

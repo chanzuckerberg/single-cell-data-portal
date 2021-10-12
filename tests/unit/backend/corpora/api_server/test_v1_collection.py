@@ -187,7 +187,7 @@ class TestCollection(BaseAuthAPITest):
                         "upload_status": "UPLOADING",
                         "upload_progress": 4 / 9,
                         "validation_status": "NA",
-                        "anndata_status": "NA",
+                        "h5ad_status": "NA",
                         "rds_status": "NA",
                         "cxg_status": "NA",
                     },

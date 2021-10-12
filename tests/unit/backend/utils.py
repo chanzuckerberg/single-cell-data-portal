@@ -20,7 +20,7 @@ class BogusProcessingStatusParams:
             validation_status=ValidationStatus.NA,
             rds_status=ConversionStatus.NA,
             cxg_status=ConversionStatus.NA,
-            anndata_status=ConversionStatus.NA,
+            h5ad_status=ConversionStatus.NA,
         )
         bogus_data.update(**kwargs)
         return bogus_data
