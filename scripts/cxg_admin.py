@@ -440,6 +440,45 @@ def strip_all_collection_fields(ctx):
         session.commit()
 
 
+@cli.command()
+@click.pass_context
+def add_trailing_slash_to_explorer_urls(ctx):
+    """
+    The explorer_url for datasets must end with a trailing slash to function
+    properly. This script adds a trailing slash to a dataset's explorer_url
+    if it already does not end with one.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will add a trailing slash to "
+            "a dataset's explorer_url if it already does not end with one.",
+            abort=True,
+        )
+
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            if record.explorer_url is None:
+                logger.info(f"SKIPPING - Dataset does not have an explorer_url | dataset_id {dataset_id}")
+                continue
+            
+            explorer_url = record.explorer_url.strip()
+            if explorer_url[-1] == "/":
+                logger.info(
+                    f"SKIPPING - Dataset explorer_url already ends with trailing slash | dataset_id {dataset_id}"
+                )
+                continue
+
+            logger.info(
+                f"Adding trailing slash to dataset explorer_url | dataset_id {dataset_id} | "
+                f"original explorer_url: {explorer_url}"
+            )
+            explorer_url_w_slash = explorer_url + "/"
+            record.explorer_url = explorer_url_w_slash
+        
+        logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
+
+
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
     uri = uri._replace(netloc="@".join([uri[1].split("@")[0], "localhost:5432"]))
