@@ -47,8 +47,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
-        url:
-          "https://cellxgene.cziscience.com/e/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e.cxg/",
+        url: "https://cellxgene.cziscience.com/e/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e.cxg/",
       },
     ],
     development_stage: [
@@ -191,8 +190,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "572f3f3e-d3e4-4d13-8e2b-88215e508481",
-        url:
-          "https://cellxgene.cziscience.com/e/572f3f3e-d3e4-4d13-8e2b-88215e508481.cxg/",
+        url: "https://cellxgene.cziscience.com/e/572f3f3e-d3e4-4d13-8e2b-88215e508481.cxg/",
       },
     ],
     development_stage: [
@@ -335,8 +333,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "78fd69d2-75e4-4207-819a-563139f273c6",
-        url:
-          "https://cellxgene.cziscience.com/e/78fd69d2-75e4-4207-819a-563139f273c6.cxg/",
+        url: "https://cellxgene.cziscience.com/e/78fd69d2-75e4-4207-819a-563139f273c6.cxg/",
       },
     ],
     development_stage: [
@@ -471,8 +468,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "84f1a631-910b-4fbb-9f76-d915a07316d2",
-        url:
-          "https://cellxgene.cziscience.com/e/84f1a631-910b-4fbb-9f76-d915a07316d2.cxg/",
+        url: "https://cellxgene.cziscience.com/e/84f1a631-910b-4fbb-9f76-d915a07316d2.cxg/",
       },
     ],
     development_stage: [
@@ -600,8 +596,7 @@ const datasets = [
       {
         dataset_id: "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
         updated_at: 1617747615.886036,
-        url:
-          "https://cellxgene.cziscience.com/e/9d584fcb-a28a-4b91-a886-ceb66a88ef81.cxg/",
+        url: "https://cellxgene.cziscience.com/e/9d584fcb-a28a-4b91-a886-ceb66a88ef81.cxg/",
       },
     ],
     development_stage: [
@@ -744,8 +739,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
-        url:
-          "https://cellxgene.cziscience.com/e/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e.cxg/",
+        url: "https://cellxgene.cziscience.com/e/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e.cxg/",
       },
     ],
     development_stage: [
@@ -888,8 +882,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "ed852810-a003-4386-9846-1638362cee39",
-        url:
-          "https://cellxgene.cziscience.com/e/ed852810-a003-4386-9846-1638362cee39.cxg/",
+        url: "https://cellxgene.cziscience.com/e/ed852810-a003-4386-9846-1638362cee39.cxg/",
       },
     ],
     development_stage: [
@@ -1032,8 +1025,7 @@ const datasets = [
     dataset_deployments: [
       {
         dataset_id: "f75f2ff4-2884-4c2d-b375-70de37a34507",
-        url:
-          "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/",
+        url: "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/",
       },
     ],
     development_stage: [
@@ -1133,4 +1125,4 @@ const datasets = [
     updated_at: 1617755780.245404,
   },
 ];
-export default (datasets as unknown) as Dataset[];
+export default datasets as unknown as Dataset[];
