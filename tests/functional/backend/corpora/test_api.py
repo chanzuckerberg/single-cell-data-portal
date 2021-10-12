@@ -213,17 +213,17 @@ class TestApi(BaseFunctionalTestCase):
 
                 # conversion statuses only returned once uploaded
                 if upload_status == "UPLOADED":
-                    conversion_cxg_status = data.get("conversion_cxg_status")
-                    conversion_rds_status = data.get("conversion_rds_status")
-                    conversion_anndata_status = data.get("conversion_anndata_status")
-                    self.assertIn(data.get("conversion_cxg_status"), expected_conversion_statuses)
-                    if conversion_cxg_status == "FAILED":
+                    cxg_status = data.get("cxg_status")
+                    rds_status = data.get("rds_status")
+                    h5ad_status = data.get("h5ad_status")
+                    self.assertIn(data.get("cxg_status"), expected_conversion_statuses)
+                    if cxg_status == "FAILED":
                         self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if conversion_rds_status == "FAILED":
+                    if rds_status == "FAILED":
                         self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if conversion_anndata_status == "FAILED":
+                    if h5ad_status == "FAILED":
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if conversion_cxg_status == conversion_rds_status == conversion_anndata_status == "CONVERTED":
+                    if cxg_status == rds_status == h5ad_status == "CONVERTED":
                         keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError(
