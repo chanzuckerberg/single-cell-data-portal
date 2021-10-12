@@ -74,7 +74,8 @@ const CollectionRow: FC<Props> = (props) => {
   const datasets = Array.from(collection.datasets.values());
   const isPrivate = visibility === VISIBILITY_TYPE.PRIVATE;
 
-  const {tissue, assay, disease, organism, cell_count} = aggregateDatasetsMetadata(datasets);
+  const { tissue, assay, disease, organism, cell_count } =
+    aggregateDatasetsMetadata(datasets);
 
   return (
     <StyledRow data-test-id="collection-row">

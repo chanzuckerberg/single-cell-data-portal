@@ -153,7 +153,8 @@ const DatasetRow: FC<Props> = ({
 
   if (checkIfCancelled(datasetStatus)) return null;
 
-  const {tissue, assay, disease, organism, cell_count} = aggregateDatasetsMetadata([dataset]);
+  const { tissue, assay, disease, organism, cell_count } =
+    aggregateDatasetsMetadata([dataset]);
 
   return (
     <StyledRow>

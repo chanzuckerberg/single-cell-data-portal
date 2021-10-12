@@ -844,10 +844,10 @@ export default function dropins() {
                     const a = document.createElement("div");
                     (a.style.position = "fixed"),
                       (a.style.left =
-                       a.style.right =
-                       a.style.top =
-                       a.style.bottom =
-                        "0"),
+                        a.style.right =
+                        a.style.top =
+                        a.style.bottom =
+                          "0"),
                       (a.style.zIndex = "1000"),
                       (a.style.backgroundColor = "rgba(160, 160, 160, 0.2)"),
                       a.appendChild(i),
