@@ -5,6 +5,7 @@ import os
 import sys
 
 import click
+from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -54,7 +55,7 @@ def delete_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -77,6 +78,104 @@ def delete_dataset(ctx, uuid):
 
 
 @cli.command()
+@click.argument("collection_name")
+@click.pass_context
+def delete_collections(ctx, collection_name):
+    """
+    Delete collections from data portal staging or dev by collection name.
+
+    You must first SSH into the target deployment using `make db/tunnel` before running.
+    You must first set DEPLOYMENT_STAGE as an env var before running
+    To run
+    ./scripts/cxg_admin.py --deployment dev delete-collections <collection_name>
+
+    Examples of valid collection_name:
+        - String with no spaces: ThisCollection
+        - String with spaces: "This Collection"
+    """
+
+    if ctx.obj['deployment'] == 'prod':
+        logger.info(f"Cannot run this script for prod. Aborting.")
+        exit(0)
+
+    click.confirm(
+        f"Are you sure you want to run this script? It will delete all of the "
+        f"collections with the name '{collection_name}' from the {ctx.obj['deployment']} environment.",
+        abort=True,
+    )
+
+    with db_session_manager() as session:
+        collections = session.query(DbCollection).filter_by(name=collection_name).all()
+
+        if not collections:
+            logger.info(f"There are no collections with the name '{collection_name}'. Aborting.")
+            exit(0)
+
+        logger.info(f"There are {len(collections)} collections with the name '{collection_name}'")
+
+        for c in collections:
+            collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
+            if not collection:
+                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+
+            # Delete collection
+            logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
+            collection.delete()
+
+        logger.info(f"Deletions complete!")
+
+
+@cli.command()
+@click.argument("uuid")
+@click.pass_context
+def tombstone_collection(ctx: Context, uuid: str):
+    """
+    Tombstones the collection specified by UUID.
+
+    Before running, create a tunnel to the database, e.g.:
+
+        AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod make db/tunnel
+
+    Then run as:
+
+        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
+
+    :param ctx: command context
+    :param uuid: UUID that identifies the collection to tombstone
+    """
+
+    with db_session_manager() as session:
+        collection = Collection.get_collection(session, uuid, include_tombstones=True)
+
+        if not collection:
+            click.echo(f"Collection:{uuid} not found!")
+            exit(0)
+
+        click.echo(
+            json.dumps(
+                collection.to_dict(remove_attr=["datasets", "links", "genesets"]),
+                sort_keys=True,
+                indent=2,
+                cls=CustomJSONEncoder,
+            )
+        )
+        click.confirm(
+            f"Are you sure you want to tombstone the collection:{uuid} from cellxgene:{ctx.obj['deployment']}?",
+            abort=True,
+        )
+
+        collection.tombstone_collection()
+
+        tombstoned = Collection.get_collection(session, uuid, include_tombstones=True)
+        if tombstoned.tombstone:
+            click.echo(f"Tombstoned collection:{uuid}")
+            exit(0)
+        else:
+            click.echo(f"Failed to tombstone collection:{uuid}")
+            exit(1)
+
+
+@cli.command()
 @click.argument("uuid")
 @click.pass_context
 def tombstone_dataset(ctx, uuid):
@@ -91,7 +190,7 @@ def tombstone_dataset(ctx, uuid):
     with db_session_manager() as session:
         dataset = Dataset.get(session, uuid, include_tombstones=True)
         if dataset is not None:
-            print(
+            click.echo(
                 json.dumps(dataset.to_dict(remove_attr=["collection"]), sort_keys=True, indent=2, cls=CustomJSONEncoder)
             )
             click.confirm(
@@ -213,7 +312,7 @@ def create_cxg_artifacts(ctx):
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]
                 s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
-                print(dataset.explorer_url, s3_uri)
+                click.echo(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
                     session,
                     dataset_id=dataset.id,
@@ -268,18 +367,42 @@ def migrate_published_at(ctx):
         # Collections
         for record in session.query(DbCollection):
             collection_id = record.id
-            logger.info(f"Setting published_at for collection {collection_id}")
 
+            # Skip private collection, since published_at will be populated when published.
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            # Skip if published_at already populated.
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Collection already has published_at | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting published_at for collection {collection_id}")
             collection_created_at = record.created_at
             record.published_at = collection_created_at
+
+        logger.info(f"----- Finished migrating published_at for collections! -----")
 
         # Datasets
         for record in session.query(DbDataset):
             dataset_id = record.id
-            logger.info(f"Setting published_at for dataset {dataset_id}")
 
+            # Skip private dataset, since published_at will be populated when published.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            # Skip if published_at already populated.
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Dataset already has published_at | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting published_at for dataset {dataset_id}")
             dataset_created_at = record.created_at
             record.published_at = dataset_created_at
+
+        logger.info(f"----- Finished migrating published_at for datasets! -----")
 
 
 @cli.command()
@@ -315,6 +438,45 @@ def strip_all_collection_fields(ctx):
 
         session.execute(query)
         session.commit()
+
+
+@cli.command()
+@click.pass_context
+def add_trailing_slash_to_explorer_urls(ctx):
+    """
+    The explorer_url for datasets must end with a trailing slash to function
+    properly. This script adds a trailing slash to a dataset's explorer_url
+    if it already does not end with one.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will add a trailing slash to "
+            "a dataset's explorer_url if it already does not end with one.",
+            abort=True,
+        )
+
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            if record.explorer_url is None:
+                logger.info(f"SKIPPING - Dataset does not have an explorer_url | dataset_id {dataset_id}")
+                continue
+            
+            explorer_url = record.explorer_url.strip()
+            if explorer_url[-1] == "/":
+                logger.info(
+                    f"SKIPPING - Dataset explorer_url already ends with trailing slash | dataset_id {dataset_id}"
+                )
+                continue
+
+            logger.info(
+                f"Adding trailing slash to dataset explorer_url | dataset_id {dataset_id} | "
+                f"original explorer_url: {explorer_url}"
+            )
+            explorer_url_w_slash = explorer_url + "/"
+            record.explorer_url = explorer_url_w_slash
+        
+        logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
 
 
 def get_database_uri() -> str:
