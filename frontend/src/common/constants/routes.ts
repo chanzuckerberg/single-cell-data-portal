@@ -9,7 +9,12 @@ export enum ROUTES {
 }
 
 export enum EXTERNAL_LINKS {
-  DOCS_DATA_PORTAL = "https://docs.cellxgene.cziscience.com",
-  DOCS_ROADMAP = "https://docs.cellxgene.cziscience.com/roadmap",
-  DOCS_TUTORIAL = "https://docs.cellxgene.cziscience.com/portal/data-portal",
+  // (thuang): TEMP -- revert back to the old links once Google Analytics is
+  // removed from Gitbook
+  // DOCS_DATA_PORTAL = "https://docs.cellxgene.cziscience.com",
+  // DOCS_ROADMAP = "https://docs.cellxgene.cziscience.com/roadmap",
+  // DOCS_TUTORIAL = "https://docs.cellxgene.cziscience.com/portal/data-portal",
+  DOCS_DATA_PORTAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md",
+  DOCS_ROADMAP = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md",
+  DOCS_TUTORIAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/portal/data-portal.md",
 }
