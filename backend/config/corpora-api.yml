@@ -590,13 +590,13 @@ paths:
                     type: string
                   h5ad_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED FAILED, NA]
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
                   cxg_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED FAILED, NA]
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
                   rds_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED FAILED, NA]
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
         "400":
           $ref: "#/components/responses/400"
         "401":
