@@ -441,6 +441,21 @@ def populate_revised_at(ctx):
 
         logger.info(f"----- Finished populating revised_at for collections! -----")
 
+        # Datasets
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            # Skip private dataset, since revised_at will be populated on
+            # publish if there are any changes.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting revised_at for dataset {dataset_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for datasets! -----")
+
 
 @cli.command()
 @click.pass_context
