@@ -46,6 +46,9 @@ import {
   useUploadProgress,
 } from "./utils";
 
+const OVER_MAX_CELL_COUNT_TOOLTIP =
+  "Exploration is currently unavailable for datasets with more than 2 million cells";
+
 const AsyncTooltip = loadable(
   () =>
     /*webpackChunkName: 'Grid/Row/DatasetRow/Tooltip' */ import(
@@ -156,6 +159,8 @@ const DatasetRow: FC<Props> = ({
   const { tissue, assay, disease, organism, cell_count } =
     aggregateDatasetsMetadata([dataset]);
 
+  const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
+
   return (
     <StyledRow>
       <DetailsCell>
@@ -212,7 +217,13 @@ const DatasetRow: FC<Props> = ({
 
           <ActionButton>
             {hasCXGFile(dataset) && (
-              <Tooltip content="Explore" disabled={dataset.tombstone ?? false}>
+              <Tooltip
+                content={
+                  isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"
+                }
+                intent={isOverMaxCellCount ? Intent.DANGER : undefined}
+                disabled={dataset.tombstone}
+              >
                 <AnchorButton
                   minimal
                   intent={Intent.PRIMARY}
@@ -225,7 +236,7 @@ const DatasetRow: FC<Props> = ({
                   target="_blank"
                   rel="noopener"
                   data-test-id="view-dataset-link"
-                  disabled={dataset.tombstone ?? false}
+                  disabled={dataset.tombstone || isOverMaxCellCount}
                 />
               </Tooltip>
             )}
@@ -235,5 +246,12 @@ const DatasetRow: FC<Props> = ({
     </StyledRow>
   );
 };
+
+/** Maximum number of cells a dataset can have in order to be included for display. */
+export const DATASET_MAX_CELL_COUNT = 2_000_000;
+
+function checkIsOverMaxCellCount(cellCount: number | null): boolean {
+  return (cellCount || 0) > DATASET_MAX_CELL_COUNT;
+}
 
 export default DatasetRow;
