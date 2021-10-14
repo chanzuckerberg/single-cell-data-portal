@@ -6,8 +6,6 @@ Create Date: 2021-10-13 15:53:34.183438
 
 """
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision = '22_449eea8f5aeb'
@@ -38,4 +36,3 @@ def downgrade():
         "filetype::text::datasetartifactfiletype"
     )
     op.execute("DROP TYPE datasetartifactfiletype_old;")
-
