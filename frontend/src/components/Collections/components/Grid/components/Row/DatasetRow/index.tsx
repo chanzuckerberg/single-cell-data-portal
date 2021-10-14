@@ -1,6 +1,5 @@
 import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import Image from "next/image";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
@@ -12,7 +11,6 @@ import {
   VALIDATION_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import ExploreSVG from "src/common/images/explore.svg";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
@@ -30,7 +28,7 @@ import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
 import RevisionStatusTag from "./components/RevisionStatusTag";
-import { TitleContainer } from "./style";
+import { StyledExplorerSvg, TitleContainer } from "./style";
 import {
   checkIfCancelled,
   checkIfFailed,
@@ -226,10 +224,9 @@ const DatasetRow: FC<Props> = ({
               >
                 <AnchorButton
                   minimal
-                  intent={Intent.PRIMARY}
                   icon={
                     <span className={Classes.ICON}>
-                      <Image alt="Explore" src={ExploreSVG} />
+                      <StyledExplorerSvg />
                     </span>
                   }
                   href={dataset?.dataset_deployments[0]?.url}
