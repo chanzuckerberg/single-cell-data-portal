@@ -197,13 +197,12 @@ class DatasetArtifactFileType(enum.Enum):
 
     H5AD - An AnnData object describing an expression matrix. Uses the .h5ad extension.
     RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
-    LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
+    LOOM - Removed. No longer supported. (#1427)
     CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
     """
 
     H5AD = "h5ad"
     RDS = "rds"
-    LOOM = "loom"
     CXG = "cxg"
 
 
@@ -391,13 +390,17 @@ class ConversionStatus(enum.Enum):
     NA - No associated conversion with the dataset, perhaps because the uploaded dataset file
          was already in this format.
     CONVERTING = The conversion script is running
-    CONVERTED - Conversion completed and the file was copied to the portal's bucket
+    CONVERTED - Conversion completed
+    UPLOADING - The file is being uploaded to the S3 artifact bucket
+    UPLOADED - The file was successfully uploaded to the S3 artifact bucket and the dataset artifact was updated
     FAILED - Conversion failed
     """
 
     NA = "N/A"
     CONVERTING = "Converting"
     CONVERTED = "Converted"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
     FAILED = "Failed"
 
 
@@ -428,10 +431,9 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     upload_message = Column(String)
     validation_status = Column(Enum(ValidationStatus))
     validation_message = Column(String)
-    conversion_loom_status = Column(Enum(ConversionStatus))
-    conversion_rds_status = Column(Enum(ConversionStatus))
-    conversion_cxg_status = Column(Enum(ConversionStatus))
-    conversion_anndata_status = Column(Enum(ConversionStatus))
+    rds_status = Column(Enum(ConversionStatus))
+    cxg_status = Column(Enum(ConversionStatus))
+    h5ad_status = Column(Enum(ConversionStatus))
     processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships

@@ -317,18 +317,6 @@ class TestDatabase:
 
         self.session.commit()
 
-        self.session.add(
-            DbDatasetArtifact(
-                id="test_dataset_artifact_for_revision_one_LOOM_id",
-                dataset_id="test_dataset_for_revisions_one",
-                filename="test_filename",
-                filetype=DatasetArtifactFileType.LOOM.name,
-                type=DatasetArtifactType.ORIGINAL.name,
-                user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
-            )
-        )
-
         self.session.commit()
 
         self.session.add(
@@ -375,18 +363,6 @@ class TestDatabase:
 
         self.session.commit()
 
-        self.session.add(
-            DbDatasetArtifact(
-                id="test_dataset_artifact_for_revision_two_LOOM_id",
-                dataset_id="test_dataset_for_revisions_two",
-                filename="test_filename",
-                filetype=DatasetArtifactFileType.LOOM.name,
-                type=DatasetArtifactType.ORIGINAL.name,
-                user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
-            )
-        )
-
         self.session.commit()
 
         self.session.add(
@@ -411,10 +387,9 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADING,
             upload_progress=4 / 9,
             validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
-            conversion_rds_status=ConversionStatus.NA,
-            conversion_cxg_status=ConversionStatus.NA,
-            conversion_anndata_status=ConversionStatus.NA,
+            rds_status=ConversionStatus.NA,
+            cxg_status=ConversionStatus.NA,
+            h5ad_status=ConversionStatus.NA,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -425,10 +400,9 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-            conversion_loom_status=ConversionStatus.CONVERTED,
-            conversion_rds_status=ConversionStatus.CONVERTED,
-            conversion_cxg_status=ConversionStatus.CONVERTED,
-            conversion_anndata_status=ConversionStatus.CONVERTED,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
@@ -439,10 +413,9 @@ class TestDatabase:
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
-            conversion_loom_status=ConversionStatus.CONVERTED,
-            conversion_rds_status=ConversionStatus.CONVERTED,
-            conversion_cxg_status=ConversionStatus.CONVERTED,
-            conversion_anndata_status=ConversionStatus.CONVERTED,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
         )
         self.session.add(dataset_processing_status)
         self.session.commit()

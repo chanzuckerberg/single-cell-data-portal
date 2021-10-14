@@ -70,10 +70,9 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         expected_body = {
-            "conversion_anndata_status": "NA",
-            "conversion_cxg_status": "NA",
-            "conversion_loom_status": "NA",
-            "conversion_rds_status": "NA",
+            "cxg_status": "NA",
+            "rds_status": "NA",
+            "h5ad_status": "NA",
             "processing_status": "PENDING",
             "dataset_id": "test_dataset_id",
             "id": "test_dataset_processing_status_id",
