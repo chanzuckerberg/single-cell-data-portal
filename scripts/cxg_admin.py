@@ -6,6 +6,7 @@ import sys
 
 import click
 from click import Context
+from datetime import datetime
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -405,6 +406,55 @@ def migrate_published_at(ctx):
             record.published_at = dataset_created_at
 
         logger.info(f"----- Finished migrating published_at for datasets! -----")
+
+
+@cli.command()
+@click.pass_context
+def populate_revised_at(ctx):
+    """
+    Populates `revised_at` for each existing collection and dataset with the
+    current datetime (UTC). This is a one-off procedure since revised_at will 
+    be set for collections and datasets when they are updated.
+    """
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign revised_at to "
+            f"all of the existing collections and datasets",
+            abort=True,
+        )
+
+        now = datetime.utcnow()
+
+        # Collections
+        for record in session.query(DbCollection):
+            collection_id = record.id
+
+            # Skip private collection, since revised_at will be populated on
+            # publish if there is a change to the collection.
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting revised_at for collection {collection_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for collections! -----")
+
+        # Datasets
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            # Skip private dataset, since revised_at will be populated on
+            # publish if there are any changes.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting revised_at for dataset {dataset_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for datasets! -----")
 
 
 @cli.command()
