@@ -27,11 +27,11 @@ const Popover: FC<Props> = ({ values }) => {
       {values.length > 2 && (
         <PopoverRaw
           interactionKind={PopoverInteractionKind.HOVER}
-          position={Position.RIGHT}
-          boundary="window"
+          placement={Position.RIGHT}
+          boundary="viewport"
           modifiers={{
             hide: { enabled: false },
-            preventOverflow: { enabled: false },
+            preventOverflow: { enabled: true },
           }}
           content={
             <ContentWrapper>
