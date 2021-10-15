@@ -34,8 +34,12 @@ async function fetchUserInfo(
   return result;
 }
 
+const AUTH_TOKEN_CACHE_TIME_MS = 8 * 60 * 60 * 1000;
+
 export function useUserInfo(hasAuth: boolean) {
   return useQuery([USE_USER_INFO, { hasAuth }], fetchUserInfo, {
+    refetchOnMount: false,
     retry: false,
+    staleTime: AUTH_TOKEN_CACHE_TIME_MS,
   });
 }

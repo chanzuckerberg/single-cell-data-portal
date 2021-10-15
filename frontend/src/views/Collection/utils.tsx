@@ -116,7 +116,6 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
     datasets.every((dataset) => {
       const numOfAssets = dataset.dataset_assets.length;
       const numOfDeployments = dataset.dataset_deployments.length;
-
       return (
         numOfDeployments === 1 &&
         numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
