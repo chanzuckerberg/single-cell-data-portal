@@ -6,6 +6,7 @@ import { FC, useEffect, useState } from "react";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
@@ -92,6 +93,11 @@ const Collection: FC = () => {
       message,
     });
   }, [tombstoned_dataset_id, collectionContactName]);
+
+  /* Pop toast if user has come from Explorer with work in progress */
+  useExplainNewTab(
+    "To maintain your in-progress work on the previous dataset, we opened this collection in a new tab."
+  );
 
   if (!collection || isError) {
     return null;
