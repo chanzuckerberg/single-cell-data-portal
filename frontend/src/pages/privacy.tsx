@@ -31,8 +31,22 @@ const Privacy = (): JSX.Element => {
           <main>
             <h1>Privacy Policy</h1>
 
-            <p>Last updated: April 1, 2021.</p>
+            <p>Last updated: Oct 19, 2021.</p>
 
+            <br />
+
+            <b>Summary of key changes in this Oct 19, 2021 update:</b>
+
+            <br />
+
+            <span>
+              We no longer use Google Analytics for web analytics. Instead, we
+              have transitioned to use the privacy-friendly Plausible service to
+              collect basic analytics about our Site traffic to understand how
+              it’s used. As a result, we collect less personal data about you.
+            </span>
+
+            <br />
             <br />
 
             <h2>Introduction</h2>
@@ -63,10 +77,11 @@ const Privacy = (): JSX.Element => {
                 <strong>not personally identifiable</strong>.
               </li>
               <li>
-                We collect <strong>basic analytics</strong> about your usage of
-                the Site (e.g. frequency, duration, IP address) so we know how
-                it’s being used. This helps us improve the Site as well as get a
-                sense of its impact.
+                We use the privacy-friendly Plausible service to collect{" "}
+                <strong>basic analytics</strong> about our Site traffic (e.g.
+                the number of visitors and page views) so we know how it’s being
+                used. This helps us improve the Site as well as get a sense of
+                its impact.
               </li>
             </ul>
 
@@ -110,12 +125,13 @@ const Privacy = (): JSX.Element => {
                     <h4>Data You Provide To Us.</h4> We collect certain
                     information from you when you provide it to us directly.
                     Specifically, this includes data you submit for display in
-                    cellxgene, data you provide you us as part of submission or
-                    registering for an account (ex: name and email address), as
-                    well as if you contact us for support or with information
-                    about a dataset via email. This information is necessary in
-                    order to create your account and provide you with access to
-                    the services we offer on the Site.
+                    cellxgene (ex: single-cell .h5ad matrix files), data you
+                    provide you us as part of submission or registering for an
+                    account (ex: name and email address), as well as if you
+                    contact us for support or with information about a dataset
+                    via email. This information is necessary in order to create
+                    your account and provide you with access to the services we
+                    offer on the Site.
                   </li>
                   <li>
                     <h4>Data From Your Browser or Device.</h4> Whenever you use
@@ -132,32 +148,31 @@ const Privacy = (): JSX.Element => {
                         stamps, clickstream data, and duration of time spent on
                         the Site. We collect this data pursuant to our
                         legitimate interests in understanding how Visitors use
-                        our Site.
+                        our Site and improving our Site.
                       </li>
                       <li>
                         <h5>Device.</h5> In addition to log data, we collect
                         information about the device you’re using to access the
                         Site; this includes the type of device, browser type,
-                        operating system, settings, unique device identifiers,
-                        and crash data that helps us understand when something
-                        goes wrong. We collect this data pursuant to our
-                        legitimate interests in improving our Site.
+                        and operating system that helps us understand when
+                        something goes wrong. We collect this data pursuant to
+                        our legitimate interests in improving our Site.
                       </li>
                       <li>
-                        <h5>Cookies and Other Similar Technologies.</h5> We also
-                        use cookies (small text files sent by your computer each
-                        time you access the Site that are unique to your account
-                        or your browser) and similar technologies. For example,
-                        we use analytics services (e.g.{" "}
-                        <a href="https://www.google.com/url?q=https://www.google.com/policies/privacy/partners/&amp;sa=D&amp;ust=1585348324239000">
-                          Google Analytics
-                        </a>
-                        ) that place cookies that collect information that
-                        allows us to understand how often you use the Sites,
-                        where you are accessing the Sites from and events that
-                        happen on the Sites. If you’d like to opt-out of Google
-                        Analytics, you can go{" "}
-                        <a href="https://www.google.com/url?q=https://tools.google.com/dlpage/gaoptout&amp;sa=D&amp;ust=1585348324240000">
+                        <h5>Cookies and Other Similar Technologies.</h5> For
+                        certain users that need to log into the cellxgene portal
+                        to publish data, we use essential cookies (small text
+                        files sent by your computer each time you access the
+                        Site that are unique to your account or your browser) to
+                        enable that use. For web analytics, we do not use Google
+                        Analytics. Instead, we use the privacy-friendly
+                        Plausible as our website analytic tool. Learn more about
+                        Plausible’s data and privacy practices{" "}
+                        <a
+                          href="https://plausible.io/data-policy"
+                          rel="noopener"
+                          target="_blank"
+                        >
                           here
                         </a>
                         .
@@ -187,12 +202,12 @@ const Privacy = (): JSX.Element => {
                     dataset you wish to share.
                   </li>
                   <li>
-                    <h4>Aggregate Insights.</h4> We use your data to produce and
-                    share aggregated insights that do not identify you. For
-                    example we may use your data to generate statistics about
-                    the location of our Visitors, and how many Visitors engage
-                    with the Site on a monthly basis. These aggregated insights
-                    are not personally identifiable.
+                    <h4>Aggregate Insights.</h4> We use the privacy-friendly
+                    Plausible service to produce and share aggregated insights
+                    that do not identify you. For example we may receive from
+                    Plausible statistics about the location of our Visitors, and
+                    how many Visitors engage with the Site on a monthly basis.
+                    These aggregated insights are not personally identifiable.
                   </li>
                   <li>
                     <h4>Security and Investigations.</h4> We use your data
@@ -342,8 +357,8 @@ const Privacy = (): JSX.Element => {
                 <ol className="section8">
                   <li>
                     <h4>Consent.</h4> We rely on consent to engage in certain
-                    data collection activities, like through cookies or data you
-                    choose to submit to us for display on cellxgene.
+                    data collection activities, like data you choose to submit
+                    to us for display on cellxgene.
                   </li>
                   <li>
                     <h4>Legitimate Interests.</h4> We rely on legitimate

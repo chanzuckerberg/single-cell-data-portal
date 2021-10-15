@@ -87,10 +87,11 @@ const ToS = (): JSX.Element => {
               <strong>not personally identifiable</strong>.
             </li>
             <li>
-              We collect <strong>basic analytics</strong> about your usage of
-              the service (e.g. frequency, duration, IP address) so we know how
-              it’s being used. This helps us improve the service as well as
-              understand how it’s used.
+              We use the privacy-friendly Plausible service to collect{" "}
+              <strong>basic analytics</strong> about Site traffic (e.g. the
+              number of visitors and page views) so we know how it’s being used.
+              This helps us improve the service as well as understand how it’s
+              used.
             </li>
           </ul>
 
