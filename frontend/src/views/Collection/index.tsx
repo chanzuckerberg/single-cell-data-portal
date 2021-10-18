@@ -67,8 +67,8 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
-  const isRevision = revisionsEnabled && !!collection?.has_revision;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const isRevision = isCurator && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
@@ -138,7 +138,7 @@ const Collection: FC = () => {
     getIsPublishable(datasets) &&
     !isUploadingLink &&
     !isFetching &&
-    revisionIsPublishable(collection, revisionsEnabled);
+    revisionIsPublishable(collection, isCurator);
 
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
