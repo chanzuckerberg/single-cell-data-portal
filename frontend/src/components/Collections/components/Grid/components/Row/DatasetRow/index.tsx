@@ -1,6 +1,5 @@
 import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import Image from "next/image";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
 import {
@@ -12,7 +11,6 @@ import {
   VALIDATION_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
-import ExploreSVG from "src/common/images/explore.svg";
 import { useDatasetStatus } from "src/common/queries/datasets";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
@@ -30,7 +28,7 @@ import DownloadButton from "./components/DownloadButton";
 import MoreDropdown from "./components/MoreDropdown";
 import Popover from "./components/Popover";
 import RevisionStatusTag from "./components/RevisionStatusTag";
-import { TitleContainer } from "./style";
+import { StyledExplorerSvg, TitleContainer } from "./style";
 import {
   checkIfCancelled,
   checkIfFailed,
@@ -45,6 +43,9 @@ import {
   useConversionProgress,
   useUploadProgress,
 } from "./utils";
+
+const OVER_MAX_CELL_COUNT_TOOLTIP =
+  "Exploration is currently unavailable for datasets with more than 2 million cells";
 
 const AsyncTooltip = loadable(
   () =>
@@ -156,6 +157,8 @@ const DatasetRow: FC<Props> = ({
   const { tissue, assay, disease, organism, cell_count } =
     aggregateDatasetsMetadata([dataset]);
 
+  const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
+
   return (
     <StyledRow>
       <DetailsCell>
@@ -212,20 +215,25 @@ const DatasetRow: FC<Props> = ({
 
           <ActionButton>
             {hasCXGFile(dataset) && (
-              <Tooltip content="Explore" disabled={dataset.tombstone ?? false}>
+              <Tooltip
+                content={
+                  isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"
+                }
+                intent={isOverMaxCellCount ? Intent.DANGER : undefined}
+                disabled={dataset.tombstone}
+              >
                 <AnchorButton
                   minimal
-                  intent={Intent.PRIMARY}
                   icon={
                     <span className={Classes.ICON}>
-                      <Image alt="Explore" src={ExploreSVG} />
+                      <StyledExplorerSvg />
                     </span>
                   }
                   href={dataset?.dataset_deployments[0]?.url}
                   target="_blank"
                   rel="noopener"
                   data-test-id="view-dataset-link"
-                  disabled={dataset.tombstone ?? false}
+                  disabled={dataset.tombstone || isOverMaxCellCount}
                 />
               </Tooltip>
             )}
@@ -235,5 +243,12 @@ const DatasetRow: FC<Props> = ({
     </StyledRow>
   );
 };
+
+/** Maximum number of cells a dataset can have in order to be included for display. */
+export const DATASET_MAX_CELL_COUNT = 2_000_000;
+
+function checkIsOverMaxCellCount(cellCount: number | null): boolean {
+  return (cellCount || 0) > DATASET_MAX_CELL_COUNT;
+}
 
 export default DatasetRow;
