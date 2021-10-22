@@ -275,7 +275,6 @@ export type PublishCollection = {
 
 async function publishCollection({id, payload}: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
-  console.log(payload)
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,

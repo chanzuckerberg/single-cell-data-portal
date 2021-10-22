@@ -26,7 +26,6 @@ def post(collection_uuid: str, body: object, user: str):
     data_submission_policy_version = body["data_submission_policy_version"]
     if data_submission_policy_version is None:
         raise ConflictException(detail="data_submission_policy_version not found")
-    # Reject if there's no data policy
-    # we need to include the data policy as a arg *ROUGH*
+
     collection.publish(data_submission_policy_version=data_submission_policy_version)
     return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)

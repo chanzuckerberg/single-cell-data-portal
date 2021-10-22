@@ -171,7 +171,6 @@ class Collection(Entity):
         """
         # Timestamp for published_at and revised_at
         now = datetime.utcnow()
-        print(data_submission_policy_version)
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         is_existing_collection = False
@@ -179,7 +178,6 @@ class Collection(Entity):
         if public_collection:
             d = self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True)
             d["data_submission_policy_version"] = data_submission_policy_version
-            print(d)
             public_collection.update(
                 commit=False,
                 **d,
