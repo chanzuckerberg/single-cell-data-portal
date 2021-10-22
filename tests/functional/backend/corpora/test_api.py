@@ -200,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
             keep_trying = True
             expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
             # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
-            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADED", None]
+            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", None]
             timer = time.time()
             while keep_trying:
                 data = None
