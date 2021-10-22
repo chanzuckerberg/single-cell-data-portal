@@ -307,7 +307,6 @@ const Content: FC<Props> = (props) => {
 
     setLinks(newLinks);
   }
-
 };
 
 function createLinkInput(linkType: COLLECTION_LINK_TYPE): Link {

@@ -7,9 +7,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";
 import Toast from "src/views/Collection/components/Toast";
-import Policy, {POLICY_BULLETS} from "./components/Policy";
-
-const POLICY_PAYLOAD_KEY = "data_submission_policy_version";
+import Policy, { POLICY_BULLETS } from "./components/Policy";
 
 const AsyncAlert = loadable(
   () =>
@@ -38,20 +36,24 @@ const PublishCollection: FC<Props> = ({
   const toggleAlert = () => setIsOpen(!isOpen);
 
   const handleConfirm = async () => {
-    
-    const payload = JSON.stringify({data_submission_policy_version: POLICY_BULLETS.version});
-    await publish({id, payload}, {
-      onSuccess: () => {
-        //if revision show  revision toast
-        if (isRevision) {
-          Toast.show({
-            icon: IconNames.TICK,
-            intent: Intent.SUCCESS,
-            message: "New version published",
-          });
-        }
-      },
+    const payload = JSON.stringify({
+      data_submission_policy_version: POLICY_BULLETS.version,
     });
+    await publish(
+      { id, payload },
+      {
+        onSuccess: () => {
+          //if revision show  revision toast
+          if (isRevision) {
+            Toast.show({
+              icon: IconNames.TICK,
+              intent: Intent.SUCCESS,
+              message: "New version published",
+            });
+          }
+        },
+      }
+    );
 
     toggleAlert();
   };
@@ -62,10 +64,6 @@ const PublishCollection: FC<Props> = ({
 
   const handleClick = () => {
     setIsOpen(!isOpen);
-  };
-
-  const handlePolicyChange = (value: string) => {
-    setPolicyVersion(value);
   };
 
   return (
