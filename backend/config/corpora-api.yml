@@ -98,9 +98,6 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
-                data_submission_policy_version:
-                  type: string
-                  description: Which data submission policy was the collection submitted under
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -389,6 +386,15 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection_uuid.publish.post
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
       responses:
         "202":
           description: OK

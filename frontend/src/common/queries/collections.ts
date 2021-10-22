@@ -268,12 +268,20 @@ export function useDeleteCollection(id = "") {
   });
 }
 
-async function publishCollection(id: Collection["id"]) {
+export type PublishCollection = {
+  id: Collection["id"],
+  payload: string
+};
+
+async function publishCollection({id, payload}: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
+  console.log(payload)
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     method: "POST",
+    body: payload
   });
 
   if (!response.ok) {

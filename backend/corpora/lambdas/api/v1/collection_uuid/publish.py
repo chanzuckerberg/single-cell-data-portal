@@ -10,7 +10,7 @@ from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
 
 
 @dbconnect
-def post(collection_uuid: str, user: str):
+def post(collection_uuid: str, body: object, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
@@ -22,5 +22,11 @@ def post(collection_uuid: str, user: str):
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
         raise ConflictException(detail="The collection must have a least one dataset.")
-    collection.publish()
+
+    data_submission_policy_version = body["data_submission_policy_version"]
+    if data_submission_policy_version is None:
+        raise ConflictException(detail="data_submission_policy_version not found")
+    # Reject if there's no data policy
+    # we need to include the data policy as a arg *ROUGH*
+    collection.publish(data_submission_policy_version=data_submission_policy_version)
     return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)
