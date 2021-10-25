@@ -588,15 +588,15 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
-                  conversion_anndata_status:
+                  h5ad_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_cxg_status:
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
+                  cxg_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_rds_status:
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
+                  rds_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
+                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
         "400":
           $ref: "#/components/responses/400"
         "401":

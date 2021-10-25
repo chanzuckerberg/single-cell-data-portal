@@ -85,11 +85,13 @@ class BaseFunctionalTestCase(unittest.TestCase):
             res.raise_for_status()
             data = json.loads(res.content)
             upload_status = data["upload_status"]
+            print(f"Upload status: {upload_status}")
             if upload_status == "UPLOADED":
-                conversion_cxg_status = data.get("conversion_cxg_status")
-                conversion_rds_status = data.get("conversion_rds_status")
-                conversion_anndata_status = data.get("conversion_anndata_status")
-                if conversion_cxg_status == conversion_rds_status == conversion_anndata_status == "CONVERTED":
+                cxg_status = data.get("cxg_status")
+                rds_status = data.get("rds_status")
+                h5ad_status = data.get("h5ad_status")
+                print(f"Statuses {cxg_status} {rds_status} {h5ad_status}")
+                if cxg_status == rds_status == h5ad_status == "UPLOADED":
                     keep_trying = False
             if time.time() >= timer + 300:
                 raise TimeoutError(

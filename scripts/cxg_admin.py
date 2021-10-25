@@ -6,6 +6,7 @@ import sys
 
 import click
 from click import Context
+from datetime import datetime
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -100,7 +101,7 @@ def delete_collections(ctx, collection_name):
         - String with spaces: "This Collection"
     """
 
-    if ctx.obj['deployment'] == 'prod':
+    if ctx.obj["deployment"] == "prod":
         logger.info(f"Cannot run this script for prod. Aborting.")
         exit(0)
 
@@ -122,7 +123,9 @@ def delete_collections(ctx, collection_name):
         for c in collections:
             collection = Collection.get_collection(session, c.id, CollectionVisibility.PUBLIC, include_tombstones=True)
             if not collection:
-                collection = Collection.get_collection(session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True)
+                collection = Collection.get_collection(
+                    session, c.id, CollectionVisibility.PRIVATE, include_tombstones=True
+                )
 
             # Delete collection
             logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
@@ -373,18 +376,91 @@ def migrate_published_at(ctx):
         # Collections
         for record in session.query(DbCollection):
             collection_id = record.id
-            logger.info(f"Setting published_at for collection {collection_id}")
 
+            # Skip private collection, since published_at will be populated when published.
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            # Skip if published_at already populated.
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Collection already has published_at | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting published_at for collection {collection_id}")
             collection_created_at = record.created_at
             record.published_at = collection_created_at
+
+        logger.info(f"----- Finished migrating published_at for collections! -----")
 
         # Datasets
         for record in session.query(DbDataset):
             dataset_id = record.id
-            logger.info(f"Setting published_at for dataset {dataset_id}")
 
+            # Skip private dataset, since published_at will be populated when published.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            # Skip if published_at already populated.
+            if record.published_at is not None:
+                logger.info(f"SKIPPING - Dataset already has published_at | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting published_at for dataset {dataset_id}")
             dataset_created_at = record.created_at
             record.published_at = dataset_created_at
+
+        logger.info(f"----- Finished migrating published_at for datasets! -----")
+
+
+@cli.command()
+@click.pass_context
+def populate_revised_at(ctx):
+    """
+    Populates `revised_at` for each existing collection and dataset with the
+    current datetime (UTC). This is a one-off procedure since revised_at will 
+    be set for collections and datasets when they are updated.
+    """
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign revised_at to "
+            f"all of the existing collections and datasets",
+            abort=True,
+        )
+
+        now = datetime.utcnow()
+
+        # Collections
+        for record in session.query(DbCollection):
+            collection_id = record.id
+
+            # Skip private collection, since revised_at will be populated on
+            # publish if there is a change to the collection.
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting revised_at for collection {collection_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for collections! -----")
+
+        # Datasets
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            # Skip private dataset, since revised_at will be populated on
+            # publish if there are any changes.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting revised_at for dataset {dataset_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for datasets! -----")
 
 
 @cli.command()
@@ -442,6 +518,45 @@ def backfill_processing_status_for_datasets(ctx):
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
             
+
+@cli.command()
+@click.pass_context
+def add_trailing_slash_to_explorer_urls(ctx):
+    """
+    The explorer_url for datasets must end with a trailing slash to function
+    properly. This script adds a trailing slash to a dataset's explorer_url
+    if it already does not end with one.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will add a trailing slash to "
+            "a dataset's explorer_url if it already does not end with one.",
+            abort=True,
+        )
+
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            if record.explorer_url is None:
+                logger.info(f"SKIPPING - Dataset does not have an explorer_url | dataset_id {dataset_id}")
+                continue
+
+            explorer_url = record.explorer_url.strip()
+            if explorer_url[-1] == "/":
+                logger.info(
+                    f"SKIPPING - Dataset explorer_url already ends with trailing slash | dataset_id {dataset_id}"
+                )
+                continue
+
+            logger.info(
+                f"Adding trailing slash to dataset explorer_url | dataset_id {dataset_id} | "
+                f"original explorer_url: {explorer_url}"
+            )
+            explorer_url_w_slash = explorer_url + "/"
+            record.explorer_url = explorer_url_w_slash
+
+        logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
+
 
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
