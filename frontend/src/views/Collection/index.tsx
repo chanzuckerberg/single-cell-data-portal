@@ -83,19 +83,11 @@ const Collection: FC = () => {
     if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
       return;
 
-    let message = "";
-    // TODO: Remove empty string check after re-curation is complete. Contact name should always be populated.
-    if (collectionContactName) {
-      message = `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`;
-    } else {
-      message =
-        "A dataset was withdrawn. You've been redirected to the parent collection.";
-    }
-
     Toast.show({
       icon: IconNames.ISSUE,
       intent: Intent.PRIMARY,
-      message,
+      message:
+        "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
   }, [tombstoned_dataset_id, collectionContactName]);
 
