@@ -19,7 +19,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
+          role-duration-seconds: 2700
       - name: Configure AWS Staging Credentials
         uses: aws-actions/configure-aws-credentials@v1
         if: github.event.deployment.environment == 'staging'
@@ -28,7 +28,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_STAGING_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
+          role-duration-seconds: 2700
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         if: github.event.deployment.environment != 'prod' && github.event.deployment.environment != 'staging'
@@ -37,7 +37,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
+          role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
         uses: docker/login-action@v1
