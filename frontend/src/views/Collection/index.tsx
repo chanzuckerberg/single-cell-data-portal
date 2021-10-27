@@ -3,6 +3,7 @@ import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -66,6 +67,10 @@ const Collection: FC = () => {
   });
 
   const { data: collection, isError, isFetching } = collectionState;
+
+  if (collection?.tombstone === true) {
+    router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
+  }
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const isRevision = isCurator && !!collection?.has_revision;
