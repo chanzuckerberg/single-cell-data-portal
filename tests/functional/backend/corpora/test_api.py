@@ -200,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
             keep_trying = True
             expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
             # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
-            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", None]
+            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", None]
             timer = time.time()
             while keep_trying:
                 data = None
@@ -223,7 +223,7 @@ class TestApi(BaseFunctionalTestCase):
                         self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if h5ad_status == "FAILED":
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if cxg_status == rds_status == h5ad_status == "CONVERTED":
+                    if cxg_status == rds_status == h5ad_status == "UPLOADED":
                         keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError(
