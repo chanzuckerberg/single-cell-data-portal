@@ -1,3 +1,4 @@
+import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import {
@@ -23,38 +24,41 @@ describeIfDeployed("Collection Revision", () => {
 
     await page.click(getText("My Collections"));
 
-    const COLLECTION_ROW_SELECTOR_CONTINUE = `*${getTestID(
+    const COLLECTION_ROW_SELECTOR = `*${getTestID(
       COLLECTION_ROW_ID
     )} >> text="${collectionName}"`;
 
-    await tryUntil(
-      async () =>
-        await expect(page).toHaveSelector(COLLECTION_ROW_SELECTOR_CONTINUE)
-    );
-
-    const collectionRowContinue = await page.$(
-      COLLECTION_ROW_SELECTOR_CONTINUE
-    );
-
-    expect(collectionRowContinue).not.toBe(null);
+    let collectionRowContinue: ElementHandle | null = null;
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
     // so upping this for avoid flakiness
     const RETRY_TIMES = 100;
 
     await tryUntil(async () => {
-      const revisionTag = await collectionRowContinue?.$(
-        getTestID("revision-tag")
-      );
+      const collections = await page.$$(COLLECTION_ROW_SELECTOR);
 
-      await expect(revisionTag).not.toBe(null);
+      for (const collection of collections) {
+        const hasPublished = Boolean(await collection.$(getText("Published")));
+        const hasRevisionPending = Boolean(
+          await collection.$(getText("Revision Pending"))
+        );
 
-      await expect(revisionTag).toMatchText("Revision Pending");
+        if (hasPublished && hasRevisionPending) {
+          collectionRowContinue = collection;
+          break;
+        }
+      }
+
+      if (!collectionRowContinue) {
+        throw new Error("Collection not found");
+      }
     }, RETRY_TIMES);
 
-    const actionButtonContinue = await collectionRowContinue?.$(
-      getTestID("revision-action-button")
-    );
+    expect(collectionRowContinue).not.toBe(null);
+
+    const actionButtonContinue = await (
+      collectionRowContinue as unknown as ElementHandle<HTMLElement>
+    ).$(getTestID("revision-action-button"));
 
     await expect(actionButtonContinue).toMatchText("Continue");
 
