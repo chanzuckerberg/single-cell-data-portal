@@ -124,6 +124,43 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    @classmethod
+    def list(cls, session) -> typing.List[typing.Dict]:
+        """
+        TODO: add docs
+        """
+
+        list_attributes = [
+            DbDataset.id,
+            DbDataset.name, 
+            DbDataset.collection_id, 
+            DbDataset.tissue,
+            DbDataset.disease,
+            DbDataset.assay,
+            DbDataset.organism,
+            DbDataset.cell_count,
+            DbDataset.cell_type,
+            DbDataset.sex,
+            DbDataset.ethnicity,
+            DbDataset.development_stage,
+            
+
+        ]
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        results = [
+            to_dict(result)
+            for result in session.query(table).with_entities(*list_attributes).all()
+        ]
+
+        return results
+
     def _create_new_explorer_url(self, new_uuid: str) -> str:
         if self.explorer_url is None:
             return None

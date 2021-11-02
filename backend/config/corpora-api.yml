@@ -604,6 +604,23 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
+  /dp/v1/datasets/index:
+    get:
+      tags:
+        - datasets
+      summary: List datasets
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        STUB
+      operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
+      responses:
+        "200":
+          description: OK
+        "400":
+          $ref: "#/components/responses/400"
+
   /dp/v1/genesets/{geneset_uuid}:
     delete:
       tags:
