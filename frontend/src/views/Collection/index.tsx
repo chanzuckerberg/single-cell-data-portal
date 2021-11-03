@@ -12,7 +12,9 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
+  useDeleteCollection,
 } from "src/common/queries/collections";
+import { Button } from "src/components/common/Button";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
@@ -67,6 +69,8 @@ const Collection: FC = () => {
   });
 
   const { data: collection, isError, isFetching } = collectionState;
+
+  const [deleteMutation] = useDeleteCollection(id);
 
   if (collection?.tombstone === true) {
     router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
@@ -140,9 +144,13 @@ const Collection: FC = () => {
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
   };
+  const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
+  const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
-  const shouldShowPrivateWriteAction =
-    collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
+  const handleDeleteCollection = () => {
+    deleteMutation(id);
+    router.push(ROUTES.MY_COLLECTIONS);
+  };
 
   return (
     <>
@@ -184,6 +192,9 @@ const Collection: FC = () => {
             isPublishable={isPublishable}
             isRevision={isRevision}
           />
+        )}
+        {hasWriteAccess && (
+          <Button onClick={handleDeleteCollection}>Delete</Button>
         )}
 
         <TabWrapper>
