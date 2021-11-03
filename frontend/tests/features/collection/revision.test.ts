@@ -152,10 +152,18 @@ async function startRevision(): Promise<string> {
   )} >> text="Start Revision"`;
 
   await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS);
+  await page.waitForLoadState();
 
-  await tryUntil(async () =>
-    expect(page).toHaveSelector(COLLECTION_ROW_SELECTOR_START)
-  );
+  // (thuang): If we can't a usable collection row, we'll delete a revision
+  await tryUntil(async () => {
+    try {
+      await expect(page).toHaveSelector(COLLECTION_ROW_SELECTOR_START);
+    } catch {
+      await page.click(getText("Continue"));
+      await deleteRevision();
+      throw new Error("No available collection");
+    }
+  });
 
   const collectionRow = await page.$(COLLECTION_ROW_SELECTOR_START);
 
