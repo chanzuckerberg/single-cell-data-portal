@@ -12,11 +12,13 @@ ENV PIP_NO_CACHE_DIR=1
 # HACK: Create a no-op npm; npm build not needed for backend-only operations
 # The no-op npm touches some files that are the cellxgene install script expects to exist
 RUN git clone https://github.com/chanzuckerberg/single-cell-explorer.git \
- && echo '#!/bin/sh\nmkdir -p build/static && touch build/static/.gitignore build/index.html build/csp-hashes.json' > /usr/bin/npm && chmod 755 /usr/bin/npm \
- && cd single-cell-explorer \
- && make build-for-server-dev \
- && cd .. \
- && rm -rf single-cell-explorer client build/client /usr/bin/npm
+  && echo '#!/bin/sh\nmkdir -p build/static && touch build/static/.gitignore build/index.html build/csp-hashes.json' > /usr/bin/npm && chmod 755 /usr/bin/npm \
+  && cd single-cell-explorer \
+  #  NOTE: Uncomment this line for prod deployment
+  # && git checkout staging \
+  && make build-for-server-dev \
+  && cd .. \
+  && rm -rf single-cell-explorer client build/client /usr/bin/npm
 
 # Install python dependencies
 # Remove packaging dependency once pyparser>3 is supported.
