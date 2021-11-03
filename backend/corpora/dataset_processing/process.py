@@ -541,6 +541,35 @@ def notify_slack_failure(dataset_id):
         slack_webhook = CorporaConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
+# New pipeline
+# Step 0: update db
+#   
+# Step 1: download
+#   Inputs: collection_id, dataset_id, dropbox_url
+#   - download the h5ad file from S3
+#   - run cellxgene-schema to validate
+#   - upload the annotated file to S3
+#   Outputs: path of the uploaded file
+# Step 2: CXG conversion
+#   Inputs: dataset_id, h5ad_url
+#   - Download the annotated file
+#   - Start the CXG conversion
+#   - Upload the CXG file to S3
+# Step 2.5: set seurat_conversion to "in progress"
+# Step 3: Seurat conversion 
+#   Inputs: dataset_id, h5ad_url
+#   - Download the annotated file
+#   - Start the seurat conversion
+#   - Upload the seurat file to S3
+# Lambdas:
+
+
+# Create a main function that runs each step based on a CLI arg
+# OR
+# install the SWIPE library as a python module
+
+# Create a wdl as per https://github.com/chanzuckerberg/idseq-workflows/blob/main/phylotree-ng/run.wdl#L81
+
 
 if __name__ == "__main__":
     rv = main()
