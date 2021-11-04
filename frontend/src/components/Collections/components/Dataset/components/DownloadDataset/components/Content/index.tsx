@@ -2,6 +2,7 @@ import { Classes, Intent } from "@blueprintjs/core";
 import { FC, useEffect, useState } from "react";
 import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import CurlLink from "./components/CurlLink";
@@ -62,7 +63,10 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
 
       try {
         const result = await (
-          await fetch(`${API_URL}${url}`, { method: "POST" })
+          await fetch(`${API_URL}${url}`, {
+            ...DEFAULT_FETCH_OPTIONS,
+            method: "POST",
+          })
         ).json();
 
         const { file_size, presigned_url, file_name } = result;
