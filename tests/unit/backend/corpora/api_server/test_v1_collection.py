@@ -799,7 +799,9 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertEqual(response.status_code, 204)
 
                 response = self.app.get(test_url.url, headers=headers)
+                body = json.loads(response.data)
                 self.assertEqual(response.status_code, 410)
+                self.assertEqual(body, "")
 
     def test_delete_collection__not_owner(self):
         collection = self.generate_collection(

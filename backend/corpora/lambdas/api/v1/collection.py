@@ -65,7 +65,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
         )
         result = collection.reshape_for_api(get_tombstone_datasets)
         response = 200
-    result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
+        result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
     return make_response(jsonify(result), response)
 
 
