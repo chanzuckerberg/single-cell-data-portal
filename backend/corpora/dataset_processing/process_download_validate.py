@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import sys
+import logging
 import os
+import sys
+
 from process import (
     check_env,
     log_batch_environment,
@@ -10,68 +12,74 @@ from process import (
     extract_metadata,
     cancel_dataset,
     notify_slack_failure,
+    create_artifact,
+    get_bucket_prefix,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
-from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
-    ConversionStatus,
-    DatasetArtifactFileType,
-    DatasetArtifactType,
     ProcessingStatus,
-    ValidationStatus,
+    DatasetArtifactFileType,
 )
-from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.db_helpers import processing_status_updater
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
-from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.dataset_processing.slack import format_slack_message
 
 
-def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
+def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
+    """
+    1. Download the original dataset from Dropbox
+    2. Validate and label it
+    3. Upload the labeled dataset to the artifact bucket
+    :param dataset_id:
+    :param dropbox_url:
+    :param artifact_bucket:
+    :return:
+    """
+
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+
+    # Download the original dataset from Dropbox
     local_filename = download_from_dropbox_url(
         dataset_id,
         dropbox_url,
         "raw.h5ad",
     )
 
-    # No file cleanup needed due to docker run-time environment.
-    # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
-    # will have to be modified since it relies on a shared local file
+    # TODO: We should store the original dataset file on S3 for provenance.
+    #       This will allow for easy reconversion of the corpus in the near future.
 
+    # Validate and label the dataset
     file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
     # Process metadata
     metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
-    # create artifacts
-    # process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    # create_artifacts(file_with_labels, dataset_id, artifact_bucket)
-    # update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    # Upload the labeled dataset to the artifact bucket
+    bucket_prefix = get_bucket_prefix(dataset_id)
+    create_artifact(
+        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
+    )
 
 
 def main():
     return_value = 0
     check_env()
     log_batch_environment()
+
     dataset_id = os.environ["DATASET_ID"]
+    dropbox_url = os.environ["DROPBOX_URL"]
+    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+
     try:
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
+        process(dataset_id, dropbox_url, artifact_bucket)
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
         logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpected error occurred while processing the data set."
+        message = f"Validation and labeling for dataset {dataset_id} failed."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)

@@ -14,6 +14,7 @@ from process import (
     make_seurat,
     create_artifact,
     get_bucket_prefix,
+    LABELED_H5AD_FILENAME,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,15 +31,24 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     s3_client.download_file(bucket_name, object_key, local_filename)
 
 
-def process(artifact_bucket: str, dataset_id: str, labeled_h5ad_filename: str, local_filename: str):
+def process(artifact_bucket: str, dataset_id: str, labeled_h5ad_filename: str):
+    """
+    1. Download the labeled dataset from the artifact bucket
+    2. Convert it to Seurat format
+    3. Upload the Seurat file to the artifact bucket
+    :param artifact_bucket:
+    :param dataset_id:
+    :param labeled_h5ad_filename:
+    :param local_filename:
+    :return:
+    """
 
     bucket_prefix = get_bucket_prefix(dataset_id)
     object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-
-    download_from_s3(artifact_bucket, object_key, local_filename)
+    download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
     seurat_filename = convert_file_ignore_exceptions(
-        make_seurat, local_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
+        make_seurat, labeled_h5ad_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
     )
 
     if seurat_filename:
@@ -54,18 +64,16 @@ def main():
 
     artifact_bucket = os.environ["ARTIFACT_BUCKET"]
     dataset_id = os.environ["DATASET_ID"]
-    labeled_h5ad_filename = os.environ["LABELED_H5AD_FILENAME"]
-    local_filename = "local.h5ad"
 
     try:
-        process(artifact_bucket, dataset_id, labeled_h5ad_filename, local_filename)
+        process(artifact_bucket, dataset_id, LABELED_H5AD_FILENAME)
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
         logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpected error occurred while processing the data set."
+        message = f"Seurat conversion for dataset {dataset_id} failed."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)

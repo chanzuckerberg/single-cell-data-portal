@@ -1,62 +1,65 @@
 #!/usr/bin/env python3
-import sys
+import logging
 import os
+import sys
+
+from backend.corpora.common.utils.s3_buckets import s3_client
 from process import (
     check_env,
     log_batch_environment,
     update_db,
-    download_from_dropbox_url,
-    validate_h5ad_file_and_add_labels,
-    extract_metadata,
     cancel_dataset,
     notify_slack_failure,
     process_cxg,
     get_bucket_prefix,
-    create_artifact
+    LABELED_H5AD_FILENAME,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
-from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
-    ConversionStatus,
-    DatasetArtifactFileType,
-    DatasetArtifactType,
     ProcessingStatus,
-    ValidationStatus,
 )
-from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.db_helpers import processing_status_updater
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
-from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.dataset_processing.slack import format_slack_message
 
 
-def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
+def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
+    s3_client.download_file(bucket_name, object_key, local_filename)
 
-    process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
+
+def process(dataset_id: str, artifact_bucket: str, labeled_h5ad_filename: str, cellxgene_bucket: str):
+    """
+    1. Download the labeled dataset from the artifact bucket
+    1. Convert the labeled dataset to CXG
+    2. Upload the CXG to the cellxgene bucket
+    :param dataset_id:
+    :param artifact_bucket:
+    :param labeled_h5ad_filename:
+    :param cellxgene_bucket:
+    :return:
+    """
+
+    # Download the labeled dataset from the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
-    logger.info("Creating Artifacts.")
-    # upload AnnData
-    create_artifact(
-        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
-    )
-    # update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+    download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+
+    # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
+    process_cxg(labeled_h5ad_filename, dataset_id, cellxgene_bucket)
 
 
 def main():
     return_value = 0
     check_env()
     log_batch_environment()
+
     dataset_id = os.environ["DATASET_ID"]
+    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+    cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
+
     try:
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
+        process(dataset_id, artifact_bucket, LABELED_H5AD_FILENAME, cellxgene_bucket)
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
