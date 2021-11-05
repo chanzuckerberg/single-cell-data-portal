@@ -58,7 +58,7 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     # Upload the labeled dataset to the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
     create_artifact(
-        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
+        file_with_labels, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
 
 
