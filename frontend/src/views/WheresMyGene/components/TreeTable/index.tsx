@@ -1,7 +1,5 @@
-import { interpolateViridis } from "d3-scale-chromatic";
-import { useBlockLayout, useExpanded, useTable } from "react-table";
+import { useBlockLayout, useTable } from "react-table";
 import AsterChart from "./components/AsterChart";
-import { Square } from "./style";
 
 interface Props {
   columns: any;
@@ -15,7 +13,6 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
         columns,
         data,
       },
-      useExpanded,
       useBlockLayout
     );
 
@@ -24,11 +21,11 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
       <div>
         {headerGroups.map((headerGroup) => {
           return (
-            // eslint-disable-next-line react/jsx-key -- getHeaderGroupProps already has key
+            // eslint-disable-next-line react/jsx-key -- getHeaderGroupProps already has `key` prop
             <div {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((header) => {
                 return (
-                  // eslint-disable-next-line react/jsx-key -- getHeaderProps already has key
+                  // eslint-disable-next-line react/jsx-key -- getHeaderProps already has `key` prop
                   <div
                     {...header.getHeaderProps([
                       {
@@ -53,7 +50,7 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
           prepareRow(row);
 
           return (
-            // eslint-disable-next-line react/jsx-key -- getRowProps already has key
+            // eslint-disable-next-line react/jsx-key -- getRowProps already has `key` prop
             <div {...row.getRowProps([{ style: { margin: "8px 0" } }])}>
               {row.cells.map((cell) => {
                 return <Cell key={cell.key} cell={cell} />;
@@ -73,12 +70,10 @@ function Cell({ cell }) {
 
   if (typeof value === "string") {
     Component = cell.render("Cell");
+  } else if (value === undefined) {
+    Component = null;
   } else {
-    const { negEntropy, relativeExpression, proportionalExpression } = value;
-
-    if (negEntropy !== undefined) {
-      Component = <Square color={interpolateViridis(negEntropy)} />;
-    }
+    const { relativeExpression, proportionalExpression } = value;
 
     if (relativeExpression !== undefined) {
       Component = (

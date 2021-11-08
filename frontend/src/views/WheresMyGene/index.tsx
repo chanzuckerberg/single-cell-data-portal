@@ -4,40 +4,18 @@ import { useMemo } from "react";
 import TreeTable from "./components/TreeTable";
 import { GENES, TISSUE } from "./mocks/brain";
 
-const data = buildTissueTree(TISSUE).subRows;
+const data = integrateTissuesAndGenes(TISSUE);
 
 const WheresMyGene = (): JSX.Element => {
   const columns = useMemo(
     () => [
       {
         Cell({ row }) {
-          // DEBUG
-          // DEBUG
-          // DEBUG
-          console.log("---row", row);
-
           const {
-            depth,
-            canExpand,
-            isExpanded,
-            getToggleRowExpandedProps,
             values: { name },
           } = row;
 
-          return (
-            <span
-              {...getToggleRowExpandedProps({
-                style: {
-                  // We can even use the row.depth property
-                  // and paddingLeft to indicate the depth
-                  // of the row
-                  paddingLeft: `${depth * 2}rem`,
-                },
-              })}
-            >
-              {canExpand ? (isExpanded ? "👇 " + name : "👉 " + name) : name}
-            </span>
-          );
+          return <span>{name}</span>;
         },
         Header: "",
         accessor: "name",
@@ -63,34 +41,6 @@ const WheresMyGene = (): JSX.Element => {
       <TreeTable columns={columns} data={data} />
     </>
   );
-
-  // function renderRelativeExpressionCell(row) {
-  //   const {
-  //     data: { id },
-  //   } = row;
-  //   // DEBUG
-  //   // DEBUG
-  //   // DEBUG
-  //   console.log("row.data", row.data);
-  //   console.log("-----gM5741", gM5741);
-
-  //   const rowData = gM5741.get(id);
-
-  //   const { negEntropy, relativeExpression } = rowData;
-
-  //   return (
-  //     <div
-  //       style={{
-  //         height: "100%",
-  //         display: "flex",
-  //         alignItems: "center",
-  //         justifyContent: "center",
-  //       }}
-  //     >
-  //       <Square color={interpolateViridis(negEntropy ?? relativeExpression)} />
-  //     </div>
-  //   );
-  // }
 };
 
 interface Node {
@@ -99,14 +49,11 @@ interface Node {
   name: string;
 }
 
-function buildTissueTree(nodes: Node[]) {
-  const idToNodes = new Map();
-  let rootNode = null;
-
+function integrateTissuesAndGenes(nodes: Node[]) {
   const geneMaps = GENES.map((gene) => rawGeneDataToMap(gene));
 
-  for (const node of cloneDeep(nodes)) {
-    const { id, parentId } = node;
+  return cloneDeep(nodes).map((node) => {
+    const { id } = node;
 
     for (const [name, geneMap] of geneMaps) {
       const columnData = geneMap.get(id);
@@ -116,31 +63,8 @@ function buildTissueTree(nodes: Node[]) {
       }
     }
 
-    if (!rootNode) {
-      rootNode = node;
-    }
-
-    idToNodes.set(id, node);
-
-    if (parentId) {
-      const parentNode = idToNodes.get(parentId);
-
-      if (!parentNode) {
-        throw Error(`parentNode id does not exist: ${parentId}`);
-      }
-
-      parentNode.subRows = parentNode.subRows || [];
-      parentNode.subRows.push(node);
-    }
-  }
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // Don't mutate the original data!!!!
-  console.log("----><><><><><><>rootNode", rootNode);
-
-  return rootNode;
+    return node;
+  });
 }
 
 function rawGeneDataToMap(gene) {
