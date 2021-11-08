@@ -137,14 +137,13 @@ class Dataset(Entity):
             dataset["organism"] = [dataset["organism"]]
 
     @classmethod
-    def list(cls, session, list_attributes=None) -> typing.List[typing.Dict]:
+    def list_for_index(cls, session) -> typing.List[typing.Dict]:
         """
         Return a list of all the datasets. For efficiency reasons, this only returns the fields
         inside the `dataset` table and doesn't include relationships.
-        :param list_attributes: fields to be included in the response
         """
 
-        attrs = list_attributes or [
+        attrs = [
             DbDataset.id,
             DbDataset.name,
             DbDataset.collection_id,

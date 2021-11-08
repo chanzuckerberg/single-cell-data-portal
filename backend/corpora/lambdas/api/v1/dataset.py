@@ -70,7 +70,7 @@ def get_status(dataset_uuid: str, user: str):
 @dbconnect
 def get_datasets_index():
     db_session = g.db_session
-    datasets = Dataset.list(db_session)
+    datasets = Dataset.list_for_index(db_session)
     return make_response(jsonify(datasets), 200)
 
 
