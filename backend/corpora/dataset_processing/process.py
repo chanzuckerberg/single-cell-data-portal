@@ -194,22 +194,27 @@ def create_artifact(
         raise e
 
 
-def create_artifacts(local_filename, dataset_id, artifact_bucket):
+def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str, can_convert_to_seurat: bool):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    logger.info("Creating Artifacts.")
+    logger.info(f"Creating artifacts for dataset {dataset_id}...")
     # upload AnnData
     create_artifact(
         local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
 
-    # Process and upload seurat
-    seurat_filename = convert_file_ignore_exceptions(
-        make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
-    )
-    if seurat_filename:
-        create_artifact(
-            seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+    if can_convert_to_seurat:
+        # Convert to Seurat and upload
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
         )
+        if seurat_filename:
+            create_artifact(
+                seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+            )
+    else:
+        logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
+
+    logger.info(f"Finished creating artifacts for dataset {dataset_id}")
 
 
 def cancel_dataset(dataset_id):
@@ -441,13 +446,16 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = "local.h5ad"
-    is_valid, errors = validate.validate(local_filename, output_filename)
 
-    if not is_valid:
-        logger.error(f"Validation failed with {len(errors)} errors!")
+    # TODO: remove this comment after the interface to validate.validate() is decided
+    # for now, expecting a dictionary with 3 items: is_valid (bool), errors (list), can_convert_to_seurat (bool)
+    result = validate.validate(local_filename, output_filename)
+
+    if not result["is_valid"]:
+        logger.error(f"Validation failed with {len(result['errors'])} errors!")
         status = dict(
             validation_status=ValidationStatus.INVALID,
-            validation_message=errors,
+            validation_message=result["errors"],
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
@@ -459,7 +467,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return output_filename
+        return dict(labeled_filename=output_filename, can_convert_to_seurat=result["can_convert_to_seurat"])
 
 
 def clean_up_local_file(local_filename):
@@ -498,14 +506,16 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
     # will have to be modified since it relies on a shared local file
 
-    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    result = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    file_with_labels = result["labeled_filename"]
+
     # Process metadata
     metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
     # create artifacts
     process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, result["can_convert_to_seurat"])
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
