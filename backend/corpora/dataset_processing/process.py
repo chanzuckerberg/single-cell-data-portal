@@ -451,11 +451,12 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     # for now, expecting a dictionary with 3 items: is_valid (bool), errors (list), can_convert_to_seurat (bool)
     result = validate.validate(local_filename, output_filename)
 
-    if not result["is_valid"]:
-        logger.error(f"Validation failed with {len(result['errors'])} errors!")
+    if not result.get("is_valid", False):
+        errors = result.get("errors", [])
+        logger.error(f"Validation failed with {len(errors)} errors!")
         status = dict(
             validation_status=ValidationStatus.INVALID,
-            validation_message=result["errors"],
+            validation_message=errors,
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
@@ -467,7 +468,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return dict(labeled_filename=output_filename, can_convert_to_seurat=result["can_convert_to_seurat"])
+        return dict(labeled_filename=output_filename, can_convert_to_seurat=result.get("can_convert_to_seurat", False))
 
 
 def clean_up_local_file(local_filename):
@@ -507,7 +508,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # will have to be modified since it relies on a shared local file
 
     result = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
-    file_with_labels = result["labeled_filename"]
+    file_with_labels = result.get("labeled_filename")
 
     # Process metadata
     metadata = extract_metadata(file_with_labels)
@@ -515,7 +516,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
     # create artifacts
     process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket, result["can_convert_to_seurat"])
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, result.get("can_convert_to_seurat"))
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
