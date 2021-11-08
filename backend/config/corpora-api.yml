@@ -608,7 +608,7 @@ paths:
     get:
       tags:
         - datasets
-      summary: List datasets
+      summary: List datasets for indexing purposes
       security:
         - cxguserCookieLenient: []
         - {}
@@ -618,6 +618,37 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    collection_id:
+                      type: string
+                    assay:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    disease:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    sex:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    ethnicity:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    organism:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    cell_count:
+                      type: integer
+                    cell_type:
+                      $ref: "#/components/schemas/ontology_element_array"
         "400":
           $ref: "#/components/responses/400"
 

@@ -124,16 +124,30 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    @staticmethod
+    def transform_sex_for_schema_2_0_0(dataset):
+        # If schema_version is 1.1.0, convert sex to the new API format
+        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
+
+    @staticmethod
+    def transform_organism_for_schema_2_0_0(dataset):
+        # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
+        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["organism"] = [dataset["organism"]]
+
     @classmethod
-    def list(cls, session) -> typing.List[typing.Dict]:
+    def list(cls, session, list_attributes=None) -> typing.List[typing.Dict]:
         """
-        TODO: add docs
+        Return a list of all the datasets. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        :param list_attributes: fields to be included in the response
         """
 
-        list_attributes = [
+        attrs = list_attributes or [
             DbDataset.id,
-            DbDataset.name, 
-            DbDataset.collection_id, 
+            DbDataset.name,
+            DbDataset.collection_id,
             DbDataset.tissue,
             DbDataset.disease,
             DbDataset.assay,
@@ -143,21 +157,27 @@ class Dataset(Entity):
             DbDataset.sex,
             DbDataset.ethnicity,
             DbDataset.development_stage,
-            
-
+            DbDataset.schema_version,
+            DbDataset.tombstone,
         ]
         table = cls.table
 
         def to_dict(db_object):
             _result = {}
             for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
                 _result[_field] = getattr(db_object, _field)
             return _result
 
         results = [
-            to_dict(result)
-            for result in session.query(table).with_entities(*list_attributes).all()
+            to_dict(result) for result in session.query(table).with_entities(*attrs).all() if not result.tombstone
         ]
+
+        for result in results:
+            Dataset.transform_organism_for_schema_2_0_0(result)
+            Dataset.transform_sex_for_schema_2_0_0(result)
 
         return results
 

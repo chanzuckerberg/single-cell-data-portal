@@ -66,20 +66,13 @@ def get_status(dataset_uuid: str, user: str):
         status.pop(remove)
     return make_response(jsonify(status), 200)
 
+
 @dbconnect
 def get_datasets_index():
     db_session = g.db_session
     datasets = Dataset.list(db_session)
-    # collections = Collection.list(db_session) # TODO: make this more efficient
+    return make_response(jsonify(datasets), 200)
 
-    # def with_collection_name(dataset):
-    #     collection = next(collection.name for collection in collections if collection.id == dataset["collection_id"])
-    #     dataset["collection_name"] = collection
-    #     return dataset
-
-    datasets_with_collection_names = datasets # [with_collection_name(dataset) for dataset in datasets]
-
-    return make_response(jsonify(datasets_with_collection_names), 200)
 
 @dbconnect
 def delete_dataset(dataset_uuid: str, user: str):
