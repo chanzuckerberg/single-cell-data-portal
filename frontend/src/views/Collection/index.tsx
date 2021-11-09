@@ -19,11 +19,11 @@ import {
   useDeleteCollection,
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
-import { Button } from "src/components/common/Button";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
+import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Banner from "./components/Banner";
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
@@ -199,8 +199,11 @@ const Collection: FC = () => {
             isRevision={isRevision}
           />
         )}
-        {hasWriteAccess && (
-          <Button onClick={handleDeleteCollection}>Delete</Button>
+        {hasWriteAccess && !isPrivate && (
+          <DeleteCollectionButton
+            handleConfirm={handleDeleteCollection}
+            collectionName={collection.name}
+          />
         )}
 
         <TabWrapper>
