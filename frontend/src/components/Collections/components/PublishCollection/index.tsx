@@ -101,7 +101,6 @@ const PublishCollection: FC<Props> = ({
                 will be viewable and downloadable by all portal users. External
                 sites may directly link to the CXG(s).
               </p>
-              <p>This action cannot be undone without manual intervention.</p>
             </>
           )}
         </AsyncAlert>
