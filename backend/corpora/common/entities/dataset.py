@@ -156,8 +156,7 @@ class Dataset(Entity):
             DbDataset.sex,
             DbDataset.ethnicity,
             DbDataset.development_stage,
-            DbDataset.schema_version,
-            DbDataset.tombstone,
+            DbDataset.schema_version, # Required for schema manipulation
         ]
         table = cls.table
 
@@ -170,8 +169,10 @@ class Dataset(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
+        filters = [DbDataset.tombstone == False, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
+
         results = [
-            to_dict(result) for result in session.query(table).with_entities(*attrs).all() if not result.tombstone
+            to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()
         ]
 
         for result in results:

@@ -608,7 +608,9 @@ paths:
     get:
       tags:
         - datasets
-      summary: List datasets for indexing purposes
+      summary: >-
+        Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets 
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       security:
         - cxguserCookieLenient: []
         - {}
