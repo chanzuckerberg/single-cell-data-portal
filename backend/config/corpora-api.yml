@@ -200,9 +200,6 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
-                data_submission_policy_version:
-                  type: string
-                  description: Which data submission policy was the collection submitted under
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -596,13 +593,16 @@ paths:
                     type: string
                   h5ad_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
+                    enum:
+                      [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
                   cxg_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
+                    enum:
+                      [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
                   rds_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
+                    enum:
+                      [CONVERTING, CONVERTED, UPLOADING, UPLOADED, FAILED, NA]
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -615,7 +615,7 @@ paths:
       tags:
         - datasets
       summary: >-
-        Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets 
+        Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       security:
         - cxguserCookieLenient: []
