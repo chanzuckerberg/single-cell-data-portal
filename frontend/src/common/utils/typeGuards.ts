@@ -3,5 +3,7 @@ import { TombstonedCollection } from "../queries/collections";
 export function isTombstonedCollection(
   collection: any
 ): collection is TombstonedCollection {
-  return "tombstone" in collection && collection.tombstone === true;
+  return (
+    collection && "tombstone" in collection && collection.tombstone === true
+  );
 }
