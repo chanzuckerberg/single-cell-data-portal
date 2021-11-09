@@ -22,7 +22,8 @@ def post(collection_uuid: str, user: str):
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
         raise ConflictException(detail="The collection must have a least one dataset.")
-    # TODO check if there are any duplicate datasets
-    # get the s3 hash using the s3_uri
+    duplicates = collection.check_for_duplicate_datasets()
+    if duplicates:
+        raise ConflictException(detail="The collection cannot have duplicate datasets.")
     collection.publish()
     return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)
