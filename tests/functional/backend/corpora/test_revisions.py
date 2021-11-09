@@ -56,9 +56,7 @@ class TestRevisions(BaseFunctionalTestCase):
         # make collection public
         with self.subTest("Test make collection public"):
             body = {"data_submission_policy_version": "1.0"}
-            res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
-            )
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=body)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
@@ -100,9 +98,7 @@ class TestRevisions(BaseFunctionalTestCase):
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
-            res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
-            )
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=body)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
@@ -136,9 +132,7 @@ class TestRevisions(BaseFunctionalTestCase):
         ):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
-            res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
-            )
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=body)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
@@ -174,9 +168,7 @@ class TestRevisions(BaseFunctionalTestCase):
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
-            res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
-            )
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=body)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
