@@ -395,7 +395,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         s3 = self.setup_s3_bucket(artifact_bucket)
 
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
@@ -492,7 +492,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
         s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
