@@ -28,7 +28,7 @@ const DeleteCollection: FC<Props> = ({
 
   const handleDelete = async () => {
     setIsLoading(true);
-    await deleteMutation(id);
+    await deleteMutation({ collectionID: id });
     router.push(ROUTES.MY_COLLECTIONS);
   };
 

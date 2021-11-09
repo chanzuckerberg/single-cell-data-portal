@@ -1,9 +1,4 @@
-import {
-  MutationResultPair,
-  useMutation,
-  useQuery,
-  useQueryCache,
-} from "react-query";
+import { useMutation, useQuery, useQueryCache } from "react-query";
 import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
@@ -249,10 +244,13 @@ export function useCollectionUploadLinks(
   });
 }
 
-async function deleteCollection(
-  collectionID: Collection["id"],
-  visibility?: Collection["visibility"]
-) {
+async function deleteCollection({
+  collectionID,
+  visibility = VISIBILITY_TYPE.PRIVATE,
+}: {
+  collectionID: Collection["id"];
+  visibility?: VISIBILITY_TYPE;
+}) {
   const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
@@ -265,13 +263,7 @@ async function deleteCollection(
   }
 }
 
-export function useDeleteCollection(
-  id: string
-): MutationResultPair<void, unknown, string, unknown> {
-  if (!id) {
-    throw new Error("No collection id given");
-  }
-
+export function useDeleteCollection(id = "") {
   const queryCache = useQueryCache();
 
   return useMutation(deleteCollection, {

@@ -153,7 +153,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
   const handleDeleteCollection = () => {
-    deleteMutation(id);
+    deleteMutation({ collectionID: id, visibility: VISIBILITY_TYPE.PUBLIC });
     router.push(ROUTES.MY_COLLECTIONS);
   };
 
