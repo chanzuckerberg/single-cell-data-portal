@@ -8,7 +8,9 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
+import HttpStatusCode from "../constants/httpStatusCode";
 import checkForRevisionChange from "../utils/checkForRevisionChange";
+import { isTombstonedCollection } from "../utils/typeGuards";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
@@ -89,12 +91,16 @@ function generateDatasetMap(json: any) {
   return datasetMap;
 }
 
+export interface TombstonedCollection {
+  tombstone: true;
+}
+
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
     _: unknown,
     id: string,
     visibility: VISIBILITY_TYPE
-  ): Promise<Collection | null> {
+  ): Promise<Collection | TombstonedCollection | null> {
     if (!id) {
       return null;
     }
@@ -109,6 +115,9 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
     let json = await response.json();
 
+    if (response.status === HttpStatusCode.GONE) {
+      return { tombstone: true };
+    }
     if (!response.ok) {
       throw json;
     }
@@ -152,7 +161,7 @@ export function useCollection({
 }) {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
-  return useQuery<Collection | null>(
+  return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, visibility, collections],
     queryFn,
     { enabled: !!collections }
@@ -350,11 +359,22 @@ export function useEditCollection(collectionID?: Collection["id"]) {
       return queryCache.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
-          const revision_diff =
-            collection?.has_revision && publishedCollection
-              ? checkForRevisionChange(newCollection, publishedCollection)
-              : null;
-          return { ...collection, ...newCollection, revision_diff };
+          let revision_diff;
+          if (isTombstonedCollection(newCollection)) {
+            return newCollection;
+          } else if (
+            !isTombstonedCollection(collection) &&
+            !isTombstonedCollection(publishedCollection) &&
+            collection?.has_revision &&
+            publishedCollection
+          ) {
+            revision_diff = checkForRevisionChange(
+              newCollection,
+              publishedCollection
+            );
+
+            return { ...collection, ...newCollection, revision_diff };
+          }
         }
       );
     },

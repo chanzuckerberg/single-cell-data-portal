@@ -13,6 +13,7 @@ import {
   useCreateCollection,
   useEditCollection,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledLabel } from "src/components/common/Form/Input/style";
@@ -82,10 +83,12 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const { data } = useCollection({
+  let { data } = useCollection({
     id: props.id,
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
+
+  if (isTombstonedCollection(data)) data = {} as Collection;
 
   const [mutateCreateCollection] = useCreateCollection();
   const [mutateEditCollection] = useEditCollection(props.id);
