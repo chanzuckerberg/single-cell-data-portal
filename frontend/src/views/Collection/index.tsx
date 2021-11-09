@@ -18,6 +18,7 @@ import {
   useCollectionUploadLinks,
   useDeleteCollection,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { Button } from "src/components/common/Button";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -105,7 +106,7 @@ const Collection: FC = () => {
     "To maintain your in-progress work on the previous dataset, we opened this collection in a new tab."
   );
 
-  if (!collection || isError) {
+  if (!collection || isError || isTombstonedCollection(collection)) {
     return null;
   }
 
