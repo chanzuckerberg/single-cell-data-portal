@@ -1,9 +1,12 @@
-import { useBlockLayout, useTable } from "react-table";
+import { Cell as ICell, Column, useBlockLayout, useTable } from "react-table";
+import { FixedSizeList } from "react-window";
+import { CellTypeAndGenes } from "../../common/types";
 import AsterChart from "./components/AsterChart";
+import { Loader } from "./style";
 
 interface Props {
-  columns: any;
-  data: any;
+  columns: Column<CellTypeAndGenes>[];
+  data: CellTypeAndGenes[];
 }
 
 export default function TreeTable({ columns, data }: Props): JSX.Element {
@@ -46,41 +49,61 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
         })}
       </div>
       <div {...getTableBodyProps()}>
-        {rows.map((row) => {
-          prepareRow(row);
+        <FixedSizeList
+          height={600}
+          width={1350}
+          itemCount={rows.length}
+          itemSize={35}
+        >
+          {({ index, style }) => {
+            const row = rows[index];
+            prepareRow(row);
 
-          return (
-            // eslint-disable-next-line react/jsx-key -- getRowProps already has `key` prop
-            <div {...row.getRowProps([{ style: { margin: "8px 0" } }])}>
-              {row.cells.map((cell) => {
-                return <Cell key={cell.key} cell={cell} />;
-              })}
-            </div>
-          );
-        })}
+            return (
+              // eslint-disable-next-line react/jsx-key -- getRowProps already has `key` prop
+              <div
+                {...row.getRowProps([{ style: { ...style, margin: "8px 0" } }])}
+              >
+                {row.cells.map((cell) => {
+                  const { row, column } = cell;
+
+                  return (
+                    <Cell
+                      key={`row-${row.id}-column-${column.id}`}
+                      cell={cell}
+                    />
+                  );
+                })}
+              </div>
+            );
+          }}
+        </FixedSizeList>
       </div>
     </div>
   );
 }
 
-function Cell({ cell }) {
-  const { value } = cell;
+interface CellProps {
+  cell: ICell<CellTypeAndGenes>;
+}
+
+function Cell({ cell }: CellProps) {
+  const { value, column } = cell;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Figure out how to extend column type
+  const { isLoading } = column as any;
 
   let Component = null;
 
   if (typeof value === "string") {
     Component = cell.render("Cell");
   } else if (value === undefined) {
-    Component = null;
+    Component = isLoading ? <Loader /> : null;
   } else {
-    const { relativeExpression, proportionalExpression } = value;
+    const { me: meanExpression, pc: percentCells } = value;
 
-    if (relativeExpression !== undefined) {
+    if (meanExpression !== undefined) {
       Component = (
-        <AsterChart
-          relativeExpression={relativeExpression}
-          proportionalExpression={proportionalExpression}
-        />
+        <AsterChart colorValue={meanExpression} degreeValue={percentCells} />
       );
     }
   }
