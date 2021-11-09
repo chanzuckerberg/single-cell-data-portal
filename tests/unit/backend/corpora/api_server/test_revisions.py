@@ -378,11 +378,11 @@ class TestPublishRevision(BaseRevisionTest):
             self.assertIsNone(dataset.revised_at)
 
         self.session.expire_all()
-
+        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-            response = self.app.post(path, headers=self.headers)
+            response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
@@ -535,12 +535,13 @@ class TestPublishRevision(BaseRevisionTest):
         """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
+            body = {"data_submission_policy_version": "1.0"}
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers)
+        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
-        """"Publish a revision with refreshed datasets."""
+        """ "Publish a revision with refreshed datasets."""
         self.refresh_datasets()
 
         response_json = self.publish_collection(self.rev_collection.id)
