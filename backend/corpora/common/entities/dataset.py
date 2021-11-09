@@ -156,7 +156,7 @@ class Dataset(Entity):
             DbDataset.sex,
             DbDataset.ethnicity,
             DbDataset.development_stage,
-            DbDataset.schema_version, # Required for schema manipulation
+            DbDataset.schema_version,  # Required for schema manipulation
         ]
         table = cls.table
 
@@ -169,11 +169,9 @@ class Dataset(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = [DbDataset.tombstone == False, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
+        filters = [~DbDataset.tombstone, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
 
-        results = [
-            to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()
-        ]
+        results = [to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()]
 
         for result in results:
             Dataset.transform_organism_for_schema_2_0_0(result)
