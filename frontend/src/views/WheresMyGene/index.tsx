@@ -1,6 +1,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import Head from "next/head";
 import { useMemo } from "react";
+import GeneSearchBar from "./components/GeneSearchBar";
 import TreeTable from "./components/TreeTable";
 import { GENES, TISSUE } from "./mocks/brain";
 
@@ -37,6 +38,8 @@ const WheresMyGene = (): JSX.Element => {
       <Head>
         <title>cellxgene | Where&apos;s My Gene</title>
       </Head>
+
+      <GeneSearchBar />
 
       <TreeTable columns={columns} data={data} />
     </>
