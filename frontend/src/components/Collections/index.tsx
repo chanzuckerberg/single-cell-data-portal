@@ -20,17 +20,17 @@ const Collections: FC = () => {
 
   const router = useRouter();
 
-  const { tombstoned_collection_id } = router.query;
+  const { tombstoned_dataset_id } = router.query;
 
   useEffect(() => {
-    if (!tombstoned_collection_id) return;
+    if (!tombstoned_dataset_id) return;
 
     Toast.show({
       icon: IconNames.ISSUE,
       intent: Intent.PRIMARY,
       message: `The collection you were attempting to view was withdrawn from the data portal`,
     });
-  }, [tombstoned_collection_id]);
+  }, [tombstoned_dataset_id]);
 
   if (isFetching && !collections) return <div>Loading collections...</div>;
 
