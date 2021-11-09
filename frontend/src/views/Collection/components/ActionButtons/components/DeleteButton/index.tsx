@@ -4,6 +4,10 @@ import { ReactElement, useState } from "react";
 import { Collection } from "src/common/entities";
 import { Wrapper } from "../../style";
 
+const AsyncAlert = loadable(
+  () =>
+    /*webpackChunkName: 'src/components/Alert' */ import("src/components/Alert")
+);
 interface Props {
   handleConfirm: () => void;
   collectionName: Collection["name"];
@@ -13,12 +17,6 @@ const DeleteCollectionButton = ({
   handleConfirm,
   collectionName,
 }: Props): ReactElement => {
-  const AsyncAlert = loadable(
-    () =>
-      /*webpackChunkName: 'src/components/Alert' */ import(
-        "src/components/Alert"
-      )
-  );
   const [isOpen, setIsOpen] = useState(false);
   const handleHover = () => {
     AsyncAlert.preload();
@@ -37,7 +35,7 @@ const DeleteCollectionButton = ({
         data-test-id="delete-collection-button"
         minimal
         outlined
-        onMouseOver={handleHover}
+        onMouseEnter={handleHover}
       />
       {isOpen && (
         <AsyncAlert
