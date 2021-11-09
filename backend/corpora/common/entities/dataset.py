@@ -139,7 +139,7 @@ class Dataset(Entity):
     @classmethod
     def list_for_index(cls, session) -> typing.List[typing.Dict]:
         """
-        Return a list of all the datasets. For efficiency reasons, this only returns the fields
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
         inside the `dataset` table and doesn't include relationships.
         """
 
