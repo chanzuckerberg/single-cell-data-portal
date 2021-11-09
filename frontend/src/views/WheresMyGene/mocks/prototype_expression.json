@@ -1,0 +1,1132 @@
+[
+  {
+    "name": "CD4",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -5.05246680245902,
+        "percent_cells": 0.00221018496711897
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -2.72504576621702,
+        "percent_cells": 0.34684584008493
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -1.67757889419919,
+        "percent_cells": 0.619127516778524
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.01862414459963,
+        "percent_cells": 0.0111650881776617
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -1.96227162192381,
+        "percent_cells": 0.304347826086957
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -1.87997779721807,
+        "percent_cells": 0.559059326563335
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": 0.19669738,
+        "percent_cells": 0.333333333333333
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -1.78896756722648,
+        "percent_cells": 0.311307901907357
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -3.43340993955528,
+        "percent_cells": 0.337531627776216
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.00135869565217391
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -3.8716820244186,
+        "percent_cells": 0.0240896358543417
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -2.20189306273549,
+        "percent_cells": 0.539596507076182
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -3.30227977333333,
+        "percent_cells": 0.00037147102526003
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -3.719246753,
+        "percent_cells": 0.041407867494824
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.00667779632721202
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -2.4572610585,
+        "percent_cells": 0.0666666666666667
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -2.2230282125,
+        "percent_cells": 0.0163265306122449
+      }
+    ]
+  },
+  {
+    "name": "CD68",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -4.18972991598815,
+        "percent_cells": 0.0428087465352633
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -0.585563732147228,
+        "percent_cells": 0.77186120578868
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": 0.747763992072727,
+        "percent_cells": 0.922818791946309
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.64919905682804,
+        "percent_cells": 0.0240243305029393
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -3.10792405428571,
+        "percent_cells": 0.202898550724638
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -1.11271206093449,
+        "percent_cells": 0.661678246926777
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": 1.2948493,
+        "percent_cells": 0.333333333333333
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": 0.940492407242336,
+        "percent_cells": 0.88658038147139
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": 1.62636155,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.7334627056676,
+        "percent_cells": 0.0201293224627495
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -4.93076006840909,
+        "percent_cells": 0.0199275362318841
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -2.47236340637641,
+        "percent_cells": 0.446498599439776
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": 0.607873271722536,
+        "percent_cells": 0.907256850346281
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -4.66354215342697,
+        "percent_cells": 0.0220406141654284
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -1.39784576528188,
+        "percent_cells": 0.308488612836439
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -4.16485056635185,
+        "percent_cells": 0.120200333889816
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -0.967403120623636,
+        "percent_cells": 0.523809523809524
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -1.53657586929321,
+        "percent_cells": 0.330612244897959
+      }
+    ]
+  },
+  {
+    "name": "CD79A",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": 0.849103487627253,
+        "percent_cells": 0.949799815214044
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -3.74443027286667,
+        "percent_cells": 0.0167625859082528
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -3.338721287,
+        "percent_cells": 0.0167785234899329
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.49295727323467,
+        "percent_cells": 0.0289639124755062
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -3.00054047811475,
+        "percent_cells": 0.0652057723142704
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -4.37393611428571,
+        "percent_cells": 0.0023841961852861
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.63691444854071,
+        "percent_cells": 0.0183019398369412
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -5.033304148,
+        "percent_cells": 0.0158514492753623
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -2.45701536324138,
+        "percent_cells": 0.0812324929971989
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -3.65350710966387,
+        "percent_cells": 0.0358325805480277
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -3.96728071908397,
+        "percent_cells": 0.0162209014363546
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.0041407867494824
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": 0.134811904422955,
+        "percent_cells": 0.809682804674457
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -2.151030995,
+        "percent_cells": 0.00952380952380952
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      }
+    ]
+  },
+  {
+    "name": "CD8A",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -4.49807448447257,
+        "percent_cells": 0.00429355604268193
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -4.52699786091195,
+        "percent_cells": 0.00888417053137397
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -4.826165953125,
+        "percent_cells": 0.0134228187919463
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -0.683293546335189,
+        "percent_cells": 0.561030372305683
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -3.8455279675,
+        "percent_cells": 0.0579710144927536
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -3.882120624,
+        "percent_cells": 0.0213789417423838
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -3.20310428266667,
+        "percent_cells": 0.00510899182561308
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -2.27094743332636,
+        "percent_cells": 0.0134382906944054
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -2.909709705,
+        "percent_cells": 0.10054347826087
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -2.86203685317647,
+        "percent_cells": 0.0476190476190476
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -4.88139420842105,
+        "percent_cells": 0.0114423366455887
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -4.16949100833333,
+        "percent_cells": 0.000742942050520059
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -2.5530866695,
+        "percent_cells": 0.0041407867494824
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -4.05856347107143,
+        "percent_cells": 0.0155815247634947
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -3.35598397333333,
+        "percent_cells": 0.0142857142857143
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -3.07107522496,
+        "percent_cells": 0.0102040816326531
+      }
+    ]
+  },
+  {
+    "name": "FOXJ1",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -4.36032692166667,
+        "percent_cells": 0.000543488106668599
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -3.98882164578947,
+        "percent_cells": 0.000530815220428005
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.58583026337931,
+        "percent_cells": 0.00295966688438929
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": 0.863379488484848,
+        "percent_cells": 0.478260869565217
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.00160342063067878
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -4.084161934375,
+        "percent_cells": 0.00544959128065395
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.45410050728846,
+        "percent_cells": 0.00292381220129322
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.000560224089635854
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.000301114122252334
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.000247647350173353
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -4.47004529125,
+        "percent_cells": 0.00445186421814135
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -0.289970508648649,
+        "percent_cells": 0.176190476190476
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -1.02591692787,
+        "percent_cells": 0.0816326530612245
+      }
+    ]
+  },
+  {
+    "name": "GNLY",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -4.376930415221,
+        "percent_cells": 0.0196742694614033
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -4.16684176760104,
+        "percent_cells": 0.0698161703078728
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -4.56471890730263,
+        "percent_cells": 0.063758389261745
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": 1.62683998115237,
+        "percent_cells": 0.570542129327237
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -3.58970370190751,
+        "percent_cells": 0.0924639230358097
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -3.90891415828814,
+        "percent_cells": 0.0401907356948229
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -1.37674379333461,
+        "percent_cells": 0.103008152937869
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": 1.60375638202781,
+        "percent_cells": 0.781702898550725
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -2.4194502414055,
+        "percent_cells": 0.163025210084034
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -4.14062354335907,
+        "percent_cells": 0.0779885576633544
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": 2.33851177644001,
+        "percent_cells": 0.942174343734522
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -3.99185731243243,
+        "percent_cells": 0.0766045548654244
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -3.73236509571429,
+        "percent_cells": 0.0545353366722315
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -4.18101015909091,
+        "percent_cells": 0.0523809523809524
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -4.6882290596,
+        "percent_cells": 0.0204081632653061
+      }
+    ]
+  },
+  {
+    "name": "JCHAIN",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -1.8620601434755,
+        "percent_cells": 0.312415079983333
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -3.78614379089178,
+        "percent_cells": 0.0557635357881209
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -4.57707024140351,
+        "percent_cells": 0.0478187919463087
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.03282992887798,
+        "percent_cells": 0.0411495754408883
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": 1.6178678,
+        "percent_cells": 0.0144927536231884
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": 0.557657005044053,
+        "percent_cells": 0.242650988776056
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -3.40315067730769,
+        "percent_cells": 0.0177111716621253
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.2205280406677,
+        "percent_cells": 0.0361259488332865
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -3.92845407826087,
+        "percent_cells": 0.0416666666666667
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -2.88521114912442,
+        "percent_cells": 0.12156862745098
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -4.41632987428571,
+        "percent_cells": 0.0358325805480277
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -4.17534758946328,
+        "percent_cells": 0.0438335809806835
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -4.4111440875,
+        "percent_cells": 0.0165631469979296
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": 2.72507068769899,
+        "percent_cells": 0.987200890372844
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -0.99457782,
+        "percent_cells": 0.0142857142857143
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      }
+    ]
+  },
+  {
+    "name": "MALAT1",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": 3.98133071515526,
+        "percent_cells": 0.999420279352887
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": 2.87904498474051,
+        "percent_cells": 0.999105995418227
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": 2.8671105923406,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": 3.84522576235002,
+        "percent_cells": 0.999632593076421
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": 3.00271111033333,
+        "percent_cells": 0.869565217391304
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": 2.98170349596975,
+        "percent_cells": 0.989310529128808
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": 3.5912638,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": 2.85711187405684,
+        "percent_cells": 0.991144414168937
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": 5.1993375,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": 3.8646545824633,
+        "percent_cells": 0.999550182738263
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": 3.80419218871377,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": 1.29723050650672,
+        "percent_cells": 0.833613445378151
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": 3.2449213915003,
+        "percent_cells": 0.995483288166215
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": 3.79734337787935,
+        "percent_cells": 0.99962852897474
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": 3.36209514865424,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": 2.57520384168896,
+        "percent_cells": 0.998330550918197
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": 2.97972156699029,
+        "percent_cells": 0.980952380952381
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": 3.03348152157447,
+        "percent_cells": 0.959183673469388
+      }
+    ]
+  },
+  {
+    "name": "MNDA",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -3.69039746092956,
+        "percent_cells": 0.0825558434029602
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": 0.303093355623132,
+        "percent_cells": 0.861233726322847
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -0.127157660028,
+        "percent_cells": 0.838926174496644
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -4.40848468276084,
+        "percent_cells": 0.0348220117570216
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.0434782608695652
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": -0.0962287876509208,
+        "percent_cells": 0.667557455905933
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.333333333333333
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -0.0885343355475782,
+        "percent_cells": 0.752384196185286
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": 1.074878295,
+        "percent_cells": 1
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.51916684504204,
+        "percent_cells": 0.0254146752881642
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.0172101449275362
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -4.12173289587444,
+        "percent_cells": 0.124929971988796
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -0.904161109729387,
+        "percent_cells": 0.712134899126769
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -4.44433869175,
+        "percent_cells": 0.0297176820208024
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -0.396798300384106,
+        "percent_cells": 0.625258799171843
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -4.4794158694382,
+        "percent_cells": 0.0495269894268225
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": -1.697947571,
+        "percent_cells": 0.0952380952380952
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": -2.88556380653846,
+        "percent_cells": 0.0530612244897959
+      }
+    ]
+  },
+  {
+    "name": "MUC5B",
+    "data": [
+      {
+        "id": "CL:0000236",
+        "name": "B cell",
+        "mean_expression": -3.52995050285714,
+        "percent_cells": 0.000126813891556006
+      },
+      {
+        "id": "CL:0002057",
+        "name": "CD14-positive, CD16-negative classical monocyte",
+        "mean_expression": -4.25502659833333,
+        "percent_cells": 0.000670503436330111
+      },
+      {
+        "id": "CL:0002397",
+        "name": "CD14-positive, CD16-positive monocyte",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000625",
+        "name": "CD8-positive, alpha-beta T cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.000122468974526453
+      },
+      {
+        "id": "CL:0000064",
+        "name": "ciliated cell",
+        "mean_expression": 0.795828367777778,
+        "percent_cells": 0.130434782608696
+      },
+      {
+        "id": "CL:0000451",
+        "name": "dendritic cell",
+        "mean_expression": 1.7923825,
+        "percent_cells": 0.000534473543559594
+      },
+      {
+        "id": "CL:0000066",
+        "name": "epithelial cell",
+        "mean_expression": 0.53950673,
+        "percent_cells": 0.333333333333333
+      },
+      {
+        "id": "CL:0000235",
+        "name": "macrophage",
+        "mean_expression": -4.11799676666667,
+        "percent_cells": 0.00204359673024523
+      },
+      {
+        "id": "CL:0000097",
+        "name": "mast cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000791",
+        "name": "mature alpha-beta T cell",
+        "mean_expression": -4.23531670833333,
+        "percent_cells": 0.000168681473151532
+      },
+      {
+        "id": "CL:0000800",
+        "name": "mature gamma-delta T cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000556",
+        "name": "megakaryocyte",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000576",
+        "name": "monocyte",
+        "mean_expression": -3.32195991333333,
+        "percent_cells": 0.000903342366757001
+      },
+      {
+        "id": "CL:0000623",
+        "name": "natural killer cell",
+        "mean_expression": -3.19133138,
+        "percent_cells": 0.00037147102526003
+      },
+      {
+        "id": "CL:0000775",
+        "name": "neutrophil",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0
+      },
+      {
+        "id": "CL:0000786",
+        "name": "plasma cell",
+        "mean_expression": -5.1993375,
+        "percent_cells": 0.000556483027267668
+      },
+      {
+        "id": "CL:0000151",
+        "name": "secretory cell",
+        "mean_expression": 0.285248765054794,
+        "percent_cells": 0.347619047619048
+      },
+      {
+        "id": "CL:0000076",
+        "name": "squamous epithelial cell",
+        "mean_expression": 0.559749975,
+        "percent_cells": 0.00408163265306122
+      }
+    ]
+  }
+]

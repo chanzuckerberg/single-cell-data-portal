@@ -1,0 +1,74 @@
+[
+  {
+    "id": "CL:0000236",
+    "name": "B cell"
+  },
+  {
+    "id": "CL:0000786",
+    "name": "plasma cell"
+  },
+  {
+    "id": "CL:0000791",
+    "name": "mature alpha-beta T cell"
+  },
+  {
+    "id": "CL:0000625",
+    "name": "CD8-positive, alpha-beta T cell"
+  },
+  {
+    "id": "CL:0000800",
+    "name": "mature gamma-delta T cell"
+  },
+  {
+    "id": "CL:0000623",
+    "name": "natural killer cell"
+  },
+  {
+    "id": "CL:0002057",
+    "name": "CD14-positive, CD16-negative classical monocyte"
+  },
+  {
+    "id": "CL:0002397",
+    "name": "CD14-positive, CD16-positive monocyte"
+  },
+  {
+    "id": "CL:0000451",
+    "name": "dendritic cell"
+  },
+  {
+    "id": "CL:0000576",
+    "name": "monocyte"
+  },
+  {
+    "id": "CL:0000235",
+    "name": "macrophage"
+  },
+  {
+    "id": "CL:0000097",
+    "name": "mast cell"
+  },
+  {
+    "id": "CL:0000775",
+    "name": "neutrophil"
+  },
+  {
+    "id": "CL:0000556",
+    "name": "megakaryocyte"
+  },
+  {
+    "id": "CL:0000076",
+    "name": "squamous epithelial cell"
+  },
+  {
+    "id": "CL:0000066",
+    "name": "epithelial cell"
+  },
+  {
+    "id": "CL:0000064",
+    "name": "ciliated cell"
+  },
+  {
+    "id": "CL:0000151",
+    "name": "secretory cell"
+  }
+]
