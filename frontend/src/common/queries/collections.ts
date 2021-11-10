@@ -263,16 +263,46 @@ async function deleteCollection({
   }
 }
 
-export function useDeleteCollection(id = "") {
+export function useDeleteCollection(
+  id = "",
+  visibility = VISIBILITY_TYPE.PRIVATE
+) {
   const queryCache = useQueryCache();
 
   return useMutation(deleteCollection, {
+    onError: (
+      _,
+      __,
+      context: { previousCollections: CollectionResponsesMap }
+    ) => {
+      queryCache.setQueryData([USE_COLLECTIONS], context.previousCollections);
+    },
+    onMutate: async () => {
+      await queryCache.cancelQueries([USE_COLLECTIONS]);
+
+      const previousCollections = queryCache.getQueryData([
+        USE_COLLECTIONS,
+      ]) as CollectionResponsesMap;
+
+      const newCollections = new Map(previousCollections);
+      // If we're deleting a public collection, nuke it from the cache
+      if (visibility === VISIBILITY_TYPE.PUBLIC) {
+        newCollections.delete(id);
+      } else {
+        // Otherwise, we need to preserve the public collection
+        const collectionsWithID = newCollections.get(id);
+        collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
+        if (collectionsWithID) newCollections.set(id, collectionsWithID);
+      }
+      queryCache.setQueryData([USE_COLLECTIONS], newCollections);
+
+      return { previousCollections };
+    },
     onSuccess: () => {
       return Promise.all([
         queryCache.invalidateQueries([USE_COLLECTIONS]),
-        queryCache.invalidateQueries([USE_COLLECTION, id], {
-          // (thuang): No need to refetch a deleted private collection
-          refetchActive: false,
+        queryCache.removeQueries([USE_COLLECTION, id, visibility], {
+          exact: false,
         }),
       ]);
     },

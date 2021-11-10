@@ -75,7 +75,7 @@ const Collection: FC = () => {
 
   const { data, isError, isFetching } = collectionState;
 
-  const [deleteMutation] = useDeleteCollection(id);
+  const [deleteMutation] = useDeleteCollection(id, visibility);
 
   if (data?.tombstone === true) {
     router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
