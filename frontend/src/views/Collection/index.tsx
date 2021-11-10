@@ -64,8 +64,6 @@ const Collection: FC = () => {
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const collectionState = useCollection({
     id,
     visibility,
@@ -73,7 +71,7 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const [deleteMutation] = useDeleteCollection(id, visibility);
+  const [deleteMutation, { isLoading }] = useDeleteCollection(id, visibility);
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -151,13 +149,13 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
   const handleDeleteCollection = async () => {
-    setIsLoading(true);
-    await deleteMutation({
-      collectionID: id,
-      visibility: VISIBILITY_TYPE.PUBLIC,
-    });
-    setIsLoading(false);
-    router.push(ROUTES.MY_COLLECTIONS);
+    await deleteMutation(
+      {
+        collectionID: id,
+        visibility: VISIBILITY_TYPE.PUBLIC,
+      },
+      { onSuccess: () => router.push(ROUTES.MY_COLLECTIONS) }
+    );
   };
 
   return (

@@ -24,8 +24,8 @@ const DeleteCollectionButton = ({
     AsyncAlert.preload();
   };
 
-  const handleClick = async () => {
-    await setIsOpen(!isOpen);
+  const handleClick = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
