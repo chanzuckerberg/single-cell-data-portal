@@ -447,12 +447,9 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = "local.h5ad"
 
-    # TODO: remove this comment after the interface to validate.validate() is decided
-    # for now, expecting a dictionary with 3 items: is_valid (bool), errors (list), can_convert_to_seurat (bool)
-    result = validate.validate(local_filename, output_filename)
+    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
 
-    if not result.get("is_valid", False):
-        errors = result.get("errors", [])
+    if not is_valid:
         logger.error(f"Validation failed with {len(errors)} errors!")
         status = dict(
             validation_status=ValidationStatus.INVALID,
@@ -468,7 +465,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return dict(labeled_filename=output_filename, can_convert_to_seurat=result.get("can_convert_to_seurat", False))
+        return dict(labeled_filename=output_filename, can_convert_to_seurat=can_convert_to_seurat)
 
 
 def clean_up_local_file(local_filename):
