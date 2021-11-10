@@ -13,28 +13,26 @@ export async function goToPage(url: string = TEST_URL): Promise<void> {
 }
 
 export async function login(): Promise<void> {
-  goToPage();
+  await goToPage();
 
   expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
 
-  try {
-    await expect(page).toHaveSelector(getText("My Collections"), {
-      timeout: TIMEOUT_MS,
-    });
-  } catch (error) {
-    const username = TEST_USERNAME;
+  const cookies = await context.cookies();
 
-    await page.click(getText("Log In"));
+  if (cookies.length) return;
 
-    await page.fill('[name="Username"], [name="email"]', username);
-    await page.fill('[name="Password"], [name="password"]', TEST_PASSWORD);
+  const username = TEST_USERNAME;
 
-    await page.click('[value="login"], [name="submit"]');
+  await page.click(getText("Log In"));
 
-    await tryUntil(() => {
-      expect(page.url()).toContain(TEST_URL);
-    });
-  }
+  await page.fill('[name="Username"], [name="email"]', username);
+  await page.fill('[name="Password"], [name="password"]', TEST_PASSWORD);
+
+  await page.click('[value="login"], [name="submit"]');
+
+  await tryUntil(() => {
+    expect(page.url()).toContain(TEST_URL);
+  });
 }
 
 export async function tryUntil(
