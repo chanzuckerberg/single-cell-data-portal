@@ -441,7 +441,13 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata)
 
 
-def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
+def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
+    """
+    Validates and labels the specified dataset file and updates the processing status in the database
+    :param dataset_id: UUID of the dataset to update
+    :param local_filename: file name of the dataset to validate and label
+    :return: (str, bool) - file name of labeled dataset, boolean indicating if Seurat conversion is possible
+    """
     from cellxgene_schema import validate
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
@@ -465,7 +471,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return dict(labeled_filename=output_filename, can_convert_to_seurat=can_convert_to_seurat)
+        return output_filename, can_convert_to_seurat
 
 
 def clean_up_local_file(local_filename):
@@ -504,8 +510,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
     # will have to be modified since it relies on a shared local file
 
-    result = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
-    file_with_labels = result.get("labeled_filename")
+    file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
 
     # Process metadata
     metadata = extract_metadata(file_with_labels)
@@ -513,7 +518,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
     # create artifacts
     process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket, result.get("can_convert_to_seurat"))
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
