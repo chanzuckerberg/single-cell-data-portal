@@ -88,7 +88,7 @@ const Content: FC<Props> = (props) => {
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
-  if (isTombstonedCollection(data)) data = {} as Collection;
+  if (isTombstonedCollection(data)) data = null;
 
   const [mutateCreateCollection] = useCreateCollection();
   const [mutateEditCollection] = useEditCollection(props.id);
