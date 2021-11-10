@@ -176,11 +176,13 @@ class Collection(Entity):
         is_existing_collection = False
 
         if public_collection:
-            d = self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True)
-            d["data_submission_policy_version"] = data_submission_policy_version
+            revision = self.to_dict(
+                remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True
+            )
+            revision["data_submission_policy_version"] = data_submission_policy_version
             public_collection.update(
                 commit=False,
-                **d,
+                **revision,
             )
             is_existing_collection = True
         # A published collection with the same uuid does not already exist.
