@@ -6,7 +6,8 @@ on:
       - '*rdev'
       - 'rdev*'
     branches:
-      - '**/?rdev-*'
+      - 'rdev-*'
+      - '**/rdev-*'
       - '**-rdev'
 
 env:
