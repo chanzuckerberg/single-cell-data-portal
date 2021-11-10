@@ -152,6 +152,8 @@ DEPLOYMENT_STAGE_TO_URL = {
     "test": "http://frontend.corporanet.local:3000",
 }
 
+LABELED_H5AD_FILENAME = "local.h5ad"
+
 
 def check_env():
     """Verify that the required environment variables are set."""
@@ -440,7 +442,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     from cellxgene_schema import validate
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    output_filename = "local.h5ad"
+    output_filename = LABELED_H5AD_FILENAME
     is_valid, errors = validate.validate(local_filename, output_filename)
 
     if not is_valid:
@@ -541,9 +543,10 @@ def notify_slack_failure(dataset_id):
         slack_webhook = CorporaConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
+
 # New pipeline
 # Step 0: update db
-#   
+#
 # Step 1: download
 #   Inputs: collection_id, dataset_id, dropbox_url
 #   - download the h5ad file from S3
@@ -556,7 +559,7 @@ def notify_slack_failure(dataset_id):
 #   - Start the CXG conversion
 #   - Upload the CXG file to S3
 # Step 2.5: set seurat_conversion to "in progress"
-# Step 3: Seurat conversion 
+# Step 3: Seurat conversion
 #   Inputs: dataset_id, h5ad_url
 #   - Download the annotated file
 #   - Start the seurat conversion
