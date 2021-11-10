@@ -41,7 +41,7 @@ class TestPublish(BaseAuthAPITest):
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers_authed)
+        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
