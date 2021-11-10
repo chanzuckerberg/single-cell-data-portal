@@ -58,7 +58,8 @@ class DatasetAsset(Entity):
         Retrieves the asset content length from the S3 object.
         :return: The content length in bytes.
         """
-        return self.get_s3_metadata()["ContentLength"]
+        metadata = self.get_s3_metadata()
+        return metadata["ContentLength"] if metadata else None
 
     def delete_from_s3(self):
         try:

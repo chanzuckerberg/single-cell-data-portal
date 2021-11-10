@@ -1,9 +1,9 @@
 import typing
-from collections import defaultdict
+
 from datetime import datetime
 from sqlalchemy import and_
 
-from . import Dataset, DatasetAsset
+from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
 from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
@@ -287,18 +287,3 @@ class Collection(Entity):
     def check_has_dataset(self, dataset: Dataset) -> bool:
         """Check that a dataset is part of the collection"""
         return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
-
-    def check_for_duplicate_datasets(self):
-        self.session.query(DbCollection)
-        duplicate_assets = defaultdict(list)
-        etags = []
-        for dataset in DbCollection.datasets:
-            if not dataset.tombstone:
-                for artifact in dataset.artifacts:
-                    _artifact = DatasetAsset(artifact)
-                    etag = _artifact.get_s3_metadata()["ETag"]
-                    if etag not in etags:
-                        etags.append(etag)
-                    else:
-                        duplicate_assets[etags].append((dataset.id, _artifact.id))
-        return duplicate_assets
