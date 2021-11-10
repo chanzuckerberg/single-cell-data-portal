@@ -47,33 +47,3 @@ jobs:
           # replace `/` with `_`
           TAG=${TAG//\//-}
           scripts/happy --profile="" push --extra-tag ${TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
-
-#  create-update-rdev:
-#    runs-on: ubuntu-20.04
-#    needs:
-#      - build-push-images
-#    steps:
-#      - name: Configure AWS Credentials
-#        uses: aws-actions/configure-aws-credentials@v1
-#        with:
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          aws-region: us-west-2
-#          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-#          role-duration-seconds: 900
-#      - uses: actions/checkout@v2
-#      - name: Install happy dependencies
-#        run: |
-#          pip install -r .happy/requirements.txt
-#      - name: Create update rdev
-#        env:
-#          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-#        run: |
-#          RDEV_NAME=${GITHUB_REF#refs/heads/rdev-}
-#          if $(./scripts/happy --profile="" list | grep -q $RDEV_NAME); then
-#            echo "Updating stack $RDEV_NAME"
-#            ./scripts/happy --profile=""  update --tag build-${GITHUB_RUN_NUMBER} $RDEV_NAME
-#          else
-#            echo "Creating stack $RDEV_NAME"
-#            ./scripts/happy --profile="" create  --tag build-${GITHUB_RUN_NUMBER} $RDEV_NAME
-#          fi
