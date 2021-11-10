@@ -46,7 +46,7 @@ jobs:
           TAG=${GITHUB_REF#refs/heads/}
           # replace `/` with `_`
           TAG=${TAG//\//-}
-          scripts/happy --profile="" push push --extra-tag ${TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
+          scripts/happy --profile="" push --extra-tag ${TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
 
 #  create-update-rdev:
 #    runs-on: ubuntu-20.04
