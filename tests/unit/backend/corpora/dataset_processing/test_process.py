@@ -610,9 +610,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_make_seurat,
     ):
         # given
-        mock_validate_h5ad_file_and_add_labels.return_value = dict(
-            labeled_filename=mock.ANY, can_convert_to_seurat=False
-        )
+        mock_validate_h5ad_file_and_add_labels.return_value = tuple([mock.ANY, False])
 
         # when
         process.process(mock.ANY, mock.ANY, mock.ANY, mock.ANY)
@@ -638,9 +636,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         mock_make_seurat,
     ):
         # given
-        mock_validate_h5ad_file_and_add_labels.return_value = dict(
-            labeled_filename=mock.ANY, can_convert_to_seurat=True
-        )
+        mock_validate_h5ad_file_and_add_labels.return_value = tuple([mock.ANY, True])
 
         # when
         process.process(mock.ANY, mock.ANY, mock.ANY, mock.ANY)
