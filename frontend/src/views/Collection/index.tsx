@@ -4,11 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  ACCESS_TYPE,
-  Collection as CollectionType,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -73,25 +69,16 @@ const Collection: FC = () => {
     visibility,
   });
 
-  const { data, isError, isFetching } = collectionState;
+  const { data: collection, isError, isFetching } = collectionState;
 
   const [deleteMutation] = useDeleteCollection(id, visibility);
 
-  if (data?.tombstone === true) {
-    router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
-  }
-  const collection = data as CollectionType;
-
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const isRevision = isCurator && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
-  const collectionContactName = collection?.contact_name;
   useEffect(() => {
-    // collectionContactName would be undefined in the case where collection is undefined.
-    if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
-      return;
+    if (!tombstoned_dataset_id) return;
 
     Toast.show({
       icon: IconNames.ISSUE,
@@ -99,7 +86,13 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-  }, [tombstoned_dataset_id, collectionContactName]);
+  }, [tombstoned_dataset_id]);
+
+  useEffect(() => {
+    if (isTombstonedCollection(collection)) {
+      router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
+    }
+  }, [collection, id, router]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
@@ -109,6 +102,8 @@ const Collection: FC = () => {
   if (!collection || isError || isTombstonedCollection(collection)) {
     return null;
   }
+
+  const isRevision = isCurator && !!collection?.has_revision;
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;

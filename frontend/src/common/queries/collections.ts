@@ -3,7 +3,7 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import HttpStatusCode from "../constants/httpStatusCode";
+import HTTP_STATUS_CODE from "../constants/httpStatusCode";
 import checkForRevisionChange from "../utils/checkForRevisionChange";
 import { isTombstonedCollection } from "../utils/typeGuards";
 import {
@@ -110,7 +110,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
     let json = await response.json();
 
-    if (response.status === HttpStatusCode.GONE) {
+    if (response.status === HTTP_STATUS_CODE.GONE) {
       return { tombstone: true };
     }
     if (!response.ok) {
