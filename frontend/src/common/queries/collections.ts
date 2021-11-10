@@ -285,12 +285,15 @@ export function useDeleteCollection(
       ]) as CollectionResponsesMap;
 
       const newCollections = new Map(previousCollections);
-      // If we're deleting a public collection, nuke it from the cache
-      if (visibility === VISIBILITY_TYPE.PUBLIC) {
+      const collectionsWithID = newCollections.get(id);
+      // If we're deleting a public collection or there is no revision, nuke it from the cache
+      if (
+        visibility === VISIBILITY_TYPE.PUBLIC ||
+        (collectionsWithID && collectionsWithID.entries.length > 1)
+      ) {
         newCollections.delete(id);
       } else {
         // Otherwise, we need to preserve the public collection
-        const collectionsWithID = newCollections.get(id);
         collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
         if (collectionsWithID) newCollections.set(id, collectionsWithID);
       }
