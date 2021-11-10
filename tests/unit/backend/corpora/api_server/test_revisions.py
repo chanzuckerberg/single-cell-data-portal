@@ -357,7 +357,7 @@ class TestDeleteRevision(BaseRevisionTest):
 
 
 def get_random_etag(*args, **kwargs):
-    return {"ETag": ''.join(random.choices(string.hexdigits, k=8))}
+    return {"ETag": "".join(random.choices(string.hexdigits, k=8))}
 
 
 class TestPublishRevision(BaseRevisionTest):
@@ -367,7 +367,6 @@ class TestPublishRevision(BaseRevisionTest):
         super().setUp()
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
-
 
     @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object", wraps=get_random_etag)
     def publish_collection(self, collection_id: str, mocked_func) -> dict:

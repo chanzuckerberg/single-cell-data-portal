@@ -20,7 +20,9 @@ def check_for_duplicate_datasets(collection: Collection) -> defaultdict:
                 _artifact = DatasetAsset(artifact)
                 metadata = _artifact.get_s3_metadata()
                 if not _artifact.get_s3_metadata():
-                    raise ServerErrorHTTPException("Failed to check datasets for duplications. Unable to find associated artifacts.")
+                    raise ServerErrorHTTPException(
+                        "Failed to check datasets for duplications. Unable to find associated artifacts."
+                    )
                 etag = metadata["ETag"]
                 if etag not in etags:
                     etags.append(etag)
