@@ -574,11 +574,17 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
-        self, mock_metadata_extraction, mock_validate_h5ad, mock_dropbox_download, mock_cxg
+        self,
+        mock_extract_metadata,
+        mock_validate_h5ad_file_and_add_labels,
+        mock_download_from_dropbox_url,
+        mock_make_cxg,
     ):
-        mock_metadata_extraction.side_effect = RuntimeError("metadata extraction failed")
-        mock_dropbox_download.return_value = self.h5ad_filename
-        mock_cxg.return_value = str(self.cxg_filename)
+        # given
+        mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
+        mock_extract_metadata.side_effect = RuntimeError("metadata extraction failed")
+        mock_download_from_dropbox_url.return_value = self.h5ad_filename
+        mock_make_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
         dataset_id = dataset.id
 
