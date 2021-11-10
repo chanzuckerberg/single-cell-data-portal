@@ -64,6 +64,8 @@ const Collection: FC = () => {
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const collectionState = useCollection({
     id,
     visibility,
@@ -148,8 +150,13 @@ const Collection: FC = () => {
   const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
-  const handleDeleteCollection = () => {
-    deleteMutation({ collectionID: id, visibility: VISIBILITY_TYPE.PUBLIC });
+  const handleDeleteCollection = async () => {
+    setIsLoading(true);
+    await deleteMutation({
+      collectionID: id,
+      visibility: VISIBILITY_TYPE.PUBLIC,
+    });
+    setIsLoading(false);
     router.push(ROUTES.MY_COLLECTIONS);
   };
 
@@ -198,6 +205,7 @@ const Collection: FC = () => {
           <DeleteCollectionButton
             handleConfirm={handleDeleteCollection}
             collectionName={collection.name}
+            loading={isLoading}
           />
         )}
 

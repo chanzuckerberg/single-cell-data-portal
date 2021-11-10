@@ -11,19 +11,21 @@ const AsyncAlert = loadable(
 interface Props {
   handleConfirm: () => void;
   collectionName: Collection["name"];
+  loading: boolean;
 }
 
 const DeleteCollectionButton = ({
   handleConfirm,
   collectionName,
+  loading,
 }: Props): ReactElement => {
   const [isOpen, setIsOpen] = useState(false);
   const handleHover = () => {
     AsyncAlert.preload();
   };
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
+  const handleClick = async () => {
+    await setIsOpen(!isOpen);
   };
 
   return (
@@ -45,6 +47,7 @@ const DeleteCollectionButton = ({
           isOpen={isOpen}
           onCancel={handleClick}
           onConfirm={handleConfirm}
+          loading={loading}
         >
           <>
             <H6>
