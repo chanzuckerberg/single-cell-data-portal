@@ -34,7 +34,7 @@ const Header: FC = () => {
           <HomepageLink />
         </Left>
         <Right>
-          {!isMyCollectionsShown && (
+          {isMyCollectionsShown && (
             <LinkWrapper>
               <Link href={ROUTES.MY_COLLECTIONS} passHref>
                 <AnchorButton

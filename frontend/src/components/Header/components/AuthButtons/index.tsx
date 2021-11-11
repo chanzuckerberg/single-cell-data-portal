@@ -12,7 +12,6 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { API_URL } from "src/configs/configs";
-import { Initial } from "./style";
 
 const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -34,11 +33,11 @@ const AuthButtons = (): JSX.Element | null => {
 };
 
 function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
-  const Name = isEmail(name) ? <Initial>{name ? name[0] : ""}</Initial> : name;
+  const authName = isEmail(name) ? "Account" : name;
 
   return (
     <Popover content={<Content />}>
-      <Button minimal rightIcon={IconNames.CHEVRON_DOWN} text={Name} />
+      <Button minimal rightIcon={IconNames.CHEVRON_DOWN} text={authName} />
     </Popover>
   );
 
