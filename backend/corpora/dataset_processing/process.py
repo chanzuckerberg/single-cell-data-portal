@@ -446,7 +446,7 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
     Validates and labels the specified dataset file and updates the processing status in the database
     :param dataset_id: UUID of the dataset to update
     :param local_filename: file name of the dataset to validate and label
-    :return: (str, bool) - file name of labeled dataset, boolean indicating if Seurat conversion is possible
+    :return: file name of labeled dataset, boolean indicating if Seurat conversion is possible
     """
     from cellxgene_schema import validate
 
