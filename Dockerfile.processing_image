@@ -21,7 +21,7 @@ RUN git clone https://github.com/chanzuckerberg/single-cell-explorer.git \
 # Install python dependencies
 # Remove packaging dependency once pyparser>3 is supported.
 RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
-RUN pip3 install cellxgene-schema==2.0.4
+RUN pip3 install cellxgene-schema==2.0.5
 
 ADD requirements.txt requirements.txt
 ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
