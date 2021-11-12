@@ -389,7 +389,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
 def convert_file_ignore_exceptions(
     converter: typing.Callable, local_filename: str, error_message: str, dataset_id: str, processing_status_type: str
 ) -> str:
-    logger.info(f"Converting {converter}")
+    logger.info(f"Converting {local_filename}")
     start = datetime.now()
     try:
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTING})
@@ -513,23 +513,33 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
 def main():
     return_value = 0
-    check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
-    try:
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
-    except ProcessingCancelled:
-        cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occurred while processing.")
-        return_value = 1
-    except Exception:
-        message = "An unexpected error occurred while processing the data set."
-        logger.exception(message)
-        update_db(
-            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
-        )
-        return_value = 1
+    step_name = os.environ["STEP_NAME"]
+    logger.warning(f"Processing dataset {dataset_id}")
+    if step_name == "download-validate":
+        from backend.corpora.dataset_processing.process_download_validate import process
+        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+    elif step_name == "cxg":
+        from backend.corpora.dataset_processing.process_cxg import process
+        process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
+    elif step_name == "seurat":
+        from backend.corpora.dataset_processing.process_seurat import process
+        process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+    # try:
+    #     process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
+    # except ProcessingCancelled:
+    #     cancel_dataset(dataset_id)
+    # except (ValidationFailed, ProcessingFailed):
+    #     logger.exception("An Error occurred while processing.")
+    #     return_value = 1
+    # except Exception:
+    #     message = "An unexpected error occurred while processing the data set."
+    #     logger.exception(message)
+    #     update_db(
+    #         dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
+    #     )
+    #     return_value = 1
 
     if return_value > 0:
         notify_slack_failure(dataset_id)

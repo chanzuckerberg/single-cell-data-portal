@@ -4,7 +4,7 @@ import os
 import sys
 
 from backend.corpora.common.utils.s3_buckets import s3_client
-from process import (
+from backend.corpora.dataset_processing.process import (
     check_env,
     log_batch_environment,
     update_db,
@@ -25,10 +25,11 @@ from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, P
 
 
 def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
+    logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
     s3_client.download_file(bucket_name, object_key, local_filename)
 
 
-def process(dataset_id: str, artifact_bucket: str, labeled_h5ad_filename: str, cellxgene_bucket: str):
+def process(dataset_id: str, artifact_bucket: str, cellxgene_bucket: str):
     """
     1. Download the labeled dataset from the artifact bucket
     1. Convert the labeled dataset to CXG
@@ -39,6 +40,8 @@ def process(dataset_id: str, artifact_bucket: str, labeled_h5ad_filename: str, c
     :param cellxgene_bucket:
     :return:
     """
+
+    labeled_h5ad_filename = "local.h5ad"
 
     # Download the labeled dataset from the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)

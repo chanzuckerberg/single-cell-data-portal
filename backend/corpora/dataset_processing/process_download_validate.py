@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from process import (
+from backend.corpora.dataset_processing.process import (
     check_env,
     log_batch_environment,
     update_db,
