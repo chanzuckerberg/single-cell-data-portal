@@ -600,52 +600,36 @@ class TestDatasetProcessing(DataPortalTestCase):
 
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     @patch("backend.corpora.dataset_processing.process.create_artifact")
-    @patch("backend.corpora.dataset_processing.process.process_cxg")
-    @patch("backend.corpora.dataset_processing.process.extract_metadata", return_value=mock.ANY)
-    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url", return_value=mock.ANY)
     @patch("backend.corpora.dataset_processing.process.update_db")
     def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(
         self,
         mock_update_db,
-        mock_download_from_dropbox_url,
-        mock_validate_h5ad_file_and_add_labels,
-        mock_extract_metadata,
-        mock_process_cxg,
         mock_create_artifact,
         mock_make_seurat,
     ):
         # given
-        mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
+        can_convert_to_seurat = False
 
         # when
-        process.process(mock.ANY, mock.ANY, mock.ANY, mock.ANY)
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
 
         # then
         mock_make_seurat.assert_not_called()
 
     @patch("backend.corpora.dataset_processing.process.make_seurat")
     @patch("backend.corpora.dataset_processing.process.create_artifact")
-    @patch("backend.corpora.dataset_processing.process.process_cxg")
-    @patch("backend.corpora.dataset_processing.process.extract_metadata", return_value=mock.ANY)
-    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url", return_value=mock.ANY)
     @patch("backend.corpora.dataset_processing.process.update_db")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected(
         self,
         mock_update_db,
-        mock_download_from_dropbox_url,
-        mock_validate_h5ad_file_and_add_labels,
-        mock_extract_metadata,
-        mock_process_cxg,
         mock_create_artifact,
         mock_make_seurat,
     ):
         # given
-        mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, True)
+        can_convert_to_seurat = True
 
         # when
-        process.process(mock.ANY, mock.ANY, mock.ANY, mock.ANY)
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
 
         # then
         mock_make_seurat.assert_called()
