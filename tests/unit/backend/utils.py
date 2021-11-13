@@ -8,6 +8,8 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     ValidationStatus,
     XApproximateDistribution,
+    DatasetArtifactType,
+    DatasetArtifactFileType,
 )
 
 
@@ -68,6 +70,21 @@ class BogusDatasetParams:
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
+        )
+
+        bogus_data.update(**kwargs)
+        return bogus_data
+
+
+class BogusDatasetAssetParams:
+    @classmethod
+    def get(cls, **kwargs):
+        bogus_data = dict(
+            filename="file.h5ad",
+            filetype=DatasetArtifactFileType.H5AD,
+            type_enum=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri="s3://fake/uri/file.h5ad",
         )
 
         bogus_data.update(**kwargs)

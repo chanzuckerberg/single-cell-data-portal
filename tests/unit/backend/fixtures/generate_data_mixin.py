@@ -1,7 +1,12 @@
-from backend.corpora.common.entities import Collection, Dataset
+from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
 from backend.corpora.common.entities.geneset import Geneset
 from backend.corpora.common.utils.db_session import db_session_manager
-from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams, BogusGenesetParams
+from tests.unit.backend.utils import (
+    BogusCollectionParams,
+    BogusDatasetParams,
+    BogusGenesetParams,
+    BogusDatasetAssetParams,
+)
 
 
 class GenerateDataMixin:
@@ -31,6 +36,10 @@ class GenerateDataMixin:
     def generate_dataset(self, session, **params) -> Dataset:
         _dataset = Dataset.create(session, **BogusDatasetParams.get(**params))
         self.addCleanup(self.delete_dataset, _dataset.id)
+        return _dataset
+
+    def generate_asset(self, session, dataset_id, **params) -> Dataset:
+        _dataset = DatasetAsset.create(session, dataset_id, **BogusDatasetAssetParams.get(**params))
         return _dataset
 
     @staticmethod

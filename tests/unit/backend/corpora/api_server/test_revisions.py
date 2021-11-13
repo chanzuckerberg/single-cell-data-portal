@@ -458,6 +458,19 @@ class TestPublishRevision(BaseRevisionTest):
                 self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
 
+    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
+    def test__publish_revision_with_Duplicate_dataset__409(self, mocked):
+        """The publishing of a revised collection is blocked when duplicate datasets are detected."""
+        mocked.return_value = {"ETag": "ABCDEF"}
+        for i in range(2):
+            self.generate_dataset_with_s3_resources(
+                self.session, collection_id=self.rev_collection.id, collection_visibility=CollectionVisibility.PRIVATE
+            ).id
+
+        path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
+        response = self.app.post(path, headers=self.headers)
+        self.assertEqual(409, response.status_code)
+
     def test__with_revision_with_tombstoned_datasets__OK(self):
         """Publish a revision with delete datasets."""
         rev_dataset_id = self.rev_collection.datasets[0].id

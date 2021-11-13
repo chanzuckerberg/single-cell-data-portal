@@ -164,6 +164,21 @@ class TestPublish(BaseAuthAPITest):
         response = self.app.post(path, headers=self.headers_authed)
         self.assertEqual(403, response.status_code)
 
+    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
+    def test__publish_with_Duplicate_dataset__409(self, mocked):
+        """The publishing of a private collection is blocked when duplicate datasets are detected."""
+        mocked.return_value = {"ETag": "ABCDEF"}
+        collection = self.generate_collection(self.session)
+        for i in range(2):
+            dataset = self.generate_dataset(
+                self.session, collection_id=collection.id, collection_visibility=collection.visibility
+            )
+            self.generate_asset(self.session, dataset.id)
+
+        path = f"/dp/v1/collections/{collection.id}/publish"
+        response = self.app.post(path, headers=self.headers_authed)
+        self.assertEqual(409, response.status_code)
+
 
 class TestPublishCurators(BasicAuthAPITestCurator):
     def test__can_publish_owned_collection(self):
