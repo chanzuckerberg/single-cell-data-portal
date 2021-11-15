@@ -3,7 +3,9 @@ import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
+import HTTP_STATUS_CODE from "../constants/HTTP_STATUS_CODE";
 import checkForRevisionChange from "../utils/checkForRevisionChange";
+import { isTombstonedCollection } from "../utils/typeGuards";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
@@ -84,12 +86,16 @@ function generateDatasetMap(json: any) {
   return datasetMap;
 }
 
+export interface TombstonedCollection {
+  tombstone: true;
+}
+
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
     _: unknown,
     id: string,
     visibility: VISIBILITY_TYPE
-  ): Promise<Collection | null> {
+  ): Promise<Collection | TombstonedCollection | null> {
     if (!id) {
       return null;
     }
@@ -104,6 +110,9 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
     let json = await response.json();
 
+    if (response.status === HTTP_STATUS_CODE.GONE) {
+      return { tombstone: true };
+    }
     if (!response.ok) {
       throw json;
     }
@@ -147,7 +156,7 @@ export function useCollection({
 }) {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
-  return useQuery<Collection | null>(
+  return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, visibility, collections],
     queryFn,
     { enabled: !!collections }
@@ -235,11 +244,17 @@ export function useCollectionUploadLinks(
   });
 }
 
-async function deleteCollection(collectionID: Collection["id"]) {
+async function deleteCollection({
+  collectionID,
+  visibility = VISIBILITY_TYPE.PRIVATE,
+}: {
+  collectionID: Collection["id"];
+  visibility?: VISIBILITY_TYPE;
+}) {
   const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
-  const finalUrl = baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`;
+  const finalUrl = baseUrl + `?visibility=${visibility}`;
 
   const response = await fetch(finalUrl, DELETE_FETCH_OPTIONS);
 
@@ -248,20 +263,49 @@ async function deleteCollection(collectionID: Collection["id"]) {
   }
 }
 
-export function useDeleteCollection(id = "") {
-  if (!id) {
-    throw new Error("No collection id given");
-  }
-
+export function useDeleteCollection(
+  id = "",
+  visibility = VISIBILITY_TYPE.PRIVATE
+) {
   const queryCache = useQueryCache();
 
   return useMutation(deleteCollection, {
+    onError: (
+      _,
+      __,
+      context: { previousCollections: CollectionResponsesMap }
+    ) => {
+      queryCache.setQueryData([USE_COLLECTIONS], context.previousCollections);
+    },
+    onMutate: async () => {
+      await queryCache.cancelQueries([USE_COLLECTIONS]);
+
+      const previousCollections = queryCache.getQueryData([
+        USE_COLLECTIONS,
+      ]) as CollectionResponsesMap;
+
+      const newCollections = new Map(previousCollections);
+      const collectionsWithID = newCollections.get(id);
+      // If we're deleting a public collection or there is no revision, nuke it from the cache
+      if (
+        visibility === VISIBILITY_TYPE.PUBLIC ||
+        (collectionsWithID && collectionsWithID.entries.length > 1)
+      ) {
+        newCollections.delete(id);
+      } else {
+        // Otherwise, we need to preserve the public collection
+        collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
+        if (collectionsWithID) newCollections.set(id, collectionsWithID);
+      }
+      queryCache.setQueryData([USE_COLLECTIONS], newCollections);
+
+      return { previousCollections };
+    },
     onSuccess: () => {
       return Promise.all([
         queryCache.invalidateQueries([USE_COLLECTIONS]),
-        queryCache.invalidateQueries([USE_COLLECTION, id], {
-          // (thuang): No need to refetch a deleted private collection
-          refetchActive: false,
+        queryCache.removeQueries([USE_COLLECTION, id, visibility], {
+          exact: false,
         }),
       ]);
     },
@@ -340,11 +384,22 @@ export function useEditCollection(collectionID?: Collection["id"]) {
       return queryCache.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
-          const revision_diff =
-            collection?.has_revision && publishedCollection
-              ? checkForRevisionChange(newCollection, publishedCollection)
-              : null;
-          return { ...collection, ...newCollection, revision_diff };
+          let revision_diff;
+          if (isTombstonedCollection(newCollection)) {
+            return newCollection;
+          } else if (
+            !isTombstonedCollection(collection) &&
+            !isTombstonedCollection(publishedCollection) &&
+            collection?.has_revision &&
+            publishedCollection
+          ) {
+            revision_diff = checkForRevisionChange(
+              newCollection,
+              publishedCollection
+            );
+
+            return { ...collection, ...newCollection, revision_diff };
+          }
         }
       );
     },

@@ -13,6 +13,7 @@ import {
   useCreateCollection,
   useEditCollection,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledLabel } from "src/components/common/Form/Input/style";
@@ -82,7 +83,7 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const { data } = useCollection({
+  let { data } = useCollection({
     id: props.id,
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
@@ -90,6 +91,8 @@ const Content: FC<Props> = (props) => {
   const [mutateCreateCollection] = useCreateCollection();
   const [mutateEditCollection] = useEditCollection(props.id);
 
+  // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
+  if (isTombstonedCollection(data)) data = null;
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
