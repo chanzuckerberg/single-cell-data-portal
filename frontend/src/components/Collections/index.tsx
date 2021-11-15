@@ -28,7 +28,8 @@ const Collections: FC = () => {
     Toast.show({
       icon: IconNames.ISSUE,
       intent: Intent.PRIMARY,
-      message: `The collection you were attempting to view was withdrawn from the data portal`,
+      message:
+        "This collection was withdrawn. You’ve been redirected to the cellxgene Data Portal homepage.",
     });
   }, [tombstoned_dataset_id]);
 
