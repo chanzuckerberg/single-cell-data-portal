@@ -22,14 +22,14 @@ const DeleteCollection: FC<Props> = ({
   Button = RawButton,
   isRevision,
 }) => {
-  const [deleteMutation] = useDeleteCollection(id);
-  const [isLoading, setIsLoading] = useState(false);
+  const [deleteMutation, { isLoading }] = useDeleteCollection(id);
   const router = useRouter();
 
   const handleDelete = async () => {
-    setIsLoading(true);
-    await deleteMutation({ collectionID: id });
-    router.push(ROUTES.MY_COLLECTIONS);
+    await deleteMutation(
+      { collectionID: id },
+      { onSuccess: () => router.push(ROUTES.MY_COLLECTIONS) }
+    );
   };
 
   const [isOpen, setIsOpen] = useState(false);
