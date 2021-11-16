@@ -1,4 +1,4 @@
-import { Button, Checkbox, Collapse, Intent } from "@blueprintjs/core";
+import { Button, Collapse, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { FC, useState } from "react";
 import { GRAY } from "src/components/common/theme";
@@ -40,22 +40,16 @@ export const POLICY_BULLETS = {
   version: "1.0",
 };
 
-interface Props {
-  handleChange: (value: string) => void;
-}
-
-const Policy: FC<Props> = ({ handleChange }) => {
-  const [isChecked, setIsChecked] = useState(false);
+const Policy: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Wrapper>
-      <Checkbox inline checked={isChecked} onChange={handleChange_}>
-        I agree to cellxgene&#39;s data submission policies.
-        <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
-          {isOpen ? "Hide" : "Show"} Details
-        </Button>
-      </Checkbox>
+      By clicking publish, you agree to cellxgene&#39;s data submission
+      policies.
+      <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
+        {isOpen ? "Hide" : "Show"} Details
+      </Button>
       <Collapse isOpen={isOpen}>
         <ContentWrapper>
           {POLICY_BULLETS.items.map((item, index) => (
@@ -65,13 +59,6 @@ const Policy: FC<Props> = ({ handleChange }) => {
       </Collapse>
     </Wrapper>
   );
-
-  function handleChange_() {
-    const newIsChecked = !isChecked;
-
-    handleChange(newIsChecked ? POLICY_BULLETS.version : "");
-    setIsChecked(newIsChecked);
-  }
 
   function handleShowButtonClick() {
     setIsOpen(!isOpen);
