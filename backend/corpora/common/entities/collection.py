@@ -145,6 +145,7 @@ class Collection(Entity):
             for link in result["links"]
         ]
         datasets = []
+        result["currator"] = get_user_info(self.owner)
         for dataset in result["datasets"]:
             dataset["dataset_deployments"] = []
             explorer_url = dataset.pop("explorer_url", None)

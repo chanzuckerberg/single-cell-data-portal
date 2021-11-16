@@ -58,6 +58,7 @@ class CorporaAuthConfig(SecretConfig):
             "api_authorize_url": "{api_base_url}/authorize",
             "api_token_url": "{api_base_url}/oauth/token",
             "api_userinfo_url": "{api_base_url}/userinfo",
+            "api_auth0_v2_url": "{api_signin_url}api/v2/",
             "internal_url": "{api_base_url}",
             "issuer": [],
         }
