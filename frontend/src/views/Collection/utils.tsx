@@ -5,6 +5,7 @@ import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
   Dataset,
+  DatasetAsset,
   DATASET_ASSET_FORMAT,
   Link,
   VISIBILITY_TYPE,
@@ -114,11 +115,13 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {
-      const numOfAssets = dataset.dataset_assets.length;
+      const assets = dataset.dataset_assets;
       const numOfDeployments = dataset.dataset_deployments.length;
+      // Assets must contain a cxg and an h5ad. RDS (Seurat) are no longer mandatory for publishing
       return (
         numOfDeployments === 1 &&
-        numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
+        assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.CXG) && 
+        assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD)
       );
     }) &&
     datasets.some((dataset) => !dataset.tombstone)
