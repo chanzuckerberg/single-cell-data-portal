@@ -167,21 +167,24 @@ class Collection(Entity):
         result["datasets"] = datasets
         return result
 
-    def publish(self):
+    def publish(self, data_submission_policy_version):
         """
         Given a private collection, set the collection to public.
         """
         # Timestamp for published_at and revised_at
         now = datetime.utcnow()
-
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         is_existing_collection = False
 
         if public_collection:
+            revision = self.to_dict(
+                remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True
+            )
+            revision["data_submission_policy_version"] = data_submission_policy_version
             public_collection.update(
                 commit=False,
-                **self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True),
+                **revision,
             )
             is_existing_collection = True
         # A published collection with the same uuid does not already exist.
@@ -193,6 +196,7 @@ class Collection(Entity):
                     primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
                     # We want to update published_at only when the collection is first published.
                     published_at=now,
+                    data_submission_policy_version=data_submission_policy_version,
                 )
             )
             self.session.add(public_collection)
