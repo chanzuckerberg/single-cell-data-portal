@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - staging
+      - prod
   pull_request:
     branches: "*"
 
@@ -46,7 +48,7 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   smoke-test:
     runs-on: ubuntu-20.04
@@ -71,7 +73,7 @@ jobs:
           sleep 30  # Give frontend some time to finish building
           make local-smoke-test
       - name: Push images
-        if: github.ref == 'refs/heads/main'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
           # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
@@ -87,7 +89,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -114,13 +116,13 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   push-prod-images:
     needs:
       - push-image
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -173,7 +175,7 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   push-image:
     needs:
@@ -182,7 +184,7 @@ jobs:
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -209,10 +211,10 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     needs:
       - push-image
     runs-on: ubuntu-20.04
