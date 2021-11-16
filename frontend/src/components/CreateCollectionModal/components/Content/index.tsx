@@ -19,7 +19,10 @@ import { LabelText, StyledLabel } from "src/components/common/Form/Input/style";
 import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
+import Policy from "./components/Policy";
 import { ContactWrapper, Form, StyledInput } from "./style";
+
+const POLICY_PAYLOAD_KEY = "data_submission_policy_version";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -64,6 +67,7 @@ const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
   const [isValid, setIsValid] = useState(initialBooleanState);
+  const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -105,13 +109,14 @@ const Content: FC<Props> = (props) => {
     const areFieldsValid = Object.values(fieldValidation).every(
       (isValid) => isValid
     );
+    const isPolicyChecked = policyVersion !== "";
 
-    const result = areLinksValid && areFieldsValid;
+    const result = areLinksValid && areFieldsValid && isPolicyChecked;
 
     if (result !== isValid) {
       setIsValid(result);
     }
-  }, [links, fieldValidation, isValid]);
+  }, [links, fieldValidation, policyVersion, isValid]);
 
   const { onClose } = props;
   return (
@@ -175,6 +180,7 @@ const Content: FC<Props> = (props) => {
             />
           ))}
           <AddLink handleClick={handleAddLinkClick} Button={AddLinkButton} />
+          <Policy handleChange={handlePolicyChange} />
         </Form>
       </div>
       <Footer />
@@ -223,6 +229,7 @@ const Content: FC<Props> = (props) => {
     }));
 
     payload.links = payloadLinks;
+    payload[POLICY_PAYLOAD_KEY] = policyVersion;
 
     return payload;
   }
@@ -306,6 +313,10 @@ const Content: FC<Props> = (props) => {
     const newLinks = [...links, link];
 
     setLinks(newLinks);
+  }
+
+  function handlePolicyChange(value: string) {
+    setPolicyVersion(value);
   }
 };
 
