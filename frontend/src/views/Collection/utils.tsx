@@ -5,7 +5,6 @@ import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
   Dataset,
-  DatasetAsset,
   DATASET_ASSET_FORMAT,
   Link,
   VISIBILITY_TYPE,
