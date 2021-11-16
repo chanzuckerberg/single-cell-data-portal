@@ -20,7 +20,6 @@ class TestRevisions(BaseFunctionalTestCase):
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
