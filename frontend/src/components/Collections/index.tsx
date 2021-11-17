@@ -20,10 +20,10 @@ const Collections: FC = () => {
 
   const router = useRouter();
 
-  const { tombstoned_dataset_id } = router.query;
+  const { tombstoned_collection_id } = router.query;
 
   useEffect(() => {
-    if (!tombstoned_dataset_id) return;
+    if (!tombstoned_collection_id) return;
 
     Toast.show({
       icon: IconNames.ISSUE,
@@ -31,7 +31,7 @@ const Collections: FC = () => {
       message:
         "This collection was withdrawn. You’ve been redirected to the cellxgene Data Portal homepage.",
     });
-  }, [tombstoned_dataset_id]);
+  }, [tombstoned_collection_id]);
 
   if (isFetching && !collections) return <div>Loading collections...</div>;
 
