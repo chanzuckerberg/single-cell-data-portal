@@ -516,30 +516,20 @@ def main():
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     step_name = os.environ["STEP_NAME"]
-    logger.warning(f"Processing dataset {dataset_id}")
+    logger.info(f"Processing dataset {dataset_id}")
+
     if step_name == "download-validate":
         from backend.corpora.dataset_processing.process_download_validate import process
+
         process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
     elif step_name == "cxg":
         from backend.corpora.dataset_processing.process_cxg import process
+
         process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
     elif step_name == "seurat":
         from backend.corpora.dataset_processing.process_seurat import process
+
         process(dataset_id, os.environ["ARTIFACT_BUCKET"])
-    # try:
-    #     process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
-    # except ProcessingCancelled:
-    #     cancel_dataset(dataset_id)
-    # except (ValidationFailed, ProcessingFailed):
-    #     logger.exception("An Error occurred while processing.")
-    #     return_value = 1
-    # except Exception:
-    #     message = "An unexpected error occurred while processing the data set."
-    #     logger.exception(message)
-    #     update_db(
-    #         dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
-    #     )
-    #     return_value = 1
 
     if return_value > 0:
         notify_slack_failure(dataset_id)
@@ -552,36 +542,6 @@ def notify_slack_failure(dataset_id):
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
         slack_webhook = CorporaConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
-
-
-# New pipeline
-# Step 0: update db
-#
-# Step 1: download
-#   Inputs: collection_id, dataset_id, dropbox_url
-#   - download the h5ad file from S3
-#   - run cellxgene-schema to validate
-#   - upload the annotated file to S3
-#   Outputs: path of the uploaded file
-# Step 2: CXG conversion
-#   Inputs: dataset_id, h5ad_url
-#   - Download the annotated file
-#   - Start the CXG conversion
-#   - Upload the CXG file to S3
-# Step 2.5: set seurat_conversion to "in progress"
-# Step 3: Seurat conversion
-#   Inputs: dataset_id, h5ad_url
-#   - Download the annotated file
-#   - Start the seurat conversion
-#   - Upload the seurat file to S3
-# Lambdas:
-
-
-# Create a main function that runs each step based on a CLI arg
-# OR
-# install the SWIPE library as a python module
-
-# Create a wdl as per https://github.com/chanzuckerberg/idseq-workflows/blob/main/phylotree-ng/run.wdl#L81
 
 
 if __name__ == "__main__":
