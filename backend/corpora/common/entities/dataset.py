@@ -124,6 +124,61 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    @staticmethod
+    def transform_sex_for_schema_2_0_0(dataset):
+        # If schema_version is 1.1.0, convert sex to the new API format
+        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
+
+    @staticmethod
+    def transform_organism_for_schema_2_0_0(dataset):
+        # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
+        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["organism"] = [dataset["organism"]]
+
+    @classmethod
+    def list_for_index(cls, session) -> typing.List[typing.Dict]:
+        """
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        """
+
+        attrs = [
+            DbDataset.id,
+            DbDataset.name,
+            DbDataset.collection_id,
+            DbDataset.tissue,
+            DbDataset.disease,
+            DbDataset.assay,
+            DbDataset.organism,
+            DbDataset.cell_count,
+            DbDataset.cell_type,
+            DbDataset.sex,
+            DbDataset.ethnicity,
+            DbDataset.development_stage,
+            DbDataset.schema_version,  # Required for schema manipulation
+        ]
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        filters = [~DbDataset.tombstone, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
+
+        results = [to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()]
+
+        for result in results:
+            Dataset.transform_organism_for_schema_2_0_0(result)
+            Dataset.transform_sex_for_schema_2_0_0(result)
+
+        return results
+
     def _create_new_explorer_url(self, new_uuid: str) -> str:
         if self.explorer_url is None:
             return None
