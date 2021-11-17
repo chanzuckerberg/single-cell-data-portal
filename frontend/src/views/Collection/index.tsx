@@ -46,6 +46,8 @@ const Collection: FC = () => {
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
+  const [userWithdrawn, setUserWithdrawn] = useState(false);
+
   let id = "";
   let isPrivate = false;
 
@@ -78,7 +80,12 @@ const Collection: FC = () => {
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
   useEffect(() => {
-    if (!tombstoned_dataset_id) return;
+    if (
+      !tombstoned_dataset_id ||
+      !collection ||
+      isTombstonedCollection(collection)
+    )
+      return;
 
     Toast.show({
       icon: IconNames.ISSUE,
@@ -86,13 +93,13 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-  }, [tombstoned_dataset_id]);
+  }, [tombstoned_dataset_id, collection]);
 
   useEffect(() => {
-    if (isTombstonedCollection(collection)) {
-      router.push(ROUTES.HOMEPAGE + "?tombstoned_dataset_id=" + id);
+    if (!userWithdrawn && isTombstonedCollection(collection)) {
+      router.push(ROUTES.HOMEPAGE + "?tombstoned_collection_id=" + id);
     }
-  }, [collection, id, router]);
+  }, [collection, id, router, userWithdrawn]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
@@ -149,6 +156,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
   const handleDeleteCollection = async () => {
+    setUserWithdrawn(true);
     await deleteMutation(
       {
         collectionID: id,
