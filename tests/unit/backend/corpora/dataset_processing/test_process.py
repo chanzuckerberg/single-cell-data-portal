@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import anndata
 import boto3
+import mock
 import numpy
 import pandas
 from moto import mock_s3
@@ -395,7 +396,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         s3 = self.setup_s3_bucket(artifact_bucket)
 
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
@@ -492,7 +493,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
         s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
@@ -573,11 +574,17 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
-        self, mock_metadata_extraction, mock_validate_h5ad, mock_dropbox_download, mock_cxg
+        self,
+        mock_extract_metadata,
+        mock_validate_h5ad_file_and_add_labels,
+        mock_download_from_dropbox_url,
+        mock_make_cxg,
     ):
-        mock_metadata_extraction.side_effect = RuntimeError("metadata extraction failed")
-        mock_dropbox_download.return_value = self.h5ad_filename
-        mock_cxg.return_value = str(self.cxg_filename)
+        # given
+        mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
+        mock_extract_metadata.side_effect = RuntimeError("metadata extraction failed")
+        mock_download_from_dropbox_url.return_value = self.h5ad_filename
+        mock_make_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
         dataset_id = dataset.id
 
@@ -590,3 +597,39 @@ class TestDatasetProcessing(DataPortalTestCase):
         dataset = Dataset.get(self.session, dataset_id)
         processing_status = dataset.processing_status
         self.assertEqual(None, processing_status.cxg_status)
+
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.corpora.dataset_processing.process.create_artifact")
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(
+        self,
+        mock_update_db,
+        mock_create_artifact,
+        mock_make_seurat,
+    ):
+        # given
+        can_convert_to_seurat = False
+
+        # when
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
+
+        # then
+        mock_make_seurat.assert_not_called()
+
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.corpora.dataset_processing.process.create_artifact")
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__process_runs_seurat_conversion_when_convertible_dataset_detected(
+        self,
+        mock_update_db,
+        mock_create_artifact,
+        mock_make_seurat,
+    ):
+        # given
+        can_convert_to_seurat = True
+
+        # when
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
+
+        # then
+        mock_make_seurat.assert_called()
