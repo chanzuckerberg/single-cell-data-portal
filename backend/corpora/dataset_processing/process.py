@@ -135,7 +135,7 @@ from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.download import download
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 from backend.corpora.dataset_processing.slack import format_slack_message
 
@@ -454,7 +454,7 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
     output_filename = LABELED_H5AD_FILENAME
-    is_valid, errors = validate.validate(local_filename, output_filename)
+    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
 
     if not is_valid:
         logger.error(f"Validation failed with {len(errors)} errors!")
