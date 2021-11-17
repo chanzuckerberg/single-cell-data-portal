@@ -222,10 +222,17 @@ jobs:
       - name: Generate payload
         run: |
           echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            echo "DEPLOYMENT_STAGE=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DEPLOYMENT_STAGE=staging" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
+          fi
       - uses: avakar/create-deployment@v1
         with:
           auto_merge: false
-          environment: dev
+          environment: ${{ env.DEPLOYMENT_STAGE }}
           payload: ${{ env.payload }}
           required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
           # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
