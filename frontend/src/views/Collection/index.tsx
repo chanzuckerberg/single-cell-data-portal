@@ -80,7 +80,12 @@ const Collection: FC = () => {
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
   useEffect(() => {
-    if (!tombstoned_dataset_id || isTombstonedCollection(collection)) return;
+    if (
+      !tombstoned_dataset_id ||
+      !collection ||
+      isTombstonedCollection(collection)
+    )
+      return;
 
     Toast.show({
       icon: IconNames.ISSUE,
