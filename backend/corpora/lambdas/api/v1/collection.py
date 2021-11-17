@@ -56,7 +56,7 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
     collection = Collection.get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
     if not collection:
         raise ForbiddenHTTPException()
-    if collection.tombstone == True and visibility == CollectionVisibility.PUBLIC.name:
+    if collection.tombstone and visibility == CollectionVisibility.PUBLIC.name:
         result = ""
         response = 410
     else:
