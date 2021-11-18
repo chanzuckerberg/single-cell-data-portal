@@ -2,7 +2,6 @@ import itertools
 import json
 from datetime import datetime
 from furl import furl
-import unittest
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -645,8 +644,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for bucket, key in s3_objects:
             self.assertS3FileDoesNotExist(bucket, key)
 
-    @unittest.skip("Tombstone not supported through API.")
-    def test_tombstone_collection__ok(self):
+    def test_tombstone_collection_revision__ok(self):
         # Generate test collection
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
@@ -662,9 +660,9 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset_1 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_1)
         dataset_2 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
-
-        response = self.app.get(test_url.url, headers=headers)
+        test_private_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
+        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC"))
+        response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
 
         body = json.loads(response.data)
@@ -673,22 +671,73 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertIn(dataset_2.id, dataset_ids)
 
         # delete collection
-        response = self.app.delete(test_url.url, headers=headers)
+        response = self.app.delete(test_private_url.url, headers=headers)
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 204)
 
         # check collection and datasets delete
-        self.session.expire_all()
-        collection = Collection.get_collection(
-            self.session, collection.id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        response = self.app.get(test_private_url.url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+
+        # Public collection still exists
+        response = self.app.get(test_public_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+
+    def test_tombstone_published_collection_with_revision__ok(self):
+        """Both the published and revised collections are tombstoned."""
+        # Generate test collection
+        collection_rev = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        )
+        # Generate the public collection with the same id as the private so a tombstone is created
+        collection_pub = self.generate_collection(
+            self.session, id=collection_rev.id, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
 
-        self.assertTrue(collection.tombstone)
-        self.assertTrue(dataset_1.tombstone)
-        self.assertTrue(dataset_2.tombstone)
+        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        response = self.app.get(test_url.url, headers=headers)
+        dataset_rev = self.generate_dataset(
+            self.session, collection=collection_rev, processing_status=processing_status
+        )
+        dataset_pub = self.generate_dataset(
+            self.session, collection=collection_pub, processing_status=processing_status
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+
+        # Verify private collections exist
+        test_private_url = furl(path=f"/dp/v1/collections/{collection_rev.id}", query_params=dict(visibility="PRIVATE"))
+        response = self.app.get(test_private_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        dataset_ids = [dataset["id"] for dataset in body["datasets"]]
+        self.assertIn(dataset_rev.id, dataset_ids)
+
+        # Verify public collections exist
+        test_public_url = furl(path=f"/dp/v1/collections/{collection_pub.id}", query_params=dict(visibility="PUBLIC"))
+        response = self.app.get(test_public_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        dataset_ids = [dataset["id"] for dataset in body["datasets"]]
+        self.assertIn(dataset_pub.id, dataset_ids)
+
+        # delete public collection
+        response = self.app.delete(test_public_url.url, headers=headers)
+        self.assertEqual(response.status_code, 204)
+
+        # check collection revision and datasets tombstoned
+        response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
+
+        # check public collection is tombstoned and datasets deleted.
+        response = self.app.get(test_public_url.url, headers=headers)
+        self.assertEqual(response.status_code, 410)
+
+        self.session.expire_all()
+        collection = Collection.get_collection(
+            self.session, collection_pub.id, CollectionVisibility.PUBLIC.name, include_tombstones=True
+        )
+        self.assertTrue(collection.tombstone)
+        self.assertTrue(dataset_pub.tombstone)
 
     def test_delete_collection__dataset_not_available(self):
         # Generate test collection
@@ -715,7 +764,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    def test_delete_collection__already_tombstoned__403(self):
+    def test_delete_collection__already_tombstoned__ok(self):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", tombstone=True
         )
@@ -728,7 +777,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 204)
 
-    def test_delete_collection__public__405(self):
+    def test_delete_collection__public__ok(self):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
@@ -741,7 +790,12 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for test_url in test_urls:
             with self.subTest(test_url.url):
                 response = self.app.delete(test_url.url, headers=headers)
-                self.assertEqual(response.status_code, 405)
+                self.assertEqual(response.status_code, 204)
+
+                response = self.app.get(test_url.url, headers=headers)
+                body = json.loads(response.data)
+                self.assertEqual(response.status_code, 410)
+                self.assertEqual(body, "")
 
     def test_delete_collection__not_owner(self):
         collection = self.generate_collection(
