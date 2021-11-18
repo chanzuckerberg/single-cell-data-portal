@@ -116,10 +116,10 @@ class TestApi(BaseFunctionalTestCase):
             collection_uuids = [x["id"] for x in data["collections"]]
             self.assertIn(collection_uuid, collection_uuids)
 
-        # cannot delete public collection
+        # can delete public collection
         with self.subTest("Test a public collection can not be deleted"):
             res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.not_allowed)
+            self.assertEqual(res.status_code, requests.codes.no_content)
 
     def test_delete_private_collection(self):
         # create collection
