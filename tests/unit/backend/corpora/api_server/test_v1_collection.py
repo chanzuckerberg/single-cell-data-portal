@@ -37,7 +37,6 @@ class TestCollection(BaseAuthAPITest):
             "obfuscated_uuid",
             "contact_email",
             "contact_name",
-            "data_submission_policy_version",
             "access_type",
         ]
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
@@ -429,7 +428,6 @@ class TestCollection(BaseAuthAPITest):
                 "description": "This is a test collection",
                 "contact_name": "person human",
                 "contact_email": "person@human.com",
-                "data_submission_policy_version": "0.0.1",
                 "links": [
                     {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                     {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -452,7 +450,6 @@ class TestCollection(BaseAuthAPITest):
                 "description": "This is a test collection",
                 "contact_name": "person human",
                 "contact_email": "person@human.com",
-                "data_submission_policy_version": "0.0.1",
                 "links": [
                     {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                     {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -463,7 +460,6 @@ class TestCollection(BaseAuthAPITest):
                 "description": "This is a test collection",
                 "contact_name": "person human",
                 "contact_email": "person@human.com",
-                "data_submission_policy_version": "0.0.1",
                 "links": [
                     {
                         "link_name": "DOI Link",
@@ -505,7 +501,6 @@ class TestCollection(BaseAuthAPITest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
-            "data_submission_policy_version": "0.0.1",
             "links": [
                 {"link_url": "http://doi.org/10.1016", "link_type": "OTHER"},
                 {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -541,7 +536,6 @@ class TestCollection(BaseAuthAPITest):
             "description": "    This is a test collection  ",
             "contact_name": " person human   ",
             "contact_email": "person@human.com  ",
-            "data_submission_policy_version": " 0.0.1",
             "links": [
                 {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
                 {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
@@ -867,7 +861,6 @@ class TestUpdateCollection(BaseAuthAPITest):
             "contact_name",
             "contact_email",
             "links",
-            "data_submission_policy_version",
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
@@ -881,7 +874,6 @@ class TestUpdateCollection(BaseAuthAPITest):
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
             ],
-            "data_submission_policy_version": "0",
         }
         data = json.dumps(expected_body)
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
@@ -975,7 +967,6 @@ class TestCollectionsCurators(BasicAuthAPITestCurator):
             "description": collection.description,
             "contact_name": collection.contact_name,
             "contact_email": collection.contact_email,
-            "data_submission_policy_version": collection.data_submission_policy_version,
             "links": collection.links,
         }
         data = json.dumps(modified_collection)

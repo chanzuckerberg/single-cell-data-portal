@@ -312,12 +312,19 @@ export function useDeleteCollection(
   });
 }
 
-async function publishCollection(id: Collection["id"]) {
+export type PublishCollection = {
+  id: Collection["id"];
+  payload: string;
+};
+
+async function publishCollection({ id, payload }: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
     method: "POST",
+    body: payload,
   });
 
   if (!response.ok) {

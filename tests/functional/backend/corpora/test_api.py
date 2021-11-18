@@ -49,7 +49,6 @@ class TestApi(BaseFunctionalTestCase):
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
@@ -93,7 +92,10 @@ class TestApi(BaseFunctionalTestCase):
 
         # make collection public
         with self.subTest("Test make collection public"):
-            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
+            body = {"data_submission_policy_version": "1.0"}
+            res = requests.post(
+                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
+            )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
@@ -124,7 +126,6 @@ class TestApi(BaseFunctionalTestCase):
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
@@ -164,7 +165,6 @@ class TestApi(BaseFunctionalTestCase):
         body = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
