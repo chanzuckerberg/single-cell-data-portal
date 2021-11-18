@@ -1,20 +1,11 @@
-import {
-  Button,
-  Intent,
-  Menu,
-  MenuItem,
-  Popover,
-  Position,
-} from "@blueprintjs/core";
+import { Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import { EXTERNAL_LINKS } from "src/common/constants/routes";
 import { MenuWrapper } from "./style";
 
 const LearnButton = (): JSX.Element => {
   return (
-    <Popover position={Position.BOTTOM} content={<Content />}>
-      <Button minimal intent={Intent.PRIMARY}>
-        Help & Documentation
-      </Button>
+    <Popover content={<Content />} position={Position.BOTTOM}>
+      <Button minimal text="Help & Documentation" />
     </Popover>
   );
 };
