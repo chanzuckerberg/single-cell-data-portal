@@ -43,7 +43,8 @@ jobs:
         run: |
           pip install -r .happy/requirements.txt
           # set tag from GITHUB_REF, but removing `refs/heads/` prefix
-          TAG=${GITHUB_REF#refs/heads/}
+          DOCKER_TAG=${GITHUB_REF#refs/heads/}
+          DOCKER_TAG=${DOCKER_TAG#refs/tags/}
           # replace `/` with `_`
-          TAG=${TAG//\//-}
-          scripts/happy --profile="" push --extra-tag ${TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
+          DOCKER_TAG=${DOCKER_TAG//\//-}
+          scripts/happy --profile="" push --extra-tag ${DOCKER_TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
