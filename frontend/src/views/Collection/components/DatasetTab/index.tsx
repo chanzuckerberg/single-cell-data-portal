@@ -11,6 +11,7 @@ import {
   useReuploadDataset,
   USE_COLLECTION,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
@@ -41,6 +42,7 @@ const DatasetTab: FC<Props> = ({
 
   const queryCache = useQueryCache();
 
+  if (isTombstonedCollection(collection)) return null;
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 

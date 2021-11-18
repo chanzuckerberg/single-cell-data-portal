@@ -53,15 +53,20 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
 @dbconnect
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, visibility)
+    collection = Collection.get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
     if not collection:
         raise ForbiddenHTTPException()
-    get_tombstone_datasets = (
-        _is_user_owner_or_allowed(user, collection.owner) and collection.visibility == CollectionVisibility.PRIVATE
-    )
-    result = collection.reshape_for_api(get_tombstone_datasets)
-    result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
-    return make_response(jsonify(result), 200)
+    if collection.tombstone and visibility == CollectionVisibility.PUBLIC.name:
+        result = ""
+        response = 410
+    else:
+        get_tombstone_datasets = (
+            _is_user_owner_or_allowed(user, collection.owner) and collection.visibility == CollectionVisibility.PRIVATE
+        )
+        result = collection.reshape_for_api(get_tombstone_datasets)
+        response = 200
+        result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
+    return make_response(jsonify(result), response)
 
 
 @dbconnect
@@ -109,23 +114,43 @@ def get_collection_dataset(dataset_uuid: str):
 
 @dbconnect
 def delete_collection(collection_uuid: str, visibility: str, user: str):
-    if visibility != CollectionVisibility.PRIVATE.name:
-        # Only allowed to delete private collections
-        return "", 405
     db_session = g.db_session
-    priv_collection = Collection.get_collection(
-        db_session,
-        collection_uuid,
-        CollectionVisibility.PRIVATE.name,
-        owner=_owner_or_allowed(user),
-        include_tombstones=True,
-    )
-    if priv_collection:
-        if not priv_collection.tombstone:
-            priv_collection.delete()
-        return "", 204
+    if visibility == CollectionVisibility.PUBLIC.name:
+        pub_collection = Collection.get_collection(
+            db_session,
+            collection_uuid,
+            visibility,
+            owner=_owner_or_allowed(user),
+            include_tombstones=True,
+        )
+        priv_collection = Collection.get_collection(
+            db_session,
+            collection_uuid,
+            CollectionVisibility.PRIVATE.name,
+            owner=_owner_or_allowed(user),
+            include_tombstones=True,
+        )
+
+        if pub_collection:
+            if not pub_collection.tombstone:
+                pub_collection.tombstone_collection()
+            if priv_collection:
+                if not priv_collection.tombstone:
+                    priv_collection.delete()
+            return "", 204
     else:
-        return "", 403
+        priv_collection = Collection.get_collection(
+            db_session,
+            collection_uuid,
+            CollectionVisibility.PRIVATE.name,
+            owner=_owner_or_allowed(user),
+            include_tombstones=True,
+        )
+        if priv_collection:
+            if not priv_collection.tombstone:
+                priv_collection.delete()
+            return "", 204
+    return "", 403
 
 
 @dbconnect

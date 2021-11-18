@@ -142,6 +142,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          description: Gone
     post:
       tags:
         - collections
