@@ -112,10 +112,6 @@ describeIfDeployed("Collection Revision", () => {
 
     await page.fill("input#name", newCollectionName);
 
-    await page.click(
-      getText("I agree to cellxgene's data submission policies.")
-    );
-
     await page.click(getTestID("create-button"));
 
     await tryUntil(async () => {

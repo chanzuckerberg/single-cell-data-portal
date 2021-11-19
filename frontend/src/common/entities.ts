@@ -76,6 +76,7 @@ export interface Collection {
   updated_at: number;
   has_revision: boolean;
   revision_diff: boolean;
+  tombstone?: boolean;
 }
 
 export type Ontology = {

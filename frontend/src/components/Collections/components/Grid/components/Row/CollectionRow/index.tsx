@@ -9,6 +9,7 @@ import {
   useCollection,
   useCreateRevision,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
@@ -55,6 +56,8 @@ const CollectionRow: FC<Props> = (props) => {
 
   const [mutate, { isLoading }] = useCreateRevision(navigateToRevision);
 
+  if (!collection || isTombstonedCollection(collection)) return null;
+
   const handleRevisionClick = () => {
     if (collection?.has_revision === false) {
       mutate(id);
@@ -62,8 +65,6 @@ const CollectionRow: FC<Props> = (props) => {
       navigateToRevision();
     }
   };
-
-  if (!collection) return null;
 
   // If there is an explicity accessType only show collections with that accessType
   if (props.accessType && collection.access_type !== props.accessType) {
