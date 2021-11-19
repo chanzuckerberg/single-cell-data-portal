@@ -141,6 +141,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
         self.assertEqual(actual_dataset["cell_count"], dataset.cell_count)
         self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
+        self.assertEqual(actual_dataset["is_primary_data"], dataset.is_primary_data.name)
 
     def test__cancel_dataset_download__ok(self):
         # Test pre upload

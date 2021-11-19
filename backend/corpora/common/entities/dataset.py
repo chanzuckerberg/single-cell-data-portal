@@ -156,6 +156,7 @@ class Dataset(Entity):
             DbDataset.sex,
             DbDataset.ethnicity,
             DbDataset.development_stage,
+            DbDataset.is_primary_data,
             DbDataset.schema_version,  # Required for schema manipulation
         ]
         table = cls.table
