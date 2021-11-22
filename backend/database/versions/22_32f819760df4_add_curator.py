@@ -12,7 +12,7 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 from backend.corpora.common.corpora_orm import StrippedString
 
-revision = "32f819760df4"
+revision = "22_32f819760df4"
 down_revision = "21_c830a9e1f874"
 branch_labels = None
 depends_on = None

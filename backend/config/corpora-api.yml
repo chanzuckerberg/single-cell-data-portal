@@ -846,6 +846,8 @@ components:
           type: string
         contact_email:
           type: string
+        curator_name:
+          type: string
         data_submission_policy_version:
           type: string
         datasets:
