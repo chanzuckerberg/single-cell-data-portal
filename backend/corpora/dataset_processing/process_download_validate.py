@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 import logging
-import os
-import sys
 
 from backend.corpora.dataset_processing.process import (
-    check_env,
-    log_batch_environment,
     update_db,
     download_from_dropbox_url,
     validate_h5ad_file_and_add_labels,
     extract_metadata,
-    cancel_dataset,
-    notify_slack_failure,
     create_artifact,
     get_bucket_prefix,
 )
@@ -23,7 +17,6 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
     DatasetArtifactFileType,
 )
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 
 
 def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
