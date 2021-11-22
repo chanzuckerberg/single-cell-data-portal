@@ -58,36 +58,3 @@ def process(dataset_id: str, artifact_bucket: str):
         create_artifact(
             seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
         )
-
-
-def main():
-    return_value = 0
-    check_env()
-    log_batch_environment()
-
-    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-    dataset_id = os.environ["DATASET_ID"]
-
-    try:
-        process(artifact_bucket, dataset_id, LABELED_H5AD_FILENAME)
-    except ProcessingCancelled:
-        cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occurred while processing.")
-        return_value = 1
-    except Exception:
-        message = f"Seurat conversion for dataset {dataset_id} failed."
-        logger.exception(message)
-        update_db(
-            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
-        )
-        return_value = 1
-
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
-    return return_value
-
-
-if __name__ == "__main__":
-    rv = main()
-    sys.exit(rv)

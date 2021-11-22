@@ -32,8 +32,8 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
 def process(dataset_id: str, artifact_bucket: str, cellxgene_bucket: str):
     """
     1. Download the labeled dataset from the artifact bucket
-    1. Convert the labeled dataset to CXG
-    2. Upload the CXG to the cellxgene bucket
+    2. Convert the labeled dataset to CXG
+    3. Upload the CXG to the cellxgene bucket
     :param dataset_id:
     :param artifact_bucket:
     :param labeled_h5ad_filename:
@@ -50,37 +50,3 @@ def process(dataset_id: str, artifact_bucket: str, cellxgene_bucket: str):
 
     # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
     process_cxg(labeled_h5ad_filename, dataset_id, cellxgene_bucket)
-
-
-def main():
-    return_value = 0
-    check_env()
-    log_batch_environment()
-
-    dataset_id = os.environ["DATASET_ID"]
-    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-    cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
-
-    try:
-        process(dataset_id, artifact_bucket, LABELED_H5AD_FILENAME, cellxgene_bucket)
-    except ProcessingCancelled:
-        cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occurred while processing.")
-        return_value = 1
-    except Exception:
-        message = "An unexpected error occurred while processing the data set."
-        logger.exception(message)
-        update_db(
-            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
-        )
-        return_value = 1
-
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
-    return return_value
-
-
-if __name__ == "__main__":
-    rv = main()
-    sys.exit(rv)

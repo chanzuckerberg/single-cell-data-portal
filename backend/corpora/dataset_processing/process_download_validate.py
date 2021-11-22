@@ -60,37 +60,3 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     create_artifact(
         file_with_labels, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
-
-
-def main():
-    return_value = 0
-    check_env()
-    log_batch_environment()
-
-    dataset_id = os.environ["DATASET_ID"]
-    dropbox_url = os.environ["DROPBOX_URL"]
-    artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-
-    try:
-        process(dataset_id, dropbox_url, artifact_bucket)
-    except ProcessingCancelled:
-        cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occurred while processing.")
-        return_value = 1
-    except Exception:
-        message = f"Validation and labeling for dataset {dataset_id} failed."
-        logger.exception(message)
-        update_db(
-            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
-        )
-        return_value = 1
-
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
-    return return_value
-
-
-if __name__ == "__main__":
-    rv = main()
-    sys.exit(rv)
