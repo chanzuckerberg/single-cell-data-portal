@@ -98,6 +98,9 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection.
                 data_submission_policy_version:
                   type: string
                   description: Which data submission policy was the collection submitted under
@@ -203,6 +206,9 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection
                 data_submission_policy_version:
                   type: string
                   description: Which data submission policy was the collection submitted under
