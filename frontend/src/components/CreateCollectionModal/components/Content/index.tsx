@@ -13,16 +13,14 @@ import {
   useCreateCollection,
   useEditCollection,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledLabel } from "src/components/common/Form/Input/style";
 import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
-import Policy from "./components/Policy";
 import { ContactWrapper, Form, StyledInput } from "./style";
-
-const POLICY_PAYLOAD_KEY = "data_submission_policy_version";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -67,7 +65,6 @@ const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
   const [isValid, setIsValid] = useState(initialBooleanState);
-  const [policyVersion, setPolicyVersion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -82,7 +79,7 @@ const Content: FC<Props> = (props) => {
 
   const formEl = useRef<HTMLFormElement>(null);
 
-  const { data } = useCollection({
+  let { data } = useCollection({
     id: props.id,
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
@@ -90,6 +87,8 @@ const Content: FC<Props> = (props) => {
   const [mutateCreateCollection] = useCreateCollection();
   const [mutateEditCollection] = useEditCollection(props.id);
 
+  // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
+  if (isTombstonedCollection(data)) data = null;
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>(
@@ -109,14 +108,13 @@ const Content: FC<Props> = (props) => {
     const areFieldsValid = Object.values(fieldValidation).every(
       (isValid) => isValid
     );
-    const isPolicyChecked = policyVersion !== "";
 
-    const result = areLinksValid && areFieldsValid && isPolicyChecked;
+    const result = areLinksValid && areFieldsValid;
 
     if (result !== isValid) {
       setIsValid(result);
     }
-  }, [links, fieldValidation, policyVersion, isValid]);
+  }, [links, fieldValidation, isValid]);
 
   const { onClose } = props;
   return (
@@ -180,7 +178,6 @@ const Content: FC<Props> = (props) => {
             />
           ))}
           <AddLink handleClick={handleAddLinkClick} Button={AddLinkButton} />
-          <Policy handleChange={handlePolicyChange} />
         </Form>
       </div>
       <Footer />
@@ -229,7 +226,6 @@ const Content: FC<Props> = (props) => {
     }));
 
     payload.links = payloadLinks;
-    payload[POLICY_PAYLOAD_KEY] = policyVersion;
 
     return payload;
   }
@@ -313,10 +309,6 @@ const Content: FC<Props> = (props) => {
     const newLinks = [...links, link];
 
     setLinks(newLinks);
-  }
-
-  function handlePolicyChange(value: string) {
-    setPolicyVersion(value);
   }
 };
 
