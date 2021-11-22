@@ -613,6 +613,13 @@ class TestDatasetProcessing(DataPortalTestCase):
         # when
         process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
 
+        # Confirm call to update_db with rds_status => SKIPPED
+        processing_status_arg = mock_update_db.call_args.kwargs.get("processing_status")
+        self.assertEqual(dict, type(processing_status_arg))
+        self.assertEqual(1, len(processing_status_arg))
+        self.assertEqual(ConversionStatus.SKIPPED, processing_status_arg.get("rds_status"))
+
+
         # then
         mock_make_seurat.assert_not_called()
 

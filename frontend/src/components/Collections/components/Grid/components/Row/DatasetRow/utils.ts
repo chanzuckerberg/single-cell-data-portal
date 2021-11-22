@@ -143,19 +143,19 @@ export function useCheckCollectionFormatsPopulated({
   dataset: Dataset;
   datasetUploadStatus: DatasetUploadStatus;
 }): void {
-  let numOfConvertedFormats = 0;
+  let numOfProcessedFormats = 0;
 
   for (const key of CONVERSION_STATUS_FORMAT_KEYS) {
-    if (datasetUploadStatus[key] !== CONVERSION_STATUS.CONVERTED) continue;
-
-    numOfConvertedFormats += 1;
+    if ([CONVERSION_STATUS.CONVERTED, CONVERSION_STATUS.SKIPPED].some(status => status === datasetUploadStatus[key])) {
+      numOfProcessedFormats += 1;
+    }
   }
 
   const numOfAvailableFormats = dataset.dataset_assets.length;
 
   useCheckCollection({
     invalidateCollectionQuery,
-    shouldFetch: numOfConvertedFormats > numOfAvailableFormats,
+    shouldFetch: numOfProcessedFormats > numOfAvailableFormats,
   });
 }
 
