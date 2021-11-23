@@ -3,6 +3,7 @@ import loadable from "@loadable/component";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
@@ -34,12 +35,15 @@ const AsyncPopover = loadable(
     )
 );
 
-const conditionalPopover = (values: string[]) => {
+const conditionalPopover = (
+  label: PluralizedMetadataLabel,
+  values: string[]
+) => {
   if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return <AsyncPopover values={values} />;
+  return <AsyncPopover label={label} values={values} />;
 };
 
 const CollectionRow: FC<Props> = (props) => {
@@ -107,10 +111,10 @@ const CollectionRow: FC<Props> = (props) => {
           </TagContainer>
         )}
       </StyledCell>
-      {conditionalPopover(tissue)}
-      {conditionalPopover(assay)}
-      {conditionalPopover(disease)}
-      {conditionalPopover(organism)}
+      {conditionalPopover(PluralizedMetadataLabel.TISSUE, tissue)}
+      {conditionalPopover(PluralizedMetadataLabel.ASSAY, assay)}
+      {conditionalPopover(PluralizedMetadataLabel.DISEASE, disease)}
+      {conditionalPopover(PluralizedMetadataLabel.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell

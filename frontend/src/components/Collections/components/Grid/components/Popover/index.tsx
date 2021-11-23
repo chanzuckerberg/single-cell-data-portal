@@ -5,26 +5,29 @@ import {
   Tag,
 } from "@blueprintjs/core";
 import { FC } from "react";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { LeftAlignedDetailsCell } from "../Row/common/style";
 import { ContentColumn, ContentWrapper, FieldValues } from "./style";
 
 interface Props {
+  label: PluralizedMetadataLabel;
   values: string[];
 }
 const CHUNK_SIZE = 25;
-const Popover: FC<Props> = ({ values }) => {
+const Popover: FC<Props> = ({ label, values }) => {
   const chunkedValues = Array(Math.ceil(values.length / CHUNK_SIZE))
     .fill("")
     .map((_, index) => index * CHUNK_SIZE)
     .map((begin) => values.slice(begin, begin + CHUNK_SIZE));
   return (
     <LeftAlignedDetailsCell>
-      <FieldValues>
-        {values[0]}
-        <br />
-        {values[1]}
-      </FieldValues>
-      {values.length > 2 && (
+      {values.length <= 2 ? (
+        <FieldValues>
+          {values[0]}
+          <br />
+          {values[1]}
+        </FieldValues>
+      ) : (
         <PopoverRaw
           interactionKind={PopoverInteractionKind.HOVER}
           placement={Position.RIGHT}
@@ -48,7 +51,9 @@ const Popover: FC<Props> = ({ values }) => {
             </ContentWrapper>
           }
         >
-          <Tag minimal>+{values.length - 2}</Tag>
+          <Tag minimal>
+            {values.length} {label}
+          </Tag>
         </PopoverRaw>
       )}
     </LeftAlignedDetailsCell>
