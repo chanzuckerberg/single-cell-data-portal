@@ -92,7 +92,7 @@ def post_collection_revision(collection_uuid: str, user: str):
 
 
 @dbconnect
-def create_collection(body: object, user: str, token_info: dict):
+def create_collection(body: object, user: str):
     db_session = g.db_session
     collection = Collection.create(
         db_session,
@@ -103,7 +103,7 @@ def create_collection(body: object, user: str, token_info: dict):
         links=body["links"],
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
-        curator_name=token_info["name"],
+        curator_name=body["curator_name"],
     )
 
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
@@ -155,7 +155,7 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
 
 
 @dbconnect
-def update_collection(collection_uuid: str, body: dict, user: str, token_info: dict):
+def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
@@ -165,7 +165,7 @@ def update_collection(collection_uuid: str, body: dict, user: str, token_info: d
     )
     if not collection:
         raise ForbiddenHTTPException()
-    collection.update(curator_name=token_info["name"], **body)
+    collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 200)
