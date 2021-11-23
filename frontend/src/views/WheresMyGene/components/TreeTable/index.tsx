@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Cell as ICell, Column, useBlockLayout, useTable } from "react-table";
-import { FixedSizeList } from "react-window";
+import { VariableSizeGrid } from "react-window";
 import { CellTypeAndGenes } from "../../common/types";
 import AsterChart from "./components/AsterChart";
 
@@ -53,48 +53,51 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
         },
       })}
     >
-      <div>
-        {headerGroups.map((headerGroup) => {
-          return (
-            // eslint-disable-next-line react/jsx-key -- getHeaderGroupProps already has `key` prop
-            <div {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  // eslint-disable-next-line react/jsx-key -- getHeaderProps already has `key` prop
-                  <div
-                    {...header.getHeaderProps([
-                      {
-                        style: {
-                          maxHeight: "100px",
-                          overflow: "auto",
-                          textOrientation: "sideways",
-                          transform: "translateX(-5px) rotateZ(180deg)",
-                          whiteSpace: "nowrap",
-                          writingMode: "vertical-lr",
-                        },
-                        // (thuang): HTML attributes not typed in react-table
-                        ...{ title: header.Header },
-                      },
-                    ])}
-                  >
-                    {header.render("Header")}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
       <div {...getTableBodyProps({ style: { flex: 1 } })} ref={tableContentRef}>
-        <FixedSizeList
+        <VariableSizeGrid
           height={(tableContentRect?.height || 200) * 0.97}
           width={tableContentRect?.width || 200}
-          itemCount={rows.length}
-          itemSize={35}
+          rowCount={rows.length + 1}
+          rowHeight={(index) => (index ? 35 : 100)}
+          columnCount={columns.length}
+          columnWidth={(index) => (index ? 20 : 200)}
         >
-          {({ index, style }) => {
-            const row = rows[index];
-            prepareRow(row);
+          {({ rowIndex, columnIndex, style }) => {
+            if (rowIndex === 0) {
+              const headerGroup = headerGroups[0];
+              const header = headerGroup.headers[columnIndex];
+
+              return (
+                // eslint-disable-next-line react/jsx-key -- getHeaderProps already has `key` prop
+                <div
+                  {...header.getHeaderProps([
+                    {
+                      style: {
+                        maxHeight: "100px",
+                        overflow: "auto",
+                        textOrientation: "sideways",
+                        transform: "translateX(-5px) rotateZ(180deg)",
+                        whiteSpace: "nowrap",
+                        writingMode: "vertical-lr",
+                      },
+                      // (thuang): HTML attributes not typed in react-table
+                      ...{ title: header.Header },
+                    },
+                  ])}
+                >
+                  {header.render("Header")}
+                </div>
+              );
+            }
+
+            const row = rows[rowIndex - 1];
+
+            if (row) {
+              prepareRow(row);
+            }
+
+            const cell = row.cells[columnIndex];
+            const { column } = cell;
 
             return (
               // eslint-disable-next-line react/jsx-key -- getRowProps already has `key` prop
@@ -108,20 +111,11 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
                   },
                 ])}
               >
-                {row.cells.map((cell) => {
-                  const { row, column } = cell;
-
-                  return (
-                    <Cell
-                      key={`row-${row.id}-column-${column.id}`}
-                      cell={cell}
-                    />
-                  );
-                })}
+                <Cell key={`row-${row.id}-column-${column.id}`} cell={cell} />
               </div>
             );
           }}
-        </FixedSizeList>
+        </VariableSizeGrid>
       </div>
     </div>
   );
