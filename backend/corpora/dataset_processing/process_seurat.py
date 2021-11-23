@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import logging
+
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_s3,
@@ -14,7 +14,7 @@ from backend.corpora.dataset_processing.process import (
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-from backend.corpora.common.corpora_orm import ConversionStatus, DatasetArtifactFileType, UploadStatus
+from backend.corpora.common.corpora_orm import ConversionStatus, DatasetArtifactFileType
 
 
 def process(dataset_id: str, artifact_bucket: str):
