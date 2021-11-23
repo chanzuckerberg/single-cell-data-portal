@@ -1,8 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { Cell as ICell, Column, useBlockLayout, useTable } from "react-table";
 import { FixedSizeList } from "react-window";
 import { CellTypeAndGenes } from "../../common/types";
 import AsterChart from "./components/AsterChart";
-import { Loader } from "./style";
 
 interface Props {
   columns: Column<CellTypeAndGenes>[];
@@ -10,6 +10,29 @@ interface Props {
 }
 
 export default function TreeTable({ columns, data }: Props): JSX.Element {
+  const tableContentRef = useRef<HTMLDivElement>(null);
+  const [tableContentRect, setTableContentRect] =
+    useState<DOMRectReadOnly | null>(null);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setTableContentRect(entry.contentRect);
+      }
+    });
+
+    const current = tableContentRef.current;
+
+    if (current) {
+      resizeObserver.observe(current);
+    }
+
+    return () => {
+      if (!current) return;
+      resizeObserver.unobserve(current);
+    };
+  }, []);
+
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable(
       {
@@ -20,7 +43,16 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
     );
 
   return (
-    <div {...getTableProps()}>
+    <div
+      {...getTableProps({
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          width: "100%",
+        },
+      })}
+    >
       <div>
         {headerGroups.map((headerGroup) => {
           return (
@@ -33,10 +65,15 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
                     {...header.getHeaderProps([
                       {
                         style: {
+                          maxHeight: "100px",
+                          overflow: "auto",
                           textOrientation: "sideways",
                           transform: "translateX(-5px) rotateZ(180deg)",
+                          whiteSpace: "nowrap",
                           writingMode: "vertical-lr",
                         },
+                        // (thuang): HTML attributes not typed in react-table
+                        ...{ title: header.Header },
                       },
                     ])}
                   >
@@ -48,10 +85,10 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
           );
         })}
       </div>
-      <div {...getTableBodyProps()}>
+      <div {...getTableBodyProps({ style: { flex: 1 } })} ref={tableContentRef}>
         <FixedSizeList
-          height={600}
-          width={1350}
+          height={(tableContentRect?.height || 200) * 0.97}
+          width={tableContentRect?.width || 200}
           itemCount={rows.length}
           itemSize={35}
         >
@@ -62,7 +99,14 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
             return (
               // eslint-disable-next-line react/jsx-key -- getRowProps already has `key` prop
               <div
-                {...row.getRowProps([{ style: { ...style, margin: "8px 0" } }])}
+                {...row.getRowProps([
+                  {
+                    style: {
+                      ...style,
+                      margin: "8px 0",
+                    },
+                  },
+                ])}
               >
                 {row.cells.map((cell) => {
                   const { row, column } = cell;
@@ -88,16 +132,14 @@ interface CellProps {
 }
 
 function Cell({ cell }: CellProps) {
-  const { value, column } = cell;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Figure out how to extend column type
-  const { isLoading } = column as any;
+  const { value } = cell;
 
   let Component = null;
 
   if (typeof value === "string") {
     Component = cell.render("Cell");
   } else if (value === undefined) {
-    Component = isLoading ? <Loader /> : null;
+    Component = null;
   } else {
     const { me: meanExpression, pc: percentCells } = value;
 
@@ -110,6 +152,12 @@ function Cell({ cell }: CellProps) {
 
   return (
     // eslint-disable-next-line react/jsx-key -- getCellProps already has key
-    <div {...cell.getCellProps()}>{Component}</div>
+    <div
+      {...cell.getCellProps({
+        style: { overflow: "auto", whiteSpace: "nowrap" },
+      })}
+    >
+      {Component}
+    </div>
   );
 }

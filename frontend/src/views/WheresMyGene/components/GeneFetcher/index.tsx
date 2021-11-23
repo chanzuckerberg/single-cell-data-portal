@@ -17,8 +17,8 @@ export default function GeneFetcher({
   name,
   onSuccess,
   onError,
-  minDelayMS = 100,
-  maxDelayMS = 5 * 1000,
+  minDelayMS = 200,
+  maxDelayMS = 500,
 }: Props): null {
   useEffect(() => {
     if (renderedGenes.includes(name)) return;

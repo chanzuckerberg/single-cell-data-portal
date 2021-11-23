@@ -7,9 +7,7 @@ const Layout: FC = ({ children }) => {
   return (
     <Wrapper>
       <Header />
-      <MainWrapper>
-        <main>{children}</main>
-      </MainWrapper>
+      <MainWrapper>{children}</MainWrapper>
       <Footer />
     </Wrapper>
   );
