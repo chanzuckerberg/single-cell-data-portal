@@ -43,7 +43,7 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     #       This will allow for easy reconversion of the corpus in the near future.
 
     # Validate and label the dataset
-    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
     # Process metadata
     metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)

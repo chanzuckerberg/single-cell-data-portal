@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import logging
+from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.utils.db_session import db_session_manager
 
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
@@ -12,7 +14,7 @@ from backend.corpora.dataset_processing.process import (
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType
+from backend.corpora.common.corpora_orm import ConversionStatus, DatasetArtifactFileType, UploadStatus
 
 
 def process(dataset_id: str, artifact_bucket: str):
@@ -26,6 +28,14 @@ def process(dataset_id: str, artifact_bucket: str):
     :param local_filename:
     :return:
     """
+
+    # If the validator previously marked the dataset as rds_status.SKIPPED, do not start the Seurat processing
+    with db_session_manager() as session:
+        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+
+        if dataset.processing_status.get("rds_status") == ConversionStatus.SKIPPED:
+            logger.info("Skipping Seurat conversion")
+            return
 
     labeled_h5ad_filename = "local.h5ad"
 
