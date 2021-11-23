@@ -15,7 +15,7 @@ import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import TreeTable from "./components/TreeTable";
 import CELL_TYPES from "./mocks/lung_tissue_cell_types.json";
-import { Wrapper } from "./style";
+import { Gap, Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
@@ -62,8 +62,7 @@ const WheresMyGene = (): JSX.Element => {
       <Wrapper>
         <GeneSearchBar onGenesChange={setGenes} />
 
-        <br />
-        <br />
+        <Gap />
 
         <TreeTable columns={columns} data={data} />
 

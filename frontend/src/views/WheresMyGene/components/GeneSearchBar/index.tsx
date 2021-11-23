@@ -19,7 +19,10 @@ interface ExtendedItemRendererProps extends IItemRendererProps {
 }
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
-  const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
+  const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
+    GENES.slice(0, 100)
+  );
+  // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
 
   useEffect(() => {
     onGenesChange(selectedGenes);
