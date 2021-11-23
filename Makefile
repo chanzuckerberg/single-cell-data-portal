@@ -100,7 +100,7 @@ local-hostconfig:
 .PHONY: local-nohostconfig
 local-nohostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo ./scripts/happy hosts uninstall; \
+	  sudo -E ./scripts/happy hosts uninstall; \
 	fi
 
 .PHONY: local-init

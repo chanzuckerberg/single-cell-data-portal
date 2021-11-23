@@ -619,7 +619,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(1, len(processing_status_arg))
         self.assertEqual(ConversionStatus.SKIPPED, processing_status_arg.get("rds_status"))
 
-
         # then
         mock_make_seurat.assert_not_called()
 
