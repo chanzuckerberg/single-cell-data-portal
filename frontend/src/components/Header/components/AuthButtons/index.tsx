@@ -11,6 +11,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
+import { AuthButtonWrapper } from "src/components/Header/style";
 import { API_URL } from "src/configs/configs";
 
 const AuthButtons = (): JSX.Element | null => {
@@ -25,10 +26,14 @@ const AuthButtons = (): JSX.Element | null => {
 
   if (!hasAuth || isLoading) return null;
 
-  return userInfo?.name ? (
-    <LoggedInButtons name={userInfo.name} email={userInfo.email} />
-  ) : (
-    <LoggedOutButtons />
+  return (
+    <AuthButtonWrapper>
+      {userInfo?.name ? (
+        <LoggedInButtons name={userInfo.name} email={userInfo.email} />
+      ) : (
+        <LoggedOutButtons />
+      )}
+    </AuthButtonWrapper>
   );
 };
 

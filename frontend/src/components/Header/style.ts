@@ -41,7 +41,7 @@ const button = css`
     background: none;
     border-radius: 0;
     color: ${GRAY.D};
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     height: 23px;
     line-height: 15px;
@@ -58,6 +58,14 @@ const button = css`
   }
 `;
 
+const iconButton = css`
+  ${button}
+
+  .${Classes.ICON} {
+    color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
+  }
+`;
+
 export const LinkWrapper = styled.span`
   ${button};
 
@@ -67,17 +75,14 @@ export const LinkWrapper = styled.span`
 `;
 
 export const LearnButtonWrapper = styled.span`
-  ${button};
+  ${iconButton};
 `;
 
 export const AuthButtonWrapper = styled.span`
-  ${button};
+  ${iconButton};
 
   .${Classes.BUTTON}.${Classes.MINIMAL} {
+    color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
     font-weight: 400; /* Overrides locally defined button font weight rule. */
-  }
-
-  .${Classes.BUTTON}.${Classes.MINIMAL}, .${Classes.ICON} {
-    color: ${Colors.WHITE}; /* Overrides locally defined button and BP button icon color rule. */
   }
 `;
