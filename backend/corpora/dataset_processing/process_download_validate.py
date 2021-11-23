@@ -39,9 +39,6 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
         "raw.h5ad",
     )
 
-    # TODO: We should store the original dataset file on S3 for provenance.
-    #       This will allow for easy reconversion of the corpus in the near future.
-
     # Validate and label the dataset
     file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
     # Process metadata
