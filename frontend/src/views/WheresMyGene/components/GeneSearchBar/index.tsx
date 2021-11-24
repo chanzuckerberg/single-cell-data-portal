@@ -6,6 +6,7 @@ import {
 } from "@blueprintjs/select";
 import { forwardRef, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Gene } from "../../common/types";
 import GENES from "../../mocks/lung_tissue_genes.json";
 
@@ -19,10 +20,30 @@ interface ExtendedItemRendererProps extends IItemRendererProps {
 }
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // TEST 100 genes
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
-    GENES.slice(0, 100)
+    GENES.slice(0, 20)
   );
   // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
+  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+
+  useEffect(() => {
+    fetchGenes();
+
+    async function fetchGenes(): Promise<void> {
+      const response = await fetch(
+        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
+      );
+
+      const allGenes = await response.json();
+
+      setGenes(allGenes);
+    }
+  }, []);
 
   useEffect(() => {
     onGenesChange(selectedGenes);
@@ -33,7 +54,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       itemPredicate={itemPredicate}
       onItemSelect={handleItemSelect}
       onRemove={handleItemRemove}
-      items={GENES}
+      items={genes}
       itemRenderer={renderItem}
       tagRenderer={TagRenderer}
       itemsEqual={areGenesEqual}
@@ -166,3 +187,5 @@ function areGenesEqual(geneA: Gene, geneB: Gene) {
   // Compare only the names (ignoring case) just for simplicity.
   return geneA.id.toLowerCase() === geneB.id.toLowerCase();
 }
+
+// https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/genes/CD4.json

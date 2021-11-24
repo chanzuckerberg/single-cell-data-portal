@@ -1,7 +1,7 @@
 import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import Head from "next/head";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Cell as ICell, Column } from "react-table";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import Toast from "../Collection/components/Toast";
@@ -14,16 +14,30 @@ import {
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import TreeTable from "./components/TreeTable";
-import CELL_TYPES from "./mocks/lung_tissue_cell_types.json";
 import { Gap, Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
+  const [cellTypes, setCellTypes] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
+
+  useEffect(() => {
+    fetchCellTypes();
+
+    async function fetchCellTypes(): Promise<void> {
+      const response = await fetch(
+        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_cell_types.json"
+      );
+
+      const cellTypes = await response.json();
+
+      setCellTypes(cellTypes);
+    }
+  }, []);
 
   const data = useMemo(
-    () => integrateCelTypesAndGenes(CELL_TYPES as CellTypeAndGenes[], geneData),
-    [geneData]
+    () => integrateCelTypesAndGenes(cellTypes, geneData),
+    [cellTypes, geneData]
   );
 
   const columns: Column<CellTypeAndGenes>[] = useMemo(() => {
