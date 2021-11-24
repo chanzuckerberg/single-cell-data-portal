@@ -48,14 +48,14 @@ db/new_migration_auto:
 
 db/connect:
 	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
-	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
+	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
 	# interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 	# ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 	PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 $(ARGS)
 
 db/download:
     # Download the database to corpora_dev-<date>.sqlc
-	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
+	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | split(":") | .[-1] | split("@") | .[0]'))
 	$(eval OUTFILE = $(shell date +corpora_${DEPLOYMENT_STAGE}-%Y%m%d%H%M.sqlc))
 	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
@@ -92,7 +92,7 @@ SSH_SERVER_ALIVE_COUNT_MAX?=60
 # - consider adding -M and -S options on ssh command when needed
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
 db/tunnel:
-	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
+	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
 	ssh -f -T -N \
 		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
 		-L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology

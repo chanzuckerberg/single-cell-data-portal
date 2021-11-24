@@ -180,7 +180,6 @@ export enum CONVERSION_STATUS {
   CONVERTED = "CONVERTED",
   FAILED = "FAILED",
   NA = "NA",
-  SKIPPED = "SKIPPED",
 }
 
 export enum PROCESSING_STATUS {

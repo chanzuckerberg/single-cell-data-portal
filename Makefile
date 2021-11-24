@@ -20,7 +20,7 @@ lint:
 
 .PHONY: unit-test
 unit-test: local-unit-test
-	# Keeping old target name for reverse compatibility
+	# Keeping old target name for reverse comatibility
 
 .PHONY: container-unittest
 container-unittest:
@@ -94,13 +94,13 @@ local-ecr-login:
 .PHONY: local-hostconfig
 local-hostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts install; \
+	  sudo ./scripts/happy hosts install; \
 	fi
 
 .PHONY: local-nohostconfig
 local-nohostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts uninstall; \
+	  sudo ./scripts/happy hosts uninstall; \
 	fi
 
 .PHONY: local-init
