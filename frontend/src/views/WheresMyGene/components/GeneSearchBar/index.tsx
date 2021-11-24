@@ -26,7 +26,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   // DEBUG
   // TEST 100 genes
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
-    GENES.slice(0, 20)
+    GENES.slice(0, 30)
   );
   // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);

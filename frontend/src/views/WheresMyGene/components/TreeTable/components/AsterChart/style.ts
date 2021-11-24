@@ -38,52 +38,13 @@ export const FirstPart = styled.div.attrs<AsterChartProps>(
   border-radius: 50%;
 `;
 
-export const SecondPart = styled.div.attrs<AsterChartProps>(
-  ({ colorValue, degreeValue }) => {
-    const { background, height, width, top, left } = getSecondPart({
-      colorValue,
-      degreeValue,
-    });
-
-    return {
-      style: {
-        background: background,
-        height: `${height}px`,
-        left: `${left}px`,
-        opacity: 0.4,
-        top: `${top}px`,
-        width: `${width}px`,
-      },
-    };
-  }
-)<AsterChartProps>`
-  position: absolute;
-  border-radius: 50%;
-`;
-
 function getFirstPart({ colorValue = 0, degreeValue = 0 }) {
   const length = Math.round(MAX_FIRST_PART_LENGTH_PX * degreeValue);
   const color = interpolateYlOrRd(colorValue);
-  const degree = Math.round(degreeValue * 360);
-
-  return {
-    background: `conic-gradient(${color} 0deg ${degree}deg, transparent ${degree}deg)`,
-    height: length,
-    width: length,
-  };
-}
-
-function getSecondPart({ colorValue = 0, degreeValue = 0 }) {
-  const firstPartLength = Math.round(MAX_FIRST_PART_LENGTH_PX * degreeValue);
-  const length = Math.round(MAX_SECOND_PART_LENGTH_PX * degreeValue);
-  const color = interpolateYlOrRd(colorValue);
-  const centerOffset = firstPartLength / 2 - length / 2;
 
   return {
     background: color,
     height: length,
-    left: centerOffset,
-    top: centerOffset,
     width: length,
   };
 }
