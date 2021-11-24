@@ -2,6 +2,7 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -183,10 +184,26 @@ const DatasetRow: FC<Props> = ({
           {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
         </TitleContainer>
       </DetailsCell>
-      <Popover values={tissue} isLoading={isMetadataLoading} />
-      <Popover values={assay} isLoading={isMetadataLoading} />
-      <Popover values={disease} isLoading={isMetadataLoading} />
-      <Popover values={organism} isLoading={isMetadataLoading} />
+      <Popover
+        label={PluralizedMetadataLabel.TISSUE}
+        values={tissue}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.ASSAY}
+        values={assay}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.DISEASE}
+        values={disease}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.ORGANISM}
+        values={organism}
+        isLoading={isMetadataLoading}
+      />
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
       <ActionCell>
         <ActionButtonsContainer>
