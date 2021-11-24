@@ -33,7 +33,7 @@ def process(dataset_id: str, artifact_bucket: str):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
 
-        if dataset.processing_status.get("rds_status") == ConversionStatus.SKIPPED:
+        if dataset.processing_status.rds_status == ConversionStatus.NA:
             logger.info("Skipping Seurat conversion")
             return
 

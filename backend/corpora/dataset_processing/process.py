@@ -548,6 +548,8 @@ def main():
         from backend.corpora.dataset_processing.process_seurat import process
 
         process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+    elif step_name == "handle-success":
+        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
     if return_value > 0:
         notify_slack_failure(dataset_id)
