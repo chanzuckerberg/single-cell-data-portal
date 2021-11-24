@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Gene, RawGeneExpression } from "../../common/types";
-import GENE_EXPRESSIONS from "../../mocks/lung_tissue_cond.json";
 
 interface Props {
   name: string;
@@ -27,17 +26,26 @@ export default function GeneFetcher({
 
     const delayMS = Math.floor(minDelayMS + Math.random() * maxDelayMS);
 
-    setTimeout(() => {
-      const geneData = (
-        GENE_EXPRESSIONS as unknown as RawGeneExpression[]
-      ).find((gene) => gene.gene_name === name);
+    fetchGeneData();
 
-      if (geneData) {
-        onSuccess(geneData);
-      } else {
-        onError(name);
-      }
-    }, delayMS);
+    async function fetchGeneData(): Promise<void> {
+      const response = await fetch(
+        `https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/genes/${name}.json`
+      );
+
+      const expressions = await response.json();
+
+      setTimeout(() => {
+        if (expressions) {
+          onSuccess({
+            cell_types: expressions,
+            gene_name: name,
+          });
+        } else {
+          onError(name);
+        }
+      }, delayMS);
+    }
   }, [name, onSuccess, onError, minDelayMS, maxDelayMS]);
 
   return null;
