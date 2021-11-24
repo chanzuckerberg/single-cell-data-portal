@@ -90,8 +90,8 @@ export interface Dataset {
   tissue: Ontology[];
   disease: Ontology[];
   cell_count: number | null;
-  // sex: string;
-  ethnicity: Ontology;
+  sex: Ontology[];
+  ethnicity: Ontology[];
   organism: Ontology[];
   name: string;
   cell_type: Ontology[];
@@ -114,6 +114,22 @@ export interface Dataset {
   tombstone?: boolean;
   collection_visibility: Collection["visibility"];
 }
+
+/* Model returned from /datasets API endpoint */
+export type FilterableDataset = Pick<
+  Dataset,
+  | "assay"
+  | "cell_count"
+  | "cell_type"
+  | "disease"
+  | "ethnicity"
+  | "id"
+  | "is_primary_data"
+  | "organism"
+  | "name"
+  | "sex"
+  | "tissue"
+>;
 
 export enum DATASET_ASSET_FORMAT {
   H5AD = "H5AD",

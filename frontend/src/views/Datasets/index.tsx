@@ -1,0 +1,150 @@
+import Head from "next/head";
+import React, { FC, useMemo } from "react";
+import { CellProps, Column, useFilters, useTable } from "react-table";
+import { ROUTES } from "src/common/constants/routes";
+import { FilterableDataset, Ontology } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import {
+  CATEGORY_KEY,
+  OntologyCategoryKey,
+  useFacetedFilter,
+} from "src/common/hooks/useFacetedFilter";
+import { useFeatureFlagRedirect } from "src/common/hooks/useFeatureFlagRedirect";
+import Categories from "src/components/Categories";
+import DatasetsGrid from "src/components/Datasets/Grid/components/DatasetsGrid";
+import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
+
+const Datasets: FC = () => {
+  // Column configuration backing table.
+  const columnConfig: Column<FilterableDataset>[] = useMemo(
+    () => [
+      {
+        Header: "Dataset",
+        accessor: "name",
+      },
+      {
+        Cell: Cell,
+        Header: "Tissue",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
+        filter: "includesSome",
+        id: CATEGORY_KEY.TISSUE,
+      },
+      {
+        Cell: Cell,
+        Header: "Disease",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
+        filter: "includesSome",
+        id: CATEGORY_KEY.DISEASE,
+      },
+      {
+        Cell: Cell,
+        Header: "Assay",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+        filter: "includesSome",
+        id: CATEGORY_KEY.ASSAY,
+      },
+      {
+        Cell: Cell,
+        Header: "Organism",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
+        filter: "includesSome",
+        id: CATEGORY_KEY.ORGANISM,
+      },
+      {
+        Header: "Cells",
+        accessor: "cell_count",
+      },
+      {
+        Cell: Cell,
+        Header: "Cell Type",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
+        filter: "includesSome",
+        id: CATEGORY_KEY.CELL_TYPE,
+      },
+      {
+        Header: "Primary Data",
+        accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
+        filter: "includesSome",
+      },
+      {
+        Cell: Cell,
+        Header: "Sex",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
+        filter: "includesSome",
+        id: CATEGORY_KEY.SEX,
+      },
+    ],
+    []
+  );
+
+  // Table init
+  const tableInstance = useTable<FilterableDataset>(
+    {
+      columns: columnConfig,
+      data: filterableDatasets,
+      initialState: {
+        hiddenColumns: [
+          CATEGORY_KEY.CELL_TYPE,
+          CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.SEX,
+        ],
+      },
+    },
+    useFilters
+  );
+
+  // Filter init.
+  const {
+    preFilteredRows,
+    setFilter,
+    state: { filters },
+  } = tableInstance;
+  const filterInstance = useFacetedFilter(preFilteredRows, filters, setFilter);
+
+  // Hide datasets behind feature flag - start
+  const isFilterEnabled = useFeatureFlagRedirect(
+    FEATURES.FILTER,
+    ROUTES.HOMEPAGE
+  );
+  if (!isFilterEnabled) {
+    return <></>;
+  }
+  // Hide datasets behind feature flag - end
+
+  return (
+    <>
+      <Head>
+        <title>cellxgene | Datasets</title>
+      </Head>
+      <div style={{ display: "flex" }}>
+        <Categories {...filterInstance} />
+        <DatasetsGrid tableInstance={tableInstance} />
+      </div>
+    </>
+  );
+};
+
+/**
+ * Table cell component displaying multi-value cell values.
+ * @param props - Cell-specific properties supplied from react-table.
+ * @returns Array of DOM elements, one for each value in multi-value cell.
+ */
+function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
+  const {
+    cell: { value },
+  } = props;
+  return value.map((v: string) => <div key={v}>{v}</div>);
+}
+
+/**
+ * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
+ * metadata (ontology label and key) values.
+ * @param key - Object key of value to display in cell.
+ * @returns Function that returns value with the given key, to display in a cell.
+ */
+function ontologyCellAccessorFn(key: OntologyCategoryKey) {
+  return (dataset: FilterableDataset) =>
+    dataset[key].map((o: Ontology) => o.label);
+}
+
+export default Datasets;

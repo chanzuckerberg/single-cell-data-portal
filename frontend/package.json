@@ -19,6 +19,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^2.26.4",
+    "react-table": "^7.7.0",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
@@ -33,6 +34,7 @@
     "@types/lodash": "^4.14.176",
     "@types/papaparse": "^5.3.1",
     "@types/react-dom": "^17.0.10",
+    "@types/react-table": "^7.7.8",
     "@types/styled-components": "^5.1.15",
     "@typescript-eslint/eslint-plugin": "^4.15.2",
     "@typescript-eslint/parser": "^4.15.2",
