@@ -15,7 +15,8 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("ALTER TYPE conversionstatus ADD VALUE 'SKIPPED'")
+    with op.get_context().autocommit_block():
+        op.execute("ALTER TYPE conversionstatus ADD VALUE 'SKIPPED'")
 
 
 def downgrade():
