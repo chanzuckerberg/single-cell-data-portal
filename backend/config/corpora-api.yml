@@ -98,6 +98,9 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection.
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -202,6 +205,9 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -847,6 +853,8 @@ components:
         contact_name:
           type: string
         contact_email:
+          type: string
+        curator_name:
           type: string
         data_submission_policy_version:
           type: string
