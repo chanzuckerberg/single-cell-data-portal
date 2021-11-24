@@ -215,7 +215,8 @@ def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str,
                 seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
             )
     else:
-        logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
+        update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
+        logger.info(f"Skipped Seurat conversion for dataset {dataset_id}")
 
     logger.info(f"Finished creating artifacts for dataset {dataset_id}")
 
@@ -228,7 +229,7 @@ def cancel_dataset(dataset_id):
         logger.info("Upload Canceled.")
 
 
-def update_db(dataset_id, metadata=None, processing_status=None):
+def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         if dataset.tombstone:
@@ -264,7 +265,7 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     s3_client.download_file(bucket_name, object_key, local_filename)
 
 
-def extract_metadata(filename):
+def extract_metadata(filename) -> dict:
     """Pull metadata out of the AnnData file to insert into the dataset table."""
 
     adata = scanpy.read_h5ad(filename, backed="r")
