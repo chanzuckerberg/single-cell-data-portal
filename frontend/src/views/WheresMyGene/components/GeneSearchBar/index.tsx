@@ -26,7 +26,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   // DEBUG
   // TEST 100 genes
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
-    GENES.slice(0, 30)
+    GENES.slice(0, 50)
   );
   // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
@@ -187,5 +187,3 @@ function areGenesEqual(geneA: Gene, geneB: Gene) {
   // Compare only the names (ignoring case) just for simplicity.
   return geneA.id.toLowerCase() === geneB.id.toLowerCase();
 }
-
-// https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/genes/CD4.json
