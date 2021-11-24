@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Cell as ICell, Column, useBlockLayout, useTable } from "react-table";
 import { VariableSizeGrid } from "react-window";
 import { CellTypeAndGenes } from "../../common/types";
@@ -9,7 +9,7 @@ interface Props {
   data: CellTypeAndGenes[];
 }
 
-export default function TreeTable({ columns, data }: Props): JSX.Element {
+export default memo(function TreeTable({ columns, data }: Props): JSX.Element {
   const tableContentRef = useRef<HTMLDivElement>(null);
   const [tableContentRect, setTableContentRect] =
     useState<DOMRectReadOnly | null>(null);
@@ -111,7 +111,10 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
                   },
                 ])}
               >
-                <Cell key={`row-${row.id}-column-${column.id}`} cell={cell} />
+                <CellContent
+                  key={`row-${row.id}-column-${column.id}`}
+                  cell={cell}
+                />
               </div>
             );
           }}
@@ -119,13 +122,13 @@ export default function TreeTable({ columns, data }: Props): JSX.Element {
       </div>
     </div>
   );
-}
+});
 
-interface CellProps {
+interface CellContentProps {
   cell: ICell<CellTypeAndGenes>;
 }
 
-function Cell({ cell }: CellProps) {
+const CellContent = memo(function Cell_({ cell }: CellContentProps) {
   const { value } = cell;
 
   let Component = null;
@@ -139,7 +142,10 @@ function Cell({ cell }: CellProps) {
 
     if (meanExpression !== undefined) {
       Component = (
-        <AsterChart colorValue={meanExpression} degreeValue={percentCells} />
+        <AsterChart
+          colorValue={roundNumber(meanExpression)}
+          degreeValue={roundNumber(percentCells)}
+        />
       );
     }
   }
@@ -154,4 +160,8 @@ function Cell({ cell }: CellProps) {
       {Component}
     </div>
   );
+});
+
+function roundNumber(num: number): number {
+  return Math.round(num * 100) / 100;
 }

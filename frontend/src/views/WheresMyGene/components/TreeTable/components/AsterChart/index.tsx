@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Container, FirstPart } from "./style";
 
 interface Props {
@@ -5,7 +6,7 @@ interface Props {
   degreeValue: number;
 }
 
-export default function AsterChart({
+export default memo(function AsterChart({
   colorValue,
   degreeValue,
 }: Props): JSX.Element {
@@ -14,4 +15,4 @@ export default function AsterChart({
       <FirstPart colorValue={colorValue} degreeValue={degreeValue} />
     </Container>
   );
-}
+});
