@@ -1,4 +1,4 @@
-import { Container, FirstPart, SecondPart } from "./style";
+import { Container, FirstPart } from "./style";
 
 interface Props {
   colorValue: number;
@@ -11,9 +11,7 @@ export default function AsterChart({
 }: Props): JSX.Element {
   return (
     <Container>
-      <FirstPart colorValue={colorValue} degreeValue={degreeValue}>
-        <SecondPart colorValue={colorValue} degreeValue={degreeValue} />
-      </FirstPart>
+      <FirstPart colorValue={colorValue} degreeValue={degreeValue} />
     </Container>
   );
 }
