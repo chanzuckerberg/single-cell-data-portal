@@ -23,5 +23,6 @@ RUN R -e "BiocManager::install('SingleCellExperiment')"
 #       See https://github.com/cellgeni/sceasy#installation
 RUN R -e "BiocManager::install('LoomExperiment')"
 RUN R -e "install.packages(c('devtools', 'igraph'));"
+# TODO: revert to 'cellgeni/sceasy' when this PR is merged: https://github.com/cellgeni/sceasy/pull/42
 RUN R -e "library(devtools); devtools::install_github('metakuni/sceasy')"
 RUN R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/')"
