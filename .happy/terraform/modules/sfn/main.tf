@@ -4,14 +4,15 @@ resource "aws_sfn_state_machine" "state_machine" {
 
   definition = <<EOF
 {
-    "StartAt": "Manage Batch task",
+    "StartAt": "DownloadValidate",
     "States": {
-      "Manage Batch task": {
+      "DownloadValidate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "CxgSeuratParallel",
         "Parameters": {
           "JobDefinition": "${var.job_definition_arn}",
-          "JobName": "processing",
+          "JobName": "download-validate",
           "JobQueue": "${var.job_queue_arn}",
           "ContainerOverrides": {
             "Environment": [
@@ -22,11 +23,15 @@ resource "aws_sfn_state_machine" "state_machine" {
               {
                 "Name": "DATASET_ID",
                 "Value.$": "$.dataset_uuid"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "download-validate"
               }
             ]
           }
         },
-        "End": true,
+        "ResultPath": null,
         "TimeoutSeconds": 36000,
         "Retry": [
           {
@@ -45,6 +50,137 @@ resource "aws_sfn_state_machine" "state_machine" {
             ],
             "Next": "HandleErrors",
             "ResultPath": "$.error"
+          }
+        ]
+      },
+      "CxgSeuratParallel": {
+        "Type": "Parallel",
+        "Next": "HandleSuccess",
+        "ResultPath": null,
+        "Branches": [
+          {
+            "StartAt": "Cxg",
+            "States": {
+              "Cxg": {
+                "Type": "Task",
+                "End": true,
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "cxg",
+                  "JobQueue": "${var.job_queue_arn}",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_uuid"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "cxg"
+                      }
+                    ]
+                  }
+                },
+                "ResultPath": null,
+                "TimeoutSeconds": 36000,
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 2,
+                    "MaxAttempts": 2
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "StartAt": "Seurat",
+            "States": {
+              "Seurat": {
+                "Type": "Task",
+                "End": true,
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "cxg",
+                  "JobQueue": "${var.job_queue_arn}",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_uuid"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "seurat"
+                      }
+                    ]
+                  }
+                },
+                "TimeoutSeconds": 36000,
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 2,
+                    "MaxAttempts": 2
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "Catch": [
+            {
+            "ErrorEquals": [
+                "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+            }
+        ]
+      },
+      "HandleSuccess": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "End": true,
+        "Parameters": {
+          "JobDefinition": "${var.job_definition_arn}",
+          "JobName": "handle-success",
+          "JobQueue": "${var.job_queue_arn}",
+          "ContainerOverrides": {
+            "Environment": [
+              {
+                "Name": "DROPBOX_URL",
+                "Value.$": "$.url"
+              },
+              {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_uuid"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "handle-success"
+              }
+            ]
+          }
+        },
+        "ResultPath": null,
+        "TimeoutSeconds": 36000,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.TaskFailed"
+            ],
+            "IntervalSeconds": 1,
+            "BackoffRate": 2,
+            "MaxAttempts": 2
           }
         ]
       },
