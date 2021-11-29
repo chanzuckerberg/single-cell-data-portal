@@ -20,16 +20,16 @@ export function useFeatureFlag(
   const router = useRouter();
 
   /* Flag indicating if feature is available to user. */
-  const [isFilterEnabled, setIsFilterEnabled] = useState<boolean>(false);
+  const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
   /* Update state of enabled flag and redirect user if feature is not available to them. */
   useEffect(() => {
     const enabled = get(featureFlag) === BOOLEAN.TRUE;
-    setIsFilterEnabled(enabled);
+    setIsEnabled(enabled);
     if (!enabled && redirectRoute) {
       router.push(redirectRoute);
     }
   }, [featureFlag, redirectRoute, router]);
 
-  return isFilterEnabled;
+  return isEnabled;
 }
