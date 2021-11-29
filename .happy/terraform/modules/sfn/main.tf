@@ -210,7 +210,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
-        "JobName": "cxg",
+        "JobName": "seurat",
         "JobQueue": "${var.job_queue_arn}",
         "ContainerOverrides": {
           "Environment": [
