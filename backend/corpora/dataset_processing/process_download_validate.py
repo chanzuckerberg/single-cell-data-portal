@@ -14,11 +14,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 from backend.corpora.common.corpora_orm import (
+    ConversionStatus,
     ProcessingStatus,
     DatasetArtifactFileType,
 )
-
-from backend.corpora.common.corpora_orm import ConversionStatus, DatasetArtifactFileType
 
 
 def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
@@ -50,7 +49,6 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     if not can_convert_to_seurat:
         update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
         logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
-
 
     # Upload the labeled dataset to the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
