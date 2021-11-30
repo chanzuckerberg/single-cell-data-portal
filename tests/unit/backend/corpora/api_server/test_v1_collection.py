@@ -626,8 +626,6 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
 
-        print(body)
-
         ids = [collection["id"] for collection in body]
         self.assertIn(collection.id, ids)
         self.assertNotIn(collection_id_private, ids)
