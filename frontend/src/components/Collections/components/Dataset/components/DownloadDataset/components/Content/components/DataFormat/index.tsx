@@ -1,6 +1,7 @@
 import {
   Intent,
   PopoverInteractionKind,
+  Position,
   Radio,
   RadioGroup,
   Tooltip,
@@ -50,8 +51,9 @@ const DataFormat: FC<Props> = ({
         <Tooltip
           disabled={!rdsSkipped}
           interactionKind={PopoverInteractionKind.HOVER}
-          content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
+          content="An .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
           intent={Intent.DANGER}
+          position={Position.TOP}
         >
           <Radio
             disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
