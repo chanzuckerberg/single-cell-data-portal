@@ -10,7 +10,7 @@ const DatasetsGrid: FC<Props> = ({ tableInstance }) => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
   return (
-    <table {...getTableProps()}>
+    <table {...getTableProps()} style={{ fontSize: "14px" }}>
       <thead>
         {headerGroups.map((headerGroup) => {
           const { key, ...restHeaderGroupProps } =

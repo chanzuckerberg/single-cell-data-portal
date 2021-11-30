@@ -9,18 +9,29 @@ import {
   OntologyCategoryKey,
   useFacetedFilter,
 } from "src/common/hooks/useFacetedFilter";
-import { useFeatureFlagRedirect } from "src/common/hooks/useFeatureFlagRedirect";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import Categories from "src/components/Categories";
-import DatasetsGrid from "src/components/Datasets/Grid/components/DatasetsGrid";
+import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
 const Datasets: FC = () => {
   // Column configuration backing table.
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
+      // TODO(cc) required for "group by" of counts
       {
+        Header: "Dataset ID",
+        accessor: "id",
+      },
+      {
+        Cell: DatasetNameCell,
         Header: "Dataset",
-        accessor: "name",
+        accessor: "name", // TODO(cc) collection name
+      },
+      // Hidden, required for accessing collection name. TODO(cc) revisit - is this necessary?
+      {
+        Header: "Collection Name",
+        accessor: "collection_name",
       },
       {
         Cell: Cell,
@@ -84,9 +95,11 @@ const Datasets: FC = () => {
       data: filterableDatasets,
       initialState: {
         hiddenColumns: [
-          CATEGORY_KEY.CELL_TYPE,
-          CATEGORY_KEY.IS_PRIMARY_DATA,
-          CATEGORY_KEY.SEX,
+          "id", // TODO(cc) constant
+          "collection_name", // TODO(cc) constant
+          // CATEGORY_KEY.CELL_TYPE,
+          // CATEGORY_KEY.IS_PRIMARY_DATA,
+          // CATEGORY_KEY.SEX,
         ],
       },
     },
@@ -99,13 +112,15 @@ const Datasets: FC = () => {
     setFilter,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useFacetedFilter(preFilteredRows, filters, setFilter);
+  const filterInstance = useFacetedFilter(
+    preFilteredRows,
+    filters,
+    setFilter,
+    "id"
+  );
 
   // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlagRedirect(
-    FEATURES.FILTER,
-    ROUTES.HOMEPAGE
-  );
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER, ROUTES.HOMEPAGE);
   if (!isFilterEnabled) {
     return <></>;
   }
@@ -125,7 +140,7 @@ const Datasets: FC = () => {
 };
 
 /**
- * Table cell component displaying multi-value cell values.
+ * Generic table cell component displaying multi-value cell values.
  * @param props - Cell-specific properties supplied from react-table.
  * @returns Array of DOM elements, one for each value in multi-value cell.
  */
@@ -134,6 +149,24 @@ function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
     cell: { value },
   } = props;
   return value.map((v: string) => <div key={v}>{v}</div>);
+}
+
+/**
+ * Table cell component displaying dataset and collection names.
+ * @param props - Cell-specific properties supplied from react-table.
+ * @returns DOM element containing both the dataset and collection names.
+ */
+function DatasetNameCell(
+  props: CellProps<FilterableDataset, string[]>
+): JSX.Element {
+  return (
+    <div>
+      <div>{props.row.values.name}</div>
+      <div style={{ color: "#5C7080", fontSize: "12px" }}>
+        {props.row.values.collection_name}
+      </div>
+    </div>
+  );
 }
 
 /**
