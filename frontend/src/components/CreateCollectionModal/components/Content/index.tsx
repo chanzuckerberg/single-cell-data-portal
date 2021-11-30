@@ -21,6 +21,7 @@ import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import { ContactWrapper, Form, StyledInput } from "./style";
+import {useUserInfo} from "src/common/queries/auth";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -67,7 +68,7 @@ const Content: FC<Props> = (props) => {
   const [isValid, setIsValid] = useState(initialBooleanState);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const { data: userInfo } = useUserInfo(true);
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
   }>({
@@ -226,7 +227,7 @@ const Content: FC<Props> = (props) => {
     }));
 
     payload.links = payloadLinks;
-
+    payload.curator_name = userInfo?.name
     return payload;
   }
 
