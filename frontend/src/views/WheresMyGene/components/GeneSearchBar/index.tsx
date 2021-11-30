@@ -26,10 +26,11 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   // DEBUG
   // TEST 100 genes
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
-    GENES.slice(0, 50)
+    GENES.slice(0, 30)
   );
   // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     fetchGenes();
@@ -49,19 +50,33 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
+  useEffect(() => {
+    if (Number.isNaN(Number(input))) return;
+
+    setSelectedGenes(GENES.slice(0, Number(input)));
+  }, [input]);
+
   return (
-    <MultiSelect
-      itemPredicate={itemPredicate}
-      onItemSelect={handleItemSelect}
-      onRemove={handleItemRemove}
-      items={genes}
-      itemRenderer={renderItem}
-      tagRenderer={TagRenderer}
-      itemsEqual={areGenesEqual}
-      selectedItems={selectedGenes}
-      itemListRenderer={itemListRenderer}
-    />
+    <>
+      <label htmlFor="first-n-genes">Select first N genes</label>
+      <input id="first-n-genes" onChange={handleInputChange} value={input} />
+      <MultiSelect
+        itemPredicate={itemPredicate}
+        onItemSelect={handleItemSelect}
+        onRemove={handleItemRemove}
+        items={genes}
+        itemRenderer={renderItem}
+        tagRenderer={TagRenderer}
+        itemsEqual={areGenesEqual}
+        selectedItems={selectedGenes}
+        itemListRenderer={itemListRenderer}
+      />
+    </>
   );
+
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    setInput(event.target.value);
+  }
 
   function itemListRenderer(listProps: IItemListRendererProps<Gene>) {
     const {

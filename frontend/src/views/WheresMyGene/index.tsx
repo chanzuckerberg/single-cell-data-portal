@@ -13,8 +13,8 @@ import {
 } from "./common/types";
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
-import TreeTable from "./components/TreeTable";
-import { Gap, Wrapper } from "./style";
+import HeatMap from "./components/HeatMap";
+import { Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
@@ -74,11 +74,11 @@ const WheresMyGene = (): JSX.Element => {
       </Head>
 
       <Wrapper>
+        {/* <TreeTable columns={columns} data={data} /> */}
+
+        <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
+
         <GeneSearchBar onGenesChange={setGenes} />
-
-        <Gap />
-
-        <TreeTable columns={columns} data={data} />
 
         {genes.map((gene) => {
           const { name } = gene;
