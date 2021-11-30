@@ -413,6 +413,39 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /dp/v1/collections/index:
+    get:
+      tags:
+        - collections
+      summary: >-
+        Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                    - published_at
+                    - revised_at
+                  properties:
+                    id:
+                      $ref: "#/components/schemas/collection_uuid"
+                    created_at:
+                      type: number
+        "400":
+          $ref: "#/components/responses/400"
+
   /dp/v1/datasets/{dataset_uuid}:
     delete:
       tags:

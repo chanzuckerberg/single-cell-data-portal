@@ -70,6 +70,19 @@ def get_collection_details(collection_uuid: str, visibility: str, user: str):
 
 
 @dbconnect
+def get_collections_index():
+    db_session = g.db_session
+    fields = ["id", "name", "published_at", "revised_at"]
+    collections = [
+        c.to_dict()
+        for c in Collection.list(db_session)
+        if c.visibility == CollectionVisibility.PUBLIC and not c.tombstone
+    ]
+    transformed_collections = [{k: d[k] for k in fields} for d in collections]
+    return make_response(jsonify(transformed_collections), 200)
+
+
+@dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
