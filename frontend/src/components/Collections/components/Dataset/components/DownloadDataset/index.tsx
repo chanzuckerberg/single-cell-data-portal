@@ -12,10 +12,12 @@ interface Props {
   dataAssets: Dataset["dataset_assets"];
   isDisabled?: boolean;
   Button?: React.ElementType;
+  rdsSkipped: boolean;
 }
 
 const DownloadDataset: FC<Props> = ({
   name,
+  rdsSkipped,
   dataAssets = EMPTY_ARRAY,
   isDisabled = false,
   Button = StyledButton,
@@ -41,7 +43,12 @@ const DownloadDataset: FC<Props> = ({
       </Tooltip>
 
       <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
-        <Content name={name} dataAssets={dataAssets} onClose={toggleOpen} />
+        <Content
+          name={name}
+          dataAssets={dataAssets}
+          onClose={toggleOpen}
+          rdsSkipped={rdsSkipped}
+        />
       </Modal>
     </>
   );

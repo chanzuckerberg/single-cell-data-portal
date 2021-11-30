@@ -15,24 +15,27 @@ interface Props {
   onClose: () => void;
   name: string;
   dataAssets: Dataset["dataset_assets"];
+  rdsSkipped: boolean;
 }
 
-const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
-  const [format, setFormat] = useState<DATASET_ASSET_FORMAT | "">("");
+const Content: FC<Props> = ({ onClose, name, dataAssets, rdsSkipped }) => {
+  const [selectedFormat, setSelectedFormat] = useState<
+    DATASET_ASSET_FORMAT | ""
+  >("");
   const [fileSize, setFileSize] = useState<number>(0);
   const [fileName, setFileName] = useState<string>("");
   const [downloadLink, setDownloadLink] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!format) return;
+    if (!selectedFormat) return;
 
     const asset = dataAssets.filter(
-      (dataAsset) => dataAsset.filetype === format
+      (dataAsset) => dataAsset.filetype === selectedFormat
     );
 
     if (!asset.length) {
-      throw Error(`Format ${format} not available`);
+      throw Error(`Format ${selectedFormat} not available`);
     }
 
     const { dataset_id: datasetId, id: assetId } = asset[0];
@@ -80,10 +83,10 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
 
       setIsLoading(false);
     }
-  }, [format, dataAssets]);
+  }, [selectedFormat, dataAssets]);
 
   const handleChange = (format: DATASET_ASSET_FORMAT) => {
-    setFormat(format);
+    setSelectedFormat(format);
   };
 
   const renderDownload = () => {
@@ -109,8 +112,9 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
           <DataFormat
             handleChange={handleChange}
             isDisabled={isLoading}
-            format={format}
+            selectedFormat={selectedFormat}
             availableFormats={availableFormats}
+            rdsSkipped={rdsSkipped}
           />
           <Details
             isLoading={isLoading}

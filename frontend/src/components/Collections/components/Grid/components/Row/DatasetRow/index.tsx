@@ -160,6 +160,8 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
+  const rdsSkipped = datasetStatus.rds_status === CONVERSION_STATUS.SKIPPED;
+
   return (
     <StyledRow>
       <DetailsCell>
@@ -227,6 +229,7 @@ const DatasetRow: FC<Props> = ({
               dataAssets={dataset?.dataset_assets}
               Button={DownloadButton}
               isDisabled={dataset.tombstone}
+              rdsSkipped={rdsSkipped}
             />
           </ActionButton>
 
