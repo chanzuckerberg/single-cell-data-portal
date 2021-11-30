@@ -23,6 +23,8 @@ const filterableDatasets = [
         ontology_term_id: "CL:0000561",
       },
     ],
+    collection_id: "fcb51725-66cf-458e-b194-b234f31073ba",
+    collection_name: "one", // TODO(cc) revisit
     disease: [
       {
         label: "type 2 diabetes mellitus",
@@ -31,12 +33,6 @@ const filterableDatasets = [
       {
         label: "normal",
         ontology_term_id: "PATO:0000461",
-      },
-    ],
-    ethnicity: [
-      {
-        label: "na",
-        ontology_term_id: "",
       },
     ],
     id: "003ab05f-a7a4-4dc5-8a5f-084bee4d9da7",
@@ -74,6 +70,8 @@ const filterableDatasets = [
         ontology_term_id: "CL:0000740",
       },
     ],
+    collection_id: "fcb51725-66cf-458e-b194-b234f31073ba",
+    collection_name: "one",
     disease: [
       {
         label: "type 2 diabetes mellitus",
@@ -126,16 +124,12 @@ const filterableDatasets = [
         ontology_term_id: "CL:0000561",
       },
     ],
+    collection_id: "fcb51725-66cf-458e-b194-b234f31073ba",
+    collection_name: "one",
     disease: [
       {
         label: "glioblastoma (disease)",
         ontology_term_id: "MONDO:0018177",
-      },
-    ],
-    ethnicity: [
-      {
-        label: "unknown",
-        ontology_term_id: "",
       },
     ],
     id: "8026b1f2-a29f-420a-88a0-3700a92236ef",
@@ -182,16 +176,12 @@ const filterableDatasets = [
         ontology_term_id: "CL:0000745",
       },
     ],
+    collection_id: "cd48bc53-7021-4a75-9685-54b374e825de",
+    collection_name: "two",
     disease: [
       {
         label: "normal",
         ontology_term_id: "PATO:0000461",
-      },
-    ],
-    ethnicity: [
-      {
-        label: "na",
-        ontology_term_id: "",
       },
     ],
     id: "2250182e-f496-4fba-9461-dc6f282ae5a7",
@@ -218,7 +208,7 @@ const filterableDatasets = [
         ontology_term_id: "EFO:0010891",
       },
     ],
-    cell_count: 2000,
+    cell_count: 2530,
     cell_type: [
       {
         label: "respiratory goblet cell",
@@ -229,16 +219,12 @@ const filterableDatasets = [
         ontology_term_id: "CL:0000745",
       },
     ],
+    collection_id: "fcb51725-66cf-458e-b194-b234f31073ba",
+    collection_name: "one",
     disease: [
       {
         label: "normal",
         ontology_term_id: "PATO:0000461",
-      },
-    ],
-    ethnicity: [
-      {
-        label: "na",
-        ontology_term_id: "",
       },
     ],
     id: "c2500381-f55a-4793-a2a2-2d72c9fecb1e",
