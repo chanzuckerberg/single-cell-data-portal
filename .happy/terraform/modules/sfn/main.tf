@@ -1,3 +1,6 @@
+# Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
+# This is used for environment (dev, staging, prod) deployments
+
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
   role_arn = var.role_arn
@@ -106,7 +109,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Resource": "arn:aws:states:::batch:submitJob.sync",
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
-                  "JobName": "cxg",
+                  "JobName": "seurat",
                   "JobQueue": "${var.job_queue_arn}",
                   "ContainerOverrides": {
                     "Environment": [
@@ -191,6 +194,57 @@ resource "aws_sfn_state_machine" "state_machine" {
         "End": true
       }
     }
+}
+EOF
+}
+
+resource "aws_sfn_state_machine" "state_machine_seurat" {
+  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-seurat-sfn"
+  role_arn = var.role_arn
+
+  definition = <<EOF
+{
+  "StartAt": "Seurat",
+  "States": {
+    "Seurat": {
+      "Type": "Task",
+      "End": true,
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobDefinition": "${var.job_definition_arn}",
+        "JobName": "seurat",
+        "JobQueue": "${var.job_queue_arn}",
+        "ContainerOverrides": {
+          "Environment": [
+            {
+              "Name": "DATASET_ID",
+              "Value.$": "$.dataset_uuid"
+            },
+            {
+              "Name": "STEP_NAME",
+              "Value": "seurat"
+            }
+          ]
+        }
+      },
+      "TimeoutSeconds": 36000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "HandleErrors": {
+      "Type": "Task",
+      "InputPath": "$",
+      "Resource": "${var.lambda_error_handler}",
+      "End": true
+    }
+  }
 }
 EOF
 }
