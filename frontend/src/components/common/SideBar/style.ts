@@ -13,17 +13,15 @@ interface PositionerProps {
 export const SideBar = styled.div<Props>`
   box-sizing: border-box;
   box-shadow: inset -1px 0px 0px rgba(16, 22, 26, 0.15);
-  width: ${(props: Props) => `${props.sideBarWidth}px`};
+  width: ${(props) => `${props.sideBarWidth}px`};
 `;
 
 export const SideBarPositioner = styled.div<PositionerProps>`
   max-height: calc(
     100vh - 48px
   ); /* required for sidebar scrolling where header height is 48px */
-  overflow-y: ${(props: PositionerProps) =>
-    props.isExpanded ? "overlay" : undefined};
-  padding: ${(props: PositionerProps) =>
-    props.isExpanded ? "24px 16px" : undefined};
+  overflow-y: ${(props) => (props.isExpanded ? "overlay" : undefined)};
+  padding: ${(props) => (props.isExpanded ? "24px 16px" : undefined)};
   position: sticky;
   top: 48px;
   width: inherit; /* inherits sidebar container width specification */

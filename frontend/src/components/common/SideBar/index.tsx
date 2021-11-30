@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC, useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   SideBar as SideBarWrapper,
   SideBarClosedButtonWrapper,
@@ -8,20 +8,24 @@ import {
   SideBarPositioner,
 } from "src/components/common/SideBar/style";
 
+const COLLAPSED_WIDTH_PX = 36;
+const EXPANDED_WIDTH_PX = 240;
+
 export interface Props {
+  children: ReactNode;
   label: string;
   isOpen?: boolean;
   width?: number;
 }
 
-const SideBar: FC<Props> = ({
+export default function SideBar({
   children: content,
   label,
   isOpen = false,
-  width = 240, // default side bar width 240px
-}) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(isOpen);
-  const sideBarWidth = isExpanded ? width : 36;
+  width = EXPANDED_WIDTH_PX,
+}: Props): JSX.Element {
+  const [isExpanded, setIsExpanded] = useState(isOpen);
+  const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
   const SideBarToggleButtonWrapper = isExpanded
     ? SideBarOpenButtonWrapper
     : SideBarClosedButtonWrapper;
@@ -43,6 +47,4 @@ const SideBar: FC<Props> = ({
       </SideBarPositioner>
     </SideBarWrapper>
   );
-};
-
-export default SideBar;
+}
