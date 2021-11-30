@@ -78,8 +78,8 @@ interface Query {
 
 // Function invoked when selected state of a category value is toggled.
 export type OnFilterFn = (
-  category: CategoryView,
-  categoryValue: CategoryValue
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey
 ) => void;
 
 // TODO(cc) check re-renders (5?)
@@ -134,13 +134,13 @@ export function useFacetedFilter(
 
   // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
-    (category: CategoryView, categoryValue: CategoryValue) => {
+    (categoryKey: CategoryKey, categoryValueKey: CategoryValueKey) => {
       const nextCategoryFilters = buildNextCategoryFilters(
-        category,
-        categoryValue,
+        categoryKey,
+        categoryValueKey,
         filters
       );
-      setFilter(category.key, nextCategoryFilters);
+      setFilter(categoryKey, nextCategoryFilters);
     },
     [filters, setFilter]
   );
@@ -421,29 +421,26 @@ function isFilterEqual(
 
 /**
  * Build updated set of selected filters for the given category and the selected category value.
- * @param category - Category of selected category value.
- * @param selectedCategoryValue - Category value to toggle selected state of.
+ * @param categoryKey - Category key (i.e. "disease") of selected category value.
+ * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
  */
 function buildNextCategoryFilters(
-  category: CategoryView,
-  selectedCategoryValue: CategoryValue,
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey,
   filters: Filters<FilterableDataset>
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
-  const categoryFilters = getCategoryFilter(category.key, filters);
+  const categoryFilters = getCategoryFilter(categoryKey, filters);
 
   // Current no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
-    return [selectedCategoryValue.key];
+    return [categoryValueKey];
   }
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
-  return toggleCategoryValueSelected(
-    selectedCategoryValue.key,
-    categoryFilters.value
-  );
+  return toggleCategoryValueSelected(categoryValueKey, categoryFilters.value);
 }
 
 /**
