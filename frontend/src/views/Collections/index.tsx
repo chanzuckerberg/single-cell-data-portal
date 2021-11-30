@@ -1,8 +1,11 @@
 import Head from "next/head";
 import React, { FC, useMemo } from "react";
 import {
+  AggregatorFn,
   CellProps,
+  CellValue,
   Column,
+  Row,
   useFilters,
   useGroupBy,
   useTable,
@@ -11,6 +14,7 @@ import { ROUTES } from "src/common/constants/routes";
 import {
   FilterableCollection,
   FilterableDataset,
+  IS_PRIMARY_DATA,
   Ontology,
 } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -237,10 +241,10 @@ const Collections: FC = () => {
  * are aggregated at the collection level.
  * @returns Function that aggregates values across rows.
  */
-function aggregateFn() {
-  return (_leafValues, aggregatedValues) => [
-    // TODO(cc) types above
-    ...new Set(aggregatedValues.flat()),
+function aggregateFn(): AggregatorFn<FilterableDataset> {
+  // TODO(cc) review types
+  return (_columnValues: CellValue[], rows: Array<Row<FilterableDataset>>) => [
+    ...new Set(rows.flat()),
   ];
 }
 
@@ -317,11 +321,12 @@ function prepareData(
   // Aggregate metadata for each collection and update on each dataset.
   const groupedFilterableDatasets = [...datasetsByCollectionId.values()].map(
     (filterableDatasets: FilterableDataset[]) => {
-      // Create model of collection metadata by aggregating the metadata of each dataset in collection.
+      // Create model of collection category values by aggregating the values in each category of each dataset in
+      // collection.
       const filterableCollection =
         createFilterableCollection(filterableDatasets);
 
-      // Add aggregated collection metadata to each dataset
+      // Add aggregated collection category values to each dataset
       return filterableDatasets.map((filterableDataset: FilterableDataset) => ({
         ...filterableDataset,
         filterableCollection,
@@ -334,15 +339,17 @@ function prepareData(
 }
 
 /**
- * TODO(cc)
- * @param filterableDatasets
+ * Create model of collection category values by aggregating the values in each category of each dataset in collection.
+ * @param filterableDatasets - Datasets in the collection to aggregate metadata of.
+ * @returns Collection object containing aggregated category values across. TODO(cc)
  */
 function createFilterableCollection(
   filterableDatasets: FilterableDataset[]
 ): FilterableCollection {
   return Object.values(CATEGORY_KEY).reduce(
     (accum: FilterableCollection, categoryKey: CategoryKey) => {
-      accum[`${categoryKey}Aggregated`] = aggregateDatasetsBy(
+      // @ts-expect-error -- TODO(cc) revisit
+      accum[`${categoryKey}Aggregated`] = aggregateCategory(
         categoryKey,
         filterableDatasets
       );
@@ -353,19 +360,32 @@ function createFilterableCollection(
 }
 
 /**
- * TODO(cc)
+ * Determine the set of category values that exist in the given datasets for the given category.
+ * @param categoryKey - Key of the category to aggregate values of.
+ * @param filterableDatasets - Datasets to aggregate category values of.
+ * @returns Array of aggregated category values for the given category.
  */
-function aggregateDatasetsBy(
+function aggregateCategory(
   categoryKey: CategoryKey,
   filterableDatasets: FilterableDataset[]
-) {
+): (Ontology | IS_PRIMARY_DATA)[] {
   // TODO(cc) return type
-  const metadataSet = new Set(
-    filterableDatasets.map(
-      (filterableDataset: FilterableDataset) => filterableDataset[categoryKey]
-    )
+  const categoryValuesSet = filterableDatasets.reduce(
+    (
+      accum: Set<Ontology | IS_PRIMARY_DATA>,
+      filterableDataset: FilterableDataset
+    ) => {
+      const categoryValue = filterableDataset[categoryKey];
+      if (!Array.isArray(categoryValue)) {
+        accum.add(categoryValue);
+      } else {
+        categoryValue.forEach((categoryValue) => accum.add(categoryValue));
+      }
+      return accum;
+    },
+    new Set<Ontology | IS_PRIMARY_DATA>()
   );
-  return [...metadataSet].flat();
+  return [...categoryValuesSet];
 }
 
 export default Collections;

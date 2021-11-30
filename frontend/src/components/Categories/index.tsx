@@ -21,7 +21,10 @@ const Categories: FC<Props> = ({ categories, onFilter }) => {
         <div key={category.key}>
           <b>{category.key}</b>
           {category.values.map((value) => (
-            <div key={value.key} onClick={() => onFilter(category, value)}>
+            <div
+              key={value.key}
+              onClick={() => onFilter(category.key, value.key)}
+            >
               {value.selected ? "\u26A1" : null} {value.key} {value.count}
             </div>
           ))}
