@@ -90,8 +90,8 @@ export interface Dataset {
   tissue: Ontology[];
   disease: Ontology[];
   cell_count: number | null;
-  sex: Ontology[];
-  ethnicity: Ontology[];
+  // sex: Ontology[];
+  ethnicity: Ontology;
   organism: Ontology[];
   name: string;
   cell_type: Ontology[];
@@ -116,20 +116,32 @@ export interface Dataset {
 }
 
 /* Model returned from /datasets API endpoint */
-export type FilterableDataset = Pick<
-  Dataset,
-  | "assay"
-  | "cell_count"
-  | "cell_type"
-  | "disease"
-  | "ethnicity"
-  | "id"
-  | "is_primary_data"
-  | "organism"
-  | "name"
-  | "sex"
-  | "tissue"
->;
+export interface FilterableDataset {
+  assay: Ontology[];
+  cell_count: number | null; // TODO(cc) check
+  cell_type: Ontology[];
+  collection_id: Collection["id"];
+  collection_name: Collection["name"]; // TODO(cc) check - use in filter?
+  disease: Ontology[];
+  filterableCollection?: FilterableCollection; // Only specified when filtering over collections
+  id: string;
+  is_primary_data: IS_PRIMARY_DATA;
+  name: string;
+  organism: Ontology[];
+  sex: Ontology[];
+  tissue: Ontology[];
+}
+
+/* TODO(cc) */
+export interface FilterableCollection {
+  assayAggregated: Ontology[];
+  cell_typeAggregated: Ontology[];
+  diseaseAggregated: Ontology[];
+  is_primary_dataAggregated: IS_PRIMARY_DATA[];
+  organismAggregated: Ontology[];
+  sexAggregated: Ontology[];
+  tissueAggregated: Ontology[];
+}
 
 export enum DATASET_ASSET_FORMAT {
   H5AD = "H5AD",

@@ -1,11 +1,11 @@
 // App dependencies
 import { FC } from "react";
 // Core dependencies
-import { Category, OnFilterFn } from "src/common/hooks/useFacetedFilter";
+import { CategoryView, OnFilterFn } from "src/common/hooks/useFacetedFilter";
 import { Wrapper } from "./style";
 
 interface Props {
-  categories: Category[];
+  categories: CategoryView[];
   onFilter: OnFilterFn;
 }
 
@@ -17,7 +17,7 @@ interface Props {
 const Categories: FC<Props> = ({ categories, onFilter }) => {
   return (
     <Wrapper>
-      {categories.map((category: Category) => (
+      {categories.map((category: CategoryView) => (
         <div key={category.key}>
           <b>{category.key}</b>
           {category.values.map((value) => (
