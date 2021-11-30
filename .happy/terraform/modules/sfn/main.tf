@@ -1,3 +1,6 @@
+# Same file as https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.happy/terraform/modules/sfn/main.tf
+# This is used for environment (dev, staging, prod) deployments
+
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
   role_arn = var.role_arn
@@ -106,7 +109,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Resource": "arn:aws:states:::batch:submitJob.sync",
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
-                  "JobName": "cxg",
+                  "JobName": "seurat",
                   "JobQueue": "${var.job_queue_arn}",
                   "ContainerOverrides": {
                     "Environment": [
@@ -195,7 +198,6 @@ resource "aws_sfn_state_machine" "state_machine" {
 EOF
 }
 
-
 resource "aws_sfn_state_machine" "state_machine_seurat" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-seurat-sfn"
   role_arn = var.role_arn
@@ -226,16 +228,6 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
         }
       },
       "TimeoutSeconds": 36000,
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "States.TaskFailed"
-          ],
-          "IntervalSeconds": 1,
-          "BackoffRate": 2,
-          "MaxAttempts": 2
-        }
-      ],
       "Catch": [
         {
           "ErrorEquals": [
@@ -256,7 +248,6 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
 }
 EOF
 }
-
 
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
