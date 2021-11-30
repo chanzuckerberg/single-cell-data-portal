@@ -420,9 +420,6 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      security:
-        - cxguserCookieLenient: []
-        - {}
       operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
       responses:
         "200":
