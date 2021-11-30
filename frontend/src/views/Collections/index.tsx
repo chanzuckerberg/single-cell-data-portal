@@ -45,14 +45,14 @@ const Collections: FC = () => {
         accessor: "collection_name", // TODO(cc) use constant here?
         aggregate: aggregateFn(),
       },
-      // Tissue for specific to each dataset row. Used for filtering datasets by the selected category values. Not
-      // displayed.
-      {
-        Header: "Tissue",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
-        filter: "includesSome",
-        id: CATEGORY_KEY.TISSUE,
-      },
+      // // Tissue for specific to each dataset row. Used for filtering datasets by the selected category values. Not
+      // // displayed.
+      // {
+      //   Header: "Tissue",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.TISSUE,
+      // },
       // Unfiltered, aggregated tissue values across datasets in a collection. Used for displaying tissue values for
       // an aggregated "materialized" collection row.
       {
@@ -60,16 +60,17 @@ const Collections: FC = () => {
         Header: "Tissue",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.TISSUE),
         aggregate: aggregateFn(), // TODO(cc) can this be made into some kind of typed or named fn? same with accessor.
-        id: `${CATEGORY_KEY.TISSUE}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.TISSUE}`,
       },
       // Disease for specific to each dataset row. Used for filtering datasets by the selected category values. Not
       // displayed.
-      {
-        Header: "Disease",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
-        filter: "includesSome",
-        id: `${CATEGORY_KEY.DISEASE}`,
-      },
+      // {
+      //   Header: "Disease",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
+      //   filter: "includesSome",
+      //   id: `${CATEGORY_KEY.DISEASE}`,
+      // },
       // Unfiltered, aggregated disease values across datasets in a collection. Used for displaying disease values for
       // an aggregated "materialized" collection row.
       {
@@ -77,16 +78,17 @@ const Collections: FC = () => {
         Header: "Disease",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.DISEASE),
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.DISEASE}Aggregated`, // TODO(cc) function for creating aggregate key name
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.DISEASE}`, // TODO(cc) function for creating aggregate key name
       },
       // Assay for specific to each dataset row. Used for filtering datasets by the selected category values. Not
       // displayed.
-      {
-        Header: "Assay",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
-        filter: "includesSome",
-        id: CATEGORY_KEY.ASSAY,
-      },
+      // {
+      //   Header: "Assay",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.ASSAY,
+      // },
       // Unfiltered, aggregated disease values across datasets in a collection. Used for displaying disease values for
       // an aggregated "materialized" collection row.
       {
@@ -94,16 +96,17 @@ const Collections: FC = () => {
         Header: "Assay",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.ASSAY),
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.ASSAY}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.ASSAY}`,
       },
       // Organism for specific to each dataset row. Used for filtering datasets by the selected category values. Not
       // displayed.
-      {
-        Header: "Organism",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
-        filter: "includesSome",
-        id: CATEGORY_KEY.ORGANISM,
-      },
+      // {
+      //   Header: "Organism",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.ORGANISM,
+      // },
       // Unfiltered, aggregated organism values across datasets in a collection. Used for displaying organism values for
       // an aggregated "materialized" collection row.
       {
@@ -111,15 +114,16 @@ const Collections: FC = () => {
         Header: "Organism",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.ORGANISM),
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.ORGANISM}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.ORGANISM}`,
       },
       // Header spec for filtering and aggregating cell type.
-      {
-        Header: "Cell Type",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
-        filter: "includesSome",
-        id: CATEGORY_KEY.CELL_TYPE,
-      },
+      // {
+      //   Header: "Cell Type",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.CELL_TYPE,
+      // },
       // Unfiltered, aggregated cell type values across datasets in a collection. Used for displaying organism values
       // for an aggregated "materialized" collection row.
       {
@@ -127,15 +131,16 @@ const Collections: FC = () => {
         Header: "Cell Type",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.CELL_TYPE),
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.CELL_TYPE}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.CELL_TYPE}`,
       },
       // Header spec for filtering and aggregating primary data.
-      {
-        Header: "Primary Data",
-        accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
-        filter: "includesSome",
-        id: CATEGORY_KEY.IS_PRIMARY_DATA,
-      },
+      // {
+      //   Header: "Primary Data",
+      //   accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.IS_PRIMARY_DATA,
+      // },
       // Unfiltered, aggregated primary data values across datasets in a collection. Used for displaying organism values
       // for an aggregated "materialized" collection row.
       {
@@ -146,15 +151,16 @@ const Collections: FC = () => {
             `${CATEGORY_KEY.IS_PRIMARY_DATA}Aggregated`
           ], // TODO(cc) update ontology accessor to use is-a on ontology or string and return value from there
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.IS_PRIMARY_DATA}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.IS_PRIMARY_DATA}`,
       },
       // Header spec for filtering and aggregating sex.
-      {
-        Header: "Sex",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
-        filter: "includesSome",
-        id: CATEGORY_KEY.SEX,
-      },
+      // {
+      //   Header: "Sex",
+      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
+      //   filter: "includesSome",
+      //   id: CATEGORY_KEY.SEX,
+      // },
       // Unfiltered, aggregated sex values across datasets in a collection. Used for displaying organism values
       // for an aggregated "materialized" collection row.
       {
@@ -162,7 +168,8 @@ const Collections: FC = () => {
         Header: "Sex",
         accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.SEX),
         aggregate: aggregateFn(),
-        id: `${CATEGORY_KEY.SEX}Aggregated`,
+        filter: "includesSome",
+        id: `${CATEGORY_KEY.SEX}`,
       },
     ],
     []
@@ -184,18 +191,18 @@ const Collections: FC = () => {
         // Only display aggregated tissue, disease and organism values.
         hiddenColumns: [
           "collection_id", // TODO(cc) constant?
-          CATEGORY_KEY.ASSAY,
+          // CATEGORY_KEY.ASSAY,
           // `${CATEGORY_KEY.ORGANISM}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          CATEGORY_KEY.DISEASE,
-          CATEGORY_KEY.CELL_TYPE,
+          // CATEGORY_KEY.DISEASE,
+          // CATEGORY_KEY.CELL_TYPE,
           // `${CATEGORY_KEY.CELL_TYPE}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          CATEGORY_KEY.IS_PRIMARY_DATA,
+          // CATEGORY_KEY.IS_PRIMARY_DATA,
           // `${CATEGORY_KEY.IS_PRIMARY_DATA}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          CATEGORY_KEY.ORGANISM,
+          // CATEGORY_KEY.ORGANISM,
           // `${CATEGORY_KEY.ORGANISM}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          CATEGORY_KEY.SEX,
+          // CATEGORY_KEY.SEX,
           // `${CATEGORY_KEY.SEX}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          CATEGORY_KEY.TISSUE,
+          // CATEGORY_KEY.TISSUE,
         ],
       },
     },
