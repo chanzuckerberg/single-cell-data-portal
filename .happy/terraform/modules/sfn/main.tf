@@ -1,4 +1,4 @@
-# Same file as https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.happy/terraform/modules/sfn/main.tf
+# Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
 
 resource "aws_sfn_state_machine" "state_machine" {
