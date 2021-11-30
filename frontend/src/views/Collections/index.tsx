@@ -308,13 +308,13 @@ function groupDatasetsByCollection( // TODO(cc) - duped
  * @param key - Object key of value to display in cell.
  * @returns Function that returns the value with the given key, to display in a cell.
  */
-function ontologyCellAccessorFn(
-  key: OntologyCategoryKey
-): (dataset: FilterableDataset) => string[] {
-  // TODO(cc) reuse with datasets
-  return (dataset: FilterableDataset) =>
-    dataset[key].map((o: Ontology) => o.label);
-}
+// function ontologyCellAccessorFn( TODO(cc) remove
+//   key: OntologyCategoryKey
+// ): (dataset: FilterableDataset) => string[] {
+//   // TODO(cc) reuse with datasets
+//   return (dataset: FilterableDataset) =>
+//     dataset[key].map((o: Ontology) => o.label);
+// }
 
 /**
  * TODO(cc)
