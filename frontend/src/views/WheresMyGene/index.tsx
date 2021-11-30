@@ -13,7 +13,7 @@ import {
 } from "./common/types";
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
-import TreeTable from "./components/TreeTable";
+import HeatMap from "./components/HeatMap";
 import { Gap, Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
@@ -78,7 +78,9 @@ const WheresMyGene = (): JSX.Element => {
 
         <Gap />
 
-        <TreeTable columns={columns} data={data} />
+        {/* <TreeTable columns={columns} data={data} /> */}
+
+        <HeatMap />
 
         {genes.map((gene) => {
           const { name } = gene;
