@@ -604,10 +604,6 @@ class TestCollection(BaseAuthAPITest):
             self.assertNotIn(private_not_owned, ids)
 
     def test__get_all_collections_for_index(self):
-        # dataset = self.generate_dataset(self.session, id="test_dataset_id_for_index", cell_count=42)
-        # self.generate_dataset(self.session, id="test_dataset_id_for_index_tombstone", tombstone=True)
-        # self.generate_dataset(self.session, id="test_dataset_id_for_index_private", collection_visibility="PRIVATE")
-
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
@@ -621,7 +617,7 @@ class TestCollection(BaseAuthAPITest):
         ).id
 
         test_url = furl(path="/dp/v1/collections/index")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
