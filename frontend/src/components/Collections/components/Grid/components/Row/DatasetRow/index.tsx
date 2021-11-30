@@ -229,6 +229,7 @@ const DatasetRow: FC<Props> = ({
               dataAssets={dataset?.dataset_assets}
               Button={DownloadButton}
               isDisabled={dataset.tombstone}
+              // rdsSkipped is drilled 3 components down to `frontend/src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/index.tsx`
               rdsSkipped={rdsSkipped}
             />
           </ActionButton>
