@@ -239,7 +239,11 @@ export function getConversionStatus(
     return CONVERSION_STATUS.FAILED;
   }
 
-  if (statuses.every((status) => status === CONVERSION_STATUS.CONVERTED)) {
+  if (
+    statuses.every((status) =>
+      [CONVERSION_STATUS.CONVERTED, CONVERSION_STATUS.SKIPPED].includes(status)
+    )
+  ) {
     return CONVERSION_STATUS.CONVERTED;
   }
 
