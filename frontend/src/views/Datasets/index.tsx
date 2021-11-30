@@ -18,7 +18,7 @@ const Datasets: FC = () => {
   // Column configuration backing table.
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
-      // TODO(cc) required for "group by" of counts
+      // Adding (hidden) ID column, required for "group by" functionality during category summarization. TODO(cc) revisit once collection functionality is confirmed.
       {
         Header: "Dataset ID",
         accessor: "id",
@@ -26,9 +26,9 @@ const Datasets: FC = () => {
       {
         Cell: DatasetNameCell,
         Header: "Dataset",
-        accessor: "name", // TODO(cc) collection name
+        accessor: "name",
       },
-      // Hidden, required for accessing collection name. TODO(cc) revisit - is this necessary?
+      // Hidden, required for accessing collection name via row.values, for display.
       {
         Header: "Collection Name",
         accessor: "collection_name",
