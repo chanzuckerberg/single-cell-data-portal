@@ -158,6 +158,8 @@ class Dataset(Entity):
             DbDataset.development_stage,
             DbDataset.is_primary_data,
             DbDataset.schema_version,  # Required for schema manipulation
+            DbDataset.published_at,
+            DbDataset.revised_at,
         ]
         table = cls.table
 
