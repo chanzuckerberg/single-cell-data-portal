@@ -16,7 +16,7 @@ interface Props {
   isDisabled: boolean;
   selectedFormat: DATASET_ASSET_FORMAT | "";
   availableFormats: DATASET_ASSET_FORMAT[];
-  rdsSkipped: boolean;
+  isRDSSkipped: boolean;
 }
 
 const DataFormat: FC<Props> = ({
@@ -24,7 +24,7 @@ const DataFormat: FC<Props> = ({
   isDisabled = false,
   selectedFormat,
   availableFormats,
-  rdsSkipped,
+  isRDSSkipped,
 }) => {
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
@@ -49,7 +49,7 @@ const DataFormat: FC<Props> = ({
           value={DATASET_ASSET_FORMAT.H5AD}
         />
         <Tooltip
-          disabled={!rdsSkipped}
+          disabled={!isRDSSkipped}
           interactionKind={PopoverInteractionKind.HOVER}
           content="An .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
           intent={Intent.DANGER}

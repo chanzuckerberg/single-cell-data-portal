@@ -15,10 +15,10 @@ interface Props {
   onClose: () => void;
   name: string;
   dataAssets: Dataset["dataset_assets"];
-  rdsSkipped: boolean;
+  isRDSSkipped: boolean;
 }
 
-const Content: FC<Props> = ({ onClose, name, dataAssets, rdsSkipped }) => {
+const Content: FC<Props> = ({ onClose, name, dataAssets, isRDSSkipped }) => {
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
   >("");
@@ -114,7 +114,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets, rdsSkipped }) => {
             isDisabled={isLoading}
             selectedFormat={selectedFormat}
             availableFormats={availableFormats}
-            rdsSkipped={rdsSkipped}
+            isRDSSkipped={isRDSSkipped}
           />
           <Details
             isLoading={isLoading}
