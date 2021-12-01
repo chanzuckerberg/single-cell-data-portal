@@ -13,6 +13,110 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
+  /dp/v1/wmg/cell_types:
+    get:
+      tags:
+        - wmg
+      summary: Get WMG cell types
+      security:
+        - cxguserCookieLenient: [ ]
+        - { }
+      description: >-
+        JSON of all genes
+      operationId: backend.corpora.lambdas.api.v1.wmg.get_cell_types
+      parameters: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+        "400":
+          $ref: "#/components/responses/400"
+  /dp/v1/wmg/genes:
+    get:
+      tags:
+        - wmg
+      summary: Get WMG genes
+      security:
+        - cxguserCookieLenient: [ ]
+        - { }
+      description: >-
+        JSON of all cell types
+      operationId: backend.corpora.lambdas.api.v1.wmg.get_genes
+      parameters: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+        "400":
+          $ref: "#/components/responses/400"
+  /dp/v1/wmg/genes/{gene_name}:
+    get:
+      tags:
+        - wmg
+      summary: Get WMG gene expression for a given gene name
+      security:
+        - cxguserCookieLenient: [ ]
+        - { }
+      description: >-
+        JSON of gene expression for a given gene
+      operationId: backend.corpora.lambdas.api.v1.wmg.get_gene_expression
+      parameters:
+      - name: gene_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The name of the gene
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - pc
+                    - me
+                  properties:
+                    id:
+                      type: string
+                    pc:
+                      type: number
+                      format: float
+                    me:
+                      type: number
+                      format: float
+        "400":
+          $ref: "#/components/responses/400"
   /dp/v1/collections:
     get:
       tags:
