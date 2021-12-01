@@ -124,6 +124,9 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
         assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD)
       );
     }) &&
+    // (ebezzi): We need to ensure all dataset `processing_status` to be success, since creating a revision relies
+    // on this status. Otherwise in the case of RDS is still WIP and a user publishes the collection and immediately
+    // tries to create a revision, the revision creation will fail
     datasets.every(
       (dataset) =>
         dataset.processing_status.processing_status ===
