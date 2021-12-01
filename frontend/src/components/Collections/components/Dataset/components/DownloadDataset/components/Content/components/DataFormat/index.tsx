@@ -51,7 +51,7 @@ const DataFormat: FC<Props> = ({
         <Tooltip
           disabled={!isRDSSkipped}
           interactionKind={PopoverInteractionKind.HOVER}
-          content="An .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
+          content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
           intent={Intent.DANGER}
           position={Position.TOP}
         >
