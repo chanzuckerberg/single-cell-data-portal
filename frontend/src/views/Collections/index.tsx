@@ -21,6 +21,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   CATEGORY_KEY,
+  NonOntologyCategoryKey,
   OntologyCategoryKey,
   useFacetedFilter,
 } from "src/common/hooks/useFacetedFilter";
@@ -31,144 +32,79 @@ import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
+// Collection ID object key
+const COLLECTION_ID = "collection_id";
+
+// Collection name object key
+const COLLECTION_NAME = "collection_name";
+
 const Collections: FC = () => {
   // Column configuration backing table.
-  // TODO(cc) function for creating aggregate headers and function for creating filtering headers
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
       // Required for grouping datasets by collections, not displayed.
       {
         Header: "Collection ID",
-        accessor: "collection_id",
+        accessor: COLLECTION_ID,
       },
       // Collection name, aggregated across datasets.
       {
         Header: "Collection",
-        accessor: "collection_name", // TODO(cc) use constant here?
+        accessor: COLLECTION_NAME,
         aggregate: aggregateFn(),
       },
-      // // Tissue for specific to each dataset row. Used for filtering datasets by the selected category values. Not
-      // // displayed.
-      // {
-      //   Header: "Tissue",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.TISSUE,
-      // },
-      // Unfiltered, aggregated tissue values across datasets in a collection. Used for displaying tissue values for
-      // an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Tissue",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.TISSUE),
-        aggregate: aggregateFn(), // TODO(cc) can this be made into some kind of typed or named fn? same with accessor.
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.TISSUE),
+        aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.TISSUE}`,
       },
-      // Disease for specific to each dataset row. Used for filtering datasets by the selected category values. Not
-      // displayed.
-      // {
-      //   Header: "Disease",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
-      //   filter: "includesSome",
-      //   id: `${CATEGORY_KEY.DISEASE}`,
-      // },
-      // Unfiltered, aggregated disease values across datasets in a collection. Used for displaying disease values for
-      // an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Disease",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.DISEASE),
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.DISEASE),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.DISEASE}`, // TODO(cc) function for creating aggregate key name
+        id: `${CATEGORY_KEY.DISEASE}`,
       },
-      // Assay for specific to each dataset row. Used for filtering datasets by the selected category values. Not
-      // displayed.
-      // {
-      //   Header: "Assay",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.ASSAY,
-      // },
-      // Unfiltered, aggregated disease values across datasets in a collection. Used for displaying disease values for
-      // an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Assay",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.ASSAY),
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.ASSAY}`,
       },
-      // Organism for specific to each dataset row. Used for filtering datasets by the selected category values. Not
-      // displayed.
-      // {
-      //   Header: "Organism",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.ORGANISM,
-      // },
-      // Unfiltered, aggregated organism values across datasets in a collection. Used for displaying organism values for
-      // an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Organism",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.ORGANISM),
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.ORGANISM}`,
       },
-      // Header spec for filtering and aggregating cell type.
-      // {
-      //   Header: "Cell Type",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.CELL_TYPE,
-      // },
-      // Unfiltered, aggregated cell type values across datasets in a collection. Used for displaying organism values
-      // for an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Cell Type",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.CELL_TYPE),
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.CELL_TYPE}`,
       },
-      // Header spec for filtering and aggregating primary data.
-      // {
-      //   Header: "Primary Data",
-      //   accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.IS_PRIMARY_DATA,
-      // },
-      // Unfiltered, aggregated primary data values across datasets in a collection. Used for displaying organism values
-      // for an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Primary Data",
-        accessor: (dataset: FilterableDataset) =>
-          dataset.filterableCollection?.[
-            `${CATEGORY_KEY.IS_PRIMARY_DATA}Aggregated`
-          ], // TODO(cc) update ontology accessor to use is-a on ontology or string and return value from there
+        accessor: aggregatedCellAccessorFn(CATEGORY_KEY.IS_PRIMARY_DATA),
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.IS_PRIMARY_DATA}`,
       },
-      // Header spec for filtering and aggregating sex.
-      // {
-      //   Header: "Sex",
-      //   accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
-      //   filter: "includesSome",
-      //   id: CATEGORY_KEY.SEX,
-      // },
-      // Unfiltered, aggregated sex values across datasets in a collection. Used for displaying organism values
-      // for an aggregated "materialized" collection row.
       {
         Cell: Cell,
         Header: "Sex",
-        accessor: filteredCollectionOntologyAccessorFn(CATEGORY_KEY.SEX),
+        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.SEX),
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: `${CATEGORY_KEY.SEX}`,
@@ -189,22 +125,14 @@ const Collections: FC = () => {
       columns: columnConfig,
       data,
       initialState: {
-        groupBy: ["collection_id"],
+        groupBy: [COLLECTION_ID],
         // Only display aggregated tissue, disease and organism values.
         hiddenColumns: [
-          "collection_id", // TODO(cc) constant?
+          COLLECTION_ID,
           // CATEGORY_KEY.ASSAY,
-          // `${CATEGORY_KEY.ORGANISM}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          // CATEGORY_KEY.DISEASE,
           // CATEGORY_KEY.CELL_TYPE,
-          // `${CATEGORY_KEY.CELL_TYPE}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
           // CATEGORY_KEY.IS_PRIMARY_DATA,
-          // `${CATEGORY_KEY.IS_PRIMARY_DATA}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          // CATEGORY_KEY.ORGANISM,
-          // `${CATEGORY_KEY.ORGANISM}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
           // CATEGORY_KEY.SEX,
-          // `${CATEGORY_KEY.SEX}Aggregated`, // TODO(cc) remove for go-live (keep for manual testing purposes)
-          // CATEGORY_KEY.TISSUE,
         ],
       },
     },
@@ -222,7 +150,7 @@ const Collections: FC = () => {
     preFilteredRows,
     filters,
     setFilter,
-    "collection_id" // TODO(cc) constant
+    COLLECTION_ID
   );
 
   // Hide datasets behind feature flag - start
@@ -236,6 +164,7 @@ const Collections: FC = () => {
     <>
       <Head>
         <title>cellxgene | Collections</title>
+        {/* eslint-disable-next-line @next/next/no-page-custom-font -- required for font specs per mocks, revisit with #1685. */}
         <link
           href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
           rel="stylesheet"
@@ -252,15 +181,16 @@ const Collections: FC = () => {
 };
 
 /**
- * Create function that de-dupes aggregated values into single array. Used when displaying dataset metadata values that
- * are aggregated at the collection level.
+ * Create function that flattens and de-dupes array category values (in a single category/column) from dataset rows
+ * grouped by collection. Used when aggregating and displaying dataset category values that are aggregated at the
+ * collection level.
  * @returns Function that aggregates values across rows.
  */
 function aggregateFn(): AggregatorFn<FilterableDataset> {
-  // TODO(cc) review types
-  return (_columnValues: CellValue[], rows: Array<Row<FilterableDataset>>) => [
-    ...new Set(rows.flat()),
-  ];
+  // @param rows - array containing all values in a single category/column for all datasets grouped by collection
+  return (_columnValues: CellValue[], rows: Array<Row<FilterableDataset>>) => {
+    return [...new Set(rows.flat())];
+  };
 }
 
 /**
@@ -278,11 +208,28 @@ function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
 }
 
 /**
- * TODO(cc) return type etc
+ * Create function to be used by column.accessor in react-table column definition, for columns containing non-ontology
+ * metadata (string) values. Used by react-table to determine filter and display values of column for each row
+ * (in this case, the category value itself is filtered and displayed).
+ * @param key - Object key of value to display in cell.
+ * @returns Function that returns the values with the given key.
  */
-function filteredCollectionOntologyAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: FilterableDataset) => {
-    // TODO(cc) ? optional filterableCollection - maybe filterable collection should be its own type and collection should be on the side?
+function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
+  return (dataset: FilterableDataset) =>
+    // @ts-expect-error -- TODO(cc) update filterableCollection to be required
+    dataset.filterableCollection[`${key}Aggregated`];
+}
+
+/**
+ * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
+ * metadata (ontology label and key) values. Used by react-table to determine filter and display values of column
+ * for each row (in this case, the ontology label is filtered and displayed, not the full ontology object).
+ // * @param key - Object key of value to display in cell.
+ // * @returns Function that returns the array of ontology labels with the given key.
+ */
+function aggregatedOntologyCellAccessorFn(key: OntologyCategoryKey) {
+  return (dataset: FilterableDataset): string[] => {
+    // @ts-expect-error -- TODO(cc) update filterableCollection to be required
     return dataset.filterableCollection?.[`${key}Aggregated`].map(
       (o: Ontology) => o.label
     );
@@ -290,20 +237,21 @@ function filteredCollectionOntologyAccessorFn(key: OntologyCategoryKey) {
 }
 
 /**
- * TODO(cc)
- * @param filterableDatasets
+ * Group filterable datasets by collection.
+ * @param filterableDatasets - Array of filterable datasets to group by their collection ID.
+ * @returns Map of filterable datasets key by collection ID.
  */
-function groupDatasetsByCollection( // TODO(cc) - duped
+function groupDatasetsByCollection(
   filterableDatasets: FilterableDataset[]
 ): Map<string, FilterableDataset[]> {
   return filterableDatasets.reduce(
     (accum: Map<string, FilterableDataset[]>, filterableDataset) => {
-      let datasetsByCollectionId = accum.get(filterableDataset.collection_id);
-      if (!datasetsByCollectionId) {
-        datasetsByCollectionId = [];
-        accum.set(filterableDataset.collection_id, datasetsByCollectionId);
+      const datasetsByCollectionId = accum.get(filterableDataset.collection_id);
+      if (datasetsByCollectionId) {
+        datasetsByCollectionId.push(filterableDataset);
+      } else {
+        accum.set(filterableDataset.collection_id, [filterableDataset]);
       }
-      datasetsByCollectionId.push(filterableDataset);
       return accum;
     },
     new Map<string, FilterableDataset[]>()
@@ -311,21 +259,9 @@ function groupDatasetsByCollection( // TODO(cc) - duped
 }
 
 /**
- * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values.
- * @param key - Object key of value to display in cell.
- * @returns Function that returns the value with the given key, to display in a cell.
- */
-// function ontologyCellAccessorFn( TODO(cc) remove
-//   key: OntologyCategoryKey
-// ): (dataset: FilterableDataset) => string[] {
-//   // TODO(cc) reuse with datasets
-//   return (dataset: FilterableDataset) =>
-//     dataset[key].map((o: Ontology) => o.label);
-// }
-
-/**
- * TODO(cc)
+ * Create filterable collections from aggregated dataset category values and add to each dataset in collection.
+ * @param filterableDatasets - Filterable datasets to create filterable collections from.
+ * @returns Array of updated filterable datasets, containing pointers to their corresponding filterable collections.
  */
 function prepareData(
   filterableDatasets: FilterableDataset[]
@@ -355,8 +291,8 @@ function prepareData(
 
 /**
  * Create model of collection category values by aggregating the values in each category of each dataset in collection.
- * @param filterableDatasets - Datasets in the collection to aggregate metadata of.
- * @returns Collection object containing aggregated category values across. TODO(cc)
+ * @param filterableDatasets - Datasets in the collection to aggregate category values over.
+ * @returns Collection object containing aggregated category values from given filterable datasets.
  */
 function createFilterableCollection(
   filterableDatasets: FilterableDataset[]

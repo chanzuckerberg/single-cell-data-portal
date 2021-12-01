@@ -69,6 +69,13 @@ export type OntologyCategoryKey = keyof Omit<
   CATEGORY_KEY.IS_PRIMARY_DATA
 >;
 
+// Filterable metadata keys where the type of the corresponding value is not Ontology. Currently, that is
+// is_primary_data only.
+export type NonOntologyCategoryKey = keyof Pick<
+  Record<CATEGORY_KEY, string>,
+  CATEGORY_KEY.IS_PRIMARY_DATA
+>;
+
 // Selected filters applicable to a category; used when deriving category value counts from current set of filters.
 // Identical queries can be shared by categories to reduce the number of result set filtering.
 interface Query {
