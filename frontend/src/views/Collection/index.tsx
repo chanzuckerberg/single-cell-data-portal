@@ -14,6 +14,7 @@ import {
   useCollectionUploadLinks,
   useDeleteCollection,
 } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -93,6 +94,7 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
+    removeParams("tombstoned_dataset_id");
   }, [tombstoned_dataset_id, collection]);
 
   useEffect(() => {
