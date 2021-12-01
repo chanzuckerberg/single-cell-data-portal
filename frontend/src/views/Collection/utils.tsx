@@ -7,6 +7,7 @@ import {
   Dataset,
   DATASET_ASSET_FORMAT,
   Link,
+  PROCESSING_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
@@ -123,6 +124,7 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
         assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD)
       );
     }) &&
+    datasets.every( dataset => dataset.processing_status.processing_status === PROCESSING_STATUS.SUCCESS) &&
     datasets.some((dataset) => !dataset.tombstone)
   );
 }
