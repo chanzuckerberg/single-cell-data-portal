@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { FC, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   AggregatorFn,
   CellProps,
@@ -8,15 +8,11 @@ import {
   Row,
   useFilters,
   useGroupBy,
+  useSortBy,
   useTable,
 } from "react-table";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  FilterableCollection,
-  FilterableDataset,
-  IS_PRIMARY_DATA,
-  Ontology,
-} from "src/common/entities";
+import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
@@ -28,6 +24,10 @@ import {
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import Categories from "src/components/Categories";
 import FilteredCollectionsGrid from "src/components/Collections/components/Grid/components/FilteredCollectionsGrid";
+import {
+  FilterableCollection,
+  FilterableDataset,
+} from "src/components/common/Filter/common/entities";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
@@ -38,16 +38,24 @@ const COLLECTION_ID = "collection_id";
 // Collection name object key
 const COLLECTION_NAME = "collection_name";
 
-const Collections: FC = () => {
+// Key identifying recency sort by column
+const COLUMN_ID_RECENCY = "recency";
+
+export default function Collections(): JSX.Element {
   // Column configuration backing table.
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
-      // Required for grouping datasets by collections, not displayed.
+      // Hidden, required for grouping datasets by collections
       {
-        Header: "Collection ID",
         accessor: COLLECTION_ID,
       },
-      // Collection name, aggregated across datasets.
+      // Hidden, required for sorting TODO(cc) this should be for materialized collection row
+      {
+        accessor: (dataset: FilterableDataset): number =>
+          dataset.revised_at ?? dataset.published_at,
+        id: COLUMN_ID_RECENCY,
+      },
+      // Collection name, aggregated across datasets to roll up into single value for each collection ID group.
       {
         Header: "Collection",
         accessor: COLLECTION_NAME,
@@ -129,15 +137,23 @@ const Collections: FC = () => {
         // Only display aggregated tissue, disease and organism values.
         hiddenColumns: [
           COLLECTION_ID,
+          COLUMN_ID_RECENCY,
           // CATEGORY_KEY.ASSAY,
           // CATEGORY_KEY.CELL_TYPE,
           // CATEGORY_KEY.IS_PRIMARY_DATA,
           // CATEGORY_KEY.SEX,
         ],
+        sortBy: [
+          {
+            desc: true,
+            id: COLUMN_ID_RECENCY,
+          },
+        ],
       },
     },
     useFilters,
-    useGroupBy
+    useGroupBy,
+    useSortBy
   );
 
   // Filter init.
@@ -178,7 +194,7 @@ const Collections: FC = () => {
       </View>
     </>
   );
-};
+}
 
 /**
  * Create function that flattens and de-dupes array category values (in a single category/column) from dataset rows
@@ -338,5 +354,3 @@ function aggregateCategory(
   );
   return [...categoryValuesSet];
 }
-
-export default Collections;
