@@ -13,38 +13,48 @@ import {
   UseGroupByOptions,
   UseGroupByRowProps,
   UseGroupByState,
+  UseSortByColumnOptions,
+  UseSortByColumnProps,
+  UseSortByHooks,
+  UseSortByInstanceProps,
+  UseSortByOptions,
+  UseSortByState,
 } from "react-table";
 
 declare module "react-table" {
-  // take this file as-is, or comment out the sections that don't apply to your plugin configuration
-
   export interface TableOptions<D extends Record<string, unknown>>
     extends UseFiltersOptions<D>,
-      UseGroupByOptions<D> {}
+      UseGroupByOptions<D>,
+      UseSortByOptions<D> {}
 
   export interface Hooks<
     D extends Record<string, unknown> = Record<string, unknown>
-  > extends UseGroupByHooks<D> {}
+  > extends UseGroupByHooks<D>,
+      UseSortByHooks<D> {}
 
   export interface TableInstance<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersInstanceProps<D>,
-      UseGroupByInstanceProps<D> {}
+      UseGroupByInstanceProps<D>,
+      UseSortByInstanceProps<D> {}
 
   export interface TableState<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersState<D>,
-      UseGroupByState<D> {}
+      UseGroupByState<D>,
+      UseSortByState<D> {}
 
   export interface ColumnInterface<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersColumnOptions<D>,
-      UseGroupByColumnOptions<D> {}
+      UseGroupByColumnOptions<D>,
+      UseSortByColumnOptions<D> {}
 
   export interface ColumnInstance<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersColumnProps<D>,
-      UseGroupByColumnProps<D> {}
+      UseGroupByColumnProps<D>,
+      UseSortByColumnProps<D> {}
 
   export interface Cell<
     D extends Record<string, unknown> = Record<string, unknown>,

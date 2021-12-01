@@ -1,7 +1,7 @@
 // Display-optimized structure of category and corresponding category values and counts.
 import { useCallback, useMemo, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
-import { FilterableDataset } from "src/common/entities";
+import { FilterableDataset } from "src/components/common/Filter/common/entities";
 
 // Metadata values grouped by metadata key.
 export interface CategoryView {
