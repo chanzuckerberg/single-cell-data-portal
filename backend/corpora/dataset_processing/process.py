@@ -136,7 +136,7 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.common.utils.s3_buckets import s3_client
 from backend.corpora.dataset_processing.download import download
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ValidationFailed
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 from backend.corpora.dataset_processing.slack import format_slack_message
 
@@ -537,20 +537,34 @@ def main():
     step_name = os.environ["STEP_NAME"]
     logger.info(f"Processing dataset {dataset_id}")
 
-    if step_name == "download-validate":
-        from backend.corpora.dataset_processing.process_download_validate import process
+    try:
+        if step_name == "download-validate":
+            from backend.corpora.dataset_processing.process_download_validate import process
 
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
-    elif step_name == "cxg":
-        from backend.corpora.dataset_processing.process_cxg import process
+            process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "cxg":
+            from backend.corpora.dataset_processing.process_cxg import process
 
-        process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
-    elif step_name == "seurat":
-        from backend.corpora.dataset_processing.process_seurat import process
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
+        elif step_name == "seurat":
+            from backend.corpora.dataset_processing.process_seurat import process
 
-        process(dataset_id, os.environ["ARTIFACT_BUCKET"])
-    elif step_name == "handle-success":
-        update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "handle-success":
+            update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+
+    except ProcessingCancelled:
+        cancel_dataset(dataset_id)
+    except (ValidationFailed, ProcessingFailed):
+        logger.exception("An Error occurred while processing.")
+        return_value = 1
+    except Exception:
+        message = "An unexpected error occurred while processing the data set."
+        logger.exception(message)
+        update_db(
+            dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)
+        )
+        return_value = 1
 
     if return_value > 0:
         notify_slack_failure(dataset_id)
