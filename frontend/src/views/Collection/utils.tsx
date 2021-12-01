@@ -124,7 +124,11 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
         assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD)
       );
     }) &&
-    datasets.every( dataset => dataset.processing_status.processing_status === PROCESSING_STATUS.SUCCESS) &&
+    datasets.every(
+      (dataset) =>
+        dataset.processing_status.processing_status ===
+        PROCESSING_STATUS.SUCCESS
+    ) &&
     datasets.some((dataset) => !dataset.tombstone)
   );
 }
