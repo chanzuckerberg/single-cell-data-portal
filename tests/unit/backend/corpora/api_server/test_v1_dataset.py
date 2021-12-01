@@ -115,7 +115,9 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.assertEqual(json.loads(response.data)["upload_status"], status.name)
 
     def test__get_all_datasets_for_index(self):
-        dataset = self.generate_dataset(self.session, id="test_dataset_id_for_index", cell_count=42, published_at=datetime.now())
+        dataset = self.generate_dataset(
+            self.session, id="test_dataset_id_for_index", cell_count=42, published_at=datetime.now()
+        )
         self.generate_dataset(self.session, id="test_dataset_id_for_index_tombstone", tombstone=True)
         self.generate_dataset(self.session, id="test_dataset_id_for_index_private", collection_visibility="PRIVATE")
         test_url = furl(path="/dp/v1/datasets/index")
