@@ -603,6 +603,37 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
 
+    def test__get_all_collections_for_index(self):
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
+
+        collection_id_private = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        ).id
+
+        collection_id_tombstone = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, tombstone=True, owner="test_user_id"
+        ).id
+
+        test_url = furl(path="/dp/v1/collections/index")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+        self.assertIn(collection.id, ids)
+        self.assertNotIn(collection_id_private, ids)
+        self.assertNotIn(collection_id_tombstone, ids)
+
+        actual_collection = body[-1]  # last added collection
+        self.assertEqual(actual_collection["id"], collection.id)
+        self.assertEqual(actual_collection["name"], collection.name)
+        self.assertNotIn("description", actual_collection)
+        self.assertEqual(actual_collection["published_at"], collection.published_at)
+        self.assertEqual(actual_collection["revised_at"], collection.revised_at)
+
 
 class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test_delete_private_collection__ok(self):
