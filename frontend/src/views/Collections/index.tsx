@@ -27,6 +27,8 @@ import {
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import Categories from "src/components/Categories";
 import FilteredCollectionsGrid from "src/components/Collections/components/Grid/components/FilteredCollectionsGrid";
+import SideBar from "src/components/common/SideBar";
+import { View } from "src/views/globalStyle";
 import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
 const Collections: FC = () => {
@@ -234,11 +236,17 @@ const Collections: FC = () => {
     <>
       <Head>
         <title>cellxgene | Collections</title>
+        <link
+          href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
+          rel="stylesheet"
+        />
       </Head>
-      <div style={{ display: "flex" }}>
+      <SideBar label="Filters">
         <Categories {...filterInstance} />
+      </SideBar>
+      <View>
         <FilteredCollectionsGrid tableInstance={tableInstance} />
-      </div>
+      </View>
     </>
   );
 };
