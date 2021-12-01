@@ -5,7 +5,8 @@
  */
 
 // App dependencies
-import { FilterableDataset, IS_PRIMARY_DATA } from "src/common/entities";
+import { IS_PRIMARY_DATA } from "src/common/entities";
+import { FilterableDataset } from "src/components/common/Filter/common/entities";
 
 // Data init
 const filterableDatasets = [
@@ -39,6 +40,8 @@ const filterableDatasets = [
     is_primary_data: IS_PRIMARY_DATA.PRIMARY,
     name: "A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
     organism: [{ label: "Mus musculus", ontology_term_id: "NCBITaxon:10090" }],
+    published_at: 1626721600.225782,
+    revised_at: 1634238524.901826,
     sex: [
       {
         label: "male",
@@ -97,6 +100,8 @@ const filterableDatasets = [
         ontology_term_id: "NCBITaxon:9606",
       },
     ],
+    published_at: 1626572070.952283,
+    revised_at: 1634238524.901826,
     sex: [
       {
         label: "female",
@@ -141,6 +146,8 @@ const filterableDatasets = [
         ontology_term_id: "NCBITaxon:9606",
       },
     ],
+    published_at: 1626572044.158318,
+    revised_at: 1634238524.901826,
     sex: [
       {
         label: "female",
@@ -188,6 +195,8 @@ const filterableDatasets = [
     is_primary_data: IS_PRIMARY_DATA.PRIMARY,
     name: "Glutamatergic neurons \u2014 An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
     organism: [{ label: "Mus musculus", ontology_term_id: "NCBITaxon:10090" }],
+    published_at: 1626572170.326643,
+    revised_at: 1634238524.901826,
     sex: [
       {
         label: "male",
@@ -231,6 +240,8 @@ const filterableDatasets = [
     is_primary_data: IS_PRIMARY_DATA.SECONDARY,
     name: "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_cells_MOp",
     organism: [{ label: "Mus musculus", ontology_term_id: "NCBITaxon:10090" }],
+    published_at: 1626572098.632964,
+    revised_at: 1634238524.901826,
     sex: [
       {
         label: "male",

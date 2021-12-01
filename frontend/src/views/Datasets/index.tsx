@@ -1,8 +1,14 @@
 import Head from "next/head";
-import React, { FC, useMemo } from "react";
-import { CellProps, Column, useFilters, useTable } from "react-table";
+import React, { useMemo } from "react";
+import {
+  CellProps,
+  Column,
+  useFilters,
+  useSortBy,
+  useTable,
+} from "react-table";
 import { ROUTES } from "src/common/constants/routes";
-import { FilterableDataset, Ontology } from "src/common/entities";
+import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
   CATEGORY_KEY,
@@ -11,27 +17,44 @@ import {
 } from "src/common/hooks/useFacetedFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import Categories from "src/components/Categories";
+import { FilterableDataset } from "src/components/common/Filter/common/entities";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
-const Datasets: FC = () => {
+// Collection name object key
+const COLLECTION_NAME = "collection_name";
+
+// Dataset ID object key
+const DATASET_ID = "id";
+
+// Dataset name object key
+const DATASET_NAME = "name";
+
+// Key identifying recency sort by column
+const COLUMN_ID_RECENCY = "recency";
+
+export default function Datasets(): JSX.Element {
   // Column configuration backing table.
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
-      // Adding (hidden) ID column, required for "group by" functionality during category summarization. TODO(cc) revisit once collection functionality is confirmed.
+      // Hidden, ID column, required for "group by" functionality during category summarization. TODO(cc) revisit once collection functionality is confirmed.
       {
-        Header: "Dataset ID",
-        accessor: "id",
+        accessor: DATASET_ID,
+      },
+      // Hidden, required for sorting by recency.
+      {
+        accessor: (dataset: FilterableDataset): number =>
+          dataset.revised_at ?? dataset.published_at,
+        id: COLUMN_ID_RECENCY,
+      },
+      // Hidden, required for accessing collection name via row.values, for display.
+      {
+        accessor: COLLECTION_NAME,
       },
       {
         Cell: DatasetNameCell,
         Header: "Dataset",
-        accessor: "name",
-      },
-      // Hidden, required for accessing collection name via row.values, for display.
-      {
-        Header: "Collection Name",
-        accessor: "collection_name",
+        accessor: DATASET_NAME,
       },
       {
         Cell: Cell,
@@ -95,15 +118,23 @@ const Datasets: FC = () => {
       data: filterableDatasets,
       initialState: {
         hiddenColumns: [
-          "id", // TODO(cc) constant
-          "collection_name", // TODO(cc) constant
+          DATASET_ID,
+          COLLECTION_NAME,
+          COLUMN_ID_RECENCY,
           // CATEGORY_KEY.CELL_TYPE,
           // CATEGORY_KEY.IS_PRIMARY_DATA,
           // CATEGORY_KEY.SEX,
         ],
+        sortBy: [
+          {
+            desc: true,
+            id: COLUMN_ID_RECENCY,
+          },
+        ],
       },
     },
-    useFilters
+    useFilters,
+    useSortBy
   );
 
   // Filter init.
@@ -137,7 +168,7 @@ const Datasets: FC = () => {
       </div>
     </>
   );
-};
+}
 
 /**
  * Generic table cell component displaying multi-value cell values.
@@ -179,5 +210,3 @@ function ontologyCellAccessorFn(key: OntologyCategoryKey) {
   return (dataset: FilterableDataset) =>
     dataset[key].map((o: Ontology) => o.label);
 }
-
-export default Datasets;
