@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from flask import make_response, g
 
 from .....common.corpora_orm import CollectionVisibility
@@ -11,8 +9,12 @@ from .....common.utils.exceptions import ForbiddenHTTPException, ServerErrorHTTP
 from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
 
 
-def check_for_duplicate_datasets(collection: Collection) -> defaultdict:
-    duplicate_assets = defaultdict(list)
+def check_for_duplicate_datasets(collection: Collection) -> bool:
+    """
+    Check if duplicate datasets are found. Return true on the first duplicate match.
+    :param collection:
+    :return: True if duplicates detected, otherwise return false.
+    """
     etags = []
     for dataset in collection.datasets:
         if not dataset.tombstone:
@@ -27,8 +29,8 @@ def check_for_duplicate_datasets(collection: Collection) -> defaultdict:
                 if etag not in etags:
                     etags.append(etag)
                 else:
-                    duplicate_assets[etag].append((dataset.id, _artifact.id))
-    return duplicate_assets
+                    return True
+    return False
 
 
 @dbconnect
