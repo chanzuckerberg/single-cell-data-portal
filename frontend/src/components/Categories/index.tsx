@@ -1,7 +1,7 @@
 // App dependencies
 import { FC } from "react";
 // Core dependencies
-import { CategoryView, OnFilterFn } from "src/common/hooks/useFacetedFilter";
+import { CategoryView, OnFilterFn } from "src/common/hooks/useCategoryFilter";
 import { Wrapper } from "./style";
 
 interface Props {
