@@ -2,6 +2,7 @@ import { interpolateYlOrRd } from "d3-scale-chromatic";
 import * as echarts from "echarts";
 import { useEffect, useRef, useState } from "react";
 import { CellTypeAndGenes, Gene } from "../../common/types";
+import { Container } from "./style";
 
 interface Props {
   cellTypes: CellTypeAndGenes[];
@@ -14,6 +15,10 @@ let isChartInitialized = false;
 
 const MAX_FIRST_PART_LENGTH_PX = 16;
 
+const HEAT_MAP_BASE_WIDTH_PX = 500;
+const HEAT_MAP_BASE_HEIGHT_PX = 300;
+const HEAT_MAP_BASE_CELL_PX = 20;
+
 export default function HeatMap({
   cellTypes,
   data,
@@ -21,7 +26,18 @@ export default function HeatMap({
 }: Props): JSX.Element {
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const [isEchartGLAvailable, setIsEchartGLAvailable] = useState(false);
+  const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(genes));
+  const [heatmapHeight, setHeatmapHeight] = useState(
+    getHeatmapHeight(cellTypes)
+  );
+
   const ref = useRef(null);
+
+  // Update heatmap size
+  useEffect(() => {
+    setHeatmapWidth(getHeatmapWidth(genes));
+    setHeatmapHeight(getHeatmapHeight(cellTypes));
+  }, [cellTypes, genes]);
 
   // Import echarts-gl
   useEffect(() => {
@@ -48,26 +64,13 @@ export default function HeatMap({
     const allGeneNames = genes.map((gene) => gene.name);
 
     chart.setOption({
-      dataZoom: [
-        {
-          type: "inside",
-          xAxisIndex: 0,
-        },
-        {
-          type: "inside",
-          yAxisIndex: 0,
-        },
-        {
-          type: "slider",
-        },
-      ],
       dataset: {
         source: dataToChartFormat(data, cellTypes, genes),
       },
       grid: {
-        bottom: "10%",
+        bottom: "100px",
         containLabel: true,
-        left: "0",
+        left: "100px",
         top: "0",
       },
       large: true,
@@ -78,14 +81,14 @@ export default function HeatMap({
             y: "cellTypeIndex",
           },
           itemStyle: {
-            color(props) {
+            color(props: { data: { meanExpression: number } }) {
               const { meanExpression } = props.data;
 
               return interpolateYlOrRd(meanExpression);
             },
           },
           name: "wmg",
-          symbolSize: function (props) {
+          symbolSize: function (props: { percentage: number }) {
             const { percentage } = props;
 
             return Math.round(MAX_FIRST_PART_LENGTH_PX * percentage);
@@ -94,7 +97,7 @@ export default function HeatMap({
         },
       ],
       tooltip: {
-        formatter(props) {
+        formatter(props: { name: string; data: ChartFormat }) {
           const { name, data } = props;
           const { geneIndex, percentage, meanExpression } = data;
 
@@ -139,15 +142,22 @@ export default function HeatMap({
     });
   }, [chart, isEchartGLAvailable, cellTypes, data, genes]);
 
+  // Resize heatmap
+  useEffect(() => {
+    chart?.resize();
+  }, [chart, heatmapHeight, heatmapWidth]);
+
   return (
-    <div
-      style={{
-        height: "850px",
-        width: "2000px",
-      }}
-      ref={ref}
-      id={ELEMENT_ID}
-    />
+    <Container>
+      <div
+        style={{
+          height: heatmapHeight + "px",
+          width: heatmapWidth + "px",
+        }}
+        ref={ref}
+        id={ELEMENT_ID}
+      />
+    </Container>
   );
 }
 
@@ -189,4 +199,12 @@ function dataToChartFormat(
       }
     );
   }
+}
+
+function getHeatmapWidth(genes: Gene[]): number {
+  return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
+}
+
+function getHeatmapHeight(cellTypes: CellTypeAndGenes[]): number {
+  return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }

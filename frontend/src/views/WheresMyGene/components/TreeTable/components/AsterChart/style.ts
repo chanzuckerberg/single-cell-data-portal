@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { SQUARE_LENGTH_PX } from "../../common/constants";
 
 const MAX_FIRST_PART_LENGTH_PX = 16;
-const MAX_SECOND_PART_LENGTH_PX = 14;
 
 interface AsterChartProps {
   colorValue: number;

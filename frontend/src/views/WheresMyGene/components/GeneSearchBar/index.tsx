@@ -6,9 +6,13 @@ import {
 } from "@blueprintjs/select";
 import { forwardRef, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
+import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { API_URL } from "src/configs/configs";
 import { Gene } from "../../common/types";
 import GENES from "../../mocks/lung_tissue_genes.json";
+import { Container } from "./style";
 
 interface Props {
   onGenesChange: (selectedGenes: Gene[]) => void;
@@ -20,25 +24,27 @@ interface ExtendedItemRendererProps extends IItemRendererProps {
 }
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
+  const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
   // DEBUG
   // DEBUG
   // DEBUG
   // DEBUG
   // TEST 100 genes
-  const [selectedGenes, setSelectedGenes] = useState<Gene[]>(
-    GENES.slice(0, 30)
-  );
-  // const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
-  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState("30");
 
   useEffect(() => {
     fetchGenes();
 
     async function fetchGenes(): Promise<void> {
       const response = await fetch(
-        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
+        API_URL + API.WMG_GENES,
+        DEFAULT_FETCH_OPTIONS
       );
+
+      // const response = await fetch(
+      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
+      // );
 
       const allGenes = await response.json();
 
@@ -57,7 +63,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   }, [input]);
 
   return (
-    <>
+    <Container>
       <label htmlFor="first-n-genes">Select first N genes</label>
       <input id="first-n-genes" onChange={handleInputChange} value={input} />
       <MultiSelect
@@ -71,7 +77,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
         selectedItems={selectedGenes}
         itemListRenderer={itemListRenderer}
       />
-    </>
+    </Container>
   );
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -202,3 +208,6 @@ function areGenesEqual(geneA: Gene, geneB: Gene) {
   // Compare only the names (ignoring case) just for simplicity.
   return geneA.id.toLowerCase() === geneB.id.toLowerCase();
 }
+
+// dp/v1/wmg/cell_types
+// dp/v1/wmg/cell_types
