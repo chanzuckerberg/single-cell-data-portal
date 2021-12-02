@@ -1,3 +1,4 @@
+import { CellValue, Row } from "react-table";
 import { Collection, IS_PRIMARY_DATA, Ontology } from "src/common/entities";
 
 /* Filterable metadata keys */
@@ -14,6 +15,8 @@ export enum CATEGORY_KEY {
 /* Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups */
 export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
+export type CellPropsValue = { value: CellValue<string[]> }; // TODO(cc)
+
 /* Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
    datasets grouped by collection. */
 export interface FilterableCollection extends FilterableDataset {
@@ -27,7 +30,7 @@ export interface FilterableCollection extends FilterableDataset {
 }
 
 export type FilterableCollectionDataset = FilterableDataset &
-  FilterableCollection;
+  FilterableCollection; // TODO(cc)
 
 /* Join of dataset and collection information, optimized for filtering datasets */
 export interface FilterableDataset {
@@ -48,3 +51,5 @@ export interface FilterableDataset {
   sex: Ontology[];
   tissue: Ontology[];
 }
+
+export type RowPropsValue = { row: Row<FilterableCollectionDataset> }; // TODO(cc)
