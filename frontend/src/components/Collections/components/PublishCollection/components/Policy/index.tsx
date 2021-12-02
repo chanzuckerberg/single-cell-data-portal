@@ -45,8 +45,8 @@ const Policy: FC = () => {
 
   return (
     <Wrapper>
-      By clicking publish, you agree to cellxgene&#39;s data submission
-      policies.
+      By publishing this collection, you agree to cellxgene&#39;s data
+      submission policies.
       <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
         {isOpen ? "Hide" : "Show"} Details
       </Button>
