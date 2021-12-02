@@ -1,10 +1,10 @@
 import { TableInstance } from "react-table";
-import { FilterableCollectionDataset } from "src/components/common/Filter/common/entities";
+import { CollectionRow } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
 
 interface Props {
   className?: string; // TODO(cc) review type
-  tableInstance: TableInstance<FilterableCollectionDataset>;
+  tableInstance: TableInstance<CollectionRow>;
 }
 
 export default function Grid({ className, tableInstance }: Props): JSX.Element {

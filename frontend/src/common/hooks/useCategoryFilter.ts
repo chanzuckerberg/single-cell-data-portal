@@ -4,7 +4,7 @@ import { Filters, FilterValue, Row } from "react-table";
 import {
   CategoryKey,
   CATEGORY_KEY,
-  FilterableDataset,
+  DatasetRow,
 } from "src/components/common/Filter/common/entities";
 
 // Metadata values grouped by metadata key.
@@ -70,7 +70,7 @@ export type NonOntologyCategoryKey = keyof Pick<
 // Identical queries can be shared by categories to reduce the number of result set filtering.
 interface Query {
   categoryKeys: CategoryKey[];
-  filters: Filters<FilterableDataset>;
+  filters: Filters<DatasetRow>;
 }
 
 // Function invoked when selected state of a category value is toggled.
@@ -82,7 +82,7 @@ export type OnFilterFn = (
 // TODO(cc) check re-renders (5?)
 
 /**
- * Collections and datasets metadata faceted filter functionality. "or" between values, "and" across categories.
+ * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
@@ -91,9 +91,9 @@ export type OnFilterFn = (
  * @returns Object containing filter accessor (view model of filter state) and filter mutator (function to modify react-
  * table's internal filter state).
  */
-export function useFacetedFilter(
-  originalRows: Row<FilterableDataset>[],
-  filters: Filters<FilterableDataset>,
+export function useCategoryFilter(
+  originalRows: Row<DatasetRow>[],
+  filters: Filters<DatasetRow>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter.
   setFilter: (columnId: string, updater: any) => void,
   groupById: string
@@ -157,7 +157,7 @@ export function useFacetedFilter(
  */
 function addEmptyCategoryValues(
   nextFilterState: FilterState,
-  filters: Filters<FilterableDataset>,
+  filters: Filters<DatasetRow>,
   categorySet: CategorySet
 ) {
   // Check filter state for each category for missing (empty) category values.
@@ -197,12 +197,12 @@ function addEmptyCategoryValues(
  * @param originalRows - Original result set before filtering.
  * @returns Sets of category values keyed by their category.
  */
-function buildCategorySet(originalRows: Row<FilterableDataset>[]): CategorySet {
+function buildCategorySet(originalRows: Row<DatasetRow>[]): CategorySet {
   // Build up category values for each category
   return Object.values(CATEGORY_KEY).reduce(
     (accum: CategorySet, categoryKey: CategoryKey) => {
       // Check category value for this category, in every row.
-      originalRows.forEach((originalRow: Row<FilterableDataset>) => {
+      originalRows.forEach((originalRow: Row<DatasetRow>) => {
         // Grab the category values already added for this category, create new set if it hasn't already been created.
         let categoryValueSet = accum[categoryKey];
         if (!categoryValueSet) {
@@ -270,8 +270,8 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState(
-  originalRows: Row<FilterableDataset>[],
-  filters: Filters<FilterableDataset>,
+  originalRows: Row<DatasetRow>[],
+  filters: Filters<DatasetRow>,
   categorySet: CategorySet,
   groupById: string
 ): FilterState {
@@ -303,7 +303,7 @@ function buildNextFilterState(
  */
 function flagSelectedCategoryValues(
   nextFilterState: FilterState,
-  filters: Filters<FilterableDataset>
+  filters: Filters<DatasetRow>
 ) {
   // Build convenience set of selected keys; interpolated category key and category value key.
   const filterKeys = filters.reduce((accum, filter) => {
@@ -334,7 +334,7 @@ function flagSelectedCategoryValues(
  */
 function getCategoryFilter(
   categoryKey: CategoryKey,
-  filters: Filters<FilterableDataset>
+  filters: Filters<DatasetRow>
 ): CategoryFilter | undefined {
   return filters.find((filter) => filter.id === categoryKey);
 }
@@ -347,14 +347,14 @@ function getCategoryFilter(
  * @returns Filtered array of rows.
  */
 function includesSome(
-  originalRows: Row<FilterableDataset>[],
+  originalRows: Row<DatasetRow>[],
   filters: CategoryFilter[]
-): Row<FilterableDataset>[] {
+): Row<DatasetRow>[] {
   // Return all rows if there are no filters.
   if (filters.length === 0) {
     return originalRows;
   }
-  return originalRows.filter((row: Row<FilterableDataset>) => {
+  return originalRows.filter((row: Row<DatasetRow>) => {
     // "and" across categories.
     return filters.every((filter: CategoryFilter) => {
       const rowValue = row.values[filter.id];
@@ -374,7 +374,7 @@ function includesSome(
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of query models representing of the selected filters applicable for each category.
  */
-function buildQueries(filters: Filters<FilterableDataset>): Query[] {
+function buildQueries(filters: Filters<DatasetRow>): Query[] {
   return Object.values(CATEGORY_KEY).reduce(
     (accum: Query[], categoryKey: CategoryKey) => {
       // Determine the filters that are applicable to this category.
@@ -407,8 +407,8 @@ function buildQueries(filters: Filters<FilterableDataset>): Query[] {
  * @param filters1 - Second filter to compare.
  */
 function isFilterEqual(
-  filters0: Filters<FilterableDataset>,
-  filters1: Filters<FilterableDataset>
+  filters0: Filters<DatasetRow>,
+  filters1: Filters<DatasetRow>
 ): boolean {
   return (
     filters0.length === filters1.length &&
@@ -426,7 +426,7 @@ function isFilterEqual(
 function buildNextCategoryFilters(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey,
-  filters: Filters<FilterableDataset>
+  filters: Filters<DatasetRow>
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryKey, filters);
@@ -487,16 +487,13 @@ function sortCategoryValueViews(
  */
 function summarizeCategory(
   categoryKey: CategoryKey,
-  filteredRows: Row<FilterableDataset>[],
+  filteredRows: Row<DatasetRow>[],
   groupById: string
 ): Map<CategoryValueKey, CategoryValue> {
   // Aggregate category value counts for each row.
   return filteredRows.reduce(
-    (
-      accum: Map<CategoryValueKey, CategoryValue>,
-      row: Row<FilterableDataset>
-    ) => {
-      // Grab the value of the category for this filterable dataset, convert to array if it isn't already (for example,
+    (accum: Map<CategoryValueKey, CategoryValue>, row: Row<DatasetRow>) => {
+      // Grab the value of the category for this dataset row, convert to array if it isn't already (for example,
       // is_primary_data).
       const rawCategoryValue = row.values[categoryKey];
       const categoryValueKeys = Array.isArray(rawCategoryValue)
@@ -535,7 +532,7 @@ function summarizeCategory(
  * and category value selected states are added after this initial structure is built.
  */
 function summarizeCategories(
-  originalRows: Row<FilterableDataset>[],
+  originalRows: Row<DatasetRow>[],
   queries: Query[],
   groupById: string
 ): FilterState {
