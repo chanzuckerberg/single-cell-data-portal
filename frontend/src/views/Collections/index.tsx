@@ -2,7 +2,6 @@ import Head from "next/head";
 import React, { useMemo, useState } from "react";
 import {
   AggregatorFn,
-  CellProps,
   CellValue,
   Column,
   Row,
@@ -11,6 +10,7 @@ import {
   useSortBy,
   useTable,
 } from "react-table";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -22,11 +22,17 @@ import {
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { fetchFilterableCollectionDatasets } from "src/common/queries/filterable-datasets";
 import Categories from "src/components/Categories";
-import FilteredCollectionsGrid from "src/components/Collections/components/Grid/components/FilteredCollectionsGrid";
+import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import {
   CATEGORY_KEY,
+  CellPropsValue,
   FilterableCollectionDataset,
+  RowPropsValue,
 } from "src/components/common/Filter/common/entities";
+import Cell from "src/components/common/Grid/components/Cell";
+import { GridHero } from "src/components/common/Grid/components/Hero";
+import LinkCell from "src/components/common/Grid/components/LinkCell";
+import NTagCell from "src/components/common/Grid/components/NTagCell";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 
@@ -61,12 +67,23 @@ export default function Collections(): JSX.Element {
       },
       // Collection name, aggregated across datasets to roll up into single value for each collection ID group.
       {
+        Cell: ({ row }: RowPropsValue) => {
+          return (
+            <LinkCell
+              data-test-id="collection-link"
+              url={ROUTES.COLLECTION.replace(":id", row.values.collection_id)}
+              value={row.values.collection_name[0]}
+            />
+          );
+        },
         Header: "Collection",
         accessor: COLLECTION_NAME,
         aggregate: aggregateFn(),
       },
       {
-        Cell: Cell,
+        Cell: ({ value }: CellPropsValue) => (
+          <NTagCell label={PluralizedMetadataLabel.TISSUE} values={value} />
+        ),
         Header: "Tissue",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.TISSUE),
         aggregate: aggregateFn(),
@@ -74,7 +91,9 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.TISSUE,
       },
       {
-        Cell: Cell,
+        Cell: ({ value }: CellPropsValue) => (
+          <NTagCell label={PluralizedMetadataLabel.DISEASE} values={value} />
+        ),
         Header: "Disease",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.DISEASE),
         aggregate: aggregateFn(),
@@ -82,7 +101,9 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.DISEASE,
       },
       {
-        Cell: Cell,
+        Cell: ({ value }: CellPropsValue) => (
+          <NTagCell label={PluralizedMetadataLabel.ASSAY} values={value} />
+        ),
         Header: "Assay",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         aggregate: aggregateFn(),
@@ -90,7 +111,9 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.ASSAY,
       },
       {
-        Cell: Cell, // TODO(cc) remove cell and header from hidden cols (same for datasets)
+        Cell: ({ value }: CellPropsValue) => (
+          <NTagCell label={PluralizedMetadataLabel.ORGANISM} values={value} />
+        ),
         Header: "Organism",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         aggregate: aggregateFn(),
@@ -98,7 +121,9 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.ORGANISM, // TODO(cc) check for `` in datasets
       },
       {
-        Cell: Cell,
+        Cell: ({ value }: CellPropsValue) => (
+          <NTagCell label={PluralizedMetadataLabel.CELL_TYPE} values={value} />
+        ), // TODO(cc) remove cell and header from hidden cols (same for datasets)
         Header: "Cell Type",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         aggregate: aggregateFn(),
@@ -136,10 +161,10 @@ export default function Collections(): JSX.Element {
         hiddenColumns: [
           COLLECTION_ID,
           COLUMN_ID_RECENCY,
-          // CATEGORY_KEY.ASSAY,
-          // CATEGORY_KEY.CELL_TYPE,
-          // CATEGORY_KEY.IS_PRIMARY_DATA,
-          // CATEGORY_KEY.SEX,
+          CATEGORY_KEY.ASSAY,
+          CATEGORY_KEY.CELL_TYPE,
+          CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.SEX,
         ],
         sortBy: [
           {
@@ -157,6 +182,7 @@ export default function Collections(): JSX.Element {
   // Filter init.
   const {
     preFilteredRows,
+    rows,
     setFilter,
     state: { filters },
   } = tableInstance;
@@ -189,7 +215,14 @@ export default function Collections(): JSX.Element {
         <Categories {...filterInstance} />
       </SideBar>
       <View>
-        <FilteredCollectionsGrid tableInstance={tableInstance} />
+        {!rows || rows.length === 0 ? (
+          <GridHero>
+            <h3>No Results</h3>
+            <p>There are no collections matching those filters.</p>
+          </GridHero>
+        ) : (
+          <CollectionsGrid tableInstance={tableInstance} />
+        )}
       </View>
     </>
   );
@@ -210,22 +243,6 @@ function aggregateFn(): AggregatorFn<FilterableCollectionDataset> {
   ) => {
     return [...new Set(rows.flat())];
   };
-}
-
-/**
- * Table cell component displaying multi-value cell values.
- * @param props - Cell-specific properties supplied from react-table.
- * @returns Array of DOM elements, one for each value in multi-value cell.
- */
-function Cell(
-  props: CellProps<FilterableCollectionDataset, string[]>
-): JSX.Element[] {
-  // TODO(cc) useMemo?
-  // TODO(cc) reuse with datasets
-  const {
-    cell: { value },
-  } = props;
-  return value.map((v: string) => <div key={v}>{v}</div>);
 }
 
 /**
