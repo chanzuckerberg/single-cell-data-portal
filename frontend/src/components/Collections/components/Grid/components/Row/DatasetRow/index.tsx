@@ -2,6 +2,7 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -159,6 +160,8 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
+  const isRDSSkipped = datasetStatus.rds_status === CONVERSION_STATUS.SKIPPED;
+
   return (
     <StyledRow>
       <DetailsCell>
@@ -183,10 +186,26 @@ const DatasetRow: FC<Props> = ({
           {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
         </TitleContainer>
       </DetailsCell>
-      <Popover values={tissue} isLoading={isMetadataLoading} />
-      <Popover values={assay} isLoading={isMetadataLoading} />
-      <Popover values={disease} isLoading={isMetadataLoading} />
-      <Popover values={organism} isLoading={isMetadataLoading} />
+      <Popover
+        label={PluralizedMetadataLabel.TISSUE}
+        values={tissue}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.ASSAY}
+        values={assay}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.DISEASE}
+        values={disease}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PluralizedMetadataLabel.ORGANISM}
+        values={organism}
+        isLoading={isMetadataLoading}
+      />
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
       <ActionCell>
         <ActionButtonsContainer>
@@ -210,6 +229,8 @@ const DatasetRow: FC<Props> = ({
               dataAssets={dataset?.dataset_assets}
               Button={DownloadButton}
               isDisabled={dataset.tombstone}
+              // isRDSSkipped is drilled 3 components down to `frontend/src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/index.tsx`
+              isRDSSkipped={isRDSSkipped}
             />
           </ActionButton>
 

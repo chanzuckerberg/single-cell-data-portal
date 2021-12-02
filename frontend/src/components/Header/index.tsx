@@ -11,7 +11,6 @@ import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
-  AuthButtonWrapper,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
@@ -49,9 +48,7 @@ const Header: FC = () => {
           <LearnButtonWrapper>
             <LearnButton />
           </LearnButtonWrapper>
-          <AuthButtonWrapper>
-            <AuthButtons />
-          </AuthButtonWrapper>
+          <AuthButtons />
         </Right>
       </MainWrapper>
     </Wrapper>

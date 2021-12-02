@@ -6,7 +6,6 @@ import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
   height: 48px;
-  margin-bottom: 24px;
   position: sticky;
   top: 0;
   width: 100%;
@@ -14,12 +13,11 @@ export const Wrapper = styled.div`
 `;
 
 export const MainWrapper = styled.div`
-  ${layout};
+  ${layout}
   align-items: center;
   display: flex;
   height: inherit; /* Take up full height of parent. */
   justify-content: space-between;
-  margin: 0 auto;
   padding: 0 16px;
 `;
 
@@ -41,7 +39,7 @@ const button = css`
     background: none;
     border-radius: 0;
     color: ${GRAY.D};
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     height: 23px;
     line-height: 15px;
@@ -58,8 +56,16 @@ const button = css`
   }
 `;
 
+const iconButton = css`
+  ${button}
+
+  .${Classes.ICON} {
+    color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
+  }
+`;
+
 export const LinkWrapper = styled.span`
-  ${button};
+  ${button}
 
   .${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.ACTIVE} {
     box-shadow: inset 0 -2px 0 ${Colors.WHITE} !important; /* Overrides specificity of BP button active box shadow rule. */
@@ -67,17 +73,14 @@ export const LinkWrapper = styled.span`
 `;
 
 export const LearnButtonWrapper = styled.span`
-  ${button};
+  ${iconButton}
 `;
 
 export const AuthButtonWrapper = styled.span`
-  ${button};
+  ${iconButton}
 
   .${Classes.BUTTON}.${Classes.MINIMAL} {
+    color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
     font-weight: 400; /* Overrides locally defined button font weight rule. */
-  }
-
-  .${Classes.BUTTON}.${Classes.MINIMAL}, .${Classes.ICON} {
-    color: ${Colors.WHITE}; /* Overrides locally defined button and BP button icon color rule. */
   }
 `;

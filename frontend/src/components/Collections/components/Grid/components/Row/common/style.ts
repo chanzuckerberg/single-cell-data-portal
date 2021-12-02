@@ -10,7 +10,9 @@ export const StyledCell = styled.td`
     :not(.${Classes.TAG}) {
       display: block;
     }
-    margin-top: ${PT_GRID_SIZE_PX / 2}px;
+    :not(.${Classes.POPOVER_WRAPPER}) {
+      margin-top: ${PT_GRID_SIZE_PX / 2}px;
+    }
   }
 `;
 
