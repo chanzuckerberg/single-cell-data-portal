@@ -5,6 +5,7 @@ import { FC, useEffect } from "react";
 import { VISIBILITY_TYPE } from "src/common/entities";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useCollections } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
 import Toast from "src/views/Collection/components/Toast";
 import CreateCollection from "../CreateCollectionModal";
 import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
@@ -31,6 +32,7 @@ const Collections: FC = () => {
       message:
         "This collection was withdrawn. You’ve been redirected to the cellxgene Data Portal homepage.",
     });
+    removeParams("tombstoned_collection_id");
   }, [tombstoned_collection_id]);
 
   if (isFetching && !collections) return <div>Loading collections...</div>;
