@@ -12,14 +12,14 @@ import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
   OntologyCategoryKey,
-  useFacetedFilter,
-} from "src/common/hooks/useFacetedFilter";
+  useCategoryFilter,
+} from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchFilterableDatasets } from "src/common/queries/filterable-datasets";
+import { fetchDatasetRows } from "src/common/queries/filterable-datasets";
 import Categories from "src/components/Categories";
 import {
   CATEGORY_KEY,
-  FilterableDataset,
+  DatasetRow,
 } from "src/components/common/Filter/common/entities";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 
@@ -37,12 +37,10 @@ const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
   // Filterable datasets joined from datasets index and collections index responses.
-  const [filterableDatasets] = useState<FilterableDataset[]>(
-    fetchFilterableDatasets()
-  );
+  const [filterableDatasets] = useState<DatasetRow[]>(fetchDatasetRows());
 
   // Column configuration backing table.
-  const columnConfig: Column<FilterableDataset>[] = useMemo(
+  const columnConfig: Column<DatasetRow>[] = useMemo(
     () => [
       // Hidden, ID column, required for "group by" functionality during category summarization. TODO(cc) revisit once collection functionality is confirmed.
       {
@@ -50,7 +48,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for sorting by recency.
       {
-        accessor: (dataset: FilterableDataset): number =>
+        accessor: (dataset: DatasetRow): number =>
           dataset.revised_at ?? dataset.published_at,
         id: COLUMN_ID_RECENCY,
       },
@@ -119,7 +117,7 @@ export default function Datasets(): JSX.Element {
   );
 
   // Table init
-  const tableInstance = useTable<FilterableDataset>(
+  const tableInstance = useTable<DatasetRow>(
     {
       columns: columnConfig,
       data: filterableDatasets,
@@ -151,7 +149,7 @@ export default function Datasets(): JSX.Element {
     state: { filters },
   } = tableInstance;
 
-  const filterInstance = useFacetedFilter(
+  const filterInstance = useCategoryFilter(
     preFilteredRows,
     filters,
     setFilter,
@@ -183,7 +181,7 @@ export default function Datasets(): JSX.Element {
  * @param props - Cell-specific properties supplied from react-table.
  * @returns Array of DOM elements, one for each value in multi-value cell.
  */
-function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
+function Cell(props: CellProps<DatasetRow, string[]>): JSX.Element[] {
   const {
     cell: { value },
   } = props;
@@ -195,9 +193,7 @@ function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
  * @param props - Cell-specific properties supplied from react-table.
  * @returns DOM element containing both the dataset and collection names.
  */
-function DatasetNameCell(
-  props: CellProps<FilterableDataset, string[]>
-): JSX.Element {
+function DatasetNameCell(props: CellProps<DatasetRow, string[]>): JSX.Element {
   return (
     <div>
       <div>{props.row.values.name}</div>
@@ -215,6 +211,5 @@ function DatasetNameCell(
  * @returns Function that returns value with the given key, to display in a cell.
  */
 function ontologyCellAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: FilterableDataset) =>
-    dataset[key].map((o: Ontology) => o.label);
+  return (dataset: DatasetRow) => dataset[key].map((o: Ontology) => o.label);
 }

@@ -17,16 +17,16 @@ import { FEATURES } from "src/common/featureFlags/features";
 import {
   NonOntologyCategoryKey,
   OntologyCategoryKey,
-  useFacetedFilter,
-} from "src/common/hooks/useFacetedFilter";
+  useCategoryFilter,
+} from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchFilterableCollectionDatasets } from "src/common/queries/filterable-datasets";
+import { fetchCollectionRows } from "src/common/queries/filterable-datasets";
 import Categories from "src/components/Categories";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import {
   CATEGORY_KEY,
   CellPropsValue,
-  FilterableCollectionDataset,
+  CollectionRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import Cell from "src/components/common/Grid/components/Cell";
@@ -47,12 +47,12 @@ const COLUMN_ID_RECENCY = "recency";
 
 export default function Collections(): JSX.Element {
   // Filterable collection datasets joined from datasets index and collections index responses.
-  const [filterableCollectionDatasets] = useState<
-    FilterableCollectionDataset[]
-  >(fetchFilterableCollectionDatasets());
+  const [filterableCollectionDatasets] = useState<CollectionRow[]>(
+    fetchCollectionRows()
+  );
 
   // Column configuration backing table.
-  const columnConfig: Column<FilterableCollectionDataset>[] = useMemo(
+  const columnConfig: Column<CollectionRow>[] = useMemo(
     () => [
       // Hidden, required for grouping datasets by collections
       {
@@ -61,7 +61,7 @@ export default function Collections(): JSX.Element {
       // Hidden, required for sorting TODO(cc) this should be for materialized collection row
       {
         // Sort by revised_at if specified otherwise published_at.
-        accessor: (dataset: FilterableCollectionDataset): number =>
+        accessor: (dataset: CollectionRow): number =>
           dataset.revised_at ?? dataset.published_at,
         id: COLUMN_ID_RECENCY,
       },
@@ -151,7 +151,7 @@ export default function Collections(): JSX.Element {
   );
 
   // Table init
-  const tableInstance = useTable<FilterableCollectionDataset>(
+  const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
       data: filterableCollectionDatasets,
@@ -186,7 +186,7 @@ export default function Collections(): JSX.Element {
     setFilter,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useFacetedFilter(
+  const filterInstance = useCategoryFilter(
     // @ts-expect-error -- TODO(cc) revisit
     preFilteredRows,
     filters,
@@ -234,13 +234,10 @@ export default function Collections(): JSX.Element {
  * collection level.
  * @returns Function that aggregates values across rows.
  */
-function aggregateFn(): AggregatorFn<FilterableCollectionDataset> {
+function aggregateFn(): AggregatorFn<CollectionRow> {
   // TODO(cc) can this just be the outside function?
   // @param rows - array containing all values in a single category/column for all datasets grouped by collection
-  return (
-    _columnValues: CellValue[],
-    rows: Array<Row<FilterableCollectionDataset>>
-  ) => {
+  return (_columnValues: CellValue[], rows: Array<Row<CollectionRow>>) => {
     return [...new Set(rows.flat())];
   };
 }
@@ -253,7 +250,7 @@ function aggregateFn(): AggregatorFn<FilterableCollectionDataset> {
  * @returns Function that returns the values with the given key.
  */
 function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
-  return (dataset: FilterableCollectionDataset) => dataset[`${key}Aggregated`];
+  return (dataset: CollectionRow) => dataset[`${key}Aggregated`];
 }
 
 /**
@@ -264,6 +261,6 @@ function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
  // * @returns Function that returns the array of ontology labels with the given key.
  */
 function aggregatedOntologyCellAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: FilterableCollectionDataset): string[] =>
+  return (dataset: CollectionRow): string[] =>
     dataset[`${key}Aggregated`].map((o: Ontology) => o.label);
 }

@@ -1,9 +1,9 @@
 import React from "react";
 import { CellProps } from "react-table";
-import { FilterableDataset } from "src/components/common/Filter/common/entities";
+import { DatasetRow } from "src/components/common/Filter/common/entities";
 
 export default function Cell(
-  props: CellProps<FilterableDataset, string[]>
+  props: CellProps<DatasetRow, string[]>
 ): JSX.Element[] {
   const {
     cell: { value },
