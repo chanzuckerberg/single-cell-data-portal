@@ -96,6 +96,10 @@ export const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
     return true;
   }
 
+  if (datasetStatus.processing_status === PROCESSING_STATUS.PENDING) {
+    return true;
+  }
+
   return false;
 };
 
