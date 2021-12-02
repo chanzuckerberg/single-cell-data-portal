@@ -1,6 +1,5 @@
 import sqlalchemy
 from typing import Optional
-
 from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
