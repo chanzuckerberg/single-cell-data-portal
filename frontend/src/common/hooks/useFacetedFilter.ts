@@ -1,7 +1,11 @@
 // Display-optimized structure of category and corresponding category values and counts.
 import { useCallback, useMemo, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
-import { FilterableDataset } from "src/components/common/Filter/common/entities";
+import {
+  CategoryKey,
+  CATEGORY_KEY,
+  FilterableDataset,
+} from "src/components/common/Filter/common/entities";
 
 // Metadata values grouped by metadata key.
 export interface CategoryView {
@@ -14,20 +18,6 @@ interface CategoryFilter {
   id: string;
   value: FilterValue;
 }
-
-// Filterable metadata key values
-export enum CATEGORY_KEY {
-  "ASSAY" = "assay",
-  "CELL_TYPE" = "cell_type",
-  "DISEASE" = "disease",
-  "IS_PRIMARY_DATA" = "is_primary_data",
-  "ORGANISM" = "organism",
-  "SEX" = "sex",
-  "TISSUE" = "tissue",
-}
-
-// Filterable metadata key. For example, "assay", "cell_type" or "is_primary_data".
-export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
 // Set of all category values in the full result set, keyed by their corresponding category.
 type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };

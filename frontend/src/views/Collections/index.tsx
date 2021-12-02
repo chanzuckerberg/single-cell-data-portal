@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   AggregatorFn,
   CellProps,
@@ -12,25 +12,23 @@ import {
   useTable,
 } from "react-table";
 import { ROUTES } from "src/common/constants/routes";
-import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
+import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
-  CategoryKey,
-  CATEGORY_KEY,
   NonOntologyCategoryKey,
   OntologyCategoryKey,
   useFacetedFilter,
 } from "src/common/hooks/useFacetedFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { fetchFilterableCollectionDatasets } from "src/common/queries/filterable-datasets";
 import Categories from "src/components/Categories";
 import FilteredCollectionsGrid from "src/components/Collections/components/Grid/components/FilteredCollectionsGrid";
 import {
-  FilterableCollection,
-  FilterableDataset,
+  CATEGORY_KEY,
+  FilterableCollectionDataset,
 } from "src/components/common/Filter/common/entities";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
-import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
 // Collection ID object key
 const COLLECTION_ID = "collection_id";
@@ -42,8 +40,13 @@ const COLLECTION_NAME = "collection_name";
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Collections(): JSX.Element {
+  // Filterable collection datasets joined from datasets index and collections index responses.
+  const [filterableCollectionDatasets] = useState<
+    FilterableCollectionDataset[]
+  >(fetchFilterableCollectionDatasets());
+
   // Column configuration backing table.
-  const columnConfig: Column<FilterableDataset>[] = useMemo(
+  const columnConfig: Column<FilterableCollectionDataset>[] = useMemo(
     () => [
       // Hidden, required for grouping datasets by collections
       {
@@ -51,7 +54,8 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for sorting TODO(cc) this should be for materialized collection row
       {
-        accessor: (dataset: FilterableDataset): number =>
+        // Sort by revised_at if specified otherwise published_at.
+        accessor: (dataset: FilterableCollectionDataset): number =>
           dataset.revised_at ?? dataset.published_at,
         id: COLUMN_ID_RECENCY,
       },
@@ -67,7 +71,7 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.TISSUE),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.TISSUE}`,
+        id: CATEGORY_KEY.TISSUE,
       },
       {
         Cell: Cell,
@@ -75,7 +79,7 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.DISEASE),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.DISEASE}`,
+        id: CATEGORY_KEY.DISEASE,
       },
       {
         Cell: Cell,
@@ -83,15 +87,15 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.ASSAY}`,
+        id: CATEGORY_KEY.ASSAY,
       },
       {
-        Cell: Cell,
+        Cell: Cell, // TODO(cc) remove cell and header from hidden cols (same for datasets)
         Header: "Organism",
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.ORGANISM}`,
+        id: CATEGORY_KEY.ORGANISM, // TODO(cc) check for `` in datasets
       },
       {
         Cell: Cell,
@@ -99,7 +103,7 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.CELL_TYPE}`,
+        id: CATEGORY_KEY.CELL_TYPE,
       },
       {
         Cell: Cell,
@@ -107,7 +111,7 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedCellAccessorFn(CATEGORY_KEY.IS_PRIMARY_DATA),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.IS_PRIMARY_DATA}`,
+        id: CATEGORY_KEY.IS_PRIMARY_DATA,
       },
       {
         Cell: Cell,
@@ -115,23 +119,17 @@ export default function Collections(): JSX.Element {
         accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.SEX),
         aggregate: aggregateFn(),
         filter: "includesSome",
-        id: `${CATEGORY_KEY.SEX}`,
+        id: CATEGORY_KEY.SEX,
       },
     ],
     []
   );
 
-  // Init collection-based filterable datasets.
-  const data: FilterableDataset[] = useMemo(
-    () => prepareData(filterableDatasets),
-    []
-  );
-
   // Table init
-  const tableInstance = useTable<FilterableDataset>(
+  const tableInstance = useTable<FilterableCollectionDataset>(
     {
       columns: columnConfig,
-      data,
+      data: filterableCollectionDatasets,
       initialState: {
         groupBy: [COLLECTION_ID],
         // Only display aggregated tissue, disease and organism values.
@@ -163,6 +161,7 @@ export default function Collections(): JSX.Element {
     state: { filters },
   } = tableInstance;
   const filterInstance = useFacetedFilter(
+    // @ts-expect-error -- TODO(cc) revisit
     preFilteredRows,
     filters,
     setFilter,
@@ -202,9 +201,13 @@ export default function Collections(): JSX.Element {
  * collection level.
  * @returns Function that aggregates values across rows.
  */
-function aggregateFn(): AggregatorFn<FilterableDataset> {
+function aggregateFn(): AggregatorFn<FilterableCollectionDataset> {
+  // TODO(cc) can this just be the outside function?
   // @param rows - array containing all values in a single category/column for all datasets grouped by collection
-  return (_columnValues: CellValue[], rows: Array<Row<FilterableDataset>>) => {
+  return (
+    _columnValues: CellValue[],
+    rows: Array<Row<FilterableCollectionDataset>>
+  ) => {
     return [...new Set(rows.flat())];
   };
 }
@@ -214,7 +217,9 @@ function aggregateFn(): AggregatorFn<FilterableDataset> {
  * @param props - Cell-specific properties supplied from react-table.
  * @returns Array of DOM elements, one for each value in multi-value cell.
  */
-function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
+function Cell(
+  props: CellProps<FilterableCollectionDataset, string[]>
+): JSX.Element[] {
   // TODO(cc) useMemo?
   // TODO(cc) reuse with datasets
   const {
@@ -231,9 +236,7 @@ function Cell(props: CellProps<FilterableDataset, string[]>): JSX.Element[] {
  * @returns Function that returns the values with the given key.
  */
 function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
-  return (dataset: FilterableDataset) =>
-    // @ts-expect-error -- TODO(cc) update filterableCollection to be required
-    dataset.filterableCollection[`${key}Aggregated`];
+  return (dataset: FilterableCollectionDataset) => dataset[`${key}Aggregated`];
 }
 
 /**
@@ -244,113 +247,6 @@ function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
  // * @returns Function that returns the array of ontology labels with the given key.
  */
 function aggregatedOntologyCellAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: FilterableDataset): string[] => {
-    // @ts-expect-error -- TODO(cc) update filterableCollection to be required
-    return dataset.filterableCollection?.[`${key}Aggregated`].map(
-      (o: Ontology) => o.label
-    );
-  };
-}
-
-/**
- * Group filterable datasets by collection.
- * @param filterableDatasets - Array of filterable datasets to group by their collection ID.
- * @returns Map of filterable datasets key by collection ID.
- */
-function groupDatasetsByCollection(
-  filterableDatasets: FilterableDataset[]
-): Map<string, FilterableDataset[]> {
-  return filterableDatasets.reduce(
-    (accum: Map<string, FilterableDataset[]>, filterableDataset) => {
-      const datasetsByCollectionId = accum.get(filterableDataset.collection_id);
-      if (datasetsByCollectionId) {
-        datasetsByCollectionId.push(filterableDataset);
-      } else {
-        accum.set(filterableDataset.collection_id, [filterableDataset]);
-      }
-      return accum;
-    },
-    new Map<string, FilterableDataset[]>()
-  );
-}
-
-/**
- * Create filterable collections from aggregated dataset category values and add to each dataset in collection.
- * @param filterableDatasets - Filterable datasets to create filterable collections from.
- * @returns Array of updated filterable datasets, containing pointers to their corresponding filterable collections.
- */
-function prepareData(
-  filterableDatasets: FilterableDataset[]
-): FilterableDataset[] {
-  // Group datasets by collection to facilitate aggregation of dataset metadata per collection.
-  const datasetsByCollectionId = groupDatasetsByCollection(filterableDatasets);
-
-  // Aggregate metadata for each collection and update on each dataset.
-  const groupedFilterableDatasets = [...datasetsByCollectionId.values()].map(
-    (filterableDatasets: FilterableDataset[]) => {
-      // Create model of collection category values by aggregating the values in each category of each dataset in
-      // collection.
-      const filterableCollection =
-        createFilterableCollection(filterableDatasets);
-
-      // Add aggregated collection category values to each dataset
-      return filterableDatasets.map((filterableDataset: FilterableDataset) => ({
-        ...filterableDataset,
-        filterableCollection,
-      }));
-    }
-  );
-
-  // Flatten the array of filterable datasets array.
-  return groupedFilterableDatasets.flat();
-}
-
-/**
- * Create model of collection category values by aggregating the values in each category of each dataset in collection.
- * @param filterableDatasets - Datasets in the collection to aggregate category values over.
- * @returns Collection object containing aggregated category values from given filterable datasets.
- */
-function createFilterableCollection(
-  filterableDatasets: FilterableDataset[]
-): FilterableCollection {
-  return Object.values(CATEGORY_KEY).reduce(
-    (accum: FilterableCollection, categoryKey: CategoryKey) => {
-      // @ts-expect-error -- TODO(cc) revisit
-      accum[`${categoryKey}Aggregated`] = aggregateCategory(
-        categoryKey,
-        filterableDatasets
-      );
-      return accum;
-    },
-    {} as FilterableCollection
-  );
-}
-
-/**
- * Determine the set of category values that exist in the given datasets for the given category.
- * @param categoryKey - Key of the category to aggregate values of.
- * @param filterableDatasets - Datasets to aggregate category values of.
- * @returns Array of aggregated category values for the given category.
- */
-function aggregateCategory(
-  categoryKey: CategoryKey,
-  filterableDatasets: FilterableDataset[]
-): (Ontology | IS_PRIMARY_DATA)[] {
-  // TODO(cc) return type
-  const categoryValuesSet = filterableDatasets.reduce(
-    (
-      accum: Set<Ontology | IS_PRIMARY_DATA>,
-      filterableDataset: FilterableDataset
-    ) => {
-      const categoryValue = filterableDataset[categoryKey];
-      if (!Array.isArray(categoryValue)) {
-        accum.add(categoryValue);
-      } else {
-        categoryValue.forEach((categoryValue) => accum.add(categoryValue));
-      }
-      return accum;
-    },
-    new Set<Ontology | IS_PRIMARY_DATA>()
-  );
-  return [...categoryValuesSet];
+  return (dataset: FilterableCollectionDataset): string[] =>
+    dataset[`${key}Aggregated`].map((o: Ontology) => o.label);
 }
