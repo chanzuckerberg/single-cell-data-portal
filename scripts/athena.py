@@ -138,7 +138,6 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
                 "browser_downloads": 0,
                 "total_downloads": 0,
                 "h5ad_downloads": 0,
-                "loom_downloads": 0,
                 "seurat_downloads": 0,
             }
         dataset_metrics = metadata_by_dataset[dataset_index]
@@ -149,8 +148,6 @@ def get_query_results(client, query_id, dataset_name_by_s3_uri, collection_id_by
 
                 if "h5ad" in metadata.get("VarCharValue"):
                     dataset_metrics["h5ad_downloads"] += 1
-                elif "loom" in metadata.get("VarCharValue"):
-                    dataset_metrics["loom_downloads"] += 1
                 elif "rds" in metadata.get("VarCharValue"):
                     dataset_metrics["seurat_downloads"] += 1
 

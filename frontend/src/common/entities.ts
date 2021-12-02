@@ -76,6 +76,7 @@ export interface Collection {
   updated_at: number;
   has_revision: boolean;
   revision_diff: boolean;
+  tombstone?: boolean;
 }
 
 export type Ontology = {
@@ -178,6 +179,7 @@ export enum CONVERSION_STATUS {
   CONVERTING = "CONVERTING",
   CONVERTED = "CONVERTED",
   FAILED = "FAILED",
+  SKIPPED = "SKIPPED",
   NA = "NA",
 }
 
@@ -195,9 +197,9 @@ export interface DatasetUploadStatus {
   upload_progress: number;
   validation_status: VALIDATION_STATUS;
   validation_message: string;
-  conversion_anndata_status: CONVERSION_STATUS;
-  conversion_cxg_status: CONVERSION_STATUS;
-  conversion_rds_status: CONVERSION_STATUS;
+  h5ad_status: CONVERSION_STATUS;
+  cxg_status: CONVERSION_STATUS;
+  rds_status: CONVERSION_STATUS;
 }
 
 export interface GeneSet {

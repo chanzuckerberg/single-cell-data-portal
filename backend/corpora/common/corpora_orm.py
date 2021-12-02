@@ -122,6 +122,11 @@ class AuditMixin(object):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
 
+class TimestampMixin(object):
+    published_at = Column(DateTime, nullable=True)
+    revised_at = Column(DateTime, nullable=True)
+
+
 Base = declarative_base(cls=TransformingBase)
 
 
@@ -192,13 +197,12 @@ class DatasetArtifactFileType(enum.Enum):
 
     H5AD - An AnnData object describing an expression matrix. Uses the .h5ad extension.
     RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
-    LOOM - A AnnData object describing an expression matrix. Uses the .loom extension.
+    LOOM - Removed. No longer supported. (#1427)
     CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
     """
 
     H5AD = "h5ad"
     RDS = "rds"
-    LOOM = "loom"
     CXG = "cxg"
 
 
@@ -214,7 +218,7 @@ class DatasetArtifactType(enum.Enum):
     REMIX = "Remix"
 
 
-class DbCollection(Base, AuditMixin):
+class DbCollection(Base, AuditMixin, TimestampMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
     DbCollections are associated with one or more single-cell datasets and links to external repositories.
@@ -230,7 +234,7 @@ class DbCollection(Base, AuditMixin):
     obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
-    data_submission_policy_version = Column(StrippedString, nullable=False)
+    data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
 
     # Relationships
@@ -267,7 +271,7 @@ class DbProjectLink(Base, AuditMixin):
 DbCollectionLink = DbProjectLink
 
 
-class DbDataset(Base, AuditMixin):
+class DbDataset(Base, AuditMixin, TimestampMixin):
     """
     Models a single experiment uploaded and processed by Corpora.
     Describes experiment metadata such as specimen and assay data.
@@ -386,14 +390,20 @@ class ConversionStatus(enum.Enum):
     NA - No associated conversion with the dataset, perhaps because the uploaded dataset file
          was already in this format.
     CONVERTING = The conversion script is running
-    CONVERTED - Conversion completed and the file was copied to the portal's bucket
+    CONVERTED - Conversion completed
+    UPLOADING - The file is being uploaded to the S3 artifact bucket
+    UPLOADED - The file was successfully uploaded to the S3 artifact bucket and the dataset artifact was updated
     FAILED - Conversion failed
+    SKIPPED - Conversion not attempted, likely due to known incompatibilities (e.g., exceeds Seurat size limit)
     """
 
     NA = "N/A"
     CONVERTING = "Converting"
     CONVERTED = "Converted"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
     FAILED = "Failed"
+    SKIPPED = "Skipped"
 
 
 class ProcessingStatus(enum.Enum):
@@ -423,10 +433,9 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
     upload_message = Column(String)
     validation_status = Column(Enum(ValidationStatus))
     validation_message = Column(String)
-    conversion_loom_status = Column(Enum(ConversionStatus))
-    conversion_rds_status = Column(Enum(ConversionStatus))
-    conversion_cxg_status = Column(Enum(ConversionStatus))
-    conversion_anndata_status = Column(Enum(ConversionStatus))
+    rds_status = Column(Enum(ConversionStatus))
+    cxg_status = Column(Enum(ConversionStatus))
+    h5ad_status = Column(Enum(ConversionStatus))
     processing_status = Column(Enum(ProcessingStatus))
 
     # Relationships

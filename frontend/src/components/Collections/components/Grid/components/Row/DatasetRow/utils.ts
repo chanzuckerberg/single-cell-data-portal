@@ -96,6 +96,10 @@ export const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
     return true;
   }
 
+  if (datasetStatus.processing_status === PROCESSING_STATUS.PENDING) {
+    return true;
+  }
+
   return false;
 };
 
@@ -126,15 +130,12 @@ export function useCheckCollectionPopulated({
   });
 }
 
-type FORMAT_KEYS =
-  | "conversion_anndata_status"
-  | "conversion_cxg_status"
-  | "conversion_rds_status";
+type FORMAT_KEYS = "h5ad_status" | "cxg_status" | "rds_status";
 
 const CONVERSION_STATUS_FORMAT_KEYS = [
-  "conversion_anndata_status",
-  "conversion_cxg_status",
-  "conversion_rds_status",
+  "h5ad_status",
+  "cxg_status",
+  "rds_status",
 ] as FORMAT_KEYS[];
 
 export function useCheckCollectionFormatsPopulated({
@@ -230,17 +231,9 @@ export function getConversionStatus(
 ): CONVERSION_STATUS {
   if (!datasetStatus) return CONVERSION_STATUS.NA;
 
-  const {
-    conversion_anndata_status,
-    conversion_cxg_status,
-    conversion_rds_status,
-  } = datasetStatus;
+  const { h5ad_status, cxg_status, rds_status } = datasetStatus;
 
-  const statuses = [
-    conversion_anndata_status,
-    conversion_cxg_status,
-    conversion_rds_status,
-  ];
+  const statuses = [h5ad_status, cxg_status, rds_status];
 
   if (statuses.some((status) => status === CONVERSION_STATUS.CONVERTING)) {
     return CONVERSION_STATUS.CONVERTING;
@@ -250,7 +243,11 @@ export function getConversionStatus(
     return CONVERSION_STATUS.FAILED;
   }
 
-  if (statuses.every((status) => status === CONVERSION_STATUS.CONVERTED)) {
+  if (
+    statuses.every((status) =>
+      [CONVERSION_STATUS.CONVERTED, CONVERSION_STATUS.SKIPPED].includes(status)
+    )
+  ) {
     return CONVERSION_STATUS.CONVERTED;
   }
 

@@ -86,21 +86,15 @@ class BaseFunctionalTestCase(unittest.TestCase):
             data = json.loads(res.content)
             upload_status = data["upload_status"]
             if upload_status == "UPLOADED":
-                conversion_cxg_status = data.get("conversion_cxg_status")
-                conversion_loom_status = data.get("conversion_loom_status")
-                conversion_rds_status = data.get("conversion_rds_status")
-                conversion_anndata_status = data.get("conversion_anndata_status")
-                if (
-                    conversion_cxg_status
-                    == conversion_loom_status
-                    == conversion_rds_status
-                    == conversion_anndata_status
-                    == "CONVERTED"
-                ):
+                cxg_status = data.get("cxg_status")
+                rds_status = data.get("rds_status")
+                h5ad_status = data.get("h5ad_status")
+                processing_status = data.get("processing_status")
+                if cxg_status == rds_status == h5ad_status == "UPLOADED" and processing_status == "SUCCESS":
                     keep_trying = False
-            if time.time() >= timer + 300:
+            if time.time() >= timer + 600:
                 raise TimeoutError(
-                    f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_uuid}"
                 )
             time.sleep(10)
         return dataset_uuid

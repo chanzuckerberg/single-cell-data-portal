@@ -18,10 +18,9 @@ class BogusProcessingStatusParams:
             upload_status=UploadStatus.UPLOADING,
             upload_progress=1 / 9,
             validation_status=ValidationStatus.NA,
-            conversion_loom_status=ConversionStatus.NA,
-            conversion_rds_status=ConversionStatus.NA,
-            conversion_cxg_status=ConversionStatus.NA,
-            conversion_anndata_status=ConversionStatus.NA,
+            rds_status=ConversionStatus.NA,
+            cxg_status=ConversionStatus.NA,
+            h5ad_status=ConversionStatus.NA,
         )
         bogus_data.update(**kwargs)
         return bogus_data

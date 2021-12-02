@@ -39,7 +39,6 @@ class MockOauthApp:
             sub="test_user_id",
             id="test_user_id",
             email="fake_user@email.com",
-            is_authenticated=True,
             email_verified=True,
         )
 

@@ -18,7 +18,7 @@ const MyCollections: FC = () => {
   if (!collections) return null;
 
   // This prop is drilled down two levels to CollectionRow
-  const revisionsEnabled = get(FEATURES.REVISION) === BOOLEAN.TRUE;
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
   return (
     <>
@@ -34,7 +34,7 @@ const MyCollections: FC = () => {
         <CollectionsGrid
           collections={collections}
           accessType={ACCESS_TYPE.WRITE}
-          revisionsEnabled={revisionsEnabled}
+          revisionsEnabled={isCurator}
         />
       </ViewGrid>
     </>

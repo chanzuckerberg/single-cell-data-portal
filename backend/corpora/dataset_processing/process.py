@@ -12,10 +12,9 @@ The initial processing_status when the container first runs is:
     upload_message = ""
     validation_status = ValidationStatus
     validation_message = ""
-    conversion_loom_status = ConversionStatus
-    conversion_rds_status = ConversionStatus
-    conversion_cxg_status = ConversionStatus
-    conversion_anndata_status = ConversionStatus
+    rds_status = ConversionStatus
+    cxg_status = ConversionStatus
+    h5ad_status = ConversionStatus
 }
 
 ## Upload
@@ -59,10 +58,9 @@ If validation succeeds the process_status changes to:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus.VALID
-    conversion_loom_status = ConversionStatus.CONVERTING
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTING
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.CONVERTING
+    h5ad_status = ConversionStatus.CONVERTING
 }
 
 If validation fails the processing_status change to:
@@ -70,20 +68,23 @@ If validation fails the processing_status change to:
     processing_status = ProcessingStatus.FAILURE
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
-    validation_status = ValidationStatus.FAILED
+    validation_status = ValidationStatus.FAILED,
+    h5ad_status = ConversionStatus.CONVERTED
 }
 
 ## Conversion
-After each conversion the processing_status change from CONVERTING to CONVERTED. Cellxgene data is converted first.
+As each conversion is started the status for the file format is set to CONVERTING then CONVERTED if the conversion
+completes successfully. The status is then set to UPLOADING while the file is copied to s3 and UPLOADED on success.
+ Cellxgene data is converted/uploaded first. The h5ad_status is set to CONVERTED after validation/label writing is
+ complete.
 {
     processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.CONVERTING
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.CONVERTING
+    cxg_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.CONVERTED
 }
 
 If a conversion fails the processing_status will indicated it as follow:
@@ -92,50 +93,50 @@ If a conversion fails the processing_status will indicated it as follow:
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
-    conversion_rds_status = ConversionStatus.CONVERTING
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.CONVERTING
+    rds_status = ConversionStatus.FAILED
+    cxg_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.UPLOADED
 }
 
-Once all conversion are complete, the conversion status for each file will be either CONVERTED or FAILED:
+Once all conversion are complete, the conversion status for each file will be either UPLOADED or FAILED:
 {
     processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
     validation_status = ValidationStatus
-    conversion_loom_status = ConversionStatus.FAILED
-    conversion_rds_status = ConversionStatus.CONVERTED
-    conversion_cxg_status = ConversionStatus.CONVERTED
-    conversion_anndata_status = ConversionStatus.FAILED
+    rds_status = ConversionStatus.FAILED
+    cxg_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.UPLOADED
 }
 """
 
 import logging
 import os
-import requests
 import subprocess
+import sys
 import typing
+from datetime import datetime
 from os.path import join
 
 import numpy
+import requests
 import scanpy
-import sys
 
 from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ValidationFailed, ProcessingCancelled
 from backend.corpora.common.corpora_orm import (
-    DatasetArtifactFileType,
     ConversionStatus,
-    ValidationStatus,
-    ProcessingStatus,
+    DatasetArtifactFileType,
     DatasetArtifactType,
+    ProcessingStatus,
+    ValidationStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.db_helpers import processing_status_updater
+from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.utils.dl_sources.url import from_url
+from backend.corpora.common.utils.s3_buckets import s3_client
 from backend.corpora.dataset_processing.download import download
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 from backend.corpora.dataset_processing.slack import format_slack_message
 
@@ -147,10 +148,12 @@ logging.basicConfig(level=logging.INFO)
 DEPLOYMENT_STAGE_TO_URL = {
     "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
     "prod": "https://cellxgene.cziscience.com/e",
-    "rdev": os.environ.get("FRONTEND_URL"),
+    "rdev": f"https:/{os.environ.get('REMOTE_DEV_PREFIX')}-explorer.rdev.single-cell.czi.technology/e",
     "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
     "test": "http://frontend.corporanet.local:3000",
 }
+
+LABELED_H5AD_FILENAME = "local.h5ad"
 
 
 def check_env():
@@ -165,47 +168,57 @@ def check_env():
 
 
 def create_artifact(
-    file_name: str, artifact_type: DatasetArtifactFileType, bucket_prefix: str, dataset_id: str, artifact_bucket: str
+    file_name: str,
+    artifact_type: DatasetArtifactFileType,
+    bucket_prefix: str,
+    dataset_id: str,
+    artifact_bucket: str,
+    processing_status_type: str,
 ):
+    update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADING})
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
-    s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
-    with db_session_manager() as session:
-        logger.info(f"Updating database with  {artifact_type}.")
-        DatasetAsset.create(
-            session,
-            dataset_id=dataset_id,
-            filename=file_name,
-            filetype=artifact_type,
-            type_enum=DatasetArtifactType.REMIX,
-            user_submitted=True,
-            s3_uri=s3_uri,
-        )
+    try:
+        s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
+        with db_session_manager() as session:
+            logger.info(f"Updating database with  {artifact_type}.")
+            DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename=file_name,
+                filetype=artifact_type,
+                type_enum=DatasetArtifactType.REMIX,
+                user_submitted=True,
+                s3_uri=s3_uri,
+            )
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.UPLOADED})
+
+    except Exception as e:
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
+        raise e
 
 
-def create_artifacts(local_filename, dataset_id, artifact_bucket):
+def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str, can_convert_to_seurat: bool = False):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    logger.info("Creating Artifacts.")
+    logger.info(f"Creating artifacts for dataset {dataset_id}...")
     # upload AnnData
-    create_artifact(local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_anndata_status=ConversionStatus.CONVERTED),
+    create_artifact(
+        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
 
-    # Process loom
-    loom_filename, status = convert_file_ignore_exceptions(make_loom, local_filename, "Issue creating loom.")
-    if loom_filename:
-        create_artifact(loom_filename, DatasetArtifactFileType.LOOM, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(
-        dataset_id,
-        processing_status=dict(conversion_loom_status=status),
-    )
+    if can_convert_to_seurat:
+        # Convert to Seurat and upload
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
+        )
+        if seurat_filename:
+            create_artifact(
+                seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+            )
+    else:
+        update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
+        logger.info(f"Skipped Seurat conversion for dataset {dataset_id}")
 
-    # Process seurat
-    seurat_filename, status = convert_file_ignore_exceptions(make_seurat, local_filename, "Issue creating seurat.")
-    if seurat_filename:
-        create_artifact(seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket)
-    update_db(dataset_id, processing_status=dict(conversion_rds_status=status))
+    logger.info(f"Finished creating artifacts for dataset {dataset_id}")
 
 
 def cancel_dataset(dataset_id):
@@ -216,7 +229,7 @@ def cancel_dataset(dataset_id):
         logger.info("Upload Canceled.")
 
 
-def update_db(dataset_id, metadata=None, processing_status=None):
+def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         if dataset.tombstone:
@@ -247,7 +260,12 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     return local_path
 
 
-def extract_metadata(filename):
+def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
+    logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
+    s3_client.download_file(bucket_name, object_key, local_filename)
+
+
+def extract_metadata(filename) -> dict:
     """Pull metadata out of the AnnData file to insert into the dataset table."""
 
     adata = scanpy.read_h5ad(filename, backed="r")
@@ -318,22 +336,6 @@ def extract_metadata(filename):
     return metadata
 
 
-def make_loom(local_filename):
-    """Create a loom file from the AnnData file."""
-
-    adata = scanpy.read_h5ad(local_filename)
-    column_name_map = {}
-    for column in adata.obs.columns:
-        if "/" in column:
-            column_name_map[column] = column.replace("/", "-")
-    if column_name_map:
-        adata.obs = adata.obs.rename(columns=column_name_map)
-
-    loom_filename = local_filename.replace(".h5ad", ".loom")
-    adata.write_loom(loom_filename, True)
-    return loom_filename
-
-
 def make_seurat(local_filename):
     """Create a Seurat rds file from the AnnData file."""
 
@@ -358,7 +360,7 @@ def make_cxg(local_filename):
 
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
-        h5ad_data_file = H5ADDataFile(local_filename, vars_index_column_name="feature_name")
+        h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
         h5ad_data_file.to_cxg(cxg_output_container, 10.0)
     except Exception as ex:
         msg = "CXG conversion failed."
@@ -397,16 +399,20 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
 
 
 def convert_file_ignore_exceptions(
-    converter: typing.Callable, local_filename: str, error_message: str
-) -> typing.Tuple[str, ConversionStatus]:
+    converter: typing.Callable, local_filename: str, error_message: str, dataset_id: str, processing_status_type: str
+) -> str:
+    logger.info(f"Converting {local_filename}")
+    start = datetime.now()
     try:
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTING})
         file_dir = converter(local_filename)
-        status = ConversionStatus.CONVERTED
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTED})
+        logger.info(f"Finished converting {converter} in {datetime.now()- start}")
     except Exception:
         file_dir = None
-        status = ConversionStatus.FAILED
+        update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
         logger.exception(error_message)
-    return file_dir, status
+    return file_dir
 
 
 def get_bucket_prefix(dataset_id):
@@ -419,8 +425,9 @@ def get_bucket_prefix(dataset_id):
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    cxg_dir, status = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.")
+    cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
         s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
         metadata = {
             "explorer_url": join(DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]], dataset_id + ".cxg", "")
@@ -436,23 +443,31 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
+
     else:
         metadata = None
-    update_db(dataset_id, metadata, processing_status=dict(conversion_cxg_status=status))
+    update_db(dataset_id, metadata)
 
 
-def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
+def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
+    """
+    Validates and labels the specified dataset file and updates the processing status in the database
+    :param dataset_id: UUID of the dataset to update
+    :param local_filename: file name of the dataset to validate and label
+    :return: file name of labeled dataset, boolean indicating if Seurat conversion is possible
+    """
+    from cellxgene_schema import validate
+
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    output_filename = "local.h5ad"
-    commands = ["cellxgene-schema", "validate", "--add-labels", output_filename, local_filename]
-    val_proc = subprocess.run(commands, capture_output=True)
-    if val_proc.returncode != 0:
-        logger.error("Validation failed!")
-        logger.error(f"stdout: {val_proc.stdout}")
-        logger.error(f"stderr: {val_proc.stderr}")
+    output_filename = LABELED_H5AD_FILENAME
+    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
+
+    if not is_valid:
+        logger.error(f"Validation failed with {len(errors)} errors!")
         status = dict(
             validation_status=ValidationStatus.INVALID,
-            validation_message=val_proc.stdout,
+            validation_message=errors,
             processing_status=ProcessingStatus.FAILURE,
         )
         update_db(dataset_id, processing_status=status)
@@ -460,14 +475,11 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
     else:
         logger.info("Validation complete")
         status = dict(
-            conversion_cxg_status=ConversionStatus.CONVERTING,
-            conversion_loom_status=ConversionStatus.CONVERTING,
-            conversion_rds_status=ConversionStatus.CONVERTING,
-            conversion_anndata_status=ConversionStatus.CONVERTING,
+            h5ad_status=ConversionStatus.CONVERTED,
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return output_filename
+        return output_filename, can_convert_to_seurat
 
 
 def clean_up_local_file(local_filename):
@@ -506,31 +518,48 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
     # will have to be modified since it relies on a shared local file
 
-    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+
     # Process metadata
     metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
     # create artifacts
     process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
 def main():
     return_value = 0
-    check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
+    step_name = os.environ["STEP_NAME"]
+    logger.info(f"Processing dataset {dataset_id}")
+
     try:
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
+        if step_name == "download-validate":
+            from backend.corpora.dataset_processing.process_download_validate import process
+
+            process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "cxg":
+            from backend.corpora.dataset_processing.process_cxg import process
+
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
+        elif step_name == "seurat":
+            from backend.corpora.dataset_processing.process_seurat import process
+
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "handle-success":
+            update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):
-        logger.exception("An Error occured while processing.")
+        logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception:
-        message = "An unexpect error occured while processing the data set."
+        message = "An unexpected error occurred while processing the data set."
         logger.exception(message)
         update_db(
             dataset_id, processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message)

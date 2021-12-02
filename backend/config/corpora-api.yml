@@ -20,7 +20,7 @@ paths:
       summary: List published collections in Corpora
       security:
         - cxguserCookieLenient: []
-        - { }
+        - {}
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
@@ -98,9 +98,6 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
-                data_submission_policy_version:
-                  type: string
-                  description: Which data submission policy was the collection submitted under
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -125,7 +122,7 @@ paths:
       summary: Get a collection's full details
       security:
         - cxguserCookieLenient: []
-        - { }
+        - {}
       description: >-
         This will return all datasets and associated attributes.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
@@ -145,13 +142,15 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          description: Gone
     post:
       tags:
         - collections
       summary: Start a revision of a public collection,
       security:
         - cxguserCookie: []
-        - { }
+        - {}
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
@@ -203,9 +202,6 @@ paths:
                 contact_email:
                   type: string
                   description: email of contact person for the collection
-                data_submission_policy_version:
-                  type: string
-                  description: Which data submission policy was the collection submitted under
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -225,7 +221,7 @@ paths:
         - collections
       summary: Delete a collection
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
@@ -389,6 +385,15 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection_uuid.publish.post
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
       responses:
         "202":
           description: OK
@@ -407,6 +412,36 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+
+  /dp/v1/collections/index:
+    get:
+      tags:
+        - collections
+      summary: >-
+        Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                    - published_at
+                    - revised_at
+                  properties:
+                    id:
+                      $ref: "#/components/schemas/collection_uuid"
+                    created_at:
+                      type: number
+        "400":
+          $ref: "#/components/responses/400"
 
   /dp/v1/datasets/{dataset_uuid}:
     delete:
@@ -506,7 +541,7 @@ paths:
         - genesets
       summary: Update links between a dataset and gene sets
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
         collection owner and the dataset and gene sets must all belong to the same private collection
@@ -588,18 +623,42 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
-                  conversion_loom_status:
+                  h5ad_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_anndata_status:
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
+                  cxg_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_cxg_status:
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
+                  rds_status:
                     type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
-                  conversion_rds_status:
-                    type: string
-                    enum: [CONVERTING, CONVERTED, FAILED, NA]
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -607,13 +666,63 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
+  /dp/v1/datasets/index:
+    get:
+      tags:
+        - datasets
+      summary: >-
+        Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        STUB
+      operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    collection_id:
+                      type: string
+                    assay:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    disease:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    sex:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    ethnicity:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    organism:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    cell_count:
+                      type: integer
+                    cell_type:
+                      $ref: "#/components/schemas/ontology_element_array"
+        "400":
+          $ref: "#/components/responses/400"
+
   /dp/v1/genesets/{geneset_uuid}:
     delete:
       tags:
         - genesets
       summary: Delete a genese
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       description: >-
         Delete a gene by set removing it from a collection and any data sets it was linked to.
       operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
@@ -737,7 +846,7 @@ components:
       enum: [COUNT, NORMAL]
     is_primary_data:
       description: >-
-        Describes whether cellular observations for this dataset are all canonical (PRIMARY), 
+        Describes whether cellular observations for this dataset are all canonical (PRIMARY),
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
       enum: [PRIMARY, SECONDARY, BOTH]
@@ -885,7 +994,7 @@ components:
           type: string
         filetype:
           type: string
-          enum: [H5AD, RDS, LOOM, CXG]
+          enum: [H5AD, RDS, CXG]
         filename:
           type: string
         type:
@@ -952,7 +1061,6 @@ components:
           type: string
         tombstoned:
           type: boolean
-
 
   parameters:
     path_collection_uuid:

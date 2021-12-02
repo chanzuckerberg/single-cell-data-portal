@@ -1,26 +1,38 @@
+import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
+import { FC } from "react";
 import { QueryCache, ReactQueryCacheProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
 import { checkFeatureFlags } from "src/common/featureFlags";
-import CookieBanner from "src/components/CookieBanner";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
-import Layout from "../components/Layout";
 
 const queryCache = new QueryCache();
 
 checkFeatureFlags();
 
-function App({ Component, pageProps }: AppProps): JSX.Element {
+type NextPageWithLayout = NextPage & {
+  Layout?: FC;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const Layout = (isFilterEnabled && Component.Layout) || DefaultLayout;
   return (
     <>
       <ReactQueryCacheProvider queryCache={queryCache}>
         <Layout>
           <Component {...pageProps} />
-          <CookieBanner />
         </Layout>
         <ReactQueryDevtools />
       </ReactQueryCacheProvider>

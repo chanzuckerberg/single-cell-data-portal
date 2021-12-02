@@ -75,11 +75,13 @@ describe("Collection", () => {
 
           await createCollection();
 
-          const publishButton = await page.$(
-            getTestID("publish-collection-button")
-          );
+          await tryUntil(async () => {
+            const publishButton = await page.$(
+              getTestID("publish-collection-button")
+            );
 
-          expect(await publishButton?.getAttribute("disabled")).toBe("");
+            expect(await publishButton?.getAttribute("disabled")).toBe("");
+          }, 100);
         });
       });
     });
@@ -109,7 +111,7 @@ async function createCollection(
     testCollection.contactEmail,
     BLUEPRINT_SAFE_TYPE_OPTIONS
   );
-  await page.click(getText("I agree to cellxgene's data submission policies."));
+
   const [response] = await Promise.all([
     page.waitForEvent("response"),
     page.click(getTestID("create-button")),

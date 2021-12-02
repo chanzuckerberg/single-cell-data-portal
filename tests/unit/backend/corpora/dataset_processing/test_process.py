@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import anndata
 import boto3
+import mock
 import numpy
 import pandas
 from moto import mock_s3
@@ -41,12 +42,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         cls.tmp_dir = tempfile.mkdtemp()
         cls.h5ad_filename = pathlib.Path(cls.tmp_dir, "test.h5ad")
         cls.seurat_filename = pathlib.Path(cls.tmp_dir, "test.rds")
-        cls.loom_filename = pathlib.Path(cls.tmp_dir, "test.loom")
         cls.cxg_filename = pathlib.Path(cls.tmp_dir, "test.cxg")
 
         cls.h5ad_filename.touch()
         cls.seurat_filename.touch()
-        cls.loom_filename.touch()
         cls.cxg_filename.touch()
 
     @classmethod
@@ -386,10 +385,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{dataset_id}.cxg/")
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
-    @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_create_artifacts(self, make_seurat, make_loom):
-        make_loom.return_value = str(self.loom_filename)
+    def test_create_artifacts(self, make_seurat):
         make_seurat.return_value = str(self.seurat_filename)
         artifact_bucket = "test-artifact-bucket"
         test_dataset_id = self.generate_dataset(
@@ -399,33 +396,32 @@ class TestDatasetProcessing(DataPortalTestCase):
         s3 = self.setup_s3_bucket(artifact_bucket)
 
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.rds_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.h5ad_status)
 
-        self.assertEqual(len(artifacts), 3)
+        self.assertEqual(len(artifacts), 2)
 
         self.assertTrue(all(a.user_submitted for a in artifacts))
         self.assertTrue(all(a.s3_uri.startswith(f"s3://{artifact_bucket}/{bucket_prefix}/") for a in artifacts))
-        self.assertEqual(len(set(a.filetype for a in artifacts)), 3)
+        self.assertEqual(len(set(a.filetype for a in artifacts)), 2)
         self.assertTrue(all(a.type == DatasetArtifactType.REMIX for a in artifacts))
 
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 3)
+        self.assertEqual(len(s3_filenames), 2)
         self.assertIn(str(self.h5ad_filename.parts[-1]), s3_filenames)
         self.assertIn(str(self.seurat_filename.parts[-1]), s3_filenames)
-        self.assertIn(str(self.loom_filename.parts[-1]), s3_filenames)
 
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    def test__create_artifact__negative(self):
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__create_artifact__negative(self, mock_update_db):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset(
             self.session,
@@ -442,6 +438,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
+                "h5ad_status",
             )
 
         with self.subTest("invalid artifact type"):
@@ -457,6 +454,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 artifact_bucket,
+                "h5ad_status",
             )
 
         with self.subTest("dataset does not exist"):
@@ -468,6 +466,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 process.get_bucket_prefix("1234"),
                 "1234",
                 artifact_bucket,
+                "h5ad_status",
             )
 
         with self.subTest("bucket does not exist"):
@@ -479,44 +478,14 @@ class TestDatasetProcessing(DataPortalTestCase):
                 bucket_prefix,
                 test_dataset.id,
                 "fake-bucket",
+                "h5ad_status",
             )
 
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.make_loom")
     @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_process_continues_with_loom_conversion_failures(self, mock_seurat, mock_loom):
-        mock_loom.side_effect = RuntimeError("Loom conversion failed")
-        mock_seurat.return_value = str(self.h5ad_filename).replace(".h5ad", ".rds")
-        test_dataset_id = self.generate_dataset(
-            self.session,
-        ).id
-        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
-        artifact_bucket = "test-artifact-bucket"
-        s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(self.session, test_dataset_id)
-        artifacts = dataset.artifacts
-        processing_status = dataset.processing_status
-
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
-
-        self.assertEqual(len(artifacts), 2)
-        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
-        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 2)
-        self.assertNotIn(str(self.loom_filename.parts[-1]), s3_filenames)
-
-        # cleanup
-        self.delete_s3_bucket(artifact_bucket)
-
-    @patch("backend.corpora.dataset_processing.process.make_loom")
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat, mock_loom):
-        mock_loom.return_value = str(self.loom_filename)
+    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat):
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
         test_dataset_id = self.generate_dataset(
             self.session,
@@ -524,19 +493,18 @@ class TestDatasetProcessing(DataPortalTestCase):
         bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
         s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
+        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True)
         dataset = Dataset.get(self.session, test_dataset_id)
         artifacts = dataset.artifacts
         processing_status = dataset.processing_status
 
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_loom_status)
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_rds_status)
-        self.assertEqual(ConversionStatus.CONVERTED, processing_status.conversion_anndata_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.rds_status)
+        self.assertEqual(ConversionStatus.UPLOADED, processing_status.h5ad_status)
 
-        self.assertEqual(len(artifacts), 2)
+        self.assertEqual(len(artifacts), 1)
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 2)
+        self.assertEqual(len(s3_filenames), 1)
         self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
 
         # cleanup
@@ -552,16 +520,18 @@ class TestDatasetProcessing(DataPortalTestCase):
         process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
         dataset = Dataset.get(self.session, test_dataset_id)
         processing_status = dataset.processing_status
-        self.assertEqual(ConversionStatus.FAILED, processing_status.conversion_cxg_status)
+        self.assertEqual(ConversionStatus.FAILED, processing_status.cxg_status)
 
-    def test__convert_file_ignore_exceptions__fail(self):
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__convert_file_ignore_exceptions__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")
 
         with self.assertLogs(process.logger, logging.ERROR):
-            filename, status = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error")
+            filename = convert_file_ignore_exceptions(
+                converter, self.h5ad_filename, "error", "fake_uuid", "h5ad_status"
+            )
         self.assertIsNone(filename)
-        self.assertEqual(ConversionStatus.FAILED, status)
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):
         time.sleep(1)
@@ -604,11 +574,17 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
-        self, mock_metadata_extraction, mock_validate_h5ad, mock_dropbox_download, mock_cxg
+        self,
+        mock_extract_metadata,
+        mock_validate_h5ad_file_and_add_labels,
+        mock_download_from_dropbox_url,
+        mock_make_cxg,
     ):
-        mock_metadata_extraction.side_effect = RuntimeError("metadata extraction failed")
-        mock_dropbox_download.return_value = self.h5ad_filename
-        mock_cxg.return_value = str(self.cxg_filename)
+        # given
+        mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
+        mock_extract_metadata.side_effect = RuntimeError("metadata extraction failed")
+        mock_download_from_dropbox_url.return_value = self.h5ad_filename
+        mock_make_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
         dataset_id = dataset.id
 
@@ -620,4 +596,46 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         dataset = Dataset.get(self.session, dataset_id)
         processing_status = dataset.processing_status
-        self.assertEqual(None, processing_status.conversion_cxg_status)
+        self.assertEqual(None, processing_status.cxg_status)
+
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.corpora.dataset_processing.process.create_artifact")
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(
+        self,
+        mock_update_db,
+        mock_create_artifact,
+        mock_make_seurat,
+    ):
+        # given
+        can_convert_to_seurat = False
+
+        # when
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
+
+        # Confirm call to update_db with rds_status => SKIPPED
+        processing_status_arg = mock_update_db.call_args.kwargs.get("processing_status")
+        self.assertEqual(dict, type(processing_status_arg))
+        self.assertEqual(1, len(processing_status_arg))
+        self.assertEqual(ConversionStatus.SKIPPED, processing_status_arg.get("rds_status"))
+
+        # then
+        mock_make_seurat.assert_not_called()
+
+    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.corpora.dataset_processing.process.create_artifact")
+    @patch("backend.corpora.dataset_processing.process.update_db")
+    def test__process_runs_seurat_conversion_when_convertible_dataset_detected(
+        self,
+        mock_update_db,
+        mock_create_artifact,
+        mock_make_seurat,
+    ):
+        # given
+        can_convert_to_seurat = True
+
+        # when
+        process.create_artifacts(mock.ANY, mock.ANY, mock.ANY, can_convert_to_seurat=can_convert_to_seurat)
+
+        # then
+        mock_make_seurat.assert_called()

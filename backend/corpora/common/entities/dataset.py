@@ -4,7 +4,7 @@ import csv
 import logging
 import os
 import typing
-
+from datetime import datetime
 from pathlib import PurePosixPath
 
 from .dataset_asset import DatasetAsset
@@ -99,9 +99,21 @@ class Dataset(Entity):
         """
         Return the most recently created dataset with the given explorer_url or None
         """
-        filters = [cls.table.explorer_url == explorer_url]
-        dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
-        return cls(dataset[0]) if dataset else None
+
+        def _get_by_explorer_url_query(url):
+            filters = [cls.table.explorer_url == url]
+            dataset = session.query(cls.table).filter(*filters).order_by(cls.table.created_at.desc()).limit(1).all()
+            return cls(dataset[0]) if dataset else None
+
+        # If dataset cannot be found, look for the url with (or without) the final slash
+        dataset = _get_by_explorer_url_query(explorer_url)
+        if not dataset:
+            if explorer_url[-1] == "/":
+                dataset = _get_by_explorer_url_query(explorer_url[:-1])
+            else:
+                dataset = _get_by_explorer_url_query(f"{explorer_url}/")
+
+        return dataset
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
@@ -112,11 +124,73 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    @staticmethod
+    def transform_sex_for_schema_2_0_0(dataset):
+        # If schema_version is 1.1.0, convert sex to the new API format
+        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
+
+    @staticmethod
+    def transform_organism_for_schema_2_0_0(dataset):
+        # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
+        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+            dataset["organism"] = [dataset["organism"]]
+
+    @classmethod
+    def list_for_index(cls, session) -> typing.List[typing.Dict]:
+        """
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        """
+
+        attrs = [
+            DbDataset.id,
+            DbDataset.name,
+            DbDataset.collection_id,
+            DbDataset.tissue,
+            DbDataset.disease,
+            DbDataset.assay,
+            DbDataset.organism,
+            DbDataset.cell_count,
+            DbDataset.cell_type,
+            DbDataset.sex,
+            DbDataset.ethnicity,
+            DbDataset.development_stage,
+            DbDataset.is_primary_data,
+            DbDataset.schema_version,  # Required for schema manipulation
+            DbDataset.published_at,
+            DbDataset.revised_at,
+        ]
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        filters = [~DbDataset.tombstone, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
+
+        results = [to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()]
+
+        for result in results:
+            Dataset.transform_organism_for_schema_2_0_0(result)
+            Dataset.transform_sex_for_schema_2_0_0(result)
+
+        return results
+
     def _create_new_explorer_url(self, new_uuid: str) -> str:
+        if self.explorer_url is None:
+            return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
-        new_path = str(original_path.parent / f"{new_uuid}.cxg")
-        return original_url._replace(path=new_path).geturl()
+        new_path = str(original_path.parent / f"{new_uuid}.cxg/")
+        new_url = original_url._replace(path=new_path).geturl()
+        # Note: the final slash is mandatory, otherwise the explorer won't load this link
+        return f"{new_url}/"
 
     def create_revision(self) -> "Dataset":
         """
@@ -222,10 +296,20 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
-    def publish_new(self):
-        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, commit=False)
+    def publish_new(self, now: datetime):
+        """
+        Publish a new dataset with the published_at datetime populated
+        with the provided datetime.
+        :param now: Datetime to populate dataset's published_at.
+        """
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_at=now, commit=False)
 
-    def publish_revision(self, revision: "Dataset"):
+    def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
+        """
+        Publish a revision of a dataset if the dataset under revision is
+        different from the existing dataset.
+        :return: True if revision differs from existing dataset, else False.
+        """
         if revision.tombstone or revision.revision > self.revision:
             # If the revision is different from the original
             self.asset_deletion()
@@ -236,19 +320,30 @@ class Dataset(Entity):
             elif revision.tombstone:
                 # tombstone
                 revision.tombstone_dataset_and_delete_child_objects()
+
             updates = revision.to_dict(
                 remove_attr=[
-                    "update_at",
+                    "updated_at",
                     "created_at",
                     "collection_visibility",
                     "id",
                     "original_id",
                     "published",
+                    "revised_at",
                     "explorer_url",
                 ],
                 remove_relationships=True,
             )
-            self.update(commit=False, **updates)
+
+            if revision.tombstone is not False:
+                self.update(commit=False, **updates, remove_attr="published_at")
+            else:
+                # There was an update to a dataset, so update revised_at
+                self.update(commit=False, **updates, revised_at=now)
+
+            return True
+
+        return False
 
 
 def get_cxg_bucket_path(explorer_url: str) -> str:

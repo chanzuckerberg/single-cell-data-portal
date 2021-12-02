@@ -9,7 +9,7 @@ if [ ! -e ./node_modules ]; then
 fi
 ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 if [ ! -z "$API_URL" ]; then
-  cat src/configs/rdev.js | envsubst >src/configs/configs.js
+  cat src/configs/$DEPLOYMENT_STAGE.js | envsubst >src/configs/configs.js
 else
   cp src/configs/local.js src/configs/configs.js
 fi

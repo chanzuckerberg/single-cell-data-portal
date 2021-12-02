@@ -67,4 +67,5 @@ export enum ORANGE {
   C = "#D9822B",
   D = "#F29D49",
   E = "#FFB366",
+  F = "#FFF1E3",
 }

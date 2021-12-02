@@ -1,17 +1,21 @@
+# Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
+# This is used for environment (dev, staging, prod) deployments
+
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
   role_arn = var.role_arn
 
   definition = <<EOF
 {
-    "StartAt": "Manage Batch task",
+    "StartAt": "DownloadValidate",
     "States": {
-      "Manage Batch task": {
+      "DownloadValidate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "CxgSeuratParallel",
         "Parameters": {
           "JobDefinition": "${var.job_definition_arn}",
-          "JobName": "processing",
+          "JobName": "download-validate",
           "JobQueue": "${var.job_queue_arn}",
           "ContainerOverrides": {
             "Environment": [
@@ -22,12 +26,16 @@ resource "aws_sfn_state_machine" "state_machine" {
               {
                 "Name": "DATASET_ID",
                 "Value.$": "$.dataset_uuid"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "download-validate"
               }
             ]
           }
         },
-        "End": true,
-        "TimeoutSeconds": 10800,
+        "ResultPath": null,
+        "TimeoutSeconds": 36000,
         "Retry": [
           {
             "ErrorEquals": [
@@ -48,6 +56,137 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         ]
       },
+      "CxgSeuratParallel": {
+        "Type": "Parallel",
+        "Next": "HandleSuccess",
+        "ResultPath": null,
+        "Branches": [
+          {
+            "StartAt": "Cxg",
+            "States": {
+              "Cxg": {
+                "Type": "Task",
+                "End": true,
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "cxg",
+                  "JobQueue": "${var.job_queue_arn}",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_uuid"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "cxg"
+                      }
+                    ]
+                  }
+                },
+                "ResultPath": null,
+                "TimeoutSeconds": 36000,
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 2,
+                    "MaxAttempts": 2
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "StartAt": "Seurat",
+            "States": {
+              "Seurat": {
+                "Type": "Task",
+                "End": true,
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "seurat",
+                  "JobQueue": "${var.job_queue_arn}",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_uuid"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "seurat"
+                      }
+                    ]
+                  }
+                },
+                "TimeoutSeconds": 36000,
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 2,
+                    "MaxAttempts": 2
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "Catch": [
+            {
+            "ErrorEquals": [
+                "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+            }
+        ]
+      },
+      "HandleSuccess": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "End": true,
+        "Parameters": {
+          "JobDefinition": "${var.job_definition_arn}",
+          "JobName": "handle-success",
+          "JobQueue": "${var.job_queue_arn}",
+          "ContainerOverrides": {
+            "Environment": [
+              {
+                "Name": "DROPBOX_URL",
+                "Value.$": "$.url"
+              },
+              {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_uuid"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "handle-success"
+              }
+            ]
+          }
+        },
+        "ResultPath": null,
+        "TimeoutSeconds": 36000,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.TaskFailed"
+            ],
+            "IntervalSeconds": 1,
+            "BackoffRate": 2,
+            "MaxAttempts": 2
+          }
+        ]
+      },
       "HandleErrors": {
         "Type": "Task",
         "InputPath": "$",
@@ -55,6 +194,57 @@ resource "aws_sfn_state_machine" "state_machine" {
         "End": true
       }
     }
+}
+EOF
+}
+
+resource "aws_sfn_state_machine" "state_machine_seurat" {
+  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-seurat-sfn"
+  role_arn = var.role_arn
+
+  definition = <<EOF
+{
+  "StartAt": "Seurat",
+  "States": {
+    "Seurat": {
+      "Type": "Task",
+      "End": true,
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobDefinition": "${var.job_definition_arn}",
+        "JobName": "seurat",
+        "JobQueue": "${var.job_queue_arn}",
+        "ContainerOverrides": {
+          "Environment": [
+            {
+              "Name": "DATASET_ID",
+              "Value.$": "$.dataset_uuid"
+            },
+            {
+              "Name": "STEP_NAME",
+              "Value": "seurat"
+            }
+          ]
+        }
+      },
+      "TimeoutSeconds": 36000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "HandleErrors": {
+      "Type": "Task",
+      "InputPath": "$",
+      "Resource": "${var.lambda_error_handler}",
+      "End": true
+    }
+  }
 }
 EOF
 }

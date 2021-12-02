@@ -7,6 +7,7 @@ import {
   Dataset,
   DATASET_ASSET_FORMAT,
   Link,
+  PROCESSING_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
@@ -114,22 +115,23 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {
-      // const numOfAssets = dataset.dataset_assets.length;
+      const assets = dataset.dataset_assets;
       const numOfDeployments = dataset.dataset_deployments.length;
-
-      // TODO(seve): uncomment old check when loom is no longer served from the backend
-      // return (
-      //   numOfDeployments === 1 &&
-      //   numOfAssets >= Object.keys(DATASET_ASSET_FORMAT).length
-      // );
-
-      const assetTypes = dataset.dataset_assets.map((asset) => asset.filetype);
-
-      const hasAllFormats = Object.values(DATASET_ASSET_FORMAT).every(
-        (format) => assetTypes.includes(format)
+      // Assets must contain a cxg and an h5ad. RDS (Seurat) are no longer mandatory for publishing
+      return (
+        numOfDeployments === 1 &&
+        assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.CXG) &&
+        assets.some((asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD)
       );
-      return numOfDeployments === 1 && hasAllFormats;
     }) &&
+    // (ebezzi): We need to ensure all dataset `processing_status` to be success, since creating a revision relies
+    // on this status. Otherwise in the case of RDS is still WIP and a user publishes the collection and immediately
+    // tries to create a revision, the revision creation will fail
+    datasets.every(
+      (dataset) =>
+        dataset.processing_status.processing_status ===
+        PROCESSING_STATUS.SUCCESS
+    ) &&
     datasets.some((dataset) => !dataset.tombstone)
   );
 }
