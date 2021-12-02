@@ -7,7 +7,7 @@
 3. From the root of this repository, run `make local-init` to build and run the dev environment. The first build takes awhile, but subsequent runs will use cached artifacts.
 4. Visit [http://backend.corporanet.local:5000](http://backend.corporanet.local:5000) to view the backend, and [http://frontend.corporanet.local:3000](http://frontend:3000) for the frontend.
 5. `make local-dbconsole` starts a connection with the local postgresql db.
-6. **Open the source code and start editing!**
+1. **Open the source code and start editing!**
 
 - Modify code in the `frontend/src` directory, save your changes and the browser will update in real time.
 - Modify code in the `backend` directory, and the data portal api will reload automatically.
