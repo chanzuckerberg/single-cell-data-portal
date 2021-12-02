@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   CellProps,
   Column,
@@ -11,15 +11,17 @@ import { ROUTES } from "src/common/constants/routes";
 import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
-  CATEGORY_KEY,
   OntologyCategoryKey,
   useFacetedFilter,
 } from "src/common/hooks/useFacetedFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { fetchFilterableDatasets } from "src/common/queries/filterable-datasets";
 import Categories from "src/components/Categories";
-import { FilterableDataset } from "src/components/common/Filter/common/entities";
+import {
+  CATEGORY_KEY,
+  FilterableDataset,
+} from "src/components/common/Filter/common/entities";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
-import filterableDatasets from "../../../tests/features/fixtures/datasets/filterable-datasets";
 
 // Collection name object key
 const COLLECTION_NAME = "collection_name";
@@ -34,6 +36,11 @@ const DATASET_NAME = "name";
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
+  // Filterable datasets joined from datasets index and collections index responses.
+  const [filterableDatasets] = useState<FilterableDataset[]>(
+    fetchFilterableDatasets()
+  );
+
   // Column configuration backing table.
   const columnConfig: Column<FilterableDataset>[] = useMemo(
     () => [
@@ -143,6 +150,7 @@ export default function Datasets(): JSX.Element {
     setFilter,
     state: { filters },
   } = tableInstance;
+
   const filterInstance = useFacetedFilter(
     preFilteredRows,
     filters,

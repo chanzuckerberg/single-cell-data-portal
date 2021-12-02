@@ -1,9 +1,9 @@
 import { FC } from "react";
 import { TableInstance } from "react-table";
-import { FilterableDataset } from "src/common/entities";
+import { FilterableCollectionDataset } from "src/components/common/Filter/common/entities";
 
 interface Props {
-  tableInstance: TableInstance<FilterableDataset>;
+  tableInstance: TableInstance<FilterableCollectionDataset>;
 }
 
 // TODO(cc) rename to CollectionsGrid and rename existing CollectionsGrid to MyCollectionsGrid.
