@@ -1,5 +1,4 @@
 import typing
-
 from datetime import datetime
 from sqlalchemy import and_
 
