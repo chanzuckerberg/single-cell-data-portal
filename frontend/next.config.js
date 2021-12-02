@@ -7,9 +7,6 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const PLAUSIBLE_URL = "https://plausible.io";
 
-const WHERES_MY_GENE_PROTOTYPE_DATA_URL =
-  "https://wmg-prototype-data-dev-public.s3.amazonaws.com";
-
 const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL];
 
 module.exports = {
@@ -30,8 +27,12 @@ module.exports = {
                 "'self'",
                 "sentry.prod.si.czi.technology",
                 PLAUSIBLE_URL,
-                WHERES_MY_GENE_PROTOTYPE_DATA_URL,
                 configs.API_URL,
+                // DEBUG
+                // DEBUG
+                // DEBUG
+                // (thuang): Remove after prototype done
+                "https://wmg-prototype-data-dev-public.s3.amazonaws.com",
               ],
               defaultSrc: ["'self'"],
               fontSrc: ["'self'", "https://fonts.gstatic.com"],

@@ -10,4 +10,7 @@ export enum API {
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
   USER_INFO = "/dp/v1/userinfo",
+  WMG_CELL_TYPES = "/dp/v1/wmg/cell_types",
+  WMG_GENES = "/dp/v1/wmg/genes",
+  WMG_GENE = "/dp/v1/wmg/genes/{name}",
 }

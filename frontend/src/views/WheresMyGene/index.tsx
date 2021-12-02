@@ -2,8 +2,10 @@ import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
-import { Cell as ICell, Column } from "react-table";
+import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
 import {
   CellTypeAndGenes,
@@ -26,8 +28,13 @@ const WheresMyGene = (): JSX.Element => {
 
     async function fetchCellTypes(): Promise<void> {
       const response = await fetch(
-        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_cell_types.json"
+        API_URL + API.WMG_CELL_TYPES,
+        DEFAULT_FETCH_OPTIONS
       );
+
+      // const response = await fetch(
+      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_cell_types.json"
+      // );
 
       const cellTypes = await response.json();
 
@@ -39,33 +46,6 @@ const WheresMyGene = (): JSX.Element => {
     () => integrateCelTypesAndGenes(cellTypes, geneData),
     [cellTypes, geneData]
   );
-
-  const columns: Column<CellTypeAndGenes>[] = useMemo(() => {
-    return [
-      {
-        Cell({ row }: ICell) {
-          const {
-            values: { name },
-          } = row;
-
-          return <span>{name}</span>;
-        },
-        Header: "",
-        accessor: "name",
-        minWidth: 200,
-      },
-      ...genes.map(({ name }) => {
-        return {
-          Header: name,
-          accessor: `expressions.${name}` as unknown as "expressions",
-          isLoading: !geneData.find((gene) => {
-            return gene.gene_name === name;
-          }),
-          maxWidth: 20,
-        };
-      }),
-    ];
-  }, [genes, geneData]);
 
   return (
     <>
