@@ -15,7 +15,7 @@ import {
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchDatasetRows } from "src/common/queries/filterable-datasets";
+import { fetchDatasetRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
 import {
   CATEGORY_KEY,
