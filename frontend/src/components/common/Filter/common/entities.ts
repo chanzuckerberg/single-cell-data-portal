@@ -18,19 +18,19 @@ export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 /* "value" prop passed to react-table's Cell function */
 export type CellPropsValue = { value: CellValue<string[]> };
 
-/* Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
-   datasets grouped by collection. */
-export interface CollectionRow extends DatasetRow {
+export interface CollectionCategoryValues {
   assayAggregated: Ontology[];
-  cell_typeAggregated: Ontology[];
-  collection_published_at: number;
-  collection_revised_at: number;
+  cellTypeAggregated: Ontology[];
   diseaseAggregated: Ontology[];
-  is_primary_dataAggregated: IS_PRIMARY_DATA[];
+  isPrimaryDataAggregated: IS_PRIMARY_DATA[];
   organismAggregated: Ontology[];
   sexAggregated: Ontology[];
   tissueAggregated: Ontology[];
 }
+
+/* Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
+   datasets grouped by collection. */
+export type CollectionRow = DatasetRow & CollectionCategoryValues;
 
 /* Join of dataset and collection information, optimized for filtering datasets */
 export interface DatasetRow {
@@ -39,8 +39,6 @@ export interface DatasetRow {
   cell_type: Ontology[];
   collection_id: Collection["id"];
   collection_name: Collection["name"];
-  collection_published_at: number; // TODO(cc) remove
-  collection_revised_at: number; // TODO(cc) remove
   disease: Ontology[];
   id: string;
   is_primary_data: IS_PRIMARY_DATA[]; // Handle "BOTH" as ["primary", "secondary"]

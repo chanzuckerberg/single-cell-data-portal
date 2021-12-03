@@ -14,13 +14,9 @@ import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
-import {
-  NonOntologyCategoryKey,
-  OntologyCategoryKey,
-  useCategoryFilter,
-} from "src/common/hooks/useCategoryFilter";
+import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchCollectionRows } from "src/common/queries/filterable-datasets";
+import { fetchCollectionRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import {
@@ -85,7 +81,8 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.TISSUE} values={value} />
         ),
         Header: "Tissue",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.TISSUE),
+        accessor: (dataset: CollectionRow) =>
+          dataset.tissueAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.TISSUE,
@@ -95,7 +92,8 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.DISEASE} values={value} />
         ),
         Header: "Disease",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.DISEASE),
+        accessor: (dataset: CollectionRow) =>
+          dataset.diseaseAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.DISEASE,
@@ -105,7 +103,8 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.ASSAY} values={value} />
         ),
         Header: "Assay",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+        accessor: (dataset: CollectionRow) =>
+          dataset.assayAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
@@ -115,7 +114,8 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.ORGANISM} values={value} />
         ),
         Header: "Organism",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
+        accessor: (dataset: CollectionRow) =>
+          dataset.organismAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.ORGANISM, // TODO(cc) check for `` in datasets
@@ -125,7 +125,8 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.CELL_TYPE} values={value} />
         ), // TODO(cc) remove cell and header from hidden cols (same for datasets)
         Header: "Cell Type",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
+        accessor: (dataset: CollectionRow) =>
+          dataset.cellTypeAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
@@ -133,7 +134,7 @@ export default function Collections(): JSX.Element {
       {
         Cell: Cell,
         Header: "Primary Data",
-        accessor: aggregatedCellAccessorFn(CATEGORY_KEY.IS_PRIMARY_DATA),
+        accessor: (dataset: CollectionRow) => dataset.isPrimaryDataAggregated,
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.IS_PRIMARY_DATA,
@@ -141,7 +142,8 @@ export default function Collections(): JSX.Element {
       {
         Cell: Cell,
         Header: "Sex",
-        accessor: aggregatedOntologyCellAccessorFn(CATEGORY_KEY.SEX),
+        accessor: (dataset: CollectionRow) =>
+          dataset.sexAggregated.map((o: Ontology) => o.label), // TODO(cc)
         aggregate: aggregateFn(),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
@@ -240,27 +242,4 @@ function aggregateFn(): AggregatorFn<CollectionRow> {
   return (_columnValues: CellValue[], rows: Array<Row<CollectionRow>>) => {
     return [...new Set(rows.flat())];
   };
-}
-
-/**
- * Create function to be used by column.accessor in react-table column definition, for columns containing non-ontology
- * metadata (string) values. Used by react-table to determine filter and display values of column for each row
- * (in this case, the category value itself is filtered and displayed).
- * @param key - Object key of value to display in cell.
- * @returns Function that returns the values with the given key.
- */
-function aggregatedCellAccessorFn(key: NonOntologyCategoryKey) {
-  return (dataset: CollectionRow) => dataset[`${key}Aggregated`];
-}
-
-/**
- * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values. Used by react-table to determine filter and display values of column
- * for each row (in this case, the ontology label is filtered and displayed, not the full ontology object).
- // * @param key - Object key of value to display in cell.
- // * @returns Function that returns the array of ontology labels with the given key.
- */
-function aggregatedOntologyCellAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: CollectionRow): string[] =>
-    dataset[`${key}Aggregated`].map((o: Ontology) => o.label);
 }
