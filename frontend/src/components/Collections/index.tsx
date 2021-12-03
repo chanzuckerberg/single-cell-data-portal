@@ -1,12 +1,42 @@
-import { FC } from "react";
+import { Intent } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
+import { useRouter } from "next/router";
+import { FC, useEffect, useState } from "react";
 import { VISIBILITY_TYPE } from "src/common/entities";
+import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useCollections } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
+import Toast from "src/views/Collection/components/Toast";
 import CreateCollection from "../CreateCollectionModal";
 import CollectionsGrid from "./components/Grid/components/CollectionsGrid";
 import { TitleAndDescription, TitleWrapper } from "./style";
 
 const Collections: FC = () => {
   const { isFetching, data: collections } = useCollections();
+
+  /* Pop toast if user has come from Explorer with work in progress */
+  useExplainNewTab(
+    "To maintain your in-progress work on the previous dataset, we opened a new tab."
+  );
+
+  const router = useRouter();
+
+  const { tombstoned_collection_id } = router.query;
+
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+
+  useEffect(() => {
+    if (!tombstoned_collection_id || hasShownWithdrawToast) return;
+
+    Toast.show({
+      icon: IconNames.ISSUE,
+      intent: Intent.PRIMARY,
+      message:
+        "This collection was withdrawn. You’ve been redirected to the cellxgene Data Portal homepage.",
+    });
+    removeParams("tombstoned_collection_id");
+    setHasShownWithdrawToast(true);
+  }, [tombstoned_collection_id, hasShownWithdrawToast]);
 
   if (isFetching && !collections) return <div>Loading collections...</div>;
 

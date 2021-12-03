@@ -6,6 +6,7 @@ import sys
 
 import click
 from click import Context
+from datetime import datetime
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -15,13 +16,19 @@ from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
+    ConversionStatus,
     DbCollection,
     DbDataset,
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetArtifact,
+    DbDatasetProcessingStatus,
+    ProcessingStatus,
+    UploadStatus,
+    ValidationStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.utils.s3_buckets import cxg_bucket
@@ -409,6 +416,55 @@ def migrate_published_at(ctx):
 
 @cli.command()
 @click.pass_context
+def populate_revised_at(ctx):
+    """
+    Populates `revised_at` for each existing collection and dataset with the
+    current datetime (UTC). This is a one-off procedure since revised_at will 
+    be set for collections and datasets when they are updated.
+    """
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign revised_at to "
+            f"all of the existing collections and datasets",
+            abort=True,
+        )
+
+        now = datetime.utcnow()
+
+        # Collections
+        for record in session.query(DbCollection):
+            collection_id = record.id
+
+            # Skip private collection, since revised_at will be populated on
+            # publish if there is a change to the collection.
+            if record.visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Collection is PRIVATE | collection.id: {collection_id}")
+                continue
+
+            logger.info(f"Setting revised_at for collection {collection_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for collections! -----")
+
+        # Datasets
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+
+            # Skip private dataset, since revised_at will be populated on
+            # publish if there are any changes.
+            if record.collection_visibility == CollectionVisibility.PRIVATE:
+                logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
+                continue
+
+            logger.info(f"Setting revised_at for dataset {dataset_id}")
+            record.revised_at = now
+
+        logger.info(f"----- Finished populating revised_at for datasets! -----")
+
+
+@cli.command()
+@click.pass_context
 def strip_all_collection_fields(ctx):
     """
     Strip all the `collection` string fields, so whitespace at the beginning and the end are removed.
@@ -441,6 +497,27 @@ def strip_all_collection_fields(ctx):
         session.execute(query)
         session.commit()
 
+@cli.command()
+@click.pass_context
+def backfill_processing_status_for_datasets(ctx):
+    """
+    Backfills the `dataset_processing_status` table for datasets that do not have a matching record.
+    """
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will assign dataset_processing_status "
+            "to all datasets that are missing it",
+            abort=True,
+        )
+
+        for record in session.query(DbDataset):
+            dataset_id = record.id
+            if record.processing_status.processing_status is None:
+                record.processing_status.processing_status = ProcessingStatus.SUCCESS
+                logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
+            else:
+                logger.warning(f"{dataset_id} processing status is fine")
+            
 
 @cli.command()
 @click.pass_context

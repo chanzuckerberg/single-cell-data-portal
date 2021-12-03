@@ -129,18 +129,6 @@ class Collection(Entity):
 
         return results
 
-    @staticmethod
-    def transform_sex_for_schema_2_0_0(dataset):
-        # If schema_version is 1.1.0, convert sex to the new API format
-        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
-            dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
-
-    @staticmethod
-    def transform_organism_for_schema_2_0_0(dataset):
-        # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
-        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
-            dataset["organism"] = [dataset["organism"]]
-
     def reshape_for_api(self, tombstoned_datasets=False) -> dict:
         """
         Reshape the collection to match the expected api output.
@@ -171,27 +159,30 @@ class Collection(Entity):
             else:
                 datasets.append(dataset)
 
-            self.transform_sex_for_schema_2_0_0(dataset)
-            self.transform_organism_for_schema_2_0_0(dataset)
+            Dataset.transform_sex_for_schema_2_0_0(dataset)
+            Dataset.transform_organism_for_schema_2_0_0(dataset)
 
         result["datasets"] = datasets
         return result
 
-    def publish(self):
+    def publish(self, data_submission_policy_version):
         """
         Given a private collection, set the collection to public.
         """
         # Timestamp for published_at and revised_at
         now = datetime.utcnow()
-
         # Create a public collection with the same uuid and same fields
         public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         is_existing_collection = False
 
         if public_collection:
+            revision = self.to_dict(
+                remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True
+            )
+            revision["data_submission_policy_version"] = data_submission_policy_version
             public_collection.update(
                 commit=False,
-                **self.to_dict(remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True),
+                **revision,
             )
             is_existing_collection = True
         # A published collection with the same uuid does not already exist.
@@ -203,6 +194,7 @@ class Collection(Entity):
                     primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
                     # We want to update published_at only when the collection is first published.
                     published_at=now,
+                    data_submission_policy_version=data_submission_policy_version,
                 )
             )
             self.session.add(public_collection)

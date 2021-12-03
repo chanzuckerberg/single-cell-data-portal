@@ -117,7 +117,7 @@ CREATE TABLE public.alembic_version (
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-7794b1ea430f
+09_7794b1ea430f
 \.
 
 --

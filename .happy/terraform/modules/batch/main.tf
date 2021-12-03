@@ -3,6 +3,8 @@
 
 data aws_region current {}
 
+data aws_caller_identity current {}
+
 resource aws_batch_job_definition batch_job_def {
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-upload"

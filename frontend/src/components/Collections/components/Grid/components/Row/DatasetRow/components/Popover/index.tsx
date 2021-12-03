@@ -1,5 +1,6 @@
 import loadable from "@loadable/component";
 import { FC } from "react";
+import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { LeftAlignedDetailsCell } from "../../../common/style";
 import { Skeleton } from "../common/Skeleton";
 
@@ -11,11 +12,12 @@ const AsyncPopover = loadable(
 );
 
 interface Props {
+  label: PluralizedMetadataLabel;
   values: string[];
   isLoading: boolean;
 }
 
-const Popover: FC<Props> = ({ values, isLoading }) => {
+const Popover: FC<Props> = ({ label, values, isLoading }) => {
   if (isLoading) {
     return (
       <td>
@@ -28,7 +30,7 @@ const Popover: FC<Props> = ({ values, isLoading }) => {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return <AsyncPopover values={values} />;
+  return <AsyncPopover label={label} values={values} />;
 };
 
 export default Popover;

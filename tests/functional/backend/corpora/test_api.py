@@ -49,7 +49,6 @@ class TestApi(BaseFunctionalTestCase):
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
@@ -93,7 +92,10 @@ class TestApi(BaseFunctionalTestCase):
 
         # make collection public
         with self.subTest("Test make collection public"):
-            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers)
+            body = {"data_submission_policy_version": "1.0"}
+            res = requests.post(
+                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
+            )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
@@ -114,17 +116,16 @@ class TestApi(BaseFunctionalTestCase):
             collection_uuids = [x["id"] for x in data["collections"]]
             self.assertIn(collection_uuid, collection_uuids)
 
-        # cannot delete public collection
+        # can delete public collection
         with self.subTest("Test a public collection can not be deleted"):
             res = requests.delete(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.not_allowed)
+            self.assertEqual(res.status_code, requests.codes.no_content)
 
     def test_delete_private_collection(self):
         # create collection
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
@@ -164,7 +165,6 @@ class TestApi(BaseFunctionalTestCase):
         body = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
-            "data_submission_policy_version": "1",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
             "name": "my2collection",
@@ -200,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
             keep_trying = True
             expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
             # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
-            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", None]
+            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", None]
             timer = time.time()
             while keep_trying:
                 data = None
@@ -223,7 +223,7 @@ class TestApi(BaseFunctionalTestCase):
                         self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if h5ad_status == "FAILED":
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
-                    if cxg_status == rds_status == h5ad_status == "CONVERTED":
+                    if cxg_status == rds_status == h5ad_status == "UPLOADED":
                         keep_trying = False
                 if time.time() >= timer + 300:
                     raise TimeoutError(

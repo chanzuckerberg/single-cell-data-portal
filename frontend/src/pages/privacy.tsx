@@ -31,8 +31,22 @@ const Privacy = (): JSX.Element => {
           <main>
             <h1>Privacy Policy</h1>
 
-            <p>Last updated: April 1, 2021.</p>
+            <p>Last updated: Oct 19, 2021.</p>
 
+            <br />
+
+            <b>Summary of key changes in this Oct 19, 2021 update:</b>
+
+            <br />
+
+            <span>
+              We no longer use Google Analytics for web analytics. Instead, we
+              have transitioned to use the privacy-friendly Plausible service to
+              collect basic analytics about our Site traffic to understand how
+              it’s used. As a result, we collect less personal data about you.
+            </span>
+
+            <br />
             <br />
 
             <h2>Introduction</h2>
@@ -63,10 +77,11 @@ const Privacy = (): JSX.Element => {
                 <strong>not personally identifiable</strong>.
               </li>
               <li>
-                We collect <strong>basic analytics</strong> about your usage of
-                the Site (e.g. frequency, duration, IP address) so we know how
-                it’s being used. This helps us improve the Site as well as get a
-                sense of its impact.
+                We use the privacy-friendly Plausible service to collect{" "}
+                <strong>basic analytics</strong> about our Site traffic (e.g.
+                the number of visitors and page views) so we know how it’s being
+                used. This helps us improve the Site as well as get a sense of
+                its impact.
               </li>
             </ul>
 
@@ -105,66 +120,70 @@ const Privacy = (): JSX.Element => {
                   analysis, exploration, and – hopefully – insight.
                 </p>
                 <p>This data is not personally identifiable.</p>
-                <ol className="section2">
-                  <li>
+                <ul className="section2">
+                  <p>
                     <h4>Data You Provide To Us.</h4> We collect certain
                     information from you when you provide it to us directly.
                     Specifically, this includes data you submit for display in
-                    cellxgene, data you provide you us as part of submission or
-                    registering for an account (ex: name and email address), as
-                    well as if you contact us for support or with information
-                    about a dataset via email. This information is necessary in
-                    order to create your account and provide you with access to
-                    the services we offer on the Site.
-                  </li>
-                  <li>
+                    cellxgene (ex: single-cell .h5ad matrix files), data you
+                    provide you us as part of submission or registering for an
+                    account (ex: name and email address), as well as if you
+                    contact us for support or with information about a dataset
+                    via email. This information is necessary in order to create
+                    your account and provide you with access to the services we
+                    offer on the Site.
+                  </p>
+                  <p>
                     <h4>Data From Your Browser or Device.</h4> Whenever you use
                     any online service, certain information gets created and
                     logged automatically; the same is true when you access or
                     use the Site. Here’s what we collect:
                     <ul>
-                      <li>
-                        <h5>Log.</h5> When you access or use the Site (whether
-                        on your computer or on a mobile device), we gather
-                        certain information automatically and store it in log
-                        files. This information includes IP addresses, the
-                        Internet Site Provider, referring pages, date/time
-                        stamps, clickstream data, and duration of time spent on
-                        the Site. We collect this data pursuant to our
-                        legitimate interests in understanding how Visitors use
-                        our Site.
-                      </li>
-                      <li>
-                        <h5>Device.</h5> In addition to log data, we collect
-                        information about the device you’re using to access the
-                        Site; this includes the type of device, browser type,
-                        operating system, settings, unique device identifiers,
-                        and crash data that helps us understand when something
-                        goes wrong. We collect this data pursuant to our
-                        legitimate interests in improving our Site.
-                      </li>
-                      <li>
-                        <h5>Cookies and Other Similar Technologies.</h5> We also
-                        use cookies (small text files sent by your computer each
-                        time you access the Site that are unique to your account
-                        or your browser) and similar technologies. For example,
-                        we use analytics services (e.g.{" "}
-                        <a href="https://www.google.com/url?q=https://www.google.com/policies/privacy/partners/&amp;sa=D&amp;ust=1585348324239000">
-                          Google Analytics
-                        </a>
-                        ) that place cookies that collect information that
-                        allows us to understand how often you use the Sites,
-                        where you are accessing the Sites from and events that
-                        happen on the Sites. If you’d like to opt-out of Google
-                        Analytics, you can go{" "}
-                        <a href="https://www.google.com/url?q=https://tools.google.com/dlpage/gaoptout&amp;sa=D&amp;ust=1585348324240000">
-                          here
-                        </a>
-                        .
-                      </li>
+                      <p>
+                        <li>
+                          <h5>Log.</h5> When you access or use the Site (whether
+                          on your computer or on a mobile device), we gather
+                          certain information automatically and store it in log
+                          files. This information includes IP addresses, the
+                          Internet Site Provider, referring pages, date/time
+                          stamps, clickstream data, and duration of time spent
+                          on the Site. We collect this data pursuant to our
+                          legitimate interests in understanding how Visitors use
+                          our Site and improving our Site.
+                        </li>
+                        <li>
+                          <h5>Device.</h5> In addition to log data, we collect
+                          information about the device you’re using to access
+                          the Site; this includes the type of device, browser
+                          type, and operating system that helps us understand
+                          when something goes wrong. We collect this data
+                          pursuant to our legitimate interests in improving our
+                          Site.
+                        </li>
+                        <li>
+                          <h5>Cookies and Other Similar Technologies.</h5> For
+                          certain users that need to log into the cellxgene
+                          portal to publish data, we use essential cookies
+                          (small text files sent by your computer each time you
+                          access the Site that are unique to your account or
+                          your browser) to enable that use. For web analytics,
+                          we do not use Google Analytics. Instead, we use the
+                          privacy-friendly Plausible as our website analytic
+                          tool. Learn more about Plausible’s data and privacy
+                          practices{" "}
+                          <a
+                            href="https://plausible.io/data-policy"
+                            rel="noopener"
+                            target="_blank"
+                          >
+                            here
+                          </a>
+                          .
+                        </li>
+                      </p>
                     </ul>
-                  </li>
-                </ol>
+                  </p>
+                </ul>
               </li>
               <li>
                 <h3>How We Use Your Data</h3>
@@ -176,25 +195,25 @@ const Privacy = (): JSX.Element => {
                 </p>
 
                 <ol className="section3">
-                  <li>
+                  <p>
                     <h4>Site.</h4> We use the information we collect to provide
                     the Site, and maintain and improve the Site, including
                     understanding the content that Visitors find valuable.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Communications.</h4> We may also use your information to
                     respond to an email from you, and to engage with you about a
                     dataset you wish to share.
-                  </li>
-                  <li>
-                    <h4>Aggregate Insights.</h4> We use your data to produce and
-                    share aggregated insights that do not identify you. For
-                    example we may use your data to generate statistics about
-                    the location of our Visitors, and how many Visitors engage
-                    with the Site on a monthly basis. These aggregated insights
-                    are not personally identifiable.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
+                    <h4>Aggregate Insights.</h4> We use the privacy-friendly
+                    Plausible service to produce and share aggregated insights
+                    that do not identify you. For example we may receive from
+                    Plausible statistics about the location of our Visitors, and
+                    how many Visitors engage with the Site on a monthly basis.
+                    These aggregated insights are not personally identifiable.
+                  </p>
+                  <p>
                     <h4>Security and Investigations.</h4> We use your data
                     (including your communications) if we think it’s necessary
                     for security purposes or to investigate violations of our{" "}
@@ -202,7 +221,7 @@ const Privacy = (): JSX.Element => {
                     Policy. We may use human and automated systems and
                     inferences we make to determine whether you or others can be
                     trusted to engage with the Sites.
-                  </li>
+                  </p>
                 </ol>
               </li>
 
@@ -218,7 +237,7 @@ const Privacy = (): JSX.Element => {
                 </p>
 
                 <ol className="section4">
-                  <li>
+                  <p>
                     <h4>Third Party Site Providers.</h4> CZIF works with service
                     providers that help us operate, secure, and improve the
                     Site. These services are, for example, performing
@@ -226,8 +245,8 @@ const Privacy = (): JSX.Element => {
                     hosting, and security. To the extent they will have access
                     to your information, their use is limited by this Privacy
                     Policy.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Legal and Safety Reasons.</h4> We may disclose
                     information if we believe in good faith that it’s necessary
                     (a) in connection with any legal investigation; (b) to
@@ -235,8 +254,8 @@ const Privacy = (): JSX.Element => {
                     warrants served on us; (c) to protect or defend our rights
                     or property; and/or (d) to investigate or assist in
                     preventing any violation of the law.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>CZIF Entities and Affiliates.</h4> The Chan Zuckerberg
                     Initiative, LLC (“CZI LLC”) is our primary technology
                     partner, focusing on the Site’s infrastructure, security,
@@ -247,67 +266,69 @@ const Privacy = (): JSX.Element => {
                     to entities controlled by or under common control with CZIF
                     (such as CZI LLC) and does not include Facebook for purposes
                     of this policy.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Reorganization, Sale or Merger.</h4> We may share your
                     information in connection with a merger, reorganization, or
                     sale of all or a portion of our organization or assets
                     related to CZIF. In the event of a merger, reorganization or
                     sale of assets, the buyer or other successor entity will
                     continue to be bound by the terms of this Privacy Policy.
-                  </li>
+                  </p>
                 </ol>
               </li>
               <li>
                 <h3>Choices and Rights</h3>
                 <ol className="section5">
-                  <li>
+                  <p>
                     <h4>Rights.</h4> You have the following rights with respect
                     to the personal data we have about you:
-                  </li>
-                  <ul>
-                    <li>
-                      <h5>Delete data.</h5> You can ask us to erase or delete
-                      all or some of your personal data.
-                    </li>
-                    <li>
-                      <h5>Change or correct personal data.</h5> You can also ask
-                      us to change, update or fix your data in certain cases,
-                      particularly if it’s inaccurate.
-                    </li>
-                    <li>
-                      <h5>
-                        Object to, limit, or restrict use of personal data.
-                      </h5>{" "}
-                      You can ask us to stop using all or some of your personal
-                      data (e.g., if we have no legal right to keep using it) or
-                      to limit our use of it (e.g., if your personal data is
-                      inaccurate or unlawfully held).
-                    </li>
-                    <li>
-                      <h5>Right to access and/or take your personal data.</h5>{" "}
-                      You can ask us for a copy of your personal data in
-                      machine-readable form.
-                    </li>
-                    <li>
-                      <h5>The right not to be discriminated against.</h5> CZIF
-                      will not discriminate against you in any manner for
-                      exercising any of the above rights with respect to your
-                      personal data.
-                    </li>
-                    <li>
-                      Contact us at{" "}
-                      <a href="mailto:privacy@chanzuckerberg.com">
-                        privacy@chanzuckerberg.com
-                      </a>{" "}
-                      if you have questions or would like to exercise any rights
-                      you have under applicable law to control your personal
-                      data. If you wish to raise a concern about our use of your
-                      information (and without prejudice to any other rights you
-                      may have), you have the right to do so with your local
-                      supervisory authority.
-                    </li>
-                  </ul>
+                  </p>
+                  <p>
+                    <ul>
+                      <li>
+                        <h5>Delete data.</h5> You can ask us to erase or delete
+                        all or some of your personal data.
+                      </li>
+                      <li>
+                        <h5>Change or correct personal data.</h5> You can also
+                        ask us to change, update or fix your data in certain
+                        cases, particularly if it’s inaccurate.
+                      </li>
+                      <li>
+                        <h5>
+                          Object to, limit, or restrict use of personal data.
+                        </h5>{" "}
+                        You can ask us to stop using all or some of your
+                        personal data (e.g., if we have no legal right to keep
+                        using it) or to limit our use of it (e.g., if your
+                        personal data is inaccurate or unlawfully held).
+                      </li>
+                      <li>
+                        <h5>Right to access and/or take your personal data.</h5>{" "}
+                        You can ask us for a copy of your personal data in
+                        machine-readable form.
+                      </li>
+                      <li>
+                        <h5>The right not to be discriminated against.</h5> CZIF
+                        will not discriminate against you in any manner for
+                        exercising any of the above rights with respect to your
+                        personal data.
+                      </li>
+                      <li>
+                        Contact us at{" "}
+                        <a href="mailto:privacy@chanzuckerberg.com">
+                          privacy@chanzuckerberg.com
+                        </a>{" "}
+                        if you have questions or would like to exercise any
+                        rights you have under applicable law to control your
+                        personal data. If you wish to raise a concern about our
+                        use of your information (and without prejudice to any
+                        other rights you may have), you have the right to do so
+                        with your local supervisory authority.
+                      </li>
+                    </ul>
+                  </p>
                 </ol>
               </li>
 
@@ -340,25 +361,25 @@ const Privacy = (): JSX.Element => {
                   GDPR.
                 </p>
                 <ol className="section8">
-                  <li>
+                  <p>
                     <h4>Consent.</h4> We rely on consent to engage in certain
-                    data collection activities, like through cookies or data you
-                    choose to submit to us for display on cellxgene.
-                  </li>
-                  <li>
+                    data collection activities, like data you choose to submit
+                    to us for display on cellxgene.
+                  </p>
+                  <p>
                     <h4>Legitimate Interests.</h4> We rely on legitimate
                     interests to process the device and log data we collect when
                     you use the Site. We process this data based on our
                     legitimate interest in understanding how the Site is being
                     used so we can improve it and have a sense of its impact,
                     and your legitimate interest in accessing the Site.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Contract.</h4> We rely on contract where processing is
                     necessary for the performance of a contract with you (e.g.
                     to make the data you submitted to us publicly available via
                     cellxgene).
-                  </li>
+                  </p>
                 </ol>
                 <p>
                   Where we rely on consent, you have the right to revoke your
@@ -380,7 +401,7 @@ const Privacy = (): JSX.Element => {
               <li>
                 <h3>Other Important Information</h3>
                 <ol className="section9">
-                  <li>
+                  <p>
                     <h4>Security.</h4> Security of personal data is important to
                     us. We implement security safeguards designed to protect
                     your personal data, including reasonable administrative,
@@ -395,8 +416,8 @@ const Privacy = (): JSX.Element => {
                     </a>{" "}
                     if you become aware of any security issues relating to the
                     Site.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Direct Marketing and Do Not Track Signals.</h4> We don’t
                     currently share personal data with third parties for their
                     direct marketing purposes, nor do we support any Do Not
@@ -404,8 +425,8 @@ const Privacy = (): JSX.Element => {
                     online services respond to those signals. As standards
                     develop, we may establish policies for responding to DNT
                     signals that we would describe in this Privacy Policy.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Changes.</h4> We may modify this Privacy Policy from
                     time to time, and you can see when the last update was by
                     looking at the “Last Updated” date at the top of this page.
@@ -414,14 +435,14 @@ const Privacy = (): JSX.Element => {
                     after we publish a notice about changes to this Privacy
                     Policy means that you acknowledge and agree to the updated
                     Privacy Policy following the date it takes effect.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Children.</h4> The Site is not designed or intended for
                     children under 16. If we become aware that we have the
                     information of such children collected through the Site, we
                     will promptly delete it.
-                  </li>
-                  <li>
+                  </p>
+                  <p>
                     <h4>Contact Information.</h4> If you have questions or
                     complaints regarding this Privacy Policy, please contact us
                     at{" "}
@@ -463,7 +484,7 @@ const Privacy = (): JSX.Element => {
                         </a>
                       </address>
                     </div>
-                  </li>
+                  </p>
                 </ol>
               </li>
             </ol>
