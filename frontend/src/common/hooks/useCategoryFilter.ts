@@ -7,7 +7,7 @@ import {
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
 
-// Metadata values grouped by metadata key.
+// Metadata values grouped by metadata key. TODO(cc) rename to Category and CategoryValue.
 export interface CategoryView {
   key: CATEGORY_KEY;
   values: CategoryValueView[];
@@ -22,11 +22,10 @@ interface CategoryFilter {
 // Set of all category values in the full result set, keyed by their corresponding category.
 type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
 
-// Metadata value, selected state and a set containing the IDs of the result set rows it's associated with. That is,
-// dataset ID when filtering datasets, collection ID when filtering collections.
+// Metadata value, count and selected state.
 export interface CategoryValue {
   key: CategoryValueKey;
-  associatedWith: Set<string>;
+  count: number;
   selected: boolean;
 }
 
@@ -72,6 +71,10 @@ export type OnFilterFn = (
   categoryValueKey: CategoryValueKey
 ) => void;
 
+/* react-table function to call when updating set of selected filters. */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter. */
+type SetFilterFn = (columnId: string, updater: any) => void;
+
 // TODO(cc) check re-renders (5?)
 
 /**
@@ -79,17 +82,13 @@ export type OnFilterFn = (
  * @param originalRows - Original result set before filtering.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
- * @param groupById - Field to group rows by when summarizing category values. For example, "collection_id" when
- * filtering collections.
  * @returns Object containing filter accessor (view model of filter state) and filter mutator (function to modify react-
  * table's internal filter state).
  */
 export function useCategoryFilter(
   originalRows: Row<DatasetRow>[],
   filters: Filters<DatasetRow>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter.
-  setFilter: (columnId: string, updater: any) => void,
-  groupById: string
+  setFilter: SetFilterFn
 ): FilterInstance {
   // Complete set of categories and category values for the result set.
   const [categorySet, setCategorySet] = useState<CategorySet>();
@@ -116,11 +115,10 @@ export function useCategoryFilter(
     const nextFilterState = buildNextFilterState(
       originalRows,
       filters,
-      categorySet,
-      groupById
+      categorySet
     );
     setFilterState(nextFilterState);
-  }, [categorySet, filters, groupById, originalRows]);
+  }, [categorySet, filters, originalRows]);
 
   // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
@@ -158,7 +156,8 @@ function addEmptyCategoryValues(
     nextFilterState
   )) {
     // Grab the expected set of category values.
-    const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
+    const allCategoryValueKeys =
+      categorySet[categoryKey as CategoryKey] ?? new Set(); // TODO(cc) *************************************************************************** problematic
 
     // Grab the filters for this category; used to set the selected state of any missing category values.
     const categoryFilter = getCategoryFilter(
@@ -175,7 +174,7 @@ function addEmptyCategoryValues(
             categoryFilter && categoryFilter.value.includes(categoryValueKey)
           );
           categoryValuesByCategoryValue.set(categoryValueKey, {
-            associatedWith: new Set(),
+            count: 0,
             key: categoryValueKey,
             selected,
           });
@@ -237,7 +236,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
       const categoryValueByValue = filterState[categoryKey as CategoryKey];
       const categoryValueViews = [...categoryValueByValue.values()]
         .map((categoryValue: CategoryValue) => ({
-          count: categoryValue.associatedWith.size,
+          count: categoryValue.count,
           key: categoryValue.key,
           selected: categoryValue.selected,
         }))
@@ -258,15 +257,12 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
  * @param originalRows - Original result set before filtering.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
- * @param groupById - Field to group rows by when summarizing category values. For example, "collection_id" when
- * filtering collections.
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState(
   originalRows: Row<DatasetRow>[],
   filters: Filters<DatasetRow>,
-  categorySet: CategorySet,
-  groupById: string
+  categorySet: CategorySet
 ): FilterState {
   // Remove empty categories from filter. react-table maintains an empty error for categories that previously had
   // selected values.
@@ -278,7 +274,7 @@ function buildNextFilterState(
   const queries = buildQueries(sanitizedFilters);
 
   // Build up base filter state of categories, category values and counts.
-  const nextFilterState = summarizeCategories(originalRows, queries, groupById);
+  const nextFilterState = summarizeCategories(originalRows, queries);
 
   // Update selected flag for the selected category values.
   flagSelectedCategoryValues(nextFilterState, filters);
@@ -469,19 +465,14 @@ function sortCategoryValueViews(
 }
 
 /**
- * Count occurrences of category values across the result set for the given category. Count is modelled as the set of
- * "group by" values on each category value. For datasets, the grouping is per dataset (so dataset ID). For collections,
- * the grouping is per collection (so collection_id).
+ * Count occurrences of category values across the result set for the given category.
  * @param categoryKey - Category to count category values.
  * @param filteredRows - Array of rows containing category values to count.
- * @param groupById - Field to group rows by when summarizing category values. For example, "collection_id" when
- * filtering collections.
  * @return Map of category values keyed by category value key.
  */
 function summarizeCategory(
   categoryKey: CategoryKey,
-  filteredRows: Row<DatasetRow>[],
-  groupById: string
+  filteredRows: Row<DatasetRow>[]
 ): Map<CategoryValueKey, CategoryValue> {
   // Aggregate category value counts for each row.
   return filteredRows.reduce(
@@ -499,14 +490,14 @@ function summarizeCategory(
         let categoryValue = accum.get(categoryValueKey);
         if (!categoryValue) {
           categoryValue = {
-            associatedWith: new Set<string>(),
+            count: 0,
             key: categoryValueKey,
             selected: false,
           };
           accum.set(categoryValueKey, categoryValue);
         }
-        // Add group by value for this category value key.
-        categoryValue.associatedWith.add(row.values[groupById]);
+        // Increment category value count.
+        categoryValue.count++;
       });
       return accum;
     },
@@ -519,15 +510,12 @@ function summarizeCategory(
  * values in each resulting result set.
  * @param originalRows - Original result set before filtering.
  * @param queries - Selected filters applicable to a category.
- * @param groupById - Field to group rows by when summarizing category values. For example, "collection_id" when
- * filtering collections.
  * @returns Intermediate filter state with category, category values and counts fully built. Note, empty category values
  * and category value selected states are added after this initial structure is built.
  */
 function summarizeCategories(
   originalRows: Row<DatasetRow>[],
-  queries: Query[],
-  groupById: string
+  queries: Query[]
 ): FilterState {
   return queries.reduce((accum: FilterState, query: Query) => {
     // Apply the filters on the original result set
@@ -535,7 +523,7 @@ function summarizeCategories(
 
     // Count the category value occurrences in each category that shares this filter.
     query.categoryKeys.forEach((categoryKey: CategoryKey) => {
-      accum[categoryKey] = summarizeCategory(categoryKey, rows, groupById);
+      accum[categoryKey] = summarizeCategory(categoryKey, rows);
     });
 
     return accum;

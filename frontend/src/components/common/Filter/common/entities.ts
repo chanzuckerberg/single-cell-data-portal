@@ -18,36 +18,35 @@ export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 /* "value" prop passed to react-table's Cell function */
 export type CellPropsValue = { value: CellValue<string[]> };
 
-export interface CollectionCategoryValues {
-  assayAggregated: Ontology[];
-  cellTypeAggregated: Ontology[];
-  diseaseAggregated: Ontology[];
-  isPrimaryDataAggregated: IS_PRIMARY_DATA[];
-  organismAggregated: Ontology[];
-  sexAggregated: Ontology[];
-  tissueAggregated: Ontology[];
+/* Filterable values of datasets and collections. */
+export interface Categories {
+  assay: Ontology[];
+  cell_type: Ontology[];
+  disease: Ontology[];
+  is_primary_data: IS_PRIMARY_DATA[];
+  organism: Ontology[];
+  sex: Ontology[];
+  tissue: Ontology[];
 }
 
 /* Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
    datasets grouped by collection. */
-export type CollectionRow = DatasetRow & CollectionCategoryValues;
-
-/* Join of dataset and collection information, optimized for filtering datasets */
-export interface DatasetRow {
-  assay: Ontology[];
-  cell_count: number | null;
-  cell_type: Ontology[];
-  collection_id: Collection["id"];
-  collection_name: Collection["name"];
-  disease: Ontology[];
+export interface CollectionRow extends Categories {
   id: string;
-  is_primary_data: IS_PRIMARY_DATA[]; // Handle "BOTH" as ["primary", "secondary"]
   name: string;
-  organism: Ontology[];
   published_at: number;
   revised_at?: number;
-  sex: Ontology[];
-  tissue: Ontology[];
+}
+
+/* Join of dataset and collection information, optimized for filtering datasets */
+export interface DatasetRow extends Categories {
+  cell_count: number | null;
+  collection_id: Collection["id"];
+  collection_name: Collection["name"];
+  id: string;
+  name: string;
+  published_at: number;
+  revised_at?: number;
 }
 
 /* "row" prop passed to react-table's Cell function */
