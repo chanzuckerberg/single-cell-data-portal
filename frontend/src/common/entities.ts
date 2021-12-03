@@ -75,8 +75,6 @@ export interface Collection {
   created_at: number;
   updated_at: number;
   has_revision: boolean;
-  published_at: number; //TODO(cc) lint
-  revised_at: number;
   revision_diff: boolean;
   tombstone?: boolean;
 }
@@ -92,7 +90,7 @@ export interface Dataset {
   tissue: Ontology[];
   disease: Ontology[];
   cell_count: number | null;
-  // sex: Ontology[];
+  // sex: string;
   ethnicity: Ontology;
   organism: Ontology[];
   name: string;
