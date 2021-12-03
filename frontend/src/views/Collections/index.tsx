@@ -87,7 +87,7 @@ export default function Collections(): JSX.Element {
         Header: "Organism",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         filter: "includesSome",
-        id: CATEGORY_KEY.ORGANISM, // TODO(cc) check for `` in datasets
+        id: CATEGORY_KEY.ORGANISM,
       },
       {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
@@ -114,7 +114,6 @@ export default function Collections(): JSX.Element {
   );
 
   // Table init
-  // TODO(cc) remove group by in types
   const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
@@ -148,7 +147,6 @@ export default function Collections(): JSX.Element {
     setFilter,
     state: { filters },
   } = tableInstance;
-  // @ts-expect-error -- TODO(cc) revisit
   const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
 
   // Hide datasets behind feature flag - start
