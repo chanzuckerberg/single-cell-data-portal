@@ -72,6 +72,8 @@ const Collection: FC = () => {
     visibility,
   });
 
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+
   const { data: collection, isError, isFetching } = collectionState;
 
   const [deleteMutation, { isLoading }] = useDeleteCollection(id, visibility);
@@ -82,6 +84,7 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (
+      hasShownWithdrawToast ||
       !tombstoned_dataset_id ||
       !collection ||
       isTombstonedCollection(collection)
@@ -95,7 +98,8 @@ const Collection: FC = () => {
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
     removeParams("tombstoned_dataset_id");
-  }, [tombstoned_dataset_id, collection]);
+    setHasShownWithdrawToast(true);
+  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
 
   useEffect(() => {
     if (!userWithdrawn && isTombstonedCollection(collection)) {
