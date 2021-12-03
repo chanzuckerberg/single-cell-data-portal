@@ -1,9 +1,8 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 
-// App dependencies
-import { DatasetsResponse } from "src/common/queries/filterable-datasets";
-
 /* Model of response from /datasets/index API endpoint. */
+import { DatasetResponse } from "src/common/queries/filter";
+
 const datasetsIndex = [
   {
     assay: [
@@ -15978,4 +15977,4 @@ const datasetsIndex = [
 ];
 
 // Adding unknown to handle schema and future filterable fields (development_stage, ethnicity etc)
-export default datasetsIndex as unknown as DatasetsResponse[];
+export default datasetsIndex as unknown as DatasetResponse[];

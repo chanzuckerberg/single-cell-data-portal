@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 
 // App dependencies
-import { CollectionsResponse } from "src/common/queries/filterable-datasets";
+import { CollectionResponse } from "src/common/queries/filter";
 
 /* Model of response from /collections/index API endpoint. */
 const collectionsIndex = [
@@ -671,6 +671,6 @@ const collectionsIndex = [
     published_at: 1638385183.242542,
     revised_at: null,
   },
-] as CollectionsResponse[];
+];
 
-export default collectionsIndex as unknown as CollectionsResponse[];
+export default collectionsIndex as unknown as CollectionResponse[];
