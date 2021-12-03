@@ -395,6 +395,7 @@ class ConversionStatus(enum.Enum):
     UPLOADING - The file is being uploaded to the S3 artifact bucket
     UPLOADED - The file was successfully uploaded to the S3 artifact bucket and the dataset artifact was updated
     FAILED - Conversion failed
+    SKIPPED - Conversion not attempted, likely due to known incompatibilities (e.g., exceeds Seurat size limit)
     """
 
     NA = "N/A"
@@ -403,6 +404,7 @@ class ConversionStatus(enum.Enum):
     UPLOADING = "Uploading"
     UPLOADED = "Uploaded"
     FAILED = "Failed"
+    SKIPPED = "Skipped"
 
 
 class ProcessingStatus(enum.Enum):

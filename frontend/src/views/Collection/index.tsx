@@ -14,6 +14,7 @@ import {
   useCollectionUploadLinks,
   useDeleteCollection,
 } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -71,6 +72,8 @@ const Collection: FC = () => {
     visibility,
   });
 
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+
   const { data: collection, isError, isFetching } = collectionState;
 
   const [deleteMutation, { isLoading }] = useDeleteCollection(id, visibility);
@@ -81,6 +84,7 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (
+      hasShownWithdrawToast ||
       !tombstoned_dataset_id ||
       !collection ||
       isTombstonedCollection(collection)
@@ -93,7 +97,9 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-  }, [tombstoned_dataset_id, collection]);
+    removeParams("tombstoned_dataset_id");
+    setHasShownWithdrawToast(true);
+  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
 
   useEffect(() => {
     if (!userWithdrawn && isTombstonedCollection(collection)) {

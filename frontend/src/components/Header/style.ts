@@ -6,7 +6,6 @@ import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
   height: 48px;
-  margin-bottom: 24px;
   position: sticky;
   top: 0;
   width: 100%;
@@ -14,12 +13,11 @@ export const Wrapper = styled.div`
 `;
 
 export const MainWrapper = styled.div`
-  ${layout};
+  ${layout}
   align-items: center;
   display: flex;
   height: inherit; /* Take up full height of parent. */
   justify-content: space-between;
-  margin: 0 auto;
   padding: 0 16px;
 `;
 
@@ -67,7 +65,7 @@ const iconButton = css`
 `;
 
 export const LinkWrapper = styled.span`
-  ${button};
+  ${button}
 
   .${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.ACTIVE} {
     box-shadow: inset 0 -2px 0 ${Colors.WHITE} !important; /* Overrides specificity of BP button active box shadow rule. */
@@ -75,11 +73,11 @@ export const LinkWrapper = styled.span`
 `;
 
 export const LearnButtonWrapper = styled.span`
-  ${iconButton};
+  ${iconButton}
 `;
 
 export const AuthButtonWrapper = styled.span`
-  ${iconButton};
+  ${iconButton}
 
   .${Classes.BUTTON}.${Classes.MINIMAL} {
     color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
