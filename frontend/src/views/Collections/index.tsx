@@ -1,18 +1,8 @@
 import Head from "next/head";
 import React, { useMemo, useState } from "react";
-import {
-  AggregatorFn,
-  CellValue,
-  Column,
-  Row,
-  useFilters,
-  useGroupBy,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
@@ -25,7 +15,7 @@ import {
   CollectionRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
-import Cell from "src/components/common/Grid/components/Cell";
+import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
@@ -36,7 +26,7 @@ import { View } from "src/views/globalStyle";
 const COLLECTION_ID = "collection_id";
 
 // Collection name object key
-const COLLECTION_NAME = "collection_name";
+const COLLECTION_NAME = "name";
 
 // Key identifying recency sort by column
 const COLUMN_ID_RECENCY = "recency";
@@ -49,41 +39,35 @@ export default function Collections(): JSX.Element {
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
+    // TODO(cc) remove cell and header from hidden cols (same for datasets)
+    // TODO(cc) share ontology accessor with datasets
     () => [
-      // Hidden, required for grouping datasets by collections
-      {
-        accessor: COLLECTION_ID,
-      },
-      // Hidden, required for sorting TODO(cc) this should be for materialized collection row
+      // Hidden, required for sorting
       {
         // Sort by revised_at if specified otherwise published_at.
         accessor: (dataset: CollectionRow): number =>
           dataset.revised_at ?? dataset.published_at,
         id: COLUMN_ID_RECENCY,
       },
-      // Collection name, aggregated across datasets to roll up into single value for each collection ID group.
       {
         Cell: ({ row }: RowPropsValue) => {
           return (
             <LinkCell
               data-test-id="collection-link"
-              url={ROUTES.COLLECTION.replace(":id", row.values.collection_id)}
-              value={row.values.collection_name[0]}
+              url={ROUTES.COLLECTION.replace(":id", row.values.id)}
+              value={row.values.name}
             />
           );
         },
         Header: "Collection",
         accessor: COLLECTION_NAME,
-        aggregate: aggregateFn(),
       },
       {
         Cell: ({ value }: CellPropsValue) => (
           <NTagCell label={PluralizedMetadataLabel.TISSUE} values={value} />
         ),
         Header: "Tissue",
-        accessor: (dataset: CollectionRow) =>
-          dataset.tissueAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
         filter: "includesSome",
         id: CATEGORY_KEY.TISSUE,
       },
@@ -92,59 +76,36 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PluralizedMetadataLabel.DISEASE} values={value} />
         ),
         Header: "Disease",
-        accessor: (dataset: CollectionRow) =>
-          dataset.diseaseAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
         filter: "includesSome",
         id: CATEGORY_KEY.DISEASE,
-      },
-      {
-        Cell: ({ value }: CellPropsValue) => (
-          <NTagCell label={PluralizedMetadataLabel.ASSAY} values={value} />
-        ),
-        Header: "Assay",
-        accessor: (dataset: CollectionRow) =>
-          dataset.assayAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
-        filter: "includesSome",
-        id: CATEGORY_KEY.ASSAY,
       },
       {
         Cell: ({ value }: CellPropsValue) => (
           <NTagCell label={PluralizedMetadataLabel.ORGANISM} values={value} />
         ),
         Header: "Organism",
-        accessor: (dataset: CollectionRow) =>
-          dataset.organismAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         filter: "includesSome",
         id: CATEGORY_KEY.ORGANISM, // TODO(cc) check for `` in datasets
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
-          <NTagCell label={PluralizedMetadataLabel.CELL_TYPE} values={value} />
-        ), // TODO(cc) remove cell and header from hidden cols (same for datasets)
-        Header: "Cell Type",
-        accessor: (dataset: CollectionRow) =>
-          dataset.cellTypeAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+        filter: "includesSome",
+        id: CATEGORY_KEY.ASSAY,
+      },
+      {
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
       },
       {
-        Cell: Cell,
-        Header: "Primary Data",
-        accessor: (dataset: CollectionRow) => dataset.isPrimaryDataAggregated,
-        aggregate: aggregateFn(),
+        accessor: (dataset: CollectionRow) => dataset.is_primary_data,
         filter: "includesSome",
         id: CATEGORY_KEY.IS_PRIMARY_DATA,
       },
       {
-        Cell: Cell,
-        Header: "Sex",
-        accessor: (dataset: CollectionRow) =>
-          dataset.sexAggregated.map((o: Ontology) => o.label), // TODO(cc)
-        aggregate: aggregateFn(),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
       },
@@ -153,13 +114,13 @@ export default function Collections(): JSX.Element {
   );
 
   // Table init
+  // TODO(cc) remove group by in types
   const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
       data: filterableCollectionDatasets,
       initialState: {
-        groupBy: [COLLECTION_ID],
-        // Only display aggregated tissue, disease and organism values.
+        // Only display tissue, disease and organism values.
         hiddenColumns: [
           COLLECTION_ID,
           COLUMN_ID_RECENCY,
@@ -177,7 +138,6 @@ export default function Collections(): JSX.Element {
       },
     },
     useFilters,
-    useGroupBy,
     useSortBy
   );
 
@@ -188,13 +148,8 @@ export default function Collections(): JSX.Element {
     setFilter,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useCategoryFilter(
-    // @ts-expect-error -- TODO(cc) revisit
-    preFilteredRows,
-    filters,
-    setFilter,
-    COLLECTION_ID
-  );
+  // @ts-expect-error -- TODO(cc) revisit
+  const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
 
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER, ROUTES.HOMEPAGE);
@@ -228,18 +183,4 @@ export default function Collections(): JSX.Element {
       </View>
     </>
   );
-}
-
-/**
- * Create function that flattens and de-dupes array category values (in a single category/column) from dataset rows
- * grouped by collection. Used when aggregating and displaying dataset category values that are aggregated at the
- * collection level.
- * @returns Function that aggregates values across rows.
- */
-function aggregateFn(): AggregatorFn<CollectionRow> {
-  // TODO(cc) can this just be the outside function?
-  // @param rows - array containing all values in a single category/column for all datasets grouped by collection
-  return (_columnValues: CellValue[], rows: Array<Row<CollectionRow>>) => {
-    return [...new Set(rows.flat())];
-  };
 }
