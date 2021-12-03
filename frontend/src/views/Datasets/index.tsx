@@ -8,12 +8,8 @@ import {
   useTable,
 } from "react-table";
 import { ROUTES } from "src/common/constants/routes";
-import { Ontology } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
-import {
-  OntologyCategoryKey,
-  useCategoryFilter,
-} from "src/common/hooks/useCategoryFilter";
+import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { fetchDatasetRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
@@ -21,6 +17,7 @@ import {
   CATEGORY_KEY,
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
+import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 
 // Collection name object key
@@ -42,10 +39,6 @@ export default function Datasets(): JSX.Element {
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
     () => [
-      // Hidden, ID column, required for "group by" functionality during category summarization. TODO(cc) revisit once collection functionality is confirmed.
-      {
-        accessor: DATASET_ID,
-      },
       // Hidden, required for sorting by recency.
       {
         accessor: (dataset: DatasetRow): number =>
@@ -77,13 +70,6 @@ export default function Datasets(): JSX.Element {
       },
       {
         Cell: Cell,
-        Header: "Assay",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
-        filter: "includesSome",
-        id: CATEGORY_KEY.ASSAY,
-      },
-      {
-        Cell: Cell,
         Header: "Organism",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
         filter: "includesSome",
@@ -92,6 +78,13 @@ export default function Datasets(): JSX.Element {
       {
         Header: "Cells",
         accessor: "cell_count",
+      },
+      {
+        Cell: Cell,
+        Header: "Assay",
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+        filter: "includesSome",
+        id: CATEGORY_KEY.ASSAY,
       },
       {
         Cell: Cell,
@@ -149,12 +142,7 @@ export default function Datasets(): JSX.Element {
     state: { filters },
   } = tableInstance;
 
-  const filterInstance = useCategoryFilter(
-    preFilteredRows,
-    filters,
-    setFilter,
-    "id"
-  );
+  const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
 
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER, ROUTES.HOMEPAGE);
@@ -202,14 +190,4 @@ function DatasetNameCell(props: CellProps<DatasetRow, string[]>): JSX.Element {
       </div>
     </div>
   );
-}
-
-/**
- * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values.
- * @param key - Object key of value to display in cell.
- * @returns Function that returns value with the given key, to display in a cell.
- */
-function ontologyCellAccessorFn(key: OntologyCategoryKey) {
-  return (dataset: DatasetRow) => dataset[key].map((o: Ontology) => o.label);
 }
