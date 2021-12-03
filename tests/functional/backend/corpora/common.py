@@ -89,11 +89,12 @@ class BaseFunctionalTestCase(unittest.TestCase):
                 cxg_status = data.get("cxg_status")
                 rds_status = data.get("rds_status")
                 h5ad_status = data.get("h5ad_status")
-                if cxg_status == rds_status == h5ad_status == "UPLOADED":
+                processing_status = data.get("processing_status")
+                if cxg_status == rds_status == h5ad_status == "UPLOADED" and processing_status == "SUCCESS":
                     keep_trying = False
-            if time.time() >= timer + 300:
+            if time.time() >= timer + 600:
                 raise TimeoutError(
-                    f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_uuid}"
                 )
             time.sleep(10)
         return dataset_uuid
