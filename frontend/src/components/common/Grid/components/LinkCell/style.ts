@@ -5,7 +5,7 @@ export const StyledAnchor = styled.a`
   font-weight: 500;
 
   &:hover {
-    color: inherit;
+    color: #0073ff;
     text-decoration: none;
   }
 `;
