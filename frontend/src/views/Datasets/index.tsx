@@ -20,16 +20,19 @@ import {
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 
-// Collection name object key
+// Collection ID object key.
+const COLLECTION_ID = "collection_id";
+
+// Collection name object key.
 const COLLECTION_NAME = "collection_name";
 
-// Dataset ID object key
+// Dataset ID object key.
 const DATASET_ID = "id";
 
-// Dataset name object key
+// Dataset name object key.
 const DATASET_NAME = "name";
 
-// Key identifying recency sort by column
+// Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
@@ -39,16 +42,6 @@ export default function Datasets(): JSX.Element {
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
     () => [
-      // Hidden, required for sorting by recency.
-      {
-        accessor: (dataset: DatasetRow): number =>
-          dataset.revised_at ?? dataset.published_at,
-        id: COLUMN_ID_RECENCY,
-      },
-      // Hidden, required for accessing collection name via row.values, for display.
-      {
-        accessor: COLLECTION_NAME,
-      },
       {
         Cell: DatasetNameCell,
         Header: "Dataset",
@@ -79,23 +72,41 @@ export default function Datasets(): JSX.Element {
         Header: "Cells",
         accessor: "cell_count",
       },
+      // Hidden, required for sorting by recency.
+      {
+        accessor: (dataset: DatasetRow): number =>
+          dataset.revised_at ?? dataset.published_at,
+        id: COLUMN_ID_RECENCY,
+      },
+      // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
+      {
+        accessor: COLLECTION_ID,
+      },
+      // Hidden, required for accessing collection name via row.values, for display.
+      {
+        accessor: COLLECTION_NAME,
+      },
+      // Hidden, required for filter.
       {
         Header: "Assay",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
       },
+      // Hidden, required for filter.
       {
         Header: "Cell Type",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
       },
+      // Hidden, required for filter.
       {
         Header: "Primary Data",
         accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
         filter: "includesSome",
       },
+      // Hidden, required for filter.
       {
         Header: "Sex",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
@@ -114,6 +125,7 @@ export default function Datasets(): JSX.Element {
       initialState: {
         hiddenColumns: [
           DATASET_ID,
+          COLLECTION_ID,
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
           // CATEGORY_KEY.CELL_TYPE,

@@ -23,7 +23,7 @@ import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 
 // Collection ID object key
-const COLLECTION_ID = "collection_id";
+const COLLECTION_ID = "id";
 
 // Collection name object key
 const COLLECTION_NAME = "name";
@@ -38,13 +38,6 @@ export default function Collections(): JSX.Element {
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
     () => [
-      // Hidden, required for sorting
-      {
-        // Sort by revised_at if specified otherwise published_at.
-        accessor: (dataset: CollectionRow): number =>
-          dataset.revised_at ?? dataset.published_at,
-        id: COLUMN_ID_RECENCY,
-      },
       {
         Cell: ({ row }: RowPropsValue) => {
           return (
@@ -85,21 +78,36 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_KEY.ORGANISM,
       },
+      // Hidden, required for sorting
+      {
+        // Sort by revised_at if specified otherwise published_at.
+        accessor: (dataset: CollectionRow): number =>
+          dataset.revised_at ?? dataset.published_at,
+        id: COLUMN_ID_RECENCY,
+      },
+      // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
+      {
+        accessor: COLLECTION_ID,
+      },
+      // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
       },
+      // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
       },
+      // Hidden, required for filter.
       {
         accessor: (dataset: CollectionRow) => dataset.is_primary_data,
         filter: "includesSome",
         id: CATEGORY_KEY.IS_PRIMARY_DATA,
       },
+      // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
