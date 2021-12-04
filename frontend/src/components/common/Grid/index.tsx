@@ -3,7 +3,7 @@ import { CollectionRow } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
 
 interface Props {
-  className?: string; // TODO(cc) review type
+  className?: string;
   tableInstance: TableInstance<CollectionRow>;
 }
 

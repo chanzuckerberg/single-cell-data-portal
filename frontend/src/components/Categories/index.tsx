@@ -11,6 +11,7 @@ interface Props {
 
 /**
  * Render categories, category values and their counts. Handle click on category values.
+ * TODO(cc) remove with updated datasets page.
  * @param categories - List of categories to display.
  * @param onFilter - Function to invoke on select of category value.
  */
