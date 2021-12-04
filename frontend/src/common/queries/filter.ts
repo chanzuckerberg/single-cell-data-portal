@@ -1,14 +1,25 @@
+import { useMemo, useState } from "react";
+import { QueryResult, useQuery } from "react-query";
+import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { ENTITIES } from "src/common/queries/entities";
 import {
   Categories,
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
-import collectionsIndex from "../../../tests/features/fixtures/collections/collections-index";
-import datasetsIndex from "../../../tests/features/fixtures/datasets/datasets-index";
+import { API_URL } from "src/configs/configs";
 
-/* Model of /collections/index JSON response  */
+/* Model returned on fetch of collections or datasets. */
+export interface FetchCategoriesRows<T extends Categories> {
+  error: boolean;
+  loading: boolean;
+  rows: T[];
+}
+
+/* Model of /collections/index JSON response. */
 export interface CollectionResponse {
   id: string;
   name: string;
@@ -16,7 +27,7 @@ export interface CollectionResponse {
   revised_at: number;
 }
 
-/* Model of /datasets/index JSON response  */
+/* Model of /datasets/index JSON response.  */
 export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
@@ -33,53 +44,119 @@ export interface DatasetResponse {
   tissue: Ontology[];
 }
 
+/* Query key for caching collections returned from /collections/index endpoint. */
+export const USE_COLLECTIONS_INDEX = {
+  entities: [ENTITIES.COLLECTION],
+  id: "collectionsIndex",
+};
+
+/* Query key for caching datasets returned from /datasets/index endpoint. */
+const USE_DATASETS_INDEX = {
+  entities: [ENTITIES.DATASET],
+  id: "datasetsIndex",
+};
+
 /**
  * Fetch collection and dataset information and build collection-specific filter view model.
- * @returns All public datasets joined with their corresponding collection information.
+ * @returns All public collections and the aggregated metadata of their datasets.
  */
-export function fetchCollectionRows(): CollectionRow[] {
-  const collectionsById = fetchCollections();
-  const datasets = fetchDatasets();
-  const datasetsRows = buildDatasetRows(collectionsById, datasets);
-  return buildCollectionRows(collectionsById, datasetsRows);
+export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
+  // View model built from join of collections response and aggregated metadata of dataset rows.
+  const [collectionRows, setCollectionRows] = useState<CollectionRow[]>([]);
+
+  // Fetch datasets.
+  const {
+    data: datasets,
+    isError: datasetsError,
+    isLoading: datasetsLoading,
+  } = useFetchDatasets();
+
+  // Fetch collections.
+  const {
+    data: collectionsById,
+    isError: collectionsError,
+    isLoading: collectionsLoading,
+  } = useFetchCollections();
+
+  // Build dataset rows once datasets and collections responses have resolved.
+  useMemo(() => {
+    if (!datasets || !collectionsById) {
+      return;
+    }
+    const datasetRows = buildDatasetRows(collectionsById, datasets);
+    setCollectionRows(buildCollectionRows(collectionsById, datasetRows));
+  }, [datasets, collectionsById]);
+
+  return {
+    error: datasetsError || collectionsError,
+    loading: datasetsLoading || collectionsLoading,
+    rows: collectionRows,
+  };
+}
+
+/**
+ * Cache-enabled hook for fetching public collections and returning only core collection fields.
+ * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
+ */
+export function useFetchCollections(): QueryResult<
+  Map<string, CollectionResponse>
+> {
+  return useQuery<Map<string, CollectionResponse>>(
+    [USE_COLLECTIONS_INDEX],
+    fetchCollections
+  );
 }
 
 /**
  * Fetch collection and dataset information and build filter view model.
  * @returns All public datasets joined with their corresponding collection information.
  */
-export function fetchDatasetRows(): DatasetRow[] {
-  const collectionsById = fetchCollections();
-  const datasets = fetchDatasets();
-  return buildDatasetRows(collectionsById, datasets);
+export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
+  // View model built from join of datasets and collections responses.
+  const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
+
+  // Fetch datasets.
+  const {
+    data: datasets,
+    isError: datasetsError,
+    isLoading: datasetsLoading,
+  } = useFetchDatasets();
+
+  // Fetch collections.
+  const {
+    data: collectionsById,
+    isError: collectionsError,
+    isLoading: collectionsLoading,
+  } = useFetchCollections();
+
+  // Build dataset rows once datasets and collections responses have resolved.
+  useMemo(() => {
+    if (!datasets || !collectionsById) {
+      return;
+    }
+    setDatasetRows(buildDatasetRows(collectionsById, datasets));
+  }, [datasets, collectionsById]);
+
+  return {
+    error: datasetsError || collectionsError,
+    loading: datasetsLoading || collectionsLoading,
+    rows: datasetRows,
+  };
 }
 
 /**
- * Fetch datasets from /datasets/index. Correct any dirt data returned from endpoint.
- * @returns Array of datasets.
+ * Cache-enabled hook for fetching public, non-tombstoned, datasets returning only filterable and sortable fields.
+ * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
+ * fields.
  */
-function fetchDatasets(): DatasetResponse[] {
-  // Correct any dirty data returned from endpoint.
-  return datasetsIndex.map((dataset: DatasetResponse) => {
-    return sanitizeDataset(dataset);
-  });
-}
-
-/**
- * Fetch collections from /datasets/index. Key collections by their ID for easy lookups during join and aggregate
- * functions.
- * @returns Map of collections keyed by their ID.
- */
-function fetchCollections(): Map<string, CollectionResponse> {
-  // Create "collections lookup" to facilitate join between collections and datasets.
-  return keyCollectionsById(collectionsIndex);
+export function useFetchDatasets(): QueryResult<DatasetResponse[]> {
+  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets);
 }
 
 /**
  * Create model of collection category values by aggregating the values in each category of each dataset in collection.
  * @param collectionDatasetRows - Datasets in the collection to aggregate category values over.
  * @returns Object containing aggregated category values from given dataset rows.
- * TODO(cc)
  */
 function aggregateCollectionDatasetRows(
   collectionDatasetRows: DatasetRow[]
@@ -218,6 +295,39 @@ function expandIsPrimaryData(
 }
 
 /**
+ * Fetch public collections from /datasets/index endpoint. Collections are partial in that they do not contain all
+ * fields; only fields required for filtering and sorting are returned.
+ * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
+ * request - containing only ID, name and recency values.
+ */
+async function fetchCollections(): Promise<Map<string, CollectionResponse>> {
+  const collections = await (
+    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
+
+  // Create "collections lookup" to facilitate join between collections and datasets.
+  return keyCollectionsById(collections);
+}
+
+/**
+ * Fetch public, non-tombstoned, partial datasets from /datasets/index endpoint. Datasets are partial in that they
+ * do not contain all fields; only fields required for filtering and sorting are returned. Correct any dirt data
+ * returned from endpoint.
+ * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
+ * filterable and sortable dataset fields.
+ */
+async function fetchDatasets(): Promise<DatasetResponse[]> {
+  const datasets = await (
+    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
+
+  // Correct any dirty data returned from endpoint.
+  return datasets.map((dataset: DatasetResponse) => {
+    return sanitizeDataset(dataset);
+  });
+}
+
+/**
  * Group dataset rows by collection.
  * @param datasetRows - Array of dataset rows to group by their collection ID.
  * @returns Dataset rows keyed by their collection IDs.
@@ -235,6 +345,7 @@ function groupDatasetRowsByCollection(
     return accum;
   }, new Map<string, DatasetRow[]>());
 }
+
 /**
  * Created a map of collections keyed by their ID.
  * @param collections - Collections returned from collection/index endpoint.

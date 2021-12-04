@@ -99,8 +99,8 @@ export function useCategoryFilter<T extends Categories>(
 
   // Set up original, full set of categories and their values.
   useMemo(() => {
-    // Only build category set once on load.
-    if (categorySet) {
+    // Only build category set if there are rows to parse category values from. Only build category set once on load.
+    if (!originalRows.length || categorySet) {
       return;
     }
     setCategorySet(buildCategorySet(originalRows));

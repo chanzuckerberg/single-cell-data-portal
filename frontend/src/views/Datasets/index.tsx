@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   CellProps,
   Column,
@@ -11,7 +11,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchDatasetRows } from "src/common/queries/filter";
+import { useFetchDatasetRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
 import {
   CATEGORY_KEY,
@@ -20,35 +20,28 @@ import {
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import DatasetsGrid from "src/components/Datasets/components/Grid/components/DatasetsGrid";
 
-// Collection name object key
+// Collection ID object key.
+const COLLECTION_ID = "collection_id";
+
+// Collection name object key.
 const COLLECTION_NAME = "collection_name";
 
-// Dataset ID object key
+// Dataset ID object key.
 const DATASET_ID = "id";
 
-// Dataset name object key
+// Dataset name object key.
 const DATASET_NAME = "name";
 
-// Key identifying recency sort by column
+// Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
-  // Filterable datasets joined from datasets index and collections index responses.
-  const [filterableDatasets] = useState<DatasetRow[]>(fetchDatasetRows());
+  // Filterable datasets joined from datasets and collections responses.
+  const { error, loading, rows: datasetRows } = useFetchDatasetRows();
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
     () => [
-      // Hidden, required for sorting by recency.
-      {
-        accessor: (dataset: DatasetRow): number =>
-          dataset.revised_at ?? dataset.published_at,
-        id: COLUMN_ID_RECENCY,
-      },
-      // Hidden, required for accessing collection name via row.values, for display.
-      {
-        accessor: COLLECTION_NAME,
-      },
       {
         Cell: DatasetNameCell,
         Header: "Dataset",
@@ -79,27 +72,42 @@ export default function Datasets(): JSX.Element {
         Header: "Cells",
         accessor: "cell_count",
       },
+      // Hidden, required for sorting by recency.
       {
-        Cell: Cell,
+        accessor: (dataset: DatasetRow): number =>
+          dataset.revised_at ?? dataset.published_at,
+        id: COLUMN_ID_RECENCY,
+      },
+      // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
+      {
+        accessor: COLLECTION_ID,
+      },
+      // Hidden, required for accessing collection name via row.values, for display.
+      {
+        accessor: COLLECTION_NAME,
+      },
+      // Hidden, required for filter.
+      {
         Header: "Assay",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
       },
+      // Hidden, required for filter.
       {
-        Cell: Cell,
         Header: "Cell Type",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
       },
+      // Hidden, required for filter.
       {
         Header: "Primary Data",
         accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
         filter: "includesSome",
       },
+      // Hidden, required for filter.
       {
-        Cell: Cell,
         Header: "Sex",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
@@ -113,10 +121,11 @@ export default function Datasets(): JSX.Element {
   const tableInstance = useTable<DatasetRow>(
     {
       columns: columnConfig,
-      data: filterableDatasets,
+      data: datasetRows,
       initialState: {
         hiddenColumns: [
           DATASET_ID,
+          COLLECTION_ID,
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
           // CATEGORY_KEY.CELL_TYPE,
@@ -157,8 +166,12 @@ export default function Datasets(): JSX.Element {
         <title>cellxgene | Datasets</title>
       </Head>
       <div style={{ display: "flex" }}>
-        <Categories {...filterInstance} />
-        <DatasetsGrid tableInstance={tableInstance} />
+        {error || loading ? null : (
+          <>
+            <Categories {...filterInstance} />
+            <DatasetsGrid tableInstance={tableInstance} />
+          </>
+        )}
       </div>
     </>
   );
