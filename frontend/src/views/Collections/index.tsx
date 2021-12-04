@@ -1,12 +1,12 @@
 import Head from "next/head";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchCollectionRows } from "src/common/queries/filter";
+import { useFetchCollectionRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import {
@@ -33,14 +33,10 @@ const COLUMN_ID_RECENCY = "recency";
 
 export default function Collections(): JSX.Element {
   // Filterable collection datasets joined from datasets index and collections index responses.
-  const [filterableCollectionDatasets] = useState<CollectionRow[]>(
-    fetchCollectionRows()
-  );
+  const { error, loading, rows: collectionRows } = useFetchCollectionRows();
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
-    // TODO(cc) remove cell and header from hidden cols (same for datasets)
-    // TODO(cc) share ontology accessor with datasets
     () => [
       // Hidden, required for sorting
       {
@@ -117,7 +113,7 @@ export default function Collections(): JSX.Element {
   const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
-      data: filterableCollectionDatasets,
+      data: collectionRows,
       initialState: {
         // Only display tissue, disease and organism values.
         hiddenColumns: [
@@ -166,19 +162,23 @@ export default function Collections(): JSX.Element {
           rel="stylesheet"
         />
       </Head>
-      <SideBar label="Filters">
-        <Categories {...filterInstance} />
-      </SideBar>
-      <View>
-        {!rows || rows.length === 0 ? (
-          <GridHero>
-            <h3>No Results</h3>
-            <p>There are no collections matching those filters.</p>
-          </GridHero>
-        ) : (
-          <CollectionsGrid tableInstance={tableInstance} />
-        )}
-      </View>
+      {error || loading ? null : (
+        <>
+          <SideBar label="Filters">
+            <Categories {...filterInstance} />
+          </SideBar>
+          <View>
+            {!rows || rows.length === 0 ? (
+              <GridHero>
+                <h3>No Results</h3>
+                <p>There are no collections matching those filters.</p>
+              </GridHero>
+            ) : (
+              <CollectionsGrid tableInstance={tableInstance} />
+            )}
+          </View>
+        </>
+      )}
     </>
   );
 }

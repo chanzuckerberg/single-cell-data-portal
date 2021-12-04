@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   CellProps,
   Column,
@@ -11,7 +11,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { fetchDatasetRows } from "src/common/queries/filter";
+import { useFetchDatasetRows } from "src/common/queries/filter";
 import Categories from "src/components/Categories";
 import {
   CATEGORY_KEY,
@@ -33,8 +33,8 @@ const DATASET_NAME = "name";
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
-  // Filterable datasets joined from datasets index and collections index responses.
-  const [filterableDatasets] = useState<DatasetRow[]>(fetchDatasetRows());
+  // Filterable datasets joined from datasets and collections responses.
+  const { error, loading, rows: datasetRows } = useFetchDatasetRows();
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
@@ -80,14 +80,12 @@ export default function Datasets(): JSX.Element {
         accessor: "cell_count",
       },
       {
-        Cell: Cell,
         Header: "Assay",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
       },
       {
-        Cell: Cell,
         Header: "Cell Type",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
         filter: "includesSome",
@@ -99,7 +97,6 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
       },
       {
-        Cell: Cell,
         Header: "Sex",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
@@ -113,7 +110,7 @@ export default function Datasets(): JSX.Element {
   const tableInstance = useTable<DatasetRow>(
     {
       columns: columnConfig,
-      data: filterableDatasets,
+      data: datasetRows,
       initialState: {
         hiddenColumns: [
           DATASET_ID,
@@ -157,8 +154,12 @@ export default function Datasets(): JSX.Element {
         <title>cellxgene | Datasets</title>
       </Head>
       <div style={{ display: "flex" }}>
-        <Categories {...filterInstance} />
-        <DatasetsGrid tableInstance={tableInstance} />
+        {error || loading ? null : (
+          <>
+            <Categories {...filterInstance} />
+            <DatasetsGrid tableInstance={tableInstance} />
+          </>
+        )}
       </div>
     </>
   );
