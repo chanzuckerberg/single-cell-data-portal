@@ -1,5 +1,7 @@
+import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
 import { Collection, IS_PRIMARY_DATA, Ontology } from "src/common/entities";
+import { CategoryValueView } from "src/common/hooks/useCategoryFilter";
 
 /* Filterable metadata keys */
 export enum CATEGORY_KEY {
@@ -49,5 +51,17 @@ export interface DatasetRow extends Categories {
   revised_at?: number;
 }
 
+export type FilterCategoryValuesFn = (
+  values: CategoryValueView[],
+  searchValue: string
+) => CategoryValueView[];
+
 /* "row" prop passed to react-table's Cell function */
 export type RowPropsValue = { row: Row<CollectionRow> };
+
+export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
+
+export type OnUpdateSearchValueFn = (
+  changeEvent: ChangeEvent<HTMLInputElement>,
+  setSearchValue: SetSearchValueFn
+) => void;
