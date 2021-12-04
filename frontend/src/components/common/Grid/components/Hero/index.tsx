@@ -7,7 +7,7 @@ export const GridHero = styled.div`
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  padding: 80px; /* TODO(cc) review value left/right */
+  padding: 80px;
 
   h3 {
     color: ${PT_TEXT_COLOR};

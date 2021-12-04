@@ -7,8 +7,8 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchCollectionRows } from "src/common/queries/filter";
-import Categories from "src/components/Categories";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
+import Filter from "src/components/common/Filter";
 import {
   CATEGORY_KEY,
   CellPropsValue,
@@ -173,7 +173,7 @@ export default function Collections(): JSX.Element {
       {error || loading ? null : (
         <>
           <SideBar label="Filters">
-            <Categories {...filterInstance} />
+            <Filter {...filterInstance} />
           </SideBar>
           <View>
             {!rows || rows.length === 0 ? (
