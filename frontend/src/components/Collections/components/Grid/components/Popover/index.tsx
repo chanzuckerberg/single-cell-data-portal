@@ -1,10 +1,10 @@
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
+import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import NTag from "src/components/common/Grid/components/NTag";
 import { FieldValues } from "src/components/common/Grid/components/NTag/style";
 import { LeftAlignedDetailsCell } from "../Row/common/style";
 
 interface Props {
-  label: PluralizedMetadataLabel;
+  label: PLURALIZED_METADATA_LABEL;
   values: string[];
 }
 

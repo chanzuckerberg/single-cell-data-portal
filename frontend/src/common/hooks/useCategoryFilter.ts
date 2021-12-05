@@ -5,11 +5,14 @@ import {
   Categories,
   CategoryKey,
   CATEGORY_KEY,
+  CATEGORY_LABEL,
+  IS_PRIMARY_DATA_LABEL,
 } from "src/components/common/Filter/common/entities";
 
-// Metadata values grouped by metadata key. TODO(cc) rename to Category and CategoryValue.
+// Metadata values grouped by metadata key.
 export interface CategoryView {
   key: CATEGORY_KEY;
+  label: CATEGORY_LABEL;
   values: CategoryValueView[];
 }
 
@@ -35,8 +38,9 @@ export type CategoryValueKey = string;
 
 // View model of metadata value, selected state and count.
 export interface CategoryValueView {
-  key: CategoryValueKey;
   count: number;
+  key: CategoryValueKey;
+  label: string;
   selected: boolean;
 }
 
@@ -155,7 +159,7 @@ function addEmptyCategoryValues(
     // Grab the expected set of category values.
     const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
     if (!allCategoryValueKeys) {
-      return; // Error state - all category values for this category can't be found. TODO(cc) revisit error
+      return; // Error state - all category values for this category can't be found.
     }
 
     // If expected category value is missing from this category's category values, add it back in with a count of 0.
@@ -213,6 +217,26 @@ function buildCategorySet<T extends Categories>(
 }
 
 /**
+ * Build the display value for the given category and category value.
+ * @param categoryKey - Category of category value (e.g. "disease").
+ * @param categoryValueKey - Category value to display (e.g. "normal").
+ * @returns String to display as a label for the given category and category value.
+ */
+function buildCategoryValueLabel(
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey
+): string {
+  // Only is_primary_data category values are to be transformed.
+  if (categoryKey !== CATEGORY_KEY.IS_PRIMARY_DATA) {
+    return categoryValueKey;
+  }
+
+  return IS_PRIMARY_DATA_LABEL[
+    categoryValueKey as keyof typeof IS_PRIMARY_DATA_LABEL
+  ];
+}
+
+/**
  * Build view-specific models from filter state, to facilitate easy rendering.
  * @param filterState - Categories, category value and their counts with the current filter applied.
  * @returns Array of category view object.s
@@ -229,12 +253,17 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
         .map((categoryValue: CategoryValue) => ({
           count: categoryValue.count,
           key: categoryValue.key,
+          label: buildCategoryValueLabel(
+            categoryKey as CategoryKey,
+            categoryValue.key
+          ),
           selected: categoryValue.selected,
         }))
         .sort(sortCategoryValueViews);
       // Return completed view model of this category.
       return {
         key: categoryKey as CategoryKey,
+        label: CATEGORY_LABEL[categoryKey as CategoryKey],
         values: categoryValueViews,
       };
     })
