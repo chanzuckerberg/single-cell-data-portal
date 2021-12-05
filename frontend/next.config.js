@@ -58,4 +58,16 @@ module.exports = {
       },
     ];
   },
+
+  // Redirect / to /datasets.
+  // TODO(cc) - disable on go-live if filter feature flag is still enabled (#1718)
+  async redirects() {
+    return [
+      {
+        destination: "/datasets",
+        permanent: true,
+        source: "/",
+      },
+    ];
+  },
 };
