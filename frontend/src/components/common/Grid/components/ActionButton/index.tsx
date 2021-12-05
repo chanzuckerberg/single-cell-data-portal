@@ -1,7 +1,7 @@
 import { AnchorButton } from "@blueprintjs/core";
 import Image from "next/image";
 import React from "react";
-import { ActionButton } from "src/components/common/Grid/components/CellActionButton/style";
+import { ActionButton as StyledActionButton } from "src/components/common/Grid/components/ActionButton/style";
 
 interface Props {
   imageProps: StaticImageData;
@@ -9,7 +9,7 @@ interface Props {
   url?: string;
 }
 
-export default function CellActionButton({
+export default function ActionButton({
   imageProps,
   isDisabled = false,
   url,
@@ -18,7 +18,7 @@ export default function CellActionButton({
   const { src, ...restImageProps } = imageProps;
   const actionIcon = <Image alt="Download" src={src} {...restImageProps} />;
   return url ? (
-    <ActionButton
+    <StyledActionButton
       as={AnchorButton}
       disabled={isDisabled}
       href={url}
@@ -27,6 +27,6 @@ export default function CellActionButton({
       {...props}
     />
   ) : (
-    <ActionButton icon={actionIcon} minimal {...props} />
+    <StyledActionButton icon={actionIcon} minimal {...props} />
   );
 }

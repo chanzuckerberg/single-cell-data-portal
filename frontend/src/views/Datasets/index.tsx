@@ -27,12 +27,15 @@ import {
   PLURALIZED_METADATA_LABEL,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
-import CellActionButton from "src/components/common/Grid/components/CellActionButton";
-import CellActions from "src/components/common/Grid/components/CellActions";
+import ActionButton from "src/components/common/Grid/components/ActionButton";
+import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
+import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
+import { SubTitle } from "src/components/common/Grid/components/SubTitle";
+import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
@@ -253,18 +256,6 @@ export default function Datasets(): JSX.Element {
 }
 
 /**
- * Returns action button with corresponding action icon.
- * @param imageData
- * @returns cell action button with corresponding action icon
- */
-function ActionButton(
-  imageData: StaticImageData,
-  props: IButtonProps
-): JSX.Element {
-  return <CellActionButton imageProps={imageData} {...props} />;
-}
-
-/**
  * Table cell component displaying dataset actions "download" and "explore".
  * @param props - Cell-specific properties supplied from react-table.
  * @returns DOM element containing dataset actions "download" and "explore".
@@ -276,12 +267,13 @@ function DatasetsActionsCell(
     row: { values },
   } = props;
   const { cell_count, name } = values || "";
-  const DownloadButton = (downloadProps: IButtonProps) =>
-    ActionButton(downloadSVG, downloadProps);
+  const DownloadButton = (downloadProps: IButtonProps) => (
+    <ActionButton imageProps={downloadSVG} {...downloadProps} />
+  );
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
   return (
-    <CellActions>
+    <ActionsCell>
       <DownloadDataset
         Button={DownloadButton}
         dataAssets={DATASET_ASSETS} // TODO(cc) dataset_assets
@@ -293,7 +285,7 @@ function DatasetsActionsCell(
         content={isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"}
         intent={isOverMaxCellCount ? Intent.DANGER : undefined}
       >
-        <CellActionButton
+        <ActionButton
           data-test-id="view-dataset-link" // TODO(cc)
           imageProps={exploreSVG}
           isDisabled={isOverMaxCellCount}
@@ -302,7 +294,7 @@ function DatasetsActionsCell(
           url={"/"} // dataset?.dataset_deployments[0]?.url
         />
       </Tooltip>
-    </CellActions>
+    </ActionsCell>
   );
 }
 
@@ -312,12 +304,21 @@ function DatasetsActionsCell(
  * @returns DOM element containing both the dataset and collection names.
  */
 function DatasetNameCell(props: CellProps<DatasetRow, string[]>): JSX.Element {
+  const {
+    row: { values },
+  } = props;
+  const { collection_id, collection_name, name } = values;
+  const url = ROUTES.COLLECTION.replace(":id", collection_id);
   return (
-    <div>
-      <div>{props.row.values.name}</div>
-      <div style={{ color: "#5C7080", fontSize: "12px" }}>
-        {props.row.values.collection_name}
-      </div>
-    </div>
+    <>
+      <Title>{name}</Title>
+      {collection_id ? (
+        <SubTitle>
+          <LinkCell url={url} value={collection_name} />
+        </SubTitle>
+      ) : (
+        <SubTitle>{collection_name}</SubTitle>
+      )}
+    </>
   );
 }
