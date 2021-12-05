@@ -57,32 +57,44 @@ const DATASET_NAME = "name";
 // Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
 
+// TODO(cc) temp hard coded - remove once dataset_assets is returned from /datasets/index
 const DATASET_ASSETS = [
   {
-    created_at: 1637192748.443175,
-    dataset_id: "218acb0f-9f2f-4f76-b90b-15a4b7c7f629",
-    filename: "explorer_cxg",
-    filetype: "CXG",
-    id: "d5b661e5-c71b-45f9-8ac0-b54b41b263e1",
-    s3_uri:
-      "s3://hosted-cellxgene-prod/218acb0f-9f2f-4f76-b90b-15a4b7c7f629.cxg/",
-    type: "REMIX",
-    updated_at: 1637192748.443183,
-    user_submitted: true,
-  },
-  {
-    created_at: 1637192883.138201,
-    dataset_id: "218acb0f-9f2f-4f76-b90b-15a4b7c7f629",
+    // eslint-disable-next-line sonarjs/no-duplicate-string -- will be removed as per above
+    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
     filename: "local.h5ad",
     filetype: "H5AD",
-    id: "b51bfa2d-22b2-4c65-9803-d36d4de973fa",
+    id: "fcb3a516-d66d-4825-8dac-48a3b7788404",
     s3_uri:
-      "s3://corpora-data-prod/218acb0f-9f2f-4f76-b90b-15a4b7c7f629/local.h5ad",
+      "s3://corpora-data-staging/14826f8b-2bdf-492d-bc35-928580b83d94/local.h5ad",
     type: "REMIX",
-    updated_at: 1637192883.138206,
-    user_submitted: true,
   },
-] as unknown as DatasetAsset[];
+  {
+    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
+    filename: "local.rds",
+    filetype: "RDS",
+    id: "7595110b-dee6-40ed-bf46-b4365793c2a0",
+    s3_uri:
+      "s3://corpora-data-staging/14826f8b-2bdf-492d-bc35-928580b83d94/local.rds",
+    type: "REMIX",
+  },
+  {
+    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
+    filename: "explorer_cxg",
+    filetype: "CXG",
+    id: "9529083a-6bf6-40d8-aaf0-d1e6ba541727",
+    s3_uri:
+      "s3://hosted-cellxgene-staging/14826f8b-2bdf-492d-bc35-928580b83d94.cxg/",
+    type: "REMIX",
+  },
+] as DatasetAsset[];
+
+// TODO(cc) temp hard coded - remove once dataset_assets is returned from /datasets/index
+const DATASET_DEPLOYMENTS = [
+  {
+    url: "https://cellxgene.staging.single-cell.czi.technology/e/aced2b9a-0107-4b06-9dae-059d170b94a6.cxg/",
+  },
+];
 
 export default function Datasets(): JSX.Element {
   // Filterable datasets joined from datasets and collections responses.
@@ -246,6 +258,7 @@ export default function Datasets(): JSX.Element {
                 <p>There are no datasets matching those filters.</p>
               </GridHero>
             ) : (
+              // @ts-expect-error -- revisit tableInstance typing
               <DatasetsGrid tableInstance={tableInstance} />
             )}
           </View>
@@ -289,9 +302,10 @@ function DatasetsActionsCell(
           data-test-id="view-dataset-link" // TODO(cc)
           imageProps={exploreSVG}
           isDisabled={isOverMaxCellCount}
+          // @ts-expect-error -- revisit rel typing
           rel="noopener"
           target="_blank"
-          url={"/"} // dataset?.dataset_deployments[0]?.url
+          url={DATASET_DEPLOYMENTS[0].url} // dataset?.dataset_deployments[0]?.url
         />
       </Tooltip>
     </ActionsCell>

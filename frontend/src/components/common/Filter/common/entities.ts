@@ -84,8 +84,10 @@ export enum CATEGORY_LABEL {
 /* "row" prop passed to react-table's Cell function */
 export type RowPropsValue = { row: Row<CollectionRow> };
 
+// TODO(cc)
 export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
 
+// TODO(cc)
 export type OnUpdateSearchValueFn = (
   changeEvent: ChangeEvent<HTMLInputElement>,
   setSearchValue: SetSearchValueFn
