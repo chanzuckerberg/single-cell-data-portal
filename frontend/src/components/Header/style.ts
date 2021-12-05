@@ -22,6 +22,9 @@ export const MainWrapper = styled.div`
 `;
 
 export const Left = styled.span`
+  display: flex;
+  gap: 32px;
+
   a {
     display: flex; /* Ensures the anchor wrapping the logo has correct line height. */
   }
@@ -30,6 +33,11 @@ export const Left = styled.span`
 export const Right = styled.span`
   display: flex;
   gap: 24px;
+`;
+
+export const Nav = styled.span`
+  display: flex;
+  gap: 16px;
 `;
 
 const button = css`

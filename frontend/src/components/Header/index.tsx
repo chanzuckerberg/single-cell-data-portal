@@ -5,6 +5,7 @@ import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
@@ -15,15 +16,16 @@ import {
   Left,
   LinkWrapper,
   MainWrapper,
+  Nav,
   Right,
   Wrapper,
 } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const { data: userInfo } = useUserInfo(isCurator);
   const { asPath } = useRouter();
-  const isMyCollectionsActive = asPath === ROUTES.MY_COLLECTIONS;
   const isMyCollectionsShown = userInfo?.name && isCurator;
 
   return (
@@ -31,13 +33,37 @@ const Header: FC = () => {
       <MainWrapper>
         <Left>
           <HomepageLink />
+          {isFilterEnabled && (
+            <Nav>
+              <LinkWrapper>
+                <Link href={ROUTES.DATASETS} passHref>
+                  <AnchorButton
+                    active={isRouteActive(asPath, ROUTES.DATASETS)}
+                    href="passHref"
+                    minimal
+                    text="Datasets"
+                  />
+                </Link>
+              </LinkWrapper>
+              <LinkWrapper>
+                <Link href={ROUTES.COLLECTIONS} passHref>
+                  <AnchorButton
+                    active={isRouteActive(asPath, ROUTES.COLLECTIONS)}
+                    href="passHref"
+                    minimal
+                    text="Collections"
+                  />
+                </Link>
+              </LinkWrapper>
+            </Nav>
+          )}
         </Left>
         <Right>
           {isMyCollectionsShown && (
             <LinkWrapper>
               <Link href={ROUTES.MY_COLLECTIONS} passHref>
                 <AnchorButton
-                  active={isMyCollectionsActive}
+                  active={isRouteActive(asPath, ROUTES.MY_COLLECTIONS)}
                   href="passHref"
                   minimal
                   text="My Collections"
@@ -54,5 +80,15 @@ const Header: FC = () => {
     </Wrapper>
   );
 };
+
+/**
+ * Returns true if current path is equal to the route.
+ * @param path
+ * @param route
+ * @returns true if the current path is the route
+ */
+function isRouteActive(path: string, route: ROUTES): boolean {
+  return path === route;
+}
 
 export default Header;
