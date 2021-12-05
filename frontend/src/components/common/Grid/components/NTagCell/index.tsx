@@ -1,5 +1,5 @@
 import React from "react";
-import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import NTag from "src/components/common/Grid/components/NTag";
 
 interface Props {

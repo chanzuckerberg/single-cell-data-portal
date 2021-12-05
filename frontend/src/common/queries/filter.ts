@@ -12,7 +12,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { API_URL } from "src/configs/configs";
 
-/* Model returned on fetch of collections or datasets. */
+/* Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.  */
 export interface FetchCategoriesRows<T extends Categories> {
   error: boolean;
   loading: boolean;
@@ -44,6 +44,7 @@ export interface DatasetResponse {
   tissue: Ontology[];
 }
 
+/* Category values sorter */
 const COLLATOR = new Intl.Collator("en", {
   numeric: true,
   sensitivity: "base",

@@ -1,7 +1,9 @@
 // App dependencies
 import { Ontology } from "src/common/entities";
-import { OntologyCategoryKey } from "src/common/hooks/useCategoryFilter";
-import { Categories } from "src/components/common/Filter/common/entities";
+import {
+  Categories,
+  OntologyCategoryKey,
+} from "src/components/common/Filter/common/entities";
 
 /* Return type of accessor function. */
 type OntologyCellAccessorFn = (categories: Categories) => string[];

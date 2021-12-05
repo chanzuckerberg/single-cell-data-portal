@@ -1,9 +1,9 @@
 import { Tag } from "@blueprintjs/core";
 import {
   CategoryValueView,
+  CATEGORY_KEY,
   OnFilterFn,
-} from "src/common/hooks/useCategoryFilter";
-import { CATEGORY_KEY } from "src/components/common/Filter/common/entities";
+} from "src/components/common/Filter/common/entities";
 import { SelectedTags } from "./style";
 
 interface Props {
