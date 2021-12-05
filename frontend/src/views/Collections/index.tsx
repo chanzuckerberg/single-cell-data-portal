@@ -81,8 +81,8 @@ export default function Collections(): JSX.Element {
       // Hidden, required for sorting
       {
         // Sort by revised_at if specified otherwise published_at.
-        accessor: (dataset: CollectionRow): number =>
-          dataset.revised_at ?? dataset.published_at,
+        accessor: (collectionRow: CollectionRow): number =>
+          collectionRow.revised_at ?? collectionRow.published_at,
         id: COLUMN_ID_RECENCY,
       },
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
@@ -103,7 +103,8 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: (dataset: CollectionRow) => dataset.is_primary_data,
+        accessor: (collectionRow: CollectionRow) =>
+          collectionRow.is_primary_data,
         filter: "includesSome",
         id: CATEGORY_KEY.IS_PRIMARY_DATA,
       },

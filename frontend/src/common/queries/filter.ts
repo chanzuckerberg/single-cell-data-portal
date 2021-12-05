@@ -44,6 +44,11 @@ export interface DatasetResponse {
   tissue: Ontology[];
 }
 
+const COLLATOR = new Intl.Collator("en", {
+  numeric: true,
+  sensitivity: "base",
+});
+
 /* Query key for caching collections returned from /collections/index endpoint. */
 export const USE_COLLECTIONS_INDEX = {
   entities: [ENTITIES.COLLECTION],
@@ -190,25 +195,13 @@ function aggregateCollectionDatasetRows(
 
   // De-dupe aggregated category values.
   return {
-    assay: uniqueOntologies(aggregatedCategoryValues.assay).sort(
-      sortOntologies
-    ),
-    cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type).sort(
-      sortOntologies
-    ),
-    disease: uniqueOntologies(aggregatedCategoryValues.disease).sort(
-      sortOntologies
-    ),
-    is_primary_data: [
-      ...new Set(aggregatedCategoryValues.is_primary_data),
-    ].sort(),
-    organism: uniqueOntologies(aggregatedCategoryValues.organism).sort(
-      sortOntologies
-    ),
-    sex: uniqueOntologies(aggregatedCategoryValues.sex).sort(sortOntologies),
-    tissue: uniqueOntologies(aggregatedCategoryValues.tissue).sort(
-      sortOntologies
-    ),
+    assay: uniqueOntologies(aggregatedCategoryValues.assay),
+    cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    disease: uniqueOntologies(aggregatedCategoryValues.disease),
+    is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
+    organism: uniqueOntologies(aggregatedCategoryValues.organism),
+    sex: uniqueOntologies(aggregatedCategoryValues.sex),
+    tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
   };
 }
 
@@ -239,13 +232,14 @@ function buildCollectionRows(
 
     // Create collection row from aggregated collection category values and core collection information.
     const { id, name, published_at, revised_at } = collection;
-    collectionRows.push({
+    const collectionRow = sortCategoryValues({
       id,
       name,
       published_at,
       revised_at,
       ...aggregatedCategoryValues,
     });
+    collectionRows.push(collectionRow);
   }
   return collectionRows;
 }
@@ -282,11 +276,13 @@ function buildDatasetRow(
   const { is_primary_data } = dataset;
 
   // Join!
-  return {
+  const datasetRow = {
     ...dataset,
     collection_name: collection?.name ?? "-",
     is_primary_data: expandIsPrimaryData(is_primary_data),
   };
+
+  return sortCategoryValues(datasetRow);
 }
 
 /**
@@ -394,26 +390,31 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
 }
 
 /**
+ * Sort category values on the given collection or dataset rows.
+ * @param row - Collection or dataset row to sort category values of.
+ * @returns Array of collection or dataset rows with category values sorted.
+ */
+function sortCategoryValues<T extends Categories>(row: T): T {
+  return {
+    ...row,
+    assay: row.assay.sort(sortOntologies),
+    cell_type: row.cell_type.sort(sortOntologies),
+    disease: row.disease.sort(sortOntologies),
+    is_primary_data: row.is_primary_data.sort(),
+    organism: row.organism.sort(sortOntologies),
+    sex: row.sex.sort(sortOntologies),
+    tissue: row.assay.sort(sortOntologies),
+  };
+}
+
+/*
  * Sort ontologies by label, case insensitive, ascending.
  * @param o0 - First filtered rows to compare.
  * @param o1 - Second filtered rows to compare.
  * @returns Number indicating sort precedence of o0 vs o1.
- *
- *
- *  * Sort category values on the given dataset rows.
- * @param rows - Collection or dataset rows with category values to sort.
- * @returns Array of collection or dataset rows with category values sorted.
  */
-function sortCategoryValues(o0: Ontology, o1: Ontology) {
-  const label0 = o0.label;
-  const label1 = o1.label;
-  if (label0 < label1) {
-    return -1;
-  }
-  if (label0 > label1) {
-    return 1;
-  }
-  return 0;
+function sortOntologies(o0: Ontology, o1: Ontology): number {
+  return COLLATOR.compare(o0.label, o1.label);
 }
 
 /**
