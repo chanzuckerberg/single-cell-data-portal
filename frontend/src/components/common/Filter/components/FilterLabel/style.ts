@@ -26,10 +26,6 @@ export const CategoryButton = styled.span`
       outline: none;
     }
 
-    .${Classes.BUTTON_TEXT} {
-      height: inherit; /* required; inheriting button height accurately center aligns button text. */
-    }
-
     &.${Classes.MINIMAL}:disabled {
       color: ${GRAY.E};
       cursor: auto;
