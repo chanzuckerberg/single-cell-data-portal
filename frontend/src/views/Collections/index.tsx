@@ -158,7 +158,7 @@ export default function Collections(): JSX.Element {
   const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
 
   // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER, ROUTES.HOMEPAGE);
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   if (!isFilterEnabled) {
     return <></>;
   }
