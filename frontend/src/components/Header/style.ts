@@ -6,7 +6,7 @@ import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
   height: 48px;
-  position: sticky;
+  position: fixed;
   top: 0;
   width: 100%;
   z-index: 1;
