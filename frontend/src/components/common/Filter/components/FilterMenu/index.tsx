@@ -3,11 +3,9 @@ import { IconNames } from "@blueprintjs/icons";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
   CategoryValueView,
-  OnFilterFn,
-} from "src/common/hooks/useCategoryFilter";
-import {
   CATEGORY_KEY,
   FilterCategoryValuesFn,
+  OnFilterFn,
   OnUpdateSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import {

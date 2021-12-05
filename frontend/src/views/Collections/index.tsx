@@ -1,6 +1,7 @@
 import Head from "next/head";
 import React, { useMemo } from "react";
 import { Column, useFilters, useSortBy, useTable } from "react-table";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
@@ -12,7 +13,6 @@ import {
   CATEGORY_KEY,
   CellPropsValue,
   CollectionRow,
-  PLURALIZED_METADATA_LABEL,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
