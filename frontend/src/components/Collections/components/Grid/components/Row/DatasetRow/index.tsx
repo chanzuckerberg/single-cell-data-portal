@@ -45,7 +45,7 @@ import {
   useUploadProgress,
 } from "./utils";
 
-const OVER_MAX_CELL_COUNT_TOOLTIP =
+export const OVER_MAX_CELL_COUNT_TOOLTIP =
   "Exploration is currently unavailable for datasets with more than 2 million cells";
 
 const AsyncTooltip = loadable(
@@ -268,7 +268,7 @@ const DatasetRow: FC<Props> = ({
 /** Maximum number of cells a dataset can have in order to be included for display. */
 export const DATASET_MAX_CELL_COUNT = 2_000_000;
 
-function checkIsOverMaxCellCount(cellCount: number | null): boolean {
+export function checkIsOverMaxCellCount(cellCount: number | null): boolean {
   return (cellCount || 0) > DATASET_MAX_CELL_COUNT;
 }
 
