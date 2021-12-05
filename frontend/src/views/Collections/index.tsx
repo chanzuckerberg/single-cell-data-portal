@@ -186,6 +186,7 @@ export default function Collections(): JSX.Element {
                 <p>There are no collections matching those filters.</p>
               </GridHero>
             ) : (
+              // @ts-expect-error -- revisit tableInstance typing
               <CollectionsGrid tableInstance={tableInstance} />
             )}
           </View>
