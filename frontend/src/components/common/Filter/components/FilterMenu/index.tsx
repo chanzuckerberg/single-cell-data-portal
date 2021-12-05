@@ -49,6 +49,7 @@ export default function FilterMenu({
   const MenuItemsScroller =
     searchable && scrollable ? MenuItemsWrapper : Fragment;
 
+  // Set initial width on menu to prevent resizing on filter of menu items.
   useEffect(() => {
     if (menuRef.current) {
       setMenuWidth(menuRef.current.children[0]?.clientWidth);
@@ -73,14 +74,14 @@ export default function FilterMenu({
           <NoMatches shouldDismissPopover={false} text={"No matches found"} />
         ) : (
           <MenuItemsScroller>
-            {menuItems.map(({ key, count, selected }) => (
+            {menuItems.map(({ key, count, label, selected }) => (
               <MenuItemWrapper key={key} isSelected={selected}>
                 <MenuItem
                   icon={selected ? IconNames.TICK : IconNames.BLANK}
                   labelElement={count}
                   onClick={() => onFilter(categoryKey, key)}
                   shouldDismissPopover={!multiselect}
-                  text={key}
+                  text={label}
                 />
               </MenuItemWrapper>
             ))}

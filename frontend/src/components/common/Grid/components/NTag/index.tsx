@@ -4,13 +4,13 @@ import {
   Position,
   Tag,
 } from "@blueprintjs/core";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
+import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import { ContentColumn, ContentWrapper, FieldValues } from "./style";
 
 const CHUNK_SIZE = 25;
 
 interface Props {
-  label: PluralizedMetadataLabel;
+  label: PLURALIZED_METADATA_LABEL;
   values: string[];
 }
 

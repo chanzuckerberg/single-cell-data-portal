@@ -2,7 +2,6 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -22,6 +21,7 @@ import {
   DetailsCell,
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
+import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";
@@ -187,22 +187,22 @@ const DatasetRow: FC<Props> = ({
         </TitleContainer>
       </DetailsCell>
       <Popover
-        label={PluralizedMetadataLabel.TISSUE}
+        label={PLURALIZED_METADATA_LABEL.TISSUE}
         values={tissue}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.ASSAY}
+        label={PLURALIZED_METADATA_LABEL.ASSAY}
         values={assay}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.DISEASE}
+        label={PLURALIZED_METADATA_LABEL.DISEASE}
         values={disease}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.ORGANISM}
+        label={PLURALIZED_METADATA_LABEL.ORGANISM}
         values={organism}
         isLoading={isMetadataLoading}
       />

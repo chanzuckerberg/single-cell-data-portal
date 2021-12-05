@@ -56,6 +56,31 @@ export type FilterCategoryValuesFn = (
   searchValue: string
 ) => CategoryValueView[];
 
+export enum IS_PRIMARY_DATA_LABEL {
+  "PRIMARY" = "primary",
+  "SECONDARY" = "composed",
+}
+
+/* Value for displaying pluralized metadata labels, for example, "tissues" or "diseases". */
+export enum PLURALIZED_METADATA_LABEL {
+  ASSAY = "assays",
+  CELL_TYPE = "cell types",
+  DISEASE = "diseases",
+  ORGANISM = "organisms",
+  TISSUE = "tissues",
+}
+
+/* Display value of category labels. */
+export enum CATEGORY_LABEL {
+  assay = "Assay",
+  cell_type = "Cell Type",
+  disease = "Disease",
+  is_primary_data = "Data Source",
+  organism = "Organism",
+  tissue = "Tissue",
+  sex = "Sex",
+}
+
 /* "row" prop passed to react-table's Cell function */
 export type RowPropsValue = { row: Row<CollectionRow> };
 
