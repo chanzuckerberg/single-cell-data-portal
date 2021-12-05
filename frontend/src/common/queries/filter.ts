@@ -403,7 +403,7 @@ function sortCategoryValues<T extends Categories>(row: T): T {
     is_primary_data: row.is_primary_data.sort(),
     organism: row.organism.sort(sortOntologies),
     sex: row.sex.sort(sortOntologies),
-    tissue: row.assay.sort(sortOntologies),
+    tissue: row.tissue.sort(sortOntologies),
   };
 }
 
