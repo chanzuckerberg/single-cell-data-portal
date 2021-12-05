@@ -19,6 +19,7 @@ import { ontologyCellAccessorFn } from "src/components/common/Filter/common/util
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
+import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 
@@ -41,11 +42,13 @@ export default function Collections(): JSX.Element {
       {
         Cell: ({ row }: RowPropsValue) => {
           return (
-            <LinkCell
-              data-test-id="collection-link"
-              url={ROUTES.COLLECTION.replace(":id", row.values.id)}
-              value={row.values.name}
-            />
+            <Title>
+              <LinkCell
+                data-test-id="collection-link"
+                url={ROUTES.COLLECTION.replace(":id", row.values.id)}
+                value={row.values.name}
+              />
+            </Title>
           );
         },
         Header: "Collection",
@@ -183,6 +186,7 @@ export default function Collections(): JSX.Element {
                 <p>There are no collections matching those filters.</p>
               </GridHero>
             ) : (
+              // @ts-expect-error -- revisit tableInstance typing
               <CollectionsGrid tableInstance={tableInstance} />
             )}
           </View>
