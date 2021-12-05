@@ -98,7 +98,7 @@ const DATASET_DEPLOYMENTS = [
 
 export default function Datasets(): JSX.Element {
   // Filterable datasets joined from datasets and collections responses.
-  const { error, loading, rows: datasetRows } = useFetchDatasetRows();
+  const { isError, isLoading, rows: datasetRows } = useFetchDatasetRows();
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
@@ -246,7 +246,7 @@ export default function Datasets(): JSX.Element {
           rel="stylesheet"
         />
       </Head>
-      {error || loading ? null : (
+      {isError || isLoading ? null : (
         <>
           <SideBar label="Filters">
             <Filter {...filterInstance} />

@@ -12,11 +12,24 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { API_URL } from "src/configs/configs";
 
+/* Query key for /collections/index */
+const QUERY_ID_COLLECTIONS = "collectionsIndex";
+
+/* Query key for /datasets/index */
+const QUERY_ID_DATASETS = "datasetIndex";
+
 /* Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.  */
 export interface FetchCategoriesRows<T extends Categories> {
-  error: boolean;
-  loading: boolean;
+  isError: boolean;
+  isLoading: boolean;
   rows: T[];
+}
+
+/* Model returned on fetch of collection datasets: materialized dataset view models as well as fetch status.  */
+export interface FetchCollectionDatasetRows {
+  isError: boolean;
+  isLoading: boolean;
+  rows: DatasetRow[];
 }
 
 /* Model of /collections/index JSON response. */
@@ -53,14 +66,31 @@ const COLLATOR = new Intl.Collator("en", {
 /* Query key for caching collections returned from /collections/index endpoint. */
 export const USE_COLLECTIONS_INDEX = {
   entities: [ENTITIES.COLLECTION],
-  id: "collectionsIndex",
+  id: QUERY_ID_COLLECTIONS,
 };
 
 /* Query key for caching datasets returned from /datasets/index endpoint. */
 const USE_DATASETS_INDEX = {
   entities: [ENTITIES.DATASET],
-  id: "datasetsIndex",
+  id: QUERY_ID_DATASETS,
 };
+
+/**
+ * Fetch datasets for the given collection ID.
+ * @param collectionId - ID of collection to fetch datasets for.
+ * @returns All public datasets for the given collection ID.
+ */
+export function useFetchCollectionDatasetRows(
+  collectionId: string
+): FetchCollectionDatasetRows {
+  const { rows: allRows, isError, isLoading } = useFetchDatasetRows();
+  const datasetsByCollectionId = groupDatasetRowsByCollection(allRows);
+  return {
+    isError,
+    isLoading,
+    rows: datasetsByCollectionId.get(collectionId) ?? [],
+  };
+}
 
 /**
  * Fetch collection and dataset information and build collection-specific filter view model.
@@ -94,8 +124,8 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
   }, [datasets, collectionsById]);
 
   return {
-    error: datasetsError || collectionsError,
-    loading: datasetsLoading || collectionsLoading,
+    isError: datasetsError || collectionsError,
+    isLoading: datasetsLoading || collectionsLoading,
     rows: collectionRows,
   };
 }
@@ -144,8 +174,8 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   }, [datasets, collectionsById]);
 
   return {
-    error: datasetsError || collectionsError,
-    loading: datasetsLoading || collectionsLoading,
+    isError: datasetsError || collectionsError,
+    isLoading: datasetsLoading || collectionsLoading,
     rows: datasetRows,
   };
 }

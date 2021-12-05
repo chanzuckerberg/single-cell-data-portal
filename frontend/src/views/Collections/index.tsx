@@ -34,7 +34,7 @@ const COLUMN_ID_RECENCY = "recency";
 
 export default function Collections(): JSX.Element {
   // Filterable collection datasets joined from datasets index and collections index responses.
-  const { error, loading, rows: collectionRows } = useFetchCollectionRows();
+  const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
@@ -174,7 +174,7 @@ export default function Collections(): JSX.Element {
           rel="stylesheet"
         />
       </Head>
-      {error || loading ? null : (
+      {isError || isLoading ? null : (
         <>
           <SideBar label="Filters">
             <Filter {...filterInstance} />
