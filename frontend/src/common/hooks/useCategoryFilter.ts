@@ -451,8 +451,8 @@ function isFilterEqual<T extends Categories>(
 
 /**
  * Sort category value views by key, ascending.
- * @param cvv0 - First filtered rows to compare.
- * @param cvv1 - Second filtered rows to compare.
+ * @param cvv0 - First category value view to compare.
+ * @param cvv1 - Second category value view to compare.
  * @returns Number indicating sort precedence of cv0 vs cv1.
  */
 function sortCategoryValueViews(
@@ -470,8 +470,8 @@ function sortCategoryValueViews(
 
 /**
  * Sort category views by key, ascending.
- * @param c0 - First category to compare.
- * @param c1 - Second category to compare.
+ * @param c0 - First category view to compare.
+ * @param c1 - Second category view to compare.
  * @returns Number indicating sort precedence of c0 vs c1.
  */
 function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
