@@ -1,4 +1,4 @@
-import { Intent, Tooltip } from "@blueprintjs/core";
+import { IButtonProps, Intent, Tooltip } from "@blueprintjs/core";
 import Head from "next/head";
 import React, { useMemo } from "react";
 import {
@@ -257,8 +257,11 @@ export default function Datasets(): JSX.Element {
  * @param imageData
  * @returns cell action button with corresponding action icon
  */
-function ActionButton(imageData: StaticImageData): JSX.Element {
-  return <CellActionButton imageProps={imageData} />;
+function ActionButton(
+  imageData: StaticImageData,
+  props: IButtonProps
+): JSX.Element {
+  return <CellActionButton imageProps={imageData} {...props} />;
 }
 
 /**
@@ -273,9 +276,9 @@ function DatasetsActionsCell(
     row: { values },
   } = props;
   const { cell_count, name } = values || "";
-  const DownloadButton = () => ActionButton(downloadSVG);
+  const DownloadButton = (downloadProps: IButtonProps) =>
+    ActionButton(downloadSVG, downloadProps);
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
-  // hasCXGFile(dataset) TODO(cc) test
 
   return (
     <CellActions>
@@ -286,14 +289,14 @@ function DatasetsActionsCell(
         isRDSSkipped={false} // TODO(cc)
         name={name}
       />
-      <Tooltip
+      <Tooltip // hasCXGFile(dataset) TODO(cc)
         content={isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"}
         intent={isOverMaxCellCount ? Intent.DANGER : undefined}
       >
         <CellActionButton
           data-test-id="view-dataset-link" // TODO(cc)
           imageProps={exploreSVG}
-          isDisabled={true} // dataset.tombstone || isOverMaxCellCount
+          isDisabled={isOverMaxCellCount}
           rel="noopener"
           target="_blank"
           url={"/"} // dataset?.dataset_deployments[0]?.url

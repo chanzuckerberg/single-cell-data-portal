@@ -27,6 +27,6 @@ export default function CellActionButton({
       {...props}
     />
   ) : (
-    <ActionButton icon={actionIcon} minimal />
+    <ActionButton icon={actionIcon} minimal {...props} />
   );
 }

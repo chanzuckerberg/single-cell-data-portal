@@ -10,9 +10,5 @@ export const ActionButton = styled(Button)`
     &:focus {
       outline: none;
     }
-
-    &:hover {
-      background: transparent;
-    }
   }
 `;
