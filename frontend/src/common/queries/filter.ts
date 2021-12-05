@@ -190,13 +190,25 @@ function aggregateCollectionDatasetRows(
 
   // De-dupe aggregated category values.
   return {
-    assay: uniqueOntologies(aggregatedCategoryValues.assay),
-    cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
-    disease: uniqueOntologies(aggregatedCategoryValues.disease),
-    is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
-    organism: uniqueOntologies(aggregatedCategoryValues.organism),
-    sex: uniqueOntologies(aggregatedCategoryValues.sex),
-    tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
+    assay: uniqueOntologies(aggregatedCategoryValues.assay).sort(
+      sortOntologies
+    ),
+    cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type).sort(
+      sortOntologies
+    ),
+    disease: uniqueOntologies(aggregatedCategoryValues.disease).sort(
+      sortOntologies
+    ),
+    is_primary_data: [
+      ...new Set(aggregatedCategoryValues.is_primary_data),
+    ].sort(),
+    organism: uniqueOntologies(aggregatedCategoryValues.organism).sort(
+      sortOntologies
+    ),
+    sex: uniqueOntologies(aggregatedCategoryValues.sex).sort(sortOntologies),
+    tissue: uniqueOntologies(aggregatedCategoryValues.tissue).sort(
+      sortOntologies
+    ),
   };
 }
 
@@ -379,6 +391,29 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
     },
     { ...dataset }
   );
+}
+
+/**
+ * Sort ontologies by label, case insensitive, ascending.
+ * @param o0 - First filtered rows to compare.
+ * @param o1 - Second filtered rows to compare.
+ * @returns Number indicating sort precedence of o0 vs o1.
+ *
+ *
+ *  * Sort category values on the given dataset rows.
+ * @param rows - Collection or dataset rows with category values to sort.
+ * @returns Array of collection or dataset rows with category values sorted.
+ */
+function sortCategoryValues(o0: Ontology, o1: Ontology) {
+  const label0 = o0.label;
+  const label1 = o1.label;
+  if (label0 < label1) {
+    return -1;
+  }
+  if (label0 > label1) {
+    return 1;
+  }
+  return 0;
 }
 
 /**
