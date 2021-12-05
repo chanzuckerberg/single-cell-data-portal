@@ -1,7 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
 import { Collection, IS_PRIMARY_DATA, Ontology } from "src/common/entities";
-import { CategoryValueView } from "src/common/hooks/useCategoryFilter";
+import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 
 /* Filterable metadata keys */
 export enum CATEGORY_KEY {
@@ -14,8 +14,12 @@ export enum CATEGORY_KEY {
   "TISSUE" = "tissue",
 }
 
-/* Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups */
-export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
+/* Metadata values grouped by metadata key. */
+export interface CategoryView {
+  key: CATEGORY_KEY;
+  label: CATEGORY_LABEL;
+  values: CategoryValueView[];
+}
 
 /* "value" prop passed to react-table's Cell function */
 export type CellPropsValue = { value: CellValue<string[]> };
@@ -40,6 +44,17 @@ export interface CollectionRow extends Categories {
   revised_at?: number;
 }
 
+/* Category values to be used as keys. For example, "Homo sapiens" or "10X 3' v2 sequencing". */
+export type CategoryValueKey = string;
+
+/* View model of metadata value, selected state and count. */
+export interface CategoryValueView {
+  count: number;
+  key: CategoryValueKey;
+  label: string;
+  selected: boolean;
+}
+
 /* Join of dataset and collection information, optimized for filtering datasets */
 export interface DatasetRow extends Categories {
   cell_count: number | null;
@@ -61,14 +76,12 @@ export enum IS_PRIMARY_DATA_LABEL {
   "SECONDARY" = "composed",
 }
 
-/* Value for displaying pluralized metadata labels, for example, "tissues" or "diseases". */
-export enum PLURALIZED_METADATA_LABEL {
-  ASSAY = "assays",
-  CELL_TYPE = "cell types",
-  DISEASE = "diseases",
-  ORGANISM = "organisms",
-  TISSUE = "tissues",
-}
+/* Filterable metadata keys where the type of the corresponding value is Ontology. Currently, that is all metadata
+   keys except is_primary_data. */
+export type OntologyCategoryKey = keyof Omit<
+  Record<CATEGORY_KEY, string>,
+  CATEGORY_KEY.IS_PRIMARY_DATA
+>;
 
 /* Display value of category labels. */
 export enum CATEGORY_LABEL {
@@ -81,14 +94,20 @@ export enum CATEGORY_LABEL {
   sex = "Sex",
 }
 
-/* "row" prop passed to react-table's Cell function */
-export type RowPropsValue = { row: Row<CollectionRow> };
-
-// TODO(cc)
-export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
+/* Function invoked when selected state of a category value is toggled. */
+export type OnFilterFn = (
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey
+) => void;
 
 // TODO(cc)
 export type OnUpdateSearchValueFn = (
   changeEvent: ChangeEvent<HTMLInputElement>,
   setSearchValue: SetSearchValueFn
 ) => void;
+
+/* "row" prop passed to react-table's Cell function */
+export type RowPropsValue = { row: Row<CollectionRow> };
+
+// TODO(cc)
+export type SetSearchValueFn = Dispatch<SetStateAction<string>>;

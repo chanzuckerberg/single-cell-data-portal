@@ -8,6 +8,7 @@ import {
   useSortBy,
   useTable,
 } from "react-table";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { DatasetAsset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -24,7 +25,6 @@ import {
   CATEGORY_KEY,
   CellPropsValue,
   DatasetRow,
-  PLURALIZED_METADATA_LABEL,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import ActionButton from "src/components/common/Grid/components/ActionButton";

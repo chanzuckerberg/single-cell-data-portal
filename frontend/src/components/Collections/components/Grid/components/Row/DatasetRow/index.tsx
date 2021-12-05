@@ -2,6 +2,7 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -21,7 +22,6 @@ import {
   DetailsCell,
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
-import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";

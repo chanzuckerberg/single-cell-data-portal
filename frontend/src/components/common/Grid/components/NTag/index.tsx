@@ -4,7 +4,7 @@ import {
   Position,
   Tag,
 } from "@blueprintjs/core";
-import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ContentColumn, ContentWrapper, FieldValues } from "./style";
 
 const CHUNK_SIZE = 25;

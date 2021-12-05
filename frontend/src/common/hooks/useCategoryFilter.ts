@@ -3,77 +3,51 @@ import { useCallback, useMemo, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
 import {
   Categories,
-  CategoryKey,
+  CategoryValueKey,
+  CategoryValueView,
+  CategoryView,
   CATEGORY_KEY,
   CATEGORY_LABEL,
   IS_PRIMARY_DATA_LABEL,
+  OnFilterFn,
 } from "src/components/common/Filter/common/entities";
 
-// Metadata values grouped by metadata key.
-export interface CategoryView {
-  key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
-  values: CategoryValueView[];
-}
-
-// Entry in react-table's filters arrays, models selected category values in a category.
+/* Entry in react-table's filters arrays, models selected category values in a category. */
 interface CategoryFilter {
   id: string;
   value: FilterValue;
 }
 
-// Set of all category values in the full result set, keyed by their corresponding category.
+/* Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups */
+export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
+
+/* Set of all category values in the full result set, keyed by their corresponding category. */
 type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
 
-// Metadata value, count and selected state.
+/* Metadata value, count and selected state. */
 export interface CategoryValue {
   key: CategoryValueKey;
   count: number;
   selected: boolean;
 }
 
-// Category values to be used as keys when building filter functionality. For example, "Homo sapiens" or
-// "10X 3' v2 sequencing".
-export type CategoryValueKey = string;
-
-// View model of metadata value, selected state and count.
-export interface CategoryValueView {
-  count: number;
-  key: CategoryValueKey;
-  label: string;
-  selected: boolean;
-}
-
-// Shape of return value from this useFilter hook.
+/* Shape of return value from this useFilter hook. */
 export interface FilterInstance {
   categories: CategoryView[];
   onFilter: OnFilterFn;
 }
 
-// State backing filter functionality and calculations. Converted to view model for display.
+/* State backing filter functionality and calculations. Converted to view model for display. */
 type FilterState = {
   [K in CATEGORY_KEY]: Map<CategoryValueKey, CategoryValue>;
 };
 
-// Filterable metadata keys where the type of the corresponding value is Ontology. Currently, that is all metadata
-// keys except is_primary_data.
-export type OntologyCategoryKey = keyof Omit<
-  Record<CATEGORY_KEY, string>,
-  CATEGORY_KEY.IS_PRIMARY_DATA
->;
-
-// Selected filters applicable to a category; used when deriving category value counts from current set of filters.
-// Identical queries can be shared by categories to reduce the number of result set filtering.
+/* Selected filters applicable to a category; used when deriving category value counts from current set of filters.
+   Identical queries can be shared by categories to reduce the number of result set filtering. */
 interface Query<T extends Categories> {
   categoryKeys: CategoryKey[];
   filters: Filters<T>;
 }
-
-// Function invoked when selected state of a category value is toggled.
-export type OnFilterFn = (
-  categoryKey: CategoryKey,
-  categoryValueKey: CategoryValueKey
-) => void;
 
 /* react-table function to call when updating set of selected filters. */
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter. */

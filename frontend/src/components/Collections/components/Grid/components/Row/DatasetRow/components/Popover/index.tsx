@@ -1,6 +1,6 @@
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { LeftAlignedDetailsCell } from "../../../common/style";
 import { Skeleton } from "../common/Skeleton";
 

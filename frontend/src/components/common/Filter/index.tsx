@@ -3,8 +3,8 @@ import {
   CategoryValueView,
   CategoryView,
   OnFilterFn,
-} from "src/common/hooks/useCategoryFilter";
-import { SetSearchValueFn } from "src/components/common/Filter/common/entities";
+  SetSearchValueFn,
+} from "src/components/common/Filter/common/entities";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import BasicFilter from "./components/BasicFilter";
 import FilterLabel from "./components/FilterLabel";
