@@ -1,13 +1,16 @@
 import { TableInstance } from "react-table";
-import { CollectionRow } from "src/components/common/Filter/common/entities";
+import { Categories } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
 
-interface Props {
+interface Props<T extends Categories> {
   className?: string;
-  tableInstance: TableInstance<CollectionRow>;
+  tableInstance: TableInstance<T>;
 }
 
-export default function Grid({ className, tableInstance }: Props): JSX.Element {
+export default function Grid<T extends Categories>({
+  className,
+  tableInstance,
+}: Props<T>): JSX.Element {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
   return (
