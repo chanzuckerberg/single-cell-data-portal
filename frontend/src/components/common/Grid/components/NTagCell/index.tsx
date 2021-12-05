@@ -1,9 +1,9 @@
 import React from "react";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
+import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import NTag from "src/components/common/Grid/components/NTag";
 
 interface Props {
-  label: PluralizedMetadataLabel;
+  label: PLURALIZED_METADATA_LABEL;
   values: string[];
 }
 

@@ -19,7 +19,7 @@ interface Props {
 export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>
-      {categories.map(({ key, values }) => {
+      {categories.map(({ label, key, values }) => {
         const isDisabled = isCategoryNA(values);
         return (
           <BasicFilter
@@ -43,7 +43,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
                 selectedValues={filterSelectedValues(values)}
               />
             }
-            target={<FilterLabel isDisabled={isDisabled} label={key} />}
+            target={<FilterLabel isDisabled={isDisabled} label={label} />}
           />
         );
       })}

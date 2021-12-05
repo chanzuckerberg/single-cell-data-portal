@@ -3,7 +3,6 @@ import loadable from "@loadable/component";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
@@ -11,6 +10,7 @@ import {
   useCreateRevision,
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
+import { PLURALIZED_METADATA_LABEL } from "src/components/common/Filter/common/entities";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
@@ -36,7 +36,7 @@ const AsyncPopover = loadable(
 );
 
 const conditionalPopover = (
-  label: PluralizedMetadataLabel,
+  label: PLURALIZED_METADATA_LABEL,
   values: string[]
 ) => {
   if (!values || values.length === 0) {
@@ -111,10 +111,10 @@ const CollectionRow: FC<Props> = (props) => {
           </TagContainer>
         )}
       </StyledCell>
-      {conditionalPopover(PluralizedMetadataLabel.TISSUE, tissue)}
-      {conditionalPopover(PluralizedMetadataLabel.ASSAY, assay)}
-      {conditionalPopover(PluralizedMetadataLabel.DISEASE, disease)}
-      {conditionalPopover(PluralizedMetadataLabel.ORGANISM, organism)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell

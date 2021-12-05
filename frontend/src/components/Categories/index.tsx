@@ -20,7 +20,7 @@ const Categories: FC<Props> = ({ categories, onFilter }) => {
     <Wrapper>
       {categories.map((category: CategoryView) => (
         <div key={category.key}>
-          <b>{category.key}</b>
+          <b>{category.label}</b>
           {category.values.map((value) => (
             <div
               key={value.key}
