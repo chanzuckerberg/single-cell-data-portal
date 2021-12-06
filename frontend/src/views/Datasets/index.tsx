@@ -38,6 +38,9 @@ const DATASET_ID = "id";
 // Dataset name object key.
 const DATASET_NAME = "name";
 
+// Explorer URL object key.
+const EXPLORER_URL = "explorer_url";
+
 // Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
 
@@ -155,7 +158,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for accessing explorer_url via row.values, for display.
       {
-        accessor: "explorer_url",
+        accessor: EXPLORER_URL,
       },
       // Hidden, required for filter.
       {
@@ -192,6 +195,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.SEX,
+          EXPLORER_URL,
         ],
         sortBy: [
           {
