@@ -7,6 +7,7 @@ import {
   COLLECTION_LINK_TYPE,
   VISIBILITY_TYPE,
 } from "src/common/entities";
+import { useUserInfo } from "src/common/queries/auth";
 import {
   formDataToObject,
   useCollection,
@@ -21,7 +22,6 @@ import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import { ContactWrapper, Form, StyledInput } from "./style";
-import { useUserInfo } from "src/common/queries/auth";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
