@@ -191,12 +191,12 @@ module upload_error_lambda {
 }
 
 module upload_sfn {
-  source               = "../sfn"
-  job_definition_arn   = module.upload_batch.batch_job_definition_no_revision
-  job_queue_arn        = local.job_queue_arn
-  role_arn             = local.sfn_role_arn
-  custom_stack_name    = local.custom_stack_name
+  source                 = "../sfn"
+  job_definition_arn     = module.upload_batch.batch_job_definition_no_revision
+  job_queue_arn          = local.job_queue_arn
+  role_arn               = local.sfn_role_arn
+  custom_stack_name      = local.custom_stack_name
   lambda_success_handler = module.upload_success_lambda.arn
-  lambda_error_handler = module.upload_error_lambda.arn
-  deployment_stage     = local.deployment_stage
+  lambda_error_handler   = module.upload_error_lambda.arn
+  deployment_stage       = local.deployment_stage
 }
