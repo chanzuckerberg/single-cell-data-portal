@@ -13,6 +13,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { DatasetAsset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
+import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchDatasetRows } from "src/common/queries/filter";
 import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
@@ -97,6 +98,11 @@ const DATASET_DEPLOYMENTS = [
 ];
 
 export default function Datasets(): JSX.Element {
+  /* Pop toast if user has come from Explorer with work in progress */
+  useExplainNewTab(
+    "To maintain your in-progress work on the previous dataset, we opened a new tab."
+  );
+
   // Filterable datasets joined from datasets and collections responses.
   const { isError, isLoading, rows: datasetRows } = useFetchDatasetRows();
 

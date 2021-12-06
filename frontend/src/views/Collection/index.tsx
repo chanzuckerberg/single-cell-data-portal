@@ -103,7 +103,7 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (!userWithdrawn && isTombstonedCollection(collection)) {
-      router.push(ROUTES.HOMEPAGE + "?tombstoned_collection_id=" + id);
+      router.push(ROUTES.COLLECTIONS + "?tombstoned_collection_id=" + id);
     }
   }, [collection, id, router, userWithdrawn]);
 
