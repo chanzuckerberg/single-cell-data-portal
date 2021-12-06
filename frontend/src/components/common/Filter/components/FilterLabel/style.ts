@@ -1,5 +1,5 @@
 import { Classes } from "@blueprintjs/core";
-import { GRAY } from "src/components/common/theme";
+import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const CategoryButton = styled.span`
@@ -18,7 +18,7 @@ export const CategoryButton = styled.span`
     width: 100%;
 
     &:hover {
-      color: ${GRAY.A};
+      color: ${PT_TEXT_COLOR};
       background: none;
     }
 
@@ -29,6 +29,10 @@ export const CategoryButton = styled.span`
     &.${Classes.MINIMAL}:disabled {
       color: ${GRAY.E};
       cursor: auto;
+    }
+
+    .${Classes.ICON} {
+      color: inherit;
     }
   }
 `;

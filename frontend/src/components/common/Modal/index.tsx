@@ -15,6 +15,7 @@ const Modal: FC<Props> = ({ className, onClose, title, isOpen, children }) => {
       isOpen={isOpen}
       onClose={onClose}
       className={className}
+      shouldReturnFocusOnClose={false}
     >
       {children}
     </StyledDialog>

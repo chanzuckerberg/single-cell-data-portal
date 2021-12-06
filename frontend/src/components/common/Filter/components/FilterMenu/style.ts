@@ -1,11 +1,16 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
-import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import {
+  GRAY,
+  LIGHT_GRAY,
+  PRIMARY_BLUE,
+  PT_TEXT_COLOR,
+} from "src/components/common/theme";
 import styled from "styled-components";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 
 interface Props {
-  width: number;
+  menuWidth: number;
 }
 
 interface MenuItemProps {
@@ -15,7 +20,7 @@ interface MenuItemProps {
 export const MenuWrapper = styled.span<Props>`
   .${Classes.MENU} {
     min-width: ${(props) =>
-      `${props.width}px`}; /* overrides BP menu min-width specification; maintains menu width when filtering menu items */
+      `${props.menuWidth}px`}; /* overrides BP menu min-width specification; maintains menu width when filtering menu items */
     padding: 6px;
 
     li {
@@ -102,7 +107,7 @@ export const MenuItemWrapper = styled.span<MenuItemProps>`
 
     .${Classes.ICON} {
       align-items: center;
-      color: #0073ff;
+      color: ${PRIMARY_BLUE};
       display: flex;
       height: 18px;
       justify-content: center;

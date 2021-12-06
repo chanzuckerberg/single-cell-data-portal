@@ -5,7 +5,7 @@ import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/c
 import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
-import exploreSVG from "/src/common/images/explore-blue.svg";
+import DatasetExploreSvg from "src/components/Datasets/components/Grid/components/DatasetExploreSvg";
 
 interface Props {
   datasetId: string;
@@ -19,7 +19,7 @@ interface Props {
 export default function DatasetsActionsCell({
   datasetId,
   explorerUrl,
-  isOverMaxCellCount,
+  isOverMaxCellCount = false, // TODO(cc) either set isOverMaxCellCount here to false when undefined or in parent...
   isRDSSkipped,
   name,
   tombstone,
@@ -51,12 +51,13 @@ export default function DatasetsActionsCell({
       >
         <ActionButton
           data-test-id="view-dataset-link"
-          imageProps={exploreSVG}
-          isDisabled={explorerDisabled || isOverMaxCellCount}
-          // @ts-expect-error -- revisit rel typing
+          // @ts-expect-error -- revisit disabled typing
+          disabled={explorerDisabled || isOverMaxCellCount} // TODO(cc) isOverMaxCellCount needed to be a boolean...
+          href={explorerUrl}
+          iconSvg={<DatasetExploreSvg />}
+          isAnchorButton
           rel="noopener"
           target="_blank"
-          url={explorerUrl}
         />
       </Tooltip>
     </ActionsCell>

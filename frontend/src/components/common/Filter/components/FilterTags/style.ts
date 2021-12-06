@@ -1,4 +1,5 @@
 import { Classes, Colors } from "@blueprintjs/core";
+import { PRIMARY_BLUE } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const SelectedTags = styled.span`
@@ -8,7 +9,7 @@ export const SelectedTags = styled.span`
   min-width: 0; /* facilitates ellipsis on tag should it be required; flex default for min width is "auto" */
 
   .${Classes.TAG}.${Classes.MINIMAL} {
-    background-color: #0073ff;
+    background-color: ${PRIMARY_BLUE};
     border-radius: 4px;
     color: ${Colors.WHITE};
     font-size: 13px;

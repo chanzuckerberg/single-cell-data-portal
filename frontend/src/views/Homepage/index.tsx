@@ -6,7 +6,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { BOOLEAN } from "src/common/localStorage/set";
 import Collections from "src/components/Collections";
-import { View as DefaultView } from "src/components/Layout/style";
+import { DefaultView } from "src/components/Layout/style";
 import { View } from "src/views/globalStyle";
 
 const AsyncUploadCSV = loadable(

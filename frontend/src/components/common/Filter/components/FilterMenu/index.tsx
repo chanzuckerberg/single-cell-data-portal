@@ -29,6 +29,8 @@ interface Props {
   values: CategoryValueView[];
 }
 
+const ADDITIONAL_MENU_WIDTH = 8;
+
 export default function FilterMenu({
   categoryKey,
   filterCategoryValues,
@@ -55,12 +57,14 @@ export default function FilterMenu({
   // Set initial width on menu to prevent resizing on filter of menu items.
   useEffect(() => {
     if (menuRef.current) {
-      setMenuWidth(menuRef.current.children[0]?.clientWidth);
+      setMenuWidth(
+        menuRef.current?.children[0]?.clientWidth + ADDITIONAL_MENU_WIDTH
+      );
     }
   }, []);
 
   return (
-    <MenuWrapper ref={menuRef} width={menuWidth}>
+    <MenuWrapper menuWidth={menuWidth} ref={menuRef}>
       <Menu>
         {searchable ? (
           <InputGroupWrapper>
@@ -74,7 +78,11 @@ export default function FilterMenu({
           </InputGroupWrapper>
         ) : null}
         {emptyItems ? (
-          <NoMatches shouldDismissPopover={false} text={"No matches found"} />
+          <NoMatches
+            multiline /* required when no matches text length is longer than longest category value */
+            shouldDismissPopover={false}
+            text={"No matches found"}
+          />
         ) : (
           <MenuItemsScroller>
             {menuItems.map(({ key, count, label, selected }) => (

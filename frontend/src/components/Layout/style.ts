@@ -14,20 +14,18 @@ export const contentWrapper = css`
 `;
 
 export const MainWrapper = styled.div`
-  ${layout}
   display: grid; /* required: ensures any remaining viewport height allocated to main content is observed; ancestor component heights are unspecified and so any height specification will revert to "auto" */
   flex: 1; /* sticks footer to bottom of viewport and initial render of main content is at full viewport height while data is loading. */
   margin-top: 48px; /* positions content below fixed header */
 `;
 
 export const DefaultMainWrapper = styled(MainWrapper)`
-  min-width: unset; /* overrides min width on layout */
-  overflow: auto;
+  main {
+    overflow: auto;
+  }
 `;
 
 export const SidebarMainWrapper = styled(MainWrapper)`
-  min-width: unset; /* overrides min width on layout */
-
   main {
     display: grid;
     grid-template-areas: "sidebar content";
@@ -35,7 +33,7 @@ export const SidebarMainWrapper = styled(MainWrapper)`
   }
 `;
 
-export const View = styled.div`
+export const DefaultView = styled.div`
   ${layout}
   ${contentWrapper}
 `;

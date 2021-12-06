@@ -181,12 +181,6 @@ const Collection: FC = () => {
     <>
       <Head>
         <title>cellxgene | {collection.name}</title>
-        {isFilterEnabled && (
-          <link
-            href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
-            rel="stylesheet"
-          />
-        )}
       </Head>
       <ViewGrid>
         {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (

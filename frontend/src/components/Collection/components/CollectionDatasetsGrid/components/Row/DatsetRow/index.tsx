@@ -44,10 +44,10 @@ import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { StatusTags } from "src/components/common/Grid/components/StatusTags";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
+import DatasetExploreSvg from "src/components/Datasets/components/Grid/components/DatasetExploreSvg";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
-import exploreSVG from "/src/common/images/explore-blue.svg";
 
 const AsyncTooltip = loadable(
   () =>
@@ -239,12 +239,13 @@ const DatasetRow: FC<Props> = ({
             >
               <ActionButton
                 data-test-id="view-dataset-link"
-                imageProps={exploreSVG}
-                isDisabled={dataset.tombstone || isOverMaxCellCount}
-                // @ts-expect-error -- revisit rel typing
+                // @ts-expect-error -- revisit disabled typing
+                disabled={dataset.tombstone || isOverMaxCellCount}
+                href={dataset?.dataset_deployments[0]?.url}
+                iconSvg={<DatasetExploreSvg />}
+                isAnchorButton
                 rel="noopener"
                 target="_blank"
-                url={dataset?.dataset_deployments[0]?.url}
               />
             </Tooltip>
           )}
