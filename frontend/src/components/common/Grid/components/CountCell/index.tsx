@@ -1,7 +1,10 @@
 import React from "react";
-import { CellPropsValue } from "src/components/common/Filter/common/entities";
 
-export default function CountCell(value: CellPropsValue): JSX.Element {
-  const count = value.value?.toLocaleString() || "";
+interface Props {
+  cellCount: number;
+}
+
+export default function CountCell({ cellCount }: Props): JSX.Element {
+  const count = cellCount ? cellCount.toLocaleString() : "";
   return <div>{count}</div>;
 }

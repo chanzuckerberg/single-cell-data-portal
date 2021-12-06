@@ -56,7 +56,7 @@ export default function Collections(): JSX.Element {
   const columnConfig: Column<CollectionRow>[] = useMemo(
     () => [
       {
-        Cell: ({ row }: RowPropsValue) => {
+        Cell: ({ row }: RowPropsValue<CollectionRow>) => {
           return (
             <Title>
               <LinkCell
@@ -71,7 +71,7 @@ export default function Collections(): JSX.Element {
         accessor: COLLECTION_NAME,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={value} />
         ),
         Header: "Tissue",
@@ -80,7 +80,7 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.TISSUE,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
         ),
         Header: "Disease",
@@ -89,7 +89,7 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_KEY.DISEASE,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.ORGANISM} values={value} />
         ),
         Header: "Organism",
