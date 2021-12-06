@@ -254,7 +254,7 @@ export default function Datasets(): JSX.Element {
       </Head>
       {isError || isLoading ? null : (
         <>
-          <SideBar label="Filters">
+          <SideBar label="Filters" isOpen>
             <Filter {...filterInstance} />
           </SideBar>
           <View>
