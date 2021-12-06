@@ -105,9 +105,12 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (!userWithdrawn && isTombstonedCollection(collection)) {
-      router.push(ROUTES.COLLECTIONS + "?tombstoned_collection_id=" + id);
+      const redirectUrl = isFilterEnabled
+        ? ROUTES.COLLECTIONS
+        : ROUTES.HOMEPAGE;
+      router.push(redirectUrl + "?tombstoned_collection_id=" + id);
     }
-  }, [collection, id, router, userWithdrawn]);
+  }, [collection, id, router, userWithdrawn, isFilterEnabled]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
