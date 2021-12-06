@@ -12,7 +12,7 @@ export const contentWrapper = css`
   padding: 0 40px;
 `;
 
-export const MainWrapper = styled.div`
+export const MainWrapper = styled.main`
   ${layout}
   display: grid; /* required: ensures any remaining viewport height allocated to main content is observed; ancestor component heights are unspecified and so any height specification will revert to "auto" */
   flex: 1; /* sticks footer to bottom of viewport and initial render of main content is at full viewport height while data is loading. */
