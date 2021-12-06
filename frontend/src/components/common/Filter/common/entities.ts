@@ -100,7 +100,6 @@ export type OnFilterFn = (
   categoryValueKey: CategoryValueKey
 ) => void;
 
-/* TODO(cc) review comment */
 /* Function invoked when filter category input value is changed. */
 export type OnUpdateSearchValueFn = (
   changeEvent: ChangeEvent<HTMLInputElement>,
@@ -110,6 +109,5 @@ export type OnUpdateSearchValueFn = (
 /* "row" prop passed to react-table's Cell function. */
 export type RowPropsValue<T extends Categories> = { row: Row<T> };
 
-/* TODO(cc) review comment */
 /* Function invoked to update state for the filter category input value. */
 export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
