@@ -25,7 +25,7 @@ const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const { data: userInfo } = useUserInfo(isCurator);
-  const { asPath } = useRouter();
+  const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
 
   return (
@@ -38,7 +38,7 @@ const Header: FC = () => {
               <LinkWrapper>
                 <Link href={ROUTES.DATASETS} passHref>
                   <AnchorButton
-                    active={isRouteActive(asPath, ROUTES.DATASETS)}
+                    active={isRouteActive(pathname, ROUTES.DATASETS)}
                     href="passHref"
                     minimal
                     text="Datasets"
@@ -48,7 +48,7 @@ const Header: FC = () => {
               <LinkWrapper>
                 <Link href={ROUTES.COLLECTIONS} passHref>
                   <AnchorButton
-                    active={isRouteActive(asPath, ROUTES.COLLECTIONS)}
+                    active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                     href="passHref"
                     minimal
                     text="Collections"
@@ -63,7 +63,7 @@ const Header: FC = () => {
             <LinkWrapper>
               <Link href={ROUTES.MY_COLLECTIONS} passHref>
                 <AnchorButton
-                  active={isRouteActive(asPath, ROUTES.MY_COLLECTIONS)}
+                  active={isRouteActive(pathname, ROUTES.MY_COLLECTIONS)}
                   href="passHref"
                   minimal
                   text="My Collections"

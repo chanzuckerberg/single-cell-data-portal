@@ -1,3 +1,4 @@
+import loadable from "@loadable/component";
 import Head from "next/head";
 import React, { useMemo } from "react";
 import { Column, useFilters, useSortBy, useTable } from "react-table";
@@ -7,6 +8,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchCollectionRows } from "src/common/queries/filter";
+import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import Filter from "src/components/common/Filter";
 import {
@@ -23,16 +25,30 @@ import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 
-// Collection ID object key
+/* Collection ID object key. */
 const COLLECTION_ID = "id";
 
-// Collection name object key
+/* Collection name object key. */
 const COLLECTION_NAME = "name";
 
-// Key identifying recency sort by column
+/* Key identifying recency sort by column. */
 const COLUMN_ID_RECENCY = "recency";
 
+/* Gene sets CSV upload functionality, available if gene sets feature flag is enabled */
+const AsyncUploadCSV = loadable(
+  () =>
+    /*webpackChunkName: 'src/components/UploadCSV' */ import(
+      "src/components/UploadCSV"
+    )
+);
+
 export default function Collections(): JSX.Element {
+  // Pop toast if user has been redirected from a tombstoned collection.
+  useExplainTombstoned();
+
+  // Determine if gene sets functionality is available to user.
+  const isGeneSetsOn = useFeatureFlag(FEATURES.GENE_SETS);
+
   // Filterable collection datasets joined from datasets index and collections index responses.
   const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
 
@@ -180,6 +196,10 @@ export default function Collections(): JSX.Element {
             <Filter {...filterInstance} />
           </SideBar>
           <View>
+            {
+              // (thuang): TEMP. Remove when we do https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/917
+              isGeneSetsOn && <AsyncUploadCSV />
+            }
             {!rows || rows.length === 0 ? (
               <GridHero>
                 <h3>No Results</h3>
