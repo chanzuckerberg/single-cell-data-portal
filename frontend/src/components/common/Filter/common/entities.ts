@@ -22,7 +22,7 @@ export interface CategoryView {
 }
 
 /* "value" prop passed to react-table's Cell function */
-export type CellPropsValue = { value: CellValue<string[]> };
+export type CellPropsValue<T> = { value: CellValue<T> };
 
 /* Filterable values of datasets and collections. */
 export interface Categories {
@@ -100,14 +100,16 @@ export type OnFilterFn = (
   categoryValueKey: CategoryValueKey
 ) => void;
 
-// TODO(cc)
+/* TODO(cc) review comment */
+/* Function invoked when filter category input value is changed. */
 export type OnUpdateSearchValueFn = (
   changeEvent: ChangeEvent<HTMLInputElement>,
   setSearchValue: SetSearchValueFn
 ) => void;
 
-/* "row" prop passed to react-table's Cell function */
-export type RowPropsValue = { row: Row<CollectionRow> };
+/* "row" prop passed to react-table's Cell function. */
+export type RowPropsValue<T extends Categories> = { row: Row<T> };
 
-// TODO(cc)
+/* TODO(cc) review comment */
+/* Function invoked to update state for the filter category input value. */
 export type SetSearchValueFn = Dispatch<SetStateAction<string>>;

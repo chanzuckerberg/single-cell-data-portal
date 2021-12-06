@@ -1,4 +1,4 @@
-import { Tooltip } from "@blueprintjs/core";
+import { Position, Tooltip } from "@blueprintjs/core";
 import * as React from "react";
 import { FC } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -34,7 +34,12 @@ const DownloadDataset: FC<Props> = ({
 
   return (
     <>
-      <Tooltip content="Download" disabled={isDisabled}>
+      <Tooltip
+        boundary="viewport"
+        content="Download"
+        disabled={isDisabled}
+        position={Position.TOP}
+      >
         <Button
           disabled={isDisabled || !dataAssets.length}
           onClick={toggleOpen}
