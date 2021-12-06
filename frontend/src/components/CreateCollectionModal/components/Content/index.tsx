@@ -21,7 +21,7 @@ import TextArea from "src/components/common/Form/TextArea";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import { ContactWrapper, Form, StyledInput } from "./style";
-import {useUserInfo} from "src/common/queries/auth";
+import { useUserInfo } from "src/common/queries/auth";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -227,7 +227,7 @@ const Content: FC<Props> = (props) => {
     }));
 
     payload.links = payloadLinks;
-    payload.curator_name = userInfo?.name
+    payload.curator_name = userInfo?.name;
     return payload;
   }
 
