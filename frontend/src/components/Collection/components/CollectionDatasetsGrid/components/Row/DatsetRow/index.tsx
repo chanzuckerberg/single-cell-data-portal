@@ -1,4 +1,6 @@
-/* TODO(cc) copy from src/components/Collections/components/Grid/components/Row/DatasetRow */
+/* Copied from src/components/Collections/components/Grid/components/Row/DatasetRow and modified as an intermediate 
+   upgrade to the collection datasets table. Ideally collection datasets table should be moved to react-table but
+   requires changes to how dataset information (statuses etc) is calculated and rolled out. */
 import { Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";

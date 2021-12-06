@@ -1,4 +1,6 @@
-/* TODO(cc) copied from src/components/Collections/components/Grid/components/DatasetsGrid */
+/* Copied from src/components/Collections/components/Grid/components/DatasetsGrid and modified as an intermediate 
+   upgrade to the collection datasets table. Ideally collection datasets table should be moved to react-table but
+   requires changes to how dataset information (statuses etc) is calculated and rolled out. */
 import { FC } from "react";
 import { MutateFunction } from "react-query";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";

@@ -53,8 +53,6 @@ interface Query<T extends Categories> {
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter. */
 type SetFilterFn = (columnId: string, updater: any) => void;
 
-// TODO(cc) check re-renders (5?)
-
 /**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
