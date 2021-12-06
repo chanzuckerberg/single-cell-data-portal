@@ -60,7 +60,9 @@ export interface DatasetRow extends Categories {
   cell_count: number | null;
   collection_id: Collection["id"];
   collection_name: Collection["name"];
+  explorer_url: string;
   id: string;
+  isOverMaxCellCount: boolean;
   name: string;
   published_at: number;
   revised_at?: number;

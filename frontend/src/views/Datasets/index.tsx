@@ -41,7 +41,7 @@ const DATASET_NAME = "name";
 // Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
 
-// TODO(cc) temp hard coded - remove once dataset_assets is returned from /datasets/index
+// TODO(cc) temp hard coded - to be removed in #1724
 const DATASET_ASSETS = [
   {
     // eslint-disable-next-line sonarjs/no-duplicate-string -- will be removed as per above
@@ -53,32 +53,7 @@ const DATASET_ASSETS = [
       "s3://corpora-data-staging/14826f8b-2bdf-492d-bc35-928580b83d94/local.h5ad",
     type: "REMIX",
   },
-  {
-    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
-    filename: "local.rds",
-    filetype: "RDS",
-    id: "7595110b-dee6-40ed-bf46-b4365793c2a0",
-    s3_uri:
-      "s3://corpora-data-staging/14826f8b-2bdf-492d-bc35-928580b83d94/local.rds",
-    type: "REMIX",
-  },
-  {
-    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
-    filename: "explorer_cxg",
-    filetype: "CXG",
-    id: "9529083a-6bf6-40d8-aaf0-d1e6ba541727",
-    s3_uri:
-      "s3://hosted-cellxgene-staging/14826f8b-2bdf-492d-bc35-928580b83d94.cxg/",
-    type: "REMIX",
-  },
 ] as DatasetAsset[];
-
-// TODO(cc) temp hard coded - remove once dataset_assets is returned from /datasets/index
-const DATASET_DEPLOYMENTS = [
-  {
-    url: "https://cellxgene.staging.single-cell.czi.technology/e/aced2b9a-0107-4b06-9dae-059d170b94a6.cxg/",
-  },
-];
 
 export default function Datasets(): JSX.Element {
   /* Pop toast if user has come from Explorer with work in progress */
@@ -153,13 +128,12 @@ export default function Datasets(): JSX.Element {
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
           <DatasetsActionsCell
-            cellCount={values.cell_count}
-            dataAssets={DATASET_ASSETS} // TODO(cc) dataset_assets
-            datasetDeployments={DATASET_DEPLOYMENTS} // TODO(cc) dataset.dataset_deployments
-            isRDSSkipped={false} // TODO(cc)
+            dataAssets={DATASET_ASSETS} // TODO(cc) to be resolved in #1724
+            isOverMaxCellCount={values.isOverMaxCellCount}
+            isRDSSkipped={false} // We can ignore RDS skipped check for public datasets (as this is curator-specific).
             name={values.name}
-            tombstone={false} // TODO(cc)
-            url={DATASET_DEPLOYMENTS[0].url} // TODO(cc) dataset?.dataset_deployments[0]?.url
+            tombstone={false} // Only public datasets are displayed in the datasets index.
+            explorerUrl={values.explorer_url}
           />
         ),
         accessor: (datasetRow: DatasetRow): DatasetRow => datasetRow,
@@ -178,6 +152,10 @@ export default function Datasets(): JSX.Element {
       // Hidden, required for accessing collection name via row.values, for display.
       {
         accessor: COLLECTION_NAME,
+      },
+      // Hidden, required for accessing explorer_url via row.values, for display.
+      {
+        accessor: "explorer_url",
       },
       // Hidden, required for filter.
       {
