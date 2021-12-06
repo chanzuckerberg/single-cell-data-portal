@@ -22,6 +22,7 @@ export const MainWrapper = styled.div`
 `;
 
 export const Left = styled.span`
+  align-items: center;
   display: flex;
   gap: 32px;
 
@@ -31,6 +32,7 @@ export const Left = styled.span`
 `;
 
 export const Right = styled.span`
+  align-items: center;
   display: flex;
   gap: 24px;
 `;
@@ -48,10 +50,11 @@ const button = css`
     border-radius: 0;
     color: ${GRAY.D};
     font-size: 13px;
-    font-weight: 600;
-    height: 23px;
-    line-height: 15px;
-    min-height: 23px;
+    font-weight: 500;
+    height: 22px;
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    min-height: 22px;
     padding: 0;
 
     &.${Classes.ACTIVE}, &:hover {
