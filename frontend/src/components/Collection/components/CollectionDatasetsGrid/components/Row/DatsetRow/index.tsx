@@ -38,6 +38,7 @@ import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
+import { StatusTags } from "src/components/common/Grid/components/StatusTags";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { UploadingFile } from "src/components/DropboxChooser";
@@ -177,7 +178,9 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
-          {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
+          <StatusTags>
+            {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
+          </StatusTags>
         </DatasetNameCell>
       </td>
       <td>
