@@ -4,6 +4,7 @@ import { layout } from "../common/layout";
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100vh; /* required for content scroll */
   min-height: 100vh; /* required for full height flex on child */
   overflow-x: hidden; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
 `;
@@ -20,13 +21,21 @@ export const MainWrapper = styled.div`
 `;
 
 export const DefaultMainWrapper = styled(MainWrapper)`
-  ${contentWrapper}
+  min-width: unset; /* overrides min width on layout */
+  overflow: auto;
 `;
 
 export const SidebarMainWrapper = styled(MainWrapper)`
+  min-width: unset; /* overrides min width on layout */
+
   main {
     display: grid;
     grid-template-areas: "sidebar content";
     grid-template-columns: auto 1fr; /* grid columns for sidebar and corresponding content. */
   }
+`;
+
+export const View = styled.div`
+  ${layout}
+  ${contentWrapper}
 `;
