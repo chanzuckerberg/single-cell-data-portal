@@ -36,6 +36,7 @@ export const TabWrapper = styled.div`
   grid-column: 1 / span 8;
 
   & .${Classes.TABS} {
+    min-width: fit-content;
     width: 100%;
   }
   & .${Classes.TAB_LIST} {

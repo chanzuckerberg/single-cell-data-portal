@@ -22,7 +22,7 @@ export const SideBarPositioner = styled.div<PositionerProps>`
   ); /* required for sidebar scrolling where header height is 48px */
   overflow-y: ${(props) => (props.isExpanded ? "overlay" : undefined)};
   padding: ${(props) => (props.isExpanded ? "24px 16px" : undefined)};
-  position: fixed;
+  position: sticky;
   top: 48px;
   width: inherit; /* inherits sidebar container width specification */
 
