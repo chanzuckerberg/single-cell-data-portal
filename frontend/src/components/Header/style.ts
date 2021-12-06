@@ -1,6 +1,5 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import styled, { css } from "styled-components";
-import { layout } from "../common/layout";
 import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 
 export const Wrapper = styled.div`
@@ -13,7 +12,6 @@ export const Wrapper = styled.div`
 `;
 
 export const MainWrapper = styled.div`
-  ${layout}
   align-items: center;
   display: flex;
   height: inherit; /* Take up full height of parent. */
