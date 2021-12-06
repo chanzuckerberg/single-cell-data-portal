@@ -10,6 +10,7 @@ import {
   CollectionRow,
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
+import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 
 /* Query key for /collections/index */
@@ -47,6 +48,7 @@ export interface DatasetResponse {
   cell_type: Ontology[];
   collection_id: string;
   disease: Ontology[];
+  explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
   name: string;
@@ -310,6 +312,7 @@ function buildDatasetRow(
   const datasetRow = {
     ...dataset,
     collection_name: collection?.name ?? "-",
+    isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
   };
 
