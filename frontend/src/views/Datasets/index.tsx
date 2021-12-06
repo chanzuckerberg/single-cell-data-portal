@@ -1,47 +1,30 @@
-import { IButtonProps, Intent, Tooltip } from "@blueprintjs/core";
 import Head from "next/head";
 import React, { useMemo } from "react";
-import {
-  CellProps,
-  Column,
-  useFilters,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { ROUTES } from "src/common/constants/routes";
 import { DatasetAsset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchDatasetRows } from "src/common/queries/filter";
-import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
-import {
-  checkIsOverMaxCellCount,
-  OVER_MAX_CELL_COUNT_TOOLTIP,
-} from "src/components/Collections/components/Grid/components/Row/DatasetRow";
 import Filter from "src/components/common/Filter";
 import {
   CATEGORY_KEY,
   CellPropsValue,
   DatasetRow,
+  RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
-import ActionButton from "src/components/common/Grid/components/ActionButton";
-import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
-import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
-import { SubTitle } from "src/components/common/Grid/components/SubTitle";
-import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
+import DatasetsActionsCell from "src/components/Datasets/components/Grid/components/DatasetActionsCell";
+import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
-import downloadSVG from "/src/common/images/download-blue.svg";
-import exploreSVG from "/src/common/images/explore-blue.svg";
 
 // Collection ID object key.
 const COLLECTION_ID = "collection_id";
@@ -110,12 +93,20 @@ export default function Datasets(): JSX.Element {
   const columnConfig: Column<DatasetRow>[] = useMemo(
     () => [
       {
-        Cell: DatasetNameCell,
+        Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => {
+          return (
+            <DatasetNameCell
+              collectionId={values.collection_id}
+              collectionName={values.collection_name}
+              name={values.name}
+            />
+          );
+        },
         Header: "Dataset",
         accessor: DATASET_NAME,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={value} />
         ),
         Header: "Tissue",
@@ -124,7 +115,7 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_KEY.TISSUE,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
         ),
         Header: "Disease",
@@ -133,7 +124,7 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_KEY.DISEASE,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={value} />
         ),
         Header: "Assay",
@@ -142,7 +133,7 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_KEY.ASSAY,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.ORGANISM} values={value} />
         ),
         Header: "Organism",
@@ -151,16 +142,26 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_KEY.ORGANISM,
       },
       {
-        Cell: ({ value }: CellPropsValue) => (
+        Cell: ({ value }: CellPropsValue<number>) => (
           <RightAlignCell>
-            <CountCell value={value} />
+            <CountCell cellCount={value || 0} />
           </RightAlignCell>
         ),
         Header: <RightAlignCell>Cells</RightAlignCell>,
         accessor: "cell_count",
       },
       {
-        Cell: DatasetsActionsCell,
+        Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
+          <DatasetsActionsCell
+            cellCount={values.cell_count}
+            dataAssets={DATASET_ASSETS} // TODO(cc) dataset_assets
+            datasetDeployments={DATASET_DEPLOYMENTS} // TODO(cc) dataset.dataset_deployments
+            isRDSSkipped={false} // TODO(cc)
+            name={values.name}
+            tombstone={false} // TODO(cc)
+            url={DATASET_DEPLOYMENTS[0].url} // TODO(cc) dataset?.dataset_deployments[0]?.url
+          />
+        ),
         accessor: (datasetRow: DatasetRow): DatasetRow => datasetRow,
         id: "dataset_actions",
       },
@@ -269,75 +270,6 @@ export default function Datasets(): JSX.Element {
             )}
           </View>
         </>
-      )}
-    </>
-  );
-}
-
-/**
- * Table cell component displaying dataset actions "download" and "explore".
- * @param props - Cell-specific properties supplied from react-table.
- * @returns DOM element containing dataset actions "download" and "explore".
- */
-function DatasetsActionsCell(
-  props: CellProps<DatasetRow, string[]>
-): JSX.Element {
-  const {
-    row: { values },
-  } = props;
-  const { cell_count, name } = values || "";
-  const DownloadButton = (downloadProps: IButtonProps) => (
-    <ActionButton imageProps={downloadSVG} {...downloadProps} />
-  );
-  const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
-
-  return (
-    <ActionsCell>
-      <DownloadDataset
-        Button={DownloadButton}
-        dataAssets={DATASET_ASSETS} // TODO(cc) dataset_assets
-        isDisabled={false} // tombstone will always be false
-        isRDSSkipped={false} // TODO(cc)
-        name={name}
-      />
-      <Tooltip // hasCXGFile(dataset) TODO(cc)
-        content={isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"}
-        intent={isOverMaxCellCount ? Intent.DANGER : undefined}
-      >
-        <ActionButton
-          data-test-id="view-dataset-link" // TODO(cc)
-          imageProps={exploreSVG}
-          isDisabled={isOverMaxCellCount}
-          // @ts-expect-error -- revisit rel typing
-          rel="noopener"
-          target="_blank"
-          url={DATASET_DEPLOYMENTS[0].url} // dataset?.dataset_deployments[0]?.url
-        />
-      </Tooltip>
-    </ActionsCell>
-  );
-}
-
-/**
- * Table cell component displaying dataset and collection names.
- * @param props - Cell-specific properties supplied from react-table.
- * @returns DOM element containing both the dataset and collection names.
- */
-function DatasetNameCell(props: CellProps<DatasetRow, string[]>): JSX.Element {
-  const {
-    row: { values },
-  } = props;
-  const { collection_id, collection_name, name } = values;
-  const url = ROUTES.COLLECTION.replace(":id", collection_id);
-  return (
-    <>
-      <Title>{name}</Title>
-      {collection_id ? (
-        <SubTitle>
-          <LinkCell url={url} value={collection_name} />
-        </SubTitle>
-      ) : (
-        <SubTitle>{collection_name}</SubTitle>
       )}
     </>
   );

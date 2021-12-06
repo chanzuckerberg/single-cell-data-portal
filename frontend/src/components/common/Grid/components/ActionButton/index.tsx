@@ -20,11 +20,11 @@ export default function ActionButton({
   return url ? (
     <StyledActionButton
       as={AnchorButton}
-      disabled={isDisabled}
       href={url}
       icon={actionIcon}
       minimal
       {...props}
+      disabled={isDisabled} /* overrides props.disabled */
     />
   ) : (
     <StyledActionButton icon={actionIcon} minimal {...props} />
