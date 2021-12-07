@@ -27,6 +27,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
               <FilterMenu
                 categoryKey={key}
                 filterCategoryValues={filterCategoryValues}
+                filterCategoryValuesWithCount={filterCategoryValuesWithCount}
                 multiselect={true} // Can possibly be single select with future filter types
                 onFilter={onFilter}
                 onUpdateSearchValue={onUpdateSearchValue}
@@ -62,6 +63,17 @@ function filterCategoryValues(
   searchValue: string
 ): CategoryValueView[] {
   return values.filter(({ key }) => key.toLowerCase().includes(searchValue));
+}
+
+/**
+ * Returns filtered category values where category count is greater than zero.
+ * @param values
+ * @returns category values with a count
+ */
+function filterCategoryValuesWithCount(
+  values: CategoryValueView[]
+): CategoryValueView[] {
+  return values.filter(({ count }) => count > 0);
 }
 
 /**
