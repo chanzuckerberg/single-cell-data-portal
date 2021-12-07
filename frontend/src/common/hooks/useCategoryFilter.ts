@@ -21,9 +21,6 @@ interface CategoryFilter {
 /* Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups */
 export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
-/* Set of all category values in the full result set, keyed by their corresponding category. */
-type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
-
 /* Metadata value, count and selected state. */
 export interface CategoryValue {
   key: CategoryValueKey;
@@ -66,35 +63,15 @@ export function useCategoryFilter<T extends Categories>(
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
-  // Complete set of categories and category values for the result set.
-  const [categorySet, setCategorySet] = useState<CategorySet>();
-
   // Core filter state facilitating build of complete set of categories, category values and counts for a filtered
   // result set.
   const [filterState, setFilterState] = useState<FilterState>();
 
-  // Set up original, full set of categories and their values.
-  useMemo(() => {
-    // Only build category set if there are rows to parse category values from. Only build category set once on load.
-    if (!originalRows.length || categorySet) {
-      return;
-    }
-    setCategorySet(buildCategorySet(originalRows));
-  }, [originalRows, categorySet]);
-
   // Build next filter state on change of filter.
   useMemo(() => {
-    // Must have category set before next filter state can be calculated.
-    if (!categorySet) {
-      return;
-    }
-    const nextFilterState = buildNextFilterState(
-      originalRows,
-      filters,
-      categorySet
-    );
+    const nextFilterState = buildNextFilterState(originalRows, filters);
     setFilterState(nextFilterState);
-  }, [categorySet, filters, originalRows]);
+  }, [filters, originalRows]);
 
   // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
@@ -113,79 +90,6 @@ export function useCategoryFilter<T extends Categories>(
     categories: buildCategoryViews(filterState),
     onFilter,
   };
-}
-
-/**
- * Add back any category values that have been filtered out, set their values to 0.
- * @param nextFilterState - Filter state currently being built due to change in filter.
- * @param categorySet - Original, unfiltered sets of category values keyed by their category.
- */
-function addEmptyCategoryValues(
-  nextFilterState: FilterState,
-  categorySet: CategorySet
-) {
-  // Check filter state for each category for missing (empty) category values.
-  for (const [categoryKey, categoryValuesByKey] of Object.entries(
-    nextFilterState
-  )) {
-    // Grab the expected set of category values.
-    const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
-    if (!allCategoryValueKeys) {
-      return; // Error state - all category values for this category can't be found.
-    }
-
-    // If expected category value is missing from this category's category values, add it back in with a count of 0.
-    [...allCategoryValueKeys.values()].forEach(
-      (categoryValueKey: CategoryValueKey) => {
-        if (!categoryValuesByKey.has(categoryValueKey)) {
-          categoryValuesByKey.set(categoryValueKey, {
-            count: 0,
-            key: categoryValueKey,
-            selected: false,
-          });
-        }
-      }
-    );
-  }
-}
-
-/**
- * Set up model of original, complete set of categories and their values.
- * @param originalRows - Original result set before filtering.
- * @returns Sets of category values keyed by their category.
- */
-function buildCategorySet<T extends Categories>(
-  originalRows: Row<T>[]
-): CategorySet {
-  // Build up category values for each category
-  return Object.values(CATEGORY_KEY).reduce(
-    (accum: CategorySet, categoryKey: CategoryKey) => {
-      // Check category value for this category, in every row.
-      originalRows.forEach((originalRow: Row<T>) => {
-        // Grab the category values already added for this category, create new set if it hasn't already been created.
-        let categoryValueSet = accum[categoryKey];
-        if (!categoryValueSet) {
-          categoryValueSet = new Set<CategoryValueKey>();
-          accum[categoryKey] = categoryValueSet;
-        }
-        // Add the category values for this row to the set.
-        let values: CategoryValueKey | CategoryValueKey[] =
-          originalRow.values[categoryKey];
-        if (!values) {
-          console.log(`No values found for category "${categoryKey}".`);
-          return accum;
-        }
-        if (!Array.isArray(values)) {
-          values = [values];
-        }
-        values.forEach((value: CategoryValueKey) =>
-          categoryValueSet.add(value)
-        );
-      });
-      return accum;
-    },
-    {} as CategorySet
-  );
 }
 
 /**
@@ -269,25 +173,19 @@ function buildNextCategoryFilters<T extends Categories>(
 /**
  * Build categories, category values and counts for the updated filter. For each category, build up category values
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
- * Retain category values with 0 counts from given category set.
  * @param originalRows - Original result set before filtering.
  * @param filters - Current set of selected category values (values) keyed by category (id).
- * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
-  filters: Filters<T>,
-  categorySet: CategorySet
+  filters: Filters<T>
 ): FilterState {
   // Build set of filters that are applicable to each category.
   const queries = buildQueries(filters);
 
   // Build up base filter state of categories, category values and counts.
   const nextFilterState = summarizeCategories(originalRows, queries);
-
-  // Always display category values even if their count is 0; add back any category values that have been filtered out.
-  addEmptyCategoryValues(nextFilterState, categorySet);
 
   // Update selected flag for the selected category values.
   flagSelectedCategoryValues(nextFilterState, filters);
@@ -461,8 +359,8 @@ function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
  * values in each resulting result set.
  * @param originalRows - Original result set before filtering.
  * @param queries - Selected filters applicable to a category.
- * @returns Intermediate filter state with category, category values and counts fully built. Note, empty category values
- * and category value selected states are added after this initial structure is built.
+ * @returns Intermediate filter state with category, category values and counts fully built. Note, category value
+ * selected states are added after this initial structure is built.
  */
 function summarizeCategories<T extends Categories>(
   originalRows: Row<T>[],
