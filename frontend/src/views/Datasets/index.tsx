@@ -2,7 +2,6 @@ import Head from "next/head";
 import React, { useMemo } from "react";
 import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { DatasetAsset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -43,20 +42,6 @@ const EXPLORER_URL = "explorer_url";
 
 // Key identifying recency sort by column.
 const COLUMN_ID_RECENCY = "recency";
-
-// TODO(cc) temp hard coded - to be removed in #1724
-const DATASET_ASSETS = [
-  {
-    // eslint-disable-next-line sonarjs/no-duplicate-string -- will be removed as per above
-    dataset_id: "aced2b9a-0107-4b06-9dae-059d170b94a6",
-    filename: "local.h5ad",
-    filetype: "H5AD",
-    id: "fcb3a516-d66d-4825-8dac-48a3b7788404",
-    s3_uri:
-      "s3://corpora-data-staging/14826f8b-2bdf-492d-bc35-928580b83d94/local.h5ad",
-    type: "REMIX",
-  },
-] as DatasetAsset[];
 
 export default function Datasets(): JSX.Element {
   /* Pop toast if user has come from Explorer with work in progress */
@@ -131,7 +116,7 @@ export default function Datasets(): JSX.Element {
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
           <DatasetsActionsCell
-            dataAssets={DATASET_ASSETS} // TODO(cc) to be resolved in #1724
+            datasetId={values.id}
             isOverMaxCellCount={values.isOverMaxCellCount}
             isRDSSkipped={false} // We can ignore RDS skipped check for public datasets (as this is curator-specific).
             name={values.name}
@@ -147,6 +132,10 @@ export default function Datasets(): JSX.Element {
         accessor: (datasetRow: DatasetRow): number =>
           datasetRow.revised_at ?? datasetRow.published_at,
         id: COLUMN_ID_RECENCY,
+      },
+      // Hidden, required for accessing dataset ID via row.values, for download functionality.
+      {
+        accessor: DATASET_ID,
       },
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
       {
