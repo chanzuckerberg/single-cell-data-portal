@@ -219,10 +219,6 @@ export default function Datasets(): JSX.Element {
     <>
       <Head>
         <title>cellxgene | Datasets</title>
-        <link
-          href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
-          rel="stylesheet"
-        />
       </Head>
       {isError || isLoading ? null : (
         <>

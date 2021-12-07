@@ -184,11 +184,6 @@ export default function Collections(): JSX.Element {
     <>
       <Head>
         <title>cellxgene | Collections</title>
-        {/* eslint-disable-next-line @next/next/no-page-custom-font -- required for font specs per mocks, revisit with #1685. */}
-        <link
-          href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
-          rel="stylesheet"
-        />
       </Head>
       {isError || isLoading ? null : (
         <>
