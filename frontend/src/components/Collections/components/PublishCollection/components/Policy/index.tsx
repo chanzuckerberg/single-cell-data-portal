@@ -28,8 +28,8 @@ export const POLICY_BULLETS = {
       if it believes more work is needed to de-identify it.
     </div>,
     <div key="2">
-      If I choose to publish this data publicly on the cellxgene portal, I
-      understand that (1) anyone will be able to access it subject to a CC-BY
+      If I choose to publish this data <b>publicly</b> on the cellxgene portal,
+      I understand that (1) anyone will be able to access it subject to a CC-BY
       license, meaning they can download, share, and use the data without
       restriction beyond providing attribution to the original data
       contributor(s) and (2) the Collection details (including collection name,
