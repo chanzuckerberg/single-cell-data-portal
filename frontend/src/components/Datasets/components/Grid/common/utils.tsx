@@ -1,4 +1,4 @@
-import { IButtonProps } from "@blueprintjs/core";
+import { IButtonProps, Intent } from "@blueprintjs/core";
 import React from "react";
 import ActionButton from "src/components/common/Grid/components/ActionButton";
 import downloadSVG from "/src/common/images/download-blue.svg";
@@ -9,5 +9,11 @@ import downloadSVG from "/src/common/images/download-blue.svg";
  * @returns dataset download action button
  */
 export function DownloadButton(downloadProps: IButtonProps): JSX.Element {
-  return <ActionButton imageProps={downloadSVG} {...downloadProps} />;
+  return (
+    <ActionButton
+      imageProps={downloadSVG}
+      intent={Intent.PRIMARY} // required for BP primary hover state
+      {...downloadProps}
+    />
+  );
 }
