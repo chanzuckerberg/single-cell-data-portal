@@ -62,6 +62,8 @@ const DataFormat: FC<Props> = ({
         intent={Intent.DANGER}
         position={Position.TOP}
       >
+        {/* Logically renders only when rds format not available, but a Tooltip wrapper also happens to prevent 
+        proper functioning of radio buttons with a larger radio group outside of the Tooltip wrapper */}
         {renderRdsRadio()}
       </Tooltip>
     );
