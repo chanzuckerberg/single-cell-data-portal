@@ -43,7 +43,7 @@ const DataFormat: FC<Props> = ({
     );
   };
 
-  const renderRdsButton = (): React.ReactElement => {
+  const renderRdsRadio = (): React.ReactElement => {
     return (
       <Radio
         disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
@@ -53,16 +53,16 @@ const DataFormat: FC<Props> = ({
     );
   };
 
-  const renderTooltip = (): React.ReactElement => {
+  const renderDisabledRdsRadio = (): React.ReactElement => {
     return (
       <Tooltip
-        disabled={!isRDSSkipped}
+        disabled={false}
         interactionKind={PopoverInteractionKind.HOVER}
         content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
         intent={Intent.DANGER}
         position={Position.TOP}
       >
-        {renderRdsButton()}
+        {renderRdsRadio()}
       </Tooltip>
     );
   };
@@ -78,8 +78,7 @@ const DataFormat: FC<Props> = ({
         selectedValue={selectedFormat}
       >
         {renderH5adRadio()}
-        {isRDSSkipped && renderTooltip()}
-        {!isRDSSkipped && renderRdsButton()}
+        {isRDSSkipped ? renderDisabledRdsRadio() : renderRdsRadio()}
       </RadioGroup>
     </Section>
   );
