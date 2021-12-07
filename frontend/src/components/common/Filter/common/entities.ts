@@ -68,9 +68,15 @@ export interface DatasetRow extends Categories {
   revised_at?: number;
 }
 
+/* Function returns filtered category values when category key contains filter category input value. */
 export type FilterCategoryValuesFn = (
   values: CategoryValueView[],
   searchValue: string
+) => CategoryValueView[];
+
+/* Function returns filtered category values with a count greater than zero. */
+export type FilterCategoryValuesWithCountFn = (
+  values: CategoryValueView[]
 ) => CategoryValueView[];
 
 export enum IS_PRIMARY_DATA_LABEL {

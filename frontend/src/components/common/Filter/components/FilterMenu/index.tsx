@@ -5,6 +5,7 @@ import {
   CategoryValueView,
   CATEGORY_KEY,
   FilterCategoryValuesFn,
+  FilterCategoryValuesWithCountFn,
   OnFilterFn,
   OnUpdateSearchValueFn,
 } from "src/components/common/Filter/common/entities";
@@ -20,6 +21,7 @@ import {
 interface Props {
   categoryKey: CATEGORY_KEY;
   filterCategoryValues: FilterCategoryValuesFn;
+  filterCategoryValuesWithCount: FilterCategoryValuesWithCountFn;
   multiselect: boolean;
   onFilter: OnFilterFn;
   onUpdateSearchValue: OnUpdateSearchValueFn;
@@ -30,6 +32,7 @@ interface Props {
 export default function FilterMenu({
   categoryKey,
   filterCategoryValues,
+  filterCategoryValuesWithCount,
   multiselect,
   onFilter,
   onUpdateSearchValue,
@@ -39,9 +42,11 @@ export default function FilterMenu({
   const menuRef = useRef<HTMLSpanElement>(null);
   const [menuWidth, setMenuWidth] = useState(0);
   const [searchValue, setSearchValue] = useState<string>("");
-  const menuItems = searchable
-    ? filterCategoryValues(values, searchValue)
-    : values;
+  const menuItemsWithCount = filterCategoryValuesWithCount(values);
+  const menuItems =
+    searchable && searchValue
+      ? filterCategoryValues(menuItemsWithCount, searchValue)
+      : menuItemsWithCount;
   const emptyItems = menuItems.length === 0;
   const scrollable = menuItems.length > MAX_DISPLAYABLE_MENU_ITEMS;
   const MenuItemsScroller =
