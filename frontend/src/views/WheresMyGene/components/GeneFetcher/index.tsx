@@ -1,8 +1,4 @@
 import { useEffect } from "react";
-import { API } from "src/common/API";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
-import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
-import { API_URL } from "src/configs/configs";
 import { Gene, RawGeneExpression } from "../../common/types";
 
 interface Props {
@@ -33,14 +29,14 @@ export default function GeneFetcher({
     fetchGeneData();
 
     async function fetchGeneData(): Promise<void> {
-      const response = await fetch(
-        apiTemplateToUrl(API_URL + API.WMG_GENE, { name }),
-        DEFAULT_FETCH_OPTIONS
-      );
-
       // const response = await fetch(
-      //   `https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/genes/${name}.json`
+      //   apiTemplateToUrl(API_URL + API.WMG_GENE, { name }),
+      //   DEFAULT_FETCH_OPTIONS
       // );
+
+      const response = await fetch(
+        `https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/genes/${name}.json`
+      );
 
       const expressions = await response.json();
 
