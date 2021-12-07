@@ -1,32 +1,23 @@
 import { AnchorButton } from "@blueprintjs/core";
-import Image from "next/image";
-import React from "react";
+import React, { ReactElement } from "react";
 import { ActionButton as StyledActionButton } from "src/components/common/Grid/components/ActionButton/style";
 
 interface Props {
-  imageProps: StaticImageData;
-  isDisabled?: boolean;
-  url?: string;
+  iconSvg: ReactElement; // TODO(cc) check type
+  isAnchorButton?: boolean;
 }
 
 export default function ActionButton({
-  imageProps,
-  isDisabled = false,
-  url,
-  ...props /* Spread props to allow for data-test-id and anchor button specific attributes e.g. "target". */
+  iconSvg,
+  isAnchorButton = false,
+  ...props /* Spread props to allow for data-test-id and button specific attributes e.g. "href", "target", or "disabled". */
 }: Props): JSX.Element {
-  const { src, ...restImageProps } = imageProps;
-  const actionIcon = <Image alt="Download" src={src} {...restImageProps} />;
-  return url ? (
+  return (
     <StyledActionButton
-      as={AnchorButton}
-      href={url}
-      icon={actionIcon}
+      as={isAnchorButton ? AnchorButton : undefined}
+      icon={iconSvg}
       minimal
       {...props}
-      disabled={isDisabled} /* overrides props.disabled */
     />
-  ) : (
-    <StyledActionButton icon={actionIcon} minimal {...props} />
   );
 }
