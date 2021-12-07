@@ -1,7 +1,11 @@
-import { useMutation, useQuery, useQueryCache } from "react-query";
+import { QueryResult, useMutation, useQuery, useQueryCache } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DatasetUploadStatus, VISIBILITY_TYPE } from "../entities";
+import {
+  DatasetMetadata,
+  DatasetUploadStatus,
+  VISIBILITY_TYPE,
+} from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
 import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
@@ -70,4 +74,44 @@ export function useDeleteDataset(collection_uuid = "") {
       );
     },
   });
+}
+
+/* Query key for /dataset-metadata/id */
+export const USE_DATASET_METADATA = {
+  entities: [ENTITIES.DATASET],
+  id: "datasetMetadata",
+};
+
+/**
+ * Cache-enabled hook for fetching metadata for the dataset with the given explorer URL.
+ * @param explorerUrl - Explorer URL of a dataset.
+ * @param enabled - True if fetch can be invoked.
+ * @returns Dataset metadata.
+ */
+export function useFetchDatasetMetadata(
+  explorerUrl: string,
+  enabled: boolean
+): QueryResult<DatasetMetadata> {
+  return useQuery<DatasetMetadata>(
+    [USE_DATASET_METADATA, explorerUrl],
+    () => fetchDatasetMetadata(explorerUrl),
+    { enabled }
+  );
+}
+
+/**
+ * Fetch metadata for the dataset with the given explorer URL.
+ * @param explorerUrl - Explorer URL of a dataset.
+ * @returns Promise that resolves to dataset metadata.
+ */
+async function fetchDatasetMetadata(
+  explorerUrl: string
+): Promise<DatasetMetadata> {
+  const explorerPath = new URL(explorerUrl).pathname;
+  const { metadata } = await (
+    await fetch(
+      apiTemplateToUrl(API_URL + API.DATASET_METADATA, { explorerPath })
+    )
+  ).json();
+  return metadata;
 }

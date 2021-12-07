@@ -33,4 +33,9 @@ export const StyledDialog = styled(Dialog)`
     min-width: 500px;
     width: unset;
   }
+  /* Dataset download loading state */
+  &.modal-loading {
+    min-height: 461px;
+    min-width: 697px;
+  }
 `;

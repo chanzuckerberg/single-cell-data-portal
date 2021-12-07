@@ -12,4 +12,7 @@ export enum API {
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
   USER_INFO = "/dp/v1/userinfo",
+
+  // Explorer
+  DATASET_METADATA = "/cellxgene{explorerPath}api/v0.2/dataset-metadata",
 }
