@@ -1,6 +1,7 @@
 // Display-optimized structure of category and corresponding category values and counts.
 import { useCallback, useMemo, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
+import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
   CategoryValueKey,
@@ -431,13 +432,7 @@ function sortCategoryValueViews(
   cvv0: CategoryValueView,
   cvv1: CategoryValueView
 ): number {
-  if (cvv0.key < cvv1.key) {
-    return -1;
-  }
-  if (cvv0.key > cvv1.key) {
-    return 1;
-  }
-  return 0;
+  return COLLATOR_CASE_INSENSITIVE.compare(cvv0.key, cvv1.key);
 }
 
 /**
@@ -447,13 +442,7 @@ function sortCategoryValueViews(
  * @returns Number indicating sort precedence of c0 vs c1.
  */
 function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
-  if (c0.key < c1.key) {
-    return -1;
-  }
-  if (c0.key > c1.key) {
-    return 1;
-  }
-  return 0;
+  return COLLATOR_CASE_INSENSITIVE.compare(c0.key, c1.key);
 }
 
 /**

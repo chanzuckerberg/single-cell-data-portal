@@ -4,6 +4,7 @@ import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
+import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
   CATEGORY_KEY,
@@ -58,12 +59,6 @@ export interface DatasetResponse {
   sex: Ontology[];
   tissue: Ontology[];
 }
-
-/* Category values sorter */
-const COLLATOR = new Intl.Collator("en", {
-  numeric: true,
-  sensitivity: "base",
-});
 
 /* Query key for caching collections returned from /collections/index endpoint. */
 export const USE_COLLECTIONS_INDEX = {
@@ -448,7 +443,7 @@ function sortCategoryValues<T extends Categories>(row: T): T {
  * @returns Number indicating sort precedence of o0 vs o1.
  */
 function sortOntologies(o0: Ontology, o1: Ontology): number {
-  return COLLATOR.compare(o0.label, o1.label);
+  return COLLATOR_CASE_INSENSITIVE.compare(o0.label, o1.label);
 }
 
 /**
