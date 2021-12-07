@@ -5,7 +5,7 @@ import styled from "styled-components";
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 
 interface Props {
-  width: number;
+  menuWidth: number;
 }
 
 interface MenuItemProps {
@@ -15,7 +15,7 @@ interface MenuItemProps {
 export const MenuWrapper = styled.span<Props>`
   .${Classes.MENU} {
     min-width: ${(props) =>
-      `${props.width}px`}; /* overrides BP menu min-width specification; maintains menu width when filtering menu items */
+      `${props.menuWidth}px`}; /* overrides BP menu min-width specification; maintains menu width when filtering menu items */
     padding: 6px;
 
     li {
