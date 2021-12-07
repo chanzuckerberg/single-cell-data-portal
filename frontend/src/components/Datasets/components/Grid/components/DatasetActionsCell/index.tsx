@@ -1,7 +1,6 @@
 import { Intent, Position, Tooltip } from "@blueprintjs/core";
 import React from "react";
-import { Dataset } from "src/common/entities";
-import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
+import DownloadDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
 import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
@@ -9,7 +8,7 @@ import { DownloadButton } from "src/components/Datasets/components/Grid/common/u
 import exploreSVG from "/src/common/images/explore-blue.svg";
 
 interface Props {
-  dataAssets: Dataset["dataset_assets"];
+  datasetId: string;
   isOverMaxCellCount: boolean;
   isRDSSkipped: boolean;
   name: string;
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export default function DatasetsActionsCell({
-  dataAssets,
+  datasetId,
   explorerUrl,
   isOverMaxCellCount,
   isRDSSkipped,
@@ -30,26 +29,30 @@ export default function DatasetsActionsCell({
     : "Explore";
   const exploreTooltipIntent = isOverMaxCellCount ? Intent.DANGER : undefined;
 
+  // Determine if Explorer link and tooltip is disabled.
+  const explorerDisabled = tombstone || !explorerUrl;
+
   return (
     <ActionsCell>
       <DownloadDataset
         Button={DownloadButton}
-        dataAssets={dataAssets}
-        isDisabled={tombstone}
+        datasetId={datasetId}
+        explorerUrl={explorerUrl}
+        isDisabled={tombstone || !explorerUrl}
         isRDSSkipped={isRDSSkipped}
         name={name}
       />
       <Tooltip
         boundary="viewport"
         content={exploreTooltipContent}
-        disabled={tombstone}
+        disabled={explorerDisabled}
         intent={exploreTooltipIntent}
         position={Position.TOP}
       >
         <ActionButton
           data-test-id="view-dataset-link"
           imageProps={exploreSVG}
-          isDisabled={tombstone || isOverMaxCellCount}
+          isDisabled={explorerDisabled || isOverMaxCellCount}
           // @ts-expect-error -- revisit rel typing
           rel="noopener"
           target="_blank"
