@@ -1,5 +1,10 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
-import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import {
+  GRAY,
+  LIGHT_GRAY,
+  PRIMARY_BLUE,
+  PT_TEXT_COLOR,
+} from "src/components/common/theme";
 import styled from "styled-components";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
@@ -102,7 +107,7 @@ export const MenuItemWrapper = styled.span<MenuItemProps>`
 
     .${Classes.ICON} {
       align-items: center;
-      color: #0073ff;
+      color: ${PRIMARY_BLUE};
       display: flex;
       height: 18px;
       justify-content: center;

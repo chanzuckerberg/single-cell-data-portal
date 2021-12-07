@@ -1,3 +1,4 @@
+import { PRIMARY_BLUE } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const StyledAnchor = styled.a`
@@ -9,7 +10,7 @@ export const StyledAnchor = styled.a`
 
   &:hover {
     background: transparent;
-    color: #0073ff;
+    color: ${PRIMARY_BLUE};
     text-decoration: none;
   }
 `;
