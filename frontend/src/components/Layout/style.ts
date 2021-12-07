@@ -20,7 +20,9 @@ export const MainWrapper = styled.div`
 `;
 
 export const DefaultMainWrapper = styled(MainWrapper)`
-  overflow: auto;
+  main {
+    overflow: auto;
+  }
 `;
 
 export const SidebarMainWrapper = styled(MainWrapper)`
@@ -31,7 +33,7 @@ export const SidebarMainWrapper = styled(MainWrapper)`
   }
 `;
 
-export const View = styled.div`
+export const DefaultView = styled.div`
   ${layout}
   ${contentWrapper}
 `;
