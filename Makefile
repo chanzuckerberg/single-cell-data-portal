@@ -94,13 +94,13 @@ local-ecr-login:
 .PHONY: local-hostconfig
 local-hostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo ./scripts/happy hosts install; \
+	  sudo -E ./scripts/happy hosts install; \
 	fi
 
 .PHONY: local-nohostconfig
 local-nohostconfig:
 	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo ./scripts/happy hosts uninstall; \
+	  sudo -E ./scripts/happy hosts uninstall; \
 	fi
 
 .PHONY: local-init
