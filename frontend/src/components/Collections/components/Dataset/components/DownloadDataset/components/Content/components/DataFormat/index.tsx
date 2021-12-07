@@ -33,6 +33,40 @@ const DataFormat: FC<Props> = ({
     handleChangeRaw(value);
   };
 
+  const renderH5adRadio = (): React.ReactElement => {
+    return (
+      <Radio
+        disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.H5AD)}
+        label=".h5ad (AnnData v0.7)"
+        value={DATASET_ASSET_FORMAT.H5AD}
+      />
+    );
+  };
+
+  const renderRdsButton = (): React.ReactElement => {
+    return (
+      <Radio
+        disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
+        label=".rds (Seurat v3)"
+        value={DATASET_ASSET_FORMAT.RDS}
+      />
+    );
+  };
+
+  const renderTooltip = (): React.ReactElement => {
+    return (
+      <Tooltip
+        disabled={!isRDSSkipped}
+        interactionKind={PopoverInteractionKind.HOVER}
+        content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
+        intent={Intent.DANGER}
+        position={Position.TOP}
+      >
+        {renderRdsButton()}
+      </Tooltip>
+    );
+  };
+
   return (
     <Section>
       <Title>DATA FORMAT</Title>
@@ -43,24 +77,9 @@ const DataFormat: FC<Props> = ({
         onChange={handleChange}
         selectedValue={selectedFormat}
       >
-        <Radio
-          disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.H5AD)}
-          label=".h5ad (AnnData v0.7)"
-          value={DATASET_ASSET_FORMAT.H5AD}
-        />
-        <Tooltip
-          disabled={!isRDSSkipped}
-          interactionKind={PopoverInteractionKind.HOVER}
-          content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
-          intent={Intent.DANGER}
-          position={Position.TOP}
-        >
-          <Radio
-            disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
-            label=".rds (Seurat v3)"
-            value={DATASET_ASSET_FORMAT.RDS}
-          />
-        </Tooltip>
+        {renderH5adRadio()}
+        {isRDSSkipped && renderTooltip()}
+        {!isRDSSkipped && renderRdsButton()}
       </RadioGroup>
     </Section>
   );
