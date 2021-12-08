@@ -224,15 +224,11 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
     .map((categoryKey: string) => {
       // Build category value view models for this category and sort.
       const categoryValueByValue = filterState[categoryKey as CategoryKey];
-      const categoryValueViews = [...categoryValueByValue.values()]
-        .map((categoryValue: CategoryValue) => ({
-          count: categoryValue.count,
-          key: categoryValue.key,
-          label: buildCategoryValueLabel(
-            categoryKey as CategoryKey,
-            categoryValue.key
-          ),
-          selected: categoryValue.selected,
+     .map(({ count, key, selected }: CategoryValue) => ({
+          count,
+          key,
+          label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
+          selected: selected,
         }))
         .sort(sortCategoryValueViews);
       // Return completed view model of this category.
