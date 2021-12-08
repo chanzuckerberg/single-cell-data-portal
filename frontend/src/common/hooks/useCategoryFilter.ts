@@ -214,7 +214,7 @@ function buildCategoryValueLabel(
 /**
  * Build view-specific models from filter state, to facilitate easy rendering.
  * @param filterState - Categories, category value and their counts with the current filter applied.
- * @returns Array of category view object.s
+ * @returns Array of category view objects.
  */
 function buildCategoryViews(filterState?: FilterState): CategoryView[] {
   if (!filterState) {
