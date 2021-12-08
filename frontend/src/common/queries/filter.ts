@@ -14,27 +14,37 @@ import {
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 
-/* Query key for /collections/index */
+/**
+ * Query key for /collections/index
+ */
 const QUERY_ID_COLLECTIONS = "collectionsIndex";
 
-/* Query key for /datasets/index */
+/**
+ * Query key for /datasets/index
+ */
 const QUERY_ID_DATASETS = "datasetIndex";
 
-/* Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.  */
+/**
+ * Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.
+ */
 export interface FetchCategoriesRows<T extends Categories> {
   isError: boolean;
   isLoading: boolean;
   rows: T[];
 }
 
-/* Model returned on fetch of collection datasets: materialized dataset view models as well as fetch status.  */
+/**
+ * Model returned on fetch of collection datasets: materialized dataset view models as well as fetch status.
+ */
 export interface FetchCollectionDatasetRows {
   isError: boolean;
   isLoading: boolean;
   rows: DatasetRow[];
 }
 
-/* Model of /collections/index JSON response. */
+/**
+ * Model of /collections/index JSON response.
+ */
 export interface CollectionResponse {
   id: string;
   name: string;
@@ -42,7 +52,9 @@ export interface CollectionResponse {
   revised_at: number;
 }
 
-/* Model of /datasets/index JSON response.  */
+/**
+ * Model of /datasets/index JSON response.
+ */
 export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
@@ -60,13 +72,17 @@ export interface DatasetResponse {
   tissue: Ontology[];
 }
 
-/* Query key for caching collections returned from /collections/index endpoint. */
+/**
+ * Query key for caching collections returned from /collections/index endpoint.
+ */
 export const USE_COLLECTIONS_INDEX = {
   entities: [ENTITIES.COLLECTION],
   id: QUERY_ID_COLLECTIONS,
 };
 
-/* Query key for caching datasets returned from /datasets/index endpoint. */
+/**
+ * Query key for caching datasets returned from /datasets/index endpoint.
+ */
 const USE_DATASETS_INDEX = {
   entities: [ENTITIES.DATASET],
   id: QUERY_ID_DATASETS,

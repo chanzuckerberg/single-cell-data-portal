@@ -76,7 +76,9 @@ export function useDeleteDataset(collection_uuid = "") {
   });
 }
 
-/* Query key for /dataset-metadata/id */
+/**
+ * Query key for /dataset-metadata/id
+ */
 export const USE_DATASET_METADATA = {
   entities: [ENTITIES.DATASET],
   id: "datasetMetadata",

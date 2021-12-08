@@ -21,38 +21,52 @@ interface CategoryFilter {
   value: FilterValue;
 }
 
-/* Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups */
+/**
+ * Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups
+ * */
 export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
-/* Set of all category values in the full result set, keyed by their corresponding category. */
+/*
+ * Set of all category values in the full result set, keyed by their corresponding category.
+ */
 type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
 
-/* Metadata value, count and selected state. */
+/**
+ * Metadata value, count and selected state.
+ */
 export interface CategoryValue {
   key: CategoryValueKey;
   count: number;
   selected: boolean;
 }
 
-/* Shape of return value from this useFilter hook. */
+/**
+ * Shape of return value from this useFilter hook.
+ */
 export interface FilterInstance {
   categories: CategoryView[];
   onFilter: OnFilterFn;
 }
 
-/* State backing filter functionality and calculations. Converted to view model for display. */
+/**
+ * State backing filter functionality and calculations. Converted to view model for display.
+ */
 type FilterState = {
   [K in CATEGORY_KEY]: Map<CategoryValueKey, CategoryValue>;
 };
 
-/* Selected filters applicable to a category; used when deriving category value counts from current set of filters.
-   Identical queries can be shared by categories to reduce the number of result set filtering. */
+/**
+ * Selected filters applicable to a category; used when deriving category value counts from current set of filters.
+ * Identical queries can be shared by categories to reduce the number of result set filtering.
+ */
 interface Query<T extends Categories> {
   categoryKeys: CategoryKey[];
   filters: Filters<T>;
 }
 
-/* react-table function to call when updating set of selected filters. */
+/**
+ * react-table function to call when updating set of selected filters.
+ */
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter. */
 type SetFilterFn = (columnId: string, updater: any) => void;
 

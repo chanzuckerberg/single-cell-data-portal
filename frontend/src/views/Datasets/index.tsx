@@ -25,22 +25,34 @@ import DatasetNameCell from "src/components/Datasets/components/Grid/components/
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
 
-// Collection ID object key.
+/**
+ * Collection ID object key.
+ */
 const COLLECTION_ID = "collection_id";
 
-// Collection name object key.
+/**
+ * Collection name object key.
+ */
 const COLLECTION_NAME = "collection_name";
 
-// Dataset ID object key.
+/**
+ * Dataset ID object key.
+ */
 const DATASET_ID = "id";
 
-// Dataset name object key.
+/**
+ * Dataset name object key.
+ */
 const DATASET_NAME = "name";
 
-// Explorer URL object key.
+/**
+ * Explorer URL object key.
+ */
 const EXPLORER_URL = "explorer_url";
 
-// Key identifying recency sort by column.
+/**
+ * Key identifying recency sort by column.
+ */
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {

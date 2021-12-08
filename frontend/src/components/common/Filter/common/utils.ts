@@ -5,7 +5,9 @@ import {
   OntologyCategoryKey,
 } from "src/components/common/Filter/common/entities";
 
-/* Return type of accessor function. */
+/**
+ * Return type of accessor function.
+ */
 type OntologyCellAccessorFn = (categories: Categories) => string[];
 
 /**

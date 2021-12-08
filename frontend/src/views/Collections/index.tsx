@@ -25,16 +25,24 @@ import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
 import { View } from "src/views/globalStyle";
 
-/* Collection ID object key. */
+/**
+ * Collection ID object key.
+ */
 const COLLECTION_ID = "id";
 
-/* Collection name object key. */
+/**
+ * Collection name object key.
+ */
 const COLLECTION_NAME = "name";
 
-/* Key identifying recency sort by column. */
+/**
+ * Key identifying recency sort by column.
+ */
 const COLUMN_ID_RECENCY = "recency";
 
-/* Gene sets CSV upload functionality, available if gene sets feature flag is enabled */
+/**
+ * Gene sets CSV upload functionality, available if gene sets feature flag is enabled
+ */
 const AsyncUploadCSV = loadable(
   () =>
     /*webpackChunkName: 'src/components/UploadCSV' */ import(

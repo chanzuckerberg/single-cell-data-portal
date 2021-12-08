@@ -28,10 +28,10 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
                 categoryKey={key}
                 filterCategoryValues={filterCategoryValues}
                 filterCategoryValuesWithCount={filterCategoryValuesWithCount}
-                multiselect={true} // Can possibly be single select with future filter types
+                isMultiselect={true} // Can possibly be single select with future filter types
+                isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
                 onFilter={onFilter}
                 onUpdateSearchValue={onUpdateSearchValue}
-                searchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
                 values={values}
               />
             }

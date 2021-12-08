@@ -22,10 +22,10 @@ interface Props {
   categoryKey: CATEGORY_KEY;
   filterCategoryValues: FilterCategoryValuesFn;
   filterCategoryValuesWithCount: FilterCategoryValuesWithCountFn;
-  multiselect: boolean;
+  isMultiselect: boolean;
+  isSearchable: boolean;
   onFilter: OnFilterFn;
   onUpdateSearchValue: OnUpdateSearchValueFn;
-  searchable: boolean;
   values: CategoryValueView[];
 }
 
@@ -35,10 +35,10 @@ export default function FilterMenu({
   categoryKey,
   filterCategoryValues,
   filterCategoryValuesWithCount,
-  multiselect,
+  isMultiselect,
   onFilter,
   onUpdateSearchValue,
-  searchable,
+  isSearchable,
   values,
 }: Props): JSX.Element {
   const menuRef = useRef<HTMLSpanElement>(null);
@@ -46,13 +46,13 @@ export default function FilterMenu({
   const [searchValue, setSearchValue] = useState<string>("");
   const menuItemsWithCount = filterCategoryValuesWithCount(values);
   const menuItems =
-    searchable && searchValue
+    isSearchable && searchValue
       ? filterCategoryValues(menuItemsWithCount, searchValue)
       : menuItemsWithCount;
   const emptyItems = menuItems.length === 0;
   const scrollable = menuItems.length > MAX_DISPLAYABLE_MENU_ITEMS;
   const MenuItemsScroller =
-    searchable && scrollable ? MenuItemsWrapper : Fragment;
+    isSearchable && scrollable ? MenuItemsWrapper : Fragment;
 
   // Set initial width on menu to prevent resizing on filter of menu items.
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function FilterMenu({
   return (
     <MenuWrapper menuWidth={menuWidth} ref={menuRef}>
       <Menu>
-        {searchable ? (
+        {isSearchable ? (
           <InputGroupWrapper>
             <InputGroup
               leftIcon={IconNames.SEARCH}
@@ -91,7 +91,7 @@ export default function FilterMenu({
                   icon={selected ? IconNames.TICK : IconNames.BLANK}
                   labelElement={count}
                   onClick={() => onFilter(categoryKey, key)}
-                  shouldDismissPopover={!multiselect}
+                  shouldDismissPopover={!isMultiselect}
                   text={label}
                 />
               </MenuItemWrapper>
