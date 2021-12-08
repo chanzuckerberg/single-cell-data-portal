@@ -29,6 +29,7 @@ export default function HeatMap({
   genes,
 }: Props): JSX.Element {
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
+  const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
   const [isEchartGLAvailable, setIsEchartGLAvailable] = useState(false);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(genes));
   const [heatmapHeight, setHeatmapHeight] = useState(
@@ -50,6 +51,7 @@ export default function HeatMap({
   // Calculate the min and max of the mean expression of each gene -- end
 
   const ref = useRef(null);
+  const xAxisRef = useRef(null);
 
   // Update heatmap size
   useEffect(() => {
@@ -69,35 +71,48 @@ export default function HeatMap({
 
   useEffect(() => {
     const { current } = ref;
+    const { current: xAxisCurrent } = xAxisRef;
 
-    if (!current || isChartInitialized || !isEchartGLAvailable) return;
+    if (!current || !xAxisCurrent || isChartInitialized || !isEchartGLAvailable)
+      return;
 
     isChartInitialized = true;
     setChart(echarts.init(current));
-  }, [ref, isEchartGLAvailable]);
+    setXAxisChart(echarts.init(xAxisCurrent));
+  }, [ref, xAxisRef, isEchartGLAvailable]);
 
   useEffect(() => {
-    if (!chart || !isEchartGLAvailable) return;
+    if (!chart || !xAxisChart || !isEchartGLAvailable) return;
 
     const allGeneNames = genes.map((gene) => gene.name);
 
-    chart.setOption({
+    const commonSeries = {
+      encode: {
+        x: "geneIndex",
+        y: "cellTypeIndex",
+      },
+      name: "wmg",
+      type: "scatter",
+    };
+
+    const commonOptions = {
       dataset: {
         source: chartData,
       },
+      large: true,
+    };
+
+    chart.setOption({
+      ...commonOptions,
       grid: {
         bottom: "100px",
         containLabel: true,
         left: "100px",
         top: "0",
       },
-      large: true,
       series: [
         {
-          encode: {
-            x: "geneIndex",
-            y: "cellTypeIndex",
-          },
+          ...commonSeries,
           itemStyle: {
             color(props: { data: { scaledMeanExpression: number } }) {
               const { scaledMeanExpression } = props.data;
@@ -105,13 +120,11 @@ export default function HeatMap({
               return interpolateYlOrRd(scaledMeanExpression);
             },
           },
-          name: "wmg",
           symbolSize: function (props: { percentage: number }) {
             const { percentage } = props;
 
             return Math.round(MAX_FIRST_PART_LENGTH_PX * percentage);
           },
-          type: "scatter",
         },
       ],
       tooltip: {
@@ -140,7 +153,7 @@ export default function HeatMap({
       },
       xAxis: [
         {
-          axisLabel: { rotate: 90 },
+          axisLabel: { fontSize: 0, rotate: 90 },
           axisLine: {
             show: false,
           },
@@ -165,15 +178,78 @@ export default function HeatMap({
         },
       ],
     });
-  }, [chart, isEchartGLAvailable, cellTypes, data, genes, chartData]);
+
+    xAxisChart.setOption({
+      ...commonOptions,
+      grid: {
+        containLabel: true,
+        left: "100px",
+        position: "sticky",
+        top: "210px",
+      },
+      series: [
+        {
+          ...commonSeries,
+          symbolSize: 0,
+        },
+      ],
+      xAxis: [
+        {
+          axisLabel: { rotate: 90 },
+          axisLine: {
+            show: false,
+          },
+          boundaryGap: false,
+          data: allGeneNames,
+          splitLine: {
+            show: true,
+          },
+          type: "category",
+        },
+      ],
+      yAxis: [
+        {
+          axisLabel: { rotate: 20 },
+          axisLine: {
+            show: true,
+          },
+          data: cellTypes.map((cellType) => cellType.name).reverse(),
+          show: false,
+          splitLine: {
+            show: true,
+          },
+        },
+      ],
+    });
+  }, [
+    chart,
+    xAxisChart,
+    isEchartGLAvailable,
+    cellTypes,
+    data,
+    genes,
+    chartData,
+  ]);
 
   // Resize heatmap
   useEffect(() => {
     chart?.resize();
-  }, [chart, heatmapHeight, heatmapWidth]);
+    xAxisChart?.resize();
+  }, [chart, xAxisChart, heatmapHeight, heatmapWidth]);
 
   return (
     <Container>
+      <div
+        style={{
+          height: "210px",
+          position: "sticky",
+          // top: heatmapHeight + "px",
+          top: "60vh",
+          width: heatmapWidth + "px",
+          zIndex: 1,
+        }}
+        ref={xAxisRef}
+      />
       <div
         style={{
           height: heatmapHeight + "px",
