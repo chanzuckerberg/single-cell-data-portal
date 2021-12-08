@@ -83,20 +83,14 @@ export function useCategoryFilter<T extends Categories>(
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
-  /**
-   * Complete set of categories and category values for the result set.
-   */
+  // Complete set of categories and category values for the result set.
   const [categorySet, setCategorySet] = useState<CategorySet>();
 
-  /**
-   * Core filter state facilitating build of complete set of categories, category values and counts for a filtered
-   * result set.
-   */
+  // Core filter state facilitating build of complete set of categories, category values and counts for a filtered
+  // result set.
   const [filterState, setFilterState] = useState<FilterState>();
 
-  /**
-   * Set up original, full set of categories and their values.
-   */
+  // Set up original, full set of categories and their values.
   useEffect(() => {
     // Only build category set if there are rows to parse category values from. Only build category set once on load.
     if (!originalRows.length || categorySet) {
@@ -105,9 +99,7 @@ export function useCategoryFilter<T extends Categories>(
     setCategorySet(buildCategorySet(originalRows));
   }, [originalRows, categorySet]);
 
-  /**
-   * Build next filter state on change of filter.
-   */
+  // Build next filter state on change of filter.
   useEffect(() => {
     // Must have category set before next filter state can be calculated.
     if (!categorySet) {
@@ -121,9 +113,7 @@ export function useCategoryFilter<T extends Categories>(
     setFilterState(nextFilterState);
   }, [categorySet, filters, originalRows]);
 
-  /**
-   *   Update set of filters on select of category value.
-   */
+  // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
     (categoryKey: CategoryKey, categoryValueKey: CategoryValueKey) => {
       const nextCategoryFilters = buildNextCategoryFilters(

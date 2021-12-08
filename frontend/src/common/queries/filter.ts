@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { QueryResult, useQuery } from "react-query";
 import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
@@ -179,7 +179,7 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   } = useFetchCollections();
 
   // Build dataset rows once datasets and collections responses have resolved.
-  useMemo(() => {
+  useEffect(() => {
     if (!datasets || !collectionsById) {
       return;
     }
