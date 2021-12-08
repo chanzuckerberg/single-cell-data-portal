@@ -105,7 +105,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-upload-success:branch-main"
-      dockerfile: Dockerfile.upload_success
+      dockerfile: Dockerfile.handle_success
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
