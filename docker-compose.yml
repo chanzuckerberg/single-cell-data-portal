@@ -115,7 +115,7 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/corpora/upload_failures:/var/task
+      - ./:/var/task
       - ./backend/corpora/lambdas/handle_success:/var/task/backend/corpora/handle_success
       - ./backend/corpora/common:/var/task/backend/corpora/common
       - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
