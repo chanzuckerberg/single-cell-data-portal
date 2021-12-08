@@ -31,13 +31,14 @@ export const POLICY_BULLETS = {
       If I choose to publish this data <b>publicly</b> on the cellxgene portal,
       I understand that (1) anyone will be able to access it subject to a CC-BY
       license, meaning they can download, share, and use the data without
-      restriction beyond providing attribution to me and (2) the Collection
-      details I’ve provided above (collection name, description, and my contact
-      information) will be made public on the cellxgene portal too.
+      restriction beyond providing attribution to the original data
+      contributor(s) and (2) the Collection details (including collection name,
+      description, my name, and the contact information for the datasets in this
+      Collection) will be made public on the cellxgene portal too.
     </div>,
-    "I understand that I have the ability to delete my data from the cellxgene portal if I later change my mind. This will not undo any prior downloads or shares of my data.",
+    "I understand that I have the ability to delete the data that I have published from the cellxgene portal if I later choose to. This however will not undo any prior downloads or shares of such data.",
   ],
-  version: "1.0",
+  version: "2.0",
 };
 
 const Policy: FC = () => {
