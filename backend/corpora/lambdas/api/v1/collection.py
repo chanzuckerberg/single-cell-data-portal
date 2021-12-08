@@ -117,6 +117,7 @@ def create_collection(body: object, user: str):
         links=body["links"],
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
+        curator_name=body["curator_name"],
     )
 
     return make_response(jsonify({"collection_uuid": collection.id}), 201)

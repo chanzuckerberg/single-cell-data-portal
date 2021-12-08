@@ -37,6 +37,7 @@ class TestCollection(BaseAuthAPITest):
             "obfuscated_uuid",
             "contact_email",
             "contact_name",
+            "curator_name",
             "access_type",
         ]
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
@@ -256,6 +257,7 @@ class TestCollection(BaseAuthAPITest):
             "visibility": "PUBLIC",
             "obfuscated_uuid": "",
             "contact_name": "Some Body",
+            "curator_name": "",
             "contact_email": "somebody@chanzuckerberg.com",
             "data_submission_policy_version": "0",
         }
@@ -305,6 +307,7 @@ class TestCollection(BaseAuthAPITest):
                 "access_type": "READ",
                 "contact_email": "",
                 "contact_name": "",
+                "curator_name": "",
                 "data_submission_policy_version": "0",
                 "datasets": [
                     {
@@ -428,6 +431,7 @@ class TestCollection(BaseAuthAPITest):
                 "description": "This is a test collection",
                 "contact_name": "person human",
                 "contact_email": "person@human.com",
+                "curator_name": "",
                 "links": [
                     {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                     {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -449,6 +453,7 @@ class TestCollection(BaseAuthAPITest):
                 "owner": "someone else",
                 "description": "This is a test collection",
                 "contact_name": "person human",
+                "curator_name": "",
                 "contact_email": "person@human.com",
                 "links": [
                     {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
@@ -459,6 +464,7 @@ class TestCollection(BaseAuthAPITest):
                 "name": "extra field in link",
                 "description": "This is a test collection",
                 "contact_name": "person human",
+                "curator_name": "",
                 "contact_email": "person@human.com",
                 "links": [
                     {
@@ -500,6 +506,7 @@ class TestCollection(BaseAuthAPITest):
             "name": "another collection name",
             "description": "This is a test collection",
             "contact_name": "person human",
+            "curator_name": "",
             "contact_email": "person@human.com",
             "links": [
                 {"link_url": "http://doi.org/10.1016", "link_type": "OTHER"},
@@ -536,6 +543,7 @@ class TestCollection(BaseAuthAPITest):
             "description": "    This is a test collection  ",
             "contact_name": " person human   ",
             "contact_email": "person@human.com  ",
+            "curator_name": "",
             "links": [
                 {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
                 {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
