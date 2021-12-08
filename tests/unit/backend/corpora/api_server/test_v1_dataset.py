@@ -154,6 +154,38 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["published_at"], dataset.published_at.timestamp())
         self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
 
+    def test__get_dataset_assets(self):
+        artifact_0 = dict(
+            filename="filename_0",
+            filetype=DatasetArtifactFileType.CXG,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri="s3://mock-bucket/mock-key.cxg",
+        )
+        artifact_1 = dict(
+            filename="filename_1",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri="s3://mock-bucket/mock-key.h5ad",
+        )
+        dataset = self.generate_dataset(
+            self.session,
+            id="test_dataset",
+            artifacts=[artifact_0, artifact_1]
+        )
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/assets")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertIn("assets", body)
+        assets = body["assets"]
+        self.assertEqual(len(assets), 2)
+        self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.cxg")
+        self.assertEqual(assets[1]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
+
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)

@@ -496,6 +496,30 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /dp/v1/datasets/{dataset_uuid}/assets:
+    get:
+      tags:
+        - datasets
+      summary: Dataset assets
+      description: >-
+        Return a list of all the dataset's assets
+      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_assets
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
   /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
