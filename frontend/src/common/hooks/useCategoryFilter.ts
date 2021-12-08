@@ -1,5 +1,5 @@
 // Display-optimized structure of category and corresponding category values and counts.
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
@@ -13,9 +13,9 @@ import {
   OnFilterFn,
 } from "src/components/common/Filter/common/entities";
 
-/** 
-  * Entry in react-table's filters arrays, models selected category values in a category. 
-  */
+/**
+ * Entry in react-table's filters arrays, models selected category values in a category.
+ */
 interface CategoryFilter {
   id: string;
   value: FilterValue;
@@ -69,15 +69,21 @@ export function useCategoryFilter<T extends Categories>(
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
-  // Complete set of categories and category values for the result set.
+  /**
+   * Complete set of categories and category values for the result set.
+   */
   const [categorySet, setCategorySet] = useState<CategorySet>();
 
-  // Core filter state facilitating build of complete set of categories, category values and counts for a filtered
-  // result set.
+  /**
+   * Core filter state facilitating build of complete set of categories, category values and counts for a filtered
+   * result set.
+   */
   const [filterState, setFilterState] = useState<FilterState>();
 
-  // Set up original, full set of categories and their values.
-  useMemo(() => {
+  /**
+   * Set up original, full set of categories and their values.
+   */
+  useEffect(() => {
     // Only build category set if there are rows to parse category values from. Only build category set once on load.
     if (!originalRows.length || categorySet) {
       return;
@@ -85,8 +91,10 @@ export function useCategoryFilter<T extends Categories>(
     setCategorySet(buildCategorySet(originalRows));
   }, [originalRows, categorySet]);
 
-  // Build next filter state on change of filter.
-  useMemo(() => {
+  /**
+   * Build next filter state on change of filter.
+   */
+  useEffect(() => {
     // Must have category set before next filter state can be calculated.
     if (!categorySet) {
       return;
@@ -99,7 +107,9 @@ export function useCategoryFilter<T extends Categories>(
     setFilterState(nextFilterState);
   }, [categorySet, filters, originalRows]);
 
-  // Update set of filters on select of category value.
+  /**
+   *   Update set of filters on select of category value.
+   */
   const onFilter = useCallback<OnFilterFn>(
     (categoryKey: CategoryKey, categoryValueKey: CategoryValueKey) => {
       const nextCategoryFilters = buildNextCategoryFilters(
@@ -224,7 +234,8 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
     .map((categoryKey: string) => {
       // Build category value view models for this category and sort.
       const categoryValueByValue = filterState[categoryKey as CategoryKey];
-     .map(({ count, key, selected }: CategoryValue) => ({
+      const categoryValueViews = [...categoryValueByValue.values()]
+        .map(({ count, key, selected }: CategoryValue) => ({
           count,
           key,
           label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
