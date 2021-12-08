@@ -308,7 +308,7 @@ function buildQueries<T extends Categories>(filters: Filters<T>): Query<T>[] {
         return filter.id !== categoryKey;
       });
 
-      // Check if we have an existing  query with an identical filter. If so, add category to that query. Otherwise
+      // Check if we have an existing query with an identical filter. If so, add category to that query. Otherwise
       // create new query for this filter.
       const matchingQuery = accum.find((query: Query<T>) =>
         isFilterEqual(query.filters, filtersExcludingSelf)
