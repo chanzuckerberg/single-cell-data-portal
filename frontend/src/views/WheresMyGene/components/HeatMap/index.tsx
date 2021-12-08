@@ -1,8 +1,12 @@
 import { interpolateYlOrRd } from "d3-scale-chromatic";
 import * as echarts from "echarts";
-import { useEffect, useRef, useState } from "react";
+import debounce from "lodash/debounce";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { CellTypeAndGenes, Gene } from "../../common/types";
 import { Container } from "./style";
+
+const DEBOUNCE_MS = 500;
 
 interface Props {
   cellTypes: CellTypeAndGenes[];
@@ -30,6 +34,20 @@ export default function HeatMap({
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
+
+  const [chartData, setChartData] = useState<ChartFormat[]>(EMPTY_ARRAY);
+
+  const debouncedDataToChartFormat = useMemo(() => {
+    return debounce((data, cellTypes, genes) => {
+      setChartData(dataToChartFormat(data, cellTypes, genes));
+    }, DEBOUNCE_MS);
+  }, []);
+
+  useEffect(() => {
+    debouncedDataToChartFormat(data, cellTypes, genes);
+  }, [data, cellTypes, genes, debouncedDataToChartFormat]);
+
+  // Calculate the min and max of the mean expression of each gene -- end
 
   const ref = useRef(null);
 
@@ -65,7 +83,7 @@ export default function HeatMap({
 
     chart.setOption({
       dataset: {
-        source: dataToChartFormat(data, cellTypes, genes),
+        source: chartData,
       },
       grid: {
         bottom: "100px",
@@ -140,7 +158,7 @@ export default function HeatMap({
         },
       ],
     });
-  }, [chart, isEchartGLAvailable, cellTypes, data, genes]);
+  }, [chart, isEchartGLAvailable, cellTypes, data, genes, chartData]);
 
   // Resize heatmap
   useEffect(() => {
