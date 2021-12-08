@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        component: ['frontend', 'backend', 'upload_failures', 'processing']
+        component: ['frontend', 'backend', 'upload_failures', 'upload_success', 'processing']
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
