@@ -112,7 +112,7 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
   } = useFetchCollections();
 
   // Build dataset rows once datasets and collections responses have resolved.
-  useMemo(() => {
+  useEffect(() => {
     if (!datasets || !collectionsById) {
       return;
     }
