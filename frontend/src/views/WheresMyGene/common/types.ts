@@ -19,6 +19,7 @@ export interface RawGeneExpression {
 }
 
 export interface GeneExpression {
+  // cellTypeId
   id: string;
   pc: number;
   me: number;

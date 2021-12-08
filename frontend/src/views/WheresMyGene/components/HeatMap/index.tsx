@@ -99,10 +99,10 @@ export default function HeatMap({
             y: "cellTypeIndex",
           },
           itemStyle: {
-            color(props: { data: { meanExpression: number } }) {
-              const { meanExpression } = props.data;
+            color(props: { data: { scaledMeanExpression: number } }) {
+              const { scaledMeanExpression } = props.data;
 
-              return interpolateYlOrRd(meanExpression);
+              return interpolateYlOrRd(scaledMeanExpression);
             },
           },
           name: "wmg",
@@ -117,7 +117,12 @@ export default function HeatMap({
       tooltip: {
         formatter(props: { name: string; data: ChartFormat }) {
           const { name, data } = props;
-          const { geneIndex, percentage, meanExpression } = data;
+          const {
+            geneIndex,
+            percentage,
+            meanExpression,
+            scaledMeanExpression,
+          } = data;
 
           return `
             cell type: ${name}
@@ -127,6 +132,8 @@ export default function HeatMap({
             percentage: ${percentage}
             <br />
             mean expression: ${meanExpression}
+            <br />
+            scaledMeanExpression: ${scaledMeanExpression}
           `;
         },
         position: "top",
@@ -184,6 +191,7 @@ interface ChartFormat {
   geneIndex: number;
   percentage: number;
   meanExpression: number;
+  scaledMeanExpression: number;
 }
 
 function dataToChartFormat(
@@ -191,6 +199,20 @@ function dataToChartFormat(
   cellTypes: CellTypeAndGenes[],
   genes: Gene[]
 ): ChartFormat[] {
+  let min = Infinity;
+  let max = -Infinity;
+
+  for (const dataPoint of Object.values(data)) {
+    for (const expression of Object.values(dataPoint.expressions)) {
+      const { me } = expression;
+
+      min = Math.min(min, me);
+      max = Math.max(max, me);
+    }
+  }
+
+  const oldRange = max - min;
+
   return data.flatMap((dataPoint) => {
     return toChartFormat(dataPoint);
   });
@@ -201,6 +223,8 @@ function dataToChartFormat(
     return Object.entries(dataPoint.expressions).map(
       ([geneName, expression]) => {
         const { pc, me } = expression;
+
+        const scaledMe = (me - min) / oldRange + min;
 
         const geneIndex = genes.findIndex((gene) => gene.name === geneName);
 
@@ -213,6 +237,7 @@ function dataToChartFormat(
           geneIndex,
           meanExpression: me,
           percentage: pc,
+          scaledMeanExpression: scaledMe,
         } as ChartFormat;
       }
     );
