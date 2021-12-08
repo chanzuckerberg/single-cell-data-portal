@@ -13,7 +13,9 @@ import {
   OnFilterFn,
 } from "src/components/common/Filter/common/entities";
 
-/* Entry in react-table's filters arrays, models selected category values in a category. */
+/** 
+  * Entry in react-table's filters arrays, models selected category values in a category. 
+  */
 interface CategoryFilter {
   id: string;
   value: FilterValue;
