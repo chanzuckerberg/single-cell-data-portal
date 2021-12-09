@@ -28,7 +28,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   // DEBUG
   // DEBUG
   // TEST 100 genes
-  const [input, setInput] = useState("30");
+  const [input, setInput] = useState("80");
 
   useEffect(() => {
     fetchGenes();
