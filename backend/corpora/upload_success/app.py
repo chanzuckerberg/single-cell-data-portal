@@ -6,7 +6,7 @@ from backend.corpora.dataset_processing.process import update_db
 logger = logging.getLogger(__name__)
 
 
-def handle_success(event: dict, context) -> None:
+def success_handler(event: dict, context) -> None:
     """
     Lambda function invoked by the ingestion step function that updates the processing status
     for the specified dataset to SUCCESS
