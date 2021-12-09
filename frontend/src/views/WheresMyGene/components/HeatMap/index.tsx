@@ -270,7 +270,7 @@ export default function HeatMap({
         style={{
           height: "210px",
           position: "sticky",
-          top: "30rem",
+          top: "0",
           width: heatmapWidth + "px",
           zIndex: 1,
         }}
@@ -335,7 +335,7 @@ function dataToChartFormat(
       ([geneName, expression]) => {
         const { pc, me } = expression;
 
-        const scaledMe = (me - min) / oldRange + min;
+        const scaledMe = (me - min) / oldRange;
 
         const geneIndex = genes.findIndex((gene) => gene.name === geneName);
 
