@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.8
 
-COPY backend/corpora/lambdas/handle_success .
+COPY backend/corpora/upload_success .
 COPY backend/__init__.py ./backend/__init__.py
 COPY backend/corpora/__init__.py ./backend/corpora/__init__.py
 COPY backend/corpora/common ./backend/corpora/common
