@@ -445,7 +445,7 @@ class TestCollection(BaseAuthAPITest):
 
         # Add curator_name
         data["curator_name"] = "john smith"
-        json_data = json.dumps()
+        json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
             headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
