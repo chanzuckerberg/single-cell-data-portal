@@ -15,7 +15,9 @@ interface Props {
 }
 
 const ELEMENT_ID = "heat-map";
+
 let isChartInitialized = false;
+let isObserverInitialized = false;
 
 const MAX_FIRST_PART_LENGTH_PX = 16;
 
@@ -38,6 +40,8 @@ export default function HeatMap({
 
   const [chartData, setChartData] = useState<ChartFormat[]>(EMPTY_ARRAY);
 
+  const [isBottom, setIsBottom] = useState(false);
+
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce((data, cellTypes, genes) => {
       setChartData(dataToChartFormat(data, cellTypes, genes));
@@ -52,6 +56,7 @@ export default function HeatMap({
 
   const ref = useRef(null);
   const xAxisRef = useRef(null);
+  const sentinelRef = useRef(null);
 
   // Update heatmap size
   useEffect(() => {
@@ -68,6 +73,27 @@ export default function HeatMap({
       setIsEchartGLAvailable(true);
     }
   }, []);
+
+  // set up intersection observer
+  useEffect(() => {
+    const { current } = sentinelRef;
+
+    if (!current || isObserverInitialized) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setIsBottom(true);
+      } else {
+        setIsBottom(false);
+      }
+    });
+
+    observer.observe(current);
+
+    isObserverInitialized = true;
+
+    return () => observer.disconnect();
+  }, [sentinelRef]);
 
   useEffect(() => {
     const { current } = ref;
@@ -153,7 +179,7 @@ export default function HeatMap({
       },
       xAxis: [
         {
-          axisLabel: { fontSize: 0, rotate: 90 },
+          axisLabel: { fontSize: isBottom ? 12 : 0, rotate: 90 },
           axisLine: {
             show: false,
           },
@@ -184,7 +210,6 @@ export default function HeatMap({
       grid: {
         containLabel: true,
         left: "100px",
-        position: "sticky",
         top: "210px",
       },
       series: [
@@ -201,6 +226,7 @@ export default function HeatMap({
           },
           boundaryGap: false,
           data: allGeneNames,
+          show: isBottom ? false : true,
           splitLine: {
             show: true,
           },
@@ -229,6 +255,7 @@ export default function HeatMap({
     data,
     genes,
     chartData,
+    isBottom,
   ]);
 
   // Resize heatmap
@@ -243,8 +270,7 @@ export default function HeatMap({
         style={{
           height: "210px",
           position: "sticky",
-          // top: heatmapHeight + "px",
-          top: "60vh",
+          top: "30rem",
           width: heatmapWidth + "px",
           zIndex: 1,
         }}
@@ -257,6 +283,15 @@ export default function HeatMap({
         }}
         ref={ref}
         id={ELEMENT_ID}
+      />
+      <div
+        style={{
+          height: "1px",
+          position: "absolute",
+          top: `calc(${heatmapHeight}px - 5rem + 180px)`,
+          width: heatmapWidth + "px",
+        }}
+        ref={sentinelRef}
       />
     </Container>
   );
