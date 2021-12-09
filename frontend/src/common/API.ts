@@ -1,5 +1,6 @@
 export enum API {
   DATASET = "/dp/v1/datasets/{dataset_uuid}",
+  DATASET_ASSETS = "/dp/v1/datasets/{dataset_uuid}/assets",
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}",
   DATASET_STATUS = "/dp/v1/datasets/{dataset_uuid}/status",
   DATASETS_INDEX = "/dp/v1/datasets/index", // Filter-specific endpoint
@@ -12,7 +13,4 @@ export enum API {
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
   USER_INFO = "/dp/v1/userinfo",
-
-  // Explorer
-  DATASET_METADATA = "/cellxgene{explorerPath}api/v0.2/dataset-metadata",
 }

@@ -37,7 +37,6 @@ export default function DatasetsActionsCell({
       <DownloadDataset
         Button={DownloadButton}
         datasetId={datasetId}
-        explorerUrl={explorerUrl}
         isDisabled={tombstone || !explorerUrl}
         isRDSSkipped={isRDSSkipped}
         name={name}

@@ -10,7 +10,6 @@ import { ModalContentWrapper } from "./style";
 interface Props {
   Button?: React.ElementType;
   datasetId: string;
-  explorerUrl: string;
   isDisabled?: boolean;
   isRDSSkipped: boolean;
   name: string;
@@ -25,7 +24,6 @@ interface Props {
 const DownloadDataset: FC<Props> = ({
   Button = StyledButton,
   datasetId,
-  explorerUrl,
   isRDSSkipped,
   isDisabled = false,
   name,
@@ -41,7 +39,6 @@ const DownloadDataset: FC<Props> = ({
   // Fetch the dataset assets on open of download modal.
   const { datasetAssets, isError, isLoading } = useDatasetAssets(
     datasetId,
-    explorerUrl,
     isOpen
   );
 

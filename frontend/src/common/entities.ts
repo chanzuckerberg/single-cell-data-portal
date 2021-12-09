@@ -139,18 +139,6 @@ export interface DatasetDeployment {
   url: string;
 }
 
-export interface DatasetMetadata {
-  collection_contact_email: string;
-  collection_contact_name: string;
-  collection_datasets: Dataset[];
-  collection_description: string;
-  collection_links: Link[];
-  collection_name: string;
-  collection_url: string;
-  dataset_id: string;
-  dataset_name: string;
-}
-
 // interface Contributor {
 //   id: string;
 //   name: string;

@@ -2,7 +2,7 @@ import { QueryResult, useMutation, useQuery, useQueryCache } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
 import {
-  DatasetMetadata,
+  DatasetAsset,
   DatasetUploadStatus,
   VISIBILITY_TYPE,
 } from "../entities";
@@ -77,43 +77,43 @@ export function useDeleteDataset(collection_uuid = "") {
 }
 
 /**
- * Query key for /dataset-metadata/id
+ * Query key for /datasets/uuid/assets.
  */
-export const USE_DATASET_METADATA = {
+export const USE_DATASETS_ASSETS = {
   entities: [ENTITIES.DATASET],
-  id: "datasetMetadata",
+  id: "datasetAsset",
 };
 
 /**
- * Cache-enabled hook for fetching metadata for the dataset with the given explorer URL.
- * @param explorerUrl - Explorer URL of a dataset.
+ * Cache-enabled hook for fetching assets for the dataset with the given ID.
+ * @param datasetId - ID of dataset to fetch assets of.
  * @param enabled - True if fetch can be invoked.
  * @returns Dataset metadata.
  */
-export function useFetchDatasetMetadata(
-  explorerUrl: string,
+export function useFetchDatasetAssets(
+  datasetId: string,
   enabled: boolean
-): QueryResult<DatasetMetadata> {
-  return useQuery<DatasetMetadata>(
-    [USE_DATASET_METADATA, explorerUrl],
-    () => fetchDatasetMetadata(explorerUrl),
+): QueryResult<DatasetAsset[]> {
+  return useQuery<DatasetAsset[]>(
+    [USE_DATASETS_ASSETS, datasetId],
+    () => fetchDatasetAssets(datasetId),
     { enabled }
   );
 }
 
 /**
- * Fetch metadata for the dataset with the given explorer URL.
- * @param explorerUrl - Explorer URL of a dataset.
+ * Fetch assets for the dataset with the given ID.
+ * @param datasetId - ID of dataset to fetch assets of.
  * @returns Promise that resolves to dataset metadata.
  */
-async function fetchDatasetMetadata(
-  explorerUrl: string
-): Promise<DatasetMetadata> {
-  const explorerPath = new URL(explorerUrl).pathname;
-  const { metadata } = await (
+async function fetchDatasetAssets(datasetId: string): Promise<DatasetAsset[]> {
+  const { assets } = await (
     await fetch(
-      apiTemplateToUrl(API_URL + API.DATASET_METADATA, { explorerPath })
+      apiTemplateToUrl(API_URL + API.DATASET_ASSETS, {
+        dataset_uuid: datasetId,
+      }),
+      DEFAULT_FETCH_OPTIONS
     )
   ).json();
-  return metadata;
+  return assets;
 }

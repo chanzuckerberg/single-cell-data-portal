@@ -1,5 +1,5 @@
-import { Dataset, DatasetAsset } from "src/common/entities";
-import { useFetchDatasetMetadata } from "src/common/queries/datasets";
+import { DatasetAsset } from "src/common/entities";
+import { useFetchDatasetAssets } from "src/common/queries/datasets";
 
 export interface UseDatasetAssets {
   datasetAssets: DatasetAsset[];
@@ -17,22 +17,15 @@ export interface UseDatasetAssets {
  */
 export function useDatasetAssets(
   datasetId: string,
-  explorerUrl: string,
   enabled: boolean
 ): UseDatasetAssets {
   // Fetch dataset metadata on open of download modal.
   const {
-    data: datasetMetadata,
+    data: datasetAssets,
     isLoading,
     isError,
     isSuccess,
-  } = useFetchDatasetMetadata(explorerUrl, enabled);
-
-  // Find the dataset assets for the current dataset.
-  const dataset = datasetMetadata?.collection_datasets.find(
-    (collectionDataset: Dataset) => collectionDataset.id === datasetId
-  );
-  const datasetAssets = dataset?.dataset_assets;
+  } = useFetchDatasetAssets(datasetId, enabled);
 
   // Check for error state where dataset assets are missing - fetch is enabled, data is loaded but there are no
   // dataset assets.
