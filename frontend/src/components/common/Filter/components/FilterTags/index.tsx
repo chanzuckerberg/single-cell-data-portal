@@ -19,7 +19,7 @@ export default function FilterTags({
 }: Props): JSX.Element | null {
   return selectedValues.length ? (
     <SelectedTags>
-      {selectedValues.map(({ key }) => (
+      {selectedValues.map(({ key, label }) => (
         <Tag
           key={key}
           large
@@ -27,7 +27,7 @@ export default function FilterTags({
           multiline
           onRemove={() => onFilter(categoryKey, key)}
         >
-          {key}
+          {label}
         </Tag>
       ))}
     </SelectedTags>
