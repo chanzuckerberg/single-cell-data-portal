@@ -169,11 +169,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             user_submitted=True,
             s3_uri="s3://mock-bucket/mock-key.h5ad",
         )
-        dataset = self.generate_dataset(
-            self.session,
-            id="test_dataset",
-            artifacts=[artifact_0, artifact_1]
-        )
+        dataset = self.generate_dataset(self.session, id="test_dataset", artifacts=[artifact_0, artifact_1])
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/assets")
         headers = {"host": "localhost", "Content-Type": "application/json"}

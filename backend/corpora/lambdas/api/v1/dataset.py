@@ -1,7 +1,5 @@
 from flask import make_response, jsonify, g
 
-from backend.corpora.common.entities.dataset_asset import DatasetAsset
-
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
@@ -48,15 +46,14 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
         200,
     )
 
+
 @dbconnect
 def get_dataset_assets(dataset_uuid: str):
     db_session = g.db_session
     # retrieve the dataset
     dataset = Dataset.get(db_session, dataset_uuid)
     assets = dataset.get_assets()
-    return make_response(
-        jsonify(assets = assets)
-    )
+    return make_response(jsonify(assets=assets))
 
 
 @dbconnect
