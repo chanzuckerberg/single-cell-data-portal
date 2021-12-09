@@ -116,7 +116,7 @@ services:
       - "9000:8080"
     volumes:
       - ./:/var/task
-      - ./backend/corpora/lambdas/handle_success:/var/task/backend/corpora/handle_success
+      - ./backend/corpora/lambdas/upload_success:/var/task/backend/corpora/upload_success
       - ./backend/corpora/common:/var/task/backend/corpora/common
       - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
     environment:
