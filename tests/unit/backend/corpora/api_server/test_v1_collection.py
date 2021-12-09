@@ -425,23 +425,31 @@ class TestCollection(BaseAuthAPITest):
 
     def test__post_collection_returns_uuid_on_success(self):
         test_url = furl(path="/dp/v1/collections/")
-        data = json.dumps(
-            {
-                "name": "collection name",
-                "description": "This is a test collection",
-                "contact_name": "person human",
-                "contact_email": "person@human.com",
-                "curator_name": "",
-                "links": [
-                    {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                    {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
-                ],
-            }
-        )
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
+        }
+        json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
             headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
-            data=data,
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+
+        # Add curator_name
+        data["curator_name"] = "john smith"
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
         )
         self.assertEqual(201, response.status_code)
 
