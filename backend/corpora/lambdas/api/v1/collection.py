@@ -114,7 +114,7 @@ def create_collection(body: object, user: str):
         name=body["name"],
         description=body["description"],
         owner=user,
-        links=body["links"],
+        links=body.get("links", []),
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
         curator_name=body.get("curator_name", ""),
