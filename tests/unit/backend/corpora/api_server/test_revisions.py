@@ -367,6 +367,7 @@ class TestPublishRevision(BaseRevisionTest):
         super().setUp()
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
+        self.publish_body = {"data_submission_policy_version": "1.0"}
 
     @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object", wraps=get_random_etag)
     def publish_collection(self, collection_id: str, mocked_func) -> dict:
@@ -385,18 +386,17 @@ class TestPublishRevision(BaseRevisionTest):
             self.assertIsNone(dataset.revised_at)
 
         self.session.expire_all()
-        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-            response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+            response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
@@ -468,7 +468,7 @@ class TestPublishRevision(BaseRevisionTest):
             ).id
 
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers)
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
@@ -555,9 +555,8 @@ class TestPublishRevision(BaseRevisionTest):
         """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
-            body = {"data_submission_policy_version": "1.0"}
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
