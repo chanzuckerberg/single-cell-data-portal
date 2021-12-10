@@ -1,6 +1,6 @@
+import { textClippingCSS } from "src/components/Collections/components/Grid/common/style";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
-import { textClippingCSS } from "../../common/style";
 
 export const FieldValues = styled.div`
   ${textClippingCSS}
@@ -8,9 +8,9 @@ export const FieldValues = styled.div`
 `;
 
 export const ContentWrapper = styled.div`
-  padding: ${2 * PT_GRID_SIZE_PX}px;
   display: flex;
   flex-direction: row;
+  padding: ${2 * PT_GRID_SIZE_PX}px;
 `;
 
 export const ContentColumn = styled.div`

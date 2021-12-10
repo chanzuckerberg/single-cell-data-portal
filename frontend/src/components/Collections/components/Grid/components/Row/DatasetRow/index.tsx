@@ -2,7 +2,7 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -22,6 +22,8 @@ import {
   DetailsCell,
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
+import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
+import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";
@@ -44,9 +46,6 @@ import {
   useConversionProgress,
   useUploadProgress,
 } from "./utils";
-
-const OVER_MAX_CELL_COUNT_TOOLTIP =
-  "Exploration is currently unavailable for datasets with more than 2 million cells";
 
 const AsyncTooltip = loadable(
   () =>
@@ -187,22 +186,22 @@ const DatasetRow: FC<Props> = ({
         </TitleContainer>
       </DetailsCell>
       <Popover
-        label={PluralizedMetadataLabel.TISSUE}
+        label={PLURALIZED_METADATA_LABEL.TISSUE}
         values={tissue}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.ASSAY}
+        label={PLURALIZED_METADATA_LABEL.ASSAY}
         values={assay}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.DISEASE}
+        label={PLURALIZED_METADATA_LABEL.DISEASE}
         values={disease}
         isLoading={isMetadataLoading}
       />
       <Popover
-        label={PluralizedMetadataLabel.ORGANISM}
+        label={PLURALIZED_METADATA_LABEL.ORGANISM}
         values={organism}
         isLoading={isMetadataLoading}
       />
@@ -237,6 +236,7 @@ const DatasetRow: FC<Props> = ({
           <ActionButton>
             {hasCXGFile(dataset) && (
               <Tooltip
+                boundary="viewport"
                 content={
                   isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"
                 }
@@ -264,12 +264,5 @@ const DatasetRow: FC<Props> = ({
     </StyledRow>
   );
 };
-
-/** Maximum number of cells a dataset can have in order to be included for display. */
-export const DATASET_MAX_CELL_COUNT = 2_000_000;
-
-function checkIsOverMaxCellCount(cellCount: number | null): boolean {
-  return (cellCount || 0) > DATASET_MAX_CELL_COUNT;
-}
 
 export default DatasetRow;

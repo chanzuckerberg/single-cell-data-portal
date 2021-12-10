@@ -2,12 +2,13 @@ import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
@@ -46,6 +47,7 @@ enum TABS {
 const Collection: FC = () => {
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
 
   const [userWithdrawn, setUserWithdrawn] = useState(false);
 
@@ -103,9 +105,12 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (!userWithdrawn && isTombstonedCollection(collection)) {
-      router.push(ROUTES.HOMEPAGE + "?tombstoned_collection_id=" + id);
+      const redirectUrl = isFilterEnabled
+        ? ROUTES.COLLECTIONS
+        : ROUTES.HOMEPAGE;
+      router.push(redirectUrl + "?tombstoned_collection_id=" + id);
     }
-  }, [collection, id, router, userWithdrawn]);
+  }, [collection, id, router, userWithdrawn, isFilterEnabled]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
