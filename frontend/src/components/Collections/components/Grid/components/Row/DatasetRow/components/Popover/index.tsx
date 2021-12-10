@@ -1,6 +1,6 @@
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { PluralizedMetadataLabel } from "src/common/constants/metadata";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { LeftAlignedDetailsCell } from "../../../common/style";
 import { Skeleton } from "../common/Skeleton";
 
@@ -12,7 +12,7 @@ const AsyncPopover = loadable(
 );
 
 interface Props {
-  label: PluralizedMetadataLabel;
+  label: PLURALIZED_METADATA_LABEL;
   values: string[];
   isLoading: boolean;
 }

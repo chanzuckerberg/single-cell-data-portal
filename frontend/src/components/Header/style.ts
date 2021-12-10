@@ -1,19 +1,17 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import styled, { css } from "styled-components";
-import { layout } from "../common/layout";
 import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
   height: 48px;
-  position: sticky;
+  position: fixed;
   top: 0;
   width: 100%;
   z-index: 1;
 `;
 
 export const MainWrapper = styled.div`
-  ${layout}
   align-items: center;
   display: flex;
   height: inherit; /* Take up full height of parent. */
@@ -22,14 +20,24 @@ export const MainWrapper = styled.div`
 `;
 
 export const Left = styled.span`
+  align-items: center;
+  display: flex;
+  gap: 32px;
+
   a {
     display: flex; /* Ensures the anchor wrapping the logo has correct line height. */
   }
 `;
 
 export const Right = styled.span`
+  align-items: center;
   display: flex;
   gap: 24px;
+`;
+
+export const Nav = styled.span`
+  display: flex;
+  gap: 16px;
 `;
 
 const button = css`
@@ -40,10 +48,11 @@ const button = css`
     border-radius: 0;
     color: ${GRAY.D};
     font-size: 13px;
-    font-weight: 600;
-    height: 23px;
-    line-height: 15px;
-    min-height: 23px;
+    font-weight: 500;
+    height: 22px;
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    min-height: 22px;
     padding: 0;
 
     &.${Classes.ACTIVE}, &:hover {

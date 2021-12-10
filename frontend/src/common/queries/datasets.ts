@@ -1,7 +1,11 @@
-import { useMutation, useQuery, useQueryCache } from "react-query";
+import { QueryResult, useMutation, useQuery, useQueryCache } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DatasetUploadStatus, VISIBILITY_TYPE } from "../entities";
+import {
+  DatasetAsset,
+  DatasetUploadStatus,
+  VISIBILITY_TYPE,
+} from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
 import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
@@ -70,4 +74,46 @@ export function useDeleteDataset(collection_uuid = "") {
       );
     },
   });
+}
+
+/**
+ * Query key for /datasets/uuid/assets.
+ */
+export const USE_DATASETS_ASSETS = {
+  entities: [ENTITIES.DATASET],
+  id: "datasetAsset",
+};
+
+/**
+ * Cache-enabled hook for fetching assets for the dataset with the given ID.
+ * @param datasetId - ID of dataset to fetch assets of.
+ * @param enabled - True if fetch can be invoked.
+ * @returns Dataset metadata.
+ */
+export function useFetchDatasetAssets(
+  datasetId: string,
+  enabled: boolean
+): QueryResult<DatasetAsset[]> {
+  return useQuery<DatasetAsset[]>(
+    [USE_DATASETS_ASSETS, datasetId],
+    () => fetchDatasetAssets(datasetId),
+    { enabled }
+  );
+}
+
+/**
+ * Fetch assets for the dataset with the given ID.
+ * @param datasetId - ID of dataset to fetch assets of.
+ * @returns Promise that resolves to dataset metadata.
+ */
+async function fetchDatasetAssets(datasetId: string): Promise<DatasetAsset[]> {
+  const { assets } = await (
+    await fetch(
+      apiTemplateToUrl(API_URL + API.DATASET_ASSETS, {
+        dataset_uuid: datasetId,
+      }),
+      DEFAULT_FETCH_OPTIONS
+    )
+  ).json();
+  return assets;
 }
