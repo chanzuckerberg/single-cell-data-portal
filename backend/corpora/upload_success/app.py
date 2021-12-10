@@ -1,7 +1,8 @@
 import logging
 
-from backend.corpora.common.corpora_orm import ProcessingStatus
-from backend.corpora.dataset_processing.process import update_db
+from backend.corpora.common.corpora_orm import ProcessingStatus, DbDatasetProcessingStatus
+from backend.corpora.common.utils.db_helpers import processing_status_updater
+from backend.corpora.common.utils.db_session import db_session_manager
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,8 @@ def success_handler(event: dict, context) -> None:
     dataset_uuid = event["dataset_uuid"]
 
     try:
-        update_db(dataset_uuid, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        with db_session_manager() as session:
+            success_status = {DbDatasetProcessingStatus.processing_status: ProcessingStatus.SUCCESS}
+            processing_status_updater(session, dataset_uuid, success_status)
     except Exception:
         logger.exception(f"Dataset {dataset_uuid}: Failed to update processing_status to SUCCESS")
