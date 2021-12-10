@@ -494,6 +494,7 @@ def log_batch_environment():
         "AWS_BATCH_CE_NAME",
         "AWS_BATCH_JOB_ATTEMPT",
         "AWS_BATCH_JOB_ID",
+        "STEP_NAME",
         "DROPBOX_URL",
         "ARTIFACT_BUCKET",
         "CELLXGENE_BUCKET",
@@ -550,8 +551,8 @@ def main():
             from backend.corpora.dataset_processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
-        elif step_name == "handle-success":
-            update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+        else:
+            logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
