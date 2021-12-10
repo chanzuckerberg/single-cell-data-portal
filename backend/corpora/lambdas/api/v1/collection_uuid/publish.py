@@ -21,7 +21,7 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
             for artifact in dataset.artifacts:
                 _artifact = DatasetAsset(artifact)
                 metadata = _artifact.get_s3_metadata()
-                if not _artifact.get_s3_metadata():
+                if not metadata:
                     raise ServerErrorHTTPException(
                         "Failed to check datasets for duplications. Unable to find associated artifacts."
                     )
