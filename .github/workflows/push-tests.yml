@@ -225,7 +225,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
             echo "DEPLOYMENT_STAGE=prod" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DEPLOYMENT_STAGE=staging" >> $GITHUB_ENV
+            echo "DEPLOYMENT_STAGE=stage" >> $GITHUB_ENV
           else
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
