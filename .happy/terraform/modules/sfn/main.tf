@@ -151,7 +151,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "HandleSuccess": {
         "Type": "Task",
-        "InputPath": "$.dataset_uuid",
+        "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
         "End": true
       },
