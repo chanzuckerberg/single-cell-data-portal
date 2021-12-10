@@ -7,6 +7,7 @@ import {
   COLLECTION_LINK_TYPE,
   VISIBILITY_TYPE,
 } from "src/common/entities";
+import { useUserInfo } from "src/common/queries/auth";
 import {
   formDataToObject,
   useCollection,
@@ -67,7 +68,7 @@ const Content: FC<Props> = (props) => {
   const [isValid, setIsValid] = useState(initialBooleanState);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const { data: userInfo } = useUserInfo(true);
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
   }>({
@@ -226,7 +227,7 @@ const Content: FC<Props> = (props) => {
     }));
 
     payload.links = payloadLinks;
-
+    payload.curator_name = userInfo?.name;
     return payload;
   }
 

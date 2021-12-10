@@ -53,9 +53,9 @@ export enum X_APPROXIMATE_DISTRIBUTION {
 }
 
 export enum IS_PRIMARY_DATA {
-  PRIMARY = "primary",
-  SECONDARY = "secondary",
-  BOTH = "both",
+  PRIMARY = "PRIMARY",
+  SECONDARY = "SECONDARY",
+  BOTH = "BOTH",
 }
 
 export interface Collection {
