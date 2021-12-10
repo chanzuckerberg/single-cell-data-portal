@@ -4,6 +4,8 @@ import unittest
 
 from furl import furl
 
+from datetime import datetime
+
 from backend.corpora.common.corpora_orm import (
     UploadStatus,
     CollectionVisibility,
@@ -111,6 +113,46 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             processing_status_updater(self.session, processing_status_id, processing_status)
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(json.loads(response.data)["upload_status"], status.name)
+
+    def test__get_all_datasets_for_index(self):
+        dataset = self.generate_dataset(
+            self.session,
+            id="test_dataset_id_for_index",
+            cell_count=42,
+            published_at=datetime.now(),
+            revised_at=datetime.now(),
+        )
+        self.generate_dataset(self.session, id="test_dataset_id_for_index_tombstone", tombstone=True)
+        self.generate_dataset(self.session, id="test_dataset_id_for_index_private", collection_visibility="PRIVATE")
+        test_url = furl(path="/dp/v1/datasets/index")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [dataset["id"] for dataset in body]
+        self.assertIn("test_dataset_id_for_index", ids)
+        self.assertNotIn("test_dataset_id_for_index_tombstone", ids)
+        self.assertNotIn("test_dataset_id_for_index_private", ids)
+
+        actual_dataset = body[-1]  # last added dataset
+        self.assertEqual(actual_dataset["id"], dataset.id)
+        self.assertEqual(actual_dataset["name"], dataset.name)
+        self.assertNotIn("description", actual_dataset)
+        self.assertEqual(actual_dataset["collection_id"], dataset.collection_id)
+        self.assertEqual(actual_dataset["assay"], dataset.assay)
+        self.assertEqual(actual_dataset["tissue"], dataset.tissue)
+        self.assertEqual(actual_dataset["disease"], dataset.disease)
+        self.assertEqual(actual_dataset["sex"], dataset.sex)
+        self.assertEqual(actual_dataset["ethnicity"], dataset.ethnicity)
+        self.assertEqual(actual_dataset["organism"], dataset.organism)
+        self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
+        self.assertEqual(actual_dataset["cell_count"], dataset.cell_count)
+        self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
+        self.assertEqual(actual_dataset["is_primary_data"], dataset.is_primary_data.name)
+        self.assertEqual(actual_dataset["explorer_url"], dataset.explorer_url)
+        self.assertEqual(actual_dataset["published_at"], dataset.published_at.timestamp())
+        self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
 
     def test__cancel_dataset_download__ok(self):
         # Test pre upload

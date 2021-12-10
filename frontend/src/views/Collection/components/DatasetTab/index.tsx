@@ -4,6 +4,8 @@ import memoize from "lodash/memoize";
 import { FC, useState } from "react";
 import { MutateFunction, useQueryCache } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
   ReuploadLink,
   useCollection,
@@ -11,6 +13,8 @@ import {
   useReuploadDataset,
   USE_COLLECTION,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
+import { CollectionDatasetsGrid } from "src/components/Collection/components/CollectionDatasetsGrid/style";
 import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
@@ -32,7 +36,7 @@ const DatasetTab: FC<Props> = ({
   isRevision,
 }) => {
   const CLI_README_LINK =
-    "https://github.com/chanzuckerberg/cellxgene/blob/main/dev_docs/schema_guide.md";
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
   const [uploadLink] = useCollectionUploadLinks(collectionId, visibility);
   const [reuploadDataset] = useReuploadDataset(collectionId);
@@ -41,6 +45,7 @@ const DatasetTab: FC<Props> = ({
 
   const queryCache = useQueryCache();
 
+  if (isTombstonedCollection(collection)) return null;
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
@@ -80,20 +85,34 @@ const DatasetTab: FC<Props> = ({
       );
     };
   };
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
 
   return (
     <>
       {isDatasetPresent ? (
-        <DatasetsGrid
-          visibility={visibility}
-          accessType={collection?.access_type}
-          datasets={datasets}
-          uploadedFiles={uploadedFiles}
-          invalidateCollectionQuery={invalidateCollectionQuery}
-          isRevision={isRevision}
-          onUploadFile={addNewFile}
-          reuploadDataset={reuploadDataset}
-        />
+        isFilterEnabled ? (
+          <CollectionDatasetsGrid
+            accessType={collection?.access_type}
+            datasets={datasets}
+            invalidateCollectionQuery={invalidateCollectionQuery}
+            isRevision={isRevision}
+            onUploadFile={addNewFile}
+            reuploadDataset={reuploadDataset}
+            uploadedFiles={uploadedFiles}
+            visibility={visibility}
+          />
+        ) : (
+          <DatasetsGrid
+            visibility={visibility}
+            accessType={collection?.access_type}
+            datasets={datasets}
+            uploadedFiles={uploadedFiles}
+            invalidateCollectionQuery={invalidateCollectionQuery}
+            isRevision={isRevision}
+            onUploadFile={addNewFile}
+            reuploadDataset={reuploadDataset}
+          />
+        )
       ) : (
         <EmptyModal
           title="No datasets uploaded"

@@ -134,6 +134,7 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
+from backend.corpora.common.utils.s3_buckets import s3_client
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
@@ -151,6 +152,8 @@ DEPLOYMENT_STAGE_TO_URL = {
     "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
     "test": "http://frontend.corporanet.local:3000",
 }
+
+LABELED_H5AD_FILENAME = "local.h5ad"
 
 
 def check_env():
@@ -194,22 +197,28 @@ def create_artifact(
         raise e
 
 
-def create_artifacts(local_filename, dataset_id, artifact_bucket):
+def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str, can_convert_to_seurat: bool = False):
     bucket_prefix = get_bucket_prefix(dataset_id)
-    logger.info("Creating Artifacts.")
+    logger.info(f"Creating artifacts for dataset {dataset_id}...")
     # upload AnnData
     create_artifact(
         local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
 
-    # Process and upload seurat
-    seurat_filename = convert_file_ignore_exceptions(
-        make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
-    )
-    if seurat_filename:
-        create_artifact(
-            seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+    if can_convert_to_seurat:
+        # Convert to Seurat and upload
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat, local_filename, "Issue creating seurat.", dataset_id, "rds_status"
         )
+        if seurat_filename:
+            create_artifact(
+                seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+            )
+    else:
+        update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
+        logger.info(f"Skipped Seurat conversion for dataset {dataset_id}")
+
+    logger.info(f"Finished creating artifacts for dataset {dataset_id}")
 
 
 def cancel_dataset(dataset_id):
@@ -220,7 +229,7 @@ def cancel_dataset(dataset_id):
         logger.info("Upload Canceled.")
 
 
-def update_db(dataset_id, metadata=None, processing_status=None):
+def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         if dataset.tombstone:
@@ -251,7 +260,12 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
     return local_path
 
 
-def extract_metadata(filename):
+def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
+    logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
+    s3_client.download_file(bucket_name, object_key, local_filename)
+
+
+def extract_metadata(filename) -> dict:
     """Pull metadata out of the AnnData file to insert into the dataset table."""
 
     adata = scanpy.read_h5ad(filename, backed="r")
@@ -387,7 +401,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
 def convert_file_ignore_exceptions(
     converter: typing.Callable, local_filename: str, error_message: str, dataset_id: str, processing_status_type: str
 ) -> str:
-    logger.info(f"Converting {converter}")
+    logger.info(f"Converting {local_filename}")
     start = datetime.now()
     try:
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.CONVERTING})
@@ -436,12 +450,18 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     update_db(dataset_id, metadata)
 
 
-def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
+def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
+    """
+    Validates and labels the specified dataset file and updates the processing status in the database
+    :param dataset_id: UUID of the dataset to update
+    :param local_filename: file name of the dataset to validate and label
+    :return: file name of labeled dataset, boolean indicating if Seurat conversion is possible
+    """
     from cellxgene_schema import validate
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    output_filename = "local.h5ad"
-    is_valid, errors = validate.validate(local_filename, output_filename)
+    output_filename = LABELED_H5AD_FILENAME
+    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
 
     if not is_valid:
         logger.error(f"Validation failed with {len(errors)} errors!")
@@ -459,7 +479,7 @@ def validate_h5ad_file_and_add_labels(dataset_id, local_filename):
             validation_status=ValidationStatus.VALID,
         )
         update_db(dataset_id, processing_status=status)
-        return output_filename
+        return output_filename, can_convert_to_seurat
 
 
 def clean_up_local_file(local_filename):
@@ -498,24 +518,41 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
     # will have to be modified since it relies on a shared local file
 
-    file_with_labels = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+    file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+
     # Process metadata
     metadata = extract_metadata(file_with_labels)
     update_db(dataset_id, metadata)
 
     # create artifacts
     process_cxg(file_with_labels, dataset_id, cellxgene_bucket)
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket)
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
 
 
 def main():
     return_value = 0
-    check_env()
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
+    step_name = os.environ["STEP_NAME"]
+    logger.info(f"Processing dataset {dataset_id}")
+
     try:
-        process(dataset_id, os.environ["DROPBOX_URL"], os.environ["CELLXGENE_BUCKET"], os.environ["ARTIFACT_BUCKET"])
+        if step_name == "download-validate":
+            from backend.corpora.dataset_processing.process_download_validate import process
+
+            process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "cxg":
+            from backend.corpora.dataset_processing.process_cxg import process
+
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"], os.environ["CELLXGENE_BUCKET"])
+        elif step_name == "seurat":
+            from backend.corpora.dataset_processing.process_seurat import process
+
+            process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "handle-success":
+            update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed):

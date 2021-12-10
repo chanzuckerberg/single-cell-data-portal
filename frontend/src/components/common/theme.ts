@@ -12,6 +12,9 @@ export const fontStyle = css`
 
 export const OLD_BLUE = "#0076dc";
 
+/* TODO determine constant for primary blue and replace with this value. */
+export const PRIMARY_BLUE = "#0073ff";
+
 export enum OLD_GRAY {
   DARK = "#868686",
   LIGHT = "#f9f9fa",

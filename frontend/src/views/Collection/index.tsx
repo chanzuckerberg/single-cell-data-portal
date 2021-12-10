@@ -2,20 +2,26 @@ import { H3, Intent, Tab, Tabs } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
+  useDeleteCollection,
 } from "src/common/queries/collections";
+import { removeParams } from "src/common/utils/removeParams";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
+import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Banner from "./components/Banner";
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
@@ -41,6 +47,9 @@ enum TABS {
 const Collection: FC = () => {
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+
+  const [userWithdrawn, setUserWithdrawn] = useState(false);
 
   let id = "";
   let isPrivate = false;
@@ -65,43 +74,54 @@ const Collection: FC = () => {
     visibility,
   });
 
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+
   const { data: collection, isError, isFetching } = collectionState;
 
+  const [deleteMutation, { isLoading }] = useDeleteCollection(id, visibility);
+
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const isRevision = isCurator && !!collection?.has_revision;
 
   const [selectedTab, setSelectedTab] = useState(TABS.DATASETS);
 
-  const collectionContactName = collection?.contact_name;
   useEffect(() => {
-    // collectionContactName would be undefined in the case where collection is undefined.
-    if (!tombstoned_dataset_id || typeof collectionContactName === "undefined")
+    if (
+      hasShownWithdrawToast ||
+      !tombstoned_dataset_id ||
+      !collection ||
+      isTombstonedCollection(collection)
+    )
       return;
-
-    let message = "";
-    // TODO: Remove empty string check after re-curation is complete. Contact name should always be populated.
-    if (collectionContactName) {
-      message = `A dataset was withdrawn by ${collectionContactName}. You've been redirected to the parent collection.`;
-    } else {
-      message =
-        "A dataset was withdrawn. You've been redirected to the parent collection.";
-    }
 
     Toast.show({
       icon: IconNames.ISSUE,
       intent: Intent.PRIMARY,
-      message,
+      message:
+        "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-  }, [tombstoned_dataset_id, collectionContactName]);
+    removeParams("tombstoned_dataset_id");
+    setHasShownWithdrawToast(true);
+  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
+
+  useEffect(() => {
+    if (!userWithdrawn && isTombstonedCollection(collection)) {
+      const redirectUrl = isFilterEnabled
+        ? ROUTES.COLLECTIONS
+        : ROUTES.HOMEPAGE;
+      router.push(redirectUrl + "?tombstoned_collection_id=" + id);
+    }
+  }, [collection, id, router, userWithdrawn, isFilterEnabled]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
     "To maintain your in-progress work on the previous dataset, we opened this collection in a new tab."
   );
 
-  if (!collection || isError) {
+  if (!collection || isError || isTombstonedCollection(collection)) {
     return null;
   }
+
+  const isRevision = isCurator && !!collection?.has_revision;
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -143,9 +163,19 @@ const Collection: FC = () => {
   const handleOnChange = function (newTabId: TABS) {
     setSelectedTab(newTabId);
   };
+  const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
+  const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
 
-  const shouldShowPrivateWriteAction =
-    collection.access_type === ACCESS_TYPE.WRITE && isPrivate;
+  const handleDeleteCollection = async () => {
+    setUserWithdrawn(true);
+    await deleteMutation(
+      {
+        collectionID: id,
+        visibility: VISIBILITY_TYPE.PUBLIC,
+      },
+      { onSuccess: () => router.push(ROUTES.MY_COLLECTIONS) }
+    );
+  };
 
   return (
     <>
@@ -186,6 +216,13 @@ const Collection: FC = () => {
             addNewFile={addNewFile}
             isPublishable={isPublishable}
             isRevision={isRevision}
+          />
+        )}
+        {hasWriteAccess && !isPrivate && (
+          <DeleteCollectionButton
+            handleConfirm={handleDeleteCollection}
+            collectionName={collection.name}
+            loading={isLoading}
           />
         )}
 

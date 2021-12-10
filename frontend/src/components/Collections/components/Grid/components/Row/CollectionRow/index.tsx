@@ -3,12 +3,14 @@ import loadable from "@loadable/component";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCreateRevision,
 } from "src/common/queries/collections";
+import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
   LeftAlignedDetailsCell,
@@ -33,12 +35,15 @@ const AsyncPopover = loadable(
     )
 );
 
-const conditionalPopover = (values: string[]) => {
+const conditionalPopover = (
+  label: PLURALIZED_METADATA_LABEL,
+  values: string[]
+) => {
   if (!values || values.length === 0) {
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return <AsyncPopover values={values} />;
+  return <AsyncPopover label={label} values={values} />;
 };
 
 const CollectionRow: FC<Props> = (props) => {
@@ -55,6 +60,8 @@ const CollectionRow: FC<Props> = (props) => {
 
   const [mutate, { isLoading }] = useCreateRevision(navigateToRevision);
 
+  if (!collection || isTombstonedCollection(collection)) return null;
+
   const handleRevisionClick = () => {
     if (collection?.has_revision === false) {
       mutate(id);
@@ -62,8 +69,6 @@ const CollectionRow: FC<Props> = (props) => {
       navigateToRevision();
     }
   };
-
-  if (!collection) return null;
 
   // If there is an explicity accessType only show collections with that accessType
   if (props.accessType && collection.access_type !== props.accessType) {
@@ -106,10 +111,10 @@ const CollectionRow: FC<Props> = (props) => {
           </TagContainer>
         )}
       </StyledCell>
-      {conditionalPopover(tissue)}
-      {conditionalPopover(assay)}
-      {conditionalPopover(disease)}
-      {conditionalPopover(organism)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
+      {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell

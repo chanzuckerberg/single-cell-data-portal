@@ -68,6 +68,13 @@ def get_status(dataset_uuid: str, user: str):
 
 
 @dbconnect
+def get_datasets_index():
+    db_session = g.db_session
+    datasets = Dataset.list_for_index(db_session)
+    return make_response(jsonify(datasets), 200)
+
+
+@dbconnect
 def delete_dataset(dataset_uuid: str, user: str):
     """
     Deletes an existing dataset or cancels an in progress upload.

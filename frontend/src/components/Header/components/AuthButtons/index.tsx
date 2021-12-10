@@ -1,7 +1,6 @@
 import {
   AnchorButton,
   Button,
-  Intent,
   Menu,
   MenuItem,
   Popover,
@@ -12,8 +11,8 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
+import { AuthButtonWrapper } from "src/components/Header/style";
 import { API_URL } from "src/configs/configs";
-import { ButtonWrapper, Initial } from "./style";
 
 const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -28,32 +27,23 @@ const AuthButtons = (): JSX.Element | null => {
   if (!hasAuth || isLoading) return null;
 
   return (
-    <ButtonWrapper>
+    <AuthButtonWrapper>
       {userInfo?.name ? (
         <LoggedInButtons name={userInfo.name} email={userInfo.email} />
       ) : (
         <LoggedOutButtons />
       )}
-    </ButtonWrapper>
+    </AuthButtonWrapper>
   );
 };
 
 function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
-  const Name = isEmail(name) ? <Initial>{name ? name[0] : ""}</Initial> : name;
+  const authName = isEmail(name) ? "Account" : name;
 
   return (
-    <>
-      <Popover content={<Content />}>
-        <Button
-          outlined
-          minimal
-          intent={Intent.PRIMARY}
-          rightIcon={IconNames.CARET_DOWN}
-        >
-          {Name}
-        </Button>
-      </Popover>
-    </>
+    <Popover content={<Content />}>
+      <Button minimal rightIcon={IconNames.CHEVRON_DOWN} text={authName} />
+    </Popover>
   );
 
   function Content() {
@@ -73,15 +63,12 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 
 function LoggedOutButtons() {
   return (
-    <>
-      <AnchorButton
-        href={`${API_URL}${API.LOG_IN}`}
-        outlined
-        intent={Intent.PRIMARY}
-      >
-        Log In
-      </AnchorButton>
-    </>
+    <AnchorButton
+      href={`${API_URL}${API.LOG_IN}`}
+      minimal
+      rightIcon={IconNames.CHEVRON_DOWN}
+      text="Log In"
+    />
   );
 }
 

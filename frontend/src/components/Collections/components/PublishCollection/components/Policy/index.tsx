@@ -1,4 +1,4 @@
-import { Button, Checkbox, Collapse, Intent } from "@blueprintjs/core";
+import { Button, Collapse, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { FC, useState } from "react";
 import { GRAY } from "src/components/common/theme";
@@ -31,31 +31,26 @@ export const POLICY_BULLETS = {
       If I choose to publish this data <b>publicly</b> on the cellxgene portal,
       I understand that (1) anyone will be able to access it subject to a CC-BY
       license, meaning they can download, share, and use the data without
-      restriction beyond providing attribution to me and (2) the Collection
-      details I’ve provided above (collection name, description, and my contact
-      information) will be made public on the cellxgene portal too.
+      restriction beyond providing attribution to the original data
+      contributor(s) and (2) the Collection details (including collection name,
+      description, my name, and the contact information for the datasets in this
+      Collection) will be made public on the cellxgene portal too.
     </div>,
-    "I understand that I have the ability to delete my data from the cellxgene portal if I later change my mind. This will not undo any prior downloads or shares of my data.",
+    "I understand that I have the ability to delete the data that I have published from the cellxgene portal if I later choose to. This however will not undo any prior downloads or shares of such data.",
   ],
-  version: "1.0",
+  version: "2.0",
 };
 
-interface Props {
-  handleChange: (value: string) => void;
-}
-
-const Policy: FC<Props> = ({ handleChange }) => {
-  const [isChecked, setIsChecked] = useState(false);
+const Policy: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Wrapper>
-      <Checkbox inline checked={isChecked} onChange={handleChange_}>
-        I agree to cellxgene&#39;s data submission policies.
-        <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
-          {isOpen ? "Hide" : "Show"} Details
-        </Button>
-      </Checkbox>
+      By publishing this collection, you agree to cellxgene&#39;s data
+      submission policies.
+      <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
+        {isOpen ? "Hide" : "Show"} Details
+      </Button>
       <Collapse isOpen={isOpen}>
         <ContentWrapper>
           {POLICY_BULLETS.items.map((item, index) => (
@@ -65,13 +60,6 @@ const Policy: FC<Props> = ({ handleChange }) => {
       </Collapse>
     </Wrapper>
   );
-
-  function handleChange_() {
-    const newIsChecked = !isChecked;
-
-    handleChange(newIsChecked ? POLICY_BULLETS.version : "");
-    setIsChecked(newIsChecked);
-  }
 
   function handleShowButtonClick() {
     setIsOpen(!isOpen);

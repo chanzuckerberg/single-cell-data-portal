@@ -53,9 +53,9 @@ export enum X_APPROXIMATE_DISTRIBUTION {
 }
 
 export enum IS_PRIMARY_DATA {
-  PRIMARY = "primary",
-  SECONDARY = "secondary",
-  BOTH = "both",
+  PRIMARY = "PRIMARY",
+  SECONDARY = "SECONDARY",
+  BOTH = "BOTH",
 }
 
 export interface Collection {
@@ -76,6 +76,7 @@ export interface Collection {
   updated_at: number;
   has_revision: boolean;
   revision_diff: boolean;
+  tombstone?: boolean;
 }
 
 export type Ontology = {
@@ -178,6 +179,7 @@ export enum CONVERSION_STATUS {
   CONVERTING = "CONVERTING",
   CONVERTED = "CONVERTED",
   FAILED = "FAILED",
+  SKIPPED = "SKIPPED",
   NA = "NA",
 }
 

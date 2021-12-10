@@ -34,7 +34,7 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
 
 
 @dbconnect
-def post(collection_uuid: str, user: str):
+def post(collection_uuid: str, body: object, user: str):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
@@ -46,8 +46,9 @@ def post(collection_uuid: str, user: str):
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
         raise ConflictException(detail="The collection must have a least one dataset.")
-    duplicates = check_for_duplicate_datasets(collection)
-    if duplicates:
+    if check_for_duplicate_datasets(collection):
         raise ConflictException(detail="The collection cannot have duplicate datasets.")
-    collection.publish()
+
+    data_submission_policy_version = body["data_submission_policy_version"]
+    collection.publish(data_submission_policy_version=data_submission_policy_version)
     return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)

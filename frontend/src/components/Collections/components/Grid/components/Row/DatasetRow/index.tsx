@@ -2,6 +2,7 @@ import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
 import { CancelledError, useQueryCache } from "react-query";
+import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
@@ -21,6 +22,8 @@ import {
   DetailsCell,
   StyledRow,
 } from "src/components/Collections/components/Grid/components/Row/common/style";
+import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
+import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import CellCount from "./components/CellCount";
@@ -43,9 +46,6 @@ import {
   useConversionProgress,
   useUploadProgress,
 } from "./utils";
-
-const OVER_MAX_CELL_COUNT_TOOLTIP =
-  "Exploration is currently unavailable for datasets with more than 2 million cells";
 
 const AsyncTooltip = loadable(
   () =>
@@ -159,6 +159,8 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
+  const isRDSSkipped = datasetStatus.rds_status === CONVERSION_STATUS.SKIPPED;
+
   return (
     <StyledRow>
       <DetailsCell>
@@ -183,10 +185,26 @@ const DatasetRow: FC<Props> = ({
           {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
         </TitleContainer>
       </DetailsCell>
-      <Popover values={tissue} isLoading={isMetadataLoading} />
-      <Popover values={assay} isLoading={isMetadataLoading} />
-      <Popover values={disease} isLoading={isMetadataLoading} />
-      <Popover values={organism} isLoading={isMetadataLoading} />
+      <Popover
+        label={PLURALIZED_METADATA_LABEL.TISSUE}
+        values={tissue}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PLURALIZED_METADATA_LABEL.ASSAY}
+        values={assay}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PLURALIZED_METADATA_LABEL.DISEASE}
+        values={disease}
+        isLoading={isMetadataLoading}
+      />
+      <Popover
+        label={PLURALIZED_METADATA_LABEL.ORGANISM}
+        values={organism}
+        isLoading={isMetadataLoading}
+      />
       <CellCount cellCount={cell_count} isLoading={isMetadataLoading} />
       <ActionCell>
         <ActionButtonsContainer>
@@ -210,12 +228,15 @@ const DatasetRow: FC<Props> = ({
               dataAssets={dataset?.dataset_assets}
               Button={DownloadButton}
               isDisabled={dataset.tombstone}
+              // isRDSSkipped is drilled 3 components down to `frontend/src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/index.tsx`
+              isRDSSkipped={isRDSSkipped}
             />
           </ActionButton>
 
           <ActionButton>
             {hasCXGFile(dataset) && (
               <Tooltip
+                boundary="viewport"
                 content={
                   isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"
                 }
@@ -243,12 +264,5 @@ const DatasetRow: FC<Props> = ({
     </StyledRow>
   );
 };
-
-/** Maximum number of cells a dataset can have in order to be included for display. */
-export const DATASET_MAX_CELL_COUNT = 2_000_000;
-
-function checkIsOverMaxCellCount(cellCount: number | null): boolean {
-  return (cellCount || 0) > DATASET_MAX_CELL_COUNT;
-}
 
 export default DatasetRow;
