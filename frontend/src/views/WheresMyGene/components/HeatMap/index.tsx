@@ -2,11 +2,11 @@ import { interpolateYlOrRd } from "d3-scale-chromatic";
 import * as echarts from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import { CellTypeAndGenes, Gene } from "../../common/types";
 import { Container } from "./style";
 
-const DEBOUNCE_MS = 500;
+const DEBOUNCE_MS = 2 * 1000;
 
 interface Props {
   cellTypes: CellTypeAndGenes[];
@@ -17,7 +17,6 @@ interface Props {
 const ELEMENT_ID = "heat-map";
 
 let isChartInitialized = false;
-let isObserverInitialized = false;
 
 const MAX_FIRST_PART_LENGTH_PX = 16;
 
@@ -40,8 +39,6 @@ export default function HeatMap({
 
   const [chartData, setChartData] = useState<ChartFormat[]>(EMPTY_ARRAY);
 
-  const [isBottom, setIsBottom] = useState(false);
-
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce((data, cellTypes, genes) => {
       setChartData(dataToChartFormat(data, cellTypes, genes));
@@ -56,7 +53,6 @@ export default function HeatMap({
 
   const ref = useRef(null);
   const xAxisRef = useRef(null);
-  const sentinelRef = useRef(null);
 
   // Update heatmap size
   useEffect(() => {
@@ -74,27 +70,6 @@ export default function HeatMap({
     }
   }, []);
 
-  // set up intersection observer
-  useEffect(() => {
-    const { current } = sentinelRef;
-
-    if (!current || isObserverInitialized) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setIsBottom(true);
-      } else {
-        setIsBottom(false);
-      }
-    });
-
-    observer.observe(current);
-
-    isObserverInitialized = true;
-
-    return () => observer.disconnect();
-  }, [sentinelRef]);
-
   useEffect(() => {
     const { current } = ref;
     const { current: xAxisCurrent } = xAxisRef;
@@ -103,8 +78,10 @@ export default function HeatMap({
       return;
 
     isChartInitialized = true;
-    setChart(echarts.init(current));
-    setXAxisChart(echarts.init(xAxisCurrent));
+    setChart(echarts.init(current, EMPTY_OBJECT, { useDirtyRect: true }));
+    setXAxisChart(
+      echarts.init(xAxisCurrent, EMPTY_OBJECT, { useDirtyRect: true })
+    );
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
   useEffect(() => {
@@ -131,7 +108,7 @@ export default function HeatMap({
     chart.setOption({
       ...commonOptions,
       grid: {
-        bottom: "100px",
+        bottom: "0",
         containLabel: true,
         left: "100px",
         top: "0",
@@ -179,8 +156,11 @@ export default function HeatMap({
       },
       xAxis: [
         {
-          axisLabel: { fontSize: isBottom ? 12 : 0, rotate: 90 },
+          axisLabel: { fontSize: 0, rotate: 90 },
           axisLine: {
+            show: false,
+          },
+          axisTick: {
             show: false,
           },
           boundaryGap: false,
@@ -208,9 +188,10 @@ export default function HeatMap({
     xAxisChart.setOption({
       ...commonOptions,
       grid: {
+        bottom: "0",
         containLabel: true,
         left: "100px",
-        top: "210px",
+        top: "0px",
       },
       series: [
         {
@@ -220,29 +201,33 @@ export default function HeatMap({
       ],
       xAxis: [
         {
-          axisLabel: { rotate: 90 },
+          axisLabel: {
+            overflow: "truncate",
+            rotate: 270,
+            verticalAlign: "bottom",
+            width: 200,
+          },
           axisLine: {
             show: false,
           },
           boundaryGap: false,
           data: allGeneNames,
-          show: isBottom ? false : true,
-          splitLine: {
-            show: true,
-          },
+          position: "top",
           type: "category",
         },
       ],
       yAxis: [
         {
-          axisLabel: { rotate: 20 },
+          axisLabel: { fontSize: 0, rotate: 20 },
           axisLine: {
-            show: true,
+            show: false,
+          },
+          axisTick: {
+            show: false,
           },
           data: cellTypes.map((cellType) => cellType.name).reverse(),
-          show: false,
           splitLine: {
-            show: true,
+            show: false,
           },
         },
       ],
@@ -255,7 +240,6 @@ export default function HeatMap({
     data,
     genes,
     chartData,
-    isBottom,
   ]);
 
   // Resize heatmap
@@ -268,7 +252,8 @@ export default function HeatMap({
     <Container>
       <div
         style={{
-          height: "210px",
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          height: "200px",
           position: "sticky",
           top: "0",
           width: heatmapWidth + "px",
@@ -283,15 +268,6 @@ export default function HeatMap({
         }}
         ref={ref}
         id={ELEMENT_ID}
-      />
-      <div
-        style={{
-          height: "1px",
-          position: "absolute",
-          top: `calc(${heatmapHeight}px - 5rem + 180px)`,
-          width: heatmapWidth + "px",
-        }}
-        ref={sentinelRef}
       />
     </Container>
   );
