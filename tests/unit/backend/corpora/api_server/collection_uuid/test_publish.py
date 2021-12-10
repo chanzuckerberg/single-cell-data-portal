@@ -183,6 +183,7 @@ class TestPublish(BaseAuthAPITest):
 
 class TestPublishCurators(BasicAuthAPITestCurator):
     def setUp(self):
+        super().setUp()
         self.publish_body = {"data_submission_policy_version": "1.0"}
 
     def test__can_publish_owned_collection(self):
