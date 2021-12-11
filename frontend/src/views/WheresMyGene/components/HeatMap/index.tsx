@@ -108,10 +108,9 @@ export default function HeatMap({
     chart.setOption({
       ...commonOptions,
       grid: {
-        bottom: "0",
-        containLabel: true,
-        left: "100px",
-        top: "0",
+        bottom: "100px",
+        left: "200px",
+        top: "200px",
       },
       series: [
         {
@@ -189,9 +188,8 @@ export default function HeatMap({
       ...commonOptions,
       grid: {
         bottom: "0",
-        containLabel: true,
-        left: "100px",
-        top: "0px",
+        left: "200px",
+        top: "200px",
       },
       series: [
         {
@@ -206,9 +204,6 @@ export default function HeatMap({
             rotate: 270,
             verticalAlign: "bottom",
             width: 200,
-          },
-          axisLine: {
-            show: false,
           },
           boundaryGap: false,
           data: allGeneNames,
@@ -264,6 +259,8 @@ export default function HeatMap({
       <div
         style={{
           height: heatmapHeight + "px",
+          position: "absolute",
+          top: "0",
           width: heatmapWidth + "px",
         }}
         ref={ref}

@@ -12,6 +12,8 @@ import GENES from "../../mocks/lung_tissue_genes.json";
 import GeneSets from "./components/Genesets";
 import { Container } from "./style";
 
+const OFFSET = { id: "offset", name: "" };
+
 const GENESETS = [
   [
     "AGER",
@@ -162,7 +164,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   useEffect(() => {
     if (Number.isNaN(Number(input))) return;
 
-    setSelectedGenes(GENES.slice(0, Number(input)));
+    setSelectedGenes([OFFSET, ...GENES.slice(0, Number(input))]);
   }, [input]);
 
   return (
@@ -192,15 +194,16 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   function handleGenesetsSelect(genesetIndex: number) {
     const geneset = GENESETS[genesetIndex];
 
-    setSelectedGenes(
-      genes
+    setSelectedGenes([
+      OFFSET,
+      ...genes
         .filter((gene) => geneset.includes(gene.name))
         .sort(
           (a, b) =>
             geneset.findIndex((gene) => gene === a.name) -
             geneset.findIndex((gene) => gene === b.name)
-        )
-    );
+        ),
+    ]);
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -331,6 +334,3 @@ function areGenesEqual(geneA: Gene, geneB: Gene) {
   // Compare only the names (ignoring case) just for simplicity.
   return geneA.id.toLowerCase() === geneB.id.toLowerCase();
 }
-
-// dp/v1/wmg/cell_types
-// dp/v1/wmg/cell_types
