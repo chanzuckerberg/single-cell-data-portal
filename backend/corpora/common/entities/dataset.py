@@ -20,6 +20,7 @@ from ..corpora_orm import (
     CollectionVisibility,
     generate_uuid,
     DatasetArtifactFileType,
+    ConversionStatus,
 )
 from ..utils.db_helpers import clone
 from ..utils.s3_buckets import cxg_bucket
@@ -317,7 +318,14 @@ class Dataset(Entity):
             if revision.revision > self.revision:
                 # connect revised artifacts with published dataset
                 for artifact in revision.artifacts:
+                    if (
+                        artifact.filetype == DatasetArtifactFileType.RDS
+                        and revision.processing_status.rds_status == ConversionStatus.SKIPPED
+                    ):
+                        # Delete old .rds (Seurat) dataset artifact clones if rds_status for dataset revision is SKIPPED
+                        artifact.delete(commit=False)
                     artifact.dataset_id = self.id
+
             elif revision.tombstone:
                 # tombstone
                 revision.tombstone_dataset_and_delete_child_objects()
