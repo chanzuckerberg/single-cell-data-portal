@@ -24,6 +24,15 @@ const HEAT_MAP_BASE_WIDTH_PX = 500;
 const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
+const COMMON_SERIES = {
+  encode: {
+    x: "geneIndex",
+    y: "cellTypeIndex",
+  },
+  name: "wmg",
+  type: "scatter",
+};
+
 export default function HeatMap({
   cellTypes,
   data,
@@ -31,6 +40,7 @@ export default function HeatMap({
 }: Props): JSX.Element {
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
+  const [yAxisChart, setYAxisChart] = useState<echarts.ECharts | null>(null);
   const [isEchartGLAvailable, setIsEchartGLAvailable] = useState(false);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(genes));
   const [heatmapHeight, setHeatmapHeight] = useState(
@@ -53,6 +63,7 @@ export default function HeatMap({
 
   const ref = useRef(null);
   const xAxisRef = useRef(null);
+  const yAxisRef = useRef(null);
 
   // Update heatmap size
   useEffect(() => {
@@ -73,30 +84,32 @@ export default function HeatMap({
   useEffect(() => {
     const { current } = ref;
     const { current: xAxisCurrent } = xAxisRef;
+    const { current: yAxisCurrent } = yAxisRef;
 
-    if (!current || !xAxisCurrent || isChartInitialized || !isEchartGLAvailable)
+    if (
+      !current ||
+      !xAxisCurrent ||
+      !yAxisCurrent ||
+      isChartInitialized ||
+      !isEchartGLAvailable
+    ) {
       return;
+    }
 
     isChartInitialized = true;
     setChart(echarts.init(current, EMPTY_OBJECT, { useDirtyRect: true }));
     setXAxisChart(
       echarts.init(xAxisCurrent, EMPTY_OBJECT, { useDirtyRect: true })
     );
+    setYAxisChart(
+      echarts.init(yAxisCurrent, EMPTY_OBJECT, { useDirtyRect: true })
+    );
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
   useEffect(() => {
-    if (!chart || !xAxisChart || !isEchartGLAvailable) return;
+    if (!chart || !xAxisChart || !yAxisChart || !isEchartGLAvailable) return;
 
     const allGeneNames = genes.map((gene) => gene.name);
-
-    const commonSeries = {
-      encode: {
-        x: "geneIndex",
-        y: "cellTypeIndex",
-      },
-      name: "wmg",
-      type: "scatter",
-    };
 
     const commonOptions = {
       dataset: {
@@ -109,12 +122,12 @@ export default function HeatMap({
       ...commonOptions,
       grid: {
         bottom: "100px",
-        left: "200px",
+        left: "300px",
         top: "200px",
       },
       series: [
         {
-          ...commonSeries,
+          ...COMMON_SERIES,
           itemStyle: {
             color(props: { data: { scaledMeanExpression: number } }) {
               const { scaledMeanExpression } = props.data;
@@ -172,9 +185,12 @@ export default function HeatMap({
       ],
       yAxis: [
         {
-          axisLabel: { rotate: 20 },
+          axisLabel: { fontSize: 0, rotate: 20 },
           axisLine: {
-            show: true,
+            show: false,
+          },
+          axisTick: {
+            show: false,
           },
           data: cellTypes.map((cellType) => cellType.name).reverse(),
           splitLine: {
@@ -188,12 +204,12 @@ export default function HeatMap({
       ...commonOptions,
       grid: {
         bottom: "0",
-        left: "200px",
+        left: "300px",
         top: "200px",
       },
       series: [
         {
-          ...commonSeries,
+          ...COMMON_SERIES,
           symbolSize: 0,
         },
       ],
@@ -227,9 +243,55 @@ export default function HeatMap({
         },
       ],
     });
+
+    yAxisChart.setOption({
+      ...commonOptions,
+      grid: {
+        bottom: "300px",
+        left: "300px",
+        right: 0,
+        top: 0,
+      },
+      series: [
+        {
+          ...COMMON_SERIES,
+          symbolSize: 0,
+        },
+      ],
+      xAxis: [
+        {
+          axisLabel: { fontSize: 0, rotate: 90 },
+          axisLine: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          boundaryGap: false,
+          data: allGeneNames,
+          splitLine: {
+            show: false,
+          },
+          type: "category",
+        },
+      ],
+      yAxis: [
+        {
+          axisLabel: { align: "right", rotate: 20 },
+          axisLine: {
+            show: false,
+          },
+          data: cellTypes.map((cellType) => cellType.name).reverse(),
+          splitLine: {
+            show: false,
+          },
+        },
+      ],
+    });
   }, [
     chart,
     xAxisChart,
+    yAxisChart,
     isEchartGLAvailable,
     cellTypes,
     data,
@@ -252,13 +314,26 @@ export default function HeatMap({
           position: "sticky",
           top: "0",
           width: heatmapWidth + "px",
-          zIndex: 1,
+          zIndex: 2,
         }}
         ref={xAxisRef}
       />
       <div
         style={{
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
           height: heatmapHeight + "px",
+          left: 0,
+          position: "sticky",
+          top: 0,
+          width: "300px",
+          zIndex: 1,
+        }}
+        ref={yAxisRef}
+      />
+      <div
+        style={{
+          height: heatmapHeight + "px",
+          left: "0",
           position: "absolute",
           top: "0",
           width: heatmapWidth + "px",
