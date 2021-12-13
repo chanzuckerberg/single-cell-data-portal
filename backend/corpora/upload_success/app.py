@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 def success_handler(event: dict, context) -> None:
     """
-    Lambda function invoked by the ingestion step function that updates the processing status
-    for the specified dataset to SUCCESS
+    Lambda function invoked by the ingestion step function that updates
+    the processing status for the specified dataset to SUCCESS
     :param event: Lambda's event object
     :param context: Lambda's context object
     :return:
