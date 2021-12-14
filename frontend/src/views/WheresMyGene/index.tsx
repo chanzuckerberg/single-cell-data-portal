@@ -1,4 +1,4 @@
-import { H4, Intent, RangeSlider } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import Head from "next/head";
 import { useMemo, useState } from "react";
@@ -15,14 +15,11 @@ import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import TreeTable from "./components/TreeTable";
 import CELL_TYPES from "./mocks/lung_tissue_cell_types.json";
-
-const MIN_DELAY_MS = 100;
-const MAX_DELAY_MS = 25 * 1000;
+import { Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
-  const [range, setRange] = useState<[number, number]>([100, 500]);
 
   const data = useMemo(
     () => integrateCelTypesAndGenes(CELL_TYPES as CellTypeAndGenes[], geneData),
@@ -56,48 +53,34 @@ const WheresMyGene = (): JSX.Element => {
     ];
   }, [genes, geneData]);
 
-  const [minDelayMS, maxDelayMS] = range;
-
   return (
     <>
       <Head>
         <title>cellxgene | Where&apos;s My Gene</title>
       </Head>
 
-      <H4>Delay Min Max Milliseconds</H4>
-      <RangeSlider
-        min={MIN_DELAY_MS}
-        max={MAX_DELAY_MS}
-        stepSize={100}
-        labelStepSize={1 * 1000}
-        value={range}
-        onChange={handleRangeChange}
-      />
+      <Wrapper>
+        <GeneSearchBar onGenesChange={setGenes} />
 
-      <br />
+        <br />
+        <br />
 
-      <GeneSearchBar onGenesChange={setGenes} />
+        <TreeTable columns={columns} data={data} />
 
-      <br />
-      <br />
+        {genes.map((gene) => {
+          const { name } = gene;
 
-      <TreeTable columns={columns} data={data} />
-
-      {genes.map((gene) => {
-        const { name } = gene;
-
-        return (
-          <GeneFetcher
-            fetchedGenes={genes}
-            name={name}
-            key={name}
-            onSuccess={handleGeneFetchSuccess}
-            onError={handleGeneFetchError}
-            minDelayMS={minDelayMS}
-            maxDelayMS={maxDelayMS}
-          />
-        );
-      })}
+          return (
+            <GeneFetcher
+              fetchedGenes={genes}
+              name={name}
+              key={name}
+              onSuccess={handleGeneFetchSuccess}
+              onError={handleGeneFetchError}
+            />
+          );
+        })}
+      </Wrapper>
     </>
   );
 
@@ -110,10 +93,6 @@ const WheresMyGene = (): JSX.Element => {
       intent: Intent.DANGER,
       message: `No data available for gene: ${name}`,
     });
-  }
-
-  function handleRangeChange(range: [number, number]) {
-    setRange(range);
   }
 };
 
