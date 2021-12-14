@@ -41,6 +41,7 @@ def process(dataset_id: str, artifact_bucket: str):
 
     bucket_prefix = get_bucket_prefix(dataset_id)
     object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+    logger.warning(f"Download {object_key} from S3 bucket {artifact_bucket}")
     download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
     seurat_filename = convert_file_ignore_exceptions(

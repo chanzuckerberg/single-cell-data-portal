@@ -558,6 +558,38 @@ def add_trailing_slash_to_explorer_urls(ctx):
         logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
 
 
+@cli.command()
+@click.pass_context
+def reprocess_seurat(ctx):
+    import boto3
+    from time import time
+    client = boto3.client('stepfunctions')
+
+    click.confirm(
+        f"Are you sure you want to run this script? It will reprocess the Seurat artifact"
+        f"for selected datasets.",
+        abort=True,
+    )
+
+    # TODO: add these when running it.
+    # TODO: Figure out if we can get the AWS account id and the stack name automatically
+    payload = {
+        "dataset_uuid": None
+    }
+    aws_account_id = None 
+    stack_name = None 
+
+
+    response = client.start_execution(
+        stateMachineArn=f'arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{stack_name}-seurat-sfn',
+        name=f'ReprocessSeuratTest-{int(time())}',
+        input=json.dumps(payload),
+    )
+
+    print(response)
+    
+
+
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
     uri = uri._replace(netloc="@".join([uri[1].split("@")[0], "localhost:5432"]))
