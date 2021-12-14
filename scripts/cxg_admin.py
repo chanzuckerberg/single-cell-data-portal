@@ -419,7 +419,7 @@ def migrate_published_at(ctx):
 def populate_revised_at(ctx):
     """
     Populates `revised_at` for each existing collection and dataset with the
-    current datetime (UTC). This is a one-off procedure since revised_at will 
+    current datetime (UTC). This is a one-off procedure since revised_at will
     be set for collections and datasets when they are updated.
     """
 
@@ -497,6 +497,7 @@ def strip_all_collection_fields(ctx):
         session.execute(query)
         session.commit()
 
+
 @cli.command()
 @click.pass_context
 def backfill_processing_status_for_datasets(ctx):
@@ -517,7 +518,7 @@ def backfill_processing_status_for_datasets(ctx):
                 logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
-            
+
 
 @cli.command()
 @click.pass_context
@@ -559,35 +560,32 @@ def add_trailing_slash_to_explorer_urls(ctx):
 
 
 @cli.command()
+@click.argument("dataset_uuid")
 @click.pass_context
-def reprocess_seurat(ctx):
+def reprocess_seurat(ctx: Context, dataset_uuid: str):
     import boto3
     from time import time
-    client = boto3.client('stepfunctions')
+
+    client = boto3.client("stepfunctions")
 
     click.confirm(
-        f"Are you sure you want to run this script? It will reprocess the Seurat artifact"
-        f"for selected datasets.",
+        f"Are you sure you want to run this script? It will reprocess the Seurat artifact" f"for selected datasets.",
         abort=True,
     )
 
     # TODO: add these when running it.
     # TODO: Figure out if we can get the AWS account id and the stack name automatically
-    payload = {
-        "dataset_uuid": None
-    }
-    aws_account_id = None 
-    stack_name = None 
-
+    aws_account_id = None
+    stack_name = None
+    payload = {"dataset_uuid": dataset_uuid}
 
     response = client.start_execution(
-        stateMachineArn=f'arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{stack_name}-seurat-sfn',
-        name=f'ReprocessSeuratTest-{int(time())}',
+        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{stack_name}-seurat-sfn",
+        name=f"{dataset_uuid}-{int(time())}",
         input=json.dumps(payload),
     )
 
     print(response)
-    
 
 
 def get_database_uri() -> str:
