@@ -25,12 +25,24 @@ const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
 const COMMON_SERIES = {
+  emphasis: { itemStyle: { color: "inherit" }, scale: false },
   encode: {
     x: "geneIndex",
     y: "cellTypeIndex",
   },
   name: "wmg",
   type: "scatter",
+};
+
+const COMMON_AXIS_POINTER = {
+  link: [
+    {
+      xAxisIndex: "all",
+    },
+  ],
+  show: true,
+  // triggerOn: "click",
+  triggerTooltip: false,
 };
 
 export default function HeatMap({
@@ -97,13 +109,20 @@ export default function HeatMap({
     }
 
     isChartInitialized = true;
-    setChart(echarts.init(current, EMPTY_OBJECT, { useDirtyRect: true }));
-    setXAxisChart(
-      echarts.init(xAxisCurrent, EMPTY_OBJECT, { useDirtyRect: true })
-    );
-    setYAxisChart(
-      echarts.init(yAxisCurrent, EMPTY_OBJECT, { useDirtyRect: true })
-    );
+
+    const chart = echarts.init(current, EMPTY_OBJECT, { useDirtyRect: true });
+    const xAxisChart = echarts.init(xAxisCurrent, EMPTY_OBJECT, {
+      useDirtyRect: true,
+    });
+    const yAxisChart = echarts.init(yAxisCurrent, EMPTY_OBJECT, {
+      useDirtyRect: true,
+    });
+
+    echarts.connect([chart, xAxisChart, yAxisChart]);
+
+    setChart(chart);
+    setXAxisChart(xAxisChart);
+    setYAxisChart(yAxisChart);
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
   useEffect(() => {
@@ -112,14 +131,18 @@ export default function HeatMap({
     const allGeneNames = genes.map((gene) => gene.name);
 
     const commonOptions = {
+      animation: false,
       dataset: {
         source: chartData,
       },
+      hoverLayerThreshold: 1,
       large: true,
+      largeThreshold: 1,
     };
 
     chart.setOption({
       ...commonOptions,
+      axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
       grid: {
         bottom: "100px",
         left: "300px",
@@ -145,6 +168,9 @@ export default function HeatMap({
       tooltip: {
         formatter(props: { name: string; data: ChartFormat }) {
           const { name, data } = props;
+
+          if (!data) return false;
+
           const {
             geneIndex,
             percentage,
@@ -202,6 +228,7 @@ export default function HeatMap({
 
     xAxisChart.setOption({
       ...commonOptions,
+      axisPointer: { ...COMMON_AXIS_POINTER },
       grid: {
         bottom: "0",
         left: "300px",
@@ -246,6 +273,7 @@ export default function HeatMap({
 
     yAxisChart.setOption({
       ...commonOptions,
+      axisPointer: { ...COMMON_AXIS_POINTER },
       grid: {
         bottom: "300px",
         left: "300px",
@@ -303,7 +331,8 @@ export default function HeatMap({
   useEffect(() => {
     chart?.resize();
     xAxisChart?.resize();
-  }, [chart, xAxisChart, heatmapHeight, heatmapWidth]);
+    yAxisChart?.resize();
+  }, [chart, xAxisChart, yAxisChart, heatmapHeight, heatmapWidth]);
 
   return (
     <Container>
