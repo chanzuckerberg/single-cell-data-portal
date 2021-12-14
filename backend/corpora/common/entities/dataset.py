@@ -323,7 +323,7 @@ class Dataset(Entity):
                         and revision.processing_status.rds_status == ConversionStatus.SKIPPED
                     ):
                         # Delete old .rds (Seurat) dataset artifact clones if rds_status for dataset revision is SKIPPED
-                        artifact.delete(commit=False)
+                        DatasetAsset(artifact).delete(commit=False)
                     artifact.dataset_id = self.id
 
             elif revision.tombstone:

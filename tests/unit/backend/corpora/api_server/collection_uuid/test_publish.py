@@ -2,9 +2,16 @@ import json
 from datetime import datetime
 from mock import Mock, patch
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    CollectionLinkType,
+    DatasetArtifactFileType,
+    ConversionStatus,
+)
+from backend.corpora.common.entities import Collection
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+from tests.unit.backend.utils import BogusDatasetArtifactParams, BogusProcessingStatusParams
 
 
 class TestPublish(BaseAuthAPITest):
@@ -126,6 +133,91 @@ class TestPublish(BaseAuthAPITest):
         for dataset in res_datasets:
             self.assertTrue(dataset["published"])
             self.assertEqual(self.mock_published_at, datetime.utcfromtimestamp(dataset["published_at"]))
+
+    @patch("backend.corpora.common.entities.dataset_asset.DatasetAsset.queue_s3_asset_for_deletion")
+    def test__publish_revision_delete_old_seurat(self, mock_queue_s3_asset_for_deletion):
+
+        # Make an collection with datasets, artifacts, processing status
+        collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC).id
+
+        artifact_1_h5ad = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.H5AD)
+        artifact_1_rds = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.RDS)
+
+        artifact_2_h5ad = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.H5AD)
+        artifact_2_rds = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.RDS)
+
+        da1_processing_status = BogusProcessingStatusParams.get(
+            cxg_status=ConversionStatus.CONVERTED, rds_status=ConversionStatus.CONVERTED
+        )
+
+        da2_processing_status = BogusProcessingStatusParams.get(
+            cxg_status=ConversionStatus.CONVERTED, rds_status=ConversionStatus.CONVERTED
+        )
+
+        dataset_1_public = self.generate_dataset(
+            self.session,
+            collection_id=collection_id,
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+            artifacts=[artifact_1_h5ad, artifact_1_rds],
+            processing_status=da1_processing_status,
+        )
+
+        dataset_2_public = self.generate_dataset(
+            self.session,
+            collection_id=collection_id,
+            collection_visibility=CollectionVisibility.PUBLIC.name,
+            artifacts=[artifact_2_h5ad, artifact_2_rds],
+            processing_status=da2_processing_status,
+        )
+
+        # Create revision
+        Collection.get_collection(self.session, collection_id, CollectionVisibility.PUBLIC.name).revision()
+
+        # Update datasets
+        artifact_3_h5ad = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.H5AD)
+        artifact_3_rds = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.RDS)
+
+        artifact_4_h5ad = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.H5AD)
+        artifact_4_rds = BogusDatasetArtifactParams.get(filetype=DatasetArtifactFileType.RDS)
+
+        # Mark one as SKIPPED
+        da3_processing_status = BogusProcessingStatusParams.get(
+            cxg_status=ConversionStatus.CONVERTED, rds_status=ConversionStatus.SKIPPED
+        )
+
+        da4_processing_status = BogusProcessingStatusParams.get(
+            cxg_status=ConversionStatus.CONVERTED, rds_status=ConversionStatus.CONVERTED
+        )
+
+        self.generate_dataset(
+            self.session,
+            collection_id=collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE.name,
+            artifacts=[artifact_3_h5ad, artifact_3_rds],
+            processing_status=da3_processing_status,
+            original_id=dataset_1_public.id,
+            revision=1,
+        )
+
+        self.generate_dataset(
+            self.session,
+            collection_id=collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE.name,
+            artifacts=[artifact_4_h5ad, artifact_4_rds],
+            processing_status=da4_processing_status,
+            original_id=dataset_2_public.id,
+            revision=1,
+        )
+
+        collection = Collection.get_collection(self.session, collection_id, CollectionVisibility.PRIVATE.name)
+        collection.publish(data_submission_policy_version="v1.0")
+        for dataset in collection.datasets:
+            if dataset.id == dataset_1_public.id:
+                self.assertEqual(len(dataset.artifacts), 1)
+                self.assertFalse(DatasetArtifactFileType.RDS in [x.filetype for x in dataset.artifacts])
+            if dataset.id == dataset_2_public.id:
+                self.assertEqual(len(dataset.artifacts), 2)
+                self.assertTrue(DatasetArtifactFileType.RDS in [x.filetype for x in dataset.artifacts])
 
     def test__publish_collection_with_links__OK(self):
         """Publish collection with a link."""
