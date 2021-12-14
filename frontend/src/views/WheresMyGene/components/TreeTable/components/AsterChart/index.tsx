@@ -1,24 +1,18 @@
 import { Container, FirstPart, SecondPart } from "./style";
 
 interface Props {
-  relativeExpression: number;
-  proportionalExpression: number;
+  colorValue: number;
+  degreeValue: number;
 }
 
 export default function AsterChart({
-  relativeExpression,
-  proportionalExpression,
+  colorValue,
+  degreeValue,
 }: Props): JSX.Element {
   return (
     <Container>
-      <FirstPart
-        relativeExpression={relativeExpression}
-        proportionalExpression={proportionalExpression}
-      >
-        <SecondPart
-          relativeExpression={relativeExpression}
-          proportionalExpression={proportionalExpression}
-        />
+      <FirstPart colorValue={colorValue} degreeValue={degreeValue}>
+        <SecondPart colorValue={colorValue} degreeValue={degreeValue} />
       </FirstPart>
     </Container>
   );

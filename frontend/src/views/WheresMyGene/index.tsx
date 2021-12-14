@@ -1,17 +1,38 @@
+import { H4, Intent, RangeSlider } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import Head from "next/head";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Cell as ICell, Column } from "react-table";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import Toast from "../Collection/components/Toast";
+import {
+  CellTypeAndGenes,
+  Gene,
+  GeneExpression,
+  RawGeneExpression,
+} from "./common/types";
+import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import TreeTable from "./components/TreeTable";
-import { GENES, TISSUE } from "./mocks/brain";
+import CELL_TYPES from "./mocks/lung_tissue_cell_types.json";
 
-const data = integrateTissuesAndGenes(TISSUE);
+const MIN_DELAY_MS = 100;
+const MAX_DELAY_MS = 25 * 1000;
 
 const WheresMyGene = (): JSX.Element => {
-  const columns = useMemo(
-    () => [
+  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
+  const [range, setRange] = useState<[number, number]>([100, 500]);
+
+  const data = useMemo(
+    () => integrateCelTypesAndGenes(CELL_TYPES as CellTypeAndGenes[], geneData),
+    [geneData]
+  );
+
+  const columns: Column<CellTypeAndGenes>[] = useMemo(() => {
+    return [
       {
-        Cell({ row }) {
+        Cell({ row }: ICell) {
           const {
             values: { name },
           } = row;
@@ -22,16 +43,20 @@ const WheresMyGene = (): JSX.Element => {
         accessor: "name",
         minWidth: 200,
       },
-      ...GENES.map(({ name }) => {
+      ...genes.map(({ name }) => {
         return {
           Header: name,
-          accessor: name,
+          accessor: `expressions.${name}` as unknown as "expressions",
+          isLoading: !geneData.find((gene) => {
+            return gene.gene_name === name;
+          }),
           maxWidth: 20,
         };
       }),
-    ],
-    []
-  );
+    ];
+  }, [genes, geneData]);
+
+  const [minDelayMS, maxDelayMS] = range;
 
   return (
     <>
@@ -39,21 +64,64 @@ const WheresMyGene = (): JSX.Element => {
         <title>cellxgene | Where&apos;s My Gene</title>
       </Head>
 
-      <GeneSearchBar />
+      <H4>Delay Min Max Milliseconds</H4>
+      <RangeSlider
+        min={MIN_DELAY_MS}
+        max={MAX_DELAY_MS}
+        stepSize={100}
+        labelStepSize={1 * 1000}
+        value={range}
+        onChange={handleRangeChange}
+      />
+
+      <br />
+
+      <GeneSearchBar onGenesChange={setGenes} />
+
+      <br />
+      <br />
 
       <TreeTable columns={columns} data={data} />
+
+      {genes.map((gene) => {
+        const { name } = gene;
+
+        return (
+          <GeneFetcher
+            fetchedGenes={genes}
+            name={name}
+            key={name}
+            onSuccess={handleGeneFetchSuccess}
+            onError={handleGeneFetchError}
+            minDelayMS={minDelayMS}
+            maxDelayMS={maxDelayMS}
+          />
+        );
+      })}
     </>
   );
+
+  function handleGeneFetchSuccess(geneData: RawGeneExpression) {
+    setGeneData((latestGeneData) => [...latestGeneData, geneData]);
+  }
+
+  function handleGeneFetchError(name: Gene["name"]) {
+    Toast.show({
+      intent: Intent.DANGER,
+      message: `No data available for gene: ${name}`,
+    });
+  }
+
+  function handleRangeChange(range: [number, number]) {
+    setRange(range);
+  }
 };
 
-interface Node {
-  id: string;
-  parentId?: string;
-  name: string;
-}
-
-function integrateTissuesAndGenes(nodes: Node[]) {
-  const geneMaps = GENES.map((gene) => rawGeneDataToMap(gene));
+function integrateCelTypesAndGenes(
+  nodes: CellTypeAndGenes[],
+  genes: RawGeneExpression[]
+): CellTypeAndGenes[] {
+  const geneMaps = genes.map((gene) => rawGeneDataToMap(gene));
 
   return cloneDeep(nodes).map((node) => {
     const { id } = node;
@@ -62,7 +130,10 @@ function integrateTissuesAndGenes(nodes: Node[]) {
       const columnData = geneMap.get(id);
 
       if (columnData !== undefined) {
-        node[name] = columnData;
+        node.expressions = {
+          ...(node.expressions || {}),
+          [name]: columnData,
+        };
       }
     }
 
@@ -70,10 +141,12 @@ function integrateTissuesAndGenes(nodes: Node[]) {
   });
 }
 
-function rawGeneDataToMap(gene) {
-  const { data, name } = gene;
+function rawGeneDataToMap(
+  gene: RawGeneExpression
+): [string, Map<string, GeneExpression>] {
+  const { cell_types, gene_name } = gene;
 
-  return [name, new Map(data.map((row) => [row.id, row]))];
+  return [gene_name, new Map(cell_types?.map((row) => [row.id, row]))];
 }
 
 export default WheresMyGene;
