@@ -30,6 +30,7 @@ const COMMON_SERIES = {
     x: "geneIndex",
     y: "cellTypeIndex",
   },
+  legendHoverLink: false,
   name: "wmg",
   type: "scatter",
 };
@@ -62,9 +63,13 @@ export default function HeatMap({
   const [chartData, setChartData] = useState<ChartFormat[]>(EMPTY_ARRAY);
 
   const debouncedDataToChartFormat = useMemo(() => {
-    return debounce((data, cellTypes, genes) => {
-      setChartData(dataToChartFormat(data, cellTypes, genes));
-    }, DEBOUNCE_MS);
+    return debounce(
+      (data, cellTypes, genes) => {
+        setChartData(dataToChartFormat(data, cellTypes, genes));
+      },
+      DEBOUNCE_MS,
+      { leading: false }
+    );
   }, []);
 
   useEffect(() => {
@@ -125,21 +130,24 @@ export default function HeatMap({
     setYAxisChart(yAxisChart);
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
+  const allGeneNames = useMemo(() => {
+    return genes.map((gene) => gene.name);
+  }, [genes]);
+
+  const allCellTypes = useMemo(() => {
+    return cellTypes.map((cellType) => cellType.name).reverse();
+  }, [cellTypes]);
+
   useEffect(() => {
     if (!chart || !xAxisChart || !yAxisChart || !isEchartGLAvailable) return;
-
-    const allGeneNames = genes.map((gene) => gene.name);
 
     const commonOptions = {
       animation: false,
       dataset: {
         source: chartData,
       },
-      hoverLayerThreshold: 1,
-      large: true,
-      largeThreshold: 1,
-      progressive: 100,
-      progressiveThreshold: 500,
+      hoverLayerThreshold: 10,
+      progressiveThreshold: 2000,
     };
 
     chart.setOption({
@@ -220,7 +228,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          data: cellTypes.map((cellType) => cellType.name).reverse(),
+          data: allCellTypes,
           splitLine: {
             show: true,
           },
@@ -265,7 +273,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          data: cellTypes.map((cellType) => cellType.name).reverse(),
+          data: allCellTypes,
           splitLine: {
             show: false,
           },
@@ -311,7 +319,7 @@ export default function HeatMap({
           axisLine: {
             show: false,
           },
-          data: cellTypes.map((cellType) => cellType.name).reverse(),
+          data: allCellTypes,
           splitLine: {
             show: false,
           },
@@ -324,8 +332,10 @@ export default function HeatMap({
     yAxisChart,
     isEchartGLAvailable,
     cellTypes,
+    allCellTypes,
     data,
     genes,
+    allGeneNames,
     chartData,
   ]);
 
