@@ -9,6 +9,7 @@ from backend.corpora.dataset_processing.process import (
     make_seurat,
     create_artifact,
     get_bucket_prefix,
+    replace_artifact,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,15 +40,37 @@ def process(dataset_id: str, artifact_bucket: str):
 
     labeled_h5ad_filename = "local.h5ad"
 
-    bucket_prefix = get_bucket_prefix(dataset_id)
-    object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-    download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+    # Check for existing artifacts
+    # If this is a new dataset, no artifacts will exist and this won't do anything
+    # If we're reprocessing a new dataset and this dataset has been revised, we need to download
+    # the h5ad from its specified artifact location
+    if dataset.artifacts:
+        h5ad_uri = next(a["s3_uri"] for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.H5AD)
+        artifact_key = h5ad_uri.split("/")[-2]
+        
+        logger.warning(f"Found an existing h5ad artifact with key {artifact_key}, downloading from there")
 
-    seurat_filename = convert_file_ignore_exceptions(
-        make_seurat, labeled_h5ad_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
-    )
+        bucket_prefix = get_bucket_prefix(artifact_key)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-    if seurat_filename:
-        create_artifact(
-            seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat, labeled_h5ad_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
         )
+
+        if seurat_filename:
+            replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
+
+    else:
+        bucket_prefix = get_bucket_prefix(dataset_id)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat, labeled_h5ad_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
+        )
+
+        if seurat_filename:
+            create_artifact(
+                seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
+            )
