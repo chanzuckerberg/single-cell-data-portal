@@ -48,14 +48,15 @@ def process(dataset_id: str, artifact_bucket: str):
 
         # Three cases:
         # 1. newly processed dataset: h5ad will exist with key == dataset_id, rds will not exist
-        # 2. reprocessed dataset with no seurat: h5ad will exist with key != dataset_id, rds will not exist
-        # 3. reprocessed dataset with "to be replaced" seurat: h5ad will exist with key != dataset_id, rds will exist
+        # 2. non-revised reprocessed dataset with seurat
+        # 3. revised reprocessed dataset with no seurat: h5ad will exist with key != dataset_id, rds will not exist
+        # 4. revised reprocessed dataset with "to be replaced" seurat: h5ad will exist with key != dataset_id, rds will exist
 
         h5ad_uri = next(a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.H5AD)
         rds_uri = [a for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.RDS]
         artifact_key = h5ad_uri.split("/")[-2]
 
-        if artifact_key == dataset_id: # Case 1
+        if artifact_key == dataset_id and not rds_uri: # Case 1
 
             bucket_prefix = get_bucket_prefix(dataset_id)
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
@@ -69,8 +70,20 @@ def process(dataset_id: str, artifact_bucket: str):
                 create_artifact(
                     seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
                 )
+
+        elif artifact_key == dataset_id and rds_uri: # Case 2
+            bucket_prefix = get_bucket_prefix(dataset_id)
+            object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+            download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+
+            seurat_filename = convert_file_ignore_exceptions(
+                make_seurat, labeled_h5ad_filename, "Failed to convert dataset to Seurat format.", dataset_id, "rds_status"
+            )
+
+            if seurat_filename:
+                replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
         
-        elif artifact_key != dataset_id and not rds_uri: # Case 2
+        elif artifact_key != dataset_id and not rds_uri: # Case 3
             logger.warning(f"Found existing artifacts in {artifact_key} but no RDS, creating a new artifact")
             bucket_prefix = get_bucket_prefix(artifact_key)
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
@@ -85,7 +98,7 @@ def process(dataset_id: str, artifact_bucket: str):
                     seurat_filename, DatasetArtifactFileType.RDS, bucket_prefix, dataset_id, artifact_bucket, "rds_status"
                 )
         
-        else: # Case 3
+        else: # Case 4
             logger.warning(f"Found existing artifacts in {artifact_key} including an RDS, replacing it")
 
             bucket_prefix = get_bucket_prefix(artifact_key)
