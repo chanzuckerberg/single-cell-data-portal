@@ -41,12 +41,6 @@ def process(dataset_id: str, artifact_bucket: str):
 
         labeled_h5ad_filename = "local.h5ad"
 
-        # Check for existing artifacts
-        # If this is a new dataset, no artifacts will exist and this won't do anything
-        # If we're reprocessing a new dataset and this dataset has been revised, we need to download
-        # the h5ad from its specified artifact location
-        # if dataset.artifacts:
-
         # Four cases:
         # 1. newly processed dataset: h5ad will exist with key == dataset_id, rds will not exist
         # 2. non-revised reprocessed dataset with seurat
@@ -84,7 +78,7 @@ def process(dataset_id: str, artifact_bucket: str):
 
             if seurat_filename:
                 replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
-                rds_artifact = next(rds_artifacts)
+                rds_artifact = rds_artifacts[0] # Only one RDS artifact for dataset will ever exist
                 rds_artifact.updated_at = datetime.utcnow()
         
         elif artifact_key != dataset_id and not rds_artifacts: # Case 3
@@ -115,5 +109,5 @@ def process(dataset_id: str, artifact_bucket: str):
 
             if seurat_filename:
                 replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
-                rds_artifact = next(rds_artifacts)
+                rds_artifact = rds_artifacts[0] # Only one RDS artifact for dataset will ever exist
                 rds_artifact.updated_at = datetime.utcnow()
