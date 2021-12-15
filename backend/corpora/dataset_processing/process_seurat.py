@@ -72,6 +72,7 @@ def process(dataset_id: str, artifact_bucket: str):
                 )
 
         elif artifact_key == dataset_id and rds_uri: # Case 2
+            logger.warning(f"Reprocessing Seurat for existing dataset {artifact_key}, will replace the S3 file only")
             bucket_prefix = get_bucket_prefix(dataset_id)
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
