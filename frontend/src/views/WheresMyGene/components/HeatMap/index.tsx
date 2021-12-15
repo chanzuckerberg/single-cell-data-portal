@@ -2,9 +2,15 @@ import { interpolateYlOrRd } from "d3-scale-chromatic";
 import * as echarts from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { CellTypeAndGenes, Gene } from "../../common/types";
 import { Container } from "./style";
+
+interface ChartProps {
+  chartData: ChartFormat[];
+  geneNames: string[];
+  cellTypeNames: string[];
+}
 
 const DEBOUNCE_MS = 2 * 1000;
 
@@ -60,12 +66,50 @@ export default function HeatMap({
     getHeatmapHeight(cellTypes)
   );
 
-  const [chartData, setChartData] = useState<ChartFormat[]>(EMPTY_ARRAY);
+  const [chartProps, setChartProps] = useState<ChartProps | null>(null);
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [genes]);
+
+  useEffect(() => {
+    if (!chart) return;
+
+    if (isLoading) {
+      chart.showLoading();
+
+      // DEBUG
+      // DEBUG
+      // DEBUG
+      console.log("--show loading");
+    } else {
+      // DEBUG
+      // DEBUG
+      // DEBUG
+      console.log("--hide loading");
+
+      chart.hideLoading();
+    }
+  }, [chart, isLoading]);
 
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
       (data, cellTypes, genes) => {
-        setChartData(dataToChartFormat(data, cellTypes, genes));
+        // DEBUG
+        // DEBUG
+        // DEBUG
+        console.log("------------SETTING!!");
+
+        setChartProps({
+          cellTypeNames: getCellTypeNames(cellTypes),
+          chartData: dataToChartFormat(data, cellTypes, genes),
+          geneNames: getGeneNames(genes),
+        });
+
+        setIsLoading(false);
       },
       DEBOUNCE_MS,
       { leading: false }
@@ -130,16 +174,18 @@ export default function HeatMap({
     setYAxisChart(yAxisChart);
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
-  const allGeneNames = useMemo(() => {
-    return genes.map((gene) => gene.name);
-  }, [genes]);
-
-  const allCellTypes = useMemo(() => {
-    return cellTypes.map((cellType) => cellType.name).reverse();
-  }, [cellTypes]);
-
   useEffect(() => {
-    if (!chart || !xAxisChart || !yAxisChart || !isEchartGLAvailable) return;
+    if (
+      !chart ||
+      !chartProps ||
+      !xAxisChart ||
+      !yAxisChart ||
+      !isEchartGLAvailable
+    ) {
+      return;
+    }
+
+    const { chartData, cellTypeNames, geneNames } = chartProps;
 
     const commonOptions = {
       animation: false,
@@ -149,6 +195,14 @@ export default function HeatMap({
       hoverLayerThreshold: 10,
       progressiveThreshold: 2000,
     };
+
+    // DEBUG
+    // DEBUG
+    // DEBUG
+    console.log("----- rendering...");
+    console.log("----- chartData", chartData);
+    console.log("----- geneNames", geneNames);
+    console.log("----- cellTypeNames", cellTypeNames);
 
     chart.setOption({
       ...commonOptions,
@@ -191,7 +245,7 @@ export default function HeatMap({
           return `
             cell type: ${name}
             <br />
-            gene: ${genes[geneIndex].name}
+            gene: ${geneNames[geneIndex]}
             <br />
             percentage: ${percentage}
             <br />
@@ -212,7 +266,7 @@ export default function HeatMap({
             show: false,
           },
           boundaryGap: false,
-          data: allGeneNames,
+          data: geneNames,
           splitLine: {
             show: true,
           },
@@ -228,7 +282,8 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          data: allCellTypes,
+          boundaryGap: false,
+          data: cellTypeNames,
           splitLine: {
             show: true,
           },
@@ -259,7 +314,7 @@ export default function HeatMap({
             width: 200,
           },
           boundaryGap: false,
-          data: allGeneNames,
+          data: geneNames,
           position: "top",
           type: "category",
         },
@@ -273,7 +328,8 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          data: allCellTypes,
+          boundaryGap: false,
+          data: cellTypeNames,
           splitLine: {
             show: false,
           },
@@ -306,7 +362,7 @@ export default function HeatMap({
             show: false,
           },
           boundaryGap: false,
-          data: allGeneNames,
+          data: geneNames,
           splitLine: {
             show: false,
           },
@@ -319,32 +375,22 @@ export default function HeatMap({
           axisLine: {
             show: false,
           },
-          data: allCellTypes,
+          axisTick: {
+            alignWithLabel: true,
+          },
+          boundaryGap: false,
+          data: cellTypeNames,
           splitLine: {
             show: false,
           },
         },
       ],
     });
-  }, [
-    chart,
-    xAxisChart,
-    yAxisChart,
-    isEchartGLAvailable,
-    cellTypes,
-    allCellTypes,
-    data,
-    genes,
-    allGeneNames,
-    chartData,
-  ]);
 
-  // Resize heatmap
-  useEffect(() => {
-    chart?.resize();
-    xAxisChart?.resize();
-    yAxisChart?.resize();
-  }, [chart, xAxisChart, yAxisChart, heatmapHeight, heatmapWidth]);
+    chart.resize();
+    xAxisChart.resize();
+    yAxisChart.resize();
+  }, [chart, xAxisChart, yAxisChart, isEchartGLAvailable, chartProps]);
 
   return (
     <Container>
@@ -450,4 +496,12 @@ function getHeatmapWidth(genes: Gene[]): number {
 
 function getHeatmapHeight(cellTypes: CellTypeAndGenes[]): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
+}
+
+function getCellTypeNames(cellTypes: CellTypeAndGenes[]): string[] {
+  return cellTypes.map((cellType) => cellType.name).reverse();
+}
+
+function getGeneNames(genes: Gene[]): string[] {
+  return genes.map((gene) => gene.name);
 }
