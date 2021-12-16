@@ -31,6 +31,7 @@ locals {
   frontend_image_repo          = local.secret["ecrs"]["frontend"]["url"]
   backend_image_repo           = local.secret["ecrs"]["backend"]["url"]
   upload_image_repo            = local.secret["ecrs"]["processing"]["url"]
+  lambda_upload_success_repo   = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo           = local.secret["ecrs"]["upload_failures"]["url"]
   batch_role_arn               = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                = local.secret["batch_queues"]["upload"]["queue_arn"]
@@ -161,6 +162,20 @@ module upload_batch {
   batch_container_memory_limit = local.batch_container_memory_limit
 }
 
+module upload_success_lambda {
+  source                = "../lambda"
+  image                 = "${local.lambda_upload_success_repo}:${local.image_tag}"
+  name                  = "upload-success"
+  custom_stack_name     = local.custom_stack_name
+  remote_dev_prefix     = local.remote_dev_prefix
+  deployment_stage      = local.deployment_stage
+  artifact_bucket       = local.artifact_bucket
+  cellxgene_bucket      = local.cellxgene_bucket
+  lambda_execution_role = local.lambda_execution_role
+  subnets               = local.subnets
+  security_groups       = local.security_groups
+}
+
 module upload_error_lambda {
   source                = "../lambda"
   image                 = "${local.lambda_upload_repo}:${local.image_tag}"
@@ -176,11 +191,12 @@ module upload_error_lambda {
 }
 
 module upload_sfn {
-  source               = "../sfn"
-  job_definition_arn   = module.upload_batch.batch_job_definition_no_revision
-  job_queue_arn        = local.job_queue_arn
-  role_arn             = local.sfn_role_arn
-  custom_stack_name    = local.custom_stack_name
-  lambda_error_handler = module.upload_error_lambda.arn
-  deployment_stage     = local.deployment_stage
+  source                 = "../sfn"
+  job_definition_arn     = module.upload_batch.batch_job_definition_no_revision
+  job_queue_arn          = local.job_queue_arn
+  role_arn               = local.sfn_role_arn
+  custom_stack_name      = local.custom_stack_name
+  lambda_success_handler = module.upload_success_lambda.arn
+  lambda_error_handler   = module.upload_error_lambda.arn
+  deployment_stage       = local.deployment_stage
 }

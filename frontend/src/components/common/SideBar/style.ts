@@ -42,7 +42,6 @@ const SideBarToggleButtonWrapper = styled.span`
   .${Classes.BUTTON} {
     color: ${PT_TEXT_COLOR};
     display: flex;
-    /* TODO(cc) font weight specification correct; font rendering resolves with https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1685 */
     font-weight: 500;
     letter-spacing: -0.1px;
     line-height: 18px;
