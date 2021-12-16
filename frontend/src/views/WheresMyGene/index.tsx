@@ -1,5 +1,6 @@
 import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
+import debounce from "lodash/debounce";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -15,10 +16,13 @@ import GeneSearchBar from "./components/GeneSearchBar";
 import HeatMap from "./components/HeatMap";
 import { Wrapper } from "./style";
 
+const DEBOUNCE_MS = 2 * 1000;
+
 const WheresMyGene = (): JSX.Element => {
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
   const [cellTypes, setCellTypes] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
+  const [data, setData] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
 
   useEffect(() => {
     fetchCellTypes();
@@ -39,10 +43,19 @@ const WheresMyGene = (): JSX.Element => {
     }
   }, []);
 
-  const data = useMemo(
-    () => integrateCelTypesAndGenes(cellTypes, geneData),
-    [cellTypes, geneData]
-  );
+  const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
+    return debounce(
+      (cellTypes, geneData) => {
+        setData(integrateCelTypesAndGenes(cellTypes, geneData));
+      },
+      DEBOUNCE_MS,
+      { leading: false }
+    );
+  }, []);
+
+  useEffect(() => {
+    debouncedIntegrateCellTypesAndGenes(cellTypes, geneData);
+  }, [geneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
 
   return (
     <>
