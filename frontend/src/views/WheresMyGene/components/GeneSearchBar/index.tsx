@@ -11,8 +11,6 @@ import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
 import { Container, MultiSelectWrapper } from "./style";
 
-const OFFSET = { id: "offset", name: "" };
-
 const GENESETS = [
   [
     "AGER",
@@ -135,7 +133,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   // DEBUG
   // DEBUG
   // TEST 100 genes
-  const [input, setInput] = useState("80");
+  const [input, setInput] = useState("40");
 
   useEffect(() => {
     fetchGenes();
@@ -163,7 +161,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   useEffect(() => {
     if (Number.isNaN(Number(input))) return;
 
-    setSelectedGenes([OFFSET, ...genes.slice(0, Number(input))]);
+    setSelectedGenes(genes.slice(0, Number(input)));
   }, [input, genes]);
 
   return (
@@ -195,16 +193,15 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   function handleGenesetsSelect(genesetIndex: number) {
     const geneset = GENESETS[genesetIndex];
 
-    setSelectedGenes([
-      OFFSET,
-      ...genes
+    setSelectedGenes(
+      genes
         .filter((gene) => geneset.includes(gene.name))
         .sort(
           (a, b) =>
             geneset.findIndex((gene) => gene === a.name) -
             geneset.findIndex((gene) => gene === b.name)
-        ),
-    ]);
+        )
+    );
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {

@@ -79,11 +79,6 @@ export default function HeatMap({
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
       (data, cellTypes, genes) => {
-        // DEBUG
-        // DEBUG
-        // DEBUG
-        console.log("------------SETTING!!");
-
         setChartProps({
           cellTypeNames: getCellTypeNames(cellTypes),
           chartData: dataToChartFormat(data, cellTypes, genes),
@@ -174,16 +169,8 @@ export default function HeatMap({
         source: chartData,
       },
       hoverLayerThreshold: 10,
-      progressiveThreshold: 2000,
+      progressive: 1e6,
     };
-
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("----- rendering...");
-    console.log("----- chartData", chartData);
-    console.log("----- geneNames", geneNames);
-    console.log("----- cellTypeNames", cellTypeNames);
 
     chart.setOption({
       ...commonOptions,
@@ -246,7 +233,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          boundaryGap: false,
+          boundaryGap: true,
           data: geneNames,
           splitLine: {
             show: true,
@@ -263,7 +250,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          boundaryGap: false,
+          boundaryGap: true,
           data: cellTypeNames,
           splitLine: {
             show: true,
@@ -278,7 +265,7 @@ export default function HeatMap({
       grid: {
         bottom: "0",
         left: "300px",
-        top: "200px",
+        top: "300px",
       },
       series: [
         {
@@ -291,10 +278,13 @@ export default function HeatMap({
           axisLabel: {
             overflow: "truncate",
             rotate: 270,
-            verticalAlign: "bottom",
+            verticalAlign: "middle",
             width: 200,
           },
-          boundaryGap: false,
+          axisTick: {
+            alignWithLabel: true,
+          },
+          boundaryGap: true,
           data: geneNames,
           position: "top",
           type: "category",
@@ -309,7 +299,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          boundaryGap: false,
+          boundaryGap: true,
           data: cellTypeNames,
           splitLine: {
             show: false,
@@ -342,7 +332,7 @@ export default function HeatMap({
           axisTick: {
             show: false,
           },
-          boundaryGap: false,
+          boundaryGap: true,
           data: geneNames,
           splitLine: {
             show: false,
@@ -359,7 +349,7 @@ export default function HeatMap({
           axisTick: {
             alignWithLabel: true,
           },
-          boundaryGap: false,
+          boundaryGap: true,
           data: cellTypeNames,
           splitLine: {
             show: false,
