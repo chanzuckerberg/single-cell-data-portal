@@ -196,6 +196,7 @@ def create_artifact(
         update_db(dataset_id, processing_status={processing_status_type: ConversionStatus.FAILED})
         raise e
 
+
 def replace_artifact(
     file_name: str,
     bucket_prefix: str,
@@ -203,6 +204,7 @@ def replace_artifact(
 ):
     logger.info(f"Uploading [{bucket_prefix}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
+
 
 def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str, can_convert_to_seurat: bool = False):
     bucket_prefix = get_bucket_prefix(dataset_id)
