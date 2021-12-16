@@ -3,13 +3,14 @@ import json
 import logging
 import os
 import sys
+import time
+from datetime import datetime
 
 import click
 import requests
 from click import Context
-from datetime import datetime
-
 from furl import furl
+from requests import HTTPError
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -19,19 +20,14 @@ from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
-    ConversionStatus,
     DbCollection,
     DbDataset,
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetArtifact,
-    DbDatasetProcessingStatus,
     ProcessingStatus,
-    UploadStatus,
-    ValidationStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
-from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.utils.s3_buckets import cxg_bucket
@@ -422,7 +418,7 @@ def migrate_published_at(ctx):
 def populate_revised_at(ctx):
     """
     Populates `revised_at` for each existing collection and dataset with the
-    current datetime (UTC). This is a one-off procedure since revised_at will 
+    current datetime (UTC). This is a one-off procedure since revised_at will
     be set for collections and datasets when they are updated.
     """
 
@@ -500,6 +496,7 @@ def strip_all_collection_fields(ctx):
         session.execute(query)
         session.commit()
 
+
 @cli.command()
 @click.pass_context
 def backfill_processing_status_for_datasets(ctx):
@@ -520,7 +517,7 @@ def backfill_processing_status_for_datasets(ctx):
                 logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
-            
+
 
 @cli.command()
 @click.pass_context
@@ -560,54 +557,85 @@ def add_trailing_slash_to_explorer_urls(ctx):
 
         logger.info("----- Finished adding trailing slash to explorer_url for datasets! ----")
 
+
+auth0_apis = {
+    "staging": "https://czi-cellxgene-dev.us.auth0.com",
+    "dev": "https://czi-cellxgene-dev.us.auth0.com",
+    "prod": "https://corpora-prod.auth0.com",
+}
+
+
 @cli.command()
-# @click.argument("auth0_client_id")
-# @click.argument("auth0_client_secret")
+@click.argument("auth0_client_id")
+@click.argument("auth0_client_secret")
 @click.pass_context
-def update_curator_names(ctx):
+def update_curator_names(ctx, auth0_client_id, auth0_client_secret):
     """
     Add the curator name to all collection based on the owner of the collection.
     """
+
+    auth0_api = auth0_apis[ctx.obj["deployment"]]
+
     def get_auth0_access_token():
-        payload = json.dumps({
-            "client_id": ctx.obj["auth0_client_id"],
-            "client_secret": ctx.obj["auth0_client_secret"],
-            "audience": "https://czi-cellxgene-dev.us.auth0.com/api/v2/",
-            "grant_type": "client_credentials"
-        })
-        headers = {'content-type': "application/json"}
-        response = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", headers=headers, data=payload)
+        logger.info("Retrieving access token from Auth0.")
+        payload = json.dumps(
+            {
+                "client_id": auth0_client_id,
+                "client_secret": auth0_client_secret,
+                "audience": f"{auth0_api}/api/v2/",
+                "grant_type": "client_credentials",
+            }
+        )
+        headers = {"content-type": "application/json"}
+        response = requests.post(f"{auth0_api}/oauth/token", headers=headers, data=payload)
         access_token = response.json()["access_token"]
         return access_token
 
     def get_owners_from_database():
-        owners = dict()
+        logger.info("Gathering owners from collections.")
+        owners = []
         with db_session_manager() as session:
             for collection in Collection.list(session):
-                owners[collection["owner"]] = ''
-        return owners
+                owner = collection.owner
+                if owner:
+                    owners.append(collection.owner)
+        unique_owners = set(owners)
+        return unique_owners
 
     def get_owner_info_from_auth0(owner, access_token):
-        url_manager = furl(f"https://corpora-prod.auth0.com/api/v2/users/{owner}",
-                           query_params=dict(fields=['given_name', 'family_name'], include_fields=True))
+        logger.info(f"Retrieving curator info for owner:{owner} from Auth0.")
+        url_manager = furl(
+            f"{auth0_api}/api/v2/users/{owner}",
+            query_params=dict(fields=",".join(["given_name", "family_name"]), include_fields="true"),
+        )
         response = requests.get(url_manager.url, headers={"Authorization": f"Bearer {access_token}"})
+        response.raise_for_status()
+        if response.headers["X-RateLimit-Remaining"] == 0:
+            wait = time.time() - response.headers["X-RateLimit-Reset"]
+            time.sleep(wait)
         body = response.json()
-        return f"{body['given_name']} {body['family_name']}"
+        return f"{body.get('given_name', '')} {body.get('family_name', '')}".strip()
 
     def update_database_curator_name(owner_id, owner_name):
+        logger.info(f"Updating collections owned by {owner_id} with curator_name:{owner_name}.")
         with db_session_manager() as session:
             collections = session.query(DbCollection).filter(DbCollection.owner == owner_id).all()
             for collection in collections:
                 collection.curator_name = owner_name
-                collection.data_submission_policy_version = '2.0'
+                collection.data_submission_policy_version = "2.0"
 
-    # access_token = get_auth0_access_token()
-    owners = get_owners_from_database()
-    # for owner in owners.keys():
-    #     owner_name = get_owner_info_from_auth0(owner, access_token)
-    #     owners[owner] = owner_name
-    # for owner_id, owner_name in owners.items():
-    #     update_database_curator_name(owner_id, owner_name)
+    access_token = get_auth0_access_token()
+    unique_owners = get_owners_from_database()
+    owners = dict()
+    for owner in unique_owners:
+        try:
+            owner_name = get_owner_info_from_auth0(owner, access_token)
+            if owner_name:
+                owners[owner] = owner_name
+        except HTTPError as e:
+            logger.exception(f"Failed to fetch Auth0 info for owner:{owner}")
+    for owner_id, owner_name in owners.items():
+        update_database_curator_name(owner_id, owner_name)
 
 
 def get_database_uri() -> str:
