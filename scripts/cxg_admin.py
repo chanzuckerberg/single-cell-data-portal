@@ -570,8 +570,12 @@ auth0_apis = {
 @click.argument("auth0_client_secret")
 @click.pass_context
 def update_curator_names(ctx, auth0_client_id, auth0_client_secret):
-    """
-    Add the curator name to all collection based on the owner of the collection.
+    """Add the curator name to all collection based on the owner of the collection.
+
+    AUTH0_CLIENT_ID: Retrieved from Auth0 console in the application section under Client ID. The application must be
+    authorized to access to the Auth0 Management API with the following permissions read:users read:user_idp_tokens.
+
+    AUTH0_CLIENT_SECRET: Retrieved from Auth0 console in the application section under Client Secret.
     """
 
     auth0_api = auth0_apis[ctx.obj["deployment"]]
