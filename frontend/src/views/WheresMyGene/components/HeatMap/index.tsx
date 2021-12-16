@@ -1,10 +1,11 @@
+import { Intent, Spinner } from "@blueprintjs/core";
 import { interpolateYlOrRd } from "d3-scale-chromatic";
 import * as echarts from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { CellTypeAndGenes, Gene } from "../../common/types";
-import { Container } from "./style";
+import { Container, Loader } from "./style";
 
 interface ChartProps {
   chartData: ChartFormat[];
@@ -74,26 +75,6 @@ export default function HeatMap({
   useEffect(() => {
     setIsLoading(true);
   }, [genes]);
-
-  useEffect(() => {
-    if (!chart) return;
-
-    if (isLoading) {
-      chart.showLoading();
-
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      console.log("--show loading");
-    } else {
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      console.log("--hide loading");
-
-      chart.hideLoading();
-    }
-  }, [chart, isLoading]);
 
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
@@ -394,6 +375,13 @@ export default function HeatMap({
 
   return (
     <Container>
+      {isLoading ? (
+        <Loader>
+          <Spinner intent={Intent.PRIMARY} size={20} />
+          Loading...
+        </Loader>
+      ) : null}
+
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.8)",
