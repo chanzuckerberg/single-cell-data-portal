@@ -3,6 +3,7 @@ Add a singleton metaclass. This is from method #3 found here
 https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 """
 
+
 class Singleton(type):
     _instances = {}
 

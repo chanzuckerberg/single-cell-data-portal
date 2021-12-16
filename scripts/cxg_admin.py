@@ -419,7 +419,7 @@ def migrate_published_at(ctx):
 def populate_revised_at(ctx):
     """
     Populates `revised_at` for each existing collection and dataset with the
-    current datetime (UTC). This is a one-off procedure since revised_at will 
+    current datetime (UTC). This is a one-off procedure since revised_at will
     be set for collections and datasets when they are updated.
     """
 
@@ -497,6 +497,7 @@ def strip_all_collection_fields(ctx):
         session.execute(query)
         session.commit()
 
+
 @cli.command()
 @click.pass_context
 def backfill_processing_status_for_datasets(ctx):
@@ -517,7 +518,7 @@ def backfill_processing_status_for_datasets(ctx):
                 logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
-            
+
 
 @cli.command()
 @click.pass_context

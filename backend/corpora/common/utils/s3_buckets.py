@@ -34,7 +34,8 @@ class Buckets(metaclass=Singleton):
     def cxg_bucket(self):
         if not self._cxg_bucket:
             self._cxg_bucket = self.resource.Bucket(
-                os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"))
+                os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
+            )
         return self._cxg_bucket
 
 
