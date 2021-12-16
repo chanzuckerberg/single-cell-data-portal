@@ -48,6 +48,15 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
 
 @dbconnect
+def get_dataset_assets(dataset_uuid: str):
+    db_session = g.db_session
+    # retrieve the dataset
+    dataset = Dataset.get(db_session, dataset_uuid)
+    assets = dataset.get_assets()
+    return make_response(jsonify(assets=assets))
+
+
+@dbconnect
 def get_status(dataset_uuid: str, user: str):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)

@@ -195,22 +195,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           ]
         }
       },
-      "TimeoutSeconds": 36000,
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "HandleErrors",
-          "ResultPath": "$.error"
-        }
-      ]
-    },
-    "HandleErrors": {
-      "Type": "Task",
-      "InputPath": "$",
-      "Resource": "${var.lambda_error_handler}",
-      "End": true
+      "TimeoutSeconds": 36000
     }
   }
 }

@@ -197,6 +197,15 @@ def create_artifact(
         raise e
 
 
+def replace_artifact(
+    file_name: str,
+    bucket_prefix: str,
+    artifact_bucket: str,
+):
+    logger.info(f"Uploading [{bucket_prefix}/{file_name}] to S3 bucket: [{artifact_bucket}].")
+    DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
+
+
 def create_artifacts(local_filename: str, dataset_id: str, artifact_bucket: str, can_convert_to_seurat: bool = False):
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info(f"Creating artifacts for dataset {dataset_id}...")
