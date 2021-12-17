@@ -1,0 +1,7 @@
+psycopg2-binary>=2.8.5
+SQLAlchemy>=1.3.17
+requests>=2.22.0
+connexion[swagger-ui]==2.7.0
+pyrsistent
+boto3
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability

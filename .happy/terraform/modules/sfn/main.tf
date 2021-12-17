@@ -151,41 +151,9 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "HandleSuccess": {
         "Type": "Task",
-        "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "End": true,
-        "Parameters": {
-          "JobDefinition": "${var.job_definition_arn}",
-          "JobName": "handle-success",
-          "JobQueue": "${var.job_queue_arn}",
-          "ContainerOverrides": {
-            "Environment": [
-              {
-                "Name": "DROPBOX_URL",
-                "Value.$": "$.url"
-              },
-              {
-                "Name": "DATASET_ID",
-                "Value.$": "$.dataset_uuid"
-              },
-              {
-                "Name": "STEP_NAME",
-                "Value": "handle-success"
-              }
-            ]
-          }
-        },
-        "ResultPath": null,
-        "TimeoutSeconds": 36000,
-        "Retry": [
-          {
-            "ErrorEquals": [
-              "States.TaskFailed"
-            ],
-            "IntervalSeconds": 1,
-            "BackoffRate": 2,
-            "MaxAttempts": 2
-          }
-        ]
+        "InputPath": "$",
+        "Resource": "${var.lambda_success_handler}",
+        "End": true
       },
       "HandleErrors": {
         "Type": "Task",
@@ -227,22 +195,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           ]
         }
       },
-      "TimeoutSeconds": 36000,
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "HandleErrors",
-          "ResultPath": "$.error"
-        }
-      ]
-    },
-    "HandleErrors": {
-      "Type": "Task",
-      "InputPath": "$",
-      "Resource": "${var.lambda_error_handler}",
-      "End": true
+      "TimeoutSeconds": 36000
     }
   }
 }
