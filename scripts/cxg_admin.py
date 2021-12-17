@@ -626,7 +626,8 @@ def update_curator_names(ctx, auth0_client_id, auth0_client_secret):
             collections = session.query(DbCollection).filter(DbCollection.owner == owner_id).all()
             for collection in collections:
                 collection.curator_name = owner_name
-                collection.data_submission_policy_version = "2.0"
+                if collection.visibility == CollectionVisibility.PUBLIC:
+                    collection.data_submission_policy_version = "2.0"
 
     access_token = get_auth0_access_token()
     unique_owners = get_owners_from_database()
