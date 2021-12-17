@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - staging
+      - prod
   pull_request:
     branches: "*"
 
@@ -46,7 +48,7 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   smoke-test:
     runs-on: ubuntu-20.04
@@ -71,7 +73,7 @@ jobs:
           sleep 30  # Give frontend some time to finish building
           make local-smoke-test
       - name: Push images
-        if: github.ref == 'refs/heads/main'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
           # Two requirements files is a temp workaround for python package conflicts
           pip install -r .happy/requirements.txt
@@ -87,7 +89,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -106,7 +108,7 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures processing
+          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success processing
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -114,13 +116,13 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   push-prod-images:
     needs:
       - push-image
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -144,6 +146,9 @@ jobs:
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
           docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
           docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
 
   unit-test:
     runs-on: ubuntu-20.04
@@ -173,7 +178,7 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   push-image:
     needs:
@@ -182,7 +187,7 @@ jobs:
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -209,10 +214,10 @@ jobs:
           mention: 'here'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     needs:
       - push-image
     runs-on: ubuntu-20.04
@@ -220,10 +225,17 @@ jobs:
       - name: Generate payload
         run: |
           echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            echo "DEPLOYMENT_STAGE=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DEPLOYMENT_STAGE=stage" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
+          fi
       - uses: avakar/create-deployment@v1
         with:
           auto_merge: false
-          environment: dev
+          environment: ${{ env.DEPLOYMENT_STAGE }}
           payload: ${{ env.payload }}
           required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
           # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so

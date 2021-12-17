@@ -8,6 +8,11 @@ variable job_queue_arn {
   description = "ARN of the batch job queue"
 }
 
+variable lambda_success_handler {
+  type        = string
+  description = "ARN for the Lambda success handler"
+}
+
 variable lambda_error_handler {
   type        = string
   description = "ARN for the Lambda error handler"
