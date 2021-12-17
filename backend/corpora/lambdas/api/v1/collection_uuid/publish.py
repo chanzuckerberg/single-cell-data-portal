@@ -15,7 +15,7 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
     :param collection:
     :return: True if duplicates detected, otherwise return false.
     """
-    etags = []
+    etags = set()
     for dataset in collection.datasets:
         if not dataset.tombstone:
             for artifact in dataset.artifacts:
@@ -27,7 +27,7 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
                     )
                 etag = metadata["ETag"]
                 if etag not in etags:
-                    etags.append(etag)
+                    etags.add(etag)
                 else:
                     return True
     return False
