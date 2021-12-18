@@ -389,14 +389,14 @@ class TestPublishRevision(BaseRevisionTest):
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-            response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
+            response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
@@ -556,7 +556,7 @@ class TestPublishRevision(BaseRevisionTest):
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body ))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
