@@ -320,7 +320,7 @@ def create_cxg_artifacts(ctx):
         for dataset in datasets:
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]
-                s3_uri = f"s3://{S3.cxg_bucket.name}/{object_key}/"
+                s3_uri = f"s3://{buckets.cxg_bucket.name}/{object_key}/"
                 click.echo(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
                     session,
