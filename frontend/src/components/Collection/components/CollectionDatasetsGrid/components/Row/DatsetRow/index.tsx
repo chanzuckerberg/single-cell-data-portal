@@ -1,4 +1,4 @@
-/* Copied from src/components/Collections/components/Grid/components/Row/DatasetRow and modified as an intermediate 
+/* Copied from src/components/Collections/components/Grid/components/Row/DatasetRow and modified as an intermediate
    upgrade to the collection datasets table while keeping the existing core datasets grid outside of the filter feature
    flag untouched. Once filter feature flag is removed, the existing core datasets grid can be deleted and replaced
    with this version.Ideally collection datasets table should be moved to react-table but requires changes to how
@@ -6,7 +6,7 @@
 import { Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { CancelledError, useQueryCache } from "react-query";
+import { CancelledError, useQueryClient } from "react-query";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
@@ -89,7 +89,7 @@ const DatasetRow: FC<Props> = ({
   revisionsEnabled,
   onUploadFile,
 }) => {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   const datasetStatusResult = useDatasetStatus(
     dataset.id,
@@ -140,7 +140,7 @@ const DatasetRow: FC<Props> = ({
     datasetId: dataset.id,
     isFailed,
     isLoading,
-    queryCache,
+    queryClient,
   });
 
   useUploadProgress({

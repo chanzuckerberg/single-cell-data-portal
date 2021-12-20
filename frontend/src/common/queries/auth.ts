@@ -18,8 +18,7 @@ export interface UserInfoResponse {
 }
 
 async function fetchUserInfo(
-  _: unknown,
-  { hasAuth }: { hasAuth: boolean }
+  hasAuth: boolean
 ): Promise<UserInfoResponse | null> {
   if (!hasAuth) return Promise.resolve(null);
 
@@ -37,7 +36,7 @@ async function fetchUserInfo(
 const AUTH_TOKEN_CACHE_TIME_MS = 8 * 60 * 60 * 1000;
 
 export function useUserInfo(hasAuth: boolean) {
-  return useQuery([USE_USER_INFO, { hasAuth }], fetchUserInfo, {
+  return useQuery([USE_USER_INFO, { hasAuth }], () => fetchUserInfo(hasAuth), {
     refetchOnMount: false,
     retry: false,
     staleTime: AUTH_TOKEN_CACHE_TIME_MS,

@@ -65,7 +65,7 @@ const Collection: FC = () => {
     ? VISIBILITY_TYPE.PRIVATE
     : VISIBILITY_TYPE.PUBLIC;
 
-  const [uploadLink] = useCollectionUploadLinks(id, visibility);
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id, visibility);
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -78,7 +78,10 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const [deleteMutation, { isLoading }] = useDeleteCollection(id, visibility);
+  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
+    id,
+    visibility
+  );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -168,13 +171,13 @@ const Collection: FC = () => {
 
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
-    await deleteMutation(
-      {
-        collectionID: id,
-        visibility: VISIBILITY_TYPE.PUBLIC,
-      },
-      { onSuccess: () => router.push(ROUTES.MY_COLLECTIONS) }
-    );
+
+    await deleteMutation({
+      collectionID: id,
+      visibility: VISIBILITY_TYPE.PUBLIC,
+    });
+
+    router.push(ROUTES.MY_COLLECTIONS);
   };
 
   return (
