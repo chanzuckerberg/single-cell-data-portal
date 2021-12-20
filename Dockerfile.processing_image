@@ -1,6 +1,6 @@
 ARG BASE_TAG=branch-main
 
-FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
+FROM ghcr.io/chanzuckerberg/corpora-upload-base:20211215
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 \
