@@ -1,5 +1,7 @@
 ARG BASE_TAG=branch-main
 
+# Note: versions after 20211215 will have a Seurat version which is incompatible with our code
+# Do not change this until the underlying issue is fixed
 FROM ghcr.io/chanzuckerberg/corpora-upload-base:20211215
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
