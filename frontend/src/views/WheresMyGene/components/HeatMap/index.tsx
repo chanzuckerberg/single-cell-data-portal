@@ -39,7 +39,7 @@ const COMMON_SERIES = {
   },
   legendHoverLink: false,
   name: "wmg",
-  type: "scatter",
+  type: "scatterGL",
 };
 
 const COMMON_AXIS_POINTER = {
