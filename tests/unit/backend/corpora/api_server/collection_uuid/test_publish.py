@@ -193,7 +193,7 @@ class TestPublish(BaseAuthAPITest):
 
         path = f"/dp/v1/collections/{collection.id}/publish"
         response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(202, response.status_code)
 
 
 class TestPublishCurators(BasicAuthAPITestCurator):
