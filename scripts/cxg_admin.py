@@ -557,7 +557,12 @@ def add_trailing_slash_to_explorer_urls(ctx):
 @cli.command()
 @click.argument("dataset_uuid")
 @click.pass_context
-def reprocess_seurat(ctx: Context, dataset_uuid: str):
+def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
+    """
+    Reconverts the specified dataset to Seurat format in place.
+    :param ctx: command context
+    :param dataset_uuid: UUID of dataset to reconvert to Seurat format
+    """
     import boto3
     from time import time
 
@@ -582,7 +587,8 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str):
         input=json.dumps(payload),
     )
 
-    print(
+    click.echo(
+        f"Step function executing: "
         f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/{response['executionArn']}"
     )
 
