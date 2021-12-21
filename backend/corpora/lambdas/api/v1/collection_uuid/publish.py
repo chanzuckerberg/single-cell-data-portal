@@ -19,7 +19,7 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
     for dataset in collection.datasets:
         if not dataset.tombstone:
             for artifact in dataset.artifacts:
-                if artifact.file_type == DatasetArtifactFileType.H5AD:
+                if artifact.filetype == DatasetArtifactFileType.H5AD:
                     _artifact = DatasetAsset(artifact)
                     metadata = _artifact.get_s3_metadata()
                     if not metadata:
