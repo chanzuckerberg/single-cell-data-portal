@@ -561,23 +561,29 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str):
     import boto3
     from time import time
 
-    client = boto3.client("stepfunctions")
+    deployment = ctx.obj["deployment"]
 
     click.confirm(
-        f"Are you sure you want to run this script? It will reprocess the Seurat artifact" f"for selected datasets.",
+        f"Are you sure you want to run this script? "
+        f"It will reconvert and replace the dataset {dataset_uuid} to Seurat in the {deployment} environment.",
         abort=True,
     )
 
-    # TODO: add these when running it.
-    # TODO: Figure out if we can get the stack name automatically
     aws_account_id = get_aws_account_id()
-    stack_name = None
+    deployment = ctx.obj["deployment"]
+    happy_stack_name = get_happy_stack_name(deployment)
+
     payload = {"dataset_uuid": dataset_uuid}
 
+    client = boto3.client("stepfunctions")
     response = client.start_execution(
-        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{stack_name}-seurat-sfn",
+        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-seurat-sfn",
         name=f"{dataset_uuid}-{int(time())}",
         input=json.dumps(payload),
+    )
+
+    print(
+        f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/{response['executionArn']}"
     )
 
 
@@ -586,6 +592,16 @@ def get_aws_account_id() -> str:
 
     sts = boto3.client("sts")
     return sts.get_caller_identity()["Account"]
+
+
+def get_happy_stack_name(deployment) -> str:
+    """
+    Returns the name of the Happy stack for the specified deployment
+    Note: This will only work with deployment={dev,stage,prod} and will not work with rdev!
+    :param deployment: dev, stage or prod
+    :return:
+    """
+    return f"{deployment}-{deployment}stack"
 
 
 def get_database_uri() -> str:
