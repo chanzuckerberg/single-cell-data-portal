@@ -3,10 +3,10 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 
 import click
 from click import Context
-from datetime import datetime
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -16,19 +16,14 @@ from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
-    ConversionStatus,
     DbCollection,
     DbDataset,
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetArtifact,
-    DbDatasetProcessingStatus,
     ProcessingStatus,
-    UploadStatus,
-    ValidationStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
-from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.utils.s3_buckets import cxg_bucket
@@ -574,8 +569,8 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str):
     )
 
     # TODO: add these when running it.
-    # TODO: Figure out if we can get the AWS account id and the stack name automatically
-    aws_account_id = None
+    # TODO: Figure out if we can get the stack name automatically
+    aws_account_id = get_aws_account_id()
     stack_name = None
     payload = {"dataset_uuid": dataset_uuid}
 
@@ -585,7 +580,12 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str):
         input=json.dumps(payload),
     )
 
-    print(response)
+
+def get_aws_account_id() -> str:
+    import boto3
+
+    sts = boto3.client("sts")
+    return sts.get_caller_identity()["Account"]
 
 
 def get_database_uri() -> str:
