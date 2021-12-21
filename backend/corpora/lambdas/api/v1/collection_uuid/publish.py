@@ -1,6 +1,6 @@
 from flask import make_response, g
 
-from .....common.corpora_orm import CollectionVisibility
+from .....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from .....common.entities import Collection, DatasetAsset
 from .....common.utils.exceptions import ConflictException
 
@@ -19,17 +19,18 @@ def check_for_duplicate_datasets(collection: Collection) -> bool:
     for dataset in collection.datasets:
         if not dataset.tombstone:
             for artifact in dataset.artifacts:
-                _artifact = DatasetAsset(artifact)
-                metadata = _artifact.get_s3_metadata()
-                if not metadata:
-                    raise ServerErrorHTTPException(
-                        "Failed to check datasets for duplications. Unable to find associated artifacts."
-                    )
-                etag = metadata["ETag"]
-                if etag not in etags:
-                    etags.add(etag)
-                else:
-                    return True
+                if artifact.file_type == DatasetArtifactFileType.H5AD:
+                    _artifact = DatasetAsset(artifact)
+                    metadata = _artifact.get_s3_metadata()
+                    if not metadata:
+                        raise ServerErrorHTTPException(
+                            "Failed to check datasets for duplications. Unable to find associated artifacts."
+                        )
+                    etag = metadata["ETag"]
+                    if etag not in etags:
+                        etags.add(etag)
+                    else:
+                        return True
     return False
 
 
