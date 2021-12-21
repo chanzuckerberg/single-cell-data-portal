@@ -208,7 +208,9 @@ class Collection(Entity):
             revision = Dataset(dataset)
             original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
             if original and public_collection.check_has_dataset(original):
-                has_dataset_changes = original.publish_revision(revision, now)
+                dataset_is_changed = original.publish_revision(revision, now)
+                if dataset_is_changed:
+                    has_dataset_changes = True
             else:
                 # The dataset is new
                 revision.publish_new(now)
