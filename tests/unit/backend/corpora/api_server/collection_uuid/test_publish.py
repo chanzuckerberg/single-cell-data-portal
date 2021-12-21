@@ -189,7 +189,7 @@ class TestPublish(BaseAuthAPITest):
             dataset = self.generate_dataset(
                 self.session, collection_id=collection.id, collection_visibility=collection.visibility
             )
-            self.generate_asset(self.session, dataset.id, file_type=DatasetArtifactFileType.CXG)
+            self.generate_asset(self.session, dataset.id, filetype=DatasetArtifactFileType.CXG)
 
         path = f"/dp/v1/collections/{collection.id}/publish"
         response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
