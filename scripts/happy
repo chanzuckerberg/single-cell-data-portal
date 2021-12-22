@@ -1173,7 +1173,6 @@ def push(ctx, images, tag, extra_tag, compose_env, stack_name):
     # container at run time.  (Note that images built on localhost via the `single-cell-infra/scripts/happy` script set
     # this similarly.)
     if stack_name:
-        # HACK: Set the happy env name at ,
         print(f"Setting happy_env (rdev stack name) to {stack_name}")
         builder_config["happy_env"] = stack_name
 
