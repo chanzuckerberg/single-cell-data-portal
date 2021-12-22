@@ -1,13 +1,20 @@
 import json
+import logging
 
 import os
 
+import requests
+
+from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.json import CustomJSONEncoder
 
+logger = logging.getLogger(__name__)
+
 
 def format_slack_message(dataset_id):
+    # TODO: pass this info in so that the Slack message formatter doesn't have to know about the db
     with db_session_manager() as session:
         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
         collection = dataset.collection
@@ -48,3 +55,11 @@ def format_slack_message(dataset_id):
         ]
     }
     return json.dumps(data, indent=2)
+
+
+def notify_slack_failure(dataset_id: str) -> None:
+    data = format_slack_message(dataset_id)
+    logger.info(data)
+
+    slack_webhook = CorporaConfig().slack_webhook
+    requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)

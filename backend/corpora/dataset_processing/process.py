@@ -119,10 +119,8 @@ from datetime import datetime
 from os.path import join
 
 import numpy
-import requests
 import scanpy
 
-from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
@@ -138,7 +136,6 @@ from backend.corpora.common.utils.s3_buckets import s3_client
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.dataset_processing.slack import format_slack_message
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -576,17 +573,7 @@ def main():
         )
         return_value = 1
 
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
     return return_value
-
-
-def notify_slack_failure(dataset_id):
-    data = format_slack_message(dataset_id)
-    logger.info(data)
-    if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        slack_webhook = CorporaConfig().slack_webhook
-        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 if __name__ == "__main__":
