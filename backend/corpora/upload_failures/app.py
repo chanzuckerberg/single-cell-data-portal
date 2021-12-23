@@ -19,5 +19,4 @@ def handle_failure(event, context):
     delete_many_from_s3(cellxgene_bucket, object_key)
     update_dataset_processing_status_to_failed(dataset_uuid, event["error"]["Cause"])
 
-    if deployment_stage == "prod":
-        notify_slack_failure(dataset_uuid)
+    notify_slack_failure(dataset_uuid)

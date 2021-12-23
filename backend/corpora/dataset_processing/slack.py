@@ -61,5 +61,8 @@ def notify_slack_failure(dataset_id: str) -> None:
     data = format_slack_message(dataset_id)
     logger.info(data)
 
+    # Slack notifications in non-prod environments (rdev, dev, staging) can be silenced by removing the
+    # slack_webhook URL from corpora/backend/{env}/config in AWS Secrets Manager
     slack_webhook = CorporaConfig().slack_webhook
-    requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
+    if slack_webhook:
+        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
