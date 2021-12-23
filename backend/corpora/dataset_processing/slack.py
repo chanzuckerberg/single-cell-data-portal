@@ -65,4 +65,7 @@ def notify_slack_failure(dataset_id: str) -> None:
     # slack_webhook URL from corpora/backend/{env}/config in AWS Secrets Manager
     slack_webhook = CorporaConfig().slack_webhook
     if slack_webhook:
-        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
+        response = requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
+
+        if not response:
+            logger.error(f"Failed to notify ingestion failure via Slack webhook! Response: {response.text}")
