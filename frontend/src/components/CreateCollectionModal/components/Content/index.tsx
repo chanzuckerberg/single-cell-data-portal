@@ -252,6 +252,8 @@ const Content: FC<Props> = (props) => {
   async function submitEditCollection() {
     const payload = createPayload();
 
+    delete payload?.curator_name; // Do not update curator name when revising a collection
+
     if (!payload) return;
 
     setIsLoading(true);

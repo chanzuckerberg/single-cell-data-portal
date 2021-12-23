@@ -1,12 +1,37 @@
 from flask import make_response, g
 
-from .....common.corpora_orm import CollectionVisibility
-from .....common.entities import Collection
+from .....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
+from .....common.entities import Collection, DatasetAsset
 from .....common.utils.exceptions import ConflictException
 
 from .....api_server.db import dbconnect
-from .....common.utils.exceptions import ForbiddenHTTPException
+from .....common.utils.exceptions import ForbiddenHTTPException, ServerErrorHTTPException
 from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+
+
+def check_for_duplicate_datasets(collection: Collection) -> bool:
+    """
+    Check if duplicate datasets are found. Return true on the first duplicate match.
+    :param collection:
+    :return: True if duplicates detected, otherwise return false.
+    """
+    etags = set()
+    for dataset in collection.datasets:
+        if not dataset.tombstone:
+            for artifact in dataset.artifacts:
+                if artifact.filetype == DatasetArtifactFileType.H5AD:
+                    _artifact = DatasetAsset(artifact)
+                    metadata = _artifact.get_s3_metadata()
+                    if not metadata:
+                        raise ServerErrorHTTPException(
+                            "Failed to check datasets for duplications. Unable to find associated artifacts."
+                        )
+                    etag = metadata["ETag"]
+                    if etag not in etags:
+                        etags.add(etag)
+                    else:
+                        return True
+    return False
 
 
 @dbconnect
@@ -22,6 +47,8 @@ def post(collection_uuid: str, body: object, user: str):
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
         raise ConflictException(detail="The collection must have a least one dataset.")
+    if check_for_duplicate_datasets(collection):
+        raise ConflictException(detail="The collection cannot have duplicate datasets.")
 
     data_submission_policy_version = body["data_submission_policy_version"]
     collection.publish(data_submission_policy_version=data_submission_policy_version)
