@@ -566,45 +566,24 @@ auth0_apis = {
 
 
 @cli.command()
-@click.argument("auth0_client_id")
-@click.argument("auth0_client_secret")
+@click.argument("access_token")
 @click.pass_context
-def update_curator_names(ctx, auth0_client_id, auth0_client_secret):
+def update_curator_names(ctx, access_token):
     """Add the curator name to all collection based on the owner of the collection.
 
-    AUTH0_CLIENT_ID: Retrieved from Auth0 console in the application section under Client ID. The application must be
+    ACCESS_TOKEN: Retrieved from Auth0 console or generated using the Client ID and Client Secret. The application must be
     authorized to access to the Auth0 Management API with the following permissions read:users read:user_idp_tokens.
-
-    AUTH0_CLIENT_SECRET: Retrieved from Auth0 console in the application section under Client Secret.
     """
 
     auth0_api = auth0_apis[ctx.obj["deployment"]]
 
-    def get_auth0_access_token():
-        logger.info("Retrieving access token from Auth0.")
-        payload = json.dumps(
-            {
-                "client_id": auth0_client_id,
-                "client_secret": auth0_client_secret,
-                "audience": f"{auth0_api}/api/v2/",
-                "grant_type": "client_credentials",
-            }
-        )
-        headers = {"content-type": "application/json"}
-        response = requests.post(f"{auth0_api}/oauth/token", headers=headers, data=payload)
-        access_token = response.json()["access_token"]
-        return access_token
-
-    def get_owners_from_database():
-        logger.info("Gathering owners from collections.")
-        owners = []
+    def get_collections_without_curator():
+        logger.info("Gathering collections with no curator.")
         with db_session_manager() as session:
-            for collection in Collection.list(session):
-                owner = collection.owner
-                if owner:
-                    owners.append(collection.owner)
-        unique_owners = set(owners)
-        return unique_owners
+            from sqlalchemy import null
+            filter = (Collection.table.curator_name == null()) | (Collection.table.curator_name == '')
+            owners = [result.owner for result in session.query(Collection.table.owner).filter(filter).distinct().all()]
+        return owners
 
     def get_owner_info_from_auth0(owner, access_token):
         logger.info(f"Retrieving curator info for owner:{owner} from Auth0.")
@@ -629,16 +608,18 @@ def update_curator_names(ctx, auth0_client_id, auth0_client_secret):
                 if collection.visibility == CollectionVisibility.PUBLIC:
                     collection.data_submission_policy_version = "2.0"
 
-    access_token = get_auth0_access_token()
-    unique_owners = get_owners_from_database()
+    # access_token = get_auth0_access_token()
+    unique_owners = get_collections_without_curator()
     owners = dict()
+    bad_owners = []
     for owner in unique_owners:
         try:
             owner_name = get_owner_info_from_auth0(owner, access_token)
             if owner_name:
                 owners[owner] = owner_name
         except HTTPError as e:
-            logger.exception(f"Failed to fetch Auth0 info for owner:{owner}")
+            bad_owners.append(owner)
+            logger.error(f"Failed to fetch Auth0 info for owner:{owner}")
     for owner_id, owner_name in owners.items():
         update_database_curator_name(owner_id, owner_name)
 
