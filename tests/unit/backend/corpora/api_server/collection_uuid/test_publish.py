@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from mock import Mock, patch
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType, DatasetArtifactFileType
+from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
@@ -179,21 +179,6 @@ class TestPublish(BaseAuthAPITest):
         path = f"/dp/v1/collections/{collection.id}/publish"
         response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
         self.assertEqual(409, response.status_code)
-
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
-    def test__publish_with_Duplicate_dataset__200(self, mocked):
-        """Only H5AD files are checked."""
-        mocked.return_value = {"ETag": "ABCDEF"}
-        collection = self.generate_collection(self.session)
-        for i in range(2):
-            dataset = self.generate_dataset(
-                self.session, collection_id=collection.id, collection_visibility=collection.visibility
-            )
-            self.generate_asset(self.session, dataset.id, filetype=DatasetArtifactFileType.CXG)
-
-        path = f"/dp/v1/collections/{collection.id}/publish"
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
-        self.assertEqual(202, response.status_code)
 
 
 class TestPublishCurators(BasicAuthAPITestCurator):
