@@ -581,8 +581,11 @@ def update_curator_names(ctx, access_token):
         logger.info("Gathering collections with no curator.")
         with db_session_manager() as session:
             from sqlalchemy import null
-            _filter = (Collection.table.curator_name == null()) | (Collection.table.curator_name == '')
-            _owners = [result.owner for result in session.query(Collection.table.owner).filter(_filter).distinct().all()]
+
+            _filter = (Collection.table.curator_name == null()) | (Collection.table.curator_name == "")
+            _owners = [
+                result.owner for result in session.query(Collection.table.owner).filter(_filter).distinct().all()
+            ]
         return _owners
 
     def get_owner_info_from_auth0(owner, access_token):
@@ -597,7 +600,7 @@ def update_curator_names(ctx, access_token):
             wait = time.time() - response.headers["X-RateLimit-Reset"]
             time.sleep(wait)
         body = response.json()
-        name = f"{body.get('given_name', '')} {body.get('family_name', '')}".strip() or body.get('name', '')
+        name = f"{body.get('given_name', '')} {body.get('family_name', '')}".strip() or body.get("name", "")
         return name
 
     def update_database_curator_name(owner_id, owner_name):
