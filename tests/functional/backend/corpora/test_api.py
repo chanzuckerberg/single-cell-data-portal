@@ -2,6 +2,7 @@ import json
 import os
 import time
 import unittest
+
 import requests
 from requests import HTTPError
 
@@ -60,6 +61,10 @@ class TestApi(BaseFunctionalTestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         collection_uuid = data["collection_uuid"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+        self.addCleanup(
+            requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}?visibility=PRIVATE", headers=headers
+        )
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_uuid", data)
 
@@ -227,9 +232,9 @@ class TestApi(BaseFunctionalTestCase):
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_uuid}")
                     if cxg_status == rds_status == h5ad_status == "UPLOADED":
                         keep_trying = False
-                if time.time() >= timer + 300:
+                if time.time() >= timer + 600:
                     raise TimeoutError(
-                        f"Dataset upload or conversion timed out after 5 min. Check logs for dataset: {dataset_uuid}"
+                        f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_uuid}"
                     )
                 time.sleep(10)
 
