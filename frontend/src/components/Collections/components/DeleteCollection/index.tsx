@@ -22,14 +22,15 @@ const DeleteCollection: FC<Props> = ({
   Button = RawButton,
   isRevision,
 }) => {
-  const [deleteMutation, { isLoading }] = useDeleteCollection(id);
+  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(id);
   const router = useRouter();
 
   const handleDelete = async () => {
-    await deleteMutation(
-      { collectionID: id },
-      { onSuccess: () => router.push(ROUTES.MY_COLLECTIONS) }
-    );
+    // (thuang): `deleteMutation` should have supported `onSuccess` callback,
+    // but it doesn't seem to work. Thus we await the promise then redirect!
+    await deleteMutation({ collectionID: id });
+
+    router.push(ROUTES.MY_COLLECTIONS);
   };
 
   const [isOpen, setIsOpen] = useState(false);
