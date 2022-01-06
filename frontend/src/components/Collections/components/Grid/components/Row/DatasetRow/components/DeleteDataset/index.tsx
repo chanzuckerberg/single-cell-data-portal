@@ -24,7 +24,7 @@ const DeleteDataset: FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [deleteDataset] = useDeleteDataset(collectionId);
+  const { mutateAsync: deleteDataset } = useDeleteDataset(collectionId);
 
   const toggleAlert = () => {
     setIsOpen(!isOpen);

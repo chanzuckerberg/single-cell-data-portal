@@ -25,6 +25,14 @@ def clone(model: Base, primary_key: dict = None, **kwargs) -> Base:
 
 
 def processing_status_updater(session, uuid: str, updates: dict):
+    """
+    Updates the DbDatasetProcessingStatus object with the specified statuses
+    Note: The uuid parameter is the ID of the dataset_processing_status row, _NOT_ the dataset!
+    :param session: active SQLAlchemy session
+    :param uuid: UUID of the dataset_processing_status to update
+    :param updates: dictionary of statuses to update
+    :return: None
+    """
     session.query(DbDatasetProcessingStatus).filter(DbDatasetProcessingStatus.id == uuid).update(updates)
     session.commit()
     logger.debug("updating status", updates)

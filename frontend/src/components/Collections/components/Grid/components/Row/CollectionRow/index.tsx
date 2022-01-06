@@ -58,7 +58,7 @@ const CollectionRow: FC<Props> = (props) => {
     router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
   };
 
-  const [mutate, { isLoading }] = useCreateRevision(navigateToRevision);
+  const { mutate, isLoading } = useCreateRevision(navigateToRevision);
 
   if (!collection || isTombstonedCollection(collection)) return null;
 

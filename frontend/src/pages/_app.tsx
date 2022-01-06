@@ -2,8 +2,8 @@ import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
 import { FC } from "react";
-import { QueryCache, ReactQueryCacheProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query-devtools";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
 import { checkFeatureFlags } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
@@ -13,7 +13,7 @@ import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
 
-const queryCache = new QueryCache();
+const queryClient = new QueryClient();
 
 checkFeatureFlags();
 
@@ -30,12 +30,12 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = (isFilterEnabled && Component.Layout) || DefaultLayout;
   return (
     <>
-      <ReactQueryCacheProvider queryCache={queryCache}>
+      <QueryClientProvider client={queryClient}>
         <Layout>
           <Component {...pageProps} />
         </Layout>
         <ReactQueryDevtools />
-      </ReactQueryCacheProvider>
+      </QueryClientProvider>
       <Script
         data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
         src="https://plausible.io/js/plausible.js"

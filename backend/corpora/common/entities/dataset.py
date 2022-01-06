@@ -125,6 +125,12 @@ class Dataset(Entity):
         asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
         return None if not asset else DatasetAsset(asset[0])
 
+    def get_assets(self):
+        """
+        Retrieve all the assets for the dataset
+        """
+        return self.artifacts
+
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
         # If schema_version is 1.1.0, convert sex to the new API format

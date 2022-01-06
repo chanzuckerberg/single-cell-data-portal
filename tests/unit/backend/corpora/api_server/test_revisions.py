@@ -1,4 +1,6 @@
 import json
+import random
+import string
 import typing
 from datetime import datetime
 from mock import Mock, patch
@@ -354,6 +356,10 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
 
+def get_random_etag(*args, **kwargs):
+    return {"ETag": "".join(random.choices(string.hexdigits, k=8))}
+
+
 class TestPublishRevision(BaseRevisionTest):
     """Test case for publishing a revision."""
 
@@ -361,8 +367,10 @@ class TestPublishRevision(BaseRevisionTest):
         super().setUp()
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
+        self.publish_body = {"data_submission_policy_version": "1.0"}
 
-    def publish_collection(self, collection_id: str) -> dict:
+    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object", wraps=get_random_etag)
+    def publish_collection(self, collection_id: str, mocked_func) -> dict:
         """
         Verify publish a collection under revision.
         :return: Jsonified response of GET collection/<collection_id>.
@@ -378,18 +386,17 @@ class TestPublishRevision(BaseRevisionTest):
             self.assertIsNone(dataset.revised_at)
 
         self.session.expire_all()
-        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-            response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+            response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
@@ -450,6 +457,19 @@ class TestPublishRevision(BaseRevisionTest):
             else:
                 self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
+
+    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
+    def test__publish_revision_with_Duplicate_dataset__409(self, mocked):
+        """The publishing of a revised collection is blocked when duplicate datasets are detected."""
+        mocked.return_value = {"ETag": "ABCDEF"}
+        for i in range(2):
+            self.generate_dataset_with_s3_resources(
+                self.session, collection_id=self.rev_collection.id, collection_visibility=CollectionVisibility.PRIVATE
+            ).id
+
+        path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
+        self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
         """Publish a revision with delete datasets."""
@@ -535,9 +555,8 @@ class TestPublishRevision(BaseRevisionTest):
         """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
-            body = {"data_submission_policy_version": "1.0"}
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):

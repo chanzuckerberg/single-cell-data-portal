@@ -1,7 +1,7 @@
 import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { useEffect } from "react";
-import { QueryCache } from "react-query";
+import { QueryClient } from "react-query";
 import {
   CONVERSION_STATUS,
   Dataset,
@@ -191,18 +191,18 @@ export function useCancelDatasetStatusQuery({
   datasetId,
   isFailed,
   isLoading,
-  queryCache,
+  queryClient,
 }: {
   datasetId: string;
   isFailed: boolean;
   isLoading: boolean;
-  queryCache: QueryCache;
+  queryClient: QueryClient;
 }): void {
   useEffect(() => {
     if (isFailed || !isLoading) {
-      queryCache.cancelQueries([USE_DATASET_STATUS, datasetId]);
+      queryClient.cancelQueries([USE_DATASET_STATUS, datasetId]);
     }
-  }, [datasetId, isFailed, isLoading, queryCache]);
+  }, [datasetId, isFailed, isLoading, queryClient]);
 }
 
 export function useUploadProgress({

@@ -1,4 +1,9 @@
-import { QueryResult, useMutation, useQuery, useQueryCache } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
 import {
@@ -17,7 +22,6 @@ export const USE_DATASET_STATUS = {
 };
 
 async function fetchDatasetStatus(
-  _: unknown,
   dataset_uuid: string
 ): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_uuid });
@@ -27,10 +31,13 @@ async function fetchDatasetStatus(
 
 const REFETCH_INTERVAL_MS = 10 * 1000;
 
-export function useDatasetStatus(dataset_uuid: string, shouldFetch: boolean) {
+export function useDatasetStatus(
+  dataset_uuid: string,
+  shouldFetch: boolean
+): UseQueryResult<DatasetUploadStatus> {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_uuid],
-    fetchDatasetStatus,
+    () => fetchDatasetStatus(dataset_uuid),
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
 }
@@ -56,19 +63,19 @@ export function useDeleteDataset(collection_uuid = "") {
     throw new Error("No collection id given");
   }
 
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(deleteDataset, {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryCache.invalidateQueries([
+      queryClient.invalidateQueries([
         USE_COLLECTION,
         collection_uuid,
         VISIBILITY_TYPE.PRIVATE,
       ]);
 
-      queryCache.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
+      queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
 
-      queryCache.setQueryData(
+      queryClient.setQueryData(
         [USE_DATASET_STATUS, uploadStatus.dataset_id],
         uploadStatus
       );
@@ -93,7 +100,7 @@ export const USE_DATASETS_ASSETS = {
 export function useFetchDatasetAssets(
   datasetId: string,
   enabled: boolean
-): QueryResult<DatasetAsset[]> {
+): UseQueryResult<DatasetAsset[]> {
   return useQuery<DatasetAsset[]>(
     [USE_DATASETS_ASSETS, datasetId],
     () => fetchDatasetAssets(datasetId),
