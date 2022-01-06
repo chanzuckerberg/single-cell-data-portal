@@ -8,7 +8,6 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     ValidationStatus,
     XApproximateDistribution,
-    DatasetArtifactType,
 )
 
 
@@ -70,15 +69,6 @@ class BogusDatasetParams:
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
-
-        bogus_data.update(**kwargs)
-        return bogus_data
-
-
-class BogusDatasetArtifactParams:
-    @classmethod
-    def get(cls, **kwargs):
-        bogus_data = dict(filename="some_cells", type=DatasetArtifactType.ORIGINAL, s3_uri="dropbox/url/for/some_cells")
 
         bogus_data.update(**kwargs)
         return bogus_data
