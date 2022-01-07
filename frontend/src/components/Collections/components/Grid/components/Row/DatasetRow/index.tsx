@@ -1,7 +1,7 @@
 import { AnchorButton, Classes, Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { CancelledError, useQueryCache } from "react-query";
+import { CancelledError, useQueryClient } from "react-query";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
@@ -86,7 +86,7 @@ const DatasetRow: FC<Props> = ({
   revisionsEnabled,
   onUploadFile,
 }) => {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   const datasetStatusResult = useDatasetStatus(
     dataset.id,
@@ -139,7 +139,7 @@ const DatasetRow: FC<Props> = ({
     datasetId: dataset.id,
     isFailed,
     isLoading,
-    queryCache,
+    queryClient,
   });
 
   useUploadProgress({

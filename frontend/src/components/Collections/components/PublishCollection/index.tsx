@@ -26,7 +26,7 @@ const PublishCollection: FC<Props> = ({
   isRevision,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [publish, { isSuccess, isLoading }] = usePublishCollection();
+  const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
   const router = useRouter();
 
   if (isSuccess) {
