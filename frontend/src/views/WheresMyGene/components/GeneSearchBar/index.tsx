@@ -8,9 +8,8 @@ import { forwardRef, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Gene } from "../../common/types";
-import GENES from "../../mocks/lung_tissue_genes.json";
 import GeneSets from "./components/Genesets";
-import { Container } from "./style";
+import { Container, MultiSelectWrapper } from "./style";
 
 const OFFSET = { id: "offset", name: "" };
 
@@ -164,8 +163,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   useEffect(() => {
     if (Number.isNaN(Number(input))) return;
 
-    setSelectedGenes([OFFSET, ...GENES.slice(0, Number(input))]);
-  }, [input]);
+    setSelectedGenes([OFFSET, ...genes.slice(0, Number(input))]);
+  }, [input, genes]);
 
   return (
     <Container>
@@ -177,17 +176,19 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       <label htmlFor="first-n-genes">Select first N genes</label>
       <br />
       <input id="first-n-genes" onChange={handleInputChange} value={input} />
-      <MultiSelect
-        itemPredicate={itemPredicate}
-        onItemSelect={handleItemSelect}
-        onRemove={handleItemRemove}
-        items={genes}
-        itemRenderer={renderItem}
-        tagRenderer={TagRenderer}
-        itemsEqual={areGenesEqual}
-        selectedItems={selectedGenes}
-        itemListRenderer={itemListRenderer}
-      />
+      <MultiSelectWrapper>
+        <MultiSelect
+          itemPredicate={itemPredicate}
+          onItemSelect={handleItemSelect}
+          onRemove={handleItemRemove}
+          items={genes}
+          itemRenderer={renderItem}
+          tagRenderer={TagRenderer}
+          itemsEqual={areGenesEqual}
+          selectedItems={selectedGenes}
+          itemListRenderer={itemListRenderer}
+        />
+      </MultiSelectWrapper>
     </Container>
   );
 

@@ -41,7 +41,7 @@ const COMMON_AXIS_POINTER = {
     },
   ],
   show: true,
-  // triggerOn: "click",
+  triggerOn: "click",
   triggerTooltip: false,
 };
 
@@ -138,6 +138,8 @@ export default function HeatMap({
       hoverLayerThreshold: 1,
       large: true,
       largeThreshold: 1,
+      progressive: 100,
+      progressiveThreshold: 500,
     };
 
     chart.setOption({

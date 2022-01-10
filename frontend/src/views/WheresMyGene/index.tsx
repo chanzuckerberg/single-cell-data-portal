@@ -53,9 +53,9 @@ const WheresMyGene = (): JSX.Element => {
       <Wrapper>
         {/* <TreeTable columns={columns} data={data} /> */}
 
-        <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
-
         <GeneSearchBar onGenesChange={setGenes} />
+
+        <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
 
         {genes.map((gene) => {
           const { name } = gene;
