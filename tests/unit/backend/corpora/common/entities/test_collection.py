@@ -67,7 +67,7 @@ class TestCollection(DataPortalTestCase):
         key = (self.uuid, self.visibility)
         collection = Collection.get(self.session, key)
         normalized_doi = collection.get_normalized_doi()
-        # The mocked DOI for the test collection is http://test_doi_url.place, 
+        # The mocked DOI for the test collection is http://test_doi_url.place,
         # so the normalized DOI is an empty string
         self.assertEqual(normalized_doi, "")
 
