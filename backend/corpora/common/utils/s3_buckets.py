@@ -2,6 +2,7 @@ import os
 
 import boto3
 
+
 class _Buckets:
     _portal_resource = None
 

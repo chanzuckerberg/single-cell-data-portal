@@ -68,7 +68,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             s3.create_bucket(
                 Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-        except self.s3_resource.meta.portal_client.exceptions.BucketAlreadyExists:
+        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
         return s3
 

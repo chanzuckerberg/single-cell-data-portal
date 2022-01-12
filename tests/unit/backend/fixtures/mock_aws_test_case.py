@@ -37,7 +37,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
         try:
             self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
-        except self.s3_resource.meta.portal_client.exceptions.BucketAlreadyExists:
+        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
 
         # Cellxgene Bucket
@@ -48,7 +48,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             self.cellxgene_bucket.create(
                 CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-        except self.s3_resource.meta.portal_client.exceptions.BucketAlreadyExists:
+        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
 
     def tearDown(self):
