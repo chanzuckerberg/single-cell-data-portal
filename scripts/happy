@@ -261,7 +261,7 @@ class Stack:
 
         self.workspace.run_config_version(config_version_id)
         if wait:
-            self.workspace.wait()
+            return self.workspace.wait()
         return True
 
     def destroy(self):
