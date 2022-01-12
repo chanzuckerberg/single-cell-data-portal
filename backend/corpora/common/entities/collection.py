@@ -28,6 +28,7 @@ class Collection(Entity):
         contact_email: str = "",
         links: list = None,
         data_submission_policy_version: str = "",
+        publisher_metadata: dict = None,
         **kwargs,
     ) -> "Collection":
         """
@@ -46,6 +47,7 @@ class Collection(Entity):
             contact_name=contact_name,
             contact_email=contact_email,
             data_submission_policy_version=data_submission_policy_version,
+            publisher_metadata=publisher_metadata,
             **kwargs,
         )
 

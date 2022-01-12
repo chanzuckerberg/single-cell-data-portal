@@ -121,6 +121,34 @@ class TestCollection(DataPortalTestCase):
             # so we can't do an exact match.
             self.assertTrue(set(expected_ids).issubset(actual_ids))
 
+    def test__get_collection_publisher_metadata___ok(self):
+
+        expected_metadata = {
+            "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+            "publication_year": 2022,
+            "publication_month": 1,
+            "journal": "Nature",
+        }
+
+        test_collection = Collection.create(
+            self.session, 
+            publisher_metadata=expected_metadata, 
+            **BogusCollectionParams.get(visibility=CollectionVisibility.PUBLIC.name)
+        )
+        collection = Collection.get_collection(self.session, test_collection.id)
+        self.assertIsNotNone(collection)
+        actual_metadata = collection.publisher_metadata
+        self.assertIsNotNone(actual_metadata)
+        self.assertDictEqual(expected_metadata, actual_metadata)
+
+        # Make sure that the author ordering is preserved
+        authors = actual_metadata["authors"]
+        self.assertEqual(2, len(authors))
+        self.assertEqual("John", authors[0]["given"])
+        self.assertEqual("Jane", authors[0]["given"])
+
+        
+
     def test__list_collections_in_time_range___ok(self):
         """Public collections are returned"""
         from_date = 10010

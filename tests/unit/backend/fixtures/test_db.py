@@ -119,19 +119,6 @@ class TestDatabase:
             data_submission_policy_version="0",
         )
         self.session.add(collection)
-        metadata = {
-            
-        }
-        collection = DbCollection(
-            id="test_collection_id_with_metadata",
-            visibility=CollectionVisibility.PUBLIC.name,
-            owner="test_user_id",
-            name="test_collection_name",
-            description="test_description",
-            data_submission_policy_version="0",
-            publisher_metadata=metadata,
-        )
-        self.session.add(collection)
         self.session.commit()
 
     def _create_test_geneset(self):
