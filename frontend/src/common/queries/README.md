@@ -22,7 +22,7 @@ The benefits of this arrangement include:
    when the window refocuses, internet reconnects, etc..
 
 1. Most importantly, React Query provides a really nice developer experience
-   (also has [React Query Devtools](https://github.com/tannerlinsley/react-query-devtools))
+   (also has [React Query Devtools](https://react-query.tanstack.com/devtools))
    and reduces even more code than what Redux Toolkit has already achieved
    compared to vanilla Redux
 
@@ -60,9 +60,9 @@ The benefits of this arrangement include:
    code to achieve that:
 
    ```ts
-   import { useMutation, useQueryCache } from "react-query";
+   import { useMutation, useQueryClient } from "react-query";
 
-   const queryCache = useQueryCache();
+   const queryClient = useQueryClient();
 
    const USE_CREATE_COLLECTION = {
      entities: [ENTITIES.COLLECTION],
@@ -76,7 +76,7 @@ The benefits of this arrangement include:
    // `ENTITIES.COLLECTION` in its query key's `entities` array
    const [mutate] = useMutation(createCollection, {
      onSuccess: () => {
-       queryCache.invalidateQueries((query) => {
+       queryClient.invalidateQueries((query) => {
          const key = query.queryKey[0];
 
          return hasIntersection(key.entities, USE_CREATE_COLLECTION.entities);

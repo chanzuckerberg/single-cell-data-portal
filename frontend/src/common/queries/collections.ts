@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryCache } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
@@ -62,7 +67,7 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
   return collectionsMap;
 }
 
-export function useCollections() {
+export function useCollections(): UseQueryResult<CollectionResponsesMap> {
   return useQuery([USE_COLLECTIONS], fetchCollections);
 }
 
@@ -92,7 +97,6 @@ export interface TombstonedCollection {
 
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
-    _: unknown,
     id: string,
     visibility: VISIBILITY_TYPE
   ): Promise<Collection | TombstonedCollection | null> {
@@ -153,12 +157,16 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
 export function useCollection({
   id = "",
   visibility = VISIBILITY_TYPE.PUBLIC,
-}) {
+}: {
+  id?: string;
+  visibility: VISIBILITY_TYPE;
+}): UseQueryResult<Collection | TombstonedCollection | null> {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
+
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, visibility, collections],
-    queryFn,
+    () => queryFn(id, visibility),
     { enabled: !!collections }
   );
 }
@@ -182,16 +190,18 @@ export async function createCollection(payload: string): Promise<string> {
 }
 
 export function useCreateCollection() {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(createCollection, {
     onSuccess: () => {
-      queryCache.invalidateQueries(USE_COLLECTIONS);
+      queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
   });
 }
 
-export const formDataToObject = function (formData: FormData) {
+export function formDataToObject(formData: FormData): {
+  [key: string]: unknown;
+} {
   const payload: { [key: string]: unknown } = {};
 
   formData.forEach((value, key: string) => {
@@ -201,7 +211,7 @@ export const formDataToObject = function (formData: FormData) {
   });
 
   return payload;
-};
+}
 
 export type CollectionUploadLinks = {
   collectionId: string;
@@ -236,7 +246,8 @@ export function useCollectionUploadLinks(
   id: string,
   visibility: VISIBILITY_TYPE
 ) {
-  const queryCache = useQueryCache();
+  const queryCache = useQueryClient();
+
   return useMutation(collectionUploadLinks, {
     onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
@@ -267,20 +278,20 @@ export function useDeleteCollection(
   id = "",
   visibility = VISIBILITY_TYPE.PRIVATE
 ) {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(deleteCollection, {
     onError: (
       _,
       __,
-      context: { previousCollections: CollectionResponsesMap }
+      context: { previousCollections: CollectionResponsesMap } | undefined
     ) => {
-      queryCache.setQueryData([USE_COLLECTIONS], context.previousCollections);
+      queryClient.setQueryData([USE_COLLECTIONS], context?.previousCollections);
     },
     onMutate: async () => {
-      await queryCache.cancelQueries([USE_COLLECTIONS]);
+      await queryClient.cancelQueries([USE_COLLECTIONS]);
 
-      const previousCollections = queryCache.getQueryData([
+      const previousCollections = queryClient.getQueryData([
         USE_COLLECTIONS,
       ]) as CollectionResponsesMap;
 
@@ -297,14 +308,14 @@ export function useDeleteCollection(
         collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
         if (collectionsWithID) newCollections.set(id, collectionsWithID);
       }
-      queryCache.setQueryData([USE_COLLECTIONS], newCollections);
+      queryClient.setQueryData([USE_COLLECTIONS], newCollections);
 
       return { previousCollections };
     },
     onSuccess: () => {
       return Promise.all([
-        queryCache.invalidateQueries([USE_COLLECTIONS]),
-        queryCache.removeQueries([USE_COLLECTION, id, visibility], {
+        queryClient.invalidateQueries([USE_COLLECTIONS]),
+        queryClient.removeQueries([USE_COLLECTION, id, visibility], {
           exact: false,
         }),
       ]);
@@ -323,8 +334,8 @@ async function publishCollection({ id, payload }: PublishCollection) {
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
-    method: "POST",
     body: payload,
+    method: "POST",
   });
 
   if (!response.ok) {
@@ -333,13 +344,13 @@ async function publishCollection({ id, payload }: PublishCollection) {
 }
 
 export function usePublishCollection() {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(publishCollection, {
     onSuccess: () => {
       // (thuang): We don't need to invalidate `[USE_COLLECTION, id, visibility]`
       // because `visibility` has changed from PRIVATE to PUBLIC
-      queryCache.invalidateQueries([USE_COLLECTIONS]);
+      queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
   });
 }
@@ -352,6 +363,7 @@ const editCollection = async function ({
   payload: string;
 }): Promise<Collection> {
   idError(id);
+
   if (!payload) {
     throw Error("No payload given");
   }
@@ -368,11 +380,12 @@ const editCollection = async function ({
   const result = await response.json();
 
   if (!response.ok) throw result;
+
   return result;
 };
 
 export function useEditCollection(collectionID?: Collection["id"]) {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   const { data: collections } = useCollections();
 
@@ -388,7 +401,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
 
   return useMutation(editCollection, {
     onSuccess: (newCollection) => {
-      return queryCache.setQueryData(
+      queryClient.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
           let revision_diff;
@@ -427,12 +440,12 @@ const createRevision = async function (id: string) {
 };
 
 export function useCreateRevision(callback: () => void) {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(createRevision, {
     onSuccess: async (collection: Collection) => {
-      await queryCache.invalidateQueries([USE_COLLECTIONS]);
-      await queryCache.invalidateQueries([USE_COLLECTION, collection.id]);
+      await queryClient.invalidateQueries([USE_COLLECTIONS]);
+      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
       callback();
     },
   });
@@ -470,11 +483,11 @@ const reuploadDataset = async function ({
 };
 
 export function useReuploadDataset(collectionId: string) {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
 
   return useMutation(reuploadDataset, {
     onSuccess: () => {
-      queryCache.invalidateQueries([
+      queryClient.invalidateQueries([
         USE_COLLECTION,
         collectionId,
         VISIBILITY_TYPE.PRIVATE,
