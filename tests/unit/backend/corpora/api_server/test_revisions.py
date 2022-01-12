@@ -6,7 +6,7 @@ from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -603,3 +603,31 @@ class TestPublishRevision(BaseRevisionTest):
         for dataset in response_json["datasets"]:
             self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
+
+    def test__delete_old_seurat_artifact_when_skipped(self):
+        """
+        Publish a revision and delete obsolete seurat / rds assets
+        """
+
+        for dataset in self.rev_collection.db_object.datasets:
+            # Revision number for rev collection must be greater than for original
+            dataset.revision += 1
+
+        # Mimic seurat conversion failure by setting conversion status to SKIPPED
+        dataset_with_skipped_seurat = self.rev_collection.db_object.datasets[0]
+        dataset_with_skipped_seurat.processing_status.rds_status = ConversionStatus.SKIPPED
+
+        self.session.commit()
+
+        # There are two datasets -- track each id of original dataset that should now lack seurat
+        id_with_skipped_seurat = dataset_with_skipped_seurat.original_id
+
+        # Publishing collection should result in rds artifact no longer existing for dataset_with_skipped_seurat
+        self.publish_collection(self.rev_collection.id)
+        self.session.expire_all()
+
+        for dataset in self.pub_collection.db_object.datasets:
+            if dataset.id == id_with_skipped_seurat:
+                self.assertFalse(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
+            else:
+                self.assertTrue(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
