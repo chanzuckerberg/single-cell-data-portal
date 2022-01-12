@@ -131,9 +131,9 @@ class TestCollection(DataPortalTestCase):
         }
 
         test_collection = Collection.create(
-            self.session, 
-            publisher_metadata=expected_metadata, 
-            **BogusCollectionParams.get(visibility=CollectionVisibility.PUBLIC.name)
+            self.session,
+            publisher_metadata=expected_metadata,
+            **BogusCollectionParams.get(visibility=CollectionVisibility.PUBLIC.name),
         )
         collection = Collection.get_collection(self.session, test_collection.id)
         self.assertIsNotNone(collection)
@@ -146,8 +146,6 @@ class TestCollection(DataPortalTestCase):
         self.assertEqual(2, len(authors))
         self.assertEqual("John", authors[0]["given"])
         self.assertEqual("Jane", authors[0]["given"])
-
-        
 
     def test__list_collections_in_time_range___ok(self):
         """Public collections are returned"""
