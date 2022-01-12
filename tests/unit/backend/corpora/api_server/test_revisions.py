@@ -369,7 +369,7 @@ class TestPublishRevision(BaseRevisionTest):
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
         self.publish_body = {"data_submission_policy_version": "1.0"}
 
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object", wraps=get_random_etag)
+    @patch("backend.corpora.common.entities.dataset_asset.buckets.portal_client.head_object", wraps=get_random_etag)
     def publish_collection(self, collection_id: str, mocked_func) -> dict:
         """
         Verify publish a collection under revision.
@@ -458,7 +458,7 @@ class TestPublishRevision(BaseRevisionTest):
                 self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
 
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
+    @patch("backend.corpora.common.entities.dataset_asset.buckets.portal_client.head_object")
     def test__publish_revision_with_Duplicate_dataset__409(self, mocked):
         """The publishing of a revised collection is blocked when duplicate datasets are detected."""
         mocked.return_value = {"ETag": "ABCDEF"}

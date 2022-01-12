@@ -41,7 +41,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
     @mock.patch("backend.corpora.common.entities.dataset_asset.buckets")
     def test__generate_file_url__ERROR(self, mock_s3):
-        mock_s3.client.generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
+        mock_s3.portal_client.generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
         # Create the Dataset Asset
         asset = self.create_dataset_asset("test__generate_file_url__ERROR.h5ad")
 

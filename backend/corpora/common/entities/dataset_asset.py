@@ -30,7 +30,7 @@ class DatasetAsset(Entity):
         :return: Presigned URL to download the requested file
         """
         try:
-            response = buckets.client.generate_presigned_url(
+            response = buckets.portal_client.generate_presigned_url(
                 "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
@@ -46,7 +46,7 @@ class DatasetAsset(Entity):
         """
 
         try:
-            response = buckets.client.head_object(Bucket=self.bucket_name, Key=self.key_name)
+            response = buckets.portal_client.head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None
@@ -66,11 +66,11 @@ class DatasetAsset(Entity):
             if self.key_name.endswith("/"):
                 # This path should only be taken when deleting from the cellxgene bucket
                 logger.info(f"Deleting all files in bucket {self.bucket_name} under {self.dataset_id}.")
-                buckets.resource.Bucket(self.bucket_name).objects.filter(Prefix=self.dataset_id).delete()
+                buckets.portal_resource.Bucket(self.bucket_name).objects.filter(Prefix=self.dataset_id).delete()
                 # using dataset_id rather than the key_name because we also need to delete the genesets if they exist.
             else:
                 logger.info(f"Deleting file {self.key_name} in bucket {self.bucket_name}.")
-                buckets.client.delete_object(Bucket=self.bucket_name, Key=self.key_name)
+                buckets.portal_client.delete_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
             logger.exception(f"Failed to delete artifact '{self.url}'.")
 
@@ -117,7 +117,7 @@ class DatasetAsset(Entity):
         artifact_bucket: str,
     ) -> str:
         file_base = basename(file_name)
-        buckets.client.upload_file(
+        buckets.portal_client.upload_file(
             file_name,
             artifact_bucket,
             join(bucket_prefix, file_base),

@@ -271,7 +271,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
 
 def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
-    buckets.client.download_file(bucket_name, object_key, local_filename)
+    buckets.portal_client.download_file(bucket_name, object_key, local_filename)
 
 
 def extract_metadata(filename) -> dict:
