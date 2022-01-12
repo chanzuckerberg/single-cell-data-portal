@@ -1140,8 +1140,12 @@ def login_ecrs(images, ecrs, ecr_client):
 )
 @click.option("--extra-tag", help="Extra tags to apply and push to the docker repo.", multiple=True)
 @click.option("--compose-env", help="Environment file to pass to docker compose", default=None)
+@click.option("--stack-name",
+              help="The rdev stack name to set in the env of the built image. " 
+                   "Only needed when being called by the push-rdev GHA.",
+              default=None)
 @click.pass_context
-def push(ctx, images, tag, extra_tag, compose_env):
+def push(ctx, images, tag, extra_tag, compose_env, stack_name):
     """Build and push docker images to ECR. Optionally filter by service name"""
     config = ctx.obj["config"]
     ecrs = config.ecrs
@@ -1164,19 +1168,21 @@ def push(ctx, images, tag, extra_tag, compose_env):
     # images to the right places with some re-tagging.
     first_registry = get_ecr_repo(config)
     builder_config["ecr_repo"] = first_registry  # TODO this is a leak in our abstraction, need to fix.
-    # HACK: Sets happy env name to the first extra tag; we need to know the happy env name at docker image build time, unfortunately, since it's not parameterized in the Docker image env
-    rdev_stack_name = extra_tag[0]
-    print(f"Setting happy_env (rdev stack name) to {rdev_stack_name}")
-    builder_config["happy_env"] = rdev_stack_name
+    # Stack name needs to be set in docker image at build time when this build is being triggered by the push-rdev GHA.
+    # Unfortunately, the stack name is not parameterized in the Docker image env and therefore cannot be set in
+    # container at run time.  (Note that images built on localhost via the `single-cell-infra/scripts/happy` script set
+    # this similarly.)
+    if stack_name:
+        print(f"Setting happy_env (rdev stack name) to {stack_name}")
+        builder_config["happy_env"] = stack_name
 
     builder = ArtifactBuilder(builder_config)
     artifacts = builder.build(images)
     print("Build complete")
 
-    # extra_tag is a tuple
-    all_tags = [tag] + (list(extra_tag) or [])
     print("Pushing images...")
-    all_tags = [tag] + (list(extra_tag) or [])
+    # extra_tag is a tuple
+    all_tags = [tag] + (list(extra_tag) or []) + ([stack_name] if stack_name else [])
     builder.push(ecrs, artifacts, all_tags)
     print(f"Built and pushed docker images with tags: {all_tags}")
 
