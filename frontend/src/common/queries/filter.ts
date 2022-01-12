@@ -15,6 +15,13 @@ import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils
 import { API_URL } from "src/configs/configs";
 
 /**
+ * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
+ */
+const DEFAULT_QUERY_OPTIONS = {
+  staleTime: Infinity,
+};
+
+/**
  * Query key for /collections/index
  */
 const QUERY_ID_COLLECTIONS = "collectionsIndex";
@@ -152,7 +159,10 @@ export function useFetchCollections(): UseQueryResult<
 > {
   return useQuery<Map<string, CollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
-    fetchCollections
+    fetchCollections,
+    {
+      ...DEFAULT_QUERY_OPTIONS,
+    }
   );
 }
 
@@ -199,7 +209,9 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
  * fields.
  */
 export function useFetchDatasets(): UseQueryResult<DatasetResponse[]> {
-  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets);
+  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets, {
+    ...DEFAULT_QUERY_OPTIONS,
+  });
 }
 
 /**
