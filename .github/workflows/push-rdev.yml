@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        component: ['frontend', 'backend', 'upload_failures', 'upload_success', 'processing']
+        component: ['frontend', 'backend', 'upload_failures', 'processing']
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -47,4 +47,4 @@ jobs:
           DOCKER_TAG=${DOCKER_TAG#refs/tags/}
           # replace `/` with `_`
           DOCKER_TAG=${DOCKER_TAG//\//-}
-          scripts/happy --profile="" push --extra-tag ${DOCKER_TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
+          scripts/happy --profile="" push --stack-name ${DOCKER_TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
