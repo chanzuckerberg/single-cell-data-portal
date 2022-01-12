@@ -2,10 +2,7 @@ import os
 
 import boto3
 
-from backend.corpora.common.utils.singleton import Singleton
-
-
-class Buckets(metaclass=Singleton):
+class _Buckets:
     _portal_resource = None
 
     @property
@@ -39,4 +36,4 @@ class Buckets(metaclass=Singleton):
         return self._explorer_bucket
 
 
-buckets = Buckets()
+buckets = _Buckets()
