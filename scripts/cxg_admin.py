@@ -6,7 +6,10 @@ import sys
 from datetime import datetime
 
 import click
+import requests
 from click import Context
+from furl import furl
+from requests import HTTPError
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -608,6 +611,75 @@ def get_happy_stack_name(deployment) -> str:
     :return:
     """
     return f"{deployment}-{deployment}stack"
+
+
+auth0_apis = {
+    "staging": "https://czi-cellxgene-dev.us.auth0.com",
+    "dev": "https://czi-cellxgene-dev.us.auth0.com",
+    "prod": "https://corpora-prod.auth0.com",
+}
+
+
+@cli.command()
+@click.argument("access_token")
+@click.pass_context
+def update_curator_names(ctx, access_token):
+    """Add the curator name to all collection based on the owner of the collection.
+
+    ACCESS_TOKEN: Retrieved from Auth0 console or generated using the Client ID and Client Secret. The application must be
+    authorized to access to the Auth0 Management API with the following permissions read:users read:user_idp_tokens.
+    """
+
+    auth0_api = auth0_apis[ctx.obj["deployment"]]
+
+    def get_collections_without_curator():
+        logger.info("Gathering collections with no curator.")
+        with db_session_manager() as session:
+            from sqlalchemy import null
+
+            _filter = (Collection.table.curator_name == null()) | (Collection.table.curator_name == "")
+            _owners = [
+                result.owner for result in session.query(Collection.table.owner).filter(_filter).distinct().all()
+            ]
+        return _owners
+
+    def get_owner_info_from_auth0(owner, access_token):
+        logger.info(f"Retrieving curator info for owner:{owner} from Auth0.")
+        url_manager = furl(
+            f"{auth0_api}/api/v2/users/{owner}",
+            query_params=dict(fields=",".join(["given_name", "family_name", "name"]), include_fields="true"),
+        )
+        response = requests.get(url_manager.url, headers={"Authorization": f"Bearer {access_token}"})
+        response.raise_for_status()
+        if response.headers["X-RateLimit-Remaining"] == 0:
+            wait = time.time() - response.headers["X-RateLimit-Reset"]
+            time.sleep(wait)
+        body = response.json()
+        name = f"{body.get('given_name', '')} {body.get('family_name', '')}".strip() or body.get("name", "")
+        return name
+
+    def update_database_curator_name(owner_id, owner_name):
+        logger.info(f"Updating collections owned by {owner_id} with curator_name:{owner_name}.")
+        with db_session_manager() as session:
+            collections = session.query(DbCollection).filter(DbCollection.owner == owner_id).all()
+            for collection in collections:
+                collection.curator_name = owner_name
+                if collection.visibility == CollectionVisibility.PUBLIC:
+                    collection.data_submission_policy_version = "2.0"
+
+    unique_owners = get_collections_without_curator()
+    owners = dict()
+    bad_owners = []
+    for owner in unique_owners:
+        try:
+            owner_name = get_owner_info_from_auth0(owner, access_token)
+            if owner_name:
+                owners[owner] = owner_name
+        except HTTPError as e:
+            bad_owners.append(owner)
+            logger.error(f"Failed to fetch Auth0 info for owner:{owner}")
+    for owner_id, owner_name in owners.items():
+        update_database_curator_name(owner_id, owner_name)
 
 
 def get_database_uri() -> str:

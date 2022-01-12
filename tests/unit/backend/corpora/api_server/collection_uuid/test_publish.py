@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from mock import Mock, patch
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType, DatasetArtifactFileType
+from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
@@ -20,7 +20,6 @@ class TestPublish(BaseAuthAPITest):
         }
         self.headers_unauthed = {"host": "localhost", "Content-Type": "application/json"}
         self.mock_published_at = datetime(2000, 12, 25, 0, 0)
-        self.publish_body = {"data_submission_policy_version": "1.0"}
 
     def verify_publish_collection(self, collection_id: str, mock_timestamp: datetime = None) -> dict:
         """
@@ -31,17 +30,18 @@ class TestPublish(BaseAuthAPITest):
             mock_timestamp = self.mock_published_at
 
         # Publish collection
+        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=mock_timestamp)
-            response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
+            response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
@@ -155,64 +155,34 @@ class TestPublish(BaseAuthAPITest):
         """Publish a collection as a non-owner."""
         collection_id = self.generate_collection(self.session, owner="someone_else").id
         path = f"{self.base_path}/{collection_id}/publish"
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
+        body = {"data_submission_policy_version": "1.0"}
+        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
     def test__bad_uuid__403(self):
         """Publish a collection with a bad uuid."""
         collection_id = "bad_uuid"
+        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
-
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
-    def test__publish_with_Duplicate_dataset__409(self, mocked):
-        """The publishing of a private collection is blocked when duplicate datasets are detected."""
-        mocked.return_value = {"ETag": "ABCDEF"}
-        collection = self.generate_collection(self.session)
-        for i in range(2):
-            dataset = self.generate_dataset(
-                self.session, collection_id=collection.id, collection_visibility=collection.visibility
-            )
-            self.generate_asset(self.session, dataset.id)
-
-        path = f"/dp/v1/collections/{collection.id}/publish"
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
-        self.assertEqual(409, response.status_code)
-
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
-    def test__publish_with_Duplicate_dataset__200(self, mocked):
-        """Only H5AD files are checked."""
-        mocked.return_value = {"ETag": "ABCDEF"}
-        collection = self.generate_collection(self.session)
-        for i in range(2):
-            dataset = self.generate_dataset(
-                self.session, collection_id=collection.id, collection_visibility=collection.visibility
-            )
-            self.generate_asset(self.session, dataset.id, filetype=DatasetArtifactFileType.CXG)
-
-        path = f"/dp/v1/collections/{collection.id}/publish"
-        response = self.app.post(path, headers=self.headers_authed, data=json.dumps(self.publish_body))
-        self.assertEqual(202, response.status_code)
 
 
 class TestPublishCurators(BasicAuthAPITestCurator):
-    def setUp(self):
-        super().setUp()
-        self.publish_body = {"data_submission_policy_version": "1.0"}
-
     def test__can_publish_owned_collection(self):
         collection_id = self.generate_collection(self.session).id
         self.generate_dataset(self.session, collection_id=collection_id, collection_visibility="PRIVATE")
         path = f"/dp/v1/collections/{collection_id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(path, headers=headers, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
     def test__can_publish_non_owned_collection(self):
         collection_id = self.generate_collection(self.session, owner="someone_else").id
         self.generate_dataset(self.session, collection_id=collection_id, collection_visibility="PRIVATE")
         path = f"/dp/v1/collections/{collection_id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        response = self.app.post(path, headers=headers, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)

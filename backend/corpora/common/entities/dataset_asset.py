@@ -39,10 +39,10 @@ class DatasetAsset(Entity):
         else:
             return response
 
-    def get_s3_metadata(self) -> typing.Dict:
+    def get_file_size(self) -> typing.Union[int, None]:
         """
-        Retrieves the asset metadata.
-        :return: the S3 metadata
+        Retrieves the asset content length from the S3 object.
+        :return: The content length in bytes.
         """
 
         try:
@@ -51,15 +51,7 @@ class DatasetAsset(Entity):
             logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None
         else:
-            return response
-
-    def get_file_size(self) -> typing.Union[int, None]:
-        """
-        Retrieves the asset content length from the S3 object.
-        :return: The content length in bytes.
-        """
-        metadata = self.get_s3_metadata()
-        return metadata["ContentLength"] if metadata else None
+            return response["ContentLength"]
 
     def delete_from_s3(self):
         try:

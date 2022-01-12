@@ -85,8 +85,8 @@ const Content: FC<Props> = (props) => {
     visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
-  const [mutateCreateCollection] = useCreateCollection();
-  const [mutateEditCollection] = useEditCollection(props.id);
+  const { mutateAsync: mutateCreateCollection } = useCreateCollection();
+  const { mutateAsync: mutateEditCollection } = useEditCollection(props.id);
 
   // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
   if (isTombstonedCollection(data)) data = null;

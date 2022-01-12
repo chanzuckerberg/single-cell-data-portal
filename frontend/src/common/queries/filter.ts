@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { QueryResult, useQuery } from "react-query";
+import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
@@ -147,7 +147,7 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
  * Cache-enabled hook for fetching public collections and returning only core collection fields.
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
  */
-export function useFetchCollections(): QueryResult<
+export function useFetchCollections(): UseQueryResult<
   Map<string, CollectionResponse>
 > {
   return useQuery<Map<string, CollectionResponse>>(
@@ -198,7 +198,7 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
  * fields.
  */
-export function useFetchDatasets(): QueryResult<DatasetResponse[]> {
+export function useFetchDatasets(): UseQueryResult<DatasetResponse[]> {
   return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets);
 }
 
