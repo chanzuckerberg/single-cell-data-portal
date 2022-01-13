@@ -1,6 +1,4 @@
 import json
-import random
-import string
 import typing
 from datetime import datetime
 from mock import Mock, patch
@@ -8,7 +6,7 @@ from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_orm import CollectionVisibility, ConversionStatus, DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -356,10 +354,6 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
 
-def get_random_etag(*args, **kwargs):
-    return {"ETag": "".join(random.choices(string.hexdigits, k=8))}
-
-
 class TestPublishRevision(BaseRevisionTest):
     """Test case for publishing a revision."""
 
@@ -367,10 +361,8 @@ class TestPublishRevision(BaseRevisionTest):
         super().setUp()
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
-        self.publish_body = {"data_submission_policy_version": "1.0"}
 
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object", wraps=get_random_etag)
-    def publish_collection(self, collection_id: str, mocked_func) -> dict:
+    def publish_collection(self, collection_id: str) -> dict:
         """
         Verify publish a collection under revision.
         :return: Jsonified response of GET collection/<collection_id>.
@@ -386,17 +378,18 @@ class TestPublishRevision(BaseRevisionTest):
             self.assertIsNone(dataset.revised_at)
 
         self.session.expire_all()
+        body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-            response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
+            response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
         self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id, "PUBLIC")
 
         # Cannot call publish for an already published collection
-        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
         # Check that the published collection is listed in /collections
@@ -457,19 +450,6 @@ class TestPublishRevision(BaseRevisionTest):
             else:
                 self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
-
-    @patch("backend.corpora.common.entities.dataset_asset.s3_client.head_object")
-    def test__publish_revision_with_Duplicate_dataset__409(self, mocked):
-        """The publishing of a revised collection is blocked when duplicate datasets are detected."""
-        mocked.return_value = {"ETag": "ABCDEF"}
-        for i in range(2):
-            self.generate_dataset_with_s3_resources(
-                self.session, collection_id=self.rev_collection.id, collection_visibility=CollectionVisibility.PRIVATE
-            ).id
-
-        path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
-        self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_tombstoned_datasets__OK(self):
         """Publish a revision with delete datasets."""
@@ -555,8 +535,9 @@ class TestPublishRevision(BaseRevisionTest):
         """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
+            body = {"data_submission_policy_version": "1.0"}
         path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(self.publish_body))
+        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
     def test__with_revision_with_refreshed_datasets__OK(self):
@@ -622,3 +603,31 @@ class TestPublishRevision(BaseRevisionTest):
         for dataset in response_json["datasets"]:
             self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
+
+    def test__delete_old_seurat_artifact_when_skipped(self):
+        """
+        Publish a revision and delete obsolete seurat / rds assets
+        """
+
+        for dataset in self.rev_collection.db_object.datasets:
+            # Revision number for rev collection must be greater than for original
+            dataset.revision += 1
+
+        # Mimic seurat conversion failure by setting conversion status to SKIPPED
+        dataset_with_skipped_seurat = self.rev_collection.db_object.datasets[0]
+        dataset_with_skipped_seurat.processing_status.rds_status = ConversionStatus.SKIPPED
+
+        self.session.commit()
+
+        # There are two datasets -- track each id of original dataset that should now lack seurat
+        id_with_skipped_seurat = dataset_with_skipped_seurat.original_id
+
+        # Publishing collection should result in rds artifact no longer existing for dataset_with_skipped_seurat
+        self.publish_collection(self.rev_collection.id)
+        self.session.expire_all()
+
+        for dataset in self.pub_collection.db_object.datasets:
+            if dataset.id == id_with_skipped_seurat:
+                self.assertFalse(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
+            else:
+                self.assertTrue(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
