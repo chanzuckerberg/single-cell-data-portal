@@ -29,7 +29,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.utils.s3_buckets import cxg_bucket
+from backend.corpora.common.utils.s3_buckets import buckets
 
 from urllib.parse import urlparse
 
@@ -318,7 +318,7 @@ def create_cxg_artifacts(ctx):
         for dataset in datasets:
             if dataset.explorer_url:
                 object_key = dataset.explorer_url.split("/")[-2]
-                s3_uri = f"s3://{cxg_bucket.name}/{object_key}/"
+                s3_uri = f"s3://{buckets.explorer_bucket.name}/{object_key}/"
                 click.echo(dataset.explorer_url, s3_uri)
                 DatasetAsset.create(
                     session,

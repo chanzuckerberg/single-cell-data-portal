@@ -20,9 +20,10 @@ from ..corpora_orm import (
     CollectionVisibility,
     generate_uuid,
     DatasetArtifactFileType,
+    ConversionStatus,
 )
 from ..utils.db_helpers import clone
-from ..utils.s3_buckets import cxg_bucket
+from ..utils.s3_buckets import buckets
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +248,7 @@ class Dataset(Entity):
     def copy_csv_to_s3(self, csv_file: str) -> str:
         object_name = get_cxg_bucket_path(self.explorer_url)
         s3_file = f"{object_name}-genesets.csv"
-        cxg_bucket.upload_file(csv_file, s3_file)
+        buckets.explorer_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
     def generate_tidy_csv_for_all_linked_genesets(self, csv_file_path: str) -> str:
@@ -323,7 +324,15 @@ class Dataset(Entity):
             if revision.revision > self.revision:
                 # connect revised artifacts with published dataset
                 for artifact in revision.artifacts:
-                    artifact.dataset_id = self.id
+                    if (
+                        artifact.filetype == DatasetArtifactFileType.RDS
+                        and revision.processing_status.rds_status == ConversionStatus.SKIPPED
+                    ):
+                        # Delete old .rds (Seurat) dataset artifact clones if rds_status for dataset revision is SKIPPED
+                        DatasetAsset(artifact).delete(commit=False)
+                    else:
+                        artifact.dataset_id = self.id
+
             elif revision.tombstone:
                 # tombstone
                 revision.tombstone_dataset_and_delete_child_objects()
