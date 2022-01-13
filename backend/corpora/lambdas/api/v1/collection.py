@@ -190,7 +190,20 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     if not collection:
         raise ForbiddenHTTPException()
 
+    def get_doi_from_body():
+        links = body.get("links", [])
+        doi = [link["link_url"] for link in links if link["link_type"] == "DOI"]
+        return doi[0] if doi else None
+
     # Compute the diff between old and new DOI
+    old_doi = collection.get_normalized_doi()
+    new_doi = get_doi_from_body()
+
+    # If the DOI was deleted, remove the publisher_metadata field
+    if not new_doi:
+        collection.update(publisher_metadata = None)
+    elif new_doi != old_doi:
+        
 
     collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
