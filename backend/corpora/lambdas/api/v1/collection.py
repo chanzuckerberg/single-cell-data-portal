@@ -1,5 +1,6 @@
 import sqlalchemy
 from typing import Optional
+from backend.corpora.common import crossref_provider
 
 from flask import make_response, jsonify, g
 
@@ -108,6 +109,14 @@ def post_collection_revision(collection_uuid: str, user: str):
 @dbconnect
 def create_collection(body: object, user: str):
     db_session = g.db_session
+
+    doi = "test_doi" # TODO (ebezzi): extract the DOI from body
+    provider = crossref_provider.CrossrefProvider()
+    try:
+        publisher_metadata = provider.fetch_metadata(doi)
+    except Exception: # TODO (ebezzi): error handling. At least a warning.
+        publisher_metadata = None
+
     collection = Collection.create(
         db_session,
         visibility=CollectionVisibility.PRIVATE,
@@ -118,6 +127,7 @@ def create_collection(body: object, user: str):
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
         curator_name=body.get("curator_name", ""),
+        publisher_metadata=publisher_metadata
     )
 
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
@@ -179,6 +189,9 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     )
     if not collection:
         raise ForbiddenHTTPException()
+
+    # Compute the diff between old and new DOI
+
     collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"

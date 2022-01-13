@@ -7,10 +7,9 @@ class CrossrefProvider(object):
     Provider class used to call Crossref and retrieve publisher metadata
     """
 
-    def __init__(self, crossref_api_uri = None) -> None:
-        # crossref_api_uri can be passed to the constructor and overrides the configuration for testing
+    def __init__(self) -> None:
         try:
-            self.base_crossref_uri = crossref_api_uri or CorporaConfig().crossref_api_uri
+            self.base_crossref_uri = CorporaConfig().crossref_api_uri
         except RuntimeError:
             self.base_crossref_uri = None
         super().__init__()

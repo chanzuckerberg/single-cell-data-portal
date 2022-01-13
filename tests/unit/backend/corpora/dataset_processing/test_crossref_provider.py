@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch
 
 from backend.corpora.common.crossref_provider import CrossrefProvider
-import backend.corpora.common.crossref_provider
 
 
 class TestCrossrefProvider(unittest.TestCase):
@@ -14,7 +13,12 @@ class TestCrossrefProvider(unittest.TestCase):
         mock_get.assert_not_called()
 
     @patch("backend.corpora.common.crossref_provider.requests.get")
-    def test__provider_calls_crossref_if_api_url_defined(self, mock_get):
+    @patch("backend.corpora.common.crossref_provider.CorporaConfig")
+    def test__provider_calls_crossref_if_api_url_defined(self, mock_config, mock_get):
+
+        # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_uri`
+        # not None, so it will go ahead and do the mocked call.
+
         mock_get.return_value = {
             "status": "ok",
             "message": {
@@ -34,8 +38,7 @@ class TestCrossrefProvider(unittest.TestCase):
                 "container-title": ["Nature"],
             },
         }
-        # Pass a fake URL to the constructor. This will allow the provider to proceed and call the (mocked) Crossref API
-        provider = CrossrefProvider("http://fake-api.uri/")
+        provider = CrossrefProvider()
         res = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
@@ -48,6 +51,3 @@ class TestCrossrefProvider(unittest.TestCase):
         }
 
         self.assertDictEqual(expected_response, res)
-
-    def test_split(self):
-        self.assertTrue(False)
