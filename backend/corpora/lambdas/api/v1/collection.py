@@ -187,6 +187,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
         CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
+    print(collection)
     if not collection:
         raise ForbiddenHTTPException()
 
@@ -197,13 +198,19 @@ def update_collection(collection_uuid: str, body: dict, user: str):
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_normalized_doi()
-    new_doi = get_doi_from_body()
+    new_doi = Collection._normalize_doi(get_doi_from_body())
 
-    # If the DOI was deleted, remove the publisher_metadata field
-    if not new_doi:
+    if old_doi and not new_doi: 
+        # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata = None)
     elif new_doi != old_doi:
-        
+        # If the DOI has changed, fetch and update the metadata
+        provider = crossref_provider.CrossrefProvider()
+        try:
+            publisher_metadata = provider.fetch_metadata(new_doi)
+        except Exception:
+            publisher_metadata = None
+        body["publisher_metadata"] = publisher_metadata
 
     collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
