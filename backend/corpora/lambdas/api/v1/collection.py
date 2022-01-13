@@ -25,6 +25,13 @@ def _owner_or_allowed(user):
     return None if has_scope("write:collections") else user
 
 
+def _get_doi_from_body(body):
+    links = body.get("links", [])
+    doi_list = [link["link_url"] for link in links if link["link_type"] == "DOI"]
+    # TODO (ebezzi): remove DOI normalization when all DOIs have been migrated to CURIE
+    return Collection._normalize_doi(doi_list[0]) if doi_list else None
+
+
 @dbconnect
 def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
     db_session = g.db_session
@@ -110,10 +117,9 @@ def post_collection_revision(collection_uuid: str, user: str):
 def create_collection(body: object, user: str):
     db_session = g.db_session
 
-    doi = "test_doi" # TODO (ebezzi): extract the DOI from body
     provider = crossref_provider.CrossrefProvider()
     try:
-        publisher_metadata = provider.fetch_metadata(doi)
+        publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
     except Exception: # TODO (ebezzi): error handling. At least a warning.
         publisher_metadata = None
 
@@ -187,7 +193,6 @@ def update_collection(collection_uuid: str, body: dict, user: str):
         CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
-    print(collection)
     if not collection:
         raise ForbiddenHTTPException()
 
@@ -198,7 +203,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_normalized_doi()
-    new_doi = Collection._normalize_doi(get_doi_from_body())
+    new_doi = _get_doi_from_body(body)
 
     if old_doi and not new_doi: 
         # If the DOI was deleted, remove the publisher_metadata field
