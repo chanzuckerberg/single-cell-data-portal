@@ -134,7 +134,7 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.common.utils.s3_buckets import s3_client
+from backend.corpora.common.utils.s3_buckets import buckets
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
@@ -271,7 +271,7 @@ def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: s
 
 def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
-    s3_client.download_file(bucket_name, object_key, local_filename)
+    buckets.portal_client.download_file(bucket_name, object_key, local_filename)
 
 
 def extract_metadata(filename) -> dict:
