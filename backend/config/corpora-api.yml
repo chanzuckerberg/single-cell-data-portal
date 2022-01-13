@@ -17,7 +17,7 @@ paths:
     get:
       tags:
         - wmg
-      summary: Get WMG cell types
+      summary: Get WMG cell types (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
         - { }
@@ -48,7 +48,7 @@ paths:
     get:
       tags:
         - wmg
-      summary: Get WMG genes
+      summary: Get WMG genes (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
         - { }
@@ -79,7 +79,7 @@ paths:
     get:
       tags:
         - wmg
-      summary: Get WMG gene expression for a given gene name
+      summary: Get WMG gene expression for a given gene name (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
         - { }

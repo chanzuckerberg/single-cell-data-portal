@@ -1,6 +1,8 @@
 import boto3
 from flask import make_response
 
+# "WHERE'S MY GENE" PROTOTYPE CODE
+
 WMG_DATA_BUCKET = "wmg-prototype-data-dev-public"
 WMG_DATA_S3_OBJ_PREFIX = "lung-tissue-10x-human-20220112"
 
