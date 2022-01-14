@@ -456,7 +456,7 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertEqual(201, response.status_code)
 
-    @patch("backend.corpora.common.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
 
         publisher_metadata = {
@@ -1019,7 +1019,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
-    @patch("backend.corpora.common.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_new_doi_updates_metadata(self, mock_provider):
         # The Crossref provider will always return "New Journal"
         mock_provider.return_value = {"journal": "New Journal"}
@@ -1045,7 +1045,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
         self.assertEqual("New Journal", actual_body["publisher_metadata"]["journal"])
 
-    @patch("backend.corpora.common.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_remove_doi_deletes_metadata(self, mock_provider):
         mock_provider.return_value = {"journal": "New Journal"}
         collection = self.generate_collection(
@@ -1071,7 +1071,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         actual_body = json.loads(response.data)
         self.assertNotIn("publisher_metadata", actual_body)
 
-    @patch("backend.corpora.common.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_same_doi_does_not_update_metadata(self, mock_provider):
         mock_provider.return_value = {"journal": "New Journal"}
         collection = self.generate_collection(

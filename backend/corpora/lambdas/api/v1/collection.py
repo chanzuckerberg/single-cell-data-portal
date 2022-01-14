@@ -1,6 +1,6 @@
 import sqlalchemy
 from typing import Optional
-from backend.corpora.common import crossref_provider
+from backend.corpora.common.providers import crossref_provider
 
 from flask import make_response, jsonify, g
 
