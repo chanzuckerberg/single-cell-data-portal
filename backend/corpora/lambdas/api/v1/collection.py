@@ -124,7 +124,7 @@ def create_collection(body: object, user: str):
     try:
         publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
     except CrossrefException as e: 
-        logging.warning(f"CrossrefException on create_collection: {e.message}. Will ignore metadata.")
+        logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
         publisher_metadata = None
 
     collection = Collection.create(
@@ -213,7 +213,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
         try:
             publisher_metadata = provider.fetch_metadata(new_doi)
         except CrossrefException as e:
-            logging.warning(f"CrossrefException on update_collection: {e.message}. Will ignore metadata.")
+            logging.warning(f"CrossrefException on update_collection: {e}. Will ignore metadata.")
             publisher_metadata = None
         body["publisher_metadata"] = publisher_metadata
 
