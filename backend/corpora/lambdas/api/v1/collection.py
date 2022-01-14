@@ -1,8 +1,11 @@
 import sqlalchemy
 from typing import Optional
 from backend.corpora.common.providers import crossref_provider
+from backend.corpora.common.providers.crossref_provider import CrossrefException
 
 from flask import make_response, jsonify, g
+
+import logging
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
@@ -120,7 +123,8 @@ def create_collection(body: object, user: str):
     provider = crossref_provider.CrossrefProvider()
     try:
         publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
-    except Exception: # TODO (ebezzi): error handling. At least a warning.
+    except CrossrefException as e: 
+        logging.warning(f"CrossrefException on create_collection: {e.message}. Will ignore metadata.")
         publisher_metadata = None
 
     collection = Collection.create(
@@ -208,7 +212,8 @@ def update_collection(collection_uuid: str, body: dict, user: str):
         provider = crossref_provider.CrossrefProvider()
         try:
             publisher_metadata = provider.fetch_metadata(new_doi)
-        except Exception:
+        except CrossrefException as e:
+            logging.warning(f"CrossrefException on update_collection: {e.message}. Will ignore metadata.")
             publisher_metadata = None
         body["publisher_metadata"] = publisher_metadata
 
