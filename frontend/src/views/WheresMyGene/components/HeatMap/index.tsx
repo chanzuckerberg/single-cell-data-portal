@@ -1,11 +1,29 @@
 import { Intent, Spinner } from "@blueprintjs/core";
-import { interpolateYlOrRd } from "d3-scale-chromatic";
-import * as echarts from "echarts";
+import { connect, DatasetComponentOption, EChartsOption, init } from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { CellTypeAndGenes, Gene } from "../../common/types";
-import { Container, Loader } from "./style";
+import {
+  ChartContainer,
+  Container,
+  Loader,
+  XAxisContainer,
+  XAxisMask,
+  XAxisWrapper,
+  YAxisContainer,
+} from "./style";
+import {
+  ChartFormat,
+  createChartOptions,
+  createXAxisOptions,
+  createYAxisOptions,
+  dataToChartFormat,
+  getCellTypeNames,
+  getGeneNames,
+  getHeatmapHeight,
+  getHeatmapWidth,
+} from "./utils";
 
 interface ChartProps {
   chartData: ChartFormat[];
@@ -24,34 +42,6 @@ interface Props {
 const ELEMENT_ID = "heat-map";
 
 let isChartInitialized = false;
-
-const MAX_FIRST_PART_LENGTH_PX = 16;
-
-const HEAT_MAP_BASE_WIDTH_PX = 500;
-const HEAT_MAP_BASE_HEIGHT_PX = 300;
-const HEAT_MAP_BASE_CELL_PX = 20;
-
-const COMMON_SERIES = {
-  emphasis: { itemStyle: { color: "inherit" }, scale: false },
-  encode: {
-    x: "geneIndex",
-    y: "cellTypeIndex",
-  },
-  legendHoverLink: false,
-  name: "wmg",
-  type: "scatter",
-};
-
-const COMMON_AXIS_POINTER = {
-  link: [
-    {
-      xAxisIndex: "all",
-    },
-  ],
-  show: true,
-  triggerOn: "click",
-  triggerTooltip: false,
-};
 
 export default function HeatMap({
   cellTypes,
@@ -118,6 +108,7 @@ export default function HeatMap({
     }
   }, []);
 
+  // Initialize charts
   useEffect(() => {
     const { current } = ref;
     const { current: xAxisCurrent } = xAxisRef;
@@ -135,21 +126,22 @@ export default function HeatMap({
 
     isChartInitialized = true;
 
-    const chart = echarts.init(current, EMPTY_OBJECT, { useDirtyRect: true });
-    const xAxisChart = echarts.init(xAxisCurrent, EMPTY_OBJECT, {
+    const chart = init(current, EMPTY_OBJECT, { useDirtyRect: true });
+    const xAxisChart = init(xAxisCurrent, EMPTY_OBJECT, {
       useDirtyRect: true,
     });
-    const yAxisChart = echarts.init(yAxisCurrent, EMPTY_OBJECT, {
+    const yAxisChart = init(yAxisCurrent, EMPTY_OBJECT, {
       useDirtyRect: true,
     });
 
-    echarts.connect([chart, xAxisChart, yAxisChart]);
+    connect([chart, xAxisChart, yAxisChart]);
 
     setChart(chart);
     setXAxisChart(xAxisChart);
     setYAxisChart(yAxisChart);
   }, [ref, xAxisRef, isEchartGLAvailable]);
 
+  // Update the charts
   useEffect(() => {
     if (
       !chart ||
@@ -163,200 +155,26 @@ export default function HeatMap({
 
     const { chartData, cellTypeNames, geneNames } = chartProps;
 
-    const commonOptions = {
+    const commonOptions: EChartsOption = {
       animation: false,
       dataset: {
-        source: chartData,
+        source: chartData as DatasetComponentOption["source"],
       },
       hoverLayerThreshold: 10,
       progressive: 1e6,
     };
 
-    chart.setOption({
-      ...commonOptions,
-      axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
-      grid: {
-        bottom: "100px",
-        left: "300px",
-        top: "200px",
-      },
-      series: [
-        {
-          ...COMMON_SERIES,
-          itemStyle: {
-            color(props: { data: { scaledMeanExpression: number } }) {
-              const { scaledMeanExpression } = props.data;
+    chart.setOption(
+      createChartOptions({ cellTypeNames, commonOptions, geneNames })
+    );
 
-              return interpolateYlOrRd(scaledMeanExpression);
-            },
-          },
-          symbolSize: function (props: { percentage: number }) {
-            const { percentage } = props;
+    xAxisChart.setOption(
+      createXAxisOptions({ cellTypeNames, commonOptions, geneNames })
+    );
 
-            return Math.round(MAX_FIRST_PART_LENGTH_PX * percentage);
-          },
-        },
-      ],
-      tooltip: {
-        formatter(props: { name: string; data: ChartFormat }) {
-          const { name, data } = props;
-
-          if (!data) return false;
-
-          const {
-            geneIndex,
-            percentage,
-            meanExpression,
-            scaledMeanExpression,
-          } = data;
-
-          return `
-            cell type: ${name}
-            <br />
-            gene: ${geneNames[geneIndex]}
-            <br />
-            percentage: ${percentage}
-            <br />
-            mean expression: ${meanExpression}
-            <br />
-            scaledMeanExpression: ${scaledMeanExpression}
-          `;
-        },
-        position: "top",
-      },
-      xAxis: [
-        {
-          axisLabel: { fontSize: 0, rotate: 90 },
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          boundaryGap: true,
-          data: geneNames,
-          splitLine: {
-            show: true,
-          },
-          type: "category",
-        },
-      ],
-      yAxis: [
-        {
-          axisLabel: { fontSize: 0, rotate: 20 },
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          boundaryGap: true,
-          data: cellTypeNames,
-          splitLine: {
-            show: true,
-          },
-        },
-      ],
-    });
-
-    xAxisChart.setOption({
-      ...commonOptions,
-      axisPointer: { ...COMMON_AXIS_POINTER },
-      grid: {
-        bottom: "0",
-        left: "300px",
-        top: "300px",
-      },
-      series: [
-        {
-          ...COMMON_SERIES,
-          symbolSize: 0,
-        },
-      ],
-      xAxis: [
-        {
-          axisLabel: {
-            overflow: "truncate",
-            rotate: 270,
-            verticalAlign: "middle",
-            width: 200,
-          },
-          axisTick: {
-            alignWithLabel: true,
-          },
-          boundaryGap: true,
-          data: geneNames,
-          position: "top",
-          type: "category",
-        },
-      ],
-      yAxis: [
-        {
-          axisLabel: { fontSize: 0, rotate: 20 },
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          boundaryGap: true,
-          data: cellTypeNames,
-          splitLine: {
-            show: false,
-          },
-        },
-      ],
-    });
-
-    yAxisChart.setOption({
-      ...commonOptions,
-      axisPointer: { ...COMMON_AXIS_POINTER },
-      grid: {
-        bottom: "300px",
-        left: "300px",
-        right: 0,
-        top: 0,
-      },
-      series: [
-        {
-          ...COMMON_SERIES,
-          symbolSize: 0,
-        },
-      ],
-      xAxis: [
-        {
-          axisLabel: { fontSize: 0, rotate: 90 },
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          boundaryGap: true,
-          data: geneNames,
-          splitLine: {
-            show: false,
-          },
-          type: "category",
-        },
-      ],
-      yAxis: [
-        {
-          axisLabel: { align: "right", rotate: 20 },
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            alignWithLabel: true,
-          },
-          boundaryGap: true,
-          data: cellTypeNames,
-          splitLine: {
-            show: false,
-          },
-        },
-      ],
-    });
+    yAxisChart.setOption(
+      createYAxisOptions({ cellTypeNames, commonOptions, geneNames })
+    );
 
     chart.resize();
     xAxisChart.resize();
@@ -372,118 +190,20 @@ export default function HeatMap({
         </Loader>
       ) : null}
 
-      <div
-        style={{
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
-          height: "200px",
-          position: "sticky",
-          top: "0",
-          width: heatmapWidth + "px",
-          zIndex: 2,
-        }}
-        ref={xAxisRef}
-      />
-      <div
-        style={{
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
-          height: heatmapHeight + "px",
-          left: 0,
-          position: "sticky",
-          top: 0,
-          width: "300px",
-          zIndex: 1,
-        }}
-        ref={yAxisRef}
-      />
-      <div
-        style={{
-          height: heatmapHeight + "px",
-          left: "0",
-          position: "absolute",
-          top: "0",
-          width: heatmapWidth + "px",
-        }}
+      <XAxisWrapper width={heatmapWidth}>
+        {/* (thuang): The extra div is needed to implement the mask */}
+        <div>
+          <XAxisContainer width={heatmapWidth} ref={xAxisRef} />
+          <XAxisMask />
+        </div>
+      </XAxisWrapper>
+      <YAxisContainer height={heatmapHeight} ref={yAxisRef} />
+      <ChartContainer
+        height={heatmapHeight}
+        width={heatmapWidth}
         ref={ref}
         id={ELEMENT_ID}
       />
     </Container>
   );
-}
-
-interface ChartFormat {
-  cellTypeIndex: number;
-  geneIndex: number;
-  percentage: number;
-  meanExpression: number;
-  scaledMeanExpression: number;
-}
-
-function dataToChartFormat(
-  data: CellTypeAndGenes[],
-  cellTypes: CellTypeAndGenes[],
-  genes: Gene[]
-): ChartFormat[] {
-  let min = Infinity;
-  let max = -Infinity;
-
-  for (const dataPoint of Object.values(data)) {
-    if (!dataPoint.expressions) continue;
-
-    for (const expression of Object.values(dataPoint.expressions)) {
-      const { me } = expression;
-
-      min = Math.min(min, me);
-      max = Math.max(max, me);
-    }
-  }
-
-  const oldRange = max - min;
-
-  const result = data.flatMap((dataPoint) => {
-    return toChartFormat(dataPoint);
-  });
-
-  return result;
-
-  function toChartFormat(dataPoint: CellTypeAndGenes): ChartFormat[] {
-    if (!dataPoint.expressions) return [];
-
-    return Object.entries(dataPoint.expressions).map(
-      ([geneName, expression]) => {
-        const { pc, me } = expression;
-
-        const scaledMe = (me - min) / oldRange;
-
-        const geneIndex = genes.findIndex((gene) => gene.name === geneName);
-
-        const cellTypeIndex = cellTypes.findIndex(
-          (cellType) => cellType.id === dataPoint.id
-        );
-
-        return {
-          cellTypeIndex,
-          geneIndex,
-          meanExpression: me,
-          percentage: pc,
-          scaledMeanExpression: scaledMe,
-        } as ChartFormat;
-      }
-    );
-  }
-}
-
-function getHeatmapWidth(genes: Gene[]): number {
-  return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
-}
-
-function getHeatmapHeight(cellTypes: CellTypeAndGenes[]): number {
-  return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
-}
-
-function getCellTypeNames(cellTypes: CellTypeAndGenes[]): string[] {
-  return cellTypes.map((cellType) => cellType.name);
-}
-
-function getGeneNames(genes: Gene[]): string[] {
-  return genes.map((gene) => gene.name);
 }

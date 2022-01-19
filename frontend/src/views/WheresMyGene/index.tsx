@@ -22,9 +22,23 @@ import { Wrapper } from "./style";
 const DEBOUNCE_MS = 2 * 1000;
 
 const WheresMyGene = (): JSX.Element => {
+  /**
+   * This is the genes that are currently selected.
+   */
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+
+  /**
+   * This holds ALL the geneData we have loaded from the API, including previously
+   * and currently selected genes.
+   * We use `selectedGeneData` to subset the data to only the genes that are
+   * currently selected.
+   */
   const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
   const [cellTypes, setCellTypes] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
+
+  /**
+   * This is the formatted data that we use to render the heatmap.
+   */
   const [data, setData] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
 
   const selectedGeneData = useMemo(() => {
@@ -67,6 +81,11 @@ const WheresMyGene = (): JSX.Element => {
     );
   }, []);
 
+  /**
+   * Performance optimization:
+   * We only format and `setData()` after the watch list has stopped changing for
+   * `DEBOUNCE_MS`
+   */
   useEffect(() => {
     debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
   }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
