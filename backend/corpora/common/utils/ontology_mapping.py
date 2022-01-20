@@ -1,6 +1,6 @@
 
 
-ontology:mapping = {
+ontology_mapping = {
     "HsapDv:0000000": ["HsapDv:0000000"],
     "HsapDv:0000001": ["HsapDv:0000001"],
     "HsapDv:0000002": ["HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],

@@ -190,17 +190,22 @@ class Dataset(Entity):
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
 
-        # Development stage expansion - this is just a placeholder for now
-        
+        print("SDIFSDKHFSDF")
+
+        # Development stage expansion
         for result in results:
-            if "development_stage" in result:
-                try:
-                    leaf = result["development_stage"][0]["ontology_term_id"]
-                    ancestors = ontology_mapping.get(leaf)
-                    if ancestors:
-                        result["development_stage_terms"] = leaf + ancestors
-                except Exception as e:
-                    logger.error(e)
+            if not "development_stage" in result:
+                continue
+
+            leaves = [e["ontology_term_id"] for e in result["development_stage"]]
+
+            if not leaves: 
+                continue
+
+            ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
+            flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
+            if ancestors:
+                result["development_stage_ancestors"] = flattened_ancestors
 
         return results
 
