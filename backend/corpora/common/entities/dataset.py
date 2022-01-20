@@ -7,6 +7,8 @@ import typing
 from datetime import datetime
 from pathlib import PurePosixPath
 
+from ..utils.ontology_mapping import ontology_mapping
+
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
@@ -187,6 +189,18 @@ class Dataset(Entity):
         for result in results:
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
+
+        # Development stage expansion - this is just a placeholder for now
+        
+        for result in results:
+            if "development_stage" in result:
+                try:
+                    leaf = result["development_stage"][0]["ontology_term_id"]
+                    ancestors = ontology_mapping.get(leaf)
+                    if ancestors:
+                        result["development_stage_terms"] = leaf + ancestors
+                except Exception as e:
+                    logger.error(e)
 
         return results
 
