@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
@@ -117,9 +117,6 @@ export function useFetchCollectionDatasetRows(
  * @returns All public collections and the aggregated metadata of their datasets.
  */
 export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
-  // View model built from join of collections response and aggregated metadata of dataset rows.
-  const [collectionRows, setCollectionRows] = useState<CollectionRow[]>([]);
-
   // Fetch datasets.
   const {
     data: datasets,
@@ -134,13 +131,14 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
     isLoading: collectionsLoading,
   } = useFetchCollections();
 
+  // View model built from join of collections response and aggregated metadata of dataset rows.
   // Build dataset rows once datasets and collections responses have resolved.
-  useEffect(() => {
+  const collectionRows = useMemo(() => {
     if (!datasets || !collectionsById) {
-      return;
+      return [];
     }
     const datasetRows = buildDatasetRows(collectionsById, datasets);
-    setCollectionRows(buildCollectionRows(collectionsById, datasetRows));
+    return buildCollectionRows(collectionsById, datasetRows);
   }, [datasets, collectionsById]);
 
   return {
