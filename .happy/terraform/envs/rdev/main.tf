@@ -12,6 +12,8 @@ module stack {
   require_okta                 = true
   stack_prefix                 = "/${var.stack_name}"
   batch_container_memory_limit = 28000
+  backend_instance_count       = 1
+  frontend_instance_count      = 1
 
   wait_for_steady_state        = var.wait_for_steady_state
 }
