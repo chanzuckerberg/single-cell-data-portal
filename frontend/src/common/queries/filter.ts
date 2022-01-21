@@ -120,6 +120,10 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
   // View model built from join of collections response and aggregated metadata of dataset rows.
   const [collectionRows, setCollectionRows] = useState<CollectionRow[]>([]);
 
+  // Fetch states
+  const [isError, setIsError] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   // Fetch datasets.
   const {
     data: datasets,
@@ -134,18 +138,28 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
     isLoading: collectionsLoading,
   } = useFetchCollections();
 
-  // Build dataset rows once datasets and collections responses have resolved.
+  // Build collection rows once datasets and collections responses have resolved. Update loading and error fetch states.
   useEffect(() => {
+    setIsLoading(datasetsLoading || collectionsLoading);
+    setIsError(datasetsError || collectionsError);
+
     if (!datasets || !collectionsById) {
       return;
     }
     const datasetRows = buildDatasetRows(collectionsById, datasets);
     setCollectionRows(buildCollectionRows(collectionsById, datasetRows));
-  }, [datasets, collectionsById]);
+  }, [
+    collectionsById,
+    collectionsError,
+    collectionsLoading,
+    datasets,
+    datasetsError,
+    datasetsLoading,
+  ]);
 
   return {
-    isError: datasetsError || collectionsError,
-    isLoading: datasetsLoading || collectionsLoading,
+    isError,
+    isLoading,
     rows: collectionRows,
   };
 }
@@ -174,6 +188,10 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   // View model built from join of datasets and collections responses.
   const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
 
+  // Fetch states
+  const [isError, setIsError] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   // Fetch datasets.
   const {
     data: datasets,
@@ -188,17 +206,27 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
     isLoading: collectionsLoading,
   } = useFetchCollections();
 
-  // Build dataset rows once datasets and collections responses have resolved.
+  // Build dataset rows once datasets and collections responses have resolved. Update loading and error fetch states.
   useEffect(() => {
+    setIsLoading(datasetsLoading || collectionsLoading);
+    setIsError(datasetsError || collectionsError);
+
     if (!datasets || !collectionsById) {
       return;
     }
     setDatasetRows(buildDatasetRows(collectionsById, datasets));
-  }, [datasets, collectionsById]);
+  }, [
+    collectionsById,
+    collectionsError,
+    collectionsLoading,
+    datasets,
+    datasetsError,
+    datasetsLoading,
+  ]);
 
   return {
-    isError: datasetsError || collectionsError,
-    isLoading: datasetsLoading || collectionsLoading,
+    isError,
+    isLoading,
     rows: datasetRows,
   };
 }
