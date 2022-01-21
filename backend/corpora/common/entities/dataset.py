@@ -190,8 +190,6 @@ class Dataset(Entity):
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
 
-        print("SDIFSDKHFSDF")
-
         # Development stage expansion
         for result in results:
             if not "development_stage" in result:
