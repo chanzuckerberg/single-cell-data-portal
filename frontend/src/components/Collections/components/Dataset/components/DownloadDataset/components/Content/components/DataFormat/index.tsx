@@ -16,7 +16,6 @@ interface Props {
   isDisabled: boolean;
   selectedFormat: DATASET_ASSET_FORMAT | "";
   availableFormats: DATASET_ASSET_FORMAT[];
-  isRDSSkipped: boolean;
 }
 
 const DataFormat: FC<Props> = ({
@@ -24,7 +23,6 @@ const DataFormat: FC<Props> = ({
   isDisabled = false,
   selectedFormat,
   availableFormats,
-  isRDSSkipped,
 }) => {
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
@@ -80,7 +78,9 @@ const DataFormat: FC<Props> = ({
         selectedValue={selectedFormat}
       >
         {renderH5adRadio()}
-        {isRDSSkipped ? renderDisabledRdsRadio() : renderRdsRadio()}
+        {availableFormats.includes(DATASET_ASSET_FORMAT.RDS)
+          ? renderRdsRadio()
+          : renderDisabledRdsRadio()}
       </RadioGroup>
     </Section>
   );

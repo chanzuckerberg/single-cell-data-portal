@@ -130,7 +130,6 @@ export default function Datasets(): JSX.Element {
           <DatasetsActionsCell
             datasetId={values.id}
             isOverMaxCellCount={values.isOverMaxCellCount}
-            isRDSSkipped={false} // We can ignore RDS skipped check for public datasets (as this is curator-specific).
             name={values.name}
             tombstone={false} // Only public datasets are displayed in the datasets index.
             explorerUrl={values.explorer_url}
