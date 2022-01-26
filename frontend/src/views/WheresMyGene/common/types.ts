@@ -1,11 +1,13 @@
 import { CSSProperties } from "react";
 
-/** This object holds a cell type and its genes. */
-export interface CellTypeAndGenes {
+/** This object holds a cell type and its gene expressions. */
+export interface CellTypeSummary {
+  /** cellType id */
   id: string;
+  /** cellType name */
   name: string;
-  expressions?: {
-    [geneName: string]: GeneExpression;
+  geneExpressions?: {
+    [geneName: string]: CellTypeGeneExpressionSummaryData;
   };
 }
 
@@ -15,30 +17,39 @@ export interface CellType {
 }
 
 /**
- * This object holds a gene and all the cell types that has this
- * genetic expression.
+ * This object holds a gene and all the cell types that express this gene.
  */
-export interface RawGeneExpression {
-  gene_name: string;
-  cell_types: GeneExpression[];
+export interface GeneExpressionSummary {
+  /** gene name */
+  name: string;
+  cellTypeGeneExpressionSummaries: CellTypeGeneExpressionSummaryData[];
+}
+
+/** This is the original data shape in API response for `CellTypeGeneExpressionSummaryData` */
+export interface RawCellTypeGeneExpressionSummaryData {
+  /** cellTypeId */
+  id: string;
+  /** percentage of the current subset of cells that express this gene */
+  pc: number;
+  /** mean expression of the current subset of cells that express this gene */
+  me: number;
 }
 
 /**
- * This object describes the cell type id and the cell's genetic
- * expression metadata
+ * This object describes the cell type id and its gene expression metadata given
+ * the current subset of cells.
  */
-export interface GeneExpression {
+export interface CellTypeGeneExpressionSummaryData {
   /** cellTypeId */
   id: string;
-  /** percentage of the cells that have this genetic expression */
-  pc: number;
-  /** mean expression of the cells that have this genetic expression */
-  me: number;
+  /** percentage of the current subset of cells that express this gene */
+  percentage: number;
+  /** mean expression of the current subset of cells that express this gene */
+  meanExpression: number;
 }
 
 export interface Gene {
   id: string;
   name: string;
   style?: CSSProperties;
-  cell_types?: GeneExpression[];
 }

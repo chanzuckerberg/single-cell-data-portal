@@ -3,7 +3,7 @@ import { connect, DatasetComponentOption, EChartsOption, init } from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
-import { CellTypeAndGenes, Gene } from "../../common/types";
+import { CellTypeSummary, Gene } from "../../common/types";
 import {
   ChartContainer,
   Container,
@@ -34,8 +34,8 @@ interface ChartProps {
 const DEBOUNCE_MS = 2 * 1000;
 
 interface Props {
-  cellTypes: CellTypeAndGenes[];
-  data: CellTypeAndGenes[];
+  cellTypes: CellTypeSummary[];
+  data: CellTypeSummary[];
   genes: Gene[];
 }
 

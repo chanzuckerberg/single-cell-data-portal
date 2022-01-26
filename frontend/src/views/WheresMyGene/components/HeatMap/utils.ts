@@ -4,7 +4,7 @@ import {
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
-import { CellTypeAndGenes, Gene } from "../../common/types";
+import { CellTypeSummary, Gene } from "../../common/types";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT = "200px";
@@ -251,21 +251,23 @@ export interface ChartFormat {
 }
 
 export function dataToChartFormat(
-  data: CellTypeAndGenes[],
-  cellTypes: CellTypeAndGenes[],
+  data: CellTypeSummary[],
+  cellTypes: CellTypeSummary[],
   genes: Gene[]
 ): ChartFormat[] {
   let min = Infinity;
   let max = -Infinity;
 
   for (const dataPoint of Object.values(data)) {
-    if (!dataPoint.expressions) continue;
+    const { geneExpressions } = dataPoint;
 
-    for (const expression of Object.values(dataPoint.expressions)) {
-      const { me } = expression;
+    if (!geneExpressions) continue;
 
-      min = Math.min(min, me);
-      max = Math.max(max, me);
+    for (const geneExpression of Object.values(geneExpressions)) {
+      const { meanExpression } = geneExpression;
+
+      min = Math.min(min, meanExpression);
+      max = Math.max(max, meanExpression);
     }
   }
 
@@ -277,30 +279,30 @@ export function dataToChartFormat(
 
   return result;
 
-  function toChartFormat(dataPoint: CellTypeAndGenes): ChartFormat[] {
-    if (!dataPoint.expressions) return [];
+  function toChartFormat(dataPoint: CellTypeSummary): ChartFormat[] {
+    const { geneExpressions } = dataPoint;
 
-    return Object.entries(dataPoint.expressions).map(
-      ([geneName, expression]) => {
-        const { pc: percentage, me: meanExpression } = expression;
+    if (!geneExpressions) return [];
 
-        const scaledMeanExpression = (meanExpression - min) / oldRange;
+    return Object.entries(geneExpressions).map(([geneName, geneExpression]) => {
+      const { percentage, meanExpression } = geneExpression;
 
-        const geneIndex = genes.findIndex((gene) => gene.name === geneName);
+      const scaledMeanExpression = (meanExpression - min) / oldRange;
 
-        const cellTypeIndex = cellTypes.findIndex(
-          (cellType) => cellType.id === dataPoint.id
-        );
+      const geneIndex = genes.findIndex((gene) => gene.name === geneName);
 
-        return {
-          cellTypeIndex,
-          geneIndex,
-          meanExpression,
-          percentage,
-          scaledMeanExpression,
-        } as ChartFormat;
-      }
-    );
+      const cellTypeIndex = cellTypes.findIndex(
+        (cellType) => cellType.id === dataPoint.id
+      );
+
+      return {
+        cellTypeIndex,
+        geneIndex,
+        meanExpression,
+        percentage,
+        scaledMeanExpression,
+      } as ChartFormat;
+    });
   }
 }
 
@@ -320,11 +322,11 @@ export function getHeatmapWidth(genes: Gene[]): number {
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellTypeAndGenes[]): number {
+export function getHeatmapHeight(cellTypes: CellTypeSummary[]): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
-export function getCellTypeNames(cellTypes: CellTypeAndGenes[]): string[] {
+export function getCellTypeNames(cellTypes: CellTypeSummary[]): string[] {
   return cellTypes.map((cellType) => cellType.name);
 }
 
