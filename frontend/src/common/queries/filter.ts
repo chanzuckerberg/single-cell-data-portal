@@ -169,9 +169,6 @@ export function useFetchCollections(): UseQueryResult<
  * @returns All public datasets joined with their corresponding collection information.
  */
 export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
-  // View model built from join of datasets and collections responses.
-  const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
-
   // Fetch datasets.
   const {
     data: datasets,
@@ -187,11 +184,11 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   } = useFetchCollections();
 
   // Build dataset rows once datasets and collections responses have resolved.
-  useEffect(() => {
+  const datasetRows = useMemo(() => {
     if (!datasets || !collectionsById) {
       return;
     }
-    setDatasetRows(buildDatasetRows(collectionsById, datasets));
+    return buildDatasetRows(collectionsById, datasets);
   }, [datasets, collectionsById]);
 
   return {
