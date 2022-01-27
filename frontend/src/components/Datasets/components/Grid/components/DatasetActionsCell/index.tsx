@@ -10,7 +10,6 @@ import DatasetExploreSvg from "src/components/Datasets/components/Grid/component
 interface Props {
   datasetId: string;
   isOverMaxCellCount: boolean;
-  isRDSSkipped: boolean;
   name: string;
   tombstone: boolean;
   explorerUrl: string;
@@ -20,7 +19,6 @@ export default function DatasetsActionsCell({
   datasetId,
   explorerUrl,
   isOverMaxCellCount = false, // TODO(cc) either set isOverMaxCellCount here to false when undefined or in parent...
-  isRDSSkipped,
   name,
   tombstone,
 }: Props): JSX.Element {
@@ -38,7 +36,6 @@ export default function DatasetsActionsCell({
         Button={DownloadButton}
         datasetId={datasetId}
         isDisabled={tombstone || !explorerUrl}
-        isRDSSkipped={isRDSSkipped}
         name={name}
       />
       <Tooltip

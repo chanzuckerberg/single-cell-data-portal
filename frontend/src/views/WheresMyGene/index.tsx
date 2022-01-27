@@ -9,10 +9,10 @@ import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
 import {
-  CellTypeAndGenes,
+  CellTypeGeneExpressionSummaryData,
+  CellTypeSummary,
   Gene,
-  GeneExpression,
-  RawGeneExpression,
+  GeneExpressionSummary,
 } from "./common/types";
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
@@ -22,14 +22,29 @@ import { Wrapper } from "./style";
 const DEBOUNCE_MS = 2 * 1000;
 
 const WheresMyGene = (): JSX.Element => {
+  /**
+   * This is the genes that are currently selected.
+   */
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [geneData, setGeneData] = useState<RawGeneExpression[]>(EMPTY_ARRAY);
-  const [cellTypes, setCellTypes] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
-  const [data, setData] = useState<CellTypeAndGenes[]>(EMPTY_ARRAY);
+
+  /**
+   * This holds ALL the geneData we have loaded from the API, including previously
+   * and currently selected genes.
+   * We use `selectedGeneData` to subset the data to only the genes that are
+   * currently selected.
+   */
+  const [geneData, setGeneData] =
+    useState<GeneExpressionSummary[]>(EMPTY_ARRAY);
+  const [cellTypes, setCellTypes] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
+
+  /**
+   * This is the formatted data that we use to render the heatmap.
+   */
+  const [data, setData] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
 
   const selectedGeneData = useMemo(() => {
     return geneData.filter((geneData) =>
-      genes.some((gene) => gene.name === geneData.gene_name)
+      genes.some((gene) => gene.name === geneData.name)
     );
   }, [genes, geneData]);
 
@@ -67,6 +82,11 @@ const WheresMyGene = (): JSX.Element => {
     );
   }, []);
 
+  /**
+   * Performance optimization:
+   * We only format and `setData()` after the watch list has stopped changing for
+   * `DEBOUNCE_MS`
+   */
   useEffect(() => {
     debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
   }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
@@ -99,7 +119,7 @@ const WheresMyGene = (): JSX.Element => {
     </>
   );
 
-  function handleGeneFetchSuccess(geneData: RawGeneExpression) {
+  function handleGeneFetchSuccess(geneData: GeneExpressionSummary) {
     setGeneData((latestGeneData) => [...latestGeneData, geneData]);
   }
 
@@ -112,9 +132,9 @@ const WheresMyGene = (): JSX.Element => {
 };
 
 function integrateCelTypesAndGenes(
-  nodes: CellTypeAndGenes[],
-  genes: RawGeneExpression[]
-): CellTypeAndGenes[] {
+  nodes: CellTypeSummary[],
+  genes: GeneExpressionSummary[]
+): CellTypeSummary[] {
   const geneMaps = genes.map((gene) => rawGeneDataToMap(gene));
 
   return cloneDeep(nodes).map((node) => {
@@ -124,8 +144,8 @@ function integrateCelTypesAndGenes(
       const columnData = geneMap.get(id);
 
       if (columnData !== undefined) {
-        node.expressions = {
-          ...(node.expressions || {}),
+        node.geneExpressions = {
+          ...(node.geneExpressions || {}),
           [name]: columnData,
         };
       }
@@ -136,11 +156,14 @@ function integrateCelTypesAndGenes(
 }
 
 function rawGeneDataToMap(
-  gene: RawGeneExpression
-): [string, Map<string, GeneExpression>] {
-  const { cell_types, gene_name } = gene;
+  gene: GeneExpressionSummary
+): [string, Map<string, CellTypeGeneExpressionSummaryData>] {
+  const { cellTypeGeneExpressionSummaries, name } = gene;
 
-  return [gene_name, new Map(cell_types?.map((row) => [row.id, row]))];
+  return [
+    name,
+    new Map(cellTypeGeneExpressionSummaries?.map((row) => [row.id, row])),
+  ];
 }
 
 export default WheresMyGene;
