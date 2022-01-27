@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
