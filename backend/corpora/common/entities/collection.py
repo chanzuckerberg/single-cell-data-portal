@@ -1,11 +1,12 @@
 import typing
 from datetime import datetime
+from urllib.parse import urlparse
 from sqlalchemy import and_
 
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from ..corpora_orm import DbCollection, DbCollectionLink, CollectionVisibility
+from ..corpora_orm import CollectionLinkType, DbCollection, DbCollectionLink, CollectionVisibility
 from ..utils.db_helpers import clone
 
 
@@ -280,3 +281,18 @@ class Collection(Entity):
     def check_has_dataset(self, dataset: Dataset) -> bool:
         """Check that a dataset is part of the collection"""
         return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
+
+    @staticmethod
+    def _normalize_doi(doi_url) -> str:
+        try:
+            return urlparse(doi_url.strip()).path.strip("/")
+        except Exception:
+            return None
+
+    def get_normalized_doi(self) -> str:
+        """Returns a normalized DOI if it exists, None otherwise"""
+        doi = [link for link in self.links if link.link_type == CollectionLinkType.DOI]
+        if doi:
+            return self._normalize_doi(doi[0].link_url)
+        else:
+            return None
