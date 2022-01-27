@@ -186,7 +186,7 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   // Build dataset rows once datasets and collections responses have resolved.
   const datasetRows = useMemo(() => {
     if (!datasets || !collectionsById) {
-      return;
+      return [];
     }
     return buildDatasetRows(collectionsById, datasets);
   }, [datasets, collectionsById]);
