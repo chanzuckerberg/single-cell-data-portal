@@ -6,8 +6,11 @@ import { useEffect, useMemo, useState } from "react";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import SideBar from "src/components/common/SideBar";
+import { Position } from "src/components/common/SideBar/style";
 import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
+import { View } from "../globalStyle";
 import {
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
@@ -97,25 +100,44 @@ const WheresMyGene = (): JSX.Element => {
         <title>cellxgene | Where&apos;s My Gene</title>
       </Head>
 
-      <Wrapper>
-        <GeneSearchBar onGenesChange={setGenes} />
+      <SideBar label="Filters" isOpen>
+        <span>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+          autem deserunt assumenda repudiandae repellat quis sunt quae, aut vero
+          rem itaque labore praesentium iure exercitationem minus iste
+          laudantium sed aliquid.
+        </span>
+      </SideBar>
+      <SideBar label="Filters" isOpen position={Position.RIGHT}>
+        <span>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+          autem deserunt assumenda repudiandae repellat quis sunt quae, aut vero
+          rem itaque labore praesentium iure exercitationem minus iste
+          laudantium sed aliquid.
+        </span>
+      </SideBar>
 
-        <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
+      <View hideOverflow>
+        <Wrapper>
+          <GeneSearchBar onGenesChange={setGenes} />
 
-        {genes.map((gene) => {
-          const { name } = gene;
+          <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
 
-          return (
-            <GeneFetcher
-              fetchedGenes={genes}
-              name={name}
-              key={name}
-              onSuccess={handleGeneFetchSuccess}
-              onError={handleGeneFetchError}
-            />
-          );
-        })}
-      </Wrapper>
+          {genes.map((gene) => {
+            const { name } = gene;
+
+            return (
+              <GeneFetcher
+                fetchedGenes={genes}
+                name={name}
+                key={name}
+                onSuccess={handleGeneFetchSuccess}
+                onError={handleGeneFetchError}
+              />
+            );
+          })}
+        </Wrapper>
+      </View>
     </>
   );
 

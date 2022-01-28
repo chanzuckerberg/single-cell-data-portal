@@ -10,8 +10,15 @@ export const ViewGrid = styled.div`
   margin-top: 10vh;
 `;
 
+interface ViewProps {
+  hideOverflow?: boolean;
+}
+
 export const View = styled.div`
   ${contentWrapper}
   grid-area: content;
-  overflow: auto; /* facilitates independent content scrolling for sidebar layout */
+  overflow: ${(props: ViewProps) =>
+    props.hideOverflow
+      ? "hidden"
+      : "auto"}; /* facilitates independent content scrolling for sidebar layout */
 `;
