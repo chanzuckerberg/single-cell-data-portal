@@ -61,6 +61,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
             "published_year": 2021,
             "published_month": 11,
+            "published_day": 10,
             "journal": "Nature",
             "is_preprint": False,
         }

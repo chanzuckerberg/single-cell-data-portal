@@ -27,7 +27,7 @@ class CrossrefProvider(object):
     @staticmethod
     def parse_date_parts(obj):
         date_parts = obj["date-parts"][0]
-        return (date_parts[0], date_parts[1])
+        return (date_parts[0], date_parts[1], date_parts[2])
 
     def fetch_metadata(self, doi):
         """
@@ -53,7 +53,7 @@ class CrossrefProvider(object):
             published_date = (
                 message.get("published-print") or message.get("published") or message.get("published-online")
             )
-            published_year, published_month = self.parse_date_parts(published_date)
+            published_year, published_month, published_day = self.parse_date_parts(published_date)
 
             # Journal
             try:
@@ -77,6 +77,7 @@ class CrossrefProvider(object):
                 "authors": parsed_authors,
                 "published_year": published_year,
                 "published_month": published_month,
+                "published_day": published_day,
                 "journal": journal,
                 "is_preprint": is_preprint,
             }
