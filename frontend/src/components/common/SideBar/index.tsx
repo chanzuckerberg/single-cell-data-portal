@@ -37,20 +37,18 @@ export default function SideBar({
     : IconNames.CHEVRON_RIGHT;
 
   return (
-    <>
-      <SideBarWrapper sideBarWidth={sideBarWidth} position={position}>
-        <SideBarPositioner isExpanded={isExpanded}>
-          <SideBarToggleButtonWrapper>
-            <Button
-              minimal
-              onClick={() => setIsExpanded(!isExpanded)}
-              rightIcon={rightIcon}
-              text={label}
-            />
-          </SideBarToggleButtonWrapper>
-          {isExpanded ? content : null}
-        </SideBarPositioner>
-      </SideBarWrapper>
-    </>
+    <SideBarWrapper sideBarWidth={sideBarWidth} position={position}>
+      <SideBarPositioner isExpanded={isExpanded}>
+        <SideBarToggleButtonWrapper>
+          <Button
+            minimal
+            onClick={() => setIsExpanded(!isExpanded)}
+            rightIcon={rightIcon}
+            text={label}
+          />
+        </SideBarToggleButtonWrapper>
+        {isExpanded ? content : null}
+      </SideBarPositioner>
+    </SideBarWrapper>
   );
 }
