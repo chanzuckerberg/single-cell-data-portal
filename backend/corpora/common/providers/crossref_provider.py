@@ -3,14 +3,18 @@ from ..corpora_config import CorporaConfig
 
 import logging
 
+
 class CrossrefException(Exception):
     pass
+
 
 class CrossrefFetchException(CrossrefException):
     pass
 
+
 class CrossrefParseException(CrossrefException):
     pass
+
 
 class CrossrefProvider(object):
     """
@@ -38,13 +42,13 @@ class CrossrefProvider(object):
         if self.base_crossref_uri is None:
             logging.info("No Crossref API URI found, skipping metadata fetching.")
             return None
-        
+
         # TODO: if we're using the commercial API, the token should also be parametrized
         try:
             res = requests.get(f"{self.base_crossref_uri}/{doi}")
             res.raise_for_status()
         except Exception as e:
-            raise CrossrefFetchException(f"Cannot fetch metadata from Crossref") from e
+            raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         try:
             message = res.json()["message"]
@@ -82,5 +86,4 @@ class CrossrefProvider(object):
                 "is_preprint": is_preprint,
             }
         except Exception as e:
-            raise CrossrefParseException(f"Cannot parse metadata from Crossref") from e
-
+            raise CrossrefParseException("Cannot parse metadata from Crossref") from e

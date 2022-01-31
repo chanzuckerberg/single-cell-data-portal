@@ -123,7 +123,7 @@ def create_collection(body: object, user: str):
     provider = crossref_provider.CrossrefProvider()
     try:
         publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
-    except CrossrefException as e: 
+    except CrossrefException as e:
         logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
         publisher_metadata = None
 
@@ -137,7 +137,7 @@ def create_collection(body: object, user: str):
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
         curator_name=body.get("curator_name", ""),
-        publisher_metadata=publisher_metadata
+        publisher_metadata=publisher_metadata,
     )
 
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
@@ -204,9 +204,9 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     old_doi = collection.get_normalized_doi()
     new_doi = _get_doi_from_body(body)
 
-    if old_doi and not new_doi: 
+    if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
-        collection.update(publisher_metadata = None)
+        collection.update(publisher_metadata=None)
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
         provider = crossref_provider.CrossrefProvider()

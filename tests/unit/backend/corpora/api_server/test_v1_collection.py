@@ -1033,7 +1033,7 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.put(
-            f"/dp/v1/collections/{collection.id}", 
+            f"/dp/v1/collections/{collection.id}",
             data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
             headers=headers,
         )
@@ -1059,7 +1059,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         # We're passing an empty links object, therefore the DOI is deleted
         response = self.app.put(
-            f"/dp/v1/collections/{collection.id}", 
+            f"/dp/v1/collections/{collection.id}",
             data=json.dumps({"links": []}),
             headers=headers,
         )
@@ -1085,7 +1085,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         # Note that the DOI is the same as the original
         response = self.app.put(
-            f"/dp/v1/collections/{collection.id}", 
+            f"/dp/v1/collections/{collection.id}",
             data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}]}),
             headers=headers,
         )
