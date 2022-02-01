@@ -47,6 +47,7 @@ const Page = (): JSX.Element => (
   </StylesProvider>
 );
 
+// This layout needs to be defined in order to correctly style the SideBars and their wrappers
 Page.Layout = SidebarLayout;
 
 export default Page;
