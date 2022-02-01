@@ -14,7 +14,6 @@ export const Description = styled.div`
   line-height: 18px;
   letter-spacing: -0.1px;
   text-align: left;
-  width: 90ch;
 `;
 
 export const LinkContainer = styled.div`
