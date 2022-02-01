@@ -1,7 +1,10 @@
 import itertools
 import json
 from datetime import datetime
+
 from furl import furl
+
+from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -452,6 +455,41 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__post_collection_adds_publisher_metadata(self, mock_provider):
+
+        publisher_metadata = {
+            "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+            "published_year": 2021,
+            "published_month": 11,
+            "published_day": 10,
+            "journal": "Nature",
+            "is_preprint": False,
+        }
+
+        mock_provider.return_value = publisher_metadata
+
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertEqual(collection.publisher_metadata, publisher_metadata)
 
     def test__post_collection_fails_with_extra_fields(self):
         test_url = furl(path="/dp/v1/collections/")
@@ -981,6 +1019,86 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__update_collection_new_doi_updates_metadata(self, mock_provider):
+        # The Crossref provider will always return "New Journal"
+        mock_provider.return_value = {"journal": "New Journal"}
+        collection = self.generate_collection(
+            self.session,
+            links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
+            publisher_metadata={"journal": "Old Journal"},
+        )
+        self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.id}",
+            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
+            headers=headers,
+        )
+        self.assertEqual(200, response.status_code)
+
+        mock_provider.assert_called_once()
+
+        actual_body = json.loads(response.data)
+        self.assertIsNotNone(actual_body["publisher_metadata"])
+        self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
+        self.assertEqual("New Journal", actual_body["publisher_metadata"]["journal"])
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__update_collection_remove_doi_deletes_metadata(self, mock_provider):
+        mock_provider.return_value = {"journal": "New Journal"}
+        collection = self.generate_collection(
+            self.session,
+            links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
+            publisher_metadata={"journal": "Old Journal"},
+        )
+        self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        # We're passing an empty links object, therefore the DOI is deleted
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.id}",
+            data=json.dumps({"links": []}),
+            headers=headers,
+        )
+
+        self.assertEqual(200, response.status_code)
+        # No Crossref calls should happen
+        mock_provider.assert_not_called()
+
+        # The `publisher_metadata` node should not longer be in the collection
+        actual_body = json.loads(response.data)
+        self.assertNotIn("publisher_metadata", actual_body)
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__update_collection_same_doi_does_not_update_metadata(self, mock_provider):
+        mock_provider.return_value = {"journal": "New Journal"}
+        collection = self.generate_collection(
+            self.session,
+            links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
+            publisher_metadata={"journal": "Old Journal"},
+        )
+        self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        # Note that the DOI is the same as the original
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.id}",
+            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}]}),
+            headers=headers,
+        )
+
+        self.assertEqual(200, response.status_code)
+        # No Crossref calls should happen, since the DOI is unmodified
+        mock_provider.assert_not_called()
+
+        # The `publisher_metadata` node should exist and be the same
+        actual_body = json.loads(response.data)
+        self.assertIsNotNone(actual_body["publisher_metadata"])
+        self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
+        self.assertEqual("Old Journal", actual_body["publisher_metadata"]["journal"])
 
 
 class TestCollectionsCurators(BasicAuthAPITestCurator):
