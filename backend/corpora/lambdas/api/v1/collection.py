@@ -1,7 +1,11 @@
 import sqlalchemy
 from typing import Optional
+from backend.corpora.common.providers import crossref_provider
+from backend.corpora.common.providers.crossref_provider import CrossrefException
 
 from flask import make_response, jsonify, g
+
+import logging
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
@@ -22,6 +26,13 @@ def _owner_or_allowed(user):
     Returns None if the user is superuser, `user` otherwise. Used for where conditions
     """
     return None if has_scope("write:collections") else user
+
+
+def _get_doi_from_body(body):
+    links = body.get("links", [])
+    doi_list = [link["link_url"] for link in links if link["link_type"] == "DOI"]
+    # TODO (ebezzi): remove DOI normalization when all DOIs have been migrated to CURIE
+    return Collection._normalize_doi(doi_list[0]) if doi_list else None
 
 
 @dbconnect
@@ -108,6 +119,14 @@ def post_collection_revision(collection_uuid: str, user: str):
 @dbconnect
 def create_collection(body: object, user: str):
     db_session = g.db_session
+
+    provider = crossref_provider.CrossrefProvider()
+    try:
+        publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
+    except CrossrefException as e:
+        logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
+        publisher_metadata = None
+
     collection = Collection.create(
         db_session,
         visibility=CollectionVisibility.PRIVATE,
@@ -118,6 +137,7 @@ def create_collection(body: object, user: str):
         contact_name=body["contact_name"],
         contact_email=body["contact_email"],
         curator_name=body.get("curator_name", ""),
+        publisher_metadata=publisher_metadata,
     )
 
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
@@ -179,6 +199,24 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     )
     if not collection:
         raise ForbiddenHTTPException()
+
+    # Compute the diff between old and new DOI
+    old_doi = collection.get_normalized_doi()
+    new_doi = _get_doi_from_body(body)
+
+    if old_doi and not new_doi:
+        # If the DOI was deleted, remove the publisher_metadata field
+        collection.update(publisher_metadata=None)
+    elif new_doi != old_doi:
+        # If the DOI has changed, fetch and update the metadata
+        provider = crossref_provider.CrossrefProvider()
+        try:
+            publisher_metadata = provider.fetch_metadata(new_doi)
+        except CrossrefException as e:
+            logging.warning(f"CrossrefException on update_collection: {e}. Will ignore metadata.")
+            publisher_metadata = None
+        body["publisher_metadata"] = publisher_metadata
+
     collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
