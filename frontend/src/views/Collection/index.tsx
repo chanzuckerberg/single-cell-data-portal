@@ -185,7 +185,7 @@ const Collection: FC = () => {
       <Head>
         <title>cellxgene | {collection.name}</title>
       </Head>
-      <ViewGrid>
+      <ViewGrid isFilterEnabled={isFilterEnabled}>
         {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
           <StyledCallout intent={Intent.PRIMARY} icon={null}>
             <span data-test-id="revision-status">
