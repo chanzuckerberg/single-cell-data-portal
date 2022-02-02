@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+from backend.corpora.common.entities.dataset import Dataset
 
 from furl import furl
 
@@ -153,6 +154,29 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["explorer_url"], dataset.explorer_url)
         self.assertEqual(actual_dataset["published_at"], dataset.published_at.timestamp())
         self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
+
+    def test__enrich_development_stage_with_ancestors_expands_correctly(self):
+        dataset = {
+            "development_stage":  [{"ontology_term_id": "HsapDv:0000008", "label": "Test"}]
+        }
+        Dataset.enrich_development_stage_with_ancestors(dataset)
+        self.assertIn("development_stage_ancestors", dataset)
+        self.assertEqual(
+            dataset["development_stage_ancestors"], 
+            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"]
+        )
+
+    def test__enrich_development_stage_with_ancestors_empty_key_ok(self):
+        dataset = {}
+        Dataset.enrich_development_stage_with_ancestors(dataset)
+        self.assertEqual(dataset, {})
+
+    def test__enrich_development_stage_with_ancestors_missing_key_ok(self):
+        dataset = {
+            "development_stage":  [{"ontology_term_id": "HsapDv:non_existant", "label": "Test"}]
+        }
+        Dataset.enrich_development_stage_with_ancestors(dataset)
+        self.assertNotIn("development_stage_ancestors", dataset)
 
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         dataset = self.generate_dataset(

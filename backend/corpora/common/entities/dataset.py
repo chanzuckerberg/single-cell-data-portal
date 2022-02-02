@@ -145,6 +145,21 @@ class Dataset(Entity):
         if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
             dataset["organism"] = [dataset["organism"]]
 
+    @staticmethod
+    def enrich_development_stage_with_ancestors(dataset):
+        if not "development_stage" in dataset:
+            return
+
+        leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
+
+        if not leaves: 
+            return
+
+        ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
+        flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
+        if flattened_ancestors:
+            dataset["development_stage_ancestors"] = flattened_ancestors
+
     @classmethod
     def list_for_index(cls, session) -> typing.List[typing.Dict]:
         """
@@ -189,21 +204,7 @@ class Dataset(Entity):
         for result in results:
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
-
-        # Development stage expansion
-        for result in results:
-            if not "development_stage" in result:
-                continue
-
-            leaves = [e["ontology_term_id"] for e in result["development_stage"]]
-
-            if not leaves: 
-                continue
-
-            ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
-            flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
-            if ancestors:
-                result["development_stage_ancestors"] = flattened_ancestors
+            Dataset.enrich_development_stage_with_ancestors(result)
 
         return results
 
