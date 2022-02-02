@@ -18,8 +18,15 @@ export const ViewGrid = styled.div<Props>`
       : undefined}; /* overrides layout min-width specification to facilitate shrink to fit responsiveness */
 `;
 
+interface ViewProps {
+  hideOverflow?: boolean;
+}
+
 export const View = styled.div`
   ${contentWrapper}
   grid-area: content;
-  overflow: auto; /* facilitates independent content scrolling for sidebar layout */
+  overflow: ${(props: ViewProps) =>
+    props.hideOverflow
+      ? "hidden"
+      : "auto"}; /* facilitates independent content scrolling for sidebar layout */
 `;
