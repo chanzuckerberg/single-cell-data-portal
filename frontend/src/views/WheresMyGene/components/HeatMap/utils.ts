@@ -4,13 +4,14 @@ import {
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
-import { CellTypeSummary, Gene } from "../../common/types";
+import { State } from "../../common/store";
+import { CellTypeSummary } from "../../common/types";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT = "200px";
 export const Y_AXIS_CHART_WIDTH = "300px";
 
-interface CreateOptionProps {
+interface CreateOptionsProps {
   geneNames: string[];
   cellTypeNames: string[];
   commonOptions: EChartsOption;
@@ -42,7 +43,7 @@ export function createChartOptions({
   geneNames,
   cellTypeNames,
   commonOptions,
-}: CreateOptionProps): EChartsOption {
+}: CreateOptionsProps): EChartsOption {
   return {
     ...commonOptions,
     axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
@@ -72,7 +73,7 @@ export function createChartOptions({
     ],
     tooltip: {
       formatter(props) {
-        const { name, data } = props as unknown as {
+        const { name: cellTypeName, data } = props as unknown as {
           name: string;
           data: ChartFormat;
         };
@@ -81,6 +82,8 @@ export function createChartOptions({
 
         const { geneIndex, percentage, meanExpression, scaledMeanExpression } =
           data;
+
+        const { name } = deserializeCellTypeName(cellTypeName);
 
         return `
           cell type: ${name}
@@ -132,11 +135,16 @@ export function createChartOptions({
   };
 }
 
+interface CreateXAxisOptionsProps extends CreateOptionsProps {
+  genesToDelete: string[];
+}
+
 export function createXAxisOptions({
   geneNames,
   cellTypeNames,
   commonOptions,
-}: CreateOptionProps): EChartsOption {
+  genesToDelete,
+}: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...commonOptions,
     axisPointer: { ...COMMON_AXIS_POINTER },
@@ -154,6 +162,17 @@ export function createXAxisOptions({
     xAxis: [
       {
         axisLabel: {
+          formatter(value) {
+            return genesToDelete.includes(value)
+              ? `{selected|${value}}`
+              : value;
+          },
+          rich: {
+            selected: {
+              color: "red",
+              fontWeight: "bold",
+            },
+          },
           rotate: 270,
           verticalAlign: "middle",
           width: 200,
@@ -164,6 +183,7 @@ export function createXAxisOptions({
         boundaryGap: true,
         data: geneNames,
         position: "top",
+        triggerEvent: true,
         type: "category",
       },
     ],
@@ -186,11 +206,16 @@ export function createXAxisOptions({
   };
 }
 
+interface CreateYAxisOptionsProps extends CreateOptionsProps {
+  cellTypeIdsToDelete: string[];
+}
+
 export function createYAxisOptions({
   geneNames,
   cellTypeNames,
   commonOptions,
-}: CreateOptionProps): EChartsOption {
+  cellTypeIdsToDelete,
+}: CreateYAxisOptionsProps): EChartsOption {
   return {
     ...commonOptions,
     axisPointer: { ...COMMON_AXIS_POINTER },
@@ -225,7 +250,23 @@ export function createYAxisOptions({
     ],
     yAxis: [
       {
-        axisLabel: { align: "right", rotate: 20 },
+        axisLabel: {
+          align: "right",
+          formatter(value) {
+            const [id, , name] = value.split("~");
+
+            return cellTypeIdsToDelete.includes(id)
+              ? `{selected|${name}}`
+              : name;
+          },
+          rich: {
+            selected: {
+              color: "red",
+              fontWeight: "bold",
+            },
+          },
+          rotate: 20,
+        },
         axisLine: {
           show: false,
         },
@@ -237,6 +278,7 @@ export function createYAxisOptions({
         splitLine: {
           show: false,
         },
+        triggerEvent: true,
       },
     ],
   };
@@ -253,7 +295,7 @@ export interface ChartFormat {
 export function dataToChartFormat(
   data: CellTypeSummary[],
   cellTypes: CellTypeSummary[],
-  genes: Gene[]
+  genes: State["selectedGenes"]
 ): ChartFormat[] {
   let min = Infinity;
   let max = -Infinity;
@@ -289,7 +331,7 @@ export function dataToChartFormat(
 
       const scaledMeanExpression = (meanExpression - min) / oldRange;
 
-      const geneIndex = genes.findIndex((gene) => gene.name === geneName);
+      const geneIndex = genes.findIndex((gene) => gene === geneName);
 
       const cellTypeIndex = cellTypes.findIndex(
         (cellType) => cellType.id === dataPoint.id
@@ -315,7 +357,7 @@ const HEAT_MAP_BASE_CELL_PX = 20;
  * This is used to make sure the table cell size stays the same regardless
  * of the number of genes selected.
  */
-export function getHeatmapWidth(genes: Gene[]): number {
+export function getHeatmapWidth(genes: State["selectedGenes"]): number {
   return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
 }
 
@@ -326,10 +368,43 @@ export function getHeatmapHeight(cellTypes: CellTypeSummary[]): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
+/**
+ * Value format: `${id}~${tissue}~${name}`
+ * We need to encode cell type metadata here, so we can use it in onClick event
+ */
 export function getCellTypeNames(cellTypes: CellTypeSummary[]): string[] {
-  return cellTypes.map((cellType) => cellType.name);
+  return cellTypes.map(({ id, name }) => {
+    // TODO(thuang): Add multiple tissues support.
+    return `${id}~lung~${name}`;
+  });
 }
 
-export function getGeneNames(genes: Gene[]): string[] {
-  return genes.map((gene) => gene.name);
+/**
+ * Value format: `${id}~${tissue}~${name}`
+ */
+export function deserializeCellTypeName(cellTypeName: string): {
+  id: string;
+  name: string;
+  tissue: string;
+} {
+  const [id, tissue, name] = cellTypeName.split("~");
+
+  return {
+    id,
+    name,
+    tissue,
+  };
+}
+
+export function isCellTypeNameATissue(cellTypeName: string): boolean {
+  const { name, tissue } = deserializeCellTypeName(cellTypeName);
+
+  return name === tissue;
+}
+
+/**
+ * Value format: `${name}`
+ */
+export function getGeneNames(genes: State["selectedGenes"]): string[] {
+  return genes;
 }
