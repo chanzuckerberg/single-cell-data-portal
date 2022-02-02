@@ -6,6 +6,7 @@ import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";
+import { StyledPrimaryButton } from "src/components/common/Button/common/style";
 import Toast from "src/views/Collection/components/Toast";
 import Policy, { POLICY_BULLETS } from "./components/Policy";
 
@@ -16,18 +17,21 @@ const AsyncAlert = loadable(
 
 interface Props {
   id: Collection["id"];
+  isFilterEnabled?: boolean;
   isPublishable: boolean;
   isRevision: boolean;
 }
 
 const PublishCollection: FC<Props> = ({
   id = "",
+  isFilterEnabled = false,
   isPublishable,
   isRevision,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
   const router = useRouter();
+  const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   if (isSuccess) {
     router.push(ROUTES.COLLECTION.replace(":id", id));
@@ -68,7 +72,7 @@ const PublishCollection: FC<Props> = ({
 
   return (
     <>
-      <Button
+      <PublishButton
         onMouseEnter={handleHover}
         onClick={handleClick}
         intent={Intent.PRIMARY}

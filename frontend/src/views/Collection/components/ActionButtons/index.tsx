@@ -6,7 +6,7 @@ import {
 } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
 import MoreDropdown from "./components/MoreDropdown";
-import { Wrapper } from "./style";
+import { CollectionActions, Wrapper } from "./style";
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;
 }
@@ -14,6 +14,7 @@ export interface UploadedFiles {
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   id: Collection["id"];
+  isFilterEnabled?: boolean;
   isPublishable: boolean;
   isRevision: boolean;
 }
@@ -21,20 +22,22 @@ interface Props {
 const ActionButtons = ({
   addNewFile,
   id,
+  isFilterEnabled = false,
   isPublishable,
   isRevision,
 }: Props): JSX.Element => {
+  const Actions = isFilterEnabled ? CollectionActions : Wrapper;
   return (
-    <Wrapper>
+    <Actions>
       <MoreDropdown id={id} isRevision={isRevision} />
-
-      <AddButton addNewFile={addNewFile} />
+      <AddButton addNewFile={addNewFile} isFilterEnabled={isFilterEnabled} />
       <PublishCollection
         id={id}
+        isFilterEnabled={isFilterEnabled}
         isPublishable={isPublishable}
         isRevision={isRevision}
       />
-    </Wrapper>
+    </Actions>
   );
 };
 

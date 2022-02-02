@@ -67,3 +67,7 @@ export const StyledCallout = styled(Callout)`
   padding: ${PT_GRID_SIZE_PX}px ${PT_GRID_SIZE_PX * 1.5}px;
   margin-bottom: ${PT_GRID_SIZE_PX * 2}px;
 `;
+
+export const ViewCollection = styled.div`
+  padding: 40px;
+`;

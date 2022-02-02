@@ -1,6 +1,15 @@
 import { ORANGE, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import styled from "styled-components";
 
+export const CollectionBanner = styled.div`
+  background-color: ${ORANGE.F};
+  margin-bottom: ${2 * PT_GRID_SIZE_PX}px;
+  max-width: calc(
+    50% - 20px
+  ); /* equates to CollectionDetails component grid column and grid gap allocation for collection description */
+  padding: ${2 * PT_GRID_SIZE_PX}px;
+`;
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -28,7 +37,7 @@ export const BannerHeader = styled.div`
   color: ${ORANGE.A};
 `;
 
-export const BannerWrapper = styled.div`
+export const BannerText = styled.div`
   font-size: 14px;
   font-style: normal;
   font-weight: 400;

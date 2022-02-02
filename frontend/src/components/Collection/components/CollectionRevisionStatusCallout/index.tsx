@@ -1,0 +1,27 @@
+import { Intent } from "@blueprintjs/core";
+import React from "react";
+import { CollectionRevisionCallout } from "src/components/Collection/components/CollectionRevisionStatusCallout/style";
+
+interface Props {
+  isRevisionDifferent: boolean;
+  shouldShowCollectionRevisionCallout: boolean;
+}
+
+export default function CollectionRevisionStatusCallout({
+  isRevisionDifferent,
+  shouldShowCollectionRevisionCallout,
+}: Props): JSX.Element {
+  return (
+    <>
+      {shouldShowCollectionRevisionCallout && (
+        <CollectionRevisionCallout intent={Intent.PRIMARY} icon={null}>
+          <span data-test-id="revision-status">
+            {isRevisionDifferent
+              ? "This collection has changed since you last published it."
+              : "This is a private revision of a public collection."}
+          </span>
+        </CollectionRevisionCallout>
+      )}
+    </>
+  );
+}
