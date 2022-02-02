@@ -3,11 +3,16 @@ import { API } from "src/common/API";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
-import { Gene, RawGeneExpression } from "../../common/types";
+import {
+  CellTypeGeneExpressionSummaryData,
+  Gene,
+  GeneExpressionSummary,
+  RawCellTypeGeneExpressionSummaryData,
+} from "../../common/types";
 
 interface Props {
   name: string;
-  onSuccess: (gene: RawGeneExpression) => void;
+  onSuccess: (gene: GeneExpressionSummary) => void;
   onError: (id: string) => void;
   minDelayMS?: number;
   maxDelayMS?: number;
@@ -51,8 +56,10 @@ export default function GeneFetcher({
       setTimeout(() => {
         if (expressions) {
           onSuccess({
-            cell_types: expressions,
-            gene_name: name,
+            cellTypeGeneExpressionSummaries: expressions.map(
+              transformCellTypeGeneExpressionSummaryData
+            ),
+            name,
           });
         } else {
           onError(name);
@@ -62,4 +69,16 @@ export default function GeneFetcher({
   }, [name, onSuccess, onError, minDelayMS, maxDelayMS]);
 
   return null;
+}
+
+function transformCellTypeGeneExpressionSummaryData(
+  data: RawCellTypeGeneExpressionSummaryData
+): CellTypeGeneExpressionSummaryData {
+  const { id, pc, me } = data;
+
+  return {
+    id,
+    meanExpression: me,
+    percentage: pc,
+  };
 }

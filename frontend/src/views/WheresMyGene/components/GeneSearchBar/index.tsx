@@ -131,11 +131,7 @@ interface ExtendedItemRendererProps extends IItemRendererProps {
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // (thuang): Default to 40 genes for now
-  const [input, setInput] = useState("40");
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     fetchGenes();
