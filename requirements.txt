@@ -21,6 +21,6 @@ scanpy
 tenacity
 tiledb==0.10.1
 click==7.1.2
--r ./backend/corpora/api_server/requirements.txt
+-r ./backend/apps/api_server/requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 parameterized
