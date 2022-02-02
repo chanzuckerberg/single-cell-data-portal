@@ -14,10 +14,10 @@ from requests import HTTPError
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.utils.json import CustomJSONEncoder
-from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-from backend.corpora.common.corpora_orm import (
+from backend.apps.common.corpora_config import CorporaDbConfig
+from backend.apps.common.utils.json import CustomJSONEncoder
+from backend.apps.common.utils.db_session import db_session_manager, DBSessionMaker
+from backend.apps.common.corpora_orm import (
     CollectionVisibility,
     DbCollection,
     DbDataset,
@@ -26,10 +26,10 @@ from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
     ProcessingStatus,
 )
-from backend.corpora.common.entities import DatasetAsset
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.utils.s3_buckets import buckets
+from backend.apps.common.entities import DatasetAsset
+from backend.apps.common.entities.dataset import Dataset
+from backend.apps.common.entities.collection import Collection
+from backend.apps.common.utils.s3_buckets import buckets
 
 from urllib.parse import urlparse
 

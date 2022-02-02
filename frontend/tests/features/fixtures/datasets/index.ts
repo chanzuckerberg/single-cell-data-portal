@@ -26,7 +26,7 @@ const datasets = [
         filetype: "H5AD",
         id: "d925fb89-8b05-4aff-b9c3-00c810cb71bd",
         s3_uri:
-          "s3://corpora-data-prod/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e/local.h5ad",
+          "s3://apps-data-prod/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e/local.h5ad",
         type: "REMIX",
         updated_at: 1617747599.150026,
         user_submitted: true,
@@ -38,7 +38,7 @@ const datasets = [
         filetype: "RDS",
         id: "4d0462e2-621e-4d80-94c6-9577b2215373",
         s3_uri:
-          "s3://corpora-data-prod/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e/local.rds",
+          "s3://apps-data-prod/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e/local.rds",
         type: "REMIX",
         updated_at: 1617747639.017628,
         user_submitted: true,
@@ -169,7 +169,7 @@ const datasets = [
         filetype: "H5AD",
         id: "ca52fdae-f092-4fbf-afb9-58cb7486a0ca",
         s3_uri:
-          "s3://corpora-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.h5ad",
+          "s3://apps-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.h5ad",
         type: "REMIX",
         updated_at: 1617748198.66594,
         user_submitted: true,
@@ -181,7 +181,7 @@ const datasets = [
         filetype: "RDS",
         id: "a3a4ea58-da04-4fcf-8cc8-db9f47b4d58a",
         s3_uri:
-          "s3://corpora-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.rds",
+          "s3://apps-data-prod/572f3f3e-d3e4-4d13-8e2b-88215e508481/local.rds",
         type: "REMIX",
         updated_at: 1617749879.638827,
         user_submitted: true,
@@ -312,7 +312,7 @@ const datasets = [
         filetype: "H5AD",
         id: "dc201379-1e9e-4973-ad6f-8367e068f4d3",
         s3_uri:
-          "s3://corpora-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.h5ad",
+          "s3://apps-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.h5ad",
         type: "REMIX",
         updated_at: 1617747955.808857,
         user_submitted: true,
@@ -324,7 +324,7 @@ const datasets = [
         filetype: "RDS",
         id: "178499a3-eaa0-4617-aee2-1e618cf17bda",
         s3_uri:
-          "s3://corpora-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.rds",
+          "s3://apps-data-prod/78fd69d2-75e4-4207-819a-563139f273c6/local.rds",
         type: "REMIX",
         updated_at: 1617749140.301688,
         user_submitted: true,
@@ -447,7 +447,7 @@ const datasets = [
         filetype: "H5AD",
         id: "c5daa006-b246-42a1-ad2a-9fad66b414e8",
         s3_uri:
-          "s3://corpora-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.h5ad",
+          "s3://apps-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.h5ad",
         type: "REMIX",
         updated_at: 1617747325.537073,
         user_submitted: true,
@@ -459,7 +459,7 @@ const datasets = [
         filetype: "RDS",
         id: "06440235-cff1-4242-b295-3fd361bf23f4",
         s3_uri:
-          "s3://corpora-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.rds",
+          "s3://apps-data-prod/84f1a631-910b-4fbb-9f76-d915a07316d2/local.rds",
         type: "REMIX",
         updated_at: 1617747541.115589,
         user_submitted: true,
@@ -574,7 +574,7 @@ const datasets = [
         filetype: "H5AD",
         id: "824875af-c989-43d9-9c07-d782fd06f5bc",
         s3_uri:
-          "s3://corpora-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.h5ad",
+          "s3://apps-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.h5ad",
         type: "REMIX",
         updated_at: 1617747653.571765,
         user_submitted: true,
@@ -586,7 +586,7 @@ const datasets = [
         filetype: "RDS",
         id: "8ab73c42-8086-427f-b585-3ada3e7f55f3",
         s3_uri:
-          "s3://corpora-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.rds",
+          "s3://apps-data-prod/9d584fcb-a28a-4b91-a886-ceb66a88ef81/local.rds",
         type: "REMIX",
         updated_at: 1617748145.260182,
         user_submitted: true,
@@ -718,7 +718,7 @@ const datasets = [
         filetype: "H5AD",
         id: "dada2b31-236c-4585-95fc-05d91fba3bef",
         s3_uri:
-          "s3://corpora-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.h5ad",
+          "s3://apps-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.h5ad",
         type: "REMIX",
         updated_at: 1617321217.253226,
         user_submitted: true,
@@ -730,7 +730,7 @@ const datasets = [
         filetype: "RDS",
         id: "8d4ccaf6-1ed7-4eed-b653-7206669209fa",
         s3_uri:
-          "s3://corpora-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.rds",
+          "s3://apps-data-prod/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e/local.rds",
         type: "REMIX",
         updated_at: 1617323095.801812,
         user_submitted: true,
@@ -861,7 +861,7 @@ const datasets = [
         filetype: "H5AD",
         id: "f46b664e-e415-4db9-8b89-f9bb18eb9ba5",
         s3_uri:
-          "s3://corpora-data-prod/ed852810-a003-4386-9846-1638362cee39/local.h5ad",
+          "s3://apps-data-prod/ed852810-a003-4386-9846-1638362cee39/local.h5ad",
         type: "REMIX",
         updated_at: 1617747713.055638,
         user_submitted: true,
@@ -873,7 +873,7 @@ const datasets = [
         filetype: "RDS",
         id: "24960190-1eb9-4afa-ac26-d55e6981af4c",
         s3_uri:
-          "s3://corpora-data-prod/ed852810-a003-4386-9846-1638362cee39/local.rds",
+          "s3://apps-data-prod/ed852810-a003-4386-9846-1638362cee39/local.rds",
         type: "REMIX",
         updated_at: 1617748062.855601,
         user_submitted: true,
@@ -1004,7 +1004,7 @@ const datasets = [
         filetype: "H5AD",
         id: "323f4fca-f1a3-4921-a350-b2d33ca76df1",
         s3_uri:
-          "s3://corpora-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.h5ad",
+          "s3://apps-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.h5ad",
         type: "REMIX",
         updated_at: 1617739451.659032,
         user_submitted: true,
@@ -1016,7 +1016,7 @@ const datasets = [
         filetype: "RDS",
         id: "a33fd442-e535-4e0b-a7e2-c26df804f9ab",
         s3_uri:
-          "s3://corpora-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.rds",
+          "s3://apps-data-prod/f75f2ff4-2884-4c2d-b375-70de37a34507/local.rds",
         type: "REMIX",
         updated_at: 1617739498.163839,
         user_submitted: true,

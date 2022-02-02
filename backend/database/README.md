@@ -12,13 +12,13 @@
 1. Update the `Revision ID` and the `revision` (used by alembic) to include the migration count
 For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` and `revision = "a8cd0dc08805"` becomes `revision = "18_a8cd0dc08805"` 
 1. [Test your migration](#test-a-migration)
-1. Check that [corpora.orm](../corpora/common/corpora_orm.py) matches up with your changes.
+1. Check that [corpora.orm](../apps/common/corpora_orm.py) matches up with your changes.
 1. Once you've completed the changes, create a PR to get the functions reviewed. 
 1. Once the PR is merged, you can run the migration.
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 1. In a new terminal, complete the migration by running:
 ```shell
-cd corpora-data-portal/backend
+cd apps-data-portal/backend
 export CORPORA_LOCAL_DEV=1
 export DEPLOYMENT_STAGE=test
 make db/migrate
@@ -27,11 +27,11 @@ make db/migrate
 ## How to autogenerate migration script
 
 1. From the top level directory (`corpora-data-portal`), `cd backend`.
-1. Make changes to [corpora_orm.py](../corpora/common/corpora_orm.py)
+1. Make changes to [corpora_orm.py](../apps/common/corpora_orm.py)
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 1. Run Auto-migration:
 ```shell
-cd corpora-data-portal/backend
+cd apps-data-portal/backend
 export CORPORA_LOCAL_DEV=1
 export DEPLOYMENT_STAGE=test
 make db/new_migration_auto MESSAGE="purpose_of_migration"
@@ -45,7 +45,7 @@ The following steps will test that a migration script works on a local database 
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 2. Open a new terminal and download the remote database schema:
 ```shell
-cd corpora-data-portal/backend
+cd apps-data-portal/backend
 export DEPLOYMENT_STAGE=test
 make db/download
 ```
@@ -53,7 +53,7 @@ This wll download the database into a file ending in *.sqlc*.
 3. Close the tunnel to the remote database
 4. Start the local database environment: 
 ```shell
-cd corpora-data-portal
+cd apps-data-portal
 make local-start
 export DEPLOYMENT_STAGE=test
 ```
@@ -84,7 +84,7 @@ To stop it run `make local-stop` from `./corpora-data-portal`
 
 
 ```shell
-cd ./corpora-data-poral/backend
+cd ./apps-data-poral/backend
 export DEPLOYMENT_STAGE=test
 make db/tunnel
 ```

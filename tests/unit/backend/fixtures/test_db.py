@@ -1,4 +1,4 @@
-from backend.corpora.common.corpora_orm import (
+from backend.apps.common.corpora_orm import (
     CollectionVisibility,
     CollectionLinkType,
     DatasetArtifactType,
@@ -16,7 +16,7 @@ from backend.corpora.common.corpora_orm import (
     DbGeneset,
     XApproximateDistribution,
 )
-from backend.corpora.common.utils.db_session import DBSessionMaker
+from backend.apps.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
 

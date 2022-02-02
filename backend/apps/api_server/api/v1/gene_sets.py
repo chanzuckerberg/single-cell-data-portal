@@ -1,0 +1,27 @@
+from flask import make_response, jsonify, g
+
+from backend.apps.common.corpora_orm import CollectionVisibility
+from backend.apps.common.entities.geneset import Geneset
+from backend.apps.api_server.db import dbconnect
+from backend.apps.common.utils.exceptions import (
+    ForbiddenHTTPException,
+)
+from backend.apps.api_server.api.v1.collection import _is_user_owner_or_allowed
+
+
+@dbconnect
+def delete(geneset_uuid: str, user: str):
+    """
+    Deletes an existing geneset
+    """
+    db_session = g.db_session
+    geneset = Geneset.get(db_session, geneset_uuid)
+    accepted_response = "", 202
+    if not geneset:
+        return accepted_response
+    if not _is_user_owner_or_allowed(user, geneset.collection.owner):
+        raise ForbiddenHTTPException()
+    if geneset.collection_visibility == CollectionVisibility.PUBLIC:
+        return make_response(jsonify("Cannot delete a public geneset"), 405)
+    geneset.delete()
+    return accepted_response

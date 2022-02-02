@@ -8,9 +8,9 @@ import typing
 from boto.s3.bucket import Bucket
 from moto import mock_s3
 
-from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
-from backend.corpora.common.entities import DatasetAsset, Dataset
+from backend.apps.common.corpora_config import CorporaConfig
+from backend.apps.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
+from backend.apps.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 

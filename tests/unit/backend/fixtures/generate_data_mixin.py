@@ -1,6 +1,6 @@
-from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.entities.geneset import Geneset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.apps.common.entities import Collection, Dataset
+from backend.apps.common.entities.geneset import Geneset
+from backend.apps.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams, BogusGenesetParams
 
 

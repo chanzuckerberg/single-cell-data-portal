@@ -4,10 +4,10 @@ from unittest.mock import patch
 
 import requests
 
-from backend.corpora.common.corpora_orm import (
+from backend.apps.common.corpora_orm import (
     CollectionVisibility,
 )
-from backend.corpora.dataset_processing import process
+from backend.apps.dataset_processing import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
@@ -54,7 +54,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             if os.path.exists(f):
                 os.remove(f)
 
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
+    @patch("backend.apps.dataset_processing.process.download_from_dropbox_url")
     def test_main(self, mock_download_from_dropbox):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates

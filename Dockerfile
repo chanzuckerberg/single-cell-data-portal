@@ -16,13 +16,13 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /corpora-data-portal
 ADD requirements.txt /corpora-data-portal/requirements.txt
-ADD backend/corpora/api_server/requirements.txt /corpora-data-portal/requirements-api.txt
+ADD backend/apps/api_server/requirements.txt /corpora-data-portal/requirements-api.txt
 RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && cat requirements-api.txt >> reqs.txt \
     && python3 -m pip install -r reqs.txt
 EXPOSE 5000
 
-# Install utilities to /corpora-data-portal so we can run db migrations.
+# Install utilities to /apps-data-portal so we can run db migrations.
 ADD tests /corpora-data-portal/tests
 ADD scripts /corpora-data-portal/scripts
 ADD backend /corpora-data-portal/backend
