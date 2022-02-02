@@ -1,10 +1,10 @@
 FROM public.ecr.aws/lambda/python:3.8
 
-COPY backend/corpora/upload_success .
+COPY backend/apps/upload_success .
 COPY backend/__init__.py ./backend/__init__.py
-COPY backend/corpora/__init__.py ./backend/corpora/__init__.py
-COPY backend/corpora/common ./backend/corpora/common
-COPY backend/corpora/dataset_processing ./backend/corpora/dataset_processing
+COPY backend/apps/__init__.py ./backend/apps/__init__.py
+COPY backend/apps/common ./backend/apps/common
+COPY backend/apps/dataset_processing ./backend/apps/dataset_processing
 
 RUN pip3 install -r requirements.txt
 
