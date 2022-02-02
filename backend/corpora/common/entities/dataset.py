@@ -147,12 +147,12 @@ class Dataset(Entity):
 
     @staticmethod
     def enrich_development_stage_with_ancestors(dataset):
-        if not "development_stage" in dataset:
+        if "development_stage" not in dataset:
             return
 
         leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
 
-        if not leaves: 
+        if not leaves:
             return
 
         ancestors = [ontology_mapping.get(leaf) for leaf in leaves]

@@ -156,14 +156,12 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
 
     def test__enrich_development_stage_with_ancestors_expands_correctly(self):
-        dataset = {
-            "development_stage":  [{"ontology_term_id": "HsapDv:0000008", "label": "Test"}]
-        }
+        dataset = {"development_stage": [{"ontology_term_id": "HsapDv:0000008", "label": "Test"}]}
         Dataset.enrich_development_stage_with_ancestors(dataset)
         self.assertIn("development_stage_ancestors", dataset)
         self.assertEqual(
-            dataset["development_stage_ancestors"], 
-            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"]
+            dataset["development_stage_ancestors"],
+            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
         )
 
     def test__enrich_development_stage_with_ancestors_empty_key_ok(self):
@@ -172,9 +170,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(dataset, {})
 
     def test__enrich_development_stage_with_ancestors_missing_key_ok(self):
-        dataset = {
-            "development_stage":  [{"ontology_term_id": "HsapDv:non_existant", "label": "Test"}]
-        }
+        dataset = {"development_stage": [{"ontology_term_id": "HsapDv:non_existant", "label": "Test"}]}
         Dataset.enrich_development_stage_with_ancestors(dataset)
         self.assertNotIn("development_stage_ancestors", dataset)
 
@@ -189,18 +185,18 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         test_url = furl(path="/dp/v1/datasets/index")
-        
+
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
 
-        actual_dataset = body[-1] # last added dataset
+        actual_dataset = body[-1]  # last added dataset
 
         self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
         self.assertEqual(
-            actual_dataset["development_stage_ancestors"], 
-            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"]
+            actual_dataset["development_stage_ancestors"],
+            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
         )
 
     def test__get_dataset_assets(self):
