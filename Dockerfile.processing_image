@@ -24,7 +24,7 @@ ADD tests /corpora-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
 ADD backend/api/__init__.py backend/api/__init__.py
 ADD backend/api/data_portal/dataset_processing backend/api/data_portal/dataset_processing
-ADD backend/api/common backend/api/common
+ADD backend/api/data_portal/common backend/api/data_portal/common
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
