@@ -3,7 +3,12 @@ import unittest
 import mock
 import requests
 from requests import HTTPError
-from backend.api.data_portal.common.utils.dl_sources.url import from_url, DropBoxURL, MissingHeaderException, RegisteredSources
+from backend.api.data_portal.common.utils.dl_sources.url import (
+    from_url,
+    DropBoxURL,
+    MissingHeaderException,
+    RegisteredSources,
+)
 
 
 class TestDropbox(unittest.TestCase):

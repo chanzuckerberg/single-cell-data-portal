@@ -2,8 +2,12 @@ from datetime import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.api.data_portal.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, \
-    DbDataset
+from backend.api.data_portal.common.corpora_orm import (
+    CollectionLinkType,
+    DbCollectionLink,
+    CollectionVisibility,
+    DbDataset,
+)
 from backend.api.data_portal.common.entities import Dataset
 from backend.api.data_portal.common.entities import Collection
 from backend.api.data_portal.common.entities.geneset import Geneset, GenesetDatasetLink

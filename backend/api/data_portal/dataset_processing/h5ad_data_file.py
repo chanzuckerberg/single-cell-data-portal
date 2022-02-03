@@ -7,8 +7,9 @@ import anndata
 import numpy as np
 import tiledb
 
-from backend.api.data_portal.common.utils.color_conversion_utils import \
-    convert_anndata_category_colors_to_cxg_category_colors
+from backend.api.data_portal.common.utils.color_conversion_utils import (
+    convert_anndata_category_colors_to_cxg_category_colors,
+)
 from backend.api.data_portal.common.utils.corpora_constants import CorporaConstants
 from backend.api.data_portal.common.utils.cxg_constants import CxgConstants
 from backend.api.data_portal.common.utils.cxg_generation_utils import (

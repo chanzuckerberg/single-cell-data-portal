@@ -136,7 +136,11 @@ from backend.api.data_portal.common.utils.db_session import db_session_manager
 from backend.api.data_portal.common.utils.dl_sources.url import from_url
 from backend.api.data_portal.common.utils.s3_buckets import buckets
 from backend.api.data_portal.dataset_processing.download import download
-from backend.api.data_portal.dataset_processing.exceptions import ProcessingCancelled, ProcessingFailed, ValidationFailed
+from backend.api.data_portal.dataset_processing.exceptions import (
+    ProcessingCancelled,
+    ProcessingFailed,
+    ValidationFailed,
+)
 from backend.api.data_portal.dataset_processing.h5ad_data_file import H5ADDataFile
 from backend.api.data_portal.dataset_processing.slack import format_slack_message
 

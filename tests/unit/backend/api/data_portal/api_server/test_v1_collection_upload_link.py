@@ -71,7 +71,8 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             self.assertEqual("The URL provided causes an error with Dropbox.", json.loads(response.data)["detail"])
 
     @patch(
-        "backend.api.data_portal.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"}
+        "backend.api.data_portal.common.utils.dl_sources.url.DropBoxURL.file_info",
+        return_value={"size": 1, "name": "file.txt"},
     )
     def test__unsupported_format__400(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload-links"

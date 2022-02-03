@@ -66,7 +66,7 @@ def assert_authorized(headers: dict) -> dict:
 
 
 def get_token_auth_header(headers: dict) -> str:
-    """Obtains the Access Token from the Authorization Header """
+    """Obtains the Access Token from the Authorization Header"""
 
     auth_header = headers.get("Authorization", None)
     if not auth_header:

@@ -19,21 +19,26 @@ APP_NAME = os.environ["APP_NAME"]
 
 
 def create_flask_app(apis: Dict):
-    connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}",
-                                       specification_dir=f"{os.path.dirname(__file__)}")
+    connexion_app = connexion.FlaskApp(
+        f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir=f"{os.path.dirname(__file__)}"
+    )
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
 
     # Add each API under its own base path
     for base_path, spec_file in apis.items():
-        connexion_app.add_api(spec_file, validate_responses=True, base_path=f"/{base_path}",
-                              options={
-                                  "serve_spec": True,
-                                  "swagger_path": swagger_ui_3_path,
-                                  "swagger_ui": True,
-                                  "swagger_url": None,
-                                  "verbose": True
-                              })
+        connexion_app.add_api(
+            spec_file,
+            validate_responses=True,
+            base_path=f"/{base_path}",
+            options={
+                "serve_spec": True,
+                "swagger_path": swagger_ui_3_path,
+                "swagger_ui": True,
+                "swagger_url": None,
+                "verbose": True,
+            },
+        )
 
     return connexion_app.app
 
@@ -89,17 +94,17 @@ class InterceptRequestMiddleware:
 
 
 # TODO: Make this config automatic, and document how to add a new API
-apis = {'wmg': 'wmg/wmg-api.yml',
-        'dp': 'data_portal/data-portal-api.yml'}
+apis = {"wmg": "wmg/wmg-api.yml", "dp": "data_portal/data-portal-api.yml"}
 app = configure_flask_app(create_flask_app(apis))
 app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
 
 
-@app.route('/')
+@app.route("/")
 def apis_landing_page():
     # TODO: use jinja2 template to render this
     links = [f'<a href="{api_name}/ui/">{api_name}</a></br>' for api_name in apis.keys()]
     return f'<html><head><title>cellxgene Platform APIs</title></head><body><h1>cellxgene Platform APIs</h1>{"".join(links)}</body></html>'
+
 
 @app.teardown_appcontext
 def close_db(e=None):
