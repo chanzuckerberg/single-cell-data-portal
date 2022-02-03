@@ -4,7 +4,7 @@ import unittest
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+from tests.functional.backend.api.data_portal.common import BaseFunctionalTestCase
 
 
 class UndesiredHttpStatusCodeError(Exception):

@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, time
 
 import click
 import requests
@@ -11,13 +11,15 @@ from click import Context
 from furl import furl
 from requests import HTTPError
 
+from backend.api.data_portal.common.utils.db_session import DBSessionMaker, db_session_manager
+from backend.api.data_portal.common.utils.json import CustomJSONEncoder
+from backend.api.data_portal.common.utils.s3_buckets import buckets
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.utils.json import CustomJSONEncoder
-from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
-from backend.corpora.common.corpora_orm import (
+from backend.api.data_portal.common.corpora_config import CorporaDbConfig
+from backend.api.data_portal.common.corpora_orm import (
     CollectionVisibility,
     DbCollection,
     DbDataset,
@@ -26,10 +28,8 @@ from backend.corpora.common.corpora_orm import (
     DbDatasetArtifact,
     ProcessingStatus,
 )
-from backend.corpora.common.entities import DatasetAsset
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.utils.s3_buckets import buckets
+from backend.api.data_portal.common.entities import DatasetAsset, Dataset
+from backend.api.data_portal.common.entities import Collection
 
 from urllib.parse import urlparse
 

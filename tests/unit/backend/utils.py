@@ -1,7 +1,7 @@
 import random
 import string
 
-from backend.corpora.common.corpora_orm import (
+from backend.api.data_portal.common.corpora_orm import (
     CollectionVisibility,
     ConversionStatus,
     IsPrimaryData,

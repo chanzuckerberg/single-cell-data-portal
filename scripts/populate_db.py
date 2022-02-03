@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 import click
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database, drop_database
 
 env = os.environ.get("DEPLOYMENT_STAGE")
-from backend.corpora.common.corpora_config import CorporaDbConfig
+from backend.api.data_portal.common.corpora_config import CorporaDbConfig
 from tests.unit.backend.fixtures.test_db import TestDatabase
 
 # Importing tests.unit overwrites our deployment stage env var.

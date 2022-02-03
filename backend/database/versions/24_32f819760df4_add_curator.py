@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-from backend.corpora.common.corpora_orm import StrippedString
+from backend.api.data_portal.common import StrippedString
 
 revision = "24_32f819760df4"
 down_revision = "23_449eea8f5aeb"

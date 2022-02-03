@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  version: "1.0.0"
+  title: Chan Zuckerburg Initiative cellxgene Where's My Gene (WMG) API
+  description: >-
+    This API is for internal use only by WMG web client.
+servers:
+  - description: Local
+    url: /
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.dev.single-cell.czi.technology/
+  - description: Staging environment
+    url: https://api.staging.single-cell.czi.technology/
+paths:
+   /v1/dummy:
+    get:
+      tags:
+        - wmg
+      summary: Temporary endpoint for development purposes.
+      description: >-
+        DELETE ME
+      operationId: backend.api.wmg.v1.dummy
+      parameters: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          $ref: "#/components/responses/400"
+
+components:
+  schemas:
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    204:
+      description: No Content
+    400:
+      description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    404:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    409:
+      description: File conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    "413":
+      description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"

@@ -5,7 +5,7 @@ import base64
 import json
 import time
 
-from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.api.data_portal.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",

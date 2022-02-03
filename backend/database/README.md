@@ -12,7 +12,7 @@
 1. Update the `Revision ID` and the `revision` (used by alembic) to include the migration count
 For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` and `revision = "a8cd0dc08805"` becomes `revision = "18_a8cd0dc08805"` 
 1. [Test your migration](#test-a-migration)
-1. Check that [corpora.orm](../corpora/common/corpora_orm.py) matches up with your changes.
+1. Check that [corpora.orm](../api/data_portal/common/corpora_orm.py) matches up with your changes.
 1. Once you've completed the changes, create a PR to get the functions reviewed. 
 1. Once the PR is merged, you can run the migration.
 1. [Connect to Remote RDS](#connect-to-remote-rds)
@@ -27,7 +27,7 @@ make db/migrate
 ## How to autogenerate migration script
 
 1. From the top level directory (`corpora-data-portal`), `cd backend`.
-1. Make changes to [corpora_orm.py](../corpora/common/corpora_orm.py)
+1. Make changes to [corpora_orm.py](../api/data_portal/common/corpora_orm.py)
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 1. Run Auto-migration:
 ```shell

@@ -5,7 +5,7 @@ import unittest
 import requests
 from requests import HTTPError
 
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+from tests.functional.backend.api.data_portal.common import BaseFunctionalTestCase
 
 
 class TestApi(BaseFunctionalTestCase):

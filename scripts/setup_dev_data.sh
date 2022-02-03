@@ -64,7 +64,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
 }' || true
 
 
-# TODO: python3 -m unittest tests.unit.backend.corpora.common.test_authorizer.TestAuthorizer.test_invalid_token
+# TODO: python3 -m unittest tests.unit.backend.api.data_portal.common.test_authorizer.TestAuthorizer.test_invalid_token
 ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-secret --secret-string '{
     "client_id": "",
     "client_secret": "",

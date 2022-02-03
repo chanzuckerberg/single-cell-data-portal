@@ -35,6 +35,7 @@ services:
             - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
+    platform: linux/x86_64
     build:
       context: frontend
       cache_from:
@@ -66,6 +67,7 @@ services:
             - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
+    platform: linux/x86_64
     build:
       context: .
       cache_from:
@@ -80,10 +82,10 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/corpora/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
-      - ./backend/corpora/common:/var/task/backend/corpora/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/api/data_portal/upload_failures:/var/task
+      - ./backend/api/data_portal/lambdas/upload_failures:/var/task/backend/api/data_portal/upload_failures
+      - ./backend/api/data_portal/common:/var/task/backend/api/data_portal/common
+      - ./backend/api/data_portal/dataset_processing:/var/task/backend/api/data_portal/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -101,6 +103,7 @@ services:
             - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
+    platform: linux/x86_64
     build:
       context: .
       cache_from:
@@ -115,9 +118,9 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/corpora/upload_success:/var/task
-      - ./backend/corpora/common:/var/task/backend/corpora/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/api/data_portal/upload_success:/var/task
+      - ./backend/api/data_portal/common:/var/task/backend/api/data_portal/common
+      - ./backend/api/data_portal/dataset_processing:/var/task/backend/api/data_portal/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -135,6 +138,7 @@ services:
             - uploadsuccess.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
+    platform: linux/x86_64
     build:
       context: .
       cache_from:
@@ -147,8 +151,8 @@ services:
         - HAPPY_TAG
     restart: "no"
     volumes:
-      - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
-      - ./backend/corpora/common:/backend/corpora/common
+      - ./backend/api/data_portal/dataset_processing:/backend/api/data_portal/dataset_processing
+      - ./backend/api/data_portal/common:/backend/api/data_portal/common
       # Mount dirs in a layout suitable for running tests.
       - .:/corpora-data-portal
     command: ["sleep", "infinity"]
@@ -169,6 +173,7 @@ services:
             - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
+    platform: linux/x86_64
     build:
       context: .
       cache_from:
