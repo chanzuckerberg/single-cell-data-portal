@@ -38,6 +38,15 @@ module.exports = {
     "@typescript-eslint/camelcase": 0,
     // Disable prop-types as we use TypeScript for type checking
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        args: "after-used",
+        argsIgnorePattern: "^_",
+        ignoreRestSiblings: false,
+        vars: "all",
+      },
+    ],
     camelcase: "off",
     "react/jsx-no-target-blank": 0,
     "react/prop-types": "off",

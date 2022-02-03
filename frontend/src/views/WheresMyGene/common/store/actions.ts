@@ -3,22 +3,15 @@
  * in `./reducer.ts`.
  */
 
+import { CellTypeMetadata } from "../../components/HeatMap/utils";
+import { CellTypeSummary } from "../types";
 import { REDUCERS, State } from "./reducer";
 
-export function deleteSelectedGenesAndSelectedCellTypeIds({
-  genesToDelete,
-  cellTypeIdsToDelete,
-}: {
-  genesToDelete: string[];
-  cellTypeIdsToDelete: string[];
-}): GetActionTypeOfReducer<
+export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
   typeof REDUCERS["deleteSelectedGenesAndSelectedCellTypeIds"]
 > {
   return {
-    payload: {
-      cellTypeIdsToDelete,
-      genesToDelete,
-    },
+    payload: null,
     type: "deleteSelectedGenesAndSelectedCellTypeIds",
   };
 }
@@ -33,7 +26,7 @@ export function toggleGeneToDelete(
 }
 
 export function toggleCellTypeIdToDelete(
-  cellTypeIdToDelete: string
+  cellTypeIdToDelete: CellTypeMetadata
 ): GetActionTypeOfReducer<typeof REDUCERS["toggleCellTypeIdToDelete"]> {
   return {
     payload: cellTypeIdToDelete,
@@ -83,6 +76,26 @@ export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReduc
   return {
     payload: null,
     type: "resetGenesToDeleteAndCellTypeIdsToDelete",
+  };
+}
+
+export function tissueCellTypesFetched(
+  tissue: string,
+  cellTypeSummaries: CellTypeSummary[]
+): GetActionTypeOfReducer<typeof REDUCERS["tissueCellTypesFetched"]> {
+  return {
+    payload: { cellTypeSummaries, tissue },
+    type: "tissueCellTypesFetched",
+  };
+}
+
+export function resetTissueCellTypes(
+  tissue: string,
+  cellTypeSummaries: CellTypeSummary[]
+): GetActionTypeOfReducer<typeof REDUCERS["resetTissueCellTypes"]> {
+  return {
+    payload: { cellTypeSummaries, tissue },
+    type: "resetTissueCellTypes",
   };
 }
 

@@ -5,11 +5,14 @@ import {
   ScatterSeriesOption,
 } from "echarts";
 import { State } from "../../common/store";
-import { CellTypeSummary } from "../../common/types";
+import { CellTypeSummary, Tissue } from "../../common/types";
+import ReplaySVG from "./icons/replay.svg";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT = "200px";
 export const Y_AXIS_CHART_WIDTH = "300px";
+
+const REPLAY_SVG_WIDTH_PX = 12;
 
 interface CreateOptionsProps {
   geneNames: string[];
@@ -73,7 +76,7 @@ export function createChartOptions({
     ],
     tooltip: {
       formatter(props) {
-        const { name: cellTypeName, data } = props as unknown as {
+        const { name: cellTypeMetadata, data } = props as unknown as {
           name: string;
           data: ChartFormat;
         };
@@ -83,7 +86,9 @@ export function createChartOptions({
         const { geneIndex, percentage, meanExpression, scaledMeanExpression } =
           data;
 
-        const { name } = deserializeCellTypeName(cellTypeName);
+        const { name } = deserializeCellTypeMetadata(
+          cellTypeMetadata as CellTypeMetadata
+        );
 
         return `
           cell type: ${name}
@@ -118,7 +123,7 @@ export function createChartOptions({
     ],
     yAxis: [
       {
-        axisLabel: { fontSize: 0, rotate: 20 },
+        axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
         },
@@ -189,7 +194,7 @@ export function createXAxisOptions({
     ],
     yAxis: [
       {
-        axisLabel: { fontSize: 0, rotate: 20 },
+        axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
         },
@@ -208,6 +213,7 @@ export function createXAxisOptions({
 
 interface CreateYAxisOptionsProps extends CreateOptionsProps {
   cellTypeIdsToDelete: string[];
+  tissuesWithDeletedCellTypes: string[];
 }
 
 export function createYAxisOptions({
@@ -215,6 +221,7 @@ export function createYAxisOptions({
   cellTypeNames,
   commonOptions,
   cellTypeIdsToDelete,
+  tissuesWithDeletedCellTypes,
 }: CreateYAxisOptionsProps): EChartsOption {
   return {
     ...commonOptions,
@@ -251,21 +258,43 @@ export function createYAxisOptions({
     yAxis: [
       {
         axisLabel: {
-          align: "right",
           formatter(value) {
-            const [id, , name] = value.split("~");
+            const { name } = deserializeCellTypeMetadata(
+              value as CellTypeMetadata
+            );
 
-            return cellTypeIdsToDelete.includes(id)
+            const isTissue = checkIsTissue(value as CellTypeMetadata);
+            const tissueHasDeletedCellTypes =
+              tissuesWithDeletedCellTypes.includes(name);
+
+            if (isTissue) {
+              return tissueHasDeletedCellTypes
+                ? `{tissue|${capitalize(name)}}{reset|}`
+                : `{tissue|${capitalize(name)}}`;
+            }
+
+            return cellTypeIdsToDelete.includes(value)
               ? `{selected|${name}}`
               : name;
           },
           rich: {
+            reset: {
+              backgroundColor: {
+                image: ReplaySVG.src,
+              },
+              width: REPLAY_SVG_WIDTH_PX,
+            },
             selected: {
               color: "red",
               fontWeight: "bold",
             },
+            tissue: {
+              align: "left",
+              color: "black",
+              fontSize: 13,
+              fontWeight: "bold",
+            },
           },
-          rotate: 20,
         },
         axisLine: {
           show: false,
@@ -370,24 +399,29 @@ export function getHeatmapHeight(cellTypes: CellTypeSummary[]): number {
 
 /**
  * Value format: `${id}~${tissue}~${name}`
+ */
+export type CellTypeMetadata =
+  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}`;
+
+/**
  * We need to encode cell type metadata here, so we can use it in onClick event
  */
-export function getCellTypeNames(cellTypes: CellTypeSummary[]): string[] {
-  return cellTypes.map(({ id, name }) => {
-    // TODO(thuang): Add multiple tissues support.
-    return `${id}~lung~${name}`;
+export function getAllSerializedCellTypeMetadata(
+  cellTypes: CellTypeSummary[]
+): CellTypeMetadata[] {
+  return cellTypes.map(({ id, name, tissue }) => {
+    return `${id}~${tissue}~${name}` as CellTypeMetadata;
   });
 }
 
-/**
- * Value format: `${id}~${tissue}~${name}`
- */
-export function deserializeCellTypeName(cellTypeName: string): {
+export function deserializeCellTypeMetadata(
+  cellTypeMetadata: CellTypeMetadata
+): {
   id: string;
   name: string;
   tissue: string;
 } {
-  const [id, tissue, name] = cellTypeName.split("~");
+  const [id, tissue, name] = cellTypeMetadata.split("~");
 
   return {
     id,
@@ -396,8 +430,8 @@ export function deserializeCellTypeName(cellTypeName: string): {
   };
 }
 
-export function isCellTypeNameATissue(cellTypeName: string): boolean {
-  const { name, tissue } = deserializeCellTypeName(cellTypeName);
+export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
+  const { name, tissue } = deserializeCellTypeMetadata(cellTypeMetadata);
 
   return name === tissue;
 }
@@ -407,4 +441,8 @@ export function isCellTypeNameATissue(cellTypeName: string): boolean {
  */
 export function getGeneNames(genes: State["selectedGenes"]): string[] {
   return genes;
+}
+
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

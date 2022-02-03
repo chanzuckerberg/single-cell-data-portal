@@ -1,7 +1,11 @@
 import { CSSProperties } from "react";
 
+export type Tissue = string;
+
 /** This object holds a cell type and its gene expressions. */
 export interface CellTypeSummary {
+  /** tissue name */
+  tissue: string;
   /** cellType id */
   id: string;
   /** cellType name */
