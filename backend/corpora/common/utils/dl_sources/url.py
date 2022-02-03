@@ -73,7 +73,7 @@ class DropBoxURL(URL):
         resp.raise_for_status()
 
         return {
-            "size": int(self._get_key(resp.headers, "content-length")),
+            "size": int(self._get_key(resp.headers, "x-dropbox-content-length")),
             "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
         }
 
