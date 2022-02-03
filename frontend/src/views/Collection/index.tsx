@@ -243,8 +243,8 @@ const Collection: FC = () => {
           <DatasetTab
             collectionID={id}
             datasets={datasets}
-            visibility={visibility}
             isRevision={isRevision}
+            visibility={visibility}
           />
         </ViewCollection>
       ) : (
