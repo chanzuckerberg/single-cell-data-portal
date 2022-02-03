@@ -143,7 +143,7 @@ class H5ADDataFile:
             "cxg_properties": json.dumps({"title": self.dataset_title, "about": None}),
         }
         if self.corpora_properties is not None:
-            cxg_group_metadata["apps"] = json.dumps(self.corpora_properties)
+            cxg_group_metadata["corpora"] = json.dumps(self.corpora_properties)
 
         if convert_anndata_colors_to_cxg_colors:
             try:

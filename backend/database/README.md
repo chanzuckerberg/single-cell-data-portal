@@ -18,7 +18,7 @@ For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` a
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 1. In a new terminal, complete the migration by running:
 ```shell
-cd apps-data-portal/backend
+cd single-cell-data-portal/backend
 export CORPORA_LOCAL_DEV=1
 export DEPLOYMENT_STAGE=test
 make db/migrate
@@ -31,7 +31,7 @@ make db/migrate
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 1. Run Auto-migration:
 ```shell
-cd apps-data-portal/backend
+cd single-cell-data-portal/backend
 export CORPORA_LOCAL_DEV=1
 export DEPLOYMENT_STAGE=test
 make db/new_migration_auto MESSAGE="purpose_of_migration"
@@ -45,7 +45,7 @@ The following steps will test that a migration script works on a local database 
 1. [Connect to Remote RDS](#connect-to-remote-rds)
 2. Open a new terminal and download the remote database schema:
 ```shell
-cd apps-data-portal/backend
+cd single-cell-data-portal/backend
 export DEPLOYMENT_STAGE=test
 make db/download
 ```
@@ -53,7 +53,7 @@ This wll download the database into a file ending in *.sqlc*.
 3. Close the tunnel to the remote database
 4. Start the local database environment: 
 ```shell
-cd apps-data-portal
+cd single-cell-data-portal
 make local-start
 export DEPLOYMENT_STAGE=test
 ```
@@ -84,7 +84,7 @@ To stop it run `make local-stop` from `./corpora-data-portal`
 
 
 ```shell
-cd ./apps-data-poral/backend
+cd ./single-cell-data-poral/backend
 export DEPLOYMENT_STAGE=test
 make db/tunnel
 ```

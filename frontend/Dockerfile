@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -- TODO, we should try turning this back on later.
-# ADD --chown=node . /apps-frontend
+# ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
 

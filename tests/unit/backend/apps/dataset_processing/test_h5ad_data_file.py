@@ -278,14 +278,14 @@ class TestH5ADDataFile(unittest.TestCase):
         random_embedding = np.random.rand(3, 2)
         obsm = {"X_awesome_embedding": random_embedding}
 
-        # Create uns apps metadata
+        # Create uns corpora metadata
         uns = {}
         for metadata_field in CorporaConstants.REQUIRED_SIMPLE_METADATA_FIELDS:
             uns[metadata_field] = "random"
 
         uns["batch_condition"] = np.array(["a", "b"], dtype="object")
 
-        # Need to carefully set the apps schema versions in order for tests to pass.
+        # Need to carefully set the corpora schema versions in order for tests to pass.
         uns["schema_version"] = "2.0.0"
 
         return anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm, uns=uns)
