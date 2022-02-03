@@ -37,6 +37,16 @@ class URL(ABC):
                 f"{self.__class__.__name__}:URL({self.url}) failed request. '{key}' not present in the header."
             )
 
+    def _get_key_with_fallback(self, headers: dict, key: str, fallback_key: str) -> str:
+        try:
+            return headers.get(key) or headers[fallback_key]
+        except KeyError:
+            raise MissingHeaderException(
+                f"""{self.__class__.__name__}:URL({self.url}) failed request.
+                Neither '{key}' nor '{fallback_key}' are present in the header.
+                """
+            )
+
 
 class DropBoxURL(URL):
     """Supports download URLs from a DropBox share link."""
@@ -72,8 +82,10 @@ class DropBoxURL(URL):
         resp = requests.head(self.url, allow_redirects=True)
         resp.raise_for_status()
 
+        print(resp.headers)
+
         return {
-            "size": int(self._get_key(resp.headers, "content-length")),
+            "size": int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length")),
             "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
         }
 
