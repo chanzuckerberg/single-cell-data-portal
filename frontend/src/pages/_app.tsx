@@ -5,8 +5,6 @@ import { FC } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { checkFeatureFlags } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
 import "src/global.scss";
@@ -26,8 +24,7 @@ type AppPropsWithLayout = AppProps & {
 };
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const Layout = (isFilterEnabled && Component.Layout) || DefaultLayout;
+  const Layout = Component.Layout || DefaultLayout;
   return (
     <>
       <QueryClientProvider client={queryClient}>
