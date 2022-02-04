@@ -116,11 +116,12 @@ class SecretConfig:
             source = os.environ[self.environ_source]
         else:
             source = "aws"
+        print(f"using {self.__class__.__name__} source={source}")
         return source
 
     def value_from_config(self, name):
         if name in self.config:
-            print(f"using secret '{name}' from config prop")
+            print(f"using {self.__class__.__name__} secret '{name}' from config prop")
             return self.config[name]
         else:
             return None
