@@ -26,7 +26,7 @@ unit-test: local-unit-test
 container-unittest:
 	# This target is intended to be run INSIDE a container
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
-		-m unittest discover --start-directory tests/unit/backend/api/data_portal/api_server/ --top-level-directory . --verbose;
+		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
