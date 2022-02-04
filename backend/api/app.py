@@ -103,8 +103,12 @@ app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
 def apis_landing_page():
     # TODO: use jinja2 template to render this
     links = [f'<a href="{api_name}/ui/">{api_name}</a></br>' for api_name in apis.keys()]
-    return f'<html><head><title>cellxgene Platform APIs</title></head><body><h1>cellxgene Platform APIs</h1>{"".join(links)}</body></html>'
-
+    return f"""
+    <html>
+      <head><title>cellxgene Platform APIs</title></head>
+      <body><h1>cellxgene Platform APIs</h1>{"".join(links)}</body>
+    </html>
+    """
 
 @app.teardown_appcontext
 def close_db(e=None):
