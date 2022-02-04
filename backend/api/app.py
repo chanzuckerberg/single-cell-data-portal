@@ -110,6 +110,7 @@ def apis_landing_page():
     </html>
     """
 
+
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
