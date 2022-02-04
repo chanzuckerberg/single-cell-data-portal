@@ -3,8 +3,8 @@ import styled from "styled-components";
 
 export const CollectionHero = styled.div`
   align-items: flex-start; /* top aligns collection name with action buttons */
-  display: flex;
   column-gap: 40px;
+  display: flex;
 
   /* collection name */
   h3 {
