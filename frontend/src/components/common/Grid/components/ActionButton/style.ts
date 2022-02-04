@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 export const ActionButton = styled(Button)`
   &.${Classes.BUTTON}.${Classes.MINIMAL} {
-    height: 32px;
-    padding: 8px;
-    width: 32px;
+    height: 24px;
+    padding: 4px;
+    width: 24px;
 
     svg {
       fill: ${PRIMARY_BLUE};

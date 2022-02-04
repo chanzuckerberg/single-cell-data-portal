@@ -28,8 +28,8 @@ export const DefaultMainWrapper = styled(MainWrapper)`
 export const SidebarMainWrapper = styled(MainWrapper)`
   main {
     display: grid;
-    grid-template-areas: "sidebar content";
-    grid-template-columns: auto 1fr; /* grid columns for sidebar and corresponding content. */
+    grid-template-areas: "leftsidebar content rightsidebar";
+    grid-template-columns: auto 1fr auto; /* grid columns for sidebar and corresponding content. */
   }
 `;
 
