@@ -1,7 +1,7 @@
 from time import sleep
 
 from backend.api.data_portal.common.entities import Dataset
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 
 
 class TestGetDatasetByExplorerUrl(TestDataset):

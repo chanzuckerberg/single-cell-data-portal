@@ -14,7 +14,7 @@ from backend.api.data_portal.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from unit.backend.api.fixtures.environment_setup import fixture_file_path
+from tests.unit.backend.api.fixtures.environment_setup import fixture_file_path
 
 
 class TestCxgGenerationUtils(unittest.TestCase):

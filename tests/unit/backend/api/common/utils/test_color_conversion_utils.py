@@ -7,7 +7,7 @@ from backend.api.data_portal.common.utils.color_conversion_utils import (
     convert_anndata_category_colors_to_cxg_category_colors,
 )
 from backend.api.data_portal.common.utils.exceptions import ColorFormatException
-from unit.backend.api.fixtures.environment_setup import fixture_file_path
+from tests.unit.backend.api.fixtures.environment_setup import fixture_file_path
 
 
 class TestColorConversionUtils(unittest.TestCase):

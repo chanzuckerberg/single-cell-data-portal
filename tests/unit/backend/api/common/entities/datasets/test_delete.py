@@ -9,7 +9,7 @@ from backend.api.data_portal.common.entities import Dataset
 from backend.api.data_portal.common.entities.dataset import get_cxg_bucket_path
 from backend.api.data_portal.common.entities.geneset import GenesetDatasetLink, Geneset
 from tests.unit.backend.utils import BogusDatasetParams
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 
 
 class TestDeleteDataset(TestDataset):

@@ -1,4 +1,4 @@
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 
 
 class TestReprocessDataset(TestDataset):

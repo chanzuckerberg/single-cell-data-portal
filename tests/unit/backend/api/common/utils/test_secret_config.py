@@ -4,8 +4,8 @@ import os
 
 from backend.api.data_portal.common.utils.aws import AwsSecret
 from backend.api.data_portal.common.utils.secret_config import SecretConfig
-from unit.backend.api.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
-from unit.backend.api.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
+from tests.unit.backend.api.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
+from tests.unit.backend.api.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 try:
     from unittest.mock import PropertyMock, patch

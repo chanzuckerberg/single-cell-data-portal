@@ -3,8 +3,8 @@ from datetime import datetime
 from mock import Mock, patch
 
 from backend.api.data_portal.common.corpora_orm import CollectionVisibility, CollectionLinkType
-from unit.backend.api.data_portal.api_server.base_api_test import BasicAuthAPITestCurator, BaseAuthAPITest
-from unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
+from tests.unit.backend.api.data_portal.api_server.base_api_test import BasicAuthAPITestCurator, BaseAuthAPITest
+from tests.unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
 
 
 class TestPublish(BaseAuthAPITest):

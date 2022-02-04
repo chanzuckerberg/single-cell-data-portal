@@ -8,7 +8,7 @@ from backend.api.data_portal.common.corpora_orm import (
 from backend.api.data_portal.common.entities import Dataset
 from backend.api.data_portal.common.utils.db_helpers import processing_status_updater
 from backend.api.data_portal.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusProcessingStatusParams, BogusDatasetParams
 
 

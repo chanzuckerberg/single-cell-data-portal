@@ -2,8 +2,8 @@ import json
 
 from backend.api.data_portal.common.corpora_orm import generate_uuid, CollectionVisibility
 from backend.api.data_portal.common.entities.geneset import Geneset
-from unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest
-from unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
+from tests.unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
 
 
 class TestGenesetCreation(BaseAuthAPITest):

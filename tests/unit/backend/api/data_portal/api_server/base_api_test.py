@@ -6,7 +6,7 @@ from backend.api.data_portal.common.corpora_config import CorporaAuthConfig
 
 from tests.unit.backend.api.data_portal.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
-from unit.backend.api.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.api.fixtures.environment_setup import EnvironmentSetup
 
 
 class BaseAPITest(DataPortalTestCase):

@@ -11,7 +11,7 @@ import tiledb
 
 from backend.api.data_portal.common.utils.corpora_constants import CorporaConstants
 from backend.api.data_portal.dataset_processing.h5ad_data_file import H5ADDataFile
-from unit.backend.api.fixtures.environment_setup import fixture_file_path
+from tests.unit.backend.api.fixtures.environment_setup import fixture_file_path
 
 
 class TestH5ADDataFile(unittest.TestCase):

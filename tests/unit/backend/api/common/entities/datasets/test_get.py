@@ -1,6 +1,6 @@
 from backend.api.data_portal.common.corpora_orm import DbDatasetArtifact, DbDatasetProcessingStatus
 from backend.api.data_portal.common.entities import Dataset
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 
 
 class TestGetDataset(TestDataset):

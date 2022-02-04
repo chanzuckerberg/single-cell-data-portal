@@ -6,7 +6,7 @@ from backend.api.data_portal.common.corpora_orm import (
 )
 from backend.api.data_portal.common.entities import Dataset
 from tests.unit.backend.utils import BogusDatasetParams
-from unit.backend.api.common.entities.datasets import TestDataset
+from tests.unit.backend.api.common.entities.datasets import TestDataset
 
 
 class TestCreateDataset(TestDataset):

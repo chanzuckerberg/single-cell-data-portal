@@ -8,7 +8,7 @@ from backend.api.data_portal.common.utils.math_utils import GB
 from tests.unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.api.fixtures.environment_setup import fixture_file_path, EnvironmentSetup
+from tests.unit.backend.api.fixtures.environment_setup import fixture_file_path, EnvironmentSetup
 
 
 class TestCollectionPostUploadLink(BaseAuthAPITest):
