@@ -67,7 +67,7 @@ class BogusDatasetParams:
             explorer_url="test_url",
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            schema_version="2.0.0",
+            schema_version="2.0.0"
         )
 
         bogus_data.update(**kwargs)
