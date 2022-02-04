@@ -19,13 +19,13 @@ import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import CollectionDetails from "src/components/Collection/components/CollectionDetails";
 import CollectionHero from "src/components/Collection/components/CollectionHero";
+import CollectionMigrationCallout from "src/components/Collection/components/CollectionMigrationCallout";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
 import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
-import Banner from "./components/Banner";
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
 import {
@@ -202,9 +202,9 @@ const Collection: FC = () => {
               shouldShowCollectionRevisionCallout
             }
           />
-          {/* Incomplete collections banner */}
+          {/* Incomplete collection callout */}
           {!isRevision && (
-            <Banner collectionId={collection.id} isFilterEnabled />
+            <CollectionMigrationCallout collectionId={collection.id} />
           )}
           {/* Collection title and actions */}
           <CollectionHero
@@ -259,7 +259,9 @@ const Collection: FC = () => {
             </StyledCallout>
           )}
 
-          {!isRevision && <Banner collectionId={collection.id} />}
+          {!isRevision && (
+            <CollectionMigrationCallout collectionId={collection.id} />
+          )}
 
           <CollectionInfo>
             <H3 data-test-id="collection-name">{collection.name}</H3>
