@@ -26,7 +26,7 @@ unit-test: local-unit-test
 container-unittest:
 	# This target is intended to be run INSIDE a container
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
-		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
+		-m unittest discover --start-directory tests/unit/backend/api/data_portal/api_server/test_v1_collection --top-level-directory . --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
@@ -105,7 +105,7 @@ local-nohostconfig:
 
 .PHONY: local-init
 local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig ## Launch a new local dev env and populate it with test data.
-	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
+	docker-compose $(COMPOSE_OPTS) up -d database oidc localstack  #backend #frontend
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /corpora-data-portal && scripts/setup_dev_data.sh"
 
 .PHONY: local-status
@@ -167,7 +167,8 @@ local-unit-test-backend: # Run container-unittest target in `backend` Docker con
 			CI=true; \
 		fi; \
 	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /corpora-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    bash -c "cd /corpora-data-portal && make container-unittest && \
+	    if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \

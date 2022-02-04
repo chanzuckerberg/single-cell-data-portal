@@ -44,6 +44,7 @@ class SecretConfig:
         self._secret_name = secret_name
         self._source = self._determine_source(source)
 
+
     @property
     def config(self):
         return self.__class__._config
@@ -96,9 +97,12 @@ class SecretConfig:
     def load_from_aws(self):
         secret_path = f"corpora/{self._component_name}/{self._deployment}/{self._secret_name}"
         secret = AwsSecret(secret_path)
+        print(f"loading {self.__class__.__name__} secrets from aws path {secret_path}")
         self.from_json(secret.value)
 
     def load_from_file(self, config_file_path):
+        print(f"loading {self.__class__.__name__} secrets from file {config_file_path}")
+
         with open(config_file_path, "r") as config_fp:
             self.from_json(config_fp.read())
 
@@ -116,15 +120,18 @@ class SecretConfig:
 
     def value_from_config(self, name):
         if name in self.config:
+            print(f"using secret '{name}' from config prop")
             return self.config[name]
         else:
             return None
 
     def value_from_defaults(self, name):
+        print(f"using {self.__class__.__name__} secret '{name}' from defaults: {self._defaults}")
         return self._defaults.get(name)
 
     def value_from_env(self, name):
         if self.__class__.use_env and name.upper() in os.environ:
+            print(f"using {self.__class__.__name__} secret '{name}' from env")
             return os.environ[name.upper()]
         else:
             return None
