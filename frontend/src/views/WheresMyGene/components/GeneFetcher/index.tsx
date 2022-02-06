@@ -5,7 +5,6 @@ import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import {
   CellTypeGeneExpressionSummaryData,
-  Gene,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "../../common/types";
@@ -16,7 +15,6 @@ interface Props {
   onError: (id: string) => void;
   minDelayMS?: number;
   maxDelayMS?: number;
-  fetchedGenes: Gene[];
 }
 
 const renderedGenes: string[] = [];
