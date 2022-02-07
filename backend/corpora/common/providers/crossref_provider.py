@@ -46,7 +46,10 @@ class CrossrefProvider(object):
 
         # TODO: if we're using the commercial API, the token should also be parametrized
         try:
-            res = requests.get(f"{self.base_crossref_uri}/{doi}", headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"})
+            res = requests.get(
+                f"{self.base_crossref_uri}/{doi}",
+                headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
+            )
             res.raise_for_status()
         except Exception as e:
             raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
