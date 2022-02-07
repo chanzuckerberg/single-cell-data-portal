@@ -2,25 +2,39 @@ import { Classes } from "@blueprintjs/core";
 import { LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
+export enum Position {
+  LEFT = "left",
+  RIGHT = "right",
+}
+
 interface Props {
   sideBarWidth: number;
+  position: typeof Position[keyof typeof Position];
 }
 
 interface PositionerProps {
   isExpanded: boolean;
 }
 
+const generateBoxShadow = (props: Props) =>
+  `inset ${
+    props.position === Position.LEFT ? -1 : 1
+  }px 0px 0px rgba(16, 22, 26, 0.15)`;
+
 export const SideBar = styled.div<Props>`
   box-sizing: border-box;
-  box-shadow: inset -1px 0px 0px rgba(16, 22, 26, 0.15);
+  box-shadow: ${generateBoxShadow};
   width: ${(props) => `${props.sideBarWidth}px`};
+  grid-area: ${(props) =>
+    props.position === Position.LEFT ? "leftsidebar" : "rightsidebar"};
 `;
 
 export const SideBarPositioner = styled.div<PositionerProps>`
   max-height: calc(
     100vh - 48px
-  ); /* required for sidebar scrolling where header height is 48px */
-  overflow-y: ${(props) => (props.isExpanded ? "overlay" : undefined)};
+  ); /* required for sidebar scrolling  where header height is 48px */
+  overflow-y: ${(props) =>
+    props.isExpanded ? "overlay" : undefined}; /* overlay is deprecated */
   padding: ${(props) => (props.isExpanded ? "24px 16px" : undefined)};
   position: sticky;
   top: 48px;
