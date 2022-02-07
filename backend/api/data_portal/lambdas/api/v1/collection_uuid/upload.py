@@ -2,7 +2,7 @@ import requests
 from flask import make_response, g
 
 from backend.api.db import dbconnect
-from .....common.corpora_config import CorporaConfig
+from backend.api.data_portal.config.app_config import ProcessingConfig
 from .....common.corpora_orm import CollectionVisibility, ProcessingStatus
 from .....common import upload_sfn
 from .....common.entities import Collection, Dataset
@@ -43,9 +43,9 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
     except MissingHeaderException as ex:
         raise InvalidParametersHTTPException(ex.detail)
-    if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
+    if resp["size"] > ProcessingConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
-    if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
+    if resp["name"].rsplit(".")[-1].lower() not in ProcessingConfig().upload_file_formats:
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
 
     # Create dataset

@@ -70,8 +70,8 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         process.process(
             dataset.id,
             "https://www.dropbox.com/IGNORED",
-            self.corpora_config.bucket_name,
-            self.corpora_config.bucket_name,
+            self.TEST_BUCKET_NAME,
+            self.TEST_BUCKET_NAME
         )
 
         # TODO: add assertions. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449 # noqa: E501

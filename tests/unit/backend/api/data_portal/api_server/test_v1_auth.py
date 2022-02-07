@@ -3,6 +3,8 @@ import os
 import unittest
 import urllib.parse
 import time
+
+from backend.api.data_portal.config.app_config import AuthConfig
 from tests.unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest
 
 from tests.unit.backend.api.data_portal.api_server.mock_auth import TOKEN_EXPIRES
@@ -39,9 +41,9 @@ class TestAuth(BaseAuthAPITest):
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
             args = dict(urllib.parse.parse_qsl(split.query))
-            self.assertTrue(location.startswith(f"{self.auth_config.api_authorize_url}"))
+            self.assertTrue(location.startswith(f"{AuthConfig().api_authorize_url}"))
             self.assertIn("response_type=code", location)
-            self.assertEqual(args["client_id"], self.auth_config.client_id)
+            self.assertEqual(args["client_id"], AuthConfig().client_id)
             self.assertEqual(args["response_type"], "code")
             self.assertIn("/dp/v1/oauth2/callback", args["redirect_uri"])
             # Test session cookie
@@ -51,7 +53,7 @@ class TestAuth(BaseAuthAPITest):
             test_url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
             response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend)
+            self.assertEqual(response.headers["Location"], AuthConfig().redirect_to_frontend)
             self.assertIn("Set-Cookie", response.headers)
             # Test cxguser cookie
             self.check_set_cookie_is_secure(
@@ -96,7 +98,7 @@ class TestAuth(BaseAuthAPITest):
             test_url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
             response = self.app.get(test_url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.headers["Location"], self.auth_config.redirect_to_frontend + "?showCC=1")
+            self.assertEqual(response.headers["Location"], AuthConfig().redirect_to_frontend + "?showCC=1")
 
         with self.subTest("logout"):
             response = self.app.get("/dp/v1/logout", headers=headers)
@@ -104,8 +106,8 @@ class TestAuth(BaseAuthAPITest):
             location = response.headers["Location"]
             split = urllib.parse.urlsplit(location)
             args = dict(urllib.parse.parse_qsl(split.query))
-            self.assertTrue(location.startswith(f"{self.auth_config.api_base_url}/v2/logout"))
-            self.assertEqual(args["returnTo"], self.auth_config.redirect_to_frontend)
+            self.assertTrue(location.startswith(f"{AuthConfig().api_base_url}/v2/logout"))
+            self.assertEqual(args["returnTo"], AuthConfig().redirect_to_frontend)
             self.assertTrue("Set-Cookie" in response.headers)
             self.assertTrue(response.headers["Set-Cookie"].startswith("cxguser=;"))
 

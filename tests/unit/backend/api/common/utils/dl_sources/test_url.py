@@ -48,7 +48,7 @@ class Test_S3URL(CorporaTestCaseUsingMockAWS):
         S3URL._scheme = parsed_url.scheme
 
         # Store a file in the s3 bucket
-        bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
+        bucket = self.TEST_BUCKET_NAME
         s3_file_name = "test_s3_uri.h5ad"
         content = "Hello world!"
         self.create_s3_object(s3_file_name, bucket, content=content)
@@ -56,7 +56,7 @@ class Test_S3URL(CorporaTestCaseUsingMockAWS):
         # Generate presigned URL for the s3 object.
         s3 = boto3.client("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
         presigned_url = s3.generate_presigned_url(
-            "get_object", Params={"Bucket": self.corpora_config.bucket_name, "Key": s3_file_name}, ExpiresIn=3000
+            "get_object", Params={"Bucket": self.TEST_BUCKET_NAME, "Key": s3_file_name}, ExpiresIn=3000
         )
 
         # Test S3URL

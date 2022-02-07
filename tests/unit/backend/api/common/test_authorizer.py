@@ -5,15 +5,17 @@ import unittest
 import requests
 
 from backend.api.data_portal.common.authorizer import assert_authorized
-from backend.api.data_portal.common.corpora_config import CorporaAuthConfig
+from backend.api.data_portal.config.app_config import AuthConfig
 from backend.api.data_portal.common.utils.aws import AwsSecret
 from backend.api.data_portal.common.utils.exceptions import UnauthorizedError
+from tests.unit.backend.api.fixtures.test_config import TemporaryTestConfigChange
 
 """
 These test may start failing if the monthly allowance of Auth0 machine to machine access tokens is exhasted.
 """
 
-
+# TODO: THIS IS NOT A UNIT TEST. It calls out to real auth0 server!
+# TODO: Do we actually need to set anything in AWS Secrets or can't we just now use DefaultConfigPropSource?
 @unittest.skipIf(
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",
@@ -22,22 +24,21 @@ class TestAuthorizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # TODO: A clearer name for this secret might be "corpora/backend/live_test/auth0-secret"
         secret_name = "corpora/cicd/test/auth0-secret"  # using the same secret for all non production stages.
         cls.auth0_secret = json.loads(AwsSecret(secret_name).value)
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
-        config = CorporaAuthConfig()
-        config.set(
-            dict(
+
+        cls.test_auth_config = dict(
                 api_base_url="https://czi-single-cell.auth0.com",
                 audience=cls.auth0_secret["audience"],
-                client_id=cls.auth0_secret["client_id"],
-            )
-        )
+                client_id=cls.auth0_secret["client_id"])
 
     @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
-    def test_postive(self):
-        token = self.get_auth_token()
-        assert_authorized({"Authorization": f"bearer {token['access_token']}"})
+    def test_positive(self):
+        with TemporaryTestConfigChange(AuthConfig(), self.test_auth_config):
+            token = self.get_auth_token()
+            assert_authorized({"Authorization": f"bearer {token['access_token']}"})
 
     @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
     def test_not_bearer(self):

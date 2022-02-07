@@ -12,7 +12,7 @@ from jose.exceptions import ExpiredSignatureError
 
 
 from ....common.authorizer import assert_authorized_token, get_userinfo_from_auth0
-from ....common.corpora_config import CorporaAuthConfig
+from backend.api.data_portal.config.app_config import AuthConfig
 
 # global oauth client
 from ....common.utils.exceptions import UnauthorizedError
@@ -20,7 +20,7 @@ from ....common.utils.exceptions import UnauthorizedError
 oauth_client = None
 
 
-def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
+def get_oauth_client(config: AuthConfig) -> FlaskRemoteApp:
     """Create an oauth client on the first invocation, then return oauth client for subsequent calls.
 
     :param config:  An object containing the auth configuration.
@@ -56,8 +56,9 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
 
 def login() -> Response:
     """API call: initiate the login process."""
-    config = CorporaAuthConfig()
+    config = AuthConfig()
     redirect = request.args.get("redirect", "")
+    # TODO: Move the FRONTEND_URL env var case to AppConfigPropertiesSource as EnvConfigPropertiesSource. Is this even used?
     if os.getenv("FRONTEND_URL"):
         return_to = f"{os.getenv('FRONTEND_URL')}{redirect}"
     else:
@@ -66,6 +67,7 @@ def login() -> Response:
     session["oauth_corpora_callback_redirect"] = return_to
     client = get_oauth_client(config)
 
+    # TODO: Move the API_URL env var case to AuthConfigPropertiesSource as EnvConfigPropertiesSource. Is this even used?
     if os.getenv("API_URL"):
         callbackurl = f"{os.getenv('API_URL')}/dp/v1/oauth2/callback"
     else:
@@ -76,7 +78,7 @@ def login() -> Response:
 
 def logout() -> Response:
     """API call: logout of the system."""
-    config = CorporaAuthConfig()
+    config = AuthConfig()
     client = get_oauth_client(config)
     params = {"returnTo": config.redirect_to_frontend, "client_id": config.client_id}
     response = redirect(client.api_base_url + "/v2/logout?" + urlencode(params))
@@ -87,7 +89,7 @@ def logout() -> Response:
 
 def oauth2_callback() -> Response:
     """API call: redirect from the auth server after login successful."""
-    config = CorporaAuthConfig()
+    config = AuthConfig()
     client = get_oauth_client(config)
     try:
         token = client.authorize_access_token()
@@ -182,7 +184,7 @@ def check_token(token: dict) -> dict:
         payload = assert_authorized_token(token.get("access_token"))
     except ExpiredSignatureError:
         # attempt to refresh the token
-        auth_config = CorporaAuthConfig()
+        auth_config = AuthConfig()
         try:
             token = refresh_expired_token(token)
             if token is None:
@@ -225,7 +227,7 @@ def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
 
 def userinfo() -> Response:
     """API call: retrieve the user info from the id token stored in the cookie"""
-    config = CorporaAuthConfig()
+    config = AuthConfig()
     token = get_token(config.cookie_name)
     userinfo = get_userinfo_from_auth0(token.get("access_token"))
     return make_response(jsonify(userinfo))
@@ -240,7 +242,7 @@ def refresh_expired_token(token: dict) -> Optional[dict]:
     :return: Either the new token dict, or None.
     """
 
-    auth_config = CorporaAuthConfig()
+    auth_config = AuthConfig()
     refresh_token = token.get("refresh_token")
     if not refresh_token:
         return None

@@ -5,7 +5,7 @@ import requests
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
-from .corpora_config import CorporaAuthConfig
+from backend.api.data_portal.config.app_config import AuthConfig
 from backend.api.data_portal.common.utils.exceptions import UnauthorizedError
 
 
@@ -19,7 +19,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         unverified_header = jwt.get_unverified_header(token)
     except JWTError:
         raise UnauthorizedError(detail="Unable to parse authentication token.")
-    auth_config = CorporaAuthConfig()
+    auth_config = AuthConfig()
     auth0_domain = auth_config.internal_url
     # If we're using an id_token (for userinfo), we need a difference audience, which gets passed in.
     # Otherwise use auth_config.api_audience
@@ -86,7 +86,7 @@ def get_token_auth_header(headers: dict) -> str:
 
 
 def get_userinfo_from_auth0(token: str) -> dict:
-    auth_config = CorporaAuthConfig()
+    auth_config = AuthConfig()
     res = requests.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
     res.raise_for_status()
     return res.json()

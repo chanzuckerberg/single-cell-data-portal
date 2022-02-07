@@ -1,5 +1,5 @@
 import requests
-from ..corpora_config import CorporaConfig
+from backend.api.data_portal.config.app_config import ProcessingConfig
 
 import logging
 
@@ -23,7 +23,7 @@ class CrossrefProvider(object):
 
     def __init__(self) -> None:
         try:
-            self.base_crossref_uri = CorporaConfig().crossref_api_uri
+            self.base_crossref_uri = ProcessingConfig().crossref_api_uri
         except RuntimeError:
             self.base_crossref_uri = None
         super().__init__()

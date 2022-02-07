@@ -2,7 +2,7 @@ import boto3
 import json
 import time
 
-from .corpora_config import CorporaConfig
+from backend.api.data_portal.config.app_config import ProcessingConfig
 import os
 
 
@@ -20,7 +20,7 @@ def start_upload_sfn(collection_uuid, dataset_uuid, url):
     input_parameters = {"collection_uuid": collection_uuid, "url": url, "dataset_uuid": dataset_uuid}
     sfn_name = f"{dataset_uuid}_{int(time.time())}"
     response = get_stepfunctions_client().start_execution(
-        stateMachineArn=CorporaConfig().upload_sfn_arn,
+        stateMachineArn=ProcessingConfig().upload_sfn_arn,
         name=sfn_name,
         input=json.dumps(input_parameters),
     )

@@ -15,7 +15,7 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.uuid = "test_dataset_id"
-        self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
+        self.bucket_name = self.TEST_BUCKET_NAME
 
     def create_dataset_with_artifacts(self, artifact_count=1, artifact_params=None):
         """

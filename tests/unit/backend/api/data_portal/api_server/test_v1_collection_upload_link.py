@@ -1,4 +1,5 @@
 import json
+
 from furl import furl
 from mock import patch
 
@@ -8,7 +9,6 @@ from backend.api.data_portal.common.utils.math_utils import GB
 from tests.unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from tests.unit.backend.api.fixtures.environment_setup import fixture_file_path, EnvironmentSetup
 
 
 class TestCollectionPostUploadLink(BaseAuthAPITest):
@@ -19,15 +19,14 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
 
     @patch("backend.api.data_portal.common.upload_sfn.start_upload_sfn")
     def test__link__202(self, mocked):
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            path = "/dp/v1/collections/test_collection_id/upload-links"
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            body = {"url": self.good_link}
+        path = "/dp/v1/collections/test_collection_id/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        body = {"url": self.good_link}
 
-            test_url = furl(path=path)
-            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-            self.assertEqual(202, response.status_code)
-            self.assertIn("dataset_uuid", json.loads(response.data).keys())
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_uuid", json.loads(response.data).keys())
 
     def test__link_no_auth__401(self):
         path = "/dp/v1/collections/test_collection_id/upload-links"
@@ -137,13 +136,12 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{pub_collection.id}/upload-links"
         body = {"url": self.good_link, "id": rev_collection.datasets[0].id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(202, response.status_code)
-            new_datset_id = json.loads(response.data)["dataset_uuid"]
-            self.assertEqual(pub_dataset.id, Dataset.get(self.session, new_datset_id).original_id)
-            for s3_object in pub_s3_objects:
-                self.assertS3FileExists(*s3_object)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        new_datset_id = json.loads(response.data)["dataset_uuid"]
+        self.assertEqual(pub_dataset.id, Dataset.get(self.session, new_datset_id).original_id)
+        for s3_object in pub_s3_objects:
+            self.assertS3FileExists(*s3_object)
 
     @patch("backend.api.data_portal.common.upload_sfn.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self, mocked):
@@ -161,13 +159,12 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset_id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(202, response.status_code)
-            actual_body = json.loads(response.data)
-            self.assertEqual(dataset_id, actual_body["dataset_uuid"])
-            for s3_object in s3_objects:
-                self.assertS3FileDoesNotExist(*s3_object)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        actual_body = json.loads(response.data)
+        self.assertEqual(dataset_id, actual_body["dataset_uuid"])
+        for s3_object in s3_objects:
+            self.assertS3FileDoesNotExist(*s3_object)
 
     @patch("backend.api.data_portal.common.upload_sfn.start_upload_sfn")
     def test__reupload_unpublished_dataset_during_revision_202(self, mock):
@@ -184,11 +181,10 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset.id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(202, response.status_code)
-            for s3_object in pub_s3_objects:
-                self.assertS3FileExists(*s3_object)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        for s3_object in pub_s3_objects:
+            self.assertS3FileExists(*s3_object)
 
     def test__reupload_public_dataset__403(self):
         """cannot reupload a public published dataset"""
@@ -205,12 +201,11 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": pub_dataset.id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(403, response.status_code)
-            self.assertIsNotNone(Dataset.get(self.session, public_dataset_id))
-            for s3_object in public_s3_objects:
-                self.assertS3FileExists(*s3_object)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+        self.assertIsNotNone(Dataset.get(self.session, public_dataset_id))
+        for s3_object in public_s3_objects:
+            self.assertS3FileExists(*s3_object)
 
     def test__reupload_while_processing_dataset__405(self):
         """cannot reupload a dataset that is pending"""
@@ -224,11 +219,10 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         s3_objects = self.get_s3_object_paths_from_dataset(dataset)
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset.id}
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(405, response.status_code)
-            for s3_object in s3_objects:
-                self.assertS3FileExists(*s3_object)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(405, response.status_code)
+        for s3_object in s3_objects:
+            self.assertS3FileExists(*s3_object)
 
     def test__reupload_dataset_not_owner__403(self):
         collection = self.generate_collection(
@@ -245,9 +239,8 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset_id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(403, response.status_code)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
 
     def test__dataset_not_in_collection__404(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
@@ -260,9 +253,8 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset_id}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-            self.assertEqual(404, response.status_code)
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(404, response.status_code)
 
 
 class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
@@ -272,17 +264,16 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
 
     @patch("backend.api.data_portal.common.upload_sfn.start_upload_sfn")
     def test__can_upload_dataset_to_non_owned_collection(self, mocked):
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-            path = f"/dp/v1/collections/{collection.id}/upload-links"
-            body = {"url": self.good_link}
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        path = f"/dp/v1/collections/{collection.id}/upload-links"
+        body = {"url": self.good_link}
 
-            test_url = furl(path=path)
-            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-            print(response.data)
-            self.assertEqual(202, response.status_code)
-            self.assertIn("dataset_uuid", json.loads(response.data).keys())
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        print(response.data)
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_uuid", json.loads(response.data).keys())
 
     @patch("backend.api.data_portal.common.upload_sfn.start_upload_sfn")
     def test__can_reupload_dataset_not_owner(self, mocked):
@@ -301,6 +292,5 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
         body = {"url": self.good_link, "id": dataset_id}
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-        with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            response = self.app.put(path, headers=headers, data=json.dumps(body))
-            self.assertEqual(202, response.status_code)
+        response = self.app.put(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)

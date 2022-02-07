@@ -5,7 +5,7 @@ import base64
 import json
 import time
 
-from backend.api.data_portal.common.corpora_config import CorporaAuthConfig
+from backend.api.data_portal.config.app_config import AuthConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -39,7 +39,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     @classmethod
     def get_auth_token(cls):
-        config = CorporaAuthConfig()
+        config = AuthConfig()
 
         response = requests.post(
             "https://czi-cellxgene-dev.us.auth0.com/oauth/token",

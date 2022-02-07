@@ -18,7 +18,6 @@ from backend.api.data_portal.common.corpora_orm import (
 )
 from backend.api.data_portal.common.utils.db_session import DBSessionMaker
 from backend.scripts.create_db import create_db
-from tests.unit.backend.fixtures import config
 
 
 class TestDatabaseManager:
@@ -35,8 +34,7 @@ class TestDatabaseManager:
 
 
 class TestDatabase:
-    fake_s3_file = f"s3://{config.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
-    real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
+    fake_s3_file = f"s3://bogus-bucket/test_s3_uri.h5ad"
 
     def __init__(self, real_data=False):
         self.real_data = real_data
@@ -282,7 +280,7 @@ class TestDatabase:
             filetype=DatasetArtifactFileType.H5AD.name,
             type=DatasetArtifactType.ORIGINAL.name,
             user_submitted=True,
-            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+            s3_uri=self.fake_s3_file,
         )
         self.session.add(dataset_artifact)
         self.session.commit()
@@ -297,7 +295,7 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.CXG.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
 
@@ -311,11 +309,9 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.H5AD.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
-
-        self.session.commit()
 
         self.session.commit()
 
@@ -327,7 +323,7 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.RDS.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
 
@@ -343,7 +339,7 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.CXG.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
 
@@ -357,11 +353,9 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.H5AD.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
-
-        self.session.commit()
 
         self.session.commit()
 
@@ -373,7 +367,7 @@ class TestDatabase:
                 filetype=DatasetArtifactFileType.RDS.name,
                 type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=self.fake_s3_file,
             )
         )
 

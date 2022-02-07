@@ -1,12 +1,9 @@
-import os
 import typing
 
 from backend.api.app import app
-from backend.api.data_portal.common.corpora_config import CorporaAuthConfig
-
+from backend.api.data_portal.config.app_config import AuthConfig
 from tests.unit.backend.api.data_portal.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
-from tests.unit.backend.api.fixtures.environment_setup import EnvironmentSetup
 
 
 class BaseAPITest(DataPortalTestCase):
@@ -18,8 +15,7 @@ class BaseAPITest(DataPortalTestCase):
 
     def setUp(self):
         super().setUp()
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
-            self.app = app.test_client(use_cookies=False)
+        self.app = app.test_client(use_cookies=False)
 
     @staticmethod
     def remove_timestamps(body: dict, remove: typing.List[str] = None) -> dict:
@@ -49,52 +45,40 @@ class BaseAPITest(DataPortalTestCase):
 
 
 class BaseAuthAPITest(BaseAPITest):
-    @staticmethod
-    def get_mock_server_and_auth_config(additional_scope=None, token_duration=0):
-        mock_oauth_server = MockOauthServer(additional_scope, token_duration)
-        mock_oauth_server.start()
-        assert mock_oauth_server.server_okay
-
-        # Use the CorporaAuthConfig used by the app
-        auth_config = CorporaAuthConfig()
-
-        os.environ["API_BASE_URL"] = f"http://localhost:{mock_oauth_server.port}"
-        # Overwrite the environment's auth config with our oidc server's config.
-        authconfig = {
-            "api_base_url": f"http://localhost:{mock_oauth_server.port}",
-            "callback_base_url": auth_config.callback_base_url,
-            "redirect_to_frontend": auth_config.redirect_to_frontend,
-            "client_id": auth_config.client_id,
-            "client_secret": auth_config.client_secret,
-            "audience": auth_config.audience,
-            "api_audience": auth_config.api_audience,
-            "cookie_name": auth_config.cookie_name,
-        }
-        auth_config.set(authconfig)
-        return (mock_oauth_server, auth_config)
+    """
+    Abstract class for test classes that exercise endpoints requiring user authorization.
+    This class will start up a mock OAuth server in a separate process. This allows the endpoints to run through their
+    authorization process prior to invoking their core logic.
+    """
+    @classmethod
+    def get_mock_oauth_server(cls):
+        return MockOauthServer(additional_scope=None, token_duration=0)
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config()
-        cls.mock_oauth_server = mock_oauth_server
-        cls.auth_config = auth_config
+        cls.mock_oauth_server = cls.get_mock_oauth_server()
+
+        # If debugging tests in IDE, you may need to start the mock oauth server from shell, if it doesn't start.
+        # Run this command, and swap out mock server start code by (un)commenting the following lines of code.
+        # python ./tests/unit/backend/api/data_portal/api_server/mock_auth.py 18000
+        # cls.mock_oauth_server.port = 18000
+        cls.mock_oauth_server.start()
+        assert cls.mock_oauth_server.server_okay
+
+        cls.orig_api_base_url = AuthConfig().api_base_url
+        mock_oauth_server_url = f"http://localhost:{cls.mock_oauth_server.port}"
+        AuthConfig().api_base_url = mock_oauth_server_url
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         cls.mock_oauth_server.terminate()
+        AuthConfig().api_base_url = cls.orig_api_base_url
 
 
-class BasicAuthAPITestCurator(BaseAPITest):
+class BasicAuthAPITestCurator(BaseAuthAPITest):
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("write:collections", 60)
-        cls.mock_oauth_server = mock_oauth_server
-        cls.auth_config = auth_config
+    def get_mock_oauth_server(cls):
+        return MockOauthServer(additional_scope="write:collections", token_duration=60)
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        cls.mock_oauth_server.terminate()

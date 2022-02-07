@@ -16,7 +16,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def setUp(self):
         super().setUp()
         self.uuid = "test_dataset_artifact_id"
-        self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
+        self.bucket_name = self.TEST_BUCKET_NAME
         self.session = DBSessionMaker().session()
 
     def tearDown(self):
@@ -26,7 +26,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def test__get__ok(self):
         asset = DatasetAsset.get(self.session, self.uuid)
         self.assertEqual(self.uuid, asset.id)
-        self.assertEqual(self.CORPORA_TEST_CONFIG["bucket_name"], asset.bucket_name)
+        self.assertEqual(self.TEST_BUCKET_NAME, asset.bucket_name)
         self.assertEqual("test_s3_uri.h5ad", asset.key_name)
 
     def test__generate_file_url__OK(self):

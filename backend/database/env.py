@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from backend.api.data_portal.common.corpora_config import CorporaDbConfig
+from backend.api.data_portal.config.app_config import DbConfig
 from backend.api.data_portal.common import DbCollection
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
@@ -49,7 +49,7 @@ def run_migrations_online():
     Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine and associate a connection with the context. We override the alembic
-    config with the CorporaDbConfig information.
+    config with the DbConfig information.
     """
 
     alembic_config = config.get_section(config.config_ini_section)
@@ -64,7 +64,7 @@ def run_migrations_online():
             f"stage specified through `db` argument: {database_deployment_stage} are different!"
         )
 
-    alembic_config["sqlalchemy.url"] = CorporaDbConfig().database_uri
+    alembic_config["sqlalchemy.url"] = DbConfig().database_uri
 
     connectable = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
 

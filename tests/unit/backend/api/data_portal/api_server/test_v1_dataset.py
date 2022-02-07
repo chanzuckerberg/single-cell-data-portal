@@ -28,10 +28,9 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         super().tearDown()
 
     def test__post_dataset_asset__OK(self):
-        bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
         s3_file_name = "test_s3_uri.h5ad"
         content = "Hello world!"
-        self.create_s3_object(s3_file_name, bucket, content=content)
+        self.create_s3_object(s3_file_name, self.TEST_BUCKET_NAME, content=content)
 
         expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")

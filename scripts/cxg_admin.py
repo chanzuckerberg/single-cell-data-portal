@@ -18,7 +18,7 @@ from backend.api.data_portal.common.utils.s3_buckets import buckets
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.api.data_portal.common.corpora_config import CorporaDbConfig
+from backend.api.data_portal.config.app_config import DbConfig
 from backend.api.data_portal.common.corpora_orm import (
     CollectionVisibility,
     DbCollection,
@@ -683,7 +683,7 @@ def update_curator_names(ctx, access_token):
 
 
 def get_database_uri() -> str:
-    uri = urlparse(CorporaDbConfig().database_uri)
+    uri = urlparse(DbConfig().database_uri)
     uri = uri._replace(netloc="@".join([uri[1].split("@")[0], "localhost:5432"]))
     return uri.geturl()
 

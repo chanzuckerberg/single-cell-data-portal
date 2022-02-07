@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, session as sql_session
 from sqlalchemy import event
 
 from .exceptions import CorporaException
-from ..corpora_config import CorporaDbConfig
+from backend.api.data_portal.config.app_config import DbConfig
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class DBSessionMaker:
 
     def __init__(self, database_uri: str = None):
         if not self.engine:
-            self.database_uri = database_uri if database_uri else CorporaDbConfig().database_uri
+            self.database_uri = database_uri if database_uri else DbConfig().database_uri
             self.engine = create_engine(self.database_uri, connect_args={"connect_timeout": 5})
 
     def session(self, **kwargs) -> sql_session.Session:

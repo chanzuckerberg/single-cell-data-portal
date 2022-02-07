@@ -1,46 +1,45 @@
+import os
 import random
 import tempfile
-import os
-
-import botocore
-import boto3
 import typing
+
+import boto3
+import botocore
 from boto.s3.bucket import Bucket
 from moto import mock_s3
 
-from backend.api.data_portal.common.corpora_config import CorporaConfig
 from backend.api.data_portal.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
 from backend.api.data_portal.common.entities import DatasetAsset, Dataset
-from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
+# TODO: Rename MockAwsTestCase.
+# TODO: Document purpose.
 class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
-    CORPORA_TEST_CONFIG = config.CORPORA_TEST_CONFIG
+    TEST_BUCKET_NAME = "bogus-bucket"
 
     def setUp(self):
         super().setUp()
-        # Setup configuration
-        self.corpora_config = CorporaConfig()
-        self.corpora_config.set(config.CORPORA_TEST_CONFIG)
 
         # Mock S3 service if we don't have a mock api already running
         if os.getenv("BOTO_ENDPOINT_URL"):
             s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
         else:
+            # TODO: Can't we assume localstack is running? Do we ever use this mock_s3?
             self.s3_mock = mock_s3()
             self.s3_mock.start()
             s3_args = {}
 
         self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         # Corpora Bucket
-        self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
+        self.bucket = self.s3_resource.Bucket(self.TEST_BUCKET_NAME)
         try:
             self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
         except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
             pass
 
         # Cellxgene Bucket
+        # TODO: Is this trying to use a real S3 bucket!?
         self.cellxgene_bucket = self.s3_resource.Bucket(
             os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         )

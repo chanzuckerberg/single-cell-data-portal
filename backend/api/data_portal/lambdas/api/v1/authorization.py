@@ -3,7 +3,7 @@ from functools import wraps
 from flask import _request_ctx_stack
 from jose import jwt
 
-from ....common.corpora_config import CorporaAuthConfig
+from backend.api.data_portal.config.app_config import AuthConfig
 from .authentication import get_token
 from ....common import authorizer
 
@@ -16,7 +16,7 @@ class AuthError(Exception):
 
 
 def get_token_from_session():
-    config = CorporaAuthConfig()
+    config = AuthConfig()
     try:
         token = get_token(config.cookie_name)
         return token["access_token"]

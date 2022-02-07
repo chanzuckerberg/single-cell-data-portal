@@ -122,7 +122,7 @@ import numpy
 import requests
 import scanpy
 
-from backend.api.data_portal.common.corpora_config import CorporaConfig
+from backend.api.data_portal.config.app_config import ProcessingConfig
 from backend.api.data_portal.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
@@ -164,6 +164,8 @@ def check_env():
     """Verify that the required environment variables are set."""
 
     missing = []
+    # TODO: These should be set in Secrets Manager, if only for consistency with Data Portal app.
+    # At a minimum, these env vars should be accessed via ProcessingConfig, which reads them in from env vars.
     for env_var in ["DROPBOX_URL", "ARTIFACT_BUCKET", "CELLXGENE_BUCKET", "DATASET_ID", "DEPLOYMENT_STAGE"]:
         if env_var not in os.environ:
             missing.append(env_var)
@@ -589,7 +591,7 @@ def notify_slack_failure(dataset_id):
     data = format_slack_message(dataset_id)
     logger.info(data)
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        slack_webhook = CorporaConfig().slack_webhook
+        slack_webhook = ProcessingConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 

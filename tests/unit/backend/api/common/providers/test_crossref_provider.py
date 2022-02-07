@@ -20,10 +20,10 @@ class TestCrossrefProvider(unittest.TestCase):
         mock_get.assert_not_called()
 
     @patch("backend.api.data_portal.common.providers.crossref_provider.requests.get")
-    @patch("backend.api.data_portal.common.corpora_config.CorporaConfig")
+    @patch("backend.api.data_portal.common.providers.crossref_provider.ProcessingConfig")
     def test__provider_calls_crossref_if_api_url_defined(self, mock_config, mock_get):
 
-        # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_uri`
+        # Defining a mocked ProcessingConfig will allow the provider to consider the `crossref_api_uri`
         # not None, so it will go ahead and do the mocked call.
 
         response = Response()
@@ -61,7 +61,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
             "published_year": 2021,
             "published_month": 11,
-            "published_day": 10,
+            "published_day": 18,
             "journal": "Nature",
             "is_preprint": False,
         }
@@ -69,7 +69,7 @@ class TestCrossrefProvider(unittest.TestCase):
         self.assertDictEqual(expected_response, res)
 
     @patch("backend.api.data_portal.common.providers.crossref_provider.requests.get")
-    @patch("backend.api.data_portal.common.corpora_config.CorporaConfig")
+    @patch("backend.api.data_portal.common.providers.crossref_provider.ProcessingConfig")
     def test__provider_throws_exception_if_request_fails(self, mock_config, mock_get):
         """
         Asserts a CrossrefFetchException if the GET request fails for any reason
@@ -86,7 +86,7 @@ class TestCrossrefProvider(unittest.TestCase):
             provider.fetch_metadata("test_doi")
 
     @patch("backend.api.data_portal.common.providers.crossref_provider.requests.get")
-    @patch("backend.api.data_portal.common.corpora_config.CorporaConfig")
+    @patch("backend.api.data_portal.common.providers.crossref_provider.ProcessingConfig")
     def test__provider_throws_exception_if_request_fails_with_non_2xx_code(self, mock_config, mock_get):
         """
         Asserts a CrossrefFetchException if the GET request return a 500 error (any non 2xx will work)
@@ -102,7 +102,7 @@ class TestCrossrefProvider(unittest.TestCase):
             provider.fetch_metadata("test_doi")
 
     @patch("backend.api.data_portal.common.providers.crossref_provider.requests.get")
-    @patch("backend.api.data_portal.common.corpora_config.CorporaConfig")
+    @patch("backend.api.data_portal.common.providers.crossref_provider.ProcessingConfig")
     def test__provider_throws_exception_if_request_cannot_be_parsed(self, mock_config, mock_get):
         """
         Asserts an CrossrefParseException if the GET request succeeds but cannot be parsed
