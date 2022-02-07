@@ -659,7 +659,10 @@ class TestCollection(BaseAuthAPITest):
 
     def test__get_all_collections_for_index(self):
         collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
+            publisher_metadata={"journal": "Nature"},
         )
 
         collection_id_private = self.generate_collection(
@@ -687,6 +690,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertNotIn("description", actual_collection)
         self.assertEqual(actual_collection["published_at"], collection.published_at)
         self.assertEqual(actual_collection["revised_at"], collection.revised_at)
+        self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
 
 
 class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
