@@ -1,7 +1,6 @@
 import json
 import os
 import unittest
-from backend.corpora.common.entities.dataset import Dataset
 
 from furl import furl
 
@@ -14,6 +13,7 @@ from backend.api.data_portal.common.corpora_orm import (
     DatasetArtifactFileType,
     DatasetArtifactType,
 )
+from backend.api.data_portal.common.entities import Dataset
 from backend.api.data_portal.common.utils.db_helpers import processing_status_updater
 from tests.unit.backend.api.data_portal.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.api.data_portal.api_server.mock_auth import get_auth_token
