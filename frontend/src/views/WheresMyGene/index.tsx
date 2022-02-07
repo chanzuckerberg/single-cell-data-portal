@@ -2,7 +2,7 @@ import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
@@ -11,6 +11,13 @@ import { Position } from "src/components/common/SideBar/style";
 import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
 import { View } from "../globalStyle";
+import {
+  DispatchContext,
+  INITIAL_STATE,
+  reducer,
+  StateContext,
+} from "./common/store";
+import { selectGenes } from "./common/store/actions";
 import {
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
@@ -25,10 +32,9 @@ import { Wrapper } from "./style";
 const DEBOUNCE_MS = 2 * 1000;
 
 const WheresMyGene = (): JSX.Element => {
-  /**
-   * This is the genes that are currently selected.
-   */
-  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+
+  const { selectedGenes } = state;
 
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
@@ -36,20 +42,24 @@ const WheresMyGene = (): JSX.Element => {
    * We use `selectedGeneData` to subset the data to only the genes that are
    * currently selected.
    */
-  const [geneData, setGeneData] =
+  const [geneExpressionSummaries, setGeneExpressionSummaries] =
     useState<GeneExpressionSummary[]>(EMPTY_ARRAY);
+
   const [cellTypes, setCellTypes] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
 
   /**
    * This is the formatted data that we use to render the heatmap.
    */
-  const [data, setData] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
+  const [cellTypeSummaries, setCellTypeSummaries] =
+    useState<CellTypeSummary[]>(EMPTY_ARRAY);
 
   const selectedGeneData = useMemo(() => {
-    return geneData.filter((geneData) =>
-      genes.some((gene) => gene.name === geneData.name)
+    return geneExpressionSummaries.filter((geneExpressionSummary) =>
+      selectedGenes.some(
+        (selectedGene) => selectedGene === geneExpressionSummary.name
+      )
     );
-  }, [genes, geneData]);
+  }, [selectedGenes, geneExpressionSummaries]);
 
   useEffect(() => {
     fetchCellTypes();
@@ -71,6 +81,7 @@ const WheresMyGene = (): JSX.Element => {
       const cellTypes = await response.json();
 
       // (thuang): Table y-axis defaults to descending order
+      // .reverse() mutates the original array
       setCellTypes(cellTypes.reverse());
     }
   }, []);
@@ -78,7 +89,7 @@ const WheresMyGene = (): JSX.Element => {
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
       (cellTypes, geneData) => {
-        setData(integrateCelTypesAndGenes(cellTypes, geneData));
+        setCellTypeSummaries(integrateCelTypesAndGenes(cellTypes, geneData));
       },
       DEBOUNCE_MS,
       { leading: false }
@@ -87,62 +98,76 @@ const WheresMyGene = (): JSX.Element => {
 
   /**
    * Performance optimization:
-   * We only format and `setData()` after the watch list has stopped changing for
+   * We only format and `setCellTypeSummaries()` after the watch list has stopped changing for
    * `DEBOUNCE_MS`
    */
   useEffect(() => {
     debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
   }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
 
+  const handleGenesOnchange = useCallback(
+    (genes: Gene[]) => {
+      dispatch(selectGenes(genes.map((gene) => gene.name)));
+    },
+    [dispatch]
+  );
+
   return (
-    <>
-      <Head>
-        <title>cellxgene | Where&apos;s My Gene</title>
-      </Head>
+    <DispatchContext.Provider value={dispatch}>
+      <StateContext.Provider value={state}>
+        <Head>
+          <title>cellxgene | Where&apos;s My Gene</title>
+        </Head>
 
-      <SideBar label="Filters" isOpen>
-        <span>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-          autem deserunt assumenda repudiandae repellat quis sunt quae, aut vero
-          rem itaque labore praesentium iure exercitationem minus iste
-          laudantium sed aliquid.
-        </span>
-      </SideBar>
-      <SideBar label="Filters" isOpen position={Position.RIGHT}>
-        <span>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-          autem deserunt assumenda repudiandae repellat quis sunt quae, aut vero
-          rem itaque labore praesentium iure exercitationem minus iste
-          laudantium sed aliquid.
-        </span>
-      </SideBar>
+        <SideBar label="Filters" isOpen>
+          <span>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
+            vero rem itaque labore praesentium iure exercitationem minus iste
+            laudantium sed aliquid.
+          </span>
+        </SideBar>
 
-      <View hideOverflow>
-        <Wrapper>
-          <GeneSearchBar onGenesChange={setGenes} />
+        <SideBar label="Filters" isOpen position={Position.RIGHT}>
+          <span>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
+            vero rem itaque labore praesentium iure exercitationem minus iste
+            laudantium sed aliquid.
+          </span>
+        </SideBar>
 
-          <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
+        <View hideOverflow>
+          <Wrapper>
+            <GeneSearchBar onGenesChange={handleGenesOnchange} />
 
-          {genes.map((gene) => {
-            const { name } = gene;
+            <HeatMap
+              cellTypes={cellTypes}
+              data={cellTypeSummaries}
+              genes={selectedGenes}
+            />
 
-            return (
-              <GeneFetcher
-                fetchedGenes={genes}
-                name={name}
-                key={name}
-                onSuccess={handleGeneFetchSuccess}
-                onError={handleGeneFetchError}
-              />
-            );
-          })}
-        </Wrapper>
-      </View>
-    </>
+            {selectedGenes.map((selectedGene) => {
+              return (
+                <GeneFetcher
+                  name={selectedGene}
+                  key={selectedGene}
+                  onSuccess={handleGeneFetchSuccess}
+                  onError={handleGeneFetchError}
+                />
+              );
+            })}
+          </Wrapper>
+        </View>
+      </StateContext.Provider>
+    </DispatchContext.Provider>
   );
 
   function handleGeneFetchSuccess(geneData: GeneExpressionSummary) {
-    setGeneData((latestGeneData) => [...latestGeneData, geneData]);
+    setGeneExpressionSummaries((latestGeneData) => [
+      ...latestGeneData,
+      geneData,
+    ]);
   }
 
   function handleGeneFetchError(name: Gene["name"]) {
