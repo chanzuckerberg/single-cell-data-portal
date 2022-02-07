@@ -11,11 +11,11 @@ class TemporaryTestConfigChange:
 
     def __enter__(self):
         self.orig_config_props = self.config.__dict__.copy()
-        for k, v in self.tmp_config_props:
+        for k, v in self.tmp_config_props.items():
             self.config.__dict__[k] = v
-        print(f"modified config for {self.config.__class__.name}")
+        print(f"modified config for {self.config.__class__.__name__}")
 
     def __exit__(self, t, value, traceback):
-        for k, v in self.orig_config_props:
+        for k, v in self.orig_config_props.items():
             self.config.__dict__[k] = v
-        print(f"restored config for {self.config.__class__.name}")
+        print(f"restored config for {self.config.__class__.__name__}")

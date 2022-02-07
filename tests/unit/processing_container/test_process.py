@@ -67,12 +67,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
         )
 
-        process.process(
-            dataset.id,
-            "https://www.dropbox.com/IGNORED",
-            self.TEST_BUCKET_NAME,
-            self.TEST_BUCKET_NAME
-        )
+        process.process(dataset.id, "https://www.dropbox.com/IGNORED", self.TEST_BUCKET_NAME, self.TEST_BUCKET_NAME)
 
         # TODO: add assertions. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449 # noqa: E501
         # 1. H5AD has annotation labels added and uploaded to S3

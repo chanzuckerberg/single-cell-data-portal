@@ -56,6 +56,7 @@ def configure_flask_app(flask_app):
     deployment_stage = os.environ["DEPLOYMENT_STAGE"]
     if deployment_stage not in ["prod"]:
         allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
+    # TODO: Move the FRONTEND_URL env var case to AppConfigPropertiesSource as EnvConfigPropertiesSource. Is this even used?
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment_stage != "test":  # pragma: no cover
@@ -89,7 +90,7 @@ class InterceptRequestMiddleware:
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
-        environ["HTTP_CXGPUBLIC"] = "dummy"
+        environ["HTTP_CXGPUBLIC"] = "dummy"  # TODO: What is this? Is it used?
         return self.wsgi_app(environ, start_response)
 
 

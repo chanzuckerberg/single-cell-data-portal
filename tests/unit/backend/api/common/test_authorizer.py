@@ -30,9 +30,10 @@ class TestAuthorizer(unittest.TestCase):
         cls.auth0_secret["audience"] = f"https://api.{os.getenv('DEPLOYMENT_STAGE')}.corpora.cziscience.com"
 
         cls.test_auth_config = dict(
-                api_base_url="https://czi-single-cell.auth0.com",
-                audience=cls.auth0_secret["audience"],
-                client_id=cls.auth0_secret["client_id"])
+            api_base_url="https://czi-single-cell.auth0.com",
+            audience=cls.auth0_secret["audience"],
+            client_id=cls.auth0_secret["client_id"],
+        )
 
     @unittest.skipIf(os.getenv("IS_DOCKER_DEV"), "No access to auth0 in docker")
     def test_positive(self):

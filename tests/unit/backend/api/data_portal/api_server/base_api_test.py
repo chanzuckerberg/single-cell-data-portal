@@ -50,6 +50,7 @@ class BaseAuthAPITest(BaseAPITest):
     This class will start up a mock OAuth server in a separate process. This allows the endpoints to run through their
     authorization process prior to invoking their core logic.
     """
+
     @classmethod
     def get_mock_oauth_server(cls):
         return MockOauthServer(additional_scope=None, token_duration=0)
@@ -81,4 +82,3 @@ class BasicAuthAPITestCurator(BaseAuthAPITest):
     @classmethod
     def get_mock_oauth_server(cls):
         return MockOauthServer(additional_scope="write:collections", token_duration=60)
-

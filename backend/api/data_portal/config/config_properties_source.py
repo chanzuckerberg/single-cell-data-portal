@@ -27,7 +27,7 @@ class ConfigPropertiesSource:
 
         value = self._props.get(name)
         if value is not None:
-            logger.debug(f'loaded config prop {name} from {self.__class__.__name__}')
+            logger.debug(f"loaded config prop {name} from {self.__class__.__name__}")
         return value
 
     @staticmethod
@@ -90,4 +90,3 @@ class AwsSecretConfigPropertiesSource(ConfigPropertiesSource):
 #             assert props.isinstance(dict)
 #             print(f'loaded config from {self._file_path}, keys={props.keys()}')
 #             return props
-

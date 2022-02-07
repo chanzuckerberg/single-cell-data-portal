@@ -1,8 +1,10 @@
 import os
 
-from backend.api.data_portal.config.config_properties_source import ComposedConfigPropertiesSource, \
-    AwsSecretConfigPropertiesSource, \
-    DefaultConfigPropertiesSource
+from backend.api.data_portal.config.config_properties_source import (
+    ComposedConfigPropertiesSource,
+    AwsSecretConfigPropertiesSource,
+    DefaultConfigPropertiesSource,
+)
 
 
 # TODO: All app configuration is performed herein using `*Config` singleton classes. Would it be simpler to just use
@@ -13,10 +15,10 @@ from backend.api.data_portal.config.config_properties_source import ComposedConf
 class ProcessingConfigPropertiesSource(ComposedConfigPropertiesSource):
     def __init__(self):
         deployment = os.environ["DEPLOYMENT_STAGE"]
-        super().__init__(AwsSecretConfigPropertiesSource(f"corpora/backend/{deployment}/config"),
-                         DefaultConfigPropertiesSource(slack_webhook='',
-                                                       upload_max_file_size_gb=30,
-                                                       upload_file_formats=["h5ad"]))
+        super().__init__(
+            AwsSecretConfigPropertiesSource(f"corpora/backend/{deployment}/config"),
+            DefaultConfigPropertiesSource(slack_webhook="", upload_max_file_size_gb=30, upload_file_formats=["h5ad"]),
+        )
 
 
 class ProcessingConfig:
@@ -31,12 +33,12 @@ class ProcessingConfig:
     def __singleton_init(self):
         config_properties_source = ProcessingConfigPropertiesSource()
 
-        self.__dict__['upload_max_file_size_gb'] = config_properties_source.get_prop('upload_max_file_size_gb')
-        self.__dict__['upload_file_formats'] = config_properties_source.get_prop('upload_file_formats')
-        self.__dict__['upload_sfn_arn'] = config_properties_source.get_prop('upload_sfn_arn')
-        self.__dict__['slack_webhook'] = config_properties_source.get_prop('slack_webhook')
+        self.__dict__["upload_max_file_size_gb"] = config_properties_source.get_prop("upload_max_file_size_gb")
+        self.__dict__["upload_file_formats"] = config_properties_source.get_prop("upload_file_formats")
+        self.__dict__["upload_sfn_arn"] = config_properties_source.get_prop("upload_sfn_arn")
+        self.__dict__["slack_webhook"] = config_properties_source.get_prop("slack_webhook")
         # TODO: This prop is not exactly "processing"-related, as it is used by endpoints that serve the frontend
-        self.__dict__['crossref_api_uri'] = config_properties_source.get_prop('crossref_api_uri')
+        self.__dict__["crossref_api_uri"] = config_properties_source.get_prop("crossref_api_uri")
 
 
 class DbConfigPropertiesSource(AwsSecretConfigPropertiesSource):
@@ -59,9 +61,11 @@ class DbConfig:
 
     def __singleton_init(self):
         config_properties_source = DbConfigPropertiesSource()
-        self.__dict__['database_uri'] = (
-                config_properties_source.get_prop('database_uri') or
-                config_properties_source.get_prop('remote_dev_uri'))  # HACK for rdev envs!
+        self.__dict__["database_uri"] = config_properties_source.get_prop(
+            "database_uri"
+        ) or config_properties_source.get_prop(
+            "remote_dev_uri"
+        )  # HACK for rdev envs!
 
 
 class AuthConfigPropertiesSource(AwsSecretConfigPropertiesSource):
@@ -82,27 +86,29 @@ class AuthConfig:
     def __singleton_init(self):
         config_properties_source = AuthConfigPropertiesSource()
 
-        self._api_signin_url = config_properties_source.get_prop('api_signin_url')
+        self._api_signin_url = config_properties_source.get_prop("api_signin_url")
 
-        for source_prop in ['audience',
-                            'api_audience',
-                            'issuer',
-                            'cookie_name',
-                            'code_challenge_method',
-                            'redirect_to_frontend',
-                            'callback_base_url',
-                            'client_id',
-                            'client_secret',
-                            'api_base_url',
-                            'refresh_token_url',
-                            'access_token_url',
-                            'test_account_password',
-                            'test_account_username']:
+        for source_prop in [
+            "audience",
+            "api_audience",
+            "issuer",
+            "cookie_name",
+            "code_challenge_method",
+            "redirect_to_frontend",
+            "callback_base_url",
+            "client_id",
+            "client_secret",
+            "api_base_url",
+            "refresh_token_url",
+            "access_token_url",
+            "test_account_password",
+            "test_account_username",
+        ]:
             self.__dict__[source_prop] = config_properties_source.get_prop(source_prop)
 
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
-        if key == 'api_base_url':
+        if key == "api_base_url":
             self.__update_api_base_url(value)
 
     def __update_api_base_url(self, api_base_url):
@@ -110,11 +116,11 @@ class AuthConfig:
         Update config props that are derived from the "api_base_url" property. This is only necessary to support
         updates while running tests, as some tests need to alter the api_base_url prop to perform a fake auth process
         """
-        self.__dict__['api_authorize_url'] = f"{api_base_url}/authorize"
-        self.__dict__['api_token_url'] = f"{api_base_url}/oauth/token"
-        self.__dict__['api_userinfo_url'] = f"{api_base_url}/userinfo"
-        self.__dict__['internal_url'] = api_base_url
-        self.__dict__['issuer'] = self.build_issuers(api_base_url, self._api_signin_url)
+        self.__dict__["api_authorize_url"] = f"{api_base_url}/authorize"
+        self.__dict__["api_token_url"] = f"{api_base_url}/oauth/token"
+        self.__dict__["api_userinfo_url"] = f"{api_base_url}/userinfo"
+        self.__dict__["internal_url"] = api_base_url
+        self.__dict__["issuer"] = self.build_issuers(api_base_url, self._api_signin_url)
 
     @staticmethod
     def build_issuers(api_base_url, api_signin_url):
