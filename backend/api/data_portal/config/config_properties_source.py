@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from abc import abstractmethod
 
 from backend.api.data_portal.common.utils.aws import AwsSecret

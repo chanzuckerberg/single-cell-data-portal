@@ -14,8 +14,8 @@ from tests.unit.backend.api.fixtures.test_config import TemporaryTestConfigChang
 These test may start failing if the monthly allowance of Auth0 machine to machine access tokens is exhasted.
 """
 
-# TODO: THIS IS NOT A UNIT TEST. It calls out to real auth0 server!
-# TODO: Do we actually need to set anything in AWS Secrets or can't we just now use DefaultConfigPropSource?
+
+# TODO: This is not a unit test. It calls out to real auth0 server! Should it be run as a function test?
 @unittest.skipIf(
     os.environ["DEPLOYMENT_STAGE"] != "test",
     f"Does not run DEPLOYMENT_STAGE:{os.environ['DEPLOYMENT_STAGE']}",

@@ -58,7 +58,8 @@ def login() -> Response:
     """API call: initiate the login process."""
     config = AuthConfig()
     redirect = request.args.get("redirect", "")
-    # TODO: Move the FRONTEND_URL env var case to AppConfigPropertiesSource as EnvConfigPropertiesSource. Is this even used?
+    # TODO: Move the FRONTEND_URL env var case to AppConfigPropertiesSource as EnvConfigPropertiesSource.
+    # Is this even used?
     if os.getenv("FRONTEND_URL"):
         return_to = f"{os.getenv('FRONTEND_URL')}{redirect}"
     else:
