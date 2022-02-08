@@ -208,3 +208,23 @@ export interface GeneSet {
   description: string;
   linked_datasets: Dataset["id"][];
 }
+
+/**
+ * Author of publication associated with a collection, populated from Crossref as part of collection publication
+ * metadata.
+ */
+export interface Author {
+  family: string;
+  given: string;
+}
+
+/**
+ * Collection publication metadata, populated from Crossref by collection publication DOI.
+ */
+export interface PublisherMetadata {
+  authors: Author[];
+  journal: string;
+  published_day: number;
+  published_month: number;
+  published_year: number;
+}

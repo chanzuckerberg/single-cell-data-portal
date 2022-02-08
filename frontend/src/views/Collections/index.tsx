@@ -15,6 +15,7 @@ import {
   CATEGORY_KEY,
   CellPropsValue,
   CollectionRow,
+  DatasetRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
@@ -137,9 +138,28 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
+      },
+      // TODO(cc) remove before PR
+      {
+        accessor: (collectionRow: DatasetRow): string => {
+          if (collectionRow.publication_metadata) {
+            return `${collectionRow.publication_metadata.published_month}/${collectionRow.publication_metadata.published_month}`;
+          }
+          const recency = new Date(
+            collectionRow.revised_at ?? collectionRow.published_at * 1000
+          );
+          return `${recency.getMonth() + 1}/${recency.getUTCFullYear()}`;
+        },
+        id: "temp",
       },
     ],
     []
@@ -158,6 +178,7 @@ export default function Collections(): JSX.Element {
           CATEGORY_KEY.ASSAY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
         ],
         sortBy: [

@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
-import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
+import {
+  IS_PRIMARY_DATA,
+  Ontology,
+  PublisherMetadata,
+} from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
@@ -10,6 +14,7 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
+  PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
@@ -55,8 +60,17 @@ export interface FetchCollectionDatasetRows {
 export interface CollectionResponse {
   id: string;
   name: string;
+  publisher_metadata: PublisherMetadata;
   published_at: number;
   revised_at: number;
+}
+
+/**
+ * Model of /collections/index JSON response that has been modified to include calculated fields, to facilitate filter
+ * functionality.
+ */
+interface ProcessedCollectionResponse extends CollectionResponse {
+  publicationDateValues: number[];
 }
 
 /**
@@ -153,9 +167,9 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
  */
 export function useFetchCollections(): UseQueryResult<
-  Map<string, CollectionResponse>
+  Map<string, ProcessedCollectionResponse>
 > {
-  return useQuery<Map<string, CollectionResponse>>(
+  return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
     fetchCollections,
     {
@@ -264,7 +278,7 @@ function aggregateCollectionDatasetRows(
  * across sibling datasets in its collection.
  */
 function buildCollectionRows(
-  collectionsById: Map<string, CollectionResponse>,
+  collectionsById: Map<string, ProcessedCollectionResponse>,
   datasetRows: DatasetRow[]
 ): CollectionRow[] {
   // Group datasets by collection to facilitate aggregation of dataset category values for each collection.
@@ -282,11 +296,20 @@ function buildCollectionRows(
     );
 
     // Create collection row from aggregated collection category values and core collection information.
-    const { id, name, published_at, revised_at } = collection;
+    const {
+      id,
+      name,
+      publicationDateValues,
+      published_at,
+      publisher_metadata,
+      revised_at,
+    } = collection;
     const collectionRow = sortCategoryValues({
       id,
       name,
+      publicationDateValues,
       published_at,
+      publisher_metadata,
       revised_at,
       ...aggregatedCategoryValues,
     });
@@ -302,7 +325,7 @@ function buildCollectionRows(
  * @returns Datasets joined with their corresponding collection information.
  */
 function buildDatasetRows(
-  collectionsById: Map<string, CollectionResponse>,
+  collectionsById: Map<string, ProcessedCollectionResponse>,
   datasets: DatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
@@ -322,7 +345,7 @@ function buildDatasetRows(
  */
 function buildDatasetRow(
   dataset: DatasetResponse,
-  collection?: CollectionResponse
+  collection?: ProcessedCollectionResponse
 ): DatasetRow {
   const { is_primary_data } = dataset;
 
@@ -332,9 +355,45 @@ function buildDatasetRow(
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
+    publicationDateValues: collection?.publicationDateValues,
+    publication_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
   };
-
   return sortCategoryValues(datasetRow);
+}
+
+/**
+ * Determine date bins that publication date falls within. Date bins are recency-based:
+ * - Published 1 month ago, all date bins are applicable (1 month to 3 years).
+ * - Published 2 months ago, all date bins except 1 month are applicable.
+ * - Published 7 months ago, all date bins except 1, 3 and 6 months are applicable.
+ */
+export function createPublicationDateValues(
+  monthsSincePublication: number
+): number[] {
+  return PUBLICATION_DATE_VALUES.reduce((accum: number[], dateBin: number) => {
+    if (monthsSincePublication <= dateBin) {
+      accum.push(dateBin);
+    }
+    return accum;
+  }, []);
+}
+
+/**
+ * Calculate the number of months since the collection was published. This value is used when filtering by publication
+ * date.
+ * @param todayMonth - Today's month
+ * @param todayYear - Today's year
+ * @param publicationMonth - Month of publication (1 = January, 2 = February etc).
+ * @param publicationYear - Year of publication
+ * @returns The count of months since collection was published.
+ */
+export function calculateMonthsSincePublication(
+  todayMonth: number,
+  todayYear: number,
+  publicationMonth: number,
+  publicationYear: number
+): number {
+  return todayMonth - publicationMonth + 12 * (todayYear - publicationYear);
 }
 
 /**
@@ -355,18 +414,56 @@ function expandIsPrimaryData(
 }
 
 /**
+ * Determine date bins applicable to the given publication date.
+ * @param collection - Collection response returned from collections endpoint.
+ * @param todayMonth - Today's month
+ * @param todayYear - Today's year
+ * @returns Array of recency date bins that publication date fall within.
+ */
+function expandPublicationDate(
+  collection: CollectionResponse,
+  todayMonth: number,
+  todayYear: number
+): number[] {
+  const [publicationMonth, publicationYear] =
+    getPublicationMonthYear(collection);
+
+  // Calculate the number of months since the publication date.
+  const monthsSincePublication = calculateMonthsSincePublication(
+    todayMonth,
+    todayYear,
+    publicationMonth,
+    publicationYear
+  );
+
+  // Build array containing all date ranges that the months since publication fall within.
+  return createPublicationDateValues(monthsSincePublication);
+}
+
+/**
  * Fetch public collections from /datasets/index endpoint. Collections are partial in that they do not contain all
  * fields; only fields required for filtering and sorting are returned.
  * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
  * request - containing only ID, name and recency values.
  */
-async function fetchCollections(): Promise<Map<string, CollectionResponse>> {
+async function fetchCollections(): Promise<
+  Map<string, ProcessedCollectionResponse>
+> {
   const collections = await (
     await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
   ).json();
 
+  // Calculate the number of months since publication for each collection.
+  const today = new Date();
+  const todayMonth = today.getMonth() + 1; // JS dates are 0-indexed, publication dates are 1-indexed.
+  const todayYear = today.getUTCFullYear();
+  const processedCollections = collections.map(
+    (collection: CollectionResponse) =>
+      processCollectionResponse(collection, todayMonth, todayYear)
+  );
+
   // Create "collections lookup" to facilitate join between collections and datasets.
-  return keyCollectionsById(collections);
+  return keyCollectionsById(processedCollections);
 }
 
 /**
@@ -385,6 +482,31 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   return datasets.map((dataset: DatasetResponse) => {
     return sanitizeDataset(dataset);
   });
+}
+
+/**
+ * Return the publication month and year for the given collection. If collection has no associated publication
+ * metadata, use revised_at or published_at in priority order.
+ * @param collection - Collection response returned from collections endpoint.
+ * @returns Tuple containing collections publication month (1-indexed) and year.
+ */
+function getPublicationMonthYear(
+  collection: CollectionResponse
+): [number, number] {
+  // Pull month and year from publication metadata if specified.
+  const { publisher_metadata: publicationMetadata } = collection;
+  if (publicationMetadata) {
+    return [
+      publicationMetadata.published_month,
+      publicationMetadata.published_year,
+    ];
+  }
+
+  // Collection has no publication metadata, use Portal date values.
+  const recency = new Date(
+    collection.revised_at ?? collection.published_at * 1000
+  );
+  return [recency.getMonth() + 1, recency.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
 }
 
 /**
@@ -412,14 +534,37 @@ function groupDatasetRowsByCollection(
  * @returns Map of collections keyed by their ID.
  */
 function keyCollectionsById(
-  collections: CollectionResponse[]
-): Map<string, CollectionResponse> {
+  collections: ProcessedCollectionResponse[]
+): Map<string, ProcessedCollectionResponse> {
   return new Map(
-    collections.map((collection: CollectionResponse) => [
+    collections.map((collection: ProcessedCollectionResponse) => [
       collection.id,
       collection,
     ])
   );
+}
+
+/**
+ * Add calculated fields to collection response.
+ * @param collection - Collection response returned from collections endpoint.
+ * @param todayMonth - Number indicating the month of today's date (1-indexed).
+ * @param todayYear - Number indicating the year of today's date.
+ */
+function processCollectionResponse(
+  collection: CollectionResponse,
+  todayMonth: number,
+  todayYear: number
+): ProcessedCollectionResponse {
+  // Calculate date bins and add to "processed" collection model.
+  const publicationDateValues = expandPublicationDate(
+    collection,
+    todayMonth,
+    todayYear
+  );
+  return {
+    ...collection,
+    publicationDateValues,
+  };
 }
 
 /**
@@ -430,6 +575,10 @@ function keyCollectionsById(
 function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
   return Object.values(CATEGORY_KEY).reduce(
     (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
+      // Check for fields that don't require sanitizing.
+      if (categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
+        return accum;
+      }
       if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
       } else {

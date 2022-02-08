@@ -173,9 +173,28 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
+      },
+      // TODO(cc) remove before PR
+      {
+        accessor: (datasetRow: DatasetRow): string => {
+          if (datasetRow.publication_metadata) {
+            return `${datasetRow.publication_metadata.published_month}/${datasetRow.publication_metadata.published_month}`;
+          }
+          const recency = new Date(
+            datasetRow.revised_at ?? datasetRow.published_at * 1000
+          );
+          return `${recency.getMonth() + 1}/${recency.getUTCFullYear()}`;
+        },
+        id: "temp",
       },
     ],
     []
@@ -194,6 +213,7 @@ export default function Datasets(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
           EXPLORER_URL,
         ],
