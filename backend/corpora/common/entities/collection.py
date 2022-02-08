@@ -1,6 +1,5 @@
 import typing
 from datetime import datetime
-from urllib.parse import urlparse
 from sqlalchemy import and_
 
 from . import Dataset

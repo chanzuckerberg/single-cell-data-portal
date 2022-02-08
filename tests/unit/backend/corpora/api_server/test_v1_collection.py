@@ -516,6 +516,8 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual(error_payload["detail"], "DOI cannot be found on Crossref")
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):

@@ -141,6 +141,7 @@ def normalize_and_get_doi(body):
 
     return doi
 
+
 def get_publisher_metadata(provider, doi):
     """
     Retrieves publisher metadata from Crossref.

@@ -12,8 +12,10 @@ class CrossrefException(Exception):
 class CrossrefFetchException(CrossrefException):
     pass
 
+
 class CrossrefDOINotFoundException(CrossrefException):
     pass
+
 
 class CrossrefParseException(CrossrefException):
     pass
