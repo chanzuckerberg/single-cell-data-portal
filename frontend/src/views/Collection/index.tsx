@@ -17,8 +17,7 @@ import {
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
-import CollectionDetails from "src/components/Collection/components/CollectionDetails";
-import CollectionHero from "src/components/Collection/components/CollectionHero";
+import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
 import CollectionMigrationCallout from "src/components/Collection/components/CollectionMigrationCallout";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
@@ -29,6 +28,9 @@ import DeleteCollectionButton from "./components/ActionButtons/components/Delete
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
 import {
+  CollectionDescription,
+  CollectionDetail,
+  CollectionHero,
   CollectionInfo,
   Description,
   LinkContainer,
@@ -37,7 +39,7 @@ import {
   ViewCollection,
 } from "./style";
 import {
-  buildCollectionMetadata,
+  buildCollectionMetadataLinks,
   getIsPublishable,
   renderContact,
   renderLinks,
@@ -176,6 +178,11 @@ const Collection: FC = () => {
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
     collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE;
+  const collectionMetadataLinks = buildCollectionMetadataLinks(
+    collection.links,
+    collection.contact_name,
+    collection.contact_email
+  );
 
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
@@ -196,48 +203,45 @@ const Collection: FC = () => {
       {isFilterEnabled ? (
         <ViewCollection>
           {/* Collection revision status callout */}
-          <CollectionRevisionStatusCallout
-            isRevisionDifferent={collection.revision_diff}
-            shouldShowCollectionRevisionCallout={
-              shouldShowCollectionRevisionCallout
-            }
-          />
+          {shouldShowCollectionRevisionCallout && (
+            <CollectionRevisionStatusCallout
+              isRevisionDifferent={collection.revision_diff}
+            />
+          )}
           {/* Incomplete collection callout */}
           {!isRevision && (
             <CollectionMigrationCallout collectionId={collection.id} />
           )}
           {/* Collection title and actions */}
-          <CollectionHero
-            CollectionActionButtons={
+          <CollectionHero>
+            <H3 data-test-id="collection-name">{collection.name}</H3>
+            {shouldShowPrivateWriteAction && (
               <ActionButtons
                 id={id}
                 addNewFile={addNewFile}
-                isFilterEnabled
                 isPublishable={isPublishable}
                 isRevision={isRevision}
               />
-            }
-            collectionName={collection.name}
-            DeleteCollectionButton={
+            )}
+            {shouldShowPublicWriteAction && (
               <DeleteCollectionButton
                 collectionName={collection.name}
                 handleConfirm={handleDeleteCollection}
-                isFilterEnabled
                 loading={isLoading}
               />
-            }
-            shouldShowPrivateWriteAction={shouldShowPrivateWriteAction}
-            shouldShowPublicWriteAction={shouldShowPublicWriteAction}
-          />
-          {/* Collection description and metadata */}
-          <CollectionDetails
-            collectionDescription={collection.description}
-            collectionMetadata={buildCollectionMetadata(
-              collection.links,
-              collection.contact_name,
-              collection.contact_email
             )}
-          />
+          </CollectionHero>
+          {/* Collection description and metadata */}
+          <CollectionDetail>
+            <CollectionDescription data-test-id="collection-description">
+              {collection.description}
+            </CollectionDescription>
+            {collectionMetadataLinks && (
+              <CollectionMetadata
+                collectionMetadataLinks={collectionMetadataLinks}
+              />
+            )}
+          </CollectionDetail>
           {/* Collection grid */}
           {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
           <DatasetTab

@@ -7,27 +7,27 @@ import {
 } from "src/components/Collection/components/CollectionMetadata/style";
 
 export interface CollectionMetadataLink {
-  dataTestId: string;
   label: string;
+  testId: string;
   url: string;
   value: string;
 }
 
 interface Props {
-  collectionMetadata: CollectionMetadataLink[];
+  collectionMetadataLinks: CollectionMetadataLink[];
 }
 
 export default function CollectionMetadata({
-  collectionMetadata,
+  collectionMetadataLinks,
 }: Props): JSX.Element {
   return (
     <Metadata>
-      {collectionMetadata.map(({ dataTestId, label, url, value }) => (
+      {collectionMetadataLinks.map(({ label, testId, url, value }) => (
         <React.Fragment key={label}>
           <MetadataLabel>{label}</MetadataLabel>
           <Link href={url} passHref>
             <MetadataValue
-              data-test-id={dataTestId}
+              data-test-id={testId}
               href="passHref"
               rel="noopener"
               target="_blank"

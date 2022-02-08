@@ -1,4 +1,6 @@
 import { Button, Intent, Popover, Position } from "@blueprintjs/core";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { StyledOutlineButton } from "src/components/common/Button/common/style";
 import {
   Props as DropboxChooserProps,
@@ -12,10 +14,10 @@ export interface UploadedFiles {
 
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
-  isFilterEnabled?: boolean;
 }
 
-const AddButton = ({ addNewFile, isFilterEnabled }: Props) => {
+const AddButton = ({ addNewFile }: Props) => {
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const AddDatasetButton = isFilterEnabled ? StyledOutlineButton : Button;
   return (
     <Popover

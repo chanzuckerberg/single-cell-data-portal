@@ -4,6 +4,7 @@ import styled from "styled-components";
 export const CollectionMetadata = styled.div`
   display: grid;
   gap: 8px 24px;
+  grid-area: metadata;
   grid-template-columns: 96px auto;
   justify-self: flex-start;
   letter-spacing: -0.1px;

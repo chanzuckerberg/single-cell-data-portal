@@ -1,4 +1,6 @@
 import { Collection } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import {
   Props as DropboxChooserProps,
@@ -14,7 +16,6 @@ export interface UploadedFiles {
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   id: Collection["id"];
-  isFilterEnabled?: boolean;
   isPublishable: boolean;
   isRevision: boolean;
 }
@@ -22,18 +23,17 @@ interface Props {
 const ActionButtons = ({
   addNewFile,
   id,
-  isFilterEnabled = false,
   isPublishable,
   isRevision,
 }: Props): JSX.Element => {
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const Actions = isFilterEnabled ? CollectionActions : Wrapper;
   return (
     <Actions>
       <MoreDropdown id={id} isRevision={isRevision} />
-      <AddButton addNewFile={addNewFile} isFilterEnabled={isFilterEnabled} />
+      <AddButton addNewFile={addNewFile} />
       <PublishCollection
         id={id}
-        isFilterEnabled={isFilterEnabled}
         isPublishable={isPublishable}
         isRevision={isRevision}
       />

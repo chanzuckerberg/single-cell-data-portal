@@ -30,7 +30,7 @@ const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
  * @param contactEmail
  * @returns Array of collection metadata in preferred order of display.
  */
-export function buildCollectionMetadata(
+export function buildCollectionMetadataLinks(
   links: Link[],
   contactName?: Collection["contact_name"],
   contactEmail?: Collection["contact_email"]
@@ -40,8 +40,8 @@ export function buildCollectionMetadata(
   /* Add contact name and email to the top of collection metadata list. */
   if (contactName && contactEmail) {
     collectionMetadataLinks.push({
-      dataTestId: "collection-contact",
       label: "Contact",
+      testId: "collection-contact",
       url: `mailto:${contactEmail}`,
       value: contactName,
     });
@@ -61,6 +61,10 @@ export function buildCollectionMetadata(
   return collectionMetadataLinks;
 }
 
+/**
+ * @deprecated - supersede by buildCollectionMetadata once filter feature flag is removed (#1718).
+ * @param links
+ */
 export function renderLinks(links: Link[]): (JSX.Element | null)[] {
   /* Reorder links into preferred order of display. */
   const orderedLinks = sortCollectionLinks(links);
@@ -120,6 +124,11 @@ function createLinkTypesToLinks(links: Link[]) {
   return linkTypesToLinks;
 }
 
+/**
+ * @deprecated - supersede by buildCollectionMetadata once filter feature flag is removed (#1718).
+ * @param contact_name
+ * @param contact_email
+ */
 export function renderContact(
   contact_name?: Collection["contact_name"],
   contact_email?: Collection["contact_email"]
@@ -206,8 +215,8 @@ function buildCollectionMetadataLink(
   if (!value) return;
 
   return {
-    dataTestId: "collection-link",
     label: linkTypeOption.text,
+    testId: "collection-link",
     url: url,
     value: value,
   };
