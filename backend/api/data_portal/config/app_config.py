@@ -6,7 +6,6 @@ from backend.api.data_portal.config.config_properties_source import (
     DefaultConfigPropertiesSource,
 )
 
-
 # TODO: All app configuration is performed herein using `*Config` singleton classes. Would it be simpler to just use
 # globals variables instead of singleton classes? We already have an `app` global var (in app.py), and globals are
 # a reasonably Python idiom to use when singleton-like behavior is required.
@@ -91,7 +90,6 @@ class AuthConfig:
         for source_prop in [
             "audience",
             "api_audience",
-            "issuer",
             "cookie_name",
             "code_challenge_method",
             "redirect_to_frontend",
@@ -106,21 +104,20 @@ class AuthConfig:
         ]:
             self.__dict__[source_prop] = config_properties_source.get_prop(source_prop)
 
-    def __setattr__(self, key, value):
-        super().__setattr__(key, value)
-        if key == "api_base_url":
-            self.__update_api_base_url(value)
-
-    def __update_api_base_url(self, api_base_url):
+    def __getattr__(self, name):
         """
-        Update config props that are derived from the "api_base_url" property. This is only necessary to support
-        updates while running tests, as some tests need to alter the api_base_url prop to perform a fake auth process
+        Returned instance variable values that are derived from source property value(s).
         """
-        self.__dict__["api_authorize_url"] = f"{api_base_url}/authorize"
-        self.__dict__["api_token_url"] = f"{api_base_url}/oauth/token"
-        self.__dict__["api_userinfo_url"] = f"{api_base_url}/userinfo"
-        self.__dict__["internal_url"] = api_base_url
-        self.__dict__["issuer"] = self.build_issuers(api_base_url, self._api_signin_url)
+        if name == "api_authorize_url":
+            return f"{self.api_base_url}/authorize"
+        if name == "api_token_url":
+            return f"{self.api_base_url}/oauth/token"
+        if name == "api_userinfo_url":
+            return f"{self.api_base_url}/userinfo"
+        if name == "internal_url":
+            return self.api_base_url
+        if name == "issuer":
+            return self.build_issuers(self.api_base_url, self._api_signin_url)
 
     @staticmethod
     def build_issuers(api_base_url, api_signin_url):

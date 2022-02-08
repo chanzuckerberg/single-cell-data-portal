@@ -20,6 +20,7 @@ class TestAppConfig(unittest.TestCase):
         assert "updated_api_base_url" in ac.api_authorize_url
         assert "updated_api_base_url" in ac.api_token_url
         assert "updated_api_base_url" in ac.api_userinfo_url
+        assert "updated_api_base_url" in ac.internal_url
         assert "updated_api_base_url" in "".join(ac.issuer)
 
     # def test__when_config_prop_is_from_env_then_prop_name_is_lowercased(self):
