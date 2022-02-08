@@ -543,6 +543,28 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertIsNone(collection.publisher_metadata)
 
+    def test__post_collection_ignores_metadata_if_no_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertIsNone(collection.publisher_metadata)
+
+
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
 

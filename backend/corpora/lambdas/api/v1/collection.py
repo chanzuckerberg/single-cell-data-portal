@@ -165,6 +165,8 @@ def create_collection(body: object, user: str):
     if doi is not None:
         provider = crossref_provider.CrossrefProvider()
         publisher_metadata = get_publisher_metadata(provider, doi)
+    else:
+        publisher_metadata = None
 
     collection = Collection.create(
         db_session,
