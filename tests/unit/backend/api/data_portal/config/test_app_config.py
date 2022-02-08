@@ -5,6 +5,16 @@ from backend.api.data_portal.config.app_config import AuthConfig, DbConfig
 
 
 class TestAppConfig(unittest.TestCase):
+    def setUp(self) -> None:
+        # force re-init of these singleton objs
+        AuthConfig._instance = None
+        DbConfig._instance = None
+
+    def tearDown(self) -> None:
+        # force re-init of these singleton objs
+        AuthConfig._instance = None
+        DbConfig._instance = None
+
     def test_auth_config_is_singleton(self):
         assert AuthConfig() is AuthConfig()
 
@@ -30,9 +40,10 @@ class TestAppConfig(unittest.TestCase):
         mock_prop_source_load.return_value = dict(remote_dev_uri="some_rdev_db_uri_base/")
         mock_os_get_env.return_value = "rdev_env_name"
 
-        DbConfig()._instance = None  # force re-init of this singleton obj
+        db_uri = DbConfig().database_uri
 
-        assert DbConfig().database_uri == "some_rdev_db_uri_base/rdev_env_name"
+        assert db_uri == "some_rdev_db_uri_base/rdev_env_name"
+
 
     # def test__when_config_prop_is_from_env_then_prop_name_is_lowercased(self):
     #     os.environ['SOME_KEY'] = 'some_value'
