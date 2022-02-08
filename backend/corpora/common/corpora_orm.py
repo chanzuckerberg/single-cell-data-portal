@@ -181,6 +181,7 @@ class ProjectLinkType(enum.Enum):
     """
 
     DOI = "doi"
+    DOI_CURIE = "doi_curie"
     RAW_DATA = "raw_data"
     PROTOCOL = "protocol"
     LAB_WEBSITE = "lab_website"

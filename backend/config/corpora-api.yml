@@ -999,7 +999,7 @@ components:
             type: string
           link_type:
             type: string
-            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE, DOI_CURIE]
     collection:
       type: object
       required:

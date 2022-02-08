@@ -1,7 +1,7 @@
 import sqlalchemy
 from typing import Optional
 from backend.corpora.common.providers import crossref_provider
-from backend.corpora.common.providers.crossref_provider import CrossrefException
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 
 from flask import make_response, jsonify, g
 
@@ -9,7 +9,7 @@ import logging
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
-from ....common.utils.exceptions import ForbiddenHTTPException, ConflictException
+from ....common.utils.exceptions import InvalidParametersHTTPException, ForbiddenHTTPException, ConflictException
 from ....api_server.db import dbconnect
 from backend.corpora.lambdas.api.v1.authorization import has_scope
 
@@ -26,13 +26,6 @@ def _owner_or_allowed(user):
     Returns None if the user is superuser, `user` otherwise. Used for where conditions
     """
     return None if has_scope("write:collections") else user
-
-
-def _get_doi_from_body(body):
-    links = body.get("links", [])
-    doi_list = [link["link_url"] for link in links if link["link_type"] == "DOI"]
-    # TODO (ebezzi): remove DOI normalization when all DOIs have been migrated to CURIE
-    return Collection._normalize_doi(doi_list[0]) if doi_list else None
 
 
 @dbconnect
@@ -122,16 +115,48 @@ def post_collection_revision(collection_uuid: str, user: str):
     return make_response(jsonify(result), 201)
 
 
+def _get_doi_from_body(body):
+    links = body.get("links", [])
+    # For backwards compatibility, support both DOI and DOI_CURIE format
+    # TODO: DOI can be deprecated later in favor of DOI_CURIE
+    doi_list = [link["link_url"] for link in links if link["link_type"] == "DOI"]
+    doi_curies = [link["link_url"] for link in links if link["link_type"] == "DOI_CURIE"]
+
+    # Can only specify a single DOI
+    if len(doi_list) > 1 or len(doi_curies) > 1:
+        raise InvalidParametersHTTPException("Can only specify a single DOI")
+
+    if doi_curies:
+        return doi_curies[0]
+
+    if doi_list:
+        return Collection._normalize_doi(doi_list[0])
+
+    return None
+
+
+def get_publisher_metadata(provider, doi):
+    """
+    Retrieves publisher metadata from Crossref.
+    """
+    provider = crossref_provider.CrossrefProvider()
+    try:
+        return provider.fetch_metadata(doi)
+    except CrossrefDOINotFoundException:
+        # TODO: add an error message
+        raise InvalidParametersHTTPException("DOI cannot be found on Crossref")
+    except CrossrefException as e:
+        logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
+        return None
+
+
 @dbconnect
 def create_collection(body: object, user: str):
     db_session = g.db_session
 
+    doi = _get_doi_from_body(body)
     provider = crossref_provider.CrossrefProvider()
-    try:
-        publisher_metadata = provider.fetch_metadata(_get_doi_from_body(body))
-    except CrossrefException as e:
-        logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
-        publisher_metadata = None
+    publisher_metadata = get_publisher_metadata(provider, doi)
 
     collection = Collection.create(
         db_session,
@@ -216,11 +241,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
         provider = crossref_provider.CrossrefProvider()
-        try:
-            publisher_metadata = provider.fetch_metadata(new_doi)
-        except CrossrefException as e:
-            logging.warning(f"CrossrefException on update_collection: {e}. Will ignore metadata.")
-            publisher_metadata = None
+        publisher_metadata = get_publisher_metadata(provider, new_doi)
         body["publisher_metadata"] = publisher_metadata
 
     collection.update(**body)

@@ -11,6 +11,8 @@ class CrossrefException(Exception):
 class CrossrefFetchException(CrossrefException):
     pass
 
+class CrossrefDOINotFoundException(CrossrefException):
+    pass
 
 class CrossrefParseException(CrossrefException):
     pass
@@ -52,7 +54,10 @@ class CrossrefProvider(object):
             )
             res.raise_for_status()
         except Exception as e:
-            raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
+            if res.status_code == 404:
+                raise CrossrefDOINotFoundException from e
+            else:
+                raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         try:
             message = res.json()["message"]
