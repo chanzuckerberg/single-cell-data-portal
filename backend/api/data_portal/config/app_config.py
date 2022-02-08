@@ -6,6 +6,7 @@ from backend.api.data_portal.config.config_properties_source import (
     DefaultConfigPropertiesSource,
 )
 
+
 # TODO: All app configuration is performed herein using `*Config` singleton classes. Would it be simpler to just use
 # globals variables instead of singleton classes? We already have an `app` global var (in app.py), and globals are
 # a reasonably Python idiom to use when singleton-like behavior is required.
@@ -60,11 +61,19 @@ class DbConfig:
 
     def __singleton_init(self):
         config_properties_source = DbConfigPropertiesSource()
-        self.__dict__["database_uri"] = config_properties_source.get_prop(
-            "database_uri"
-        ) or config_properties_source.get_prop(
-            "remote_dev_uri"
-        )  # HACK for rdev envs!
+
+        # HACK for rdev envs!
+        # If we're in an rdev env, as determined by the existence of `REMOTE_DEV_PREFIX` env variable,
+        # then we have to build the database_uri config property by concatenating:
+        # - the "root" db URI, provided within the AWS Secret json object wit the  `remote_dev_uri` key
+        # - the rdev env name, provided via the env var `REMOTE_DEV_PREFIX`
+        def remote_dev_database_uri():
+            rdev_db_uri_suffix = os.getenv("REMOTE_DEV_PREFIX", "")
+            if rdev_db_uri_suffix:
+                return config_properties_source.get_prop("remote_dev_uri") + rdev_db_uri_suffix
+            return None
+
+        self.__dict__["database_uri"] = remote_dev_database_uri() or config_properties_source.get_prop("database_uri")
 
 
 class AuthConfigPropertiesSource(AwsSecretConfigPropertiesSource):
