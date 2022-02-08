@@ -89,7 +89,13 @@ def get_collections_index():
     filtered_collection = Collection.list_attributes_in_time_range(
         db_session,
         filters=[DbCollection.visibility == CollectionVisibility.PUBLIC],
-        list_attributes=[DbCollection.id, DbCollection.name, DbCollection.published_at, DbCollection.revised_at],
+        list_attributes=[
+            DbCollection.id,
+            DbCollection.name,
+            DbCollection.published_at,
+            DbCollection.revised_at,
+            DbCollection.publisher_metadata,
+        ],
     )
 
     return make_response(jsonify(filtered_collection), 200)
