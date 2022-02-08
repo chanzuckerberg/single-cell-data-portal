@@ -236,7 +236,7 @@ const Collection: FC = () => {
             <CollectionDescription data-test-id="collection-description">
               {collection.description}
             </CollectionDescription>
-            {collectionMetadataLinks && (
+            {collectionMetadataLinks.length > 0 && (
               <CollectionMetadata
                 collectionMetadataLinks={collectionMetadataLinks}
               />
