@@ -38,7 +38,7 @@ class ProcessingConfig:
         self.__dict__["upload_sfn_arn"] = config_properties_source.get_prop("upload_sfn_arn")
         self.__dict__["slack_webhook"] = config_properties_source.get_prop("slack_webhook")
         # TODO: This prop is not exactly "processing"-related, as it is used by endpoints that serve the frontend
-        self.__dict__["crossref_api_uri"] = config_properties_source.get_prop("crossref_api_uri")
+        self.__dict__["crossref_api_key"] = config_properties_source.get_prop("crossref_api_key")
 
 
 class DbConfigPropertiesSource(AwsSecretConfigPropertiesSource):

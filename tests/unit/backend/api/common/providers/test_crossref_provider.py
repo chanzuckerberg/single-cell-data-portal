@@ -21,9 +21,9 @@ class TestCrossrefProvider(unittest.TestCase):
 
     @patch("backend.api.data_portal.common.providers.crossref_provider.requests.get")
     @patch("backend.api.data_portal.common.providers.crossref_provider.ProcessingConfig")
-    def test__provider_calls_crossref_if_api_url_defined(self, mock_config, mock_get):
+    def test__provider_calls_crossref_if_api_key_defined(self, mock_config, mock_get):
 
-        # Defining a mocked ProcessingConfig will allow the provider to consider the `crossref_api_uri`
+        # Defining a mocked ProcessingConfig will allow the provider to consider the `crossref_api_key`
         # not None, so it will go ahead and do the mocked call.
 
         response = Response()
