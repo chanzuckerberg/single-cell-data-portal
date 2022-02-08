@@ -564,7 +564,6 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertIsNone(collection.publisher_metadata)
 
-
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
 
