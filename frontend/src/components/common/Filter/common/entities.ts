@@ -164,7 +164,7 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   id: string;
   isOverMaxCellCount: boolean;
   name: string;
-  publication_metadata?: PublisherMetadata; // TODO(cc) remove before PR, required for temp col display values
+  publisher_metadata?: PublisherMetadata; // TODO(cc) remove before PR, required for temp col display values
   published_at: number;
   revised_at?: number;
 }
@@ -204,7 +204,7 @@ export enum IS_PRIMARY_DATA_LABEL {
  */
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
-  CATEGORY_KEY.IS_PRIMARY_DATA
+  CATEGORY_KEY.IS_PRIMARY_DATA | CATEGORY_KEY.PUBLICATION_DATE_VALUES
 >;
 
 /**

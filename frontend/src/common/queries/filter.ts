@@ -356,7 +356,7 @@ function buildDatasetRow(
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
     publicationDateValues: collection?.publicationDateValues,
-    publication_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
+    publisher_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
   };
   return sortCategoryValues(datasetRow);
 }

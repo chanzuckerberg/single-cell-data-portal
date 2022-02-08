@@ -186,8 +186,8 @@ export default function Datasets(): JSX.Element {
       // TODO(cc) remove before PR
       {
         accessor: (datasetRow: DatasetRow): string => {
-          if (datasetRow.publication_metadata) {
-            return `${datasetRow.publication_metadata.published_month}/${datasetRow.publication_metadata.published_month}`;
+          if (datasetRow.publisher_metadata) {
+            return `${datasetRow.publisher_metadata.published_month}/${datasetRow.publisher_metadata.published_month}`;
           }
           const recency = new Date(
             datasetRow.revised_at ?? datasetRow.published_at * 1000

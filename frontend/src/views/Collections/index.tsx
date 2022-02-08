@@ -15,7 +15,6 @@ import {
   CATEGORY_KEY,
   CellPropsValue,
   CollectionRow,
-  DatasetRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
@@ -150,9 +149,9 @@ export default function Collections(): JSX.Element {
       },
       // TODO(cc) remove before PR
       {
-        accessor: (collectionRow: DatasetRow): string => {
-          if (collectionRow.publication_metadata) {
-            return `${collectionRow.publication_metadata.published_month}/${collectionRow.publication_metadata.published_month}`;
+        accessor: (collectionRow: CollectionRow): string => {
+          if (collectionRow.publisher_metadata) {
+            return `${collectionRow.publisher_metadata.published_month}/${collectionRow.publisher_metadata.published_month}`;
           }
           const recency = new Date(
             collectionRow.revised_at ?? collectionRow.published_at * 1000
