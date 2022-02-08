@@ -4,6 +4,7 @@ from backend.corpora.common.providers import crossref_provider
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 
 from flask import make_response, jsonify, g
+from urllib.parse import urlparse
 
 import logging
 
@@ -115,25 +116,30 @@ def post_collection_revision(collection_uuid: str, user: str):
     return make_response(jsonify(result), 201)
 
 
-def _get_doi_from_body(body):
+def normalize_and_get_doi(body):
+    """
+    1. Check for DOI uniqueness in the payload
+    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
+    3. Returns the newly normalized DOI
+    """
     links = body.get("links", [])
-    # For backwards compatibility, support both DOI and DOI_CURIE format
-    # TODO: DOI can be deprecated later in favor of DOI_CURIE
-    doi_list = [link["link_url"] for link in links if link["link_type"] == "DOI"]
-    doi_curies = [link["link_url"] for link in links if link["link_type"] == "DOI_CURIE"]
+    dois = [link for link in links if link["link_type"] == "DOI"]
 
-    # Can only specify a single DOI
-    if len(doi_list) > 1 or len(doi_curies) > 1:
+    if not dois:
+        return None
+
+    # Verify that a single DOI exists
+    if len(dois) > 1:
         raise InvalidParametersHTTPException("Can only specify a single DOI")
 
-    if doi_curies:
-        return doi_curies[0]
+    doi_node = dois[0]
+    doi = doi_node["link_url"]
 
-    if doi_list:
-        return Collection._normalize_doi(doi_list[0])
+    parsed = urlparse(doi)
+    if not parsed.scheme and not parsed.netloc:
+        doi_node["link_url"] = f"https://doi.org/{parsed.path}"
 
-    return None
-
+    return doi
 
 def get_publisher_metadata(provider, doi):
     """
@@ -154,9 +160,10 @@ def get_publisher_metadata(provider, doi):
 def create_collection(body: object, user: str):
     db_session = g.db_session
 
-    doi = _get_doi_from_body(body)
-    provider = crossref_provider.CrossrefProvider()
-    publisher_metadata = get_publisher_metadata(provider, doi)
+    doi = normalize_and_get_doi(body)
+    if doi is not None:
+        provider = crossref_provider.CrossrefProvider()
+        publisher_metadata = get_publisher_metadata(provider, doi)
 
     collection = Collection.create(
         db_session,
@@ -232,8 +239,8 @@ def update_collection(collection_uuid: str, body: dict, user: str):
         raise ForbiddenHTTPException()
 
     # Compute the diff between old and new DOI
-    old_doi = collection.get_normalized_doi()
-    new_doi = _get_doi_from_body(body)
+    old_doi = collection.get_doi()
+    new_doi = normalize_and_get_doi(body)
 
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field

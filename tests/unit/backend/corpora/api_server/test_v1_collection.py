@@ -223,12 +223,6 @@ class TestCollection(BaseAuthAPITest):
                 {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
                 {"link_name": "", "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
                 {
-                    "link_name": "test_doi_curie_link_name",
-                    "link_type": "DOI_CURIE",
-                    "link_url": "http://test_doi_curie_url.place",
-                },
-                {"link_name": "", "link_type": "DOI_CURIE", "link_url": "http://test_no_link_name_doi_curie_url.place"},
-                {
                     "link_name": "test_raw_data_link_name",
                     "link_type": "RAW_DATA",
                     "link_url": "http://test_raw_data_url.place",
@@ -459,6 +453,30 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
+
+    def test__post_collection_normalizes_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
+            ],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertEquals(collection.get_doi(), "https://doi.org/10.1016/foo")
 
     def test__post_collection_rejects_two_dois(self):
         test_url = furl(path="/dp/v1/collections/")
