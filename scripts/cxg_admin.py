@@ -18,6 +18,7 @@ from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.db_session import db_session_manager, DBSessionMaker
 from backend.corpora.common.corpora_orm import (
+    CollectionLinkType,
     CollectionVisibility,
     DbCollection,
     DbDataset,
@@ -680,6 +681,62 @@ def update_curator_names(ctx, access_token):
             logger.error(f"Failed to fetch Auth0 info for owner:{owner}")
     for owner_id, owner_name in owners.items():
         update_database_curator_name(owner_id, owner_name)
+
+
+@cli.command()
+@click.pass_context
+def add_publisher_metadata(ctx):
+    """Add publisher metadata to the current records
+    """
+
+    from backend.corpora.common.providers import crossref_provider
+    from backend.corpora.common.providers.crossref_provider import CrossrefException
+
+    def check_doi(doi):
+        url = f"https://dx.doi.org/{doi}"
+        res = requests.head(url, allow_redirects=True)
+        return res.status_code
+
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will populate publisher_metadata for all "
+            "datasets. This will also do N calls to Crossref.",
+            abort=True,
+        )
+
+        import time
+        import traceback
+
+        provider = crossref_provider.CrossrefProvider()
+
+        for record in session.query(DbCollection):
+            collection = Collection.get_collection(session, record.id, record.visibility)
+            if not collection: 
+                continue
+            collection_id = record.id
+            dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
+            normalized_doi = collection.get_normalized_doi()
+
+            if record.publisher_metadata:
+                print("Already has metadata, skipping...")
+                continue
+
+            if normalized_doi:
+                if not '/' in normalized_doi:
+                    continue
+
+                try:
+                    metadata = provider.fetch_metadata(normalized_doi)
+                    record.publisher_metadata = metadata
+                    print(collection_id, dois, normalized_doi)
+                except Exception as e:
+                    print(record.id, normalized_doi, record.name, e)
+                    print(traceback.format_exc())
+                    record.publisher_metadata = {"error" : str(e.__cause__)}
+
+                time.sleep(2)
+                
 
 
 def get_database_uri() -> str:

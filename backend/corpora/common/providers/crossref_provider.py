@@ -32,7 +32,10 @@ class CrossrefProvider(object):
     @staticmethod
     def parse_date_parts(obj):
         date_parts = obj["date-parts"][0]
-        return (date_parts[0], date_parts[1], date_parts[2])
+        year = date_parts[0]
+        month = date_parts[1] if len(date_parts) > 1 else 1
+        day = date_parts[2] if len(date_parts) > 2 else 1
+        return (year, month, day)
 
     def fetch_metadata(self, doi):
         """
@@ -44,7 +47,6 @@ class CrossrefProvider(object):
             logging.info("No Crossref API key found, skipping metadata fetching.")
             return None
 
-        # TODO: if we're using the commercial API, the token should also be parametrized
         try:
             res = requests.get(
                 f"{self.base_crossref_uri}/{doi}",
@@ -63,6 +65,12 @@ class CrossrefProvider(object):
             )
             published_year, published_month, published_day = self.parse_date_parts(published_date)
 
+            dates = []
+            for k, v in message.items():
+                if isinstance(v, dict) and "date-parts" in v:
+                    dt = v["date-parts"][0]
+                    dates.append(f"{k}: {dt}")
+
             # Journal
             try:
                 if "short-container-title" in message and message["short-container-title"]:
@@ -75,8 +83,14 @@ class CrossrefProvider(object):
                 journal = None
 
             # Authors
+            # Note: make sure that the order is preserved, as it is a relevant information
             authors = message["author"]
-            parsed_authors = [{"given": a["given"], "family": a["family"]} for a in authors]
+            parsed_authors = []
+            for author in authors:
+                if "given" in author:
+                    parsed_authors.append({"given": author["given"], "family": author["family"]})
+                elif "name" in author:
+                    parsed_authors.append({"name": author["name"]})
 
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
@@ -86,6 +100,7 @@ class CrossrefProvider(object):
                 "published_year": published_year,
                 "published_month": published_month,
                 "published_day": published_day,
+                "dates": dates,
                 "journal": journal,
                 "is_preprint": is_preprint,
             }
