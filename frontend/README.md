@@ -4,6 +4,8 @@
 
 See [DEV_ENV.md](DEV_ENV.md) for local dev quickstart
 
+NOTE: If you want to `npm i` in your local machine, please make sure to install [`nvm`](https://github.com/nvm-sh/nvm), since we use `.nvmrc` to specify which node version to install the dependencies
+
 ## Environment Variables
 
 The environment variables for the web application. The variables are stored in /frontend/configs/\*. E.g., `frontend/configs/local.js`
