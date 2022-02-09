@@ -349,13 +349,28 @@ function buildDatasetRow(
 ): DatasetRow {
   const { is_primary_data } = dataset;
 
+  // Determine dataset's publication month and year.
+  const [publicationMonth, publicationYear] = getPublicationMonthYear(
+    dataset,
+    collection?.publisher_metadata
+  );
+
+  // Calculate date bins for dataset.
+  const [todayMonth, todayYear] = getMonthYear(new Date());
+  const publicationDateValues = expandPublicationDateValues(
+    todayMonth,
+    todayYear,
+    publicationMonth,
+    publicationYear
+  );
+
   // Join!
   const datasetRow = {
     ...dataset,
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
-    publicationDateValues: collection?.publicationDateValues,
+    publicationDateValues,
     publisher_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
   };
   return sortCategoryValues(datasetRow);
@@ -415,19 +430,18 @@ function expandIsPrimaryData(
 
 /**
  * Determine date bins applicable to the given publication date.
- * @param collection - Collection response returned from collections endpoint.
  * @param todayMonth - Today's month
  * @param todayYear - Today's year
+ * @param publicationMonth - Month of publication (1 = January, 2 = February etc).
+ * @param publicationYear - Year of publication
  * @returns Array of recency date bins that publication date fall within.
  */
-function expandPublicationDate(
-  collection: CollectionResponse,
+function expandPublicationDateValues(
   todayMonth: number,
-  todayYear: number
+  todayYear: number,
+  publicationMonth: number,
+  publicationYear: number
 ): number[] {
-  const [publicationMonth, publicationYear] =
-    getPublicationMonthYear(collection);
-
   // Calculate the number of months since the publication date.
   const monthsSincePublication = calculateMonthsSincePublication(
     todayMonth,
@@ -454,9 +468,7 @@ async function fetchCollections(): Promise<
   ).json();
 
   // Calculate the number of months since publication for each collection.
-  const today = new Date();
-  const todayMonth = today.getUTCMonth() + 1; // JS dates are 0-indexed, publication dates are 1-indexed.
-  const todayYear = today.getUTCFullYear();
+  const [todayMonth, todayYear] = getMonthYear(new Date());
   const processedCollections = collections.map(
     (collection: CollectionResponse) =>
       processCollectionResponse(collection, todayMonth, todayYear)
@@ -485,28 +497,38 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
 }
 
 /**
- * Return the publication month and year for the given collection. If collection has no associated publication
- * metadata, use revised_at or published_at in priority order.
- * @param collection - Collection response returned from collections endpoint.
+ * Return the publication month and year for the given collection or dataset. If there is no associated publication
+ * metadata, use revised_at or published_at in priority order for the given collection or dataset.
+ * @param response - Collection or dataset response returned from endpoint.
+ * @param publisherMetadata - Publication metadata of the collection, or of the dataset's corresponding collection.
  * @returns Tuple containing collections publication month (1-indexed) and year.
  */
 function getPublicationMonthYear(
-  collection: CollectionResponse
+  response: CollectionResponse | DatasetResponse,
+  publisherMetadata?: PublisherMetadata
 ): [number, number] {
   // Pull month and year from publication metadata if specified.
-  const { publisher_metadata: publicationMetadata } = collection;
-  if (publicationMetadata) {
+  if (publisherMetadata) {
     return [
-      publicationMetadata.published_month,
-      publicationMetadata.published_year,
+      publisherMetadata.published_month,
+      publisherMetadata.published_year,
     ];
   }
 
-  // Collection has no publication metadata, use Portal date values.
+  // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
   const recency = new Date(
-    (collection.revised_at ?? collection.published_at) * 1000
+    (response.revised_at ?? response.published_at) * 1000
   );
-  return [recency.getUTCMonth() + 1, recency.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
+  return getMonthYear(recency);
+}
+
+/**
+ * Return the month and year of the specified date.
+ * @param date - Date to return UTC month and year of.
+ * @returns Tuple containing the given date's month (1-indexed) and year.
+ */
+function getMonthYear(date: Date): [number, number] {
+  return [date.getUTCMonth() + 1, date.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
 }
 
 /**
@@ -555,11 +577,18 @@ function processCollectionResponse(
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
-  // Calculate date bins and add to "processed" collection model.
-  const publicationDateValues = expandPublicationDate(
+  // Determine the collections publication month and year.
+  const [publicationMonth, publicationYear] = getPublicationMonthYear(
     collection,
+    collection.publisher_metadata
+  );
+
+  // Calculate date bins and add to "processed" collection model.
+  const publicationDateValues = expandPublicationDateValues(
     todayMonth,
-    todayYear
+    todayYear,
+    publicationMonth,
+    publicationYear
   );
   return {
     ...collection,
