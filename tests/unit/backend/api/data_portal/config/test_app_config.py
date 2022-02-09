@@ -44,7 +44,6 @@ class TestAppConfig(unittest.TestCase):
 
         assert db_uri == "some_rdev_db_uri_base/rdev_env_name"
 
-
     # def test__when_config_prop_is_from_env_then_prop_name_is_lowercased(self):
     #     os.environ['SOME_KEY'] = 'some_value'
     #
