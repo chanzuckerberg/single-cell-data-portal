@@ -6,6 +6,7 @@ import os
 import typing
 from datetime import datetime
 from pathlib import PurePosixPath
+from collections import OrderedDict
 
 from ..utils.ontology_mapping import ontology_mapping
 
@@ -157,8 +158,9 @@ class Dataset(Entity):
 
         ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
         flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
-        if flattened_ancestors:
-            dataset["development_stage_ancestors"] = flattened_ancestors
+        unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
+        if unique_ancestors:
+            dataset["development_stage_ancestors"] = unique_ancestors
 
     @classmethod
     def list_for_index(cls, session) -> typing.List[typing.Dict]:
