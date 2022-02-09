@@ -455,7 +455,7 @@ async function fetchCollections(): Promise<
 
   // Calculate the number of months since publication for each collection.
   const today = new Date();
-  const todayMonth = today.getMonth() + 1; // JS dates are 0-indexed, publication dates are 1-indexed.
+  const todayMonth = today.getUTCMonth() + 1; // JS dates are 0-indexed, publication dates are 1-indexed.
   const todayYear = today.getUTCFullYear();
   const processedCollections = collections.map(
     (collection: CollectionResponse) =>
@@ -504,9 +504,9 @@ function getPublicationMonthYear(
 
   // Collection has no publication metadata, use Portal date values.
   const recency = new Date(
-    collection.revised_at ?? collection.published_at * 1000
+    (collection.revised_at ?? collection.published_at) * 1000
   );
-  return [recency.getMonth() + 1, recency.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
+  return [recency.getUTCMonth() + 1, recency.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
 }
 
 /**

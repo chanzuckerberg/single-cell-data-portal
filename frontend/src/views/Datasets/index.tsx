@@ -187,12 +187,16 @@ export default function Datasets(): JSX.Element {
       {
         accessor: (datasetRow: DatasetRow): string => {
           if (datasetRow.publisher_metadata) {
-            return `${datasetRow.publisher_metadata.published_month}/${datasetRow.publisher_metadata.published_month}`;
+            return `${datasetRow.publisher_metadata.published_month}/${datasetRow.publisher_metadata.published_year}`;
           }
-          const recency = new Date(
-            datasetRow.revised_at ?? datasetRow.published_at * 1000
-          );
-          return `${recency.getMonth() + 1}/${recency.getUTCFullYear()}`;
+          const recency = datasetRow.revised_at ?? datasetRow.published_at;
+          if (!recency) {
+            return "-";
+          }
+          const filterDate = new Date(recency * 1000);
+          return `${
+            filterDate.getUTCMonth() + 1
+          }/${filterDate.getUTCFullYear()}`;
         },
         id: "temp",
       },

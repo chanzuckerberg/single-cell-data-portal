@@ -151,12 +151,17 @@ export default function Collections(): JSX.Element {
       {
         accessor: (collectionRow: CollectionRow): string => {
           if (collectionRow.publisher_metadata) {
-            return `${collectionRow.publisher_metadata.published_month}/${collectionRow.publisher_metadata.published_month}`;
+            return `${collectionRow.publisher_metadata.published_month}/${collectionRow.publisher_metadata.published_year}`;
           }
-          const recency = new Date(
-            collectionRow.revised_at ?? collectionRow.published_at * 1000
-          );
-          return `${recency.getMonth() + 1}/${recency.getUTCFullYear()}`;
+          const recency =
+            collectionRow.revised_at ?? collectionRow.published_at;
+          if (!recency) {
+            return "-";
+          }
+          const filterDate = new Date(recency * 1000);
+          return `${
+            filterDate.getUTCMonth() + 1
+          }/${filterDate.getUTCFullYear()}`;
         },
         id: "temp",
       },

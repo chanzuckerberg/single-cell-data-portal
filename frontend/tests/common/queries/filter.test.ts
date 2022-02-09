@@ -69,6 +69,12 @@ describe("filter", () => {
       expect(dateBins.length).toEqual(5);
       validateDateValue(dateBins, PUBLICATION_DATE_VALUES.slice(1));
     });
+    it("calculates bins for 4 months since publication", () => {
+      const dateBins = createPublicationDateValues(4);
+      // Expecting 6, 12, 24 and 36.
+      expect(dateBins.length).toEqual(4);
+      validateDateValue(dateBins, PUBLICATION_DATE_VALUES.slice(2));
+    });
     it("calculates bins for 7 months since publication", () => {
       const dateBins = createPublicationDateValues(7);
       // Expecting 12, 24 and 36.
