@@ -464,16 +464,14 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
     Validates and labels the specified dataset file and updates the processing status in the database
     :param dataset_id: UUID of the dataset to update
     :param local_filename: file name of the dataset to validate and label
-    :return: file name of labeled dataset, boolean indicating if Seurat conversion is possible
+    :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
     """
-    # from cellxgene_schema import validate
+    from cellxgene_schema import validate
 
     update_db(dataset_id, processing_status=dict(validation_status=ValidationStatus.VALIDATING))
-    output_filename = local_filename
-    # is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
-    is_valid = True
-    can_convert_to_seurat = False
-    errors = []
+    output_filename = LABELED_H5AD_FILENAME
+    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
+
     if not is_valid:
         logger.error(f"Validation failed with {len(errors)} errors!")
         status = dict(
