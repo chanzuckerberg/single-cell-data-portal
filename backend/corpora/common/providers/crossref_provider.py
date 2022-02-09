@@ -22,10 +22,11 @@ class CrossrefProvider(object):
     """
 
     def __init__(self) -> None:
+        self.base_crossref_uri = "https://api.crossref.org/works"
         try:
-            self.base_crossref_uri = CorporaConfig().crossref_api_uri
+            self.crossref_api_key = CorporaConfig().crossref_api_key
         except RuntimeError:
-            self.base_crossref_uri = None
+            self.crossref_api_key = None
         super().__init__()
 
     @staticmethod
@@ -39,13 +40,16 @@ class CrossrefProvider(object):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
-        if self.base_crossref_uri is None:
-            logging.info("No Crossref API URI found, skipping metadata fetching.")
+        if self.crossref_api_key is None:
+            logging.info("No Crossref API key found, skipping metadata fetching.")
             return None
 
         # TODO: if we're using the commercial API, the token should also be parametrized
         try:
-            res = requests.get(f"{self.base_crossref_uri}/{doi}")
+            res = requests.get(
+                f"{self.base_crossref_uri}/{doi}",
+                headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
+            )
             res.raise_for_status()
         except Exception as e:
             raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
