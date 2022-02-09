@@ -72,7 +72,6 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.corpora.common.providers.crossref_provider.CorporaConfig")
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
 
-
         response = Response()
         response.status_code = 200
         response._content = str.encode(
@@ -86,9 +85,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "family": "Doe",
                                 "sequence": "first",
                             },
-                            {
-                                "name": "A consortium"
-                            },
+                            {"name": "A consortium"},
                         ],
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
