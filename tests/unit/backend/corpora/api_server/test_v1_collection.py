@@ -1,6 +1,7 @@
 import itertools
 import json
 from datetime import datetime
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 
 from furl import furl
 
@@ -433,10 +434,7 @@ class TestCollection(BaseAuthAPITest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
-            "links": [
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
-            ],
+            "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -455,6 +453,116 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
+
+    def test__post_collection_normalizes_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
+            ],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertEquals(collection.get_doi(), "https://doi.org/10.1016/foo")
+
+    def test__post_collection_rejects_two_dois(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+            ],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(400, response.status_code)
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__post_collection_rejects_invalid_doi(self, mock_provider):
+        mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual(error_payload["detail"], "DOI cannot be found on Crossref")
+
+    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
+        mock_provider.side_effect = CrossrefFetchException("Mocked CrossrefFetchException")
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertIsNone(collection.publisher_metadata)
+
+    def test__post_collection_ignores_metadata_if_no_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_uuid"]
+        collection = Collection.get_collection(
+            self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
+        )
+        self.assertIsNone(collection.publisher_metadata)
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
@@ -659,7 +767,10 @@ class TestCollection(BaseAuthAPITest):
 
     def test__get_all_collections_for_index(self):
         collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
+            publisher_metadata={"journal": "Nature"},
         )
 
         collection_id_private = self.generate_collection(
@@ -687,6 +798,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertNotIn("description", actual_collection)
         self.assertEqual(actual_collection["published_at"], collection.published_at)
         self.assertEqual(actual_collection["revised_at"], collection.revised_at)
+        self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
 
 
 class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -955,10 +1067,7 @@ class TestUpdateCollection(BaseAuthAPITest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
-            "links": [
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
-            ],
+            "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         data = json.dumps(expected_body)
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
@@ -979,10 +1088,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
         # add links
-        links = [
-            {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-            {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
-        ]
+        links = [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
         data = json.dumps({"links": links})
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)

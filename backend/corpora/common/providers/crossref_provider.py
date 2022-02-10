@@ -1,5 +1,6 @@
 import requests
 from ..corpora_config import CorporaConfig
+from urllib.parse import urlparse
 
 import logging
 
@@ -9,6 +10,10 @@ class CrossrefException(Exception):
 
 
 class CrossrefFetchException(CrossrefException):
+    pass
+
+
+class CrossrefDOINotFoundException(CrossrefException):
     pass
 
 
@@ -22,16 +27,20 @@ class CrossrefProvider(object):
     """
 
     def __init__(self) -> None:
+        self.base_crossref_uri = "https://api.crossref.org/works"
         try:
-            self.base_crossref_uri = CorporaConfig().crossref_api_uri
+            self.crossref_api_key = CorporaConfig().crossref_api_key
         except RuntimeError:
-            self.base_crossref_uri = None
+            self.crossref_api_key = None
         super().__init__()
 
     @staticmethod
     def parse_date_parts(obj):
         date_parts = obj["date-parts"][0]
-        return (date_parts[0], date_parts[1], date_parts[2])
+        year = date_parts[0]
+        month = date_parts[1] if len(date_parts) > 1 else 1
+        day = date_parts[2] if len(date_parts) > 2 else 1
+        return (year, month, day)
 
     def fetch_metadata(self, doi):
         """
@@ -39,16 +48,27 @@ class CrossrefProvider(object):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
-        if self.base_crossref_uri is None:
-            logging.info("No Crossref API URI found, skipping metadata fetching.")
+
+        # Remove the https://doi.org part
+        parsed = urlparse(doi)
+        if parsed.scheme and parsed.netloc:
+            doi = parsed.path
+
+        if self.crossref_api_key is None:
+            logging.info("No Crossref API key found, skipping metadata fetching.")
             return None
 
-        # TODO: if we're using the commercial API, the token should also be parametrized
         try:
-            res = requests.get(f"{self.base_crossref_uri}/{doi}")
+            res = requests.get(
+                f"{self.base_crossref_uri}/{doi}",
+                headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
+            )
             res.raise_for_status()
         except Exception as e:
-            raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
+            if res.status_code == 404:
+                raise CrossrefDOINotFoundException from e
+            else:
+                raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         try:
             message = res.json()["message"]
@@ -58,6 +78,12 @@ class CrossrefProvider(object):
                 message.get("published-print") or message.get("published") or message.get("published-online")
             )
             published_year, published_month, published_day = self.parse_date_parts(published_date)
+
+            dates = []
+            for k, v in message.items():
+                if isinstance(v, dict) and "date-parts" in v:
+                    dt = v["date-parts"][0]
+                    dates.append(f"{k}: {dt}")
 
             # Journal
             try:
@@ -71,8 +97,14 @@ class CrossrefProvider(object):
                 journal = None
 
             # Authors
+            # Note: make sure that the order is preserved, as it is a relevant information
             authors = message["author"]
-            parsed_authors = [{"given": a["given"], "family": a["family"]} for a in authors]
+            parsed_authors = []
+            for author in authors:
+                if "given" in author:
+                    parsed_authors.append({"given": author["given"], "family": author["family"]})
+                elif "name" in author:
+                    parsed_authors.append({"name": author["name"]})
 
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
@@ -82,6 +114,7 @@ class CrossrefProvider(object):
                 "published_year": published_year,
                 "published_month": published_month,
                 "published_day": published_day,
+                "dates": dates,
                 "journal": journal,
                 "is_preprint": is_preprint,
             }

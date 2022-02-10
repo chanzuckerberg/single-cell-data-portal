@@ -10,3 +10,9 @@ export const Wrapper = styled.div`
     margin-right: ${PT_GRID_SIZE_PX * 2}px;
   }
 `;
+
+export const CollectionActions = styled.div`
+  align-items: center;
+  column-gap: 16px;
+  display: flex;
+`;
