@@ -477,13 +477,16 @@ function sortCategoryValueViews(
 }
 
 /**
- * Sort category views by key, ascending.
+ * Sort category views by display label, ascending.
  * @param c0 - First category view to compare.
  * @param c1 - Second category view to compare.
  * @returns Number indicating sort precedence of c0 vs c1.
  */
 function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
-  return COLLATOR_CASE_INSENSITIVE.compare(c0.key, c1.key);
+  return COLLATOR_CASE_INSENSITIVE.compare(
+    CATEGORY_LABEL[c0.key],
+    CATEGORY_LABEL[c1.key]
+  );
 }
 
 /**

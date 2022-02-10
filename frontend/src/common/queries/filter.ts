@@ -3,6 +3,7 @@ import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
   Author,
+  Consortium,
   IS_PRIMARY_DATA,
   Ontology,
   PublisherMetadata,
@@ -376,7 +377,6 @@ function buildDatasetRow(
     is_primary_data: expandIsPrimaryData(is_primary_data),
     publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
-    publisher_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
   };
   return sortCategoryValues(datasetRow);
 }
@@ -439,9 +439,9 @@ function expandIsPrimaryData(
  * @param authors - Array of collection publication authors.
  * @returns Array of strings containing author first and last names.
  */
-function expandPublicationAuthors(authors: Author[]): string[] {
+function expandPublicationAuthors(authors: (Author | Consortium)[]): string[] {
   return authors
-    .filter((author: Author) => !author.name)
+    .filter(isAuthorPerson)
     .map((author: Author) => `${author.family}, ${author.given}`);
 }
 
@@ -565,6 +565,16 @@ function groupDatasetRowsByCollection(
     }
     return accum;
   }, new Map<string, DatasetRow[]>());
+}
+
+/**
+ * Publication authors can be a person or a consortium; determine if the given author is in fact a person (and not a
+ * consortium).
+ * @param author - Person or consortium associated with a publication.
+ * @returns True if author is a person and not a consortium.
+ */
+function isAuthorPerson(author: Author | Consortium): author is Author {
+  return (author as Author).given !== undefined;
 }
 
 /**

@@ -170,7 +170,6 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   id: string;
   isOverMaxCellCount: boolean;
   name: string;
-  publisher_metadata?: PublisherMetadata; // TODO(cc) remove before PR, required for temp col display values
   published_at: number;
   revised_at?: number;
 }

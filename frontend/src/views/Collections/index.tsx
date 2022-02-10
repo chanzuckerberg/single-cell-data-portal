@@ -153,24 +153,6 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
       },
-      // TODO(cc) remove before PR
-      {
-        accessor: (collectionRow: CollectionRow): string => {
-          if (collectionRow.publisher_metadata) {
-            return `${collectionRow.publisher_metadata.published_month}/${collectionRow.publisher_metadata.published_year}`;
-          }
-          const recency =
-            collectionRow.revised_at ?? collectionRow.published_at;
-          if (!recency) {
-            return "-";
-          }
-          const filterDate = new Date(recency * 1000);
-          return `${
-            filterDate.getUTCMonth() + 1
-          }/${filterDate.getUTCFullYear()}`;
-        },
-        id: "temp",
-      },
     ],
     []
   );
