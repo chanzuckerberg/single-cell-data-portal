@@ -251,7 +251,7 @@ export type OnUpdateSearchValueFn = (
 export const PUBLICATION_DATE_VALUES: number[] = [1, 3, 6, 12, 24, 36];
 
 /**
- * Display values of publicationDateValue labels. Note, enum must be non-numeric key for reverse lookup.
+ * Display values of publicationDateValue labels. Enum must be non-numeric key for reverse lookup.
  */
 export enum PUBLICATION_DATE_LABELS {
   "LABEL_1" = "1 month",

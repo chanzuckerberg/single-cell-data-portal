@@ -303,8 +303,7 @@ function buildNextCategoryFilters<T extends Categories>(
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryKey, filters);
 
-  // Current no filters already selected for this category; add category value as first. Or, if category is not
-  // multiselect, set selected value as the only value.
+  // Currently no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
     return [categoryValueKey];
   }

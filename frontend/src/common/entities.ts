@@ -230,7 +230,7 @@ export interface GeneSet {
  * Collection publication metadata, populated from Crossref by collection publication DOI.
  */
 export interface PublisherMetadata {
-  authors: Author[];
+  authors: (Author | Consortium)[];
   journal: string;
   published_day: number;
   published_month: number;

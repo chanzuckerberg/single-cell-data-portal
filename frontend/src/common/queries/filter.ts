@@ -68,7 +68,7 @@ export interface CollectionResponse {
 }
 
 /**
- * Model of /collections/index JSON response that has been modified to include calculated fields, to facilitate filter
+ * Model of /collections/index JSON response that has been modified to include calculated fields that facilitate filter
  * functionality.
  */
 interface ProcessedCollectionResponse extends CollectionResponse {
@@ -299,23 +299,8 @@ function buildCollectionRows(
     );
 
     // Create collection row from aggregated collection category values and core collection information.
-    const {
-      id,
-      name,
-      publicationAuthors,
-      publicationDateValues,
-      published_at,
-      publisher_metadata,
-      revised_at,
-    } = collection;
     const collectionRow = sortCategoryValues({
-      id,
-      name,
-      publicationAuthors,
-      publicationDateValues,
-      published_at,
-      publisher_metadata,
-      revised_at,
+      ...collection,
       ...aggregatedCategoryValues,
     });
     collectionRows.push(collectionRow);
