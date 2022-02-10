@@ -17,22 +17,29 @@ import {
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
+import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
+import CollectionMigrationCallout from "src/components/Collection/components/CollectionMigrationCallout";
+import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import { ViewGrid } from "../globalStyle";
 import ActionButtons from "./components/ActionButtons";
 import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
-import Banner from "./components/Banner";
 import GeneSetTab from "./components/GeneSetTab";
 import Toast from "./components/Toast";
 import {
+  CollectionDescription,
+  CollectionDetail,
+  CollectionHero,
   CollectionInfo,
   Description,
   LinkContainer,
   StyledCallout,
   TabWrapper,
+  ViewCollection,
 } from "./style";
 import {
+  buildCollectionMetadataLinks,
   getIsPublishable,
   renderContact,
   renderLinks,
@@ -168,6 +175,14 @@ const Collection: FC = () => {
   };
   const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
+  const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
+  const shouldShowCollectionRevisionCallout =
+    collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE;
+  const collectionMetadataLinks = buildCollectionMetadataLinks(
+    collection.links,
+    collection.contact_name,
+    collection.contact_email
+  );
 
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
@@ -185,79 +200,134 @@ const Collection: FC = () => {
       <Head>
         <title>cellxgene | {collection.name}</title>
       </Head>
-      <ViewGrid isFilterEnabled={isFilterEnabled}>
-        {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
-          <StyledCallout intent={Intent.PRIMARY} icon={null}>
-            <span data-test-id="revision-status">
-              {collection.revision_diff
-                ? "This collection has changed since you last published it."
-                : "This is a private revision of a public collection."}
-            </span>
-          </StyledCallout>
-        )}
-
-        {!isRevision && <Banner collectionId={collection.id} />}
-
-        <CollectionInfo>
-          <H3 data-test-id="collection-name">{collection.name}</H3>
-          <Description data-test-id="collection-description">
-            {collection.description}
-          </Description>
-          <LinkContainer>
-            {/*
-             * (thuang): Contact and Links order defined here:
-             * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell/124
-             */}
-            {renderContact(collection.contact_name, collection.contact_email)}
-            {renderLinks(collection.links)}
-          </LinkContainer>
-        </CollectionInfo>
-
-        {shouldShowPrivateWriteAction && (
-          <ActionButtons
-            id={id}
-            addNewFile={addNewFile}
-            isPublishable={isPublishable}
-            isRevision={isRevision}
-          />
-        )}
-        {hasWriteAccess && !isPrivate && (
-          <DeleteCollectionButton
-            handleConfirm={handleDeleteCollection}
-            collectionName={collection.name}
-            loading={isLoading}
-          />
-        )}
-
-        <TabWrapper>
-          <Tabs
-            onChange={handleOnChange}
-            selectedTabId={selectedTab}
-            id="collection-tabs"
-            defaultSelectedTabId={TABS.DATASETS}
-          >
-            <Tab
-              id={TABS.DATASETS}
-              title="Datasets"
-              panel={
-                <DatasetTab
-                  collectionID={id}
-                  datasets={datasets}
-                  visibility={visibility}
-                  isRevision={isRevision}
-                />
-              }
+      {isFilterEnabled ? (
+        <ViewCollection>
+          {/* Collection revision status callout */}
+          {shouldShowCollectionRevisionCallout && (
+            <CollectionRevisionStatusCallout
+              isRevisionDifferent={collection.revision_diff}
             />
-            {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
-              <Tab
-                id={TABS.GENE_SETS}
-                title="Gene Sets"
-                panel={<GeneSetTab />}
+          )}
+          {/* Incomplete collection callout */}
+          {!isRevision && (
+            <CollectionMigrationCallout collectionId={collection.id} />
+          )}
+          {/* Collection title and actions */}
+          <CollectionHero>
+            <H3 data-test-id="collection-name">{collection.name}</H3>
+            {shouldShowPrivateWriteAction && (
+              <ActionButtons
+                id={id}
+                addNewFile={addNewFile}
+                isPublishable={isPublishable}
+                isRevision={isRevision}
               />
             )}
-          </Tabs>
-        </TabWrapper>
-      </ViewGrid>
+            {shouldShowPublicWriteAction && (
+              <DeleteCollectionButton
+                collectionName={collection.name}
+                handleConfirm={handleDeleteCollection}
+                loading={isLoading}
+              />
+            )}
+          </CollectionHero>
+          {/* Collection description and metadata */}
+          <CollectionDetail>
+            <CollectionDescription data-test-id="collection-description">
+              {collection.description}
+            </CollectionDescription>
+            {collectionMetadataLinks.length > 0 && (
+              <CollectionMetadata
+                collectionMetadataLinks={collectionMetadataLinks}
+              />
+            )}
+          </CollectionDetail>
+          {/* Collection grid */}
+          {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
+          <DatasetTab
+            collectionID={id}
+            datasets={datasets}
+            isRevision={isRevision}
+            visibility={visibility}
+          />
+        </ViewCollection>
+      ) : (
+        <ViewGrid>
+          {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
+            <StyledCallout intent={Intent.PRIMARY} icon={null}>
+              <span data-test-id="revision-status">
+                {collection.revision_diff
+                  ? "This collection has changed since you last published it."
+                  : "This is a private revision of a public collection."}
+              </span>
+            </StyledCallout>
+          )}
+
+          {!isRevision && (
+            <CollectionMigrationCallout collectionId={collection.id} />
+          )}
+
+          <CollectionInfo>
+            <H3 data-test-id="collection-name">{collection.name}</H3>
+            <Description data-test-id="collection-description">
+              {collection.description}
+            </Description>
+            <LinkContainer>
+              {/*
+               * (thuang): Contact and Links order defined here:
+               * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell/124
+               */}
+              {renderContact(collection.contact_name, collection.contact_email)}
+              {renderLinks(collection.links)}
+            </LinkContainer>
+          </CollectionInfo>
+
+          {shouldShowPrivateWriteAction && (
+            <ActionButtons
+              id={id}
+              addNewFile={addNewFile}
+              isPublishable={isPublishable}
+              isRevision={isRevision}
+            />
+          )}
+          {hasWriteAccess && !isPrivate && (
+            <DeleteCollectionButton
+              handleConfirm={handleDeleteCollection}
+              collectionName={collection.name}
+              loading={isLoading}
+            />
+          )}
+
+          <TabWrapper>
+            <Tabs
+              onChange={handleOnChange}
+              selectedTabId={selectedTab}
+              id="collection-tabs"
+              defaultSelectedTabId={TABS.DATASETS}
+            >
+              <Tab
+                id={TABS.DATASETS}
+                title="Datasets"
+                panel={
+                  <DatasetTab
+                    collectionID={id}
+                    datasets={datasets}
+                    visibility={visibility}
+                    isRevision={isRevision}
+                  />
+                }
+              />
+              {get(FEATURES.GENE_SETS) === BOOLEAN.TRUE && (
+                <Tab
+                  id={TABS.GENE_SETS}
+                  title="Gene Sets"
+                  panel={<GeneSetTab />}
+                />
+              )}
+            </Tabs>
+          </TabWrapper>
+        </ViewGrid>
+      )}
     </>
   );
 };
