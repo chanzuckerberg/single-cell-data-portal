@@ -419,7 +419,7 @@ export function deserializeCellTypeMetadata(
 ): {
   id: string;
   name: string;
-  tissue: string;
+  tissue: Tissue;
 } {
   const [id, tissue, name] = cellTypeMetadata.split("~");
 

@@ -4,7 +4,7 @@
  */
 
 import { CellTypeMetadata } from "../../components/HeatMap/utils";
-import { CellTypeSummary } from "../types";
+import { CellTypeSummary, Tissue } from "../types";
 import { REDUCERS, State } from "./reducer";
 
 export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
@@ -80,7 +80,7 @@ export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReduc
 }
 
 export function tissueCellTypesFetched(
-  tissue: string,
+  tissue: Tissue,
   cellTypeSummaries: CellTypeSummary[]
 ): GetActionTypeOfReducer<typeof REDUCERS["tissueCellTypesFetched"]> {
   return {
@@ -90,7 +90,7 @@ export function tissueCellTypesFetched(
 }
 
 export function resetTissueCellTypes(
-  tissue: string,
+  tissue: Tissue,
   cellTypeSummaries: CellTypeSummary[]
 ): GetActionTypeOfReducer<typeof REDUCERS["resetTissueCellTypes"]> {
   return {

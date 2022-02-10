@@ -3,7 +3,7 @@ import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
-import { CellTypeSummary } from "../types";
+import { CellTypeSummary, Tissue } from "../types";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -15,7 +15,7 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedCellTypeIds: {
-    [tissue: string]: string[];
+    [tissue: Tissue]: string[];
   };
   selectedOrganism: string;
   selectedTissues: string[];
@@ -223,7 +223,7 @@ function deleteSelectedCellTypeIdsByMetadata(
 function tissueCellTypesFetched(
   state: State,
   action: PayloadAction<{
-    tissue: string;
+    tissue: Tissue;
     cellTypeSummaries: CellTypeSummary[];
   }>
 ): State {
@@ -243,7 +243,7 @@ function tissueCellTypesFetched(
 function resetTissueCellTypes(
   state: State,
   action: PayloadAction<{
-    tissue: string;
+    tissue: Tissue;
     cellTypeSummaries: CellTypeSummary[];
   }>
 ): State {
