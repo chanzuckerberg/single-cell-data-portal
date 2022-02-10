@@ -69,6 +69,11 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
     multiselect: true,
   },
   {
+    categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    multiselect: true,
+  },
+  {
     categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: false,
