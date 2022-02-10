@@ -1,7 +1,9 @@
 import { Button, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { ReactElement, useState } from "react";
+import { Fragment, ReactElement, useState } from "react";
 import { Collection } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { Wrapper } from "../../style";
 
 const AsyncAlert = loadable(
@@ -19,6 +21,8 @@ const DeleteCollectionButton = ({
   collectionName,
   loading,
 }: Props): ReactElement => {
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const Actions = isFilterEnabled ? Fragment : Wrapper;
   const [isOpen, setIsOpen] = useState(false);
   const handleHover = () => {
     AsyncAlert.preload();
@@ -29,7 +33,7 @@ const DeleteCollectionButton = ({
   };
 
   return (
-    <Wrapper>
+    <Actions>
       <Button
         onClick={handleClick}
         text="Delete Collection"
@@ -62,7 +66,7 @@ const DeleteCollectionButton = ({
           </>
         </AsyncAlert>
       )}
-    </Wrapper>
+    </Actions>
   );
 };
 

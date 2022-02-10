@@ -1,5 +1,6 @@
 import requests
 from ..corpora_config import CorporaConfig
+from urllib.parse import urlparse
 
 import logging
 
@@ -9,6 +10,10 @@ class CrossrefException(Exception):
 
 
 class CrossrefFetchException(CrossrefException):
+    pass
+
+
+class CrossrefDOINotFoundException(CrossrefException):
     pass
 
 
@@ -43,6 +48,12 @@ class CrossrefProvider(object):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
+
+        # Remove the https://doi.org part
+        parsed = urlparse(doi)
+        if parsed.scheme and parsed.netloc:
+            doi = parsed.path
+
         if self.crossref_api_key is None:
             logging.info("No Crossref API key found, skipping metadata fetching.")
             return None
@@ -54,7 +65,10 @@ class CrossrefProvider(object):
             )
             res.raise_for_status()
         except Exception as e:
-            raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
+            if res.status_code == 404:
+                raise CrossrefDOINotFoundException from e
+            else:
+                raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         try:
             message = res.json()["message"]
