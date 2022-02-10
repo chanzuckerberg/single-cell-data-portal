@@ -216,6 +216,7 @@ export interface GeneSet {
 export interface Author {
   family: string;
   given: string;
+  name?: string; // TODO(cc) ********************************************************************************************************************* extract to separate model?
 }
 
 /**

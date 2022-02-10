@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
+  Author,
   IS_PRIMARY_DATA,
   Ontology,
   PublisherMetadata,
@@ -70,6 +71,7 @@ export interface CollectionResponse {
  * functionality.
  */
 interface ProcessedCollectionResponse extends CollectionResponse {
+  publicationAuthors: string[];
   publicationDateValues: number[];
 }
 
@@ -299,6 +301,7 @@ function buildCollectionRows(
     const {
       id,
       name,
+      publicationAuthors,
       publicationDateValues,
       published_at,
       publisher_metadata,
@@ -307,6 +310,7 @@ function buildCollectionRows(
     const collectionRow = sortCategoryValues({
       id,
       name,
+      publicationAuthors,
       publicationDateValues,
       published_at,
       publisher_metadata,
@@ -370,6 +374,7 @@ function buildDatasetRow(
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
+    publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
     publisher_metadata: collection?.publisher_metadata, // TODO(cc) remove before PR, required for temp display col values
   };
@@ -426,6 +431,18 @@ function expandIsPrimaryData(
   return isPrimaryData === IS_PRIMARY_DATA.BOTH
     ? [IS_PRIMARY_DATA.PRIMARY, IS_PRIMARY_DATA.SECONDARY]
     : [isPrimaryData];
+}
+
+/**
+ * Concat author first and last names to facilitate filter. Ignore authors with a `name` attribute as this indicates
+ * author is a consortium which are not to be included in the filter.
+ * @param authors - Array of collection publication authors.
+ * @returns Array of strings containing author first and last names.
+ */
+function expandPublicationAuthors(authors: Author[]): string[] {
+  return authors
+    .filter((author: Author) => !author.name)
+    .map((author: Author) => `${author.family}, ${author.given}`);
 }
 
 /**
@@ -590,8 +607,15 @@ function processCollectionResponse(
     publicationMonth,
     publicationYear
   );
+
+  // Determine the set of authors of the publication.
+  const publicationAuthors = expandPublicationAuthors(
+    collection?.publisher_metadata?.authors ?? []
+  );
+
   return {
     ...collection,
+    publicationAuthors,
     publicationDateValues,
   };
 }
@@ -605,7 +629,10 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
   return Object.values(CATEGORY_KEY).reduce(
     (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
       // Check for fields that don't require sanitizing.
-      if (categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
+      if (
+        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS
+      ) {
         return accum;
       }
       if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {

@@ -33,6 +33,7 @@ export enum CATEGORY_KEY {
   "DISEASE" = "disease",
   "IS_PRIMARY_DATA" = "is_primary_data",
   "ORGANISM" = "organism",
+  "PUBLICATION_AUTHORS" = "publicationAuthors",
   "PUBLICATION_DATE_VALUES" = "publicationDateValues",
   "SEX" = "sex",
   "TISSUE" = "tissue",
@@ -204,7 +205,9 @@ export enum IS_PRIMARY_DATA_LABEL {
  */
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
-  CATEGORY_KEY.IS_PRIMARY_DATA | CATEGORY_KEY.PUBLICATION_DATE_VALUES
+  | CATEGORY_KEY.IS_PRIMARY_DATA
+  | CATEGORY_KEY.PUBLICATION_DATE_VALUES
+  | CATEGORY_KEY.PUBLICATION_AUTHORS
 >;
 
 /**
@@ -215,6 +218,7 @@ export enum CATEGORY_LABEL {
   cell_type = "Cell Type",
   disease = "Disease",
   is_primary_data = "Data Source",
+  publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",
   organism = "Organism",
   tissue = "Tissue",
@@ -258,6 +262,7 @@ export enum PUBLICATION_DATE_LABELS {
  * Publication-related filterable values of collections and datasets.
  */
 export interface PublisherMetadataCategories {
+  publicationAuthors?: string[];
   publicationDateValues?: number[]; // Set of date bins that publication date falls within
 }
 
