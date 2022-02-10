@@ -3,9 +3,12 @@ import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { API } from "src/common/API";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import SideBar from "src/components/common/SideBar";
 import { Position } from "src/components/common/SideBar/style";
+import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
 import { View } from "../globalStyle";
 import {
@@ -112,18 +115,18 @@ const WheresMyGene = (): JSX.Element => {
     fetchCellTypes();
 
     async function fetchCellTypes(): Promise<void> {
-      // const response = await fetch(
-      //   API_URL + API.WMG_CELL_TYPES,
-      //   DEFAULT_FETCH_OPTIONS
-      // );
+      const response = await fetch(
+        API_URL + API.WMG_CELL_TYPES,
+        DEFAULT_FETCH_OPTIONS
+      );
 
       // DEBUG
       // DEBUG
       // DEBUG
       // (thuang): Local test data
-      const response = await fetch(
-        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_cell_types.json"
-      );
+      // const response = await fetch(
+      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_cell_types.json"
+      // );
 
       const cellTypes = await response.json();
 

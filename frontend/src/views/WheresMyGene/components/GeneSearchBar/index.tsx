@@ -6,7 +6,10 @@ import {
 } from "@blueprintjs/select";
 import { forwardRef, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
+import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { API_URL } from "src/configs/configs";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
 import { Container, MultiSelectWrapper } from "./style";
@@ -128,31 +131,24 @@ interface ExtendedItemRendererProps extends IItemRendererProps {
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // SET BACK TO ""
-  const [input, setInput] = useState("20");
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     fetchGenes();
 
     async function fetchGenes(): Promise<void> {
-      // const response = await fetch(
-      //   API_URL + API.WMG_GENES,
-      //   DEFAULT_FETCH_OPTIONS
-      // );
+      const response = await fetch(
+        API_URL + API.WMG_GENES,
+        DEFAULT_FETCH_OPTIONS
+      );
 
       // DEBUG
       // DEBUG
       // DEBUG
       // (thuang): Local test data
-      const response = await fetch(
-        "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
-      );
+      // const response = await fetch(
+      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
+      // );
 
       const allGenes = await response.json();
 
