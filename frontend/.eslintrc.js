@@ -38,6 +38,8 @@ module.exports = {
     "@typescript-eslint/camelcase": 0,
     // Disable prop-types as we use TypeScript for type checking
     "@typescript-eslint/explicit-function-return-type": "off",
+    // (thuang): Allow args prefixed with `_`
+    // example: https://eslint.org/docs/rules/no-unused-vars#argsignorepattern
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
