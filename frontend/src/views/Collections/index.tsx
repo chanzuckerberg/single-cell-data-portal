@@ -41,6 +41,11 @@ const COLLECTION_NAME = "name";
 const COLUMN_ID_RECENCY = "recency";
 
 /**
+ * Recency object key.
+ */
+const RECENCY = "recency";
+
+/**
  * Gene sets CSV upload functionality, available if gene sets feature flag is enabled
  */
 const AsyncUploadCSV = loadable(
@@ -107,9 +112,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for sorting
       {
-        // Sort by revised_at if specified otherwise published_at.
-        accessor: (collectionRow: CollectionRow): number =>
-          collectionRow.revised_at ?? collectionRow.published_at,
+        accessor: RECENCY,
         id: COLUMN_ID_RECENCY,
       },
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.

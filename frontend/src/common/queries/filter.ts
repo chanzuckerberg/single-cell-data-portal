@@ -298,10 +298,17 @@ function buildCollectionRows(
       collectionDatasetRows
     );
 
+    // Calculate recency for sorting.
+    const recency = calculateRecency(
+      collection,
+      collection?.publisher_metadata
+    );
+
     // Create collection row from aggregated collection category values and core collection information.
     const collectionRow = sortCategoryValues({
       ...collection,
       ...aggregatedCategoryValues,
+      recency,
     });
     collectionRows.push(collectionRow);
   }
@@ -354,6 +361,9 @@ function buildDatasetRow(
     publicationYear
   );
 
+  // Calculate recency for sorting.
+  const recency = calculateRecency(dataset, collection?.publisher_metadata);
+
   // Join!
   const datasetRow = {
     ...dataset,
@@ -362,6 +372,7 @@ function buildDatasetRow(
     is_primary_data: expandIsPrimaryData(is_primary_data),
     publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
+    recency,
   };
   return sortCategoryValues(datasetRow);
 }
@@ -399,6 +410,32 @@ export function calculateMonthsSincePublication(
   publicationYear: number
 ): number {
   return todayMonth - publicationMonth + 12 * (todayYear - publicationYear);
+}
+
+/**
+ * Calculate the recency value for the given collection or dataset. If there is no associated publication
+ * metadata, use revised_at or published_at in priority order for the given collection or dataset.
+ * @param response - Collection or dataset response returned from endpoint.
+ * @param publisherMetadata - Publication metadata of the collection, or of the dataset's corresponding collection.
+ * @returns Number representing seconds since Unix epoch.
+ */
+export function calculateRecency(
+  response: CollectionResponse | DatasetResponse,
+  publisherMetadata?: PublisherMetadata
+): number {
+  // Pull date values from publication metadata if specified.
+  if (publisherMetadata) {
+    const {
+      published_day: day,
+      published_month: month,
+      published_year: year,
+    } = publisherMetadata;
+    const recency = new Date(year, month - 1, day); // Publication months are 1-indexed, JS months are 0-indexed.
+    return recency.getTime() / 1000; // Convert JS date millis to Unix timestamp seconds.
+  }
+
+  // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
+  return response.revised_at ?? response.published_at;
 }
 
 /**
