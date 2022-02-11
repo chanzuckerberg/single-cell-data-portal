@@ -141,6 +141,7 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
   name: string;
   published_at: number;
   publisher_metadata?: PublisherMetadata; // Collection publication metadata
+  recency: number; // Used by sort
   revised_at?: number;
 }
 
@@ -171,6 +172,7 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   isOverMaxCellCount: boolean;
   name: string;
   published_at: number;
+  recency: number; // Used by sort
   revised_at?: number;
 }
 
