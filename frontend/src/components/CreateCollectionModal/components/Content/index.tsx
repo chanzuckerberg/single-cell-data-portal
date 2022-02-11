@@ -61,7 +61,7 @@ enum FIELD_NAMES {
   CONTACT_EMAIL = "contact-email",
 }
 
-const AddInputGroupButton = () => (
+const AddMetadataLinkButton = () => (
   <StyledPrimaryAnchorButton intent={Intent.PRIMARY} minimal text="Add Link" />
 );
 
@@ -107,11 +107,7 @@ const Content: FC<Props> = (props) => {
   const ContactDetailsWrapper = isFilterEnabled
     ? Fragment
     : ContactWrapper; /* remove ContactDetailsWrapper from structure once filter feature flag is removed (#1718) */
-  const CollectionContactInput = isFilterEnabled ? Input : StyledInput;
   const CollectionLinks = isFilterEnabled ? Links : Fragment;
-  const AddMetadataLinkButton = isFilterEnabled
-    ? AddInputGroupButton
-    : AddLinkButton;
   const DialogFooter = isFilterEnabled ? CollectionFooter : "div";
   const CancelButton = isFilterEnabled ? StyledDefaultButton : Button;
   const SaveButton = isFilterEnabled ? StyledPrimaryButton : Button;
@@ -188,7 +184,7 @@ const Content: FC<Props> = (props) => {
               defaultValue={description}
             />
             <ContactDetailsWrapper>
-              <CollectionContactInput
+              <StyledInput // @deprecated - revert to bp Input once filter feature flag is removed (#1718).
                 name={FIELD_NAMES.CONTACT_NAME}
                 text="Contact Name"
                 handleChange={handleInputChange}
@@ -196,7 +192,7 @@ const Content: FC<Props> = (props) => {
                 defaultValue={contact_name}
                 syncValidation={[requiredValidator]}
               />
-              <CollectionContactInput
+              <StyledInput // @deprecated - revert to bp Input once filter feature flag is removed (#1718).
                 name={FIELD_NAMES.CONTACT_EMAIL}
                 text="Contact Email"
                 handleChange={handleInputChange}
@@ -235,7 +231,7 @@ const Content: FC<Props> = (props) => {
           {/* Add metadata link button */}
           <AddLink
             handleClick={handleAddLinkClick}
-            Button={AddMetadataLinkButton}
+            Button={isFilterEnabled ? AddMetadataLinkButton : AddLinkButton}
           />
         </Form>
       </div>
