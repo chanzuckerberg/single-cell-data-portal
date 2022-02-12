@@ -142,7 +142,7 @@ function buildDoiMetadataLink(
   // There's a summary citation link for the collection, update DOI link display.
   return {
     ...doiMetadataLink,
-    label: "Publication DOI",
+    label: "Publication",
     value: summaryCitation,
   };
 }
