@@ -8,11 +8,12 @@ import {
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
 } from "src/views/WheresMyGene/common/store/actions";
+import { CellTypeMetadata } from "../utils";
 
 export function useDeleteGenesAndCellTypes(): {
   cellTypeIdsToDelete: string[];
   genesToDelete: string[];
-  handleCellTypeClick: (cellTypeId: string) => void;
+  handleCellTypeClick: (cellTypeMetadata: CellTypeMetadata) => void;
   handleGeneClick: (gene: string) => void;
   reset: () => void;
 } {
@@ -29,10 +30,10 @@ export function useDeleteGenesAndCellTypes(): {
   );
 
   const handleCellTypeClick = useCallback(
-    (cellTypeId: string) => {
+    (cellTypeMetadata: CellTypeMetadata) => {
       if (!dispatch) return;
 
-      dispatch(toggleCellTypeIdToDelete(cellTypeId));
+      dispatch(toggleCellTypeIdToDelete(cellTypeMetadata));
     },
     [dispatch]
   );
