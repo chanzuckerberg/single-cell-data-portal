@@ -940,6 +940,57 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/200"
+
+  /wmg/v1/snapshots/latest:
+    get:
+      summary: Returns a UUID identifier for the latest (most recent) snapshot of WMG cube and related data artifacts.
+      description: >-
+         WMG API requests. By specifying an explicit snapshot for each API request, the server can notify the client,
+         via a future response, when a snapshot is no longer valid (i.e. has been replaced).
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v1.latest_snapshot
+      parameters: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - snapshot_id
+                properties:
+                  snapshot_id:
+                    type: string
+                    format: uuid
+        "400":
+          $ref: "#/components/responses/400"
+#  /wmg/v1/snapshots/{snapshot_id}/primary_filter_dimensions:
+#    get:
+#      tags:
+#        - wmg
+#      operationId: backend.wmg.api.v1.primary_filter_dimensions
+#      parameters: [ ]
+#      responses:
+#        "200":
+#          description: OK
+#          content:
+#            application/json:
+#
+#  /wmg/v1/snapshots/{snapshot_id}/query:
+#    post:
+#      tags:
+#        - wmg
+#      operationId: backend.wmg.api.v1.query
+#      parameters: [ ]
+#      responses:
+#        "200":
+#          description: OK
+#          content:
+#            application/json:
+
+
 components:
   schemas:
     user_uuid:
