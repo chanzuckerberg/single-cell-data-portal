@@ -964,19 +964,29 @@ paths:
                   snapshot_id:
                     type: string
                     format: uuid
-        "400":
-          $ref: "#/components/responses/400"
-#  /wmg/v1/snapshots/{snapshot_id}/primary_filter_dimensions:
-#    get:
-#      tags:
-#        - wmg
-#      operationId: backend.wmg.api.v1.primary_filter_dimensions
-#      parameters: [ ]
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
+  /wmg/v1/snapshots/{snapshot_id}/primary_filter_dimensions:
+    get:
+      summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
+      description: >-
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v1.primary_filter_dimensions
+      parameters:
+        - $ref: "#/components/parameters/path_wmg_snapshot_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organism_terms:
+                    $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  tissue_type_terms:
+                    $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+        "404":
+          $ref: "#/components/responses/404"
 #
 #  /wmg/v1/snapshots/{snapshot_id}/query:
 #    post:
@@ -1248,6 +1258,22 @@ components:
           type: string
         tombstoned:
           type: boolean
+    wmg_ontology_term_id_label_list:
+      type: array
+      items:
+        type: object
+        required:
+          - id
+          - label
+        properties:
+          id:
+            type: string
+          label:
+            type: string
+    wmg_snapshot_id:
+      type: string
+      format: uuid
+
 
   parameters:
     path_collection_uuid:
@@ -1275,6 +1301,12 @@ components:
       required: true
       schema:
         type: string
+    path_wmg_snapshot_id:
+        name: snapshot_id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/wmg_snapshot_id"
     query_user_uuid:
       name: user_uuid
       description: an ID that represents the user.
