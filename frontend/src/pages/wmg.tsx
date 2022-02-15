@@ -2,6 +2,7 @@ import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StylesProvider, ThemeProvider } from "@material-ui/core/styles";
 import createTheme from "@material-ui/core/styles/createTheme";
 import { defaultAppTheme, makeThemeOptions } from "czifui";
+import SidebarLayout from "src/components/Layout/components/sidebarLayout";
 import WheresMyGene from "src/views/WheresMyGene";
 
 const customTheme = {
@@ -45,5 +46,8 @@ const Page = (): JSX.Element => (
     </EmotionThemeProvider>
   </StylesProvider>
 );
+
+// This layout needs to be defined in order to correctly style the SideBars and their wrappers
+Page.Layout = SidebarLayout;
 
 export default Page;

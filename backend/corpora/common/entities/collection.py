@@ -1,6 +1,5 @@
 import typing
 from datetime import datetime
-from urllib.parse import urlparse
 from sqlalchemy import and_
 
 from . import Dataset
@@ -284,17 +283,9 @@ class Collection(Entity):
         """Check that a dataset is part of the collection"""
         return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
 
-    @staticmethod
-    def _normalize_doi(doi_url) -> str:
-        try:
-            return urlparse(doi_url.strip()).path.strip("/")
-        except Exception:
-            return None
-
-    def get_normalized_doi(self) -> str:
-        """Returns a normalized DOI if it exists, None otherwise"""
+    def get_doi(self) -> str:
         doi = [link for link in self.links if link.link_type == CollectionLinkType.DOI]
         if doi:
-            return self._normalize_doi(doi[0].link_url)
+            return doi[0].link_url
         else:
             return None

@@ -41,6 +41,11 @@ const COLLECTION_NAME = "name";
 const COLUMN_ID_RECENCY = "recency";
 
 /**
+ * Recency object key.
+ */
+const RECENCY = "recency";
+
+/**
  * Gene sets CSV upload functionality, available if gene sets feature flag is enabled
  */
 const AsyncUploadCSV = loadable(
@@ -107,9 +112,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for sorting
       {
-        // Sort by revised_at if specified otherwise published_at.
-        accessor: (collectionRow: CollectionRow): number =>
-          collectionRow.revised_at ?? collectionRow.published_at,
+        accessor: RECENCY,
         id: COLUMN_ID_RECENCY,
       },
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
@@ -137,6 +140,18 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_AUTHORS,
+      },
+      // Hidden, required for filter.
+      {
+        accessor: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
@@ -158,6 +173,8 @@ export default function Collections(): JSX.Element {
           CATEGORY_KEY.ASSAY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.PUBLICATION_AUTHORS,
+          CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
         ],
         sortBy: [

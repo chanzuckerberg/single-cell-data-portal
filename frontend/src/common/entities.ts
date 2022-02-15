@@ -58,6 +58,15 @@ export enum IS_PRIMARY_DATA {
   BOTH = "BOTH",
 }
 
+/**
+ * Author of publication associated with a collection, populated from Crossref as part of collection publication
+ * metadata.
+ */
+export interface Author {
+  family: string;
+  given: string;
+}
+
 export interface Collection {
   access_type: ACCESS_TYPE;
   contact_email: string;
@@ -77,6 +86,14 @@ export interface Collection {
   has_revision: boolean;
   revision_diff: boolean;
   tombstone?: boolean;
+}
+
+/**
+ * Consortium of publication associated with a collection, populated from Crossref as part of collection publication
+ * metadata.
+ */
+export interface Consortium {
+  name: string;
 }
 
 export type Ontology = {
@@ -207,4 +224,15 @@ export interface GeneSet {
   id: string;
   description: string;
   linked_datasets: Dataset["id"][];
+}
+
+/**
+ * Collection publication metadata, populated from Crossref by collection publication DOI.
+ */
+export interface PublisherMetadata {
+  authors: (Author | Consortium)[];
+  journal: string;
+  published_day: number;
+  published_month: number;
+  published_year: number;
 }

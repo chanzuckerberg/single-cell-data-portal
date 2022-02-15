@@ -51,6 +51,11 @@ const DATASET_NAME = "name";
 const EXPLORER_URL = "explorer_url";
 
 /**
+ * Recency object key.
+ */
+const RECENCY = "recency";
+
+/**
  * Key identifying recency sort by column.
  */
 const COLUMN_ID_RECENCY = "recency";
@@ -140,8 +145,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for sorting by recency.
       {
-        accessor: (datasetRow: DatasetRow): number =>
-          datasetRow.revised_at ?? datasetRow.published_at,
+        accessor: RECENCY,
         id: COLUMN_ID_RECENCY,
       },
       // Hidden, required for accessing dataset ID via row.values, for download functionality.
@@ -173,6 +177,18 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_AUTHORS,
+      },
+      // Hidden, required for filter.
+      {
+        accessor: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        filter: "includesSome",
+        id: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
@@ -194,6 +210,8 @@ export default function Datasets(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.PUBLICATION_AUTHORS,
+          CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
           EXPLORER_URL,
         ],

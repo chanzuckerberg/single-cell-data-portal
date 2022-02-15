@@ -7,10 +7,12 @@ import {
   CategoryValueKey,
   CategoryValueView,
   CategoryView,
+  CATEGORY_CONFIGS_BY_CATEGORY_KEY,
   CATEGORY_KEY,
   CATEGORY_LABEL,
   IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
+  PUBLICATION_DATE_LABELS,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -167,6 +169,29 @@ function addEmptyCategoryValues(
 }
 
 /**
+ * Determine the filter type for each selected filter value and apply to rows.
+ * @param originalRows - Original result set before filtering.
+ * @param filters - Selected filters to apply to rows.
+ * @returns Filtered array of rows.
+ */
+function applyFilters<T extends Categories>(
+  originalRows: Row<T>[],
+  filters: CategoryFilter[]
+): Row<T>[] {
+  // Return all rows if there are no filters.
+  if (filters.length === 0) {
+    return originalRows;
+  }
+  return originalRows.filter((row: Row<T>) => {
+    // "and" across categories.
+    return filters.every((filter: CategoryFilter) => {
+      const rowValue = row.values[filter.id];
+      return includesSome(rowValue, filter);
+    });
+  });
+}
+
+/**
  * Set up model of original, complete set of categories and their values.
  * @param originalRows - Original result set before filtering.
  * @returns Sets of category values keyed by their category.
@@ -188,7 +213,7 @@ function buildCategorySet<T extends Categories>(
         // Add the category values for this row to the set.
         let values: CategoryValueKey | CategoryValueKey[] =
           originalRow.values[categoryKey];
-        if (!values) {
+        if (typeof values === "undefined") {
           console.log(`No values found for category "${categoryKey}".`);
           return accum;
         }
@@ -215,14 +240,21 @@ function buildCategoryValueLabel(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey
 ): string {
-  // Only is_primary_data category values are to be transformed.
-  if (categoryKey !== CATEGORY_KEY.IS_PRIMARY_DATA) {
-    return categoryValueKey;
+  // Transform is_primary_data category values.
+  if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
+    return IS_PRIMARY_DATA_LABEL[
+      categoryValueKey as keyof typeof IS_PRIMARY_DATA_LABEL
+    ];
   }
 
-  return IS_PRIMARY_DATA_LABEL[
-    categoryValueKey as keyof typeof IS_PRIMARY_DATA_LABEL
-  ];
+  if (categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
+    return PUBLICATION_DATE_LABELS[
+      `LABEL_${categoryValueKey}` as keyof typeof PUBLICATION_DATE_LABELS
+    ];
+  }
+
+  // Return all other category values as is.
+  return categoryValueKey;
 }
 
 /**
@@ -271,13 +303,18 @@ function buildNextCategoryFilters<T extends Categories>(
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryKey, filters);
 
-  // Current no filters already selected for this category; add category value as first.
+  // Currently no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
     return [categoryValueKey];
   }
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
-  return toggleCategoryValueSelected(categoryValueKey, categoryFilters.value);
+  const multiselect = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].multiselect;
+  return toggleCategoryValueSelected(
+    categoryValueKey,
+    categoryFilters.value,
+    multiselect
+  );
 }
 
 /**
@@ -394,30 +431,20 @@ function getCategoryFilter<T extends Categories>(
 /**
  * Determine the rows that have values matching the given filters. Row must have at least one selected value across each
  * category. Mimics react-query's includeSome functionality.
- * @param originalRows - Original result set before filtering.
- * @param filters - Selected filters to apply to rows.
+ * @param rowValue - Value to filter row by.
+ * @param filter - Selected filter to apply to row.
  * @returns Filtered array of rows.
  */
-function includesSome<T extends Categories>(
-  originalRows: Row<T>[],
-  filters: CategoryFilter[]
-): Row<T>[] {
-  // Return all rows if there are no filters.
-  if (filters.length === 0) {
-    return originalRows;
-  }
-  return originalRows.filter((row: Row<T>) => {
-    // "and" across categories.
-    return filters.every((filter: CategoryFilter) => {
-      const rowValue = row.values[filter.id];
-      // "or" across category values (that is, inside a category).
-      return (
-        rowValue &&
-        rowValue.length &&
-        filter.value.some((val: string) => rowValue.includes(val)) // Handles string or array values
-      );
-    });
-  });
+function includesSome(
+  rowValue: string | string[],
+  filter: CategoryFilter
+): boolean {
+  // "or" across category values (that is, inside a category).
+  return (
+    rowValue &&
+    rowValue.length &&
+    filter.value.some((val: string) => rowValue.includes(val)) // Handles string or array values
+  );
 }
 
 /**
@@ -449,13 +476,16 @@ function sortCategoryValueViews(
 }
 
 /**
- * Sort category views by key, ascending.
+ * Sort category views by display label, ascending.
  * @param c0 - First category view to compare.
  * @param c1 - Second category view to compare.
  * @returns Number indicating sort precedence of c0 vs c1.
  */
 function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
-  return COLLATOR_CASE_INSENSITIVE.compare(c0.key, c1.key);
+  return COLLATOR_CASE_INSENSITIVE.compare(
+    CATEGORY_LABEL[c0.key],
+    CATEGORY_LABEL[c1.key]
+  );
 }
 
 /**
@@ -472,7 +502,7 @@ function summarizeCategories<T extends Categories>(
 ): FilterState {
   return queries.reduce((accum: FilterState, query: Query<T>) => {
     // Apply the filters on the original result set
-    const rows = includesSome(originalRows, query.filters);
+    const rows = applyFilters(originalRows, query.filters);
 
     // Count the category value occurrences in each category that shares this filter.
     query.categoryKeys.forEach((categoryKey: CategoryKey) => {
@@ -497,7 +527,11 @@ function summarizeCategory<T extends Categories>(
   return filteredRows.reduce(
     (accum: Map<CategoryValueKey, CategoryValue>, row: Row<T>) => {
       // Grab the values of the category for this dataset row.
-      const categoryValues = row.values[categoryKey];
+      let categoryValues = row.values[categoryKey];
+
+      if (!Array.isArray(categoryValues)) {
+        categoryValues = [categoryValues];
+      }
 
       // Init category value it doesn't already exist. Default selected state to false (selected state is updated
       // from the filter state at a later point).
@@ -525,17 +559,23 @@ function summarizeCategory<T extends Categories>(
  * it's already selected.
  * @param selectedCategoryValueKey - Key of the selected category.
  * @param selectedCategoryValueKeys - Keys of the current set of selected category values.
+ * @param multiselect - True if category allows more than one selected value.
  * @returns Array of selected category values.
  */
 function toggleCategoryValueSelected(
   selectedCategoryValueKey: CategoryValueKey,
-  selectedCategoryValueKeys: CategoryValueKey[]
+  selectedCategoryValueKeys: CategoryValueKey[],
+  multiselect: boolean
 ): CategoryValueKey[] {
   // Convert to set for ease of lookup and lookup efficiency.
   const selectedCategoryValueKeySet = new Set(selectedCategoryValueKeys);
   if (selectedCategoryValueKeySet.has(selectedCategoryValueKey)) {
     selectedCategoryValueKeySet.delete(selectedCategoryValueKey);
   } else {
+    // If category only allows single selected value, clear all other values
+    if (!multiselect) {
+      selectedCategoryValueKeySet.clear();
+    }
     selectedCategoryValueKeySet.add(selectedCategoryValueKey);
   }
   return [...selectedCategoryValueKeySet.values()];

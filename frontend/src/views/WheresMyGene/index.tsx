@@ -2,12 +2,26 @@ import { Intent } from "@blueprintjs/core";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { API } from "src/common/API";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import SideBar from "src/components/common/SideBar";
+import { Position } from "src/components/common/SideBar/style";
 import { API_URL } from "src/configs/configs";
 import Toast from "../Collection/components/Toast";
+import { View } from "../globalStyle";
+import {
+  DispatchContext,
+  INITIAL_STATE,
+  reducer,
+  StateContext,
+} from "./common/store";
+import {
+  deleteSelectedGenesAndSelectedCellTypeIds,
+  selectGenes,
+  tissueCellTypesFetched,
+} from "./common/store/actions";
 import {
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
@@ -22,10 +36,9 @@ import { Wrapper } from "./style";
 const DEBOUNCE_MS = 2 * 1000;
 
 const WheresMyGene = (): JSX.Element => {
-  /**
-   * This is the genes that are currently selected.
-   */
-  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+
+  const { selectedGenes, selectedCellTypeIds } = state;
 
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
@@ -33,20 +46,70 @@ const WheresMyGene = (): JSX.Element => {
    * We use `selectedGeneData` to subset the data to only the genes that are
    * currently selected.
    */
-  const [geneData, setGeneData] =
+  const [geneExpressionSummaries, setGeneExpressionSummaries] =
     useState<GeneExpressionSummary[]>(EMPTY_ARRAY);
-  const [cellTypes, setCellTypes] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
+
+  /**
+   * This holds ALL the cell type data we have loaded from the API
+   */
+  const [cellTypes, setCellTypes] =
+    useState<{ [tissue: string]: CellTypeSummary[] }>(EMPTY_OBJECT);
+
+  /**
+   * This holds only the CellTypeSummary objects that are currently selected in
+   * `state.selectedCellTypeIds`.
+   * NOTE: We also prepend corresponding tissues for their cell types for
+   * rendering in the heat map.
+   */
+  const selectedCellTypes = useMemo(() => {
+    const result = [];
+
+    for (const [tissue, selectedIds] of Object.entries(selectedCellTypeIds)) {
+      for (const selectedId of selectedIds) {
+        const cellType = cellTypes[tissue].find(
+          (cellType) => cellType.id === selectedId
+        );
+
+        if (cellType !== undefined) {
+          result.push({ ...cellType, tissue });
+        }
+      }
+      // (thuang): Tissue needs to be last in the list
+      result.push({ id: tissue, name: tissue, tissue });
+    }
+
+    return result;
+  }, [selectedCellTypeIds, cellTypes]);
+
+  /**
+   * This indicates which tissues have less cell types than the API response,
+   * indicating the user has deleted some cell types manually
+   */
+  const tissuesWithDeletedCellTypes = useMemo(() => {
+    const result = [];
+
+    for (const [tissue, tissueCellTypes] of Object.entries(cellTypes)) {
+      if (selectedCellTypeIds[tissue]?.length < tissueCellTypes.length) {
+        result.push(tissue);
+      }
+    }
+
+    return result;
+  }, [cellTypes, selectedCellTypeIds]);
 
   /**
    * This is the formatted data that we use to render the heatmap.
    */
-  const [data, setData] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
+  const [cellTypeSummaries, setCellTypeSummaries] =
+    useState<CellTypeSummary[]>(EMPTY_ARRAY);
 
   const selectedGeneData = useMemo(() => {
-    return geneData.filter((geneData) =>
-      genes.some((gene) => gene.name === geneData.name)
+    return geneExpressionSummaries.filter((geneExpressionSummary) =>
+      selectedGenes.some(
+        (selectedGene) => selectedGene === geneExpressionSummary.name
+      )
     );
-  }, [genes, geneData]);
+  }, [selectedGenes, geneExpressionSummaries]);
 
   useEffect(() => {
     fetchCellTypes();
@@ -68,59 +131,121 @@ const WheresMyGene = (): JSX.Element => {
       const cellTypes = await response.json();
 
       // (thuang): Table y-axis defaults to descending order
-      setCellTypes(cellTypes.reverse());
+      // .reverse() mutates the original array
+      const cellTypeSummaries = cellTypes.reverse();
+      setCellTypes({ lung: cellTypeSummaries });
+      dispatch(tissueCellTypesFetched("lung", cellTypeSummaries));
     }
-  }, []);
+  }, [setCellTypes]);
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
       (cellTypes, geneData) => {
-        setData(integrateCelTypesAndGenes(cellTypes, geneData));
+        setCellTypeSummaries(integrateCelTypesAndGenes(cellTypes, geneData));
       },
       DEBOUNCE_MS,
       { leading: false }
     );
   }, []);
 
+  // Cancel debounce when unmounting
+  useEffect(() => {
+    return () => debouncedIntegrateCellTypesAndGenes.cancel();
+  }, [debouncedIntegrateCellTypesAndGenes]);
+
   /**
    * Performance optimization:
-   * We only format and `setData()` after the watch list has stopped changing for
+   * We only format and `setCellTypeSummaries()` after the watch list has stopped changing for
    * `DEBOUNCE_MS`
    */
   useEffect(() => {
-    debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
-  }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
+    debouncedIntegrateCellTypesAndGenes(selectedCellTypes, selectedGeneData);
+  }, [
+    selectedGeneData,
+    selectedCellTypes,
+    debouncedIntegrateCellTypesAndGenes,
+  ]);
+
+  const handleGenesOnchange = useCallback(
+    (genes: Gene[]) => {
+      dispatch(selectGenes(genes.map((gene) => gene.name)));
+    },
+    [dispatch]
+  );
+
+  // Listen to delete keyboard press event
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.code === "Backspace") {
+        dispatch(deleteSelectedGenesAndSelectedCellTypeIds());
+      }
+    }
+  }, [dispatch]);
 
   return (
-    <>
-      <Head>
-        <title>cellxgene | Where&apos;s My Gene</title>
-      </Head>
+    <DispatchContext.Provider value={dispatch}>
+      <StateContext.Provider value={state}>
+        <Head>
+          <title>cellxgene | Where&apos;s My Gene</title>
+        </Head>
 
-      <Wrapper>
-        <GeneSearchBar onGenesChange={setGenes} />
+        <SideBar label="Filters" isOpen>
+          <span>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
+            vero rem itaque labore praesentium iure exercitationem minus iste
+            laudantium sed aliquid.
+          </span>
+        </SideBar>
 
-        <HeatMap cellTypes={cellTypes} data={data} genes={genes} />
+        <SideBar label="Filters" isOpen position={Position.RIGHT}>
+          <span>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
+            vero rem itaque labore praesentium iure exercitationem minus iste
+            laudantium sed aliquid.
+          </span>
+        </SideBar>
 
-        {genes.map((gene) => {
-          const { name } = gene;
+        <View hideOverflow>
+          <Wrapper>
+            <GeneSearchBar onGenesChange={handleGenesOnchange} />
 
-          return (
-            <GeneFetcher
-              fetchedGenes={genes}
-              name={name}
-              key={name}
-              onSuccess={handleGeneFetchSuccess}
-              onError={handleGeneFetchError}
+            <HeatMap
+              cellTypes={selectedCellTypes}
+              data={cellTypeSummaries}
+              genes={selectedGenes}
+              tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
+              allTissueCellTypes={cellTypes}
             />
-          );
-        })}
-      </Wrapper>
-    </>
+
+            {selectedGenes.map((selectedGene) => {
+              return (
+                <GeneFetcher
+                  name={selectedGene}
+                  key={selectedGene}
+                  onSuccess={handleGeneFetchSuccess}
+                  onError={handleGeneFetchError}
+                />
+              );
+            })}
+          </Wrapper>
+        </View>
+      </StateContext.Provider>
+    </DispatchContext.Provider>
   );
 
   function handleGeneFetchSuccess(geneData: GeneExpressionSummary) {
-    setGeneData((latestGeneData) => [...latestGeneData, geneData]);
+    setGeneExpressionSummaries((latestGeneData) => [
+      ...latestGeneData,
+      geneData,
+    ]);
   }
 
   function handleGeneFetchError(name: Gene["name"]) {
@@ -131,27 +256,32 @@ const WheresMyGene = (): JSX.Element => {
   }
 };
 
+/**
+ * Adds gene expressions to the cell types.
+ */
 function integrateCelTypesAndGenes(
-  nodes: CellTypeSummary[],
-  genes: GeneExpressionSummary[]
+  cellTypeSummaries: CellTypeSummary[],
+  geneExpressionSummaries: GeneExpressionSummary[]
 ): CellTypeSummary[] {
-  const geneMaps = genes.map((gene) => rawGeneDataToMap(gene));
+  const geneMaps = geneExpressionSummaries.map((geneExpressionSummary) =>
+    rawGeneDataToMap(geneExpressionSummary)
+  );
 
-  return cloneDeep(nodes).map((node) => {
-    const { id } = node;
+  return cloneDeep(cellTypeSummaries).map((cellTypeSummary) => {
+    const { id } = cellTypeSummary;
 
     for (const [name, geneMap] of geneMaps) {
       const columnData = geneMap.get(id);
 
       if (columnData !== undefined) {
-        node.geneExpressions = {
-          ...(node.geneExpressions || {}),
+        cellTypeSummary.geneExpressions = {
+          ...(cellTypeSummary.geneExpressions || {}),
           [name]: columnData,
         };
       }
     }
 
-    return node;
+    return cellTypeSummary;
   });
 }
 

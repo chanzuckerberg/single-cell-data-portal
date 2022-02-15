@@ -2,7 +2,10 @@ import DatasetsGrid from "src/components/Collection/components/CollectionDataset
 import styled from "styled-components";
 
 export const CollectionDatasetsGrid = styled(DatasetsGrid)`
-  grid-template-columns:
-    minmax(520px, 6.9fr) minmax(200px, 2.5fr) minmax(160px, 2fr)
-    repeat(2, minmax(104px, 1.3fr)) minmax(80px, 1fr) minmax(64px, auto); /* collection column min value at 520px to allow for more dropdown action button */
+  grid-template-columns: 12fr 5fr 4fr repeat(2, 3fr) 2fr auto;
+
+  th,
+  td {
+    word-break: break-word; /* word break on columns; maintains grid fr allocation on small viewports */
+  }
 `;
