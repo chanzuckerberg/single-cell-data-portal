@@ -3,7 +3,27 @@
     "terraform_version": "0.13.5",
     "default_env": "rdev",
     "app": "data-portal",
-    "default_compose_env": ".env.ecr",
+    "default_compose_env_file": ".env.ecr",
+    "slice_default_tag": "branch-trunk",
+    "services": ["frontend", "backend"],
+    "slices": {
+        "frontend": {
+            "build_images": [
+                "frontend"
+            ]
+        },
+        "backend": {
+            "build_images": [
+                "backend"
+            ]
+        },
+        "fullstack": {
+            "build_images": [
+                "frontend",
+                "backend"
+            ]
+        }
+    },
     "environments": {
         "rdev": {
             "aws_profile": "single-cell-dev",
@@ -37,7 +57,11 @@
         }
     },
     "tasks": {
-        "migrate": ["migrate_db_task_definition_arn"],
-        "delete": ["delete_db_task_definition_arn"]
+        "migrate": [
+            "migrate_db_task_definition_arn"
+        ],
+        "delete": [
+            "delete_db_task_definition_arn"
+        ]
     }
 }
