@@ -987,18 +987,92 @@ paths:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
         "404":
           $ref: "#/components/responses/404"
-#
-#  /wmg/v1/snapshots/{snapshot_id}/query:
-#    post:
-#      tags:
-#        - wmg
-#      operationId: backend.wmg.api.v1.query
-#      parameters: [ ]
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
+  /wmg/v1/snapshots/{snapshot_id}/query:
+    post:
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v1.query
+      parameters:
+        - $ref: "#/components/parameters/path_wmg_snapshot_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: object
+                  required:
+                    - gene_term_ids
+                    - organism_term_id
+                    - tissue_type_term_ids
+                  properties:
+                      gene_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      organism_term_id:
+                        type: string
+                      tissue_type_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      dataset_ids:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                      disease_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      sex_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      development_stage_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      ethnicity_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                response_option:
+                  type: string
+                  enum:
+                    - include_filter_dims_include_dataset_links
+                    - include_filter_dims_exclude_dataset_links
+                    - exclude_filter_dims
+              required:
+                - filter
+                - response_option
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - expression_summary
+                  - term_id_labels
+                properties:
+                  expression_summary:
+                    type: object
+                  term_id_labels:
+                    type: object
+                    required:
+                      - genes
+                      - cell_types
+                    properties:
+                      genes:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      cell_types:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  filter_dimensions:
+                    type: object
+                    properties:
+                      datasets:
+                        type: array
+                        items:
+                          type: object
+                      disease_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      sex_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      development_stage_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      ethnicity_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
 
 components:
@@ -1259,17 +1333,14 @@ components:
         tombstoned:
           type: boolean
     wmg_ontology_term_id_label_list:
+      description: An array of ontology term ids and labels, where array elements are single-element objects of the form "<id>":"<label>"
       type: array
       items:
         type: object
-        required:
-          - id
-          - label
-        properties:
-          id:
-            type: string
-          label:
-            type: string
+    wmg_ontology_term_id_list:
+      type: array
+      items:
+        type: string
     wmg_snapshot_id:
       type: string
       format: uuid
