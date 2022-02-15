@@ -690,13 +690,6 @@ def add_publisher_metadata(ctx):
     """
 
     from backend.corpora.common.providers import crossref_provider
-    from backend.corpora.common.providers.crossref_provider import CrossrefException
-
-    def check_doi(doi):
-        url = f"https://dx.doi.org/{doi}"
-        res = requests.head(url, allow_redirects=True)
-        return res.status_code
-
 
     with db_session_manager() as session:
         click.confirm(
@@ -716,7 +709,7 @@ def add_publisher_metadata(ctx):
                 continue
             collection_id = record.id
             dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
-            normalized_doi = collection.get_normalized_doi()
+            normalized_doi = collection.get_doi()
 
             if record.publisher_metadata:
                 print("Already has metadata, skipping...")
@@ -734,6 +727,46 @@ def add_publisher_metadata(ctx):
                     print(record.id, normalized_doi, record.name, e)
                     print(traceback.format_exc())
                     record.publisher_metadata = {"error" : str(e.__cause__)}
+
+                time.sleep(2)
+
+
+@cli.command()
+@click.pass_context
+def refresh_preprint_doi(ctx):
+    """Add publisher metadata to the current records
+    """
+
+    from backend.corpora.common.providers import crossref_provider
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will populate publisher_metadata for all "
+            "datasets. This will also do N calls to Crossref.",
+            abort=True,
+        )
+
+        import time
+        import traceback
+
+        provider = crossref_provider.CrossrefProvider()
+
+        for record in session.query(DbCollection):
+            collection = Collection.get_collection(session, record.id, record.visibility)
+            if not collection: 
+                continue
+            collection_id = record.id
+            dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
+            normalized_doi = collection.get_doi()
+
+            if record.publisher_metadata and record.publisher_metadata.get("is_preprint"):
+                print(f"{normalized_doi}: is_preprint")
+
+                try:
+                    published_doi = provider.fetch_preprint_published_doi(normalized_doi)
+                    print(collection_id, normalized_doi, published_doi)
+                except Exception as e:
+                    print(e)
 
                 time.sleep(2)
                 
