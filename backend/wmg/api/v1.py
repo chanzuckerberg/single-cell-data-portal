@@ -1,22 +1,20 @@
 from typing import List, Dict
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import connexion
 from flask import jsonify
 
-
-def latest_snapshot():
-    return jsonify(snapshot_id=uuid4().hex)
+DUMMY_SNAPSHOT_UUID = uuid4().hex
 
 
-def primary_filter_dimensions(snapshot_id: UUID):
+def primary_filter_dimensions():
     organism_terms = [dict(oid1="olbl1"), dict(oid2="olbl2")]
     tissue_type_terms = [dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")]
-    result = dict(organism_terms=organism_terms, tissue_type_terms=tissue_type_terms)
+    result = dict(snapshot_id=DUMMY_SNAPSHOT_UUID, organism_terms=organism_terms, tissue_type_terms=tissue_type_terms)
     return jsonify(result)
 
 
-def query(snapshot_id: UUID):
+def query():
     request = connexion.request.json
 
     gene_term_ids = request["filter"]["gene_term_ids"]
@@ -48,6 +46,7 @@ def query(snapshot_id: UUID):
 
     return jsonify(
         dict(
+            snapshot_id=DUMMY_SNAPSHOT_UUID,
             expression_summary=build_genes(gene_term_ids),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(gene_term_ids),

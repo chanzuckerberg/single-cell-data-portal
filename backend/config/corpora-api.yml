@@ -941,15 +941,13 @@ paths:
         "200":
           $ref: "#/components/responses/200"
 
-  /wmg/v1/snapshots/latest:
+  /wmg/v1/primary_filter_dimensions:
     get:
-      summary: Returns a UUID identifier for the latest (most recent) snapshot of WMG cube and related data artifacts.
+      summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
       description: >-
-         WMG API requests. By specifying an explicit snapshot for each API request, the server can notify the client,
-         via a future response, when a snapshot is no longer valid (i.e. has been replaced).
       tags:
         - wmg
-      operationId: backend.wmg.api.v1.latest_snapshot
+      operationId: backend.wmg.api.v1.primary_filter_dimensions
       parameters: [ ]
       responses:
         "200":
@@ -958,42 +956,21 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                  - snapshot_id
                 properties:
                   snapshot_id:
-                    type: string
-                    format: uuid
-  /wmg/v1/snapshots/{snapshot_id}/primary_filter_dimensions:
-    get:
-      summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
-      description: >-
-      tags:
-        - wmg
-      operationId: backend.wmg.api.v1.primary_filter_dimensions
-      parameters:
-        - $ref: "#/components/parameters/path_wmg_snapshot_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
                   organism_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   tissue_type_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
         "404":
           $ref: "#/components/responses/404"
-  /wmg/v1/snapshots/{snapshot_id}/query:
+  /wmg/v1/query:
     post:
       tags:
         - wmg
       operationId: backend.wmg.api.v1.query
-      parameters:
-        - $ref: "#/components/parameters/path_wmg_snapshot_id"
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -1042,6 +1019,7 @@ paths:
             application/json:
               example:
                 {
+                  'snapshot_id': '8ce15034-162a-4e2e-9987-eb1af08bd4d4',
                   'expression_summary': {
                     'gene1': {
                       'tissuetype1': [
@@ -1086,6 +1064,8 @@ paths:
                   - expression_summary
                   - term_id_labels
                 properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
                   expression_summary:
                     type: object
                     # we use `additionalProperties` instead of `properties`, since the object's property names are
@@ -1469,12 +1449,6 @@ components:
       required: true
       schema:
         type: string
-    path_wmg_snapshot_id:
-        name: snapshot_id
-        in: path
-        required: true
-        schema:
-          $ref: "#/components/schemas/wmg_snapshot_id"
     query_user_uuid:
       name: user_uuid
       description: an ID that represents the user.
