@@ -4,26 +4,7 @@
     "default_env": "rdev",
     "app": "data-portal",
     "default_compose_env_file": ".env.ecr",
-    "slice_default_tag": "branch-trunk",
     "services": ["frontend", "backend"],
-    "slices": {
-        "frontend": {
-            "build_images": [
-                "frontend"
-            ]
-        },
-        "backend": {
-            "build_images": [
-                "backend"
-            ]
-        },
-        "fullstack": {
-            "build_images": [
-                "frontend",
-                "backend"
-            ]
-        }
-    },
     "environments": {
         "rdev": {
             "aws_profile": "single-cell-dev",
