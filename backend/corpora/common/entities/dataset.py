@@ -6,6 +6,9 @@ import os
 import typing
 from datetime import datetime
 from pathlib import PurePosixPath
+from collections import OrderedDict
+
+from ..utils.ontology_mapping import ontology_mapping
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
@@ -143,6 +146,22 @@ class Dataset(Entity):
         if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
             dataset["organism"] = [dataset["organism"]]
 
+    @staticmethod
+    def enrich_development_stage_with_ancestors(dataset):
+        if "development_stage" not in dataset:
+            return
+
+        leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
+
+        if not leaves:
+            return
+
+        ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
+        flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
+        unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
+        if unique_ancestors:
+            dataset["development_stage_ancestors"] = unique_ancestors
+
     @classmethod
     def list_for_index(cls, session) -> typing.List[typing.Dict]:
         """
@@ -187,6 +206,7 @@ class Dataset(Entity):
         for result in results:
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
+            Dataset.enrich_development_stage_with_ancestors(result)
 
         return results
 

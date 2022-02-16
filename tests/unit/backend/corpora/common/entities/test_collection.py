@@ -46,31 +46,6 @@ class TestCollection(DataPortalTestCase):
         with self.assertRaises(SQLAlchemyError):
             Collection.get(self.session, invalid_visibility_key)
 
-    def test__normalize_doi(self):
-        # Removes doi.org
-        normalized_doi = Collection._normalize_doi("http://doi.org/part1/part2")
-        self.assertEqual("part1/part2", normalized_doi)
-
-        # Removes www.doi.org
-        normalized_doi = Collection._normalize_doi("http://www.doi.org/part1/part2")
-        self.assertEqual("part1/part2", normalized_doi)
-
-        # Handes whitespaces correctly
-        normalized_doi = Collection._normalize_doi(" https://doi.org/part1/part2 ")
-        self.assertEqual("part1/part2", normalized_doi)
-
-        # If a plain DOI (no URL) is passed, return it
-        normalized_doi = Collection._normalize_doi("part1/part2")
-        self.assertEqual("part1/part2", normalized_doi)
-
-    def test__get_normalized_doi(self):
-        key = (self.uuid, self.visibility)
-        collection = Collection.get(self.session, key)
-        normalized_doi = collection.get_normalized_doi()
-        # The mocked DOI for the test collection is http://test_doi_url.place,
-        # so the normalized DOI is an empty string
-        self.assertEqual(normalized_doi, "")
-
     def test__create_collection_creates_associated_links(self):
         """
         Create a collection with a variable number of links.

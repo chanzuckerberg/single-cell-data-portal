@@ -7,7 +7,7 @@ import {
 import { IconNames } from "@blueprintjs/icons";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { ActionButton } from "src/components/common/Grid/components/ActionButton/style";
+import { MoreButton as StyledMoreButton } from "src/components/common/MoreDropdown/style";
 
 interface Props {
   popoverProps?: IPopoverProps;
@@ -19,7 +19,7 @@ const MoreDropdown = ({
   buttonProps = {},
 }: Props): JSX.Element => {
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const MoreButton = isFilterEnabled ? ActionButton : Button;
+  const MoreButton = isFilterEnabled ? StyledMoreButton : Button;
   return (
     <Popover {...popoverProps}>
       <MoreButton

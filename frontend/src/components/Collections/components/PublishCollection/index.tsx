@@ -5,7 +5,10 @@ import { useRouter } from "next/router";
 import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { usePublishCollection } from "src/common/queries/collections";
+import { StyledPrimaryButton } from "src/components/common/Button/common/style";
 import Toast from "src/views/Collection/components/Toast";
 import Policy, { POLICY_BULLETS } from "./components/Policy";
 
@@ -28,6 +31,8 @@ const PublishCollection: FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
   const router = useRouter();
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   if (isSuccess) {
     router.push(ROUTES.COLLECTION.replace(":id", id));
@@ -68,7 +73,7 @@ const PublishCollection: FC<Props> = ({
 
   return (
     <>
-      <Button
+      <PublishButton
         onMouseEnter={handleHover}
         onClick={handleClick}
         intent={Intent.PRIMARY}

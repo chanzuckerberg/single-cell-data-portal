@@ -2,7 +2,7 @@ import DatasetsGrid from "src/components/Collection/components/CollectionDataset
 import styled from "styled-components";
 
 export const CollectionDatasetsGrid = styled(DatasetsGrid)`
-  grid-template-columns: 13.2fr 5fr 4fr repeat(2, 3fr) 2fr auto;
+  grid-template-columns: 12fr 5fr 4fr repeat(2, 3fr) 2fr auto;
 
   th,
   td {

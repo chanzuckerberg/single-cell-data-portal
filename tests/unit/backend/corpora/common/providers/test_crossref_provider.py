@@ -21,9 +21,9 @@ class TestCrossrefProvider(unittest.TestCase):
 
     @patch("backend.corpora.common.providers.crossref_provider.requests.get")
     @patch("backend.corpora.common.providers.crossref_provider.CorporaConfig")
-    def test__provider_calls_crossref_if_api_url_defined(self, mock_config, mock_get):
+    def test__provider_calls_crossref_if_api_key_defined(self, mock_config, mock_get):
 
-        # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_uri`
+        # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_key`
         # not None, so it will go ahead and do the mocked call.
 
         response = Response()
@@ -62,6 +62,48 @@ class TestCrossrefProvider(unittest.TestCase):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 10,
+            "journal": "Nature",
+            "is_preprint": False,
+        }
+
+        self.assertDictEqual(expected_response, res)
+
+    @patch("backend.corpora.common.providers.crossref_provider.requests.get")
+    @patch("backend.corpora.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
+
+        response = Response()
+        response.status_code = 200
+        response._content = str.encode(
+            json.dumps(
+                {
+                    "status": "ok",
+                    "message": {
+                        "author": [
+                            {
+                                "given": "John",
+                                "family": "Doe",
+                                "sequence": "first",
+                            },
+                            {"name": "A consortium"},
+                        ],
+                        "published-online": {"date-parts": [[2021, 11]]},
+                        "container-title": ["Nature"],
+                    },
+                }
+            )
+        )
+
+        mock_get.return_value = response
+        provider = CrossrefProvider()
+        res = provider.fetch_metadata("test_doi")
+        mock_get.assert_called_once()
+
+        expected_response = {
+            "authors": [{"given": "John", "family": "Doe"}, {"name": "A Consortium"}],
+            "published_year": 2021,
+            "published_month": 11,
+            "published_day": 1,
             "journal": "Nature",
             "is_preprint": False,
         }

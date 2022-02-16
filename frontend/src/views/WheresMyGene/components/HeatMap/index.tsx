@@ -3,7 +3,9 @@ import { connect, DatasetComponentOption, EChartsOption, init } from "echarts";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
-import { CellTypeSummary, Gene } from "../../common/types";
+import { State } from "../../common/store";
+import { CellTypeSummary } from "../../common/types";
+import { useDeleteGenesAndCellTypes } from "./hooks/useDeleteGenesAndCellTypes";
 import {
   ChartContainer,
   Container,
@@ -19,6 +21,7 @@ import {
   createXAxisOptions,
   createYAxisOptions,
   dataToChartFormat,
+  deserializeCellTypeName,
   getCellTypeNames,
   getGeneNames,
   getHeatmapHeight,
@@ -36,7 +39,7 @@ const DEBOUNCE_MS = 2 * 1000;
 interface Props {
   cellTypes: CellTypeSummary[];
   data: CellTypeSummary[];
-  genes: Gene[];
+  genes: State["selectedGenes"];
 }
 
 const ELEMENT_ID = "heat-map";
@@ -59,6 +62,13 @@ export default function HeatMap({
 
   const [chartProps, setChartProps] = useState<ChartProps | null>(null);
 
+  const {
+    cellTypeIdsToDelete,
+    genesToDelete,
+    handleCellTypeClick,
+    handleGeneClick,
+  } = useDeleteGenesAndCellTypes();
+
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,7 +78,11 @@ export default function HeatMap({
 
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
-      (data, cellTypes, genes) => {
+      (
+        data: CellTypeSummary[],
+        cellTypes: CellTypeSummary[],
+        genes: State["selectedGenes"]
+      ) => {
         const result = {
           cellTypeNames: getCellTypeNames(cellTypes),
           chartData: dataToChartFormat(data, cellTypes, genes),
@@ -134,12 +148,35 @@ export default function HeatMap({
       useDirtyRect: true,
     });
 
+    xAxisChart.on("click", function (params) {
+      /**
+       * `value` is set by utils.getGeneNames()
+       */
+      const { value } = params;
+      handleGeneClick(value as string);
+    });
+
+    yAxisChart.on("click", function (params) {
+      /**
+       * `value` is set by utils.getCellTypeNames()
+       */
+      const { value } = params;
+      const { id } = deserializeCellTypeName(value as string);
+      handleCellTypeClick(id);
+    });
+
     connect([chart, xAxisChart, yAxisChart]);
 
     setChart(chart);
     setXAxisChart(xAxisChart);
     setYAxisChart(yAxisChart);
-  }, [ref, xAxisRef, isEchartGLAvailable]);
+  }, [
+    ref,
+    xAxisRef,
+    isEchartGLAvailable,
+    handleCellTypeClick,
+    handleGeneClick,
+  ]);
 
   // Update the charts
   useEffect(() => {
@@ -169,17 +206,37 @@ export default function HeatMap({
     );
 
     xAxisChart.setOption(
-      createXAxisOptions({ cellTypeNames, commonOptions, geneNames })
+      createXAxisOptions({
+        cellTypeNames,
+        commonOptions,
+        geneNames,
+        genesToDelete,
+      })
     );
 
     yAxisChart.setOption(
-      createYAxisOptions({ cellTypeNames, commonOptions, geneNames })
+      createYAxisOptions({
+        cellTypeIdsToDelete,
+        cellTypeNames,
+        commonOptions,
+        geneNames,
+      })
     );
 
     chart.resize();
     xAxisChart.resize();
     yAxisChart.resize();
-  }, [chart, xAxisChart, yAxisChart, isEchartGLAvailable, chartProps]);
+  }, [
+    chart,
+    xAxisChart,
+    yAxisChart,
+    isEchartGLAvailable,
+    chartProps,
+    cellTypeIdsToDelete,
+    genesToDelete,
+    handleCellTypeClick,
+    handleGeneClick,
+  ]);
 
   return (
     <Container>
