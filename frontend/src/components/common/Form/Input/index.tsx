@@ -1,7 +1,13 @@
-import { FormGroup, Intent } from "@blueprintjs/core";
+import { FormGroup, Icon, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
 import { FC, useRef, useState } from "react";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import {
+  FormLabelText as StyledLabelText,
+  StyledFormLabel,
+} from "src/components/common/Form/common/style";
 import { DEBOUNCE_TIME_MS } from "../../../CreateCollectionModal/components/Content/common/constants";
 import { Value } from "../common/constants";
 import { LabelText, StyledIcon, StyledInputGroup, StyledLabel } from "./style";
@@ -17,10 +23,18 @@ interface Props {
   className?: string;
   placeholder?: string;
   defaultValue?: string;
+  optionalField?: boolean;
 }
 
-const DangerIcon = () => {
+/**
+ * @deprecated - supersede by ErrorIcon once filter feature flag is removed (#1718).
+ */
+const DangerIcon = (): JSX.Element => {
   return <StyledIcon icon={IconNames.ISSUE} intent={Intent.DANGER} />;
+};
+
+const ErrorIcon = (): JSX.Element => {
+  return <Icon icon={IconNames.ISSUE} intent={Intent.DANGER} />;
 };
 
 const Input: FC<Props> = ({
@@ -34,19 +48,37 @@ const Input: FC<Props> = ({
   className,
   placeholder = "",
   defaultValue,
+  optionalField = false,
 }) => {
   const [isValid, setIsValid] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /* Temporary structure to enable both filter feature and existing functionality. */
+  /* Fragments and any deprecated styled components can either be removed or replaced once filter feature flag is removed (#1718). */
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const labelProps = isFilterEnabled
+    ? undefined
+    : {
+        className: className,
+        percentage: percentage,
+      }; /* remove labelProps from <FormLabel/> once filter feature flag is removed (#1718). */
+  const FormLabel = isFilterEnabled ? StyledFormLabel : StyledLabel;
+  const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
+  const FormInputGroup = isFilterEnabled ? InputGroup : StyledInputGroup;
+  const FormIcon = isFilterEnabled ? ErrorIcon : DangerIcon;
+
   return (
-    <StyledLabel percentage={percentage} htmlFor={name} className={className}>
+    <FormLabel htmlFor={name} {...labelProps}>
       <FormGroup
         helperText={errors.join(", ")}
         intent={(!isValid && Intent.DANGER) || undefined}
       >
-        <LabelText>{text}</LabelText>
-        <StyledInputGroup
+        <FormLabelText>
+          <span>{text}</span>
+          {optionalField && <i>(optional)</i>}
+        </FormLabelText>
+        <FormInputGroup
           // (thuang): `autoComplete="off"` and `type="search"` are needed to stop autofill
           // https://stackoverflow.com/a/30873633
           autoComplete="off"
@@ -55,14 +87,14 @@ const Input: FC<Props> = ({
           intent={(!isValid && Intent.DANGER) || undefined}
           id={name}
           name={noNameAttr ? undefined : name}
-          rightElement={(!isValid && <DangerIcon />) || undefined}
+          rightElement={(!isValid && <FormIcon />) || undefined}
           disabled={disabled}
           onChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
           placeholder={placeholder}
           defaultValue={defaultValue}
         />
       </FormGroup>
-    </StyledLabel>
+    </FormLabel>
   );
 
   function handleChange_() {
