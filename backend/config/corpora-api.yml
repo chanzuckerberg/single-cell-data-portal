@@ -1023,26 +1023,26 @@ paths:
                   'expression_summary': {
                     'gene1': {
                       'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0 }
+                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
                       ],
                       'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0 }
+                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
                       ]
                     },
                     'gene2': {
                       'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0 }
+                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
                       ],
                       'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0 }
+                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
+                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
                       ]
                     }
                   },
@@ -1096,14 +1096,21 @@ paths:
                               format: float
                               maxLength: 4
                             pc:
-                              description: percent expression
+                              description: percentage of cells expressing gene within this cell type
+                              type: number
+                              format: float
+                              maxLength: 4
+                              minimum: 0.0
+                              maximum: 100.0
+                            tpc:
+                              description: perecentage of cells for this cell type within tissue (cell type's cell count / tissue's total cell count)
                               type: number
                               format: float
                               maxLength: 4
                               minimum: 0.0
                               maximum: 100.0
                             n:
-                              description: number of expressed cells (non-zero expression)
+                              description: number of expressed cells (non-zero expression) within this cell type
                               type: integer
                               minimum: 0.0
                   term_id_labels:
