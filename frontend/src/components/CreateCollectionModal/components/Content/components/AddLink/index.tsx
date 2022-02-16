@@ -12,6 +12,7 @@ interface Props {
 
 interface AddLinkProps extends Props {
   Button: React.ElementType;
+  fill?: boolean;
 }
 
 const OPTION_ORDER = [
@@ -35,10 +36,11 @@ const LinkTypes: FC<Props> = ({ handleClick }) => {
   );
 };
 
-const AddLink: FC<AddLinkProps> = ({ handleClick, Button }) => {
+const AddLink: FC<AddLinkProps> = ({ fill = false, handleClick, Button }) => {
   return (
     <Popover
       content={<LinkTypes handleClick={handleClick} />}
+      fill={fill}
       position={Position.BOTTOM_LEFT}
       captureDismiss={true} // Not setting this led to this ridiculously obfuscated bug where choosing a link type would close the menu that held the edit collection button. Closing that menu would close the entire edit collection modal
     >
