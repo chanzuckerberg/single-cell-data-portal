@@ -394,20 +394,22 @@ export function buildSummaryCitation(
   if (!publisherMetadata) {
     return "";
   }
-  const { authors, journal, published_year: publishedYear } = publisherMetadata;
-  const [firstAuthor] = authors;
 
   const citationTokens = [];
 
   // Add author to citation - family name if first author is a person, name if first author is a consortium.
-  if (isAuthorPerson(firstAuthor)) {
-    citationTokens.push(firstAuthor.family);
-  } else {
-    citationTokens.push(firstAuthor.name);
-  }
+  const { authors, journal, published_year: publishedYear } = publisherMetadata;
+  const [firstAuthor] = authors;
+  if (firstAuthor) {
+    if (isAuthorPerson(firstAuthor)) {
+      citationTokens.push(firstAuthor.family);
+    } else {
+      citationTokens.push(firstAuthor.name);
+    }
 
-  if (authors.length > 1) {
-    citationTokens.push("et al.");
+    if (authors.length > 1) {
+      citationTokens.push("et al.");
+    }
   }
 
   // Add year and journal.
