@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from uuid import UUID, uuid4
 
 import connexion
@@ -34,19 +34,19 @@ def query(snapshot_id: UUID):
     def build_viz_dots(cell_type_term_ids_: List[str]) -> List[dict]:
         return [build_viz_dot(cell_type_term_id, 0.0, 0.0, 0) for cell_type_term_id in cell_type_term_ids_]
 
-    def build_tissues_types(tissue_type_term_ids_: List[str]) -> dict[str, List]:
+    def build_tissues_types(tissue_type_term_ids_: List[str]) -> Dict[str, List]:
         return dict(
             [(tissue_type_term_id, build_viz_dots(cell_type_term_ids)) for tissue_type_term_id in tissue_type_term_ids_]
         )
 
-    def build_genes(gene_term_ids_: List[str]) -> dict[str, dict]:
+    def build_genes(gene_term_ids_: List[str]) -> Dict[str, dict]:
         return dict([(gene_term_id, build_tissues_types(tissue_type_term_ids)) for gene_term_id in gene_term_ids_])
 
     def build_gene_id_label_mapping(gene_term_ids_) -> List[dict]:
         return [{gene_term_id: f"{gene_term_id}_label"} for gene_term_id in gene_term_ids_]
 
     def build_cell_type_id_label_mapping(cell_type_term_ids_) -> List[dict]:
-        return [{gene_term_id: f"{gene_term_id}_label"} for gene_term_id in cell_type_term_ids_]
+        return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in cell_type_term_ids_]
 
     return jsonify(
         dict(
