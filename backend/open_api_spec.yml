@@ -24,8 +24,62 @@ paths:
 
   /curation/collections:
     get:
-      description: Get all Collections metadata
+      description: Get all Collections metadata. Include authentication information to retrieve private collections as well. 
+      security:
+        - cxguserCookie: []
+      Parameters:
+        - $ref: "#/components/parameters/query_visibility"
       responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_type:
+                    type: string
+                    enum: [READ, WRITE]
+                  revised_at:
+                    type: number
+                  published_at:
+                    type: number
+                  name:
+                    type: string
+                  id:
+                    $ref: "#/components/schemas/collection_uuid"
+                  visibility:
+                    $ref: "#/components/schemas/visibility"
+                  contact_name:
+                    type: string
+                  contact_email:
+                    type: string
+                  curator_name:
+                    type: string
+                  data_submission_policy_version:
+                    type: string
+                  tissues:
+                    type: array
+                    items:
+                      type: string
+                  assays:
+                    type: array
+                    items:
+                      type: string
+                  disease:
+                    type: array
+                    items:
+                      type: string
+                  organism:
+                    type: array
+                    items:
+                      type: string
+                  cell_count:
+                    type: int
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
 
 		post:
       description: Create a new Collection
@@ -212,16 +266,14 @@ components:
         - visibility
         - links
         - datasets
-        - created_at
-        - updated_at
         - data_submission_policy_version
       properties:
         access_type:
           type: string
           enum: [READ, WRITE]
-        created_at:
+        revised_at:
           type: number
-        updated_at:
+        published_at:
           type: number
         description:
           type: string
