@@ -5,6 +5,7 @@ import {
   UseQueryResult,
 } from "react-query";
 import { Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { buildSummaryCitation } from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -150,6 +151,12 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
         publishedCounterpart
       );
     }
+
+    // Add summary citation to collection.
+    collection.summaryCitation = buildSummaryCitation(
+      collection.publisher_metadata
+    );
+
     return collection;
   };
 }

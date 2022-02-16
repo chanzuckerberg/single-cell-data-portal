@@ -26,16 +26,73 @@ const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
 /**
  * Returns collection metadata in preferred order of display.
  * @param links - links associated with collection.
- * @param contactName
- * @param contactEmail
+ * @param contactName - Name of collection contact.
+ * @param contactEmail - Email of collection contact.
+ * @param summaryCitation - Summary citation format of collection publication metadata.
  * @returns Array of collection metadata in preferred order of display.
  */
 export function buildCollectionMetadataLinks(
   links: Link[],
   contactName?: Collection["contact_name"],
+  contactEmail?: Collection["contact_email"],
+  summaryCitation?: string
+): CollectionMetadataLink[] {
+  const collectionMetadataLinks = [];
+
+  /* Clone the links so we can safely remove the DOI link type if present and display it separately from the other link
+    types at the top of the metadata links list.*/
+  const linksClone = [...links];
+
+  /* If collection has an associated DOI, display either the summary citation or the DOI itself. */
+  const doiLink = links.find((link: Link) => link.link_type === "DOI");
+  if (doiLink) {
+    const doiMetadataLink = buildDoiMetadataLink(doiLink, summaryCitation);
+    if (doiMetadataLink) {
+      collectionMetadataLinks.push(doiMetadataLink);
+
+      /* Remove the DOI from links so we don't display it again in the links section below contact. */
+      linksClone.splice(linksClone.indexOf(doiLink), 1);
+    }
+  }
+
+  /* Add contact name and email to the top of collection metadata list. */
+  if (contactName && contactEmail) {
+    collectionMetadataLinks.push({
+      label: "Contact",
+      testId: "collection-contact",
+      url: `mailto:${contactEmail}`,
+      value: contactName,
+    });
+  }
+
+  /* Add collection links - except DOI - to collection metadata list. */
+  /* Collection metadata reordered for preferred order of display. */
+  const orderedLinks = sortCollectionLinks(linksClone);
+  for (const orderedLink of orderedLinks) {
+    /* Build and add any valid collection metadata. */
+    const collectionMetadataLink = buildCollectionMetadataLink(orderedLink);
+    if (!collectionMetadataLink) continue;
+    collectionMetadataLinks.push(collectionMetadataLink);
+  }
+
+  /* Return valid collection metadata. */
+  return collectionMetadataLinks;
+}
+
+/**
+ * @deprecated Remove once feature flag is removed (#1718).
+ * Returns collection metadata in preferred order of display.
+ * @param links - links associated with collection.
+ * @param contactName
+ * @param contactEmail
+ * @returns Array of collection metadata in preferred order of display.
+ */
+export function buildCollectionMetadataLinksDeprecated(
+  links: Link[],
+  contactName?: Collection["contact_name"],
   contactEmail?: Collection["contact_email"]
 ): CollectionMetadataLink[] {
-  let collectionMetadataLinks = [];
+  const collectionMetadataLinks = [];
 
   /* Add contact name and email to the top of collection metadata list. */
   if (contactName && contactEmail) {
@@ -59,6 +116,35 @@ export function buildCollectionMetadataLinks(
 
   /* Return valid collection metadata. */
   return collectionMetadataLinks;
+}
+
+/**
+ * Build display model of DOI link associated with a collection, if any. Display publication metadata if it has been
+ * retrieved for the DOI, otherwise display the DOI link as is.
+ * @params links - Links associated with a collection.
+ * @returns Display model of DOI link.
+ */
+function buildDoiMetadataLink(
+  doiLink: Link,
+  summaryCitation?: string
+): CollectionMetadataLink | undefined {
+  // Build display model of DOI link.
+  const doiMetadataLink = buildCollectionMetadataLink(doiLink);
+  if (!doiMetadataLink) {
+    return;
+  }
+
+  // If there's no summary citation for the collection, return the DOI link as is..
+  if (!summaryCitation) {
+    return doiMetadataLink;
+  }
+
+  // There's a summary citation link for the collection, update DOI link display.
+  return {
+    ...doiMetadataLink,
+    label: "Publication",
+    value: summaryCitation,
+  };
 }
 
 /**
