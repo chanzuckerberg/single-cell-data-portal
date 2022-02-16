@@ -4,7 +4,6 @@
     "default_env": "rdev",
     "app": "data-portal",
     "default_compose_env_file": ".env.ecr",
-    "services": ["frontend", "backend"],
     "environments": {
         "rdev": {
             "aws_profile": "single-cell-dev",
@@ -38,11 +37,7 @@
         }
     },
     "tasks": {
-        "migrate": [
-            "migrate_db_task_definition_arn"
-        ],
-        "delete": [
-            "delete_db_task_definition_arn"
-        ]
+        "migrate": ["migrate_db_task_definition_arn"],
+        "delete": ["delete_db_task_definition_arn"]
     }
 }
