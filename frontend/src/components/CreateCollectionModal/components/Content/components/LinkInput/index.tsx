@@ -67,6 +67,16 @@ const LinkInput: FC<Props> = ({
   const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
   const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
 
+  // All links except DOIs are validated on the FE. DOIs are validated by the BE.
+  // TODO replace syncValidation below with this definition once filter flag is removed.
+  const filterEnabledValidation =
+    linkType === COLLECTION_LINK_TYPE.DOI ? [] : [isValidHttpUrl];
+
+  // Determine validation for link.
+  const syncValidation = isFilterEnabled
+    ? filterEnabledValidation
+    : [isValidHttpUrl, isDOILink(value)];
+
   const LinkTypeButton = () => (
     <SelectButton fill minimal outlined rightIcon="caret-down" text={text} />
   );
@@ -76,6 +86,7 @@ const LinkInput: FC<Props> = ({
       <FormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink
+          doiSelected={false}
           fill
           handleClick={handleLinkTypeChange}
           Button={LinkTypeButton}
@@ -99,7 +110,7 @@ const LinkInput: FC<Props> = ({
         noNameAttr
         name={value}
         text="URL"
-        syncValidation={[isValidHttpUrl, isDOILink(value)]}
+        syncValidation={syncValidation}
         placeholder={
           value === COLLECTION_LINK_TYPE.DOI
             ? DOI_PLACEHOLDER

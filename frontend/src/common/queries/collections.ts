@@ -189,7 +189,13 @@ export async function createCollection(payload: string): Promise<string> {
 
   const json = await response.json();
 
-  if (!response.ok) {
+  // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
+  // are validated by the BE. Expected error response for invalid DOI:
+  // {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+  const isDOIValidationError =
+    json.status === 400 && json.detail === "DOI cannot be found on Crossref";
+
+  if (!response.ok && !isDOIValidationError) {
     throw json;
   }
 

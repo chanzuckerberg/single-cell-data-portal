@@ -230,6 +230,9 @@ const Content: FC<Props> = (props) => {
           )}
           {/* Add metadata link button */}
           <AddLink
+            doiSelected={links.some(
+              (link) => link.linkType === COLLECTION_LINK_TYPE.DOI
+            )}
             handleClick={handleAddLinkClick}
             Button={isFilterEnabled ? AddMetadataLinkButton : AddLinkButton}
           />
