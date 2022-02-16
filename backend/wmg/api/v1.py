@@ -4,8 +4,6 @@ from uuid import UUID, uuid4
 import connexion
 from flask import jsonify
 
-_logger = None
-
 
 def latest_snapshot():
     return jsonify(snapshot_id=uuid4().hex)

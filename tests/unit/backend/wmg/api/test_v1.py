@@ -4,10 +4,10 @@ import uuid
 from pprint import pprint
 
 from backend.corpora.api_server.app import app
-from unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 
 
-class WmgApiTests(unittest.TestCase):
+class WmgApiV1Tests(unittest.TestCase):
     def setUp(self):
         super().setUp()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
