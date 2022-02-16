@@ -58,6 +58,8 @@ class HappyConfig:
             raise CliError(error)
 
     def __getattr__(self, field):
+        if field == "default_compose_env":
+            return self._data["default_compose_env_file"]
         if field == "ecrs":
             return self.ctx.obj["secret_mgr"].secrets["ecrs"]
         if field in self._data:
@@ -1159,8 +1161,8 @@ def push(ctx, images, tag, extra_tag, compose_env, stack_name):
     builder_config = {}
     if compose_env:
         builder_config["env"] = compose_env
-    elif os.path.isfile(config.default_compose_env):
-        builder_config["env"] = config.default_compose_env
+    elif os.path.isfile(config.default_compose_env_file):
+        builder_config["env"] = config.default_compose_env_file
 
     # NOTE: It's OK to set an arbitrary repo here because it's only
     # used for buildkit caching during image building.
