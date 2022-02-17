@@ -142,9 +142,9 @@ const OuterElementType = React.forwardRef<HTMLDivElement>(
   }
 );
 
-function defaultRenderOption(props: ListChildComponentProps) {
+function rowRender(props: ListChildComponentProps) {
   const { data, index, style } = props;
-  return React.cloneElement(data[index], style);
+  return <div style={style}>{data[index]}</div>;
 }
 
 const ListboxComponent = React.forwardRef<HTMLDivElement>(
@@ -163,13 +163,12 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
             height={height}
             itemCount={itemCount}
             outerElementType={OuterElementType}
-            innerElementType="ul"
             itemSize={itemHeight}
             width="100%"
             overscanCount={10}
             itemData={itemData}
           >
-            {defaultRenderOption}
+            {rowRender}
           </FixedSizeList>
         </ListBoxContext.Provider>
       </div>
@@ -180,7 +179,6 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -209,12 +207,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   useEffect(() => {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
-
-  useEffect(() => {
-    if (Number.isNaN(Number(input))) return;
-
-    setSelectedGenes(genes.slice(0, Number(input)));
-  }, [input, genes]);
 
   const [pendingGenes, setPendingGenes] = useState<DefaultMenuSelectOption[]>(
     []
@@ -275,9 +267,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
         <span>Add Genes</span>
       </ButtonBase>
 
-      <Popper open className={classes.popper} anchorEl={ref.current}>
+      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
         <MenuSelect
-          open={open}
+          open
           search
           onClose={handleClose}
           multiple
