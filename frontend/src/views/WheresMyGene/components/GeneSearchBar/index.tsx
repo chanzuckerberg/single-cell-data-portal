@@ -208,22 +208,16 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
-  const [pendingGenes, setPendingGenes] = useState<DefaultMenuSelectOption[]>(
-    []
-  );
-
   const handleClose = (_, reason: AutocompleteCloseReason) => {
     if (reason === "toggleInput") {
       return;
     }
-    setSelectedGenes(pendingGenes as Gene[]);
     setOpen(false);
   };
   const handleChange = (_, newValue: DefaultMenuSelectOption[] | null) => {
-    return setPendingGenes(newValue as DefaultMenuSelectOption[]);
+    return setSelectedGenes(newValue as Gene[]);
   };
   const handleClick = () => {
-    setPendingGenes(selectedGenes as DefaultMenuSelectOption[]);
     setOpen(true);
   };
 
@@ -277,7 +271,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             paper: classes.paper,
             popperDisablePortal: classes.popperDisablePortal,
           }}
-          value={pendingGenes}
+          value={selectedGenes}
           onChange={handleChange}
           disableCloseOnSelect
           disableListWrap
