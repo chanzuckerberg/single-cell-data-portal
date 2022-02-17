@@ -24,7 +24,7 @@
     "echarts-gl": "^2.0.8",
     "jschardet": "^2.3.0",
     "lodash": "^4.17.20",
-    "next": "^11.1.2",
+    "next": "^12.1.0",
     "next-secure-headers": "^2.1.0",
     "node-sass": "^5.0.0",
     "papaparse": "^5.3.1",
