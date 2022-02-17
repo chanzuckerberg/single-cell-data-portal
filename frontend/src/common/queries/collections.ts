@@ -20,6 +20,11 @@ import {
 import { ENTITIES } from "./entities";
 
 /**
+ * Error text returned from BE when DOI is identified as invalid.
+ */
+// const INVALID_DOI_MESSAGE = "DOI cannot be found on Crossref"; // TODO(cc) reenable
+
+/**
  * Model returned from create collection: collection ID if create was successful, otherwise flag indicating invalid DOI.
  */
 export interface CollectionCreateResponse {
@@ -209,20 +214,17 @@ export async function createCollection(
   const json = await response.json();
 
   // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
-  // are validated by the BE. Expected error response for invalid DOI:
-  // {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
-  // TODO generalize beyond DOI link type once all links are validated on the BE.
-  // const isInvalidDOI = TODO(cc) reenable
-  //   response.status === 400 &&
-  //   json.detail === "DOI cannot be found on Crossref";
+  // are validated by the BE.
+  if (isInvalidDOI(response.status, json.detail)) {
+    return { isInvalidDOI: true };
+  }
 
-  // if (!response.ok && !isInvalidDOI) { // TODO(cc) reenable
+  // if (!response.ok) { // TODO(cc) reenable
   //   throw json;
   // }
 
   return {
     collectionId: json.collection_uuid,
-    isInvalidDOI: true, // TODO(cc) remove :true
   };
 }
 
@@ -417,18 +419,18 @@ const editCollection = async function ({
   const result = await response.json();
 
   // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
-  // are validated by the BE. Expected error response for invalid DOI:
-  // {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
-  // TODO generalize beyond DOI link type once all links are validated on the BE.
-  // const isInvalidDOI = TODO(cc) reenable
-  //   response.status === 400 &&
-  //   result.detail === "DOI cannot be found on Crossref";
+  // are validated by the BE.
+  if (isInvalidDOI(response.status, result.detail)) {
+    return { isInvalidDOI: true };
+  }
 
-  // if (!response.ok && !isInvalidDOI) { // TODO(cc) reenable
+  // if (!response.ok) { // TODO(cc) reenable
   //   throw result;
   // }
-  console.log(response); // TODO(cc) remove
-  return { collection: result, isInvalidDOI: true }; // TODO(cc) remove :true
+
+  return {
+    collection: result,
+  };
 };
 
 export function useEditCollection(collectionID?: Collection["id"]) {
@@ -546,4 +548,18 @@ export function useReuploadDataset(collectionId: string) {
       ]);
     },
   });
+}
+
+/**
+ * Determine if a submitted DOI has failed validation on the BE. Expected response for invalid DOI:
+ * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * TODO generalize beyond DOI link type once all links are validated on the BE.
+ * @param status - Response status returned from server.
+ * @param detail - Response error text, if any.
+ * @returns True if DOI has been identified as invalid by the BE.
+ */
+function isInvalidDOI(_status: number, _detail?: string): boolean {
+  // TODO(cc) remove _ above
+  return true;
+  // return status === 400 && detail === INVALID_DOI_MESSAGE; // TODO(cc) reenable
 }
