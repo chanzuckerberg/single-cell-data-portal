@@ -138,6 +138,10 @@ const Content: FC<Props> = (props) => {
     }) || []
   );
 
+  // Flag indicating if DOI has been identified as invalid by the BE.
+  // TODO generalize beyond DOI link type once all links are validated on the BE.
+  const [isInvalidDOI, setIsInvalidDOI] = useState(false);
+
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
     const areFieldsValid = Object.values(fieldValidation).every(
@@ -213,6 +217,7 @@ const Content: FC<Props> = (props) => {
                 {links.map(
                   ({ linkType, id, url, linkName, isValid }, index) => (
                     <LinkInput
+                      errorMessage={getLinkErrorMessage(linkType, isInvalidDOI)}
                       index={index}
                       linkType={linkType}
                       id={id}
@@ -294,11 +299,18 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    const collectionId = (await mutateCreateCollection(
+    const { collectionId, isInvalidDOI } = await mutateCreateCollection(
       JSON.stringify(payload)
-    )) as string;
+    );
 
     setIsLoading(false);
+
+    // Handle the case where DOI is invalid.
+    // TODO generalize beyond DOI link type once all links are validated on the BE.
+    if (isInvalidDOI) {
+      setIsInvalidDOI(true);
+      return;
+    }
 
     if (collectionId) {
       router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
@@ -321,6 +333,23 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(false);
     onClose();
+  }
+
+  /**
+   * Determine if there are server-side errors for the given link type.
+   * TODO generalize beyond DOI link type once all links are validated on the BE.
+   * @param linkType - Type of link to check for associated errors.
+   * @param isInvalidDOI - True if the server has indicated the submitted DOI is invalid.
+   * @returns Error message for the given link type, if any.
+   */
+  function getLinkErrorMessage(
+    linkType: COLLECTION_LINK_TYPE,
+    isInvalidDOI: boolean
+  ): string {
+    if (linkType === COLLECTION_LINK_TYPE.DOI && isInvalidDOI) {
+      return "We could not resolve this DOI. Please correct or remove it.";
+    }
+    return "";
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {

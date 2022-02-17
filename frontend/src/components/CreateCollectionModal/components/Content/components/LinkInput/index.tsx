@@ -38,6 +38,7 @@ const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
+  errorMessage?: string; // Populated from server side errors
   handleChange: ({ id, url, isValid }: LinkValue) => void;
   id: number;
   index: number;
@@ -49,6 +50,7 @@ interface Props {
 }
 
 const LinkInput: FC<Props> = ({
+  errorMessage,
   handleChange,
   handleDelete,
   id,
@@ -83,6 +85,7 @@ const LinkInput: FC<Props> = ({
 
   return (
     <LinkInputWrapper>
+      {errorMessage}
       <FormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink

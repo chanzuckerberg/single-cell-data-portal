@@ -19,6 +19,14 @@ import {
 } from "./common";
 import { ENTITIES } from "./entities";
 
+/**
+ * Model returned from create collection.
+ */
+export interface CollectionCreateResponse {
+  collectionId?: string;
+  isInvalidDOI?: boolean;
+}
+
 export const USE_COLLECTIONS = {
   entities: [ENTITIES.COLLECTION],
   id: "collections",
@@ -178,7 +186,9 @@ export function useCollection({
   );
 }
 
-export async function createCollection(payload: string): Promise<string> {
+export async function createCollection(
+  payload: string
+): Promise<CollectionCreateResponse> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -192,14 +202,19 @@ export async function createCollection(payload: string): Promise<string> {
   // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
   // are validated by the BE. Expected error response for invalid DOI:
   // {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
-  const isDOIValidationError =
-    json.status === 400 && json.detail === "DOI cannot be found on Crossref";
+  // TODO generalize beyond DOI link type once all links are validated on the BE.
+  // const isInvalidDOI = TODO(cc) reenable
+  //   response.status === 400 &&
+  //   json.detail === "DOI cannot be found on Crossref";
 
-  if (!response.ok && !isDOIValidationError) {
-    throw json;
-  }
+  // if (!response.ok && !isInvalidDOI) { // TODO(cc) reenable
+  //   throw json;
+  // }
 
-  return json.collection_uuid;
+  return {
+    collectionId: json.collection_uuid,
+    isInvalidDOI: true, // TODO(cc) remove :true
+  };
 }
 
 export function useCreateCollection() {
