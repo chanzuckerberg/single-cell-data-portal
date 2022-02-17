@@ -20,10 +20,19 @@ import {
 import { ENTITIES } from "./entities";
 
 /**
- * Model returned from create collection.
+ * Model returned from create collection: collection ID if create was successful, otherwise flag indicating invalid DOI.
  */
 export interface CollectionCreateResponse {
   collectionId?: string;
+  isInvalidDOI?: boolean;
+}
+
+/**
+ * Model returned from edit collection: the collection itself if edit was successful, otherwise flag indicating invalid
+ * DOI.
+ */
+export interface CollectionEditResponse {
+  collection?: Collection;
   isInvalidDOI?: boolean;
 }
 
@@ -389,7 +398,7 @@ const editCollection = async function ({
 }: {
   id: string;
   payload: string;
-}): Promise<Collection> {
+}): Promise<CollectionEditResponse> {
   idError(id);
 
   if (!payload) {
@@ -407,9 +416,19 @@ const editCollection = async function ({
 
   const result = await response.json();
 
-  if (!response.ok) throw result;
+  // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
+  // are validated by the BE. Expected error response for invalid DOI:
+  // {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+  // TODO generalize beyond DOI link type once all links are validated on the BE.
+  // const isInvalidDOI = TODO(cc) reenable
+  //   response.status === 400 &&
+  //   result.detail === "DOI cannot be found on Crossref";
 
-  return result;
+  // if (!response.ok && !isInvalidDOI) { // TODO(cc) reenable
+  //   throw result;
+  // }
+
+  return { collection: result, isInvalidDOI: true }; // TODO(cc) remove :true
 };
 
 export function useEditCollection(collectionID?: Collection["id"]) {
@@ -428,28 +447,33 @@ export function useEditCollection(collectionID?: Collection["id"]) {
   });
 
   return useMutation(editCollection, {
-    onSuccess: (newCollection) => {
-      queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
-        () => {
-          let revision_diff;
-          if (isTombstonedCollection(newCollection)) {
-            return newCollection;
-          } else if (
-            !isTombstonedCollection(collection) &&
-            !isTombstonedCollection(publishedCollection) &&
-            collection?.has_revision &&
-            publishedCollection
-          ) {
-            revision_diff = checkForRevisionChange(
-              newCollection,
+    onSuccess: ({ collection: newCollection }) => {
+      // Check for updated collection: it's possible server-side validation errors have occurred where the error has
+      // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
+      // though update did not occur.
+      if (newCollection) {
+        queryClient.setQueryData(
+          [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
+          () => {
+            let revision_diff;
+            if (isTombstonedCollection(newCollection)) {
+              return newCollection;
+            } else if (
+              !isTombstonedCollection(collection) &&
+              !isTombstonedCollection(publishedCollection) &&
+              collection?.has_revision &&
               publishedCollection
-            );
+            ) {
+              revision_diff = checkForRevisionChange(
+                newCollection,
+                publishedCollection
+              );
 
-            return { ...collection, ...newCollection, revision_diff };
+              return { ...collection, ...newCollection, revision_diff };
+            }
           }
-        }
-      );
+        );
+      }
     },
   });
 }

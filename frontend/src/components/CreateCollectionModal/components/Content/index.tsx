@@ -25,6 +25,7 @@ import {
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import TextArea from "src/components/common/Form/TextArea";
+import { getDOIPath } from "src/views/Collection/utils";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -128,12 +129,22 @@ const Content: FC<Props> = (props) => {
 
   const [links, setLinks] = useState<Link[]>(
     data?.links.map((link, index) => {
+      const {
+        link_name: linkName,
+        link_type: linkType,
+        link_url: linkUrl,
+      } = link;
+
+      // DOI links are specified as path only, all other links are specified as full URLs.
+      const url =
+        linkType === COLLECTION_LINK_TYPE.DOI ? getDOIPath(linkUrl) : linkUrl;
+
       return {
         id: Date.now() + index,
         isValid: true,
-        linkName: link.link_name,
-        linkType: link.link_type,
-        url: link.link_url,
+        linkName,
+        linkType,
+        url,
       };
     }) || []
   );
@@ -326,13 +337,21 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(true);
 
-    await mutateEditCollection({
+    const response = await mutateEditCollection({
       id: props.id ?? "",
       payload: JSON.stringify(payload),
     });
 
     setIsLoading(false);
-    onClose();
+
+    // Handle the case where DOI is invalid.
+    // TODO generalize beyond DOI link type once all links are validated on the BE.
+    const { isInvalidDOI } = response;
+    if (isInvalidDOI) {
+      setIsInvalidDOI(true);
+    } else {
+      onClose();
+    }
   }
 
   /**
