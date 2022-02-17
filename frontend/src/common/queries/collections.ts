@@ -427,7 +427,7 @@ const editCollection = async function ({
   // if (!response.ok && !isInvalidDOI) { // TODO(cc) reenable
   //   throw result;
   // }
-
+  console.log(response); // TODO(cc) remove
   return { collection: result, isInvalidDOI: true }; // TODO(cc) remove :true
 };
 

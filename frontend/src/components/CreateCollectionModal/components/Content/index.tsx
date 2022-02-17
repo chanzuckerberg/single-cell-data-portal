@@ -346,6 +346,7 @@ const Content: FC<Props> = (props) => {
 
     // Handle the case where DOI is invalid.
     // TODO generalize beyond DOI link type once all links are validated on the BE.
+    console.log(response); // TODO(cc) remove
     const { isInvalidDOI } = response;
     if (isInvalidDOI) {
       setIsInvalidDOI(true);
