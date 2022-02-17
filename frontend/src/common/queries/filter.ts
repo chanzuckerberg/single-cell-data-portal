@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
-import { IS_PRIMARY_DATA, Ontology } from "src/common/entities";
+import {
+  Author,
+  Consortium,
+  IS_PRIMARY_DATA,
+  Ontology,
+  PublisherMetadata,
+} from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
@@ -10,6 +16,7 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
+  PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
@@ -55,8 +62,18 @@ export interface FetchCollectionDatasetRows {
 export interface CollectionResponse {
   id: string;
   name: string;
+  publisher_metadata: PublisherMetadata;
   published_at: number;
   revised_at: number;
+}
+
+/**
+ * Model of /collections/index JSON response that has been modified to include calculated fields that facilitate filter
+ * functionality.
+ */
+interface ProcessedCollectionResponse extends CollectionResponse {
+  publicationAuthors: string[];
+  publicationDateValues: number[];
 }
 
 /**
@@ -153,9 +170,9 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
  */
 export function useFetchCollections(): UseQueryResult<
-  Map<string, CollectionResponse>
+  Map<string, ProcessedCollectionResponse>
 > {
-  return useQuery<Map<string, CollectionResponse>>(
+  return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
     fetchCollections,
     {
@@ -264,7 +281,7 @@ function aggregateCollectionDatasetRows(
  * across sibling datasets in its collection.
  */
 function buildCollectionRows(
-  collectionsById: Map<string, CollectionResponse>,
+  collectionsById: Map<string, ProcessedCollectionResponse>,
   datasetRows: DatasetRow[]
 ): CollectionRow[] {
   // Group datasets by collection to facilitate aggregation of dataset category values for each collection.
@@ -281,14 +298,23 @@ function buildCollectionRows(
       collectionDatasetRows
     );
 
+    // Calculate recency for sorting.
+    const recency = calculateRecency(
+      collection,
+      collection?.publisher_metadata
+    );
+
+    // Build the summary citation from the collection's publication metadata, if any.
+    const summaryCitation = buildSummaryCitation(
+      collection?.publisher_metadata
+    );
+
     // Create collection row from aggregated collection category values and core collection information.
-    const { id, name, published_at, revised_at } = collection;
     const collectionRow = sortCategoryValues({
-      id,
-      name,
-      published_at,
-      revised_at,
+      ...collection,
       ...aggregatedCategoryValues,
+      recency,
+      summaryCitation,
     });
     collectionRows.push(collectionRow);
   }
@@ -302,7 +328,7 @@ function buildCollectionRows(
  * @returns Datasets joined with their corresponding collection information.
  */
 function buildDatasetRows(
-  collectionsById: Map<string, CollectionResponse>,
+  collectionsById: Map<string, ProcessedCollectionResponse>,
   datasets: DatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
@@ -322,9 +348,27 @@ function buildDatasetRows(
  */
 function buildDatasetRow(
   dataset: DatasetResponse,
-  collection?: CollectionResponse
+  collection?: ProcessedCollectionResponse
 ): DatasetRow {
   const { is_primary_data } = dataset;
+
+  // Determine dataset's publication month and year.
+  const [publicationMonth, publicationYear] = getPublicationMonthYear(
+    dataset,
+    collection?.publisher_metadata
+  );
+
+  // Calculate date bins for dataset.
+  const [todayMonth, todayYear] = getMonthYear(new Date());
+  const publicationDateValues = expandPublicationDateValues(
+    todayMonth,
+    todayYear,
+    publicationMonth,
+    publicationYear
+  );
+
+  // Calculate recency for sorting.
+  const recency = calculateRecency(dataset, collection?.publisher_metadata);
 
   // Join!
   const datasetRow = {
@@ -332,9 +376,108 @@ function buildDatasetRow(
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     is_primary_data: expandIsPrimaryData(is_primary_data),
+    publicationAuthors: collection?.publicationAuthors,
+    publicationDateValues,
+    recency,
   };
-
   return sortCategoryValues(datasetRow);
+}
+
+/**
+ * Build summary citation format from given publisher metadata:
+ * Last name of first author (publication year) journal abbreviation such as Ren et al. (2021) Cell.
+ * @param publisherMetadata - Publication metadata of a collection.
+ */
+export function buildSummaryCitation(
+  publisherMetadata?: PublisherMetadata
+): string {
+  if (!publisherMetadata) {
+    return "";
+  }
+
+  const citationTokens = [];
+
+  // Add author to citation - family name if first author is a person, name if first author is a consortium.
+  const { authors, journal, published_year: publishedYear } = publisherMetadata;
+  const [firstAuthor] = authors;
+  if (firstAuthor) {
+    if (isAuthorPerson(firstAuthor)) {
+      citationTokens.push(firstAuthor.family);
+    } else {
+      citationTokens.push(firstAuthor.name);
+    }
+
+    if (authors.length > 1) {
+      citationTokens.push("et al.");
+    }
+  }
+
+  // Add year and journal.
+  citationTokens.push(`(${publishedYear})`);
+  citationTokens.push(journal);
+
+  return citationTokens.join(" ");
+}
+
+/**
+ * Determine date bins that publication date falls within. Date bins are recency-based:
+ * - Published 1 month ago, all date bins are applicable (1 month to 3 years).
+ * - Published 2 months ago, all date bins except 1 month are applicable.
+ * - Published 7 months ago, all date bins except 1, 3 and 6 months are applicable.
+ */
+export function createPublicationDateValues(
+  monthsSincePublication: number
+): number[] {
+  return PUBLICATION_DATE_VALUES.reduce((accum: number[], dateBin: number) => {
+    if (monthsSincePublication <= dateBin) {
+      accum.push(dateBin);
+    }
+    return accum;
+  }, []);
+}
+
+/**
+ * Calculate the number of months since the collection was published. This value is used when filtering by publication
+ * date.
+ * @param todayMonth - Today's month
+ * @param todayYear - Today's year
+ * @param publicationMonth - Month of publication (1 = January, 2 = February etc).
+ * @param publicationYear - Year of publication
+ * @returns The count of months since collection was published.
+ */
+export function calculateMonthsSincePublication(
+  todayMonth: number,
+  todayYear: number,
+  publicationMonth: number,
+  publicationYear: number
+): number {
+  return todayMonth - publicationMonth + 12 * (todayYear - publicationYear);
+}
+
+/**
+ * Calculate the recency value for the given collection or dataset. If there is no associated publication
+ * metadata, use revised_at or published_at in priority order for the given collection or dataset.
+ * @param response - Collection or dataset response returned from endpoint.
+ * @param publisherMetadata - Publication metadata of the collection, or of the dataset's corresponding collection.
+ * @returns Number representing seconds since Unix epoch.
+ */
+export function calculateRecency(
+  response: CollectionResponse | DatasetResponse,
+  publisherMetadata?: PublisherMetadata
+): number {
+  // Pull date values from publication metadata if specified.
+  if (publisherMetadata) {
+    const {
+      published_day: day,
+      published_month: month,
+      published_year: year,
+    } = publisherMetadata;
+    const recency = new Date(year, month - 1, day); // Publication months are 1-indexed, JS months are 0-indexed.
+    return recency.getTime() / 1000; // Convert JS date millis to Unix timestamp seconds.
+  }
+
+  // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
+  return response.revised_at ?? response.published_at;
 }
 
 /**
@@ -355,18 +498,65 @@ function expandIsPrimaryData(
 }
 
 /**
+ * Concat author first and last names to facilitate filter. Ignore authors with a `name` attribute as this indicates
+ * author is a consortium which are not to be included in the filter.
+ * @param authors - Array of collection publication authors.
+ * @returns Array of strings containing author first and last names.
+ */
+function expandPublicationAuthors(authors: (Author | Consortium)[]): string[] {
+  return authors
+    .filter(isAuthorPerson)
+    .map((author: Author) => `${author.family}, ${author.given}`);
+}
+
+/**
+ * Determine date bins applicable to the given publication date.
+ * @param todayMonth - Today's month
+ * @param todayYear - Today's year
+ * @param publicationMonth - Month of publication (1 = January, 2 = February etc).
+ * @param publicationYear - Year of publication
+ * @returns Array of recency date bins that publication date fall within.
+ */
+function expandPublicationDateValues(
+  todayMonth: number,
+  todayYear: number,
+  publicationMonth: number,
+  publicationYear: number
+): number[] {
+  // Calculate the number of months since the publication date.
+  const monthsSincePublication = calculateMonthsSincePublication(
+    todayMonth,
+    todayYear,
+    publicationMonth,
+    publicationYear
+  );
+
+  // Build array containing all date ranges that the months since publication fall within.
+  return createPublicationDateValues(monthsSincePublication);
+}
+
+/**
  * Fetch public collections from /datasets/index endpoint. Collections are partial in that they do not contain all
  * fields; only fields required for filtering and sorting are returned.
  * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
  * request - containing only ID, name and recency values.
  */
-async function fetchCollections(): Promise<Map<string, CollectionResponse>> {
+async function fetchCollections(): Promise<
+  Map<string, ProcessedCollectionResponse>
+> {
   const collections = await (
     await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
   ).json();
 
+  // Calculate the number of months since publication for each collection.
+  const [todayMonth, todayYear] = getMonthYear(new Date());
+  const processedCollections = collections.map(
+    (collection: CollectionResponse) =>
+      processCollectionResponse(collection, todayMonth, todayYear)
+  );
+
   // Create "collections lookup" to facilitate join between collections and datasets.
-  return keyCollectionsById(collections);
+  return keyCollectionsById(processedCollections);
 }
 
 /**
@@ -385,6 +575,41 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   return datasets.map((dataset: DatasetResponse) => {
     return sanitizeDataset(dataset);
   });
+}
+
+/**
+ * Return the publication month and year for the given collection or dataset. If there is no associated publication
+ * metadata, use revised_at or published_at in priority order for the given collection or dataset.
+ * @param response - Collection or dataset response returned from endpoint.
+ * @param publisherMetadata - Publication metadata of the collection, or of the dataset's corresponding collection.
+ * @returns Tuple containing collections publication month (1-indexed) and year.
+ */
+function getPublicationMonthYear(
+  response: CollectionResponse | DatasetResponse,
+  publisherMetadata?: PublisherMetadata
+): [number, number] {
+  // Pull month and year from publication metadata if specified.
+  if (publisherMetadata) {
+    return [
+      publisherMetadata.published_month,
+      publisherMetadata.published_year,
+    ];
+  }
+
+  // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
+  const recency = new Date(
+    (response.revised_at ?? response.published_at) * 1000
+  );
+  return getMonthYear(recency);
+}
+
+/**
+ * Return the month and year of the specified date.
+ * @param date - Date to return UTC month and year of.
+ * @returns Tuple containing the given date's month (1-indexed) and year.
+ */
+function getMonthYear(date: Date): [number, number] {
+  return [date.getUTCMonth() + 1, date.getUTCFullYear()]; // JS dates are 0-indexed, publication dates are 1-indexed.
 }
 
 /**
@@ -407,19 +632,66 @@ function groupDatasetRowsByCollection(
 }
 
 /**
+ * Publication authors can be a person or a consortium; determine if the given author is in fact a person (and not a
+ * consortium).
+ * @param author - Person or consortium associated with a publication.
+ * @returns True if author is a person and not a consortium.
+ */
+function isAuthorPerson(author: Author | Consortium): author is Author {
+  return (author as Author).given !== undefined;
+}
+
+/**
  * Created a map of collections keyed by their ID.
  * @param collections - Collections returned from collection/index endpoint.
  * @returns Map of collections keyed by their ID.
  */
 function keyCollectionsById(
-  collections: CollectionResponse[]
-): Map<string, CollectionResponse> {
+  collections: ProcessedCollectionResponse[]
+): Map<string, ProcessedCollectionResponse> {
   return new Map(
-    collections.map((collection: CollectionResponse) => [
+    collections.map((collection: ProcessedCollectionResponse) => [
       collection.id,
       collection,
     ])
   );
+}
+
+/**
+ * Add calculated fields to collection response.
+ * @param collection - Collection response returned from collections endpoint.
+ * @param todayMonth - Number indicating the month of today's date (1-indexed).
+ * @param todayYear - Number indicating the year of today's date.
+ */
+function processCollectionResponse(
+  collection: CollectionResponse,
+  todayMonth: number,
+  todayYear: number
+): ProcessedCollectionResponse {
+  // Determine the collections publication month and year.
+  const [publicationMonth, publicationYear] = getPublicationMonthYear(
+    collection,
+    collection.publisher_metadata
+  );
+
+  // Calculate date bins and add to "processed" collection model.
+  const publicationDateValues = expandPublicationDateValues(
+    todayMonth,
+    todayYear,
+    publicationMonth,
+    publicationYear
+  );
+
+  // Determine the set of authors of the publication.
+  const publicationAuthors = expandPublicationAuthors(
+    collection?.publisher_metadata?.authors ?? []
+  );
+
+  return {
+    ...collection,
+    publicationAuthors,
+    publicationDateValues,
+  };
 }
 
 /**
@@ -430,6 +702,13 @@ function keyCollectionsById(
 function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
   return Object.values(CATEGORY_KEY).reduce(
     (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
+      // Check for fields that don't require sanitizing.
+      if (
+        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS
+      ) {
+        return accum;
+      }
       if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
       } else {

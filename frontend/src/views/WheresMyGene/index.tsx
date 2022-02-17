@@ -4,7 +4,7 @@ import debounce from "lodash/debounce";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { API } from "src/common/API";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import SideBar from "src/components/common/SideBar";
 import { Position } from "src/components/common/SideBar/style";
@@ -17,7 +17,11 @@ import {
   reducer,
   StateContext,
 } from "./common/store";
-import { selectGenes } from "./common/store/actions";
+import {
+  deleteSelectedGenesAndSelectedCellTypeIds,
+  selectGenes,
+  tissueCellTypesFetched,
+} from "./common/store/actions";
 import {
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
@@ -34,7 +38,7 @@ const DEBOUNCE_MS = 2 * 1000;
 const WheresMyGene = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
-  const { selectedGenes } = state;
+  const { selectedGenes, selectedCellTypeIds } = state;
 
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
@@ -45,7 +49,53 @@ const WheresMyGene = (): JSX.Element => {
   const [geneExpressionSummaries, setGeneExpressionSummaries] =
     useState<GeneExpressionSummary[]>(EMPTY_ARRAY);
 
-  const [cellTypes, setCellTypes] = useState<CellTypeSummary[]>(EMPTY_ARRAY);
+  /**
+   * This holds ALL the cell type data we have loaded from the API
+   */
+  const [cellTypes, setCellTypes] =
+    useState<{ [tissue: string]: CellTypeSummary[] }>(EMPTY_OBJECT);
+
+  /**
+   * This holds only the CellTypeSummary objects that are currently selected in
+   * `state.selectedCellTypeIds`.
+   * NOTE: We also prepend corresponding tissues for their cell types for
+   * rendering in the heat map.
+   */
+  const selectedCellTypes = useMemo(() => {
+    const result = [];
+
+    for (const [tissue, selectedIds] of Object.entries(selectedCellTypeIds)) {
+      for (const selectedId of selectedIds) {
+        const cellType = cellTypes[tissue].find(
+          (cellType) => cellType.id === selectedId
+        );
+
+        if (cellType !== undefined) {
+          result.push({ ...cellType, tissue });
+        }
+      }
+      // (thuang): Tissue needs to be last in the list
+      result.push({ id: tissue, name: tissue, tissue });
+    }
+
+    return result;
+  }, [selectedCellTypeIds, cellTypes]);
+
+  /**
+   * This indicates which tissues have less cell types than the API response,
+   * indicating the user has deleted some cell types manually
+   */
+  const tissuesWithDeletedCellTypes = useMemo(() => {
+    const result = [];
+
+    for (const [tissue, tissueCellTypes] of Object.entries(cellTypes)) {
+      if (selectedCellTypeIds[tissue]?.length < tissueCellTypes.length) {
+        result.push(tissue);
+      }
+    }
+
+    return result;
+  }, [cellTypes, selectedCellTypeIds]);
 
   /**
    * This is the formatted data that we use to render the heatmap.
@@ -82,9 +132,11 @@ const WheresMyGene = (): JSX.Element => {
 
       // (thuang): Table y-axis defaults to descending order
       // .reverse() mutates the original array
-      setCellTypes(cellTypes.reverse());
+      const cellTypeSummaries = cellTypes.reverse();
+      setCellTypes({ lung: cellTypeSummaries });
+      dispatch(tissueCellTypesFetched("lung", cellTypeSummaries));
     }
-  }, []);
+  }, [setCellTypes]);
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
@@ -96,14 +148,23 @@ const WheresMyGene = (): JSX.Element => {
     );
   }, []);
 
+  // Cancel debounce when unmounting
+  useEffect(() => {
+    return () => debouncedIntegrateCellTypesAndGenes.cancel();
+  }, [debouncedIntegrateCellTypesAndGenes]);
+
   /**
    * Performance optimization:
    * We only format and `setCellTypeSummaries()` after the watch list has stopped changing for
    * `DEBOUNCE_MS`
    */
   useEffect(() => {
-    debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
-  }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
+    debouncedIntegrateCellTypesAndGenes(selectedCellTypes, selectedGeneData);
+  }, [
+    selectedGeneData,
+    selectedCellTypes,
+    debouncedIntegrateCellTypesAndGenes,
+  ]);
 
   const handleGenesOnchange = useCallback(
     (genes: Gene[]) => {
@@ -111,6 +172,21 @@ const WheresMyGene = (): JSX.Element => {
     },
     [dispatch]
   );
+
+  // Listen to delete keyboard press event
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.code === "Backspace") {
+        dispatch(deleteSelectedGenesAndSelectedCellTypeIds());
+      }
+    }
+  }, [dispatch]);
 
   return (
     <DispatchContext.Provider value={dispatch}>
@@ -142,9 +218,11 @@ const WheresMyGene = (): JSX.Element => {
             <GeneSearchBar onGenesChange={handleGenesOnchange} />
 
             <HeatMap
-              cellTypes={cellTypes}
+              cellTypes={selectedCellTypes}
               data={cellTypeSummaries}
               genes={selectedGenes}
+              tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
+              allTissueCellTypes={cellTypes}
             />
 
             {selectedGenes.map((selectedGene) => {
@@ -178,27 +256,32 @@ const WheresMyGene = (): JSX.Element => {
   }
 };
 
+/**
+ * Adds gene expressions to the cell types.
+ */
 function integrateCelTypesAndGenes(
-  nodes: CellTypeSummary[],
-  genes: GeneExpressionSummary[]
+  cellTypeSummaries: CellTypeSummary[],
+  geneExpressionSummaries: GeneExpressionSummary[]
 ): CellTypeSummary[] {
-  const geneMaps = genes.map((gene) => rawGeneDataToMap(gene));
+  const geneMaps = geneExpressionSummaries.map((geneExpressionSummary) =>
+    rawGeneDataToMap(geneExpressionSummary)
+  );
 
-  return cloneDeep(nodes).map((node) => {
-    const { id } = node;
+  return cloneDeep(cellTypeSummaries).map((cellTypeSummary) => {
+    const { id } = cellTypeSummary;
 
     for (const [name, geneMap] of geneMaps) {
       const columnData = geneMap.get(id);
 
       if (columnData !== undefined) {
-        node.geneExpressions = {
-          ...(node.geneExpressions || {}),
+        cellTypeSummary.geneExpressions = {
+          ...(cellTypeSummary.geneExpressions || {}),
           [name]: columnData,
         };
       }
     }
 
-    return node;
+    return cellTypeSummary;
   });
 }
 
