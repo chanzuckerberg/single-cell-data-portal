@@ -9,6 +9,8 @@ import {
   getShadows,
   MenuSelect,
 } from "czifui";
+import pull from "lodash/pull";
+import uniq from "lodash/uniq";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { API } from "src/common/API";
@@ -205,6 +207,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   }, []);
 
   useEffect(() => {
+    console.log(selectedGenes);
+
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
@@ -219,6 +223,24 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   };
   const handleClick = () => {
     setOpen(true);
+  };
+
+  const handlePaste = ({ clipboardData }: React.ClipboardEvent) => {
+    const newSelectedGenes = selectedGenes;
+    const clipboardStr = clipboardData.getData("text");
+    const pastedGenes = pull(uniq(clipboardStr.split(/[ ,]+/)), "");
+    console.log("pastedGenes", pastedGenes);
+    const allGenes = genes.reduce((acc, gene) => {
+      return acc.set(gene.name, gene);
+    }, new Map<Gene["name"], Gene>());
+    pastedGenes.map((gene) => {
+      const newGene = allGenes.get(gene);
+      if (!newGene) {
+        //  Missing gene toast
+        console.log("Missing gene", gene);
+      } else newSelectedGenes.push(newGene);
+    });
+    return setSelectedGenes(newSelectedGenes);
   };
 
   const useStyles = makeStyles((theme: Theme) => {
@@ -282,6 +304,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             >
           }
           renderOption={(option) => option.name}
+          // DHRS9, PDSS2, APOD
+          onPaste={handlePaste}
         />
       </Popper>
     </Container>
