@@ -1,11 +1,10 @@
-from typing import List, Dict
 from uuid import uuid4
 
 import connexion
 from flask import jsonify
 
 from backend.wmg.data.query import build_genes, build_gene_id_label_mapping, build_cell_type_id_label_mapping, \
-    cell_type_term_ids
+    DUMMY_CELL_TYPE_TERM_IDS
 
 DUMMY_SNAPSHOT_UUID = uuid4().hex
 
@@ -26,10 +25,10 @@ def query():
     return jsonify(
         dict(
             snapshot_id=DUMMY_SNAPSHOT_UUID,
-            expression_summary=build_genes(gene_term_ids, tissue_term_ids),
+            expression_summary=build_genes(gene_term_ids, tissue_term_ids, DUMMY_CELL_TYPE_TERM_IDS),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(gene_term_ids),
-                cell_types=build_cell_type_id_label_mapping(cell_type_term_ids),
+                cell_types=build_cell_type_id_label_mapping(DUMMY_CELL_TYPE_TERM_IDS),
             ),
         )
     )
