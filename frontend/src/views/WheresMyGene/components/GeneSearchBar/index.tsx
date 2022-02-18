@@ -182,6 +182,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [open, setOpen] = useState(false);
+  const [pendingPaste, setPendingPaste] = useState(false);
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     fetchGenes();
@@ -207,8 +209,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   }, []);
 
   useEffect(() => {
-    console.log(selectedGenes);
-
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
@@ -225,22 +225,33 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     setOpen(true);
   };
 
-  const handlePaste = ({ clipboardData }: React.ClipboardEvent) => {
-    const newSelectedGenes = selectedGenes;
-    const clipboardStr = clipboardData.getData("text");
-    const pastedGenes = pull(uniq(clipboardStr.split(/[ ,]+/)), "");
-    console.log("pastedGenes", pastedGenes);
-    const allGenes = genes.reduce((acc, gene) => {
-      return acc.set(gene.name, gene);
-    }, new Map<Gene["name"], Gene>());
-    pastedGenes.map((gene) => {
-      const newGene = allGenes.get(gene);
-      if (!newGene) {
-        //  Missing gene toast
-        console.log("Missing gene", gene);
-      } else newSelectedGenes.push(newGene);
-    });
-    return setSelectedGenes(newSelectedGenes);
+  const handlePaste = () => {
+    setPendingPaste(true);
+  };
+
+  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && pendingPaste) {
+      event.preventDefault();
+      const newSelectedGenes = [...selectedGenes];
+      const pastedGenes = pull(uniq(input.split(/[ ,]+/)), "");
+      const allGenes = genes.reduce((acc, gene) => {
+        return acc.set(gene.name, gene);
+      }, new Map<Gene["name"], Gene>());
+      pastedGenes.map((gene) => {
+        const newGene = allGenes.get(gene);
+        if (!newGene) {
+          //  Missing gene toast
+          console.log("Missing gene", gene);
+        } else newSelectedGenes.push(newGene);
+      });
+      setPendingPaste(false);
+      setOpen(false);
+      return setSelectedGenes(newSelectedGenes);
+    }
+  };
+
+  const handleInput = (_, value: string, reason: AutocompleteChangeReason) => {
+    if (reason === "input") setInput(value);
   };
 
   const useStyles = makeStyles((theme: Theme) => {
@@ -295,8 +306,10 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           }}
           value={selectedGenes}
           onChange={handleChange}
+          onInputChange={handleInput}
           disableCloseOnSelect
           disableListWrap
+          onKeyDownCapture={handleEnter}
           options={genes}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
