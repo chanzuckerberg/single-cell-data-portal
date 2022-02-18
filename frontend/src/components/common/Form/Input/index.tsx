@@ -1,7 +1,7 @@
 import { FormGroup, Icon, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
@@ -18,6 +18,7 @@ interface Props {
   percentage?: number;
   disabled?: boolean;
   handleChange: ({ isValid, value, name }: Value) => void;
+  isRevalidationRequired?: boolean;
   syncValidation?: Array<(value: string) => true | string>;
   noNameAttr?: boolean;
   className?: string;
@@ -43,6 +44,7 @@ const Input: FC<Props> = ({
   percentage = 100,
   disabled,
   handleChange,
+  isRevalidationRequired = false,
   syncValidation = [],
   noNameAttr = false,
   className,
@@ -67,6 +69,15 @@ const Input: FC<Props> = ({
   const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
   const FormInputGroup = isFilterEnabled ? InputGroup : StyledInputGroup;
   const FormIcon = isFilterEnabled ? ErrorIcon : DangerIcon;
+
+  // Revalidation is necessary if the link type has changed for this link to or from a DOI link type (as DOIs have
+  // different validation to the other link types). Revalidation is not required when switching between link types
+  // other than DOI as they share the same validation.
+  useEffect(() => {
+    if (isRevalidationRequired) {
+      handleChange_();
+    }
+  }, [handleChange_, isRevalidationRequired]);
 
   return (
     <FormLabel htmlFor={name} {...labelProps}>

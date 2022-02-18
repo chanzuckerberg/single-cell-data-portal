@@ -25,6 +25,7 @@ import {
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import TextArea from "src/components/common/Form/TextArea";
+import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
@@ -41,6 +42,12 @@ import {
 
 const REQUIRED_FIELD_TEXT = "Required";
 
+/**
+ * Text displayed when BE has identified DOI as invalid.
+ */
+const INVALID_DOI_ERROR_MESSAGE =
+  "We could not resolve this DOI. Please correct or remove it.";
+
 interface Props {
   onClose: () => void;
   editingMode?: boolean;
@@ -48,9 +55,11 @@ interface Props {
 }
 
 type Link = {
+  errorMessage?: string; // Populated by server-side errors
   id: number;
   url: string;
   linkName: string;
+  isRevalidationRequired?: boolean; // True if switching between link fields with different validation (e.g. DOI vs others).
   isValid: boolean;
   linkType: COLLECTION_LINK_TYPE;
 };
@@ -136,8 +145,7 @@ const Content: FC<Props> = (props) => {
       } = link;
 
       // DOI links are specified as path only, all other links are specified as full URLs.
-      const url =
-        linkType === COLLECTION_LINK_TYPE.DOI ? getDOIPath(linkUrl) : linkUrl;
+      const url = isLinkTypeDOI(linkType) ? getDOIPath(linkUrl) : linkUrl;
 
       return {
         id: Date.now() + index,
@@ -148,10 +156,6 @@ const Content: FC<Props> = (props) => {
       };
     }) || []
   );
-
-  // Flag indicating if DOI has been identified as invalid by the BE.
-  // TODO generalize beyond DOI link type once all links are validated on the BE.
-  const [isInvalidDOI, setIsInvalidDOI] = useState(false);
 
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
@@ -226,9 +230,21 @@ const Content: FC<Props> = (props) => {
                 {isFilterEnabled && <Title>Links</Title>}
                 {/* Fields */}
                 {links.map(
-                  ({ linkType, id, url, linkName, isValid }, index) => (
+                  (
+                    {
+                      errorMessage,
+                      linkType,
+                      id,
+                      url,
+                      linkName,
+                      isRevalidationRequired,
+                      isValid,
+                    },
+                    index
+                  ) => (
                     <LinkInput
-                      errorMessage={getLinkErrorMessage(linkType, isInvalidDOI)}
+                      doiSelected={isDOISelected()}
+                      errorMessage={errorMessage}
                       index={index}
                       linkType={linkType}
                       id={id}
@@ -237,6 +253,7 @@ const Content: FC<Props> = (props) => {
                       handleChange={handleLinkInputChange}
                       handleDelete={handleLinkInputDelete}
                       url={url}
+                      isRevalidationRequired={isRevalidationRequired}
                       isValid={isValid}
                     />
                   )
@@ -246,9 +263,7 @@ const Content: FC<Props> = (props) => {
           )}
           {/* Add metadata link button */}
           <AddLink
-            doiSelected={links.some(
-              (link) => link.linkType === COLLECTION_LINK_TYPE.DOI
-            )}
+            doiSelected={isDOISelected()}
             handleClick={handleAddLinkClick}
             Button={isFilterEnabled ? AddMetadataLinkButton : AddLinkButton}
           />
@@ -303,6 +318,14 @@ const Content: FC<Props> = (props) => {
     return payload;
   }
 
+  /**
+   * Determine if there is currently a DOI link type selected.
+   * @returns True if a DOI link type has been added to the array of links.
+   */
+  function isDOISelected(): boolean {
+    return links.some((link) => isLinkTypeDOI(link.linkType));
+  }
+
   async function submitCreateCollection() {
     const payload = createPayload();
 
@@ -317,9 +340,8 @@ const Content: FC<Props> = (props) => {
     setIsLoading(false);
 
     // Handle the case where DOI is invalid.
-    // TODO generalize beyond DOI link type once all links are validated on the BE.
     if (isInvalidDOI) {
-      setIsInvalidDOI(true);
+      setLinks(updateLinkErrors(links, true));
       return;
     }
 
@@ -345,31 +367,13 @@ const Content: FC<Props> = (props) => {
     setIsLoading(false);
 
     // Handle the case where DOI is invalid.
-    // TODO generalize beyond DOI link type once all links are validated on the BE.
-    console.log(response); // TODO(cc) remove
     const { isInvalidDOI } = response;
     if (isInvalidDOI) {
-      setIsInvalidDOI(true);
-    } else {
-      onClose();
+      setLinks(updateLinkErrors(links, true));
+      return;
     }
-  }
 
-  /**
-   * Determine if there are server-side errors for the given link type.
-   * TODO generalize beyond DOI link type once all links are validated on the BE.
-   * @param linkType - Type of link to check for associated errors.
-   * @param isInvalidDOI - True if the server has indicated the submitted DOI is invalid.
-   * @returns Error message for the given link type, if any.
-   */
-  function getLinkErrorMessage(
-    linkType: COLLECTION_LINK_TYPE,
-    isInvalidDOI: boolean
-  ): string {
-    if (linkType === COLLECTION_LINK_TYPE.DOI && isInvalidDOI) {
-      return "We could not resolve this DOI. Please correct or remove it.";
-    }
-    return "";
+    onClose();
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
@@ -386,6 +390,7 @@ const Content: FC<Props> = (props) => {
   function handleLinkInputChange({
     index,
     url,
+    isRevalidationRequired,
     isValid: isValidFromLinkInput,
     linkName,
     linkType,
@@ -393,6 +398,8 @@ const Content: FC<Props> = (props) => {
     const link = links[index];
     const newLink: Link = {
       ...link,
+      errorMessage: "", // Clear server-side errors
+      isRevalidationRequired,
       isValid: isValidFromLinkInput,
       linkName,
       linkType,
@@ -417,6 +424,25 @@ const Content: FC<Props> = (props) => {
     const newLinks = [...links, link];
 
     setLinks(newLinks);
+  }
+
+  /**
+   * Update link validation status to include server-side errors.
+   * TODO generalize beyond DOI link type once all links are validated on the BE.
+   * @param links - Current set of selected links.
+   * @param isInvalidDOI - True if the server has indicated the submitted DOI is invalid.
+   * @returns Array of links with error messages updated according to server-side errors.
+   */
+  function updateLinkErrors(links: Link[], isInvalidDOI: boolean): Link[] {
+    return links.map((link) => {
+      if (isLinkTypeDOI(link.linkType) && isInvalidDOI) {
+        return {
+          ...link,
+          errorMessage: INVALID_DOI_ERROR_MESSAGE,
+        };
+      }
+      return link;
+    });
   }
 };
 

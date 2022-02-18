@@ -14,6 +14,7 @@ import {
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
+import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import AddLink from "../AddLink";
 import {
   CloseCollectionLinkIcon,
@@ -28,6 +29,7 @@ import {
 export type LinkValue = {
   id: number;
   url: string;
+  isRevalidationRequired?: boolean; // True if switching between link fields with different validation (e.g. DOI vs others).
   isValid: boolean;
   index: number;
   linkName: string;
@@ -38,10 +40,12 @@ const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
+  doiSelected: boolean;
   errorMessage?: string; // Populated from server side errors
   handleChange: ({ id, url, isValid }: LinkValue) => void;
   id: number;
   index: number;
+  isRevalidationRequired?: boolean;
   linkName: string;
   linkType: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
@@ -50,10 +54,12 @@ interface Props {
 }
 
 const LinkInput: FC<Props> = ({
+  doiSelected,
   errorMessage,
   handleChange,
   handleDelete,
   id,
+  isRevalidationRequired,
   linkType,
   index,
   url,
@@ -89,7 +95,7 @@ const LinkInput: FC<Props> = ({
       <FormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink
-          doiSelected={false}
+          doiSelected={doiSelected}
           fill
           handleClick={handleLinkTypeChange}
           Button={LinkTypeButton}
@@ -122,6 +128,7 @@ const LinkInput: FC<Props> = ({
         defaultValue={url}
         handleChange={handleChange_}
         percentage={40} // TODO(cc) remove prop once filter feature flag is removed (#1718).
+        isRevalidationRequired={isRevalidationRequired}
       />
       <CloseCollectionLink>
         {isFilterEnabled ? (
@@ -158,9 +165,16 @@ const LinkInput: FC<Props> = ({
     });
   }
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
+    // Check if revalidation of link is required. This is only true if:
+    // 1. The current link type is DOI or the new link type is DOI (all other link types share the same validation
+    // and revalidation is therefore not required).
+    // 2. There is currently a value specified for the link URL.
+    const isRevalidationRequired =
+      !!url && (isLinkTypeDOI(linkType) || isLinkTypeDOI(newLinkType));
     handleChange({
       id,
       index,
+      isRevalidationRequired,
       isValid,
       linkName,
       linkType: newLinkType,
