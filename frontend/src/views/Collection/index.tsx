@@ -40,6 +40,7 @@ import {
 } from "./style";
 import {
   buildCollectionMetadataLinks,
+  buildCollectionMetadataLinksDeprecated,
   getIsPublishable,
   renderContact,
   renderLinks,
@@ -178,10 +179,15 @@ const Collection: FC = () => {
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
     collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE;
-  const collectionMetadataLinks = buildCollectionMetadataLinks(
+  // TODO update to use buildCollectionMetadataLinks once filter feature flag is removed (#1718).
+  const collectionMetadataLinksFn = isFilterEnabled
+    ? buildCollectionMetadataLinks
+    : buildCollectionMetadataLinksDeprecated;
+  const collectionMetadataLinks = collectionMetadataLinksFn(
     collection.links,
     collection.contact_name,
-    collection.contact_email
+    collection.contact_email,
+    collection.summaryCitation
   );
 
   const handleDeleteCollection = async () => {
