@@ -1,6 +1,9 @@
 import { IItemRendererProps } from "@blueprintjs/select";
 import { ButtonBase, Popper, Theme } from "@material-ui/core";
-import { AutocompleteCloseReason } from "@material-ui/lab";
+import {
+  AutocompleteCloseReason,
+  AutocompleteInputChangeReason,
+} from "@material-ui/lab";
 import { makeStyles } from "@material-ui/styles";
 import {
   DefaultMenuSelectOption,
@@ -250,7 +253,11 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     }
   };
 
-  const handleInput = (_, value: string, reason: AutocompleteChangeReason) => {
+  const handleInput = (
+    _,
+    value: string,
+    reason: AutocompleteInputChangeReason
+  ) => {
     if (reason === "input") setInput(value);
   };
 
@@ -307,6 +314,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           value={selectedGenes}
           onChange={handleChange}
           onInputChange={handleInput}
+          // (seve): chanzuckerberg/sci-components/issues/121
+          placeholder="Search or paste comma separated gene names"
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={handleEnter}
