@@ -1,7 +1,7 @@
 import { FormGroup, Icon, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
@@ -70,6 +70,28 @@ const Input: FC<Props> = ({
   const FormInputGroup = isFilterEnabled ? InputGroup : StyledInputGroup;
   const FormIcon = isFilterEnabled ? ErrorIcon : DangerIcon;
 
+  const handleChange_ = useCallback(() => {
+    if (!inputRef.current) return;
+
+    const value = inputRef.current.value;
+
+    const validation = syncValidation.map((validate) => validate(value));
+
+    const isSyncValid = validation.every((result) => result === true);
+
+    const errors = validation.filter((error) => error !== true) as string[];
+
+    const result = isSyncValid;
+
+    handleChange({ isValid: result, name, value });
+
+    setErrors(errors);
+
+    if (result !== isValid) {
+      setIsValid(result);
+    }
+  }, [handleChange, isValid, name, syncValidation]);
+
   // Revalidation is necessary if the link type has changed for this link to or from a DOI link type (as DOIs have
   // different validation to the other link types). Revalidation is not required when switching between link types
   // other than DOI as they share the same validation.
@@ -107,28 +129,6 @@ const Input: FC<Props> = ({
       </FormGroup>
     </FormLabel>
   );
-
-  function handleChange_() {
-    if (!inputRef.current) return;
-
-    const value = inputRef.current.value;
-
-    const validation = syncValidation.map((validate) => validate(value));
-
-    const isSyncValid = validation.every((result) => result === true);
-
-    const errors = validation.filter((error) => error !== true) as string[];
-
-    const result = isSyncValid;
-
-    handleChange({ isValid: result, name, value });
-
-    setErrors(errors);
-
-    if (result !== isValid) {
-      setIsValid(result);
-    }
-  }
 };
 
 export default Input;
