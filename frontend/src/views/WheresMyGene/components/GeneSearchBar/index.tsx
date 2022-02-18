@@ -243,7 +243,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             intent: Intent.DANGER,
             message: `Gene not found: ${gene}`,
           });
-        } else newSelectedGenes.push(newGene);
+        } else if (!newSelectedGenes.includes(newGene))
+          newSelectedGenes.push(newGene);
       });
       setPendingPaste(false);
       setOpen(false);
