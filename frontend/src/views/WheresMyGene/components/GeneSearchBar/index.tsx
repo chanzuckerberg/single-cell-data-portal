@@ -1,3 +1,4 @@
+import { Intent } from "@blueprintjs/core";
 import { IItemRendererProps } from "@blueprintjs/select";
 import { ButtonBase, Popper, Theme } from "@material-ui/core";
 import {
@@ -20,6 +21,7 @@ import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
+import Toast from "src/views/Collection/components/Toast";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
 import { Container } from "./style";
@@ -243,8 +245,10 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       pastedGenes.map((gene) => {
         const newGene = allGenes.get(gene);
         if (!newGene) {
-          //  Missing gene toast
-          console.log("Missing gene", gene);
+          Toast.show({
+            intent: Intent.DANGER,
+            message: `Gene not found: ${gene}`,
+          });
         } else newSelectedGenes.push(newGene);
       });
       setPendingPaste(false);
@@ -314,7 +318,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           value={selectedGenes}
           onChange={handleChange}
           onInputChange={handleInput}
-          // (seve): chanzuckerberg/sci-components/issues/121
+          // (seve): chanzuckerberg/sci-components#121
           placeholder="Search or paste comma separated gene names"
           disableCloseOnSelect
           disableListWrap
