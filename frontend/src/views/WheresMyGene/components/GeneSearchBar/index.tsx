@@ -1,5 +1,4 @@
 import { Intent } from "@blueprintjs/core";
-import { IItemRendererProps } from "@blueprintjs/select";
 import { ButtonBase, Popper, Theme } from "@material-ui/core";
 import {
   AutocompleteCloseReason,
@@ -133,11 +132,6 @@ const GENESETS = [
 
 interface Props {
   onGenesChange: (selectedGenes: Gene[]) => void;
-}
-
-interface ExtendedItemRendererProps extends IItemRendererProps {
-  item: Gene;
-  isSelected: boolean;
 }
 
 const ListBoxContext = createContext({});
