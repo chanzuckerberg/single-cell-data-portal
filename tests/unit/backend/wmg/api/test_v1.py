@@ -13,12 +13,12 @@ class WmgApiV1Tests(unittest.TestCase):
             self.app = app.test_client(use_cookies=False)
 
     def test__primary_filter_dimensions__returns_200(self):
-        response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
+        response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         self.assertEqual(200, response.status_code)
 
     def test__primary_filter_dimensions__returns_valid_response_body(self):
-        response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
+        response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
             snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
@@ -34,7 +34,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response_option="include_filter_dims_include_dataset_links",
         )
 
-        response = self.app.post(f"/wmg/v1/query", json=request)
+        response = self.app.post("/wmg/v1/query", json=request)
 
         self.assertEqual(200, response.status_code)
 
@@ -48,7 +48,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response_option="include_filter_dims_include_dataset_links",
         )
 
-        response = self.app.post(f"/wmg/v1/query", json=request)
+        response = self.app.post("/wmg/v1/query", json=request)
 
         expected = {
             "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
@@ -90,7 +90,7 @@ class WmgApiV1Tests(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.data))
 
     def test__query__invalid_request_returns_400(self):
-        response = self.app.post(f"/wmg/v1/query", json={})
+        response = self.app.post("/wmg/v1/query", json={})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
