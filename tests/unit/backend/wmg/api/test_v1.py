@@ -1,7 +1,5 @@
 import json
 import unittest
-import uuid
-from pprint import pprint
 
 from backend.corpora.api_server.app import app
 from backend.wmg.api import v1
@@ -23,9 +21,9 @@ class WmgApiV1Tests(unittest.TestCase):
         response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-                snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
-                organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
-                tissue_type_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
+            snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
+            organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
+            tissue_type_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
         )
 
         self.assertEqual(expected, json.loads(response.data))
@@ -89,7 +87,6 @@ class WmgApiV1Tests(unittest.TestCase):
                 "genes": [{"gene1": "gene1_label"}, {"gene2": "gene2_label"}],
             },
         }
-        pprint(expected)
         self.assertEqual(expected, json.loads(response.data))
 
     def test__query__invalid_request_returns_400(self):

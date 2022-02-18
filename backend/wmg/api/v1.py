@@ -28,7 +28,9 @@ def query():
         return dict(id=cell_type_term_id, me=me, pc=pc, n=n, tpc=tpc)
 
     def build_viz_dots(cell_type_term_ids_: List[str]) -> List[dict]:
-        return [build_viz_dot(cell_type_term_id, me=0.0, pc=0.0, n=0, tpc=0.0) for cell_type_term_id in cell_type_term_ids_]
+        return [
+            build_viz_dot(cell_type_term_id, me=0.0, pc=0.0, n=0, tpc=0.0) for cell_type_term_id in cell_type_term_ids_
+        ]
 
     def build_tissues_types(tissue_type_term_ids_: List[str]) -> Dict[str, List]:
         return dict(
