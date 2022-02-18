@@ -25,14 +25,14 @@ class WmgApiV1Tests(unittest.TestCase):
         expected = dict(
                 snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
                 organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
-                tissue_type_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
+                tissue_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
         )
 
         self.assertEqual(expected, json.loads(response.data))
 
     def test__query__minimal_valid_request_returns_200(self):
         request = dict(
-            filter=dict(gene_term_ids=["gene1"], organism_term_id="organism1", tissue_type_term_ids=["tissuetype1"]),
+            filter=dict(gene_term_ids=["gene1"], organism_term_id="organism1", tissue_term_ids=["tissuetype1"]),
             response_option="include_filter_dims_include_dataset_links",
         )
 
@@ -45,7 +45,7 @@ class WmgApiV1Tests(unittest.TestCase):
             filter=dict(
                 gene_term_ids=["gene1", "gene2"],
                 organism_term_id="organism1",
-                tissue_type_term_ids=["tissuetype1", "tissuetype2"],
+                tissue_term_ids=["tissuetype1", "tissuetype2"],
             ),
             response_option="include_filter_dims_include_dataset_links",
         )

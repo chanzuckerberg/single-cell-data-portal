@@ -961,7 +961,7 @@ paths:
                     $ref: "#/components/schemas/wmg_snapshot_id"
                   organism_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  tissue_type_terms:
+                  tissue_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
         "404":
           $ref: "#/components/responses/404"
@@ -982,13 +982,13 @@ paths:
                   required:
                     - gene_term_ids
                     - organism_term_id
-                    - tissue_type_term_ids
+                    - tissue_term_ids
                   properties:
                       gene_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       organism_term_id:
                         type: string
-                      tissue_type_term_ids:
+                      tissue_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       dataset_ids:
                         type: array
