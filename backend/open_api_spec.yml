@@ -80,16 +80,9 @@ paths:
                 type: object
                 properties:
                   collections:
-                    type: object
-                    properties:
-                      public:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/collection_with_dataset_preview"
-                      private:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/collection_with_dataset_preview"
+                    type: array
+                      items:
+                        $ref: "#/components/schemas/collection_with_dataset_preview"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -118,8 +111,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           content:
             application/json:
               type: string
