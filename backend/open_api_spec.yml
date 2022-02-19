@@ -169,35 +169,15 @@ paths:
         - $ref: "#/components/parameters/optional_query_curator_tag"
         - $ref: "#/components/parameters/optional_query_dataset_uuid"
       responses:
-        "204":
-          $ref: "#/components/responses/204"
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              type: string
         "401":
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-    get:
-      description: Fetch a Dataset.
-      security:
-        - cxguserCookie: []
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/optional_query_curator_tag"
-        - $ref: "#/components/parameters/optional_query_dataset_uuid"
-        - $ref: "#/components/parameters/query_visibility"
-      responses:
-        "200":
-          description: OK
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    dataset:
-                      $ref: "#/components/schemas/dataset"
-        "401":
-          $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
     patch:
