@@ -208,7 +208,6 @@ paths:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/optional_query_curator_tag"
         - $ref: "#components/parameters/optional_query_dataset_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       requestBody:
         content:
           application/json:
