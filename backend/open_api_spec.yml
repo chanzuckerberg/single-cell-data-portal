@@ -227,8 +227,8 @@ paths:
                 link:
                   $ref: "#/components/schemas/upload_link"
       responses:
-        "204":
-          $ref: "#/components/responses/204"
+        "202":
+          $ref: "#/components/responses/202"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -252,7 +252,6 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: false
                 properties:
                   credentials:
                     type: object
