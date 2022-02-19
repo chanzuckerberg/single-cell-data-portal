@@ -447,57 +447,6 @@ components:
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
-    collection:
-      type: object
-      required:
-        - id
-        - name
-        - visibility
-        - contact_name
-        - contact_email
-        - curator_name
-        - revised_at
-        - created_at
-        - links
-        - datasets
-      properties:
-        id:
-          $ref: "#/components/schemas/collection_uuid"
-        name:
-          type: string
-        visibility:
-          $ref: "#/components/schemas/visibility"
-        contact_name:
-          type: string
-        contact_email:
-          type: string
-        curator_name:
-          type: string
-        revised_at:
-          type: number
-        created_at:
-          type: number
-        links:
-          $ref: "#/components/schemas/links"
-        datasets:
-          type: array
-          items:
-            $ref: "#/components/schemas/dataset"
-        access_type:
-          type: string
-          enum: [READ, WRITE]
-        published_at:
-          type: number
-        description:
-          type: string
-        obfuscated_uuid:
-          type: string
-        data_submission_policy_version:
-          type: string
-        genesets:
-          type: array
-          items:
-            $ref: "#/components/schemas/gene_set"
     dataset:
       type: object
       required:
