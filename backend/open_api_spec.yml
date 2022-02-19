@@ -96,10 +96,12 @@ paths:
       responses:
         "201":
           description: Created
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/collection_uuid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection_uuid"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
 
@@ -150,6 +152,8 @@ paths:
       responses:
         "204":
           $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -157,21 +161,20 @@ paths:
 
   /curation/collections/{collection_id}/datasets:
     delete:
-      description: >
-        Delete a private Dataset. For a public Dataset, start a revision if
-        one does not exist, then delete the Dataset from the revision.
+      description: Delete a private Dataset.
       security:
         - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/optional_query_curator_tag"
         - $ref: "#/components/parameters/optional_query_dataset_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       responses:
         "204":
           $ref: "#/components/responses/204"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
     get:
@@ -219,6 +222,8 @@ paths:
       responses:
         "204":
           $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -245,6 +250,8 @@ paths:
       responses:
         "204":
           $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -757,39 +764,39 @@ components:
     202:
       description: Accepted
     204:
-      description: No content.
+      description: No content
     400:
-      description: Invalid parameter.
+      description: Invalid or missing parameter
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
     401:
-      description: Failed to authenticate.
+      description: Failed to authenticate
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
     403:
-      description: Unauthorized.
+      description: Forbidden
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
     404:
-      description: Resource not found.
+      description: Resource not found
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
     405:
-      description: Method not allowed.
+      description: Method not allowed
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
     409:
-      description: File conflict.
+      description: File conflict
       content:
         application/problem+json:
           schema:
