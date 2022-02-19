@@ -82,7 +82,59 @@ paths:
                   collections:
                     type: array
                       items:
-                        $ref: "#/components/schemas/collection_with_dataset_preview"
+                        type: object
+                          required:
+                            - id
+                            - name
+                            - visibility
+                            - contact_name
+                            - contact_email
+                            - curator_name
+                            - revised_at
+                            - created_at
+                            - links
+                            - datasets
+                          properties:
+                            id:
+                              $ref: "#/components/schemas/collection_uuid"
+                            name:
+                              type: string
+                            visibility:
+                              $ref: "#/components/schemas/visibility"
+                            contact_name:
+                              type: string
+                            contact_email:
+                              type: string
+                            curator_name:
+                              type: string
+                            revised_at:
+                              type: number
+                            created_at:
+                              type: number
+                            links:
+                              $ref: "#/components/schemas/links"
+                            datasets:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/dataset_preview"
+                            revision_of:
+                              type: string
+                              description: uuid of the public version of this Collection
+                            access_type:
+                              type: string
+                              enum: [ READ, WRITE ]
+                            published_at:
+                              type: number
+                            description:
+                              type: string
+                            obfuscated_uuid:
+                              type: string
+                            data_submission_policy_version:
+                              type: string
+                            genesets:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/gene_set"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -92,7 +144,7 @@ paths:
       requestBody:
         content:
           application/json:
-            $ref: "#/components/schemas/collection_metadata"
+            $ref: "#/components/schemas/query_collection_metadata"
       responses:
         "201":
           description: Created
@@ -134,7 +186,43 @@ paths:
           description: OK
           content:
             application/json:
-              $ref: "#/components/schemas/collection"
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - name
+                  - description
+                  - contact_name
+                  - contact_email
+                  - curator_name
+                properties:
+                  name:
+                    type: string
+                    description: name of the collection
+                  description:
+                    type: string
+                    description: description of the collection
+                  contact_name:
+                    type: string
+                    description: name of the primary person of contact for the collection
+                  contact_email:
+                    type: string
+                    description: email of contact person for the collection
+                  curator_name:
+                    type: string
+                    description: name of the curator of the collection.
+                  links:
+                    $ref: "#/components/schemas/links"
+                  published_at:
+                    type: number
+                    description: date of publication
+                  revised_at:
+                    type: number
+                    description: date of revision
+                  datasets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/dataset"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -148,7 +236,8 @@ paths:
       requestBody:
         content:
           application/json:
-            $ref: "#/components/schemas/collection_metadata"
+            schema:
+              $ref: "#/components/schemas/query_collection_metadata"
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -291,7 +380,6 @@ paths:
                       status:
                         type: string
                         enum: [FAILURE, PENDING, SUCCESS]
-                        required: true
 
 components:
   schemas:
@@ -309,39 +397,7 @@ components:
         email:
           description: The user's email
           type: string
-    collection_metadata:
-      type: object
-      additionalProperties: false
-      required:
-        - name
-        - description
-        - contact_name
-        - contact_email
-        - curator_name
-      properties:
-        name:
-          type: string
-          description: name of the collection
-        description:
-          type: string
-          description: description of the collection
-        contact_name:
-          type: string
-          description: name of the primary person of contact for the collection
-        contact_email:
-          type: string
-          description: email of contact person for the collection
-        curator_name:
-          type: string
-          description: name of the curator of the collection.
-        links:
-          $ref: "#/components/schemas/links"
-        published_at:
-          type: number
-          description: date of publication
-        revised_at:
-          type: number
-          description: date of revision
+
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
@@ -428,57 +484,6 @@ components:
         access_type:
           type: string
           enum: [READ, WRITE]
-        published_at:
-          type: number
-        description:
-          type: string
-        obfuscated_uuid:
-          type: string
-        data_submission_policy_version:
-          type: string
-        genesets:
-          type: array
-          items:
-            $ref: "#/components/schemas/gene_set"
-    collection_with_dataset_preview:
-      type: object
-      required:
-        - id
-        - name
-        - visibility
-        - contact_name
-        - contact_email
-        - curator_name
-        - revised_at
-        - created_at
-        - links
-        - datasets
-      properties:
-        id:
-          $ref: "#/components/schemas/collection_uuid"
-        name:
-          type: string
-        visibility:
-          $ref: "#/components/schemas/visibility"
-        contact_name:
-          type: string
-        contact_email:
-          type: string
-        curator_name:
-          type: string
-        revised_at:
-          type: number
-        created_at:
-          type: number
-        links:
-          $ref: "#/components/schemas/links"
-        datasets:
-          type: array
-          items:
-            $ref: "#/components/schemas/dataset_preview"
-        access_type:
-          type: string
-          enum: [ READ, WRITE ]
         published_at:
           type: number
         description:
@@ -642,6 +647,33 @@ components:
           type: string
         detail:
           type: string
+    query_collection_metadata:
+      type: object
+        additionalProperties: false
+        required:
+          - name
+          - description
+          - contact_name
+          - contact_email
+          - curator_name
+        properties:
+          name:
+            type: string
+            description: name of the collection
+          description:
+            type: string
+            description: description of the collection
+          contact_name:
+            type: string
+            description: name of the primary person of contact for the collection
+          contact_email:
+            type: string
+            description: email of contact person for the collection
+          curator_name:
+            type: string
+            description: name of the curator of the collection.
+          links:
+            $ref: "#/components/schemas/links"
     user_defined_gene_sets:
       type: object
       description: User created geneset information
