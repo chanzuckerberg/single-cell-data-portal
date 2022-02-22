@@ -31,6 +31,9 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
   },
 };
 
+// TODO(cc) remove constant and update COLLECTION_LINK_TYPE_OPTIONS.DOI text once filter feature flag is removed (#1718).
+export const COLLECTION_LINK_TYPE_OPTION_DOI_TEXT = "Publication DOI";
+
 export interface Link {
   link_name: string;
   link_url: string;

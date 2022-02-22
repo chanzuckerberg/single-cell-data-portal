@@ -19,7 +19,9 @@ import AddLink from "../AddLink";
 import {
   CloseCollectionLinkIcon,
   CollectionLink,
+  HelperText,
   IconWrapper,
+  InputAdornment as Adornment,
   LinkWrapper,
   StyledButton,
   StyledLinkTypeButton,
@@ -36,7 +38,10 @@ export type LinkValue = {
   linkType: COLLECTION_LINK_TYPE;
 };
 
+const DOI_HELPER_TEXT =
+  "A summary citation linked to this DOI will be automatically added to this collection.";
 const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
+const FILTER_ENABLED_DOI_PLACEHOLDER = "10.12345/67890123456789";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
@@ -74,6 +79,13 @@ const LinkInput: FC<Props> = ({
   const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
   const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
   const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
+  const isDoiLink = value === COLLECTION_LINK_TYPE.DOI;
+  const isFilterEnabledDoiLink = isFilterEnabled && isDoiLink;
+  const showNameField = isShowNameField(isFilterEnabled, isDoiLink);
+  const urlLeftElement = isFilterEnabledDoiLink ? (
+    <Adornment>doi:</Adornment>
+  ) : undefined;
+  const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDoiLink);
 
   // All links except DOIs are validated on the FE. DOIs are validated by the BE.
   // TODO replace syncValidation below with this definition once filter flag is removed.
@@ -91,7 +103,6 @@ const LinkInput: FC<Props> = ({
 
   return (
     <LinkInputWrapper>
-      {errorMessage}
       <FormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink
@@ -101,35 +112,40 @@ const LinkInput: FC<Props> = ({
           Button={LinkTypeButton}
         />
       </FormLabel>
-      <Input
-        name="Name"
-        // (thuang): `noNameAttr` removes this input field from the FormData and
-        // the payload
-        noNameAttr
-        optionalField={isFilterEnabled}
-        text={isFilterEnabled ? "Name" : "Name (optional)"}
-        placeholder="Name"
-        handleChange={handleNameChange}
-        defaultValue={linkName}
-        percentage={25} // TODO(cc) remove prop once filter feature flag is removed (#1718).
-      />
+      {showNameField && (
+        <Input
+          name="Name"
+          // (thuang): `noNameAttr` removes this input field from the FormData and
+          // the payload
+          noNameAttr
+          optionalField={isFilterEnabled}
+          text={isFilterEnabled ? "Name" : "Name (optional)"}
+          placeholder="Name"
+          handleChange={handleNameChange}
+          defaultValue={linkName}
+          percentage={25} // TODO(cc) remove prop once filter feature flag is removed (#1718).
+        />
+      )}
       <StyledURLInput // TODO(cc) revert to Input component once filter feature flag is removed (#1718).
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
+        leftElement={urlLeftElement}
         noNameAttr
         name={value}
         text="URL"
         syncValidation={syncValidation}
-        placeholder={
-          value === COLLECTION_LINK_TYPE.DOI
-            ? DOI_PLACEHOLDER
-            : LINK_PLACEHOLDER
-        }
+        placeholder={urlPlaceholder}
         defaultValue={url}
         handleChange={handleChange_}
         percentage={40} // TODO(cc) remove prop once filter feature flag is removed (#1718).
         isRevalidationRequired={isRevalidationRequired}
       />
+      {/* Helper text */}
+      {isFilterEnabledDoiLink && (
+        <HelperText warning={!!errorMessage}>
+          {errorMessage ? errorMessage : DOI_HELPER_TEXT}
+        </HelperText>
+      )}
       <CloseCollectionLink>
         {isFilterEnabled ? (
           <CloseCollectionLinkIcon
@@ -148,6 +164,25 @@ const LinkInput: FC<Props> = ({
       </CloseCollectionLink>
     </LinkInputWrapper>
   );
+
+  /**
+   * Returns "url" input field placeholder text.
+   * @param isFilterEnabled
+   * @param isDoiLink
+   * @returns placeholder text for the "url" input field.
+   */
+  function getUrlPlaceholder(
+    isFilterEnabled: boolean,
+    isDoiLink: boolean
+  ): string {
+    if (isDoiLink) {
+      if (isFilterEnabled) {
+        return FILTER_ENABLED_DOI_PLACEHOLDER;
+      }
+      return DOI_PLACEHOLDER;
+    }
+    return LINK_PLACEHOLDER;
+  }
 
   function handleNameChange({
     value: newLinkName,
@@ -197,6 +232,21 @@ const LinkInput: FC<Props> = ({
       linkType,
       url: value,
     });
+  }
+
+  /**
+   * Returns true if either:
+   * - filter feature flag is not enabled, or
+   * - filter feature flag is enabled and link type is not DOI.
+   * @param isFilterEnabled
+   * @param isDoiLink
+   * @returns boolean
+   */
+  function isShowNameField(isFilterEnabled: boolean, isDoiLink: boolean) {
+    if (!isFilterEnabled) {
+      return true;
+    }
+    return !isDoiLink;
   }
 };
 

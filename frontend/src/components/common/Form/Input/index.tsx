@@ -1,7 +1,14 @@
 import { FormGroup, Icon, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  ReactElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
@@ -19,6 +26,7 @@ interface Props {
   disabled?: boolean;
   handleChange: ({ isValid, value, name }: Value) => void;
   isRevalidationRequired?: boolean;
+  leftElement?: ReactElement;
   syncValidation?: Array<(value: string) => true | string>;
   noNameAttr?: boolean;
   className?: string;
@@ -45,6 +53,7 @@ const Input: FC<Props> = ({
   disabled,
   handleChange,
   isRevalidationRequired = false,
+  leftElement,
   syncValidation = [],
   noNameAttr = false,
   className,
@@ -119,6 +128,7 @@ const Input: FC<Props> = ({
           inputRef={inputRef}
           intent={(!isValid && Intent.DANGER) || undefined}
           id={name}
+          leftElement={leftElement}
           name={noNameAttr ? undefined : name}
           rightElement={(!isValid && <FormIcon />) || undefined}
           disabled={disabled}
