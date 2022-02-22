@@ -21,7 +21,7 @@ import {
   CollectionLink,
   HelperText,
   IconWrapper,
-  InputAdornment as Adornment,
+  InputPrefix,
   LinkWrapper,
   StyledButton,
   StyledLinkTypeButton,
@@ -32,6 +32,7 @@ export type LinkValue = {
   id: number;
   url: string;
   isRevalidationRequired?: boolean; // True if switching between link fields with different validation (e.g. DOI vs others).
+  isTouched?: boolean; // True if field value has been modified by user.
   isValid: boolean;
   index: number;
   linkName: string;
@@ -51,6 +52,7 @@ interface Props {
   id: number;
   index: number;
   isRevalidationRequired?: boolean;
+  isTouched?: boolean;
   linkName: string;
   linkType: COLLECTION_LINK_TYPE;
   handleDelete: (id: number) => void;
@@ -69,6 +71,7 @@ const LinkInput: FC<Props> = ({
   index,
   url,
   linkName,
+  isTouched,
   isValid,
 }) => {
   const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
@@ -79,18 +82,17 @@ const LinkInput: FC<Props> = ({
   const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
   const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
   const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
-  const isDoiLink = value === COLLECTION_LINK_TYPE.DOI;
-  const isFilterEnabledDoiLink = isFilterEnabled && isDoiLink;
-  const showNameField = isShowNameField(isFilterEnabled, isDoiLink);
-  const urlLeftElement = isFilterEnabledDoiLink ? (
-    <Adornment>doi:</Adornment>
+  const isDOI = isLinkTypeDOI(value);
+  const isFilterEnabledDOI = isFilterEnabled && isDOI;
+  const nameFieldVisible = isNameFieldVisible(isFilterEnabled, isDOI);
+  const urlPrefix = isFilterEnabledDOI ? (
+    <InputPrefix>doi:</InputPrefix>
   ) : undefined;
-  const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDoiLink);
+  const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDOI);
 
   // All links except DOIs are validated on the FE. DOIs are validated by the BE.
   // TODO replace syncValidation below with this definition once filter flag is removed.
-  const filterEnabledValidation =
-    linkType === COLLECTION_LINK_TYPE.DOI ? [] : [isValidHttpUrl];
+  const filterEnabledValidation = isDOI ? [] : [isValidHttpUrl];
 
   // Determine validation for link.
   const syncValidation = isFilterEnabled
@@ -112,7 +114,7 @@ const LinkInput: FC<Props> = ({
           Button={LinkTypeButton}
         />
       </FormLabel>
-      {showNameField && (
+      {nameFieldVisible && (
         <Input
           name="Name"
           // (thuang): `noNameAttr` removes this input field from the FormData and
@@ -129,7 +131,8 @@ const LinkInput: FC<Props> = ({
       <StyledURLInput // TODO(cc) revert to Input component once filter feature flag is removed (#1718).
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
-        leftElement={urlLeftElement}
+        leftElement={urlPrefix}
+        markAsError={!!errorMessage}
         noNameAttr
         name={value}
         text="URL"
@@ -141,7 +144,7 @@ const LinkInput: FC<Props> = ({
         isRevalidationRequired={isRevalidationRequired}
       />
       {/* Helper text */}
-      {isFilterEnabledDoiLink && (
+      {isFilterEnabledDOI && (
         <HelperText warning={!!errorMessage}>
           {errorMessage ? errorMessage : DOI_HELPER_TEXT}
         </HelperText>
@@ -201,15 +204,20 @@ const LinkInput: FC<Props> = ({
   }
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
     // Check if revalidation of link is required. This is only true if:
-    // 1. The current link type is DOI or the new link type is DOI (all other link types share the same validation
+    // 1. Filter functionality is enabled.
+    // 2. The current link type is DOI or the new link type is DOI (all other link types share the same validation
     // and revalidation is therefore not required).
-    // 2. There is currently a value specified for the link URL.
+    // 3. There is currently a value specified for the link URL, or the field has been modified by the user and is
+    // currently marked as invalid.
     const isRevalidationRequired =
-      !!url && (isLinkTypeDOI(linkType) || isLinkTypeDOI(newLinkType));
+      isFilterEnabled &&
+      (!!url || (isTouched && !isValid)) &&
+      (isLinkTypeDOI(linkType) || isLinkTypeDOI(newLinkType));
     handleChange({
       id,
       index,
       isRevalidationRequired,
+      isTouched,
       isValid,
       linkName,
       linkType: newLinkType,
@@ -224,10 +232,14 @@ const LinkInput: FC<Props> = ({
     isValid: boolean;
     value: string;
   }) {
+    // Adding special handling for filter-enabled DOI: DOI is considered invalid if not specified (that is, prevent form
+    // submit) but don't mark the input as an error.
+    const isValid = isFilterEnabledDOI ? !!value : isValidFromInput;
     handleChange({
       id,
       index,
-      isValid: isValidFromInput,
+      isTouched: true,
+      isValid,
       linkName,
       linkType,
       url: value,
@@ -242,7 +254,7 @@ const LinkInput: FC<Props> = ({
    * @param isDoiLink
    * @returns boolean
    */
-  function isShowNameField(isFilterEnabled: boolean, isDoiLink: boolean) {
+  function isNameFieldVisible(isFilterEnabled: boolean, isDoiLink: boolean) {
     if (!isFilterEnabled) {
       return true;
     }

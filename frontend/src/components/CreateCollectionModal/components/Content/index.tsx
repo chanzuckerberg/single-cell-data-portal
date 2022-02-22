@@ -60,6 +60,7 @@ type Link = {
   url: string;
   linkName: string;
   isRevalidationRequired?: boolean; // True if switching between link fields with different validation (e.g. DOI vs others).
+  isTouched?: boolean; // True if field value has been modified by user.
   isValid: boolean;
   linkType: COLLECTION_LINK_TYPE;
 };
@@ -238,6 +239,7 @@ const Content: FC<Props> = (props) => {
                       url,
                       linkName,
                       isRevalidationRequired,
+                      isTouched,
                       isValid,
                     },
                     index
@@ -254,6 +256,7 @@ const Content: FC<Props> = (props) => {
                       handleDelete={handleLinkInputDelete}
                       url={url}
                       isRevalidationRequired={isRevalidationRequired}
+                      isTouched={isTouched}
                       isValid={isValid}
                     />
                   )
@@ -391,6 +394,7 @@ const Content: FC<Props> = (props) => {
     index,
     url,
     isRevalidationRequired,
+    isTouched,
     isValid: isValidFromLinkInput,
     linkName,
     linkType,
@@ -400,6 +404,7 @@ const Content: FC<Props> = (props) => {
       ...link,
       errorMessage: "", // Clear server-side errors
       isRevalidationRequired,
+      isTouched,
       isValid: isValidFromLinkInput,
       linkName,
       linkType,

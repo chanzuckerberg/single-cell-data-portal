@@ -28,7 +28,7 @@ export const CloseCollectionLinkIcon = styled(Icon)`
   top: 0;
 `;
 
-export const InputAdornment = styled.span`
+export const InputPrefix = styled.span`
   color: ${GRAY.A};
   display: block;
   letter-spacing: -0.1px;

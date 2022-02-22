@@ -20,6 +20,7 @@ import { Value } from "../common/constants";
 import { LabelText, StyledIcon, StyledInputGroup, StyledLabel } from "./style";
 
 interface Props {
+  markAsError?: boolean; // True if input has server side errors
   name: string;
   text: string;
   percentage?: number;
@@ -47,6 +48,7 @@ const ErrorIcon = (): JSX.Element => {
 };
 
 const Input: FC<Props> = ({
+  markAsError,
   name,
   text,
   percentage = 100,
@@ -109,6 +111,13 @@ const Input: FC<Props> = ({
       handleChange_();
     }
   }, [handleChange_, isRevalidationRequired]);
+
+  // Check for server-side error messages and update error state of input if necessary.
+  useEffect(() => {
+    if (markAsError) {
+      setIsValid(false);
+    }
+  }, [markAsError]);
 
   return (
     <FormLabel htmlFor={name} {...labelProps}>
