@@ -4,7 +4,7 @@ servers:
 paths:
   /curation/auth/key:
     post:
-      summary: Generate the curator's API key
+      summary: Generate the curator's API key -- for use with Data Portal UI
       security:
         - cxguserCookie: []
       responses:
@@ -26,7 +26,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
     get:
-      summary: Fetch the identifier of the curator's active API key
+      summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       security:
         - cxguserCookie: []
       responses:
@@ -41,7 +41,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     delete:
-      summary: Delete the curator's API key
+      summary: Delete the curator's API key -- for use with Data Portal UI
       security:
         - cxguserCookie: []
       responses:
