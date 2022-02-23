@@ -4,9 +4,9 @@ import secrets
 import requests
 from flask import make_response
 
-from ....common.authorizer import CorporaAuthConfig
-from ....common.utils import json
-from ....common.utils.exceptions import NotFoundHTTPException
+from backend.corpora.common.authorizer import CorporaAuthConfig
+from backend.corpora.common.utils import json
+from backend.corpora.common.utils.exceptions import NotFoundHTTPException
 
 
 domain = CorporaAuthConfig.domain
