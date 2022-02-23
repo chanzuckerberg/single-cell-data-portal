@@ -140,7 +140,7 @@ paths:
       requestBody:
         content:
           application/json:
-            $ref: "#/components/schemas/query_collection_metadata"
+            $ref: "#/components/schemas/collection_form_metadata"
       responses:
         "201":
           description: Created
@@ -181,42 +181,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: false
-                required:
-                  - name
-                  - description
-                  - contact_name
-                  - contact_email
-                  - curator_name
-                properties:
-                  name:
-                    type: string
-                    description: name of the collection
-                  description:
-                    type: string
-                    description: description of the collection
-                  contact_name:
-                    type: string
-                    description: name of the primary person of contact for the collection
-                  contact_email:
-                    type: string
-                    description: email of contact person for the collection
-                  curator_name:
-                    type: string
-                    description: name of the curator of the collection.
-                  links:
-                    $ref: "#/components/schemas/links"
-                  published_at:
-                    type: number
-                    description: date of publication
-                  revised_at:
-                    type: number
-                    description: date of revision
-                  datasets:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/dataset"
+                allOf:
+                  - $ref: "#/components/schemas/collection_form_metadata"
+                  - type: object
+                    properties:
+                      published_at:
+                        type: number
+                        description: date of publication
+                      revised_at:
+                        type: number
+                        description: date of revision
+                      datasets:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/dataset"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -231,7 +209,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/query_collection_metadata"
+              $ref: "#/components/schemas/collection_form_metadata"
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -580,7 +558,7 @@ components:
           type: string
         detail:
           type: string
-    query_collection_metadata:
+    collection_form_metadata:
       type: object
       additionalProperties: false
       required:
