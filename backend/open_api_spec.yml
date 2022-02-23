@@ -609,19 +609,6 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_uuid"
-    path_dataset_uuid:
-      name: dataset_uuid
-      in: path
-      required: true
-      schema:
-        $ref: "#/components/schemas/dataset_uuid"
-    path_filename:
-      name: filename
-      description: The name of a file to add, remove, or download.
-      in: path
-      required: true
-      schema:
-        type: string
     query_user_uuid:
       name: user_uuid
       description: an ID that represents the user.
@@ -712,12 +699,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
-    dummyAuth:
-      type: apiKey
-      in: header
-      name: cxgpublic
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_dummy_info_func
-    APIKeyAuth:
-      type: apiKey
-      in: header
-      name: apiKey
