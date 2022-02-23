@@ -586,7 +586,7 @@ components:
         links:
           $ref: "#/components/schemas/links"
     upload_link:
-      description: A link from which to download a Dataset source file.
+      description: A user-provided link to the dataset source file.
       type: string
 
   parameters:
