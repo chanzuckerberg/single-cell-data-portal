@@ -1,14 +1,23 @@
+import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC } from "react";
+import { FC, Fragment } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
 } from "src/common/entities";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import {
+  FormLabelText as StyledLabelText,
+  SelectFormLabel,
+} from "src/components/common/Form/common/style";
 import Input from "src/components/common/Form/Input";
 import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
 import AddLink from "../AddLink";
 import {
+  CloseCollectionLinkIcon,
+  CollectionLink,
   IconWrapper,
   LinkWrapper,
   StyledButton,
@@ -51,31 +60,40 @@ const LinkInput: FC<Props> = ({
 }) => {
   const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
   const { text, value } = option;
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const LinkInputWrapper = isFilterEnabled ? CollectionLink : LinkWrapper;
+  const FormLabel = isFilterEnabled ? SelectFormLabel : StyledDiv;
+  const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
+  const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
+  const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
 
   const LinkTypeButton = () => (
-    <StyledDiv>
-      <LabelText>Type</LabelText>
-      <StyledLinkTypeButton outlined minimal={true} rightIcon="caret-down">
-        {text}
-      </StyledLinkTypeButton>
-    </StyledDiv>
+    <SelectButton fill minimal outlined rightIcon="caret-down" text={text} />
   );
 
   return (
-    <LinkWrapper>
-      <AddLink handleClick={handleLinkTypeChange} Button={LinkTypeButton} />
+    <LinkInputWrapper>
+      <FormLabel>
+        <FormLabelText>Type</FormLabelText>
+        <AddLink
+          fill
+          handleClick={handleLinkTypeChange}
+          Button={LinkTypeButton}
+        />
+      </FormLabel>
       <Input
         name="Name"
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
         noNameAttr
-        text="Name (optional)"
+        optionalField={isFilterEnabled}
+        text={isFilterEnabled ? "Name" : "Name (optional)"}
         placeholder="Name"
         handleChange={handleNameChange}
         defaultValue={linkName}
-        percentage={25}
+        percentage={25} // TODO(cc) remove prop once filter feature flag is removed (#1718).
       />
-      <StyledURLInput
+      <StyledURLInput // TODO(cc) revert to Input component once filter feature flag is removed (#1718).
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
         noNameAttr
@@ -89,17 +107,25 @@ const LinkInput: FC<Props> = ({
         }
         defaultValue={url}
         handleChange={handleChange_}
-        percentage={40}
+        percentage={40} // TODO(cc) remove prop once filter feature flag is removed (#1718).
       />
-      <IconWrapper>
-        <StyledButton
-          minimal
-          color={GRAY.A}
-          icon={IconNames.CROSS}
-          onClick={() => handleDelete(id)}
-        />
-      </IconWrapper>
-    </LinkWrapper>
+      <CloseCollectionLink>
+        {isFilterEnabled ? (
+          <CloseCollectionLinkIcon
+            color={GRAY.A}
+            icon={IconNames.CROSS}
+            onClick={() => handleDelete(id)}
+          />
+        ) : (
+          <StyledButton
+            minimal
+            color={GRAY.A}
+            icon={IconNames.CROSS}
+            onClick={() => handleDelete(id)}
+          />
+        )}
+      </CloseCollectionLink>
+    </LinkInputWrapper>
   );
 
   function handleNameChange({

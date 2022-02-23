@@ -84,7 +84,9 @@ export interface Collection {
   created_at: number;
   updated_at: number;
   has_revision: boolean;
+  publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
+  summaryCitation?: string;
   tombstone?: boolean;
 }
 

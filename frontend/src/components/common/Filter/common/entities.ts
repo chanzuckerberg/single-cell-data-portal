@@ -143,6 +143,7 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
   publisher_metadata?: PublisherMetadata; // Collection publication metadata
   recency: number; // Used by sort
   revised_at?: number;
+  summaryCitation: string;
 }
 
 /**
