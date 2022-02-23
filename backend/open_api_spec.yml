@@ -23,8 +23,10 @@ paths:
                     required: true
         "401":
           $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
     get:
-      summary: Fetch the identifier of the curator's active API keys
+      summary: Fetch the identifier of the curator's active API key
       security:
         - cxguserCookie: []
       responses:
