@@ -1,9 +1,6 @@
 import { Intent } from "@blueprintjs/core";
 import { ButtonBase, Popper, Theme } from "@material-ui/core";
-import {
-  AutocompleteCloseReason,
-  AutocompleteInputChangeReason,
-} from "@material-ui/lab";
+import { AutocompleteCloseReason } from "@material-ui/lab";
 import { makeStyles } from "@material-ui/styles";
 import {
   DefaultMenuSelectOption,
@@ -136,6 +133,9 @@ const GENESETS = [
   ],
 ];
 
+const LISTBOX_ITEM_HEIGHT_PX = 32;
+const LISTBOX_HEIGHT_PX = 152;
+
 interface Props {
   onGenesChange: (selectedGenes: Gene[]) => void;
 }
@@ -158,8 +158,6 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
   function ListboxComponent(props, ref) {
     const { children, ...other } = props;
 
-    const itemHeight = 32;
-    const height = 152;
     const itemData = React.Children.toArray(children);
     const itemCount = itemData.length;
 
@@ -167,10 +165,10 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
       <div ref={ref}>
         <ListBoxContext.Provider value={other}>
           <FixedSizeList
-            height={height}
+            height={LISTBOX_HEIGHT_PX}
             itemCount={itemCount}
             outerElementType={OuterElementType}
-            itemSize={itemHeight}
+            itemSize={LISTBOX_ITEM_HEIGHT_PX}
             width="100%"
             overscanCount={10}
             itemData={itemData}
@@ -261,14 +259,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     }
   };
 
-  const handleInput = (
-    _,
-    value: string,
-    reason: AutocompleteInputChangeReason
-  ) => {
-    if (reason === "input") setInput(value);
-  };
-
   const useStyles = makeStyles((theme: Theme) => {
     const colors = getColors({ theme });
     const shadows = getShadows({ theme });
@@ -321,7 +311,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           }}
           value={selectedGenes}
           onChange={handleChange}
-          onInputChange={handleInput}
+          onInputChange={(_, value, reason) => {
+            if (reason === "input") setInput(value);
+          }}
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={handleEnter}
