@@ -53,6 +53,9 @@ paths:
   /curation/auth/token:
     post:
       summary: Generate an access token
+      description: >-
+        Returns a bearer access token that must be passed as a parameter to requests that
+        require authorization such as creating a new Collection.
       security:
         - apiKey: []
       responses:
@@ -70,7 +73,7 @@ paths:
 
   /curation/collections:
     get:
-      description: Fetch all Collections metadata. Authentication required for private collections.
+      description: Fetch all Collections metadata. Authorization required for private collections.
       security:
         - cxguserCookieLenient: []
       parameters:
