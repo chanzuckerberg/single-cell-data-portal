@@ -408,80 +408,62 @@ components:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
     dataset:
-      type: object
-      required:
-        - id
-        - curator_tag
-        - name
-        - revision
-        - collection_id
-        - collection_visibility
-        - revised_at
-        - is_primary_data
-        - X_normalization
-        - dataset_assets
-        - tombstone
-        - assay
-        - organism
-        - tissue
-      properties:
-        id:
-          $ref: "#/components/schemas/dataset_uuid"
-        curator_tag:
-          $ref: "#/components/schemas/curator_tag"
-        name:
-          type: string
-        revision:
-          type: integer
-        collection_id:
-          $ref: "#/components/schemas/collection_uuid"
-        collection_visibility:
-          $ref: "#/components/schemas/visibility"
-        revised_at:
-          type: number
-        is_primary_data:
-          $ref: "#/components/schemas/is_primary_data"
-        X_normalization:
-          type: string
-        dataset_assets:
-          type: array
-          items:
-            $ref: "#/components/schemas/dataset_asset"
-        tombstone:
-          type: boolean
-        assay:
-          $ref: "#/components/schemas/ontology_element_array"
-        organism:
-          $ref: "#/components/schemas/ontology_element_array"
-        tissue:
-          $ref: "#/components/schemas/ontology_element_array"
-        disease:
-          $ref: "#/components/schemas/ontology_element_array"
-        sex:
-          $ref: "#/components/schemas/ontology_element_array"
-        ethnicity:
-          $ref: "#/components/schemas/ontology_element_array"
-        development_stage:
-          $ref: "#/components/schemas/ontology_element_array"
-        dataset_deployments:
-          type: array
-          items:
-            type: object
-            properties:
-              url:
+      allOf:
+        - $ref: "#/components/schemas/dataset_preview"
+        - type: object
+          required:
+            - name
+            - revision
+            - collection_id
+            - collection_visibility
+            - revised_at
+            - is_primary_data
+            - X_normalization
+            - dataset_assets
+          properties:
+            name:
+              type: string
+            revision:
+              type: integer
+            collection_id:
+              $ref: "#/components/schemas/collection_uuid"
+            collection_visibility:
+              $ref: "#/components/schemas/visibility"
+            revised_at:
+              type: number
+            is_primary_data:
+              $ref: "#/components/schemas/is_primary_data"
+            X_normalization:
+              type: string
+            dataset_assets:
+              type: array
+              items:
+                $ref: "#/components/schemas/dataset_asset"
+            sex:
+              $ref: "#/components/schemas/ontology_element_array"
+            ethnicity:
+              $ref: "#/components/schemas/ontology_element_array"
+            development_stage:
+              $ref: "#/components/schemas/ontology_element_array"
+            dataset_deployments:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+            linked_genesets:
+              type: array
+              items:
                 type: string
-        linked_genesets:
-          type: array
-          items:
-            type: string
-        cell_type:
-          $ref: "#/components/schemas/ontology_element_array"
-        cell_count:
-          type: integer
-        X_approximate_distribution:
-          $ref: "#/components/schemas/distribution"
-        schema_version:
-          type: string
+            cell_type:
+              $ref: "#/components/schemas/ontology_element_array"
+            cell_count:
+              type: integer
+            X_approximate_distribution:
+              $ref: "#/components/schemas/distribution"
+            schema_version:
+              type: string
     dataset_preview:
       type: object
       required:
