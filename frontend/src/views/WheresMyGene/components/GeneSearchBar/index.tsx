@@ -14,7 +14,13 @@ import {
 } from "czifui";
 import pull from "lodash/pull";
 import uniq from "lodash/uniq";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -228,16 +234,19 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     setPendingPaste(true);
   };
 
+  const genesByName = useMemo(() => {
+    return genes.reduce((acc, gene) => {
+      return acc.set(gene.name, gene);
+    }, new Map<Gene["name"], Gene>());
+  }, [genes]);
+
   const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && pendingPaste) {
       event.preventDefault();
       const newSelectedGenes = [...selectedGenes];
       const pastedGenes = pull(uniq(input.split(/[ ,]+/)), "");
-      const allGenes = genes.reduce((acc, gene) => {
-        return acc.set(gene.name, gene);
-      }, new Map<Gene["name"], Gene>());
       pastedGenes.map((gene) => {
-        const newGene = allGenes.get(gene);
+        const newGene = genesByName.get(gene);
         if (!newGene) {
           Toast.show({
             intent: Intent.DANGER,
@@ -313,8 +322,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           value={selectedGenes}
           onChange={handleChange}
           onInputChange={handleInput}
-          // (seve): chanzuckerberg/sci-components#121
-          placeholder="Search or paste comma separated gene names"
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={handleEnter}
@@ -325,8 +332,10 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             >
           }
           renderOption={(option) => option.name}
-          // DHRS9, PDSS2, APOD
           onPaste={handlePaste}
+          InputBaseProps={{
+            placeholder: "Search or paste comma separated gene names",
+          }}
         />
       </Popper>
     </Container>
