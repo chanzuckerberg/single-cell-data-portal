@@ -168,8 +168,6 @@ paths:
               type: string
         "401":
           $ref: "#/components/responses/401"
-        "404":
-          $ref: "#/components/responses/404"
     get:
       description: Fetch Collection metadata and associated Datasets, public and private.
       security:
