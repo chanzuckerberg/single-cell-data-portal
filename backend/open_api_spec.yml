@@ -149,7 +149,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/collection_uuid"
         "400":
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
 
@@ -240,7 +240,7 @@ paths:
         "201":
           $ref: "#/components/responses/201"
         "400":
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -289,7 +289,7 @@ paths:
         "204":
           $ref: "#/components/responses/204"
         "400":
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -317,7 +317,7 @@ paths:
         "202":
           $ref: "#/components/responses/202"
         "400":
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -674,6 +674,21 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
+    400_multiple:
+      description: Invalid or missing parameters
+      content:
+        application/problem+json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the errant parameter
+                reason:
+                  type: string
+                  description: the specific problem with the parameter
     401:
       description: Failed to authenticate
       content:
