@@ -433,7 +433,7 @@ const Content: FC<Props> = (props) => {
 
   /**
    * Update link validation status to include server-side errors.
-   * TODO generalize beyond DOI link type once all links are validated on the BE.
+   * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
    * @param links - Current set of selected links.
    * @param isInvalidDOI - True if the server has indicated the submitted DOI is invalid.
    * @returns Array of links with error messages updated according to server-side errors.

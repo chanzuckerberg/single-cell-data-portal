@@ -4,6 +4,7 @@ import {
   Collection,
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
+  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
   Dataset,
   DATASET_ASSET_FORMAT,
   Link,
@@ -134,9 +135,12 @@ function buildDoiMetadataLink(
     return;
   }
 
-  // If there's no summary citation for the collection, return the DOI link as is..
+  // If there's no summary citation for the collection, return the DOI link with the label "DOI".
   if (!summaryCitation) {
-    return doiMetadataLink;
+    return {
+      ...doiMetadataLink,
+      label: "DOI",
+    };
   }
 
   // There's a summary citation link for the collection, update DOI link display.
@@ -166,14 +170,14 @@ export function renderLinks(links: Link[]): (JSX.Element | null)[] {
 
   return orderedLinks.map(
     ({ link_url: url, link_type: type, link_name: name }) => {
-      const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS[type];
+      const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[type];
 
       if (!linkTypeOption) return null;
 
       let urlName: string | null = name;
 
       if (!urlName) {
-        if (linkTypeOption === COLLECTION_LINK_TYPE_OPTIONS["DOI"]) {
+        if (linkTypeOption === COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED["DOI"]) {
           urlName = getDOIPath(url);
         } else {
           urlName = getUrlHost(url);

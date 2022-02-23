@@ -4,6 +4,7 @@ import { FC, Fragment } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
+  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
 } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
@@ -74,9 +75,11 @@ const LinkInput: FC<Props> = ({
   isTouched,
   isValid,
 }) => {
-  const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
-  const { text, value } = option;
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const option = isFilterEnabled
+    ? COLLECTION_LINK_TYPE_OPTIONS[linkType]
+    : COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[linkType];
+  const { text, value } = option;
   const LinkInputWrapper = isFilterEnabled ? CollectionLink : LinkWrapper;
   const FormLabel = isFilterEnabled ? SelectFormLabel : StyledDiv;
   const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
@@ -125,10 +128,10 @@ const LinkInput: FC<Props> = ({
           placeholder="Name"
           handleChange={handleNameChange}
           defaultValue={linkName}
-          percentage={25} // TODO(cc) remove prop once filter feature flag is removed (#1718).
+          percentage={25} // TODO remove prop once filter feature flag is removed (#1718).
         />
       )}
-      <StyledURLInput // TODO(cc) revert to Input component once filter feature flag is removed (#1718).
+      <StyledURLInput // TODO revert to Input component once filter feature flag is removed (#1718).
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
         leftElement={urlPrefix}
@@ -140,7 +143,7 @@ const LinkInput: FC<Props> = ({
         placeholder={urlPlaceholder}
         defaultValue={url}
         handleChange={handleChange_}
-        percentage={40} // TODO(cc) remove prop once filter feature flag is removed (#1718).
+        percentage={40} // TODO remove prop once filter feature flag is removed (#1718).
         isRevalidationRequired={isRevalidationRequired}
       />
       {/* Helper text */}
@@ -202,17 +205,17 @@ const LinkInput: FC<Props> = ({
       url,
     });
   }
+
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
-    // Check if revalidation of link is required. This is only true if:
-    // 1. Filter functionality is enabled.
-    // 2. The current link type is DOI or the new link type is DOI (all other link types share the same validation
-    // and revalidation is therefore not required).
-    // 3. There is currently a value specified for the link URL, or the field has been modified by the user and is
-    // currently marked as invalid.
-    const isRevalidationRequired =
-      isFilterEnabled &&
-      (!!url || (isTouched && !isValid)) &&
-      (isLinkTypeDOI(linkType) || isLinkTypeDOI(newLinkType));
+    // Check if revalidation of link is required.
+    const isRevalidationRequired = isRevalidationRequired_(
+      isFilterEnabled,
+      url,
+      linkType,
+      newLinkType,
+      isValid,
+      isTouched
+    );
     handleChange({
       id,
       index,
@@ -275,6 +278,49 @@ export function isDOILink(
 
     return isValid || "Please enter a valid DOI link";
   };
+}
+
+/**
+ * Determine if validation of field needs to be executed on change on link type.  This is only true if:
+ * 1. Filter functionality is enabled.
+ * 2. The current link type is DOI or the new link type is DOI (all other link types share the same validation
+ * and revalidation is therefore not required).
+ * 3. There is currently a value specified for the link URL, or the field has been modified by the user and is
+ * currently marked as invalid.
+ * @param isFilterEnabled - True if filter flag is enabled.
+ * @param url - URL specified by user.
+ * @param linkType - Currently selected link type.
+ * @param newLinkType - Link type to switch to.
+ * @param isValid - True if field is currently marked as valid
+ * @param isTouched - True if field value has been modified by user.
+ * @returns True if re-validation is required.
+ */
+function isRevalidationRequired_(
+  isFilterEnabled: boolean,
+  url: string,
+  linkType: COLLECTION_LINK_TYPE,
+  newLinkType: COLLECTION_LINK_TYPE,
+  isValid: boolean,
+  isTouched = false
+): boolean {
+  // Revalidation is only required for filter-related functionality.
+  if (!isFilterEnabled) {
+    return false;
+  }
+
+  // If neither the current link type nor new link type is DOI, revalidation is not required.
+  const isCurrentLinkTypeDOI = isLinkTypeDOI(linkType);
+  if (!isCurrentLinkTypeDOI && !isLinkTypeDOI(newLinkType)) {
+    return false;
+  }
+
+  // Revalidation is not required if current link type is a DOI and there is no value specified.
+  if (isCurrentLinkTypeDOI && !url) {
+    return false;
+  }
+
+  // Revalidate if there is a URL or if the field has been modified and is invalid.
+  return !!url || (isTouched && !isValid);
 }
 
 function isValidHttpUrl(url: string): true | string {

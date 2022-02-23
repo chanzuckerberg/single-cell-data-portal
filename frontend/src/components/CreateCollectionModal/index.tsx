@@ -4,7 +4,10 @@ import * as React from "react";
 import { FC, useState } from "react";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
 import { Collection } from "src/common/entities";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
+import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
 
@@ -15,11 +18,10 @@ const AsyncContent = loadable(
     )
 );
 
-// TODO(cc) reenable
-// const AsyncCTA = loadable(
-//   () =>
-//     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
-// );
+const AsyncCTA = loadable(
+  () =>
+    /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
+);
 
 const CreateCollectionButton = (props: Partial<IButtonProps>) => (
   <StyledButton {...props}>Create Collection</StyledButton>
@@ -30,32 +32,33 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
-  // const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE; // TODO(cc) reenable
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
 
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
-  // const { data: userInfo, isLoading } = useUserInfo(isCurator); // TODO(cc) reenable
+  const { data: userInfo, isLoading } = useUserInfo(isCurator);
 
-  // if (!isCurator || isLoading) { // TODO(cc) reenable
-  //   return null;
-  // }
+  if (!isCurator || isLoading) {
+    return null;
+  }
 
-  const config = /*userInfo?.name // TODO(cc) reenable
-    ? */ {
-    canEscapeKeyClose: false,
-    canOutsideClickClose: false,
-    content: AsyncContent,
-  };
-  /* : {
+  const config = userInfo?.name
+    ? {
+        canEscapeKeyClose: false,
+        canOutsideClickClose: false,
+        content: AsyncContent,
+      }
+    : {
         canEscapeKeyClose: true,
         canOutsideClickClose: true,
         content: AsyncCTA,
         isCloseButtonShown: true,
         title: "Create an account or sign-in to get started",
-      }*/ const OpenDialogButton = Button || CreateCollectionButton;
+      };
+  const OpenDialogButton = Button || CreateCollectionButton;
 
   return (
     <>
@@ -65,8 +68,8 @@ const CreateCollection: FC<{
         {...{ className }}
       />
       <Dialog
-        // isCloseButtonShown={config.isCloseButtonShown} TODO(cc) reenable
-        // title={config.title} // TODO(cc) reenable
+        isCloseButtonShown={config.isCloseButtonShown}
+        title={config.title}
         isOpen={isOpen}
         onClose={toggleOpen}
         canEscapeKeyClose={config.canEscapeKeyClose}

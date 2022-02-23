@@ -7,7 +7,11 @@ export enum COLLECTION_LINK_TYPE {
   DATA_SOURCE = "DATA_SOURCE",
 }
 
-export const COLLECTION_LINK_TYPE_OPTIONS = {
+/**
+ * @deprecated Merge into COLLECTION_LINK_TYPE_OPTIONS once filter feature flag is removed (specifically, update DOI
+ * text from "DOI" to "Publication DOI"). (#1718)
+ */
+export const COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED = {
   [COLLECTION_LINK_TYPE.DOI]: { text: "DOI", value: COLLECTION_LINK_TYPE.DOI },
   [COLLECTION_LINK_TYPE.RAW_DATA]: {
     text: "Raw Data",
@@ -31,8 +35,16 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
   },
 };
 
-// TODO(cc) remove constant and update COLLECTION_LINK_TYPE_OPTIONS.DOI text once filter feature flag is removed (#1718).
-export const COLLECTION_LINK_TYPE_OPTION_DOI_TEXT = "Publication DOI";
+/**
+ * Options backing link type menu, used when associating links with collection.
+ */
+export const COLLECTION_LINK_TYPE_OPTIONS = {
+  ...COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
+  [COLLECTION_LINK_TYPE.DOI]: {
+    text: "Publication DOI",
+    value: COLLECTION_LINK_TYPE.DOI,
+  },
+};
 
 export interface Link {
   link_name: string;
