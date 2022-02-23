@@ -1,4 +1,5 @@
 import { Intent } from "@blueprintjs/core";
+import { DefaultMenuSelectOption } from "czifui";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { API } from "src/common/API";
@@ -20,7 +21,13 @@ import {
   selectGenes,
   tissueCellTypesFetched,
 } from "./common/store/actions";
-import { CellTypeSummary, Gene, GeneExpressionSummary } from "./common/types";
+import {
+  CellTypeSummary,
+  Filters as IFilters,
+  Gene,
+  GeneExpressionSummary,
+} from "./common/types";
+import Filters from "./components/Filters";
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import HeatMap from "./components/HeatMap";
@@ -28,6 +35,7 @@ import { Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [filters, setFilters] = useState<IFilters>(EMPTY_OBJECT);
 
   const { selectedGenes, selectedCellTypeIds } = state;
 
@@ -142,6 +150,16 @@ const WheresMyGene = (): JSX.Element => {
     }
   }, [dispatch]);
 
+  const handleFiltersChange = useCallback(
+    (key: keyof IFilters, options: DefaultMenuSelectOption[] | null) => {
+      setFilters((currentFilters) => ({
+        ...currentFilters,
+        [key]: options,
+      }));
+    },
+    []
+  );
+
   return (
     <DispatchContext.Provider value={dispatch}>
       <StateContext.Provider value={state}>
@@ -150,15 +168,10 @@ const WheresMyGene = (): JSX.Element => {
         </Head>
 
         <SideBar label="Filters" isOpen>
-          <span>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
-            vero rem itaque labore praesentium iure exercitationem minus iste
-            laudantium sed aliquid.
-          </span>
+          <Filters filters={filters} onFiltersChange={handleFiltersChange} />
         </SideBar>
 
-        <SideBar label="Filters" isOpen position={Position.RIGHT}>
+        <SideBar label="Info" isOpen position={Position.RIGHT}>
           <span>
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
             autem deserunt assumenda repudiandae repellat quis sunt quae, aut
