@@ -86,7 +86,7 @@ const LinkInput: FC<Props> = ({
   const isFilterEnabledDOI = isFilterEnabled && isDOI;
   const nameFieldVisible = isNameFieldVisible(isFilterEnabled, isDOI);
   const urlPrefix = isFilterEnabledDOI ? (
-    <InputPrefix>doi:</InputPrefix>
+    <InputPrefix warning={!!errorMessage}>doi:</InputPrefix>
   ) : undefined;
   const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDOI);
 

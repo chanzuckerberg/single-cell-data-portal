@@ -28,8 +28,8 @@ export const CloseCollectionLinkIcon = styled(Icon)`
   top: 0;
 `;
 
-export const InputPrefix = styled.span`
-  color: ${GRAY.A};
+export const InputPrefix = styled.span<Props>`
+  color: ${(props) => (props.warning ? RED.C : GRAY.A)};
   display: block;
   letter-spacing: -0.1px;
   line-height: 18px;
