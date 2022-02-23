@@ -33,7 +33,7 @@ interface Props {
   selectedGeneData: GeneExpressionSummary[];
   setIsLoading: Dispatch<
     SetStateAction<{
-      lung: boolean;
+      [tissue: Tissue]: boolean;
     }>
   >;
   tissue: Tissue;

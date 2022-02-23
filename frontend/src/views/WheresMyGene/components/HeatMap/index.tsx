@@ -1,7 +1,11 @@
 import { Intent, Spinner } from "@blueprintjs/core";
 import { memo, useEffect, useMemo, useState } from "react";
 import { State } from "../../common/store";
-import { CellTypeSummary, GeneExpressionSummary } from "../../common/types";
+import {
+  CellTypeSummary,
+  GeneExpressionSummary,
+  Tissue,
+} from "../../common/types";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
@@ -9,10 +13,10 @@ import { ChartWrapper, Container, Loader, YAxisWrapper } from "./style";
 import { getHeatmapHeight, X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
-  cellTypes: { [tissue: string]: CellTypeSummary[] };
+  cellTypes: { [tissue: Tissue]: CellTypeSummary[] };
   genes: State["selectedGenes"];
   tissuesWithDeletedCellTypes: string[];
-  allTissueCellTypes: { [tissue: string]: CellTypeSummary[] };
+  allTissueCellTypes: { [tissue: Tissue]: CellTypeSummary[] };
   selectedGeneData: GeneExpressionSummary[];
 }
 
@@ -84,7 +88,7 @@ export default memo(function HeatMap({
   );
 });
 
-function isAnyTissueLoading(isLoading: { [tissue: string]: boolean }) {
+function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
   return Object.values(isLoading).some((isLoading) => isLoading);
 }
 

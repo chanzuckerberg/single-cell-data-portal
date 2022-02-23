@@ -26,6 +26,7 @@ import {
   Filters as IFilters,
   Gene,
   GeneExpressionSummary,
+  Tissue,
 } from "./common/types";
 import Filters from "./components/Filters";
 import GeneFetcher from "./components/GeneFetcher";
@@ -52,14 +53,14 @@ const WheresMyGene = (): JSX.Element => {
    * This holds ALL the cell type data we have loaded from the API
    */
   const [cellTypes, setCellTypes] =
-    useState<{ [tissue: string]: CellTypeSummary[] }>(EMPTY_OBJECT);
+    useState<{ [tissue: Tissue]: CellTypeSummary[] }>(EMPTY_OBJECT);
 
   /**
    * This holds only the CellTypeSummary objects that are currently selected in
    * `state.selectedCellTypeIds`.
    */
   const selectedCellTypes = useMemo(() => {
-    const result: { [tissue: string]: CellTypeSummary[] } = {};
+    const result: { [tissue: Tissue]: CellTypeSummary[] } = {};
 
     for (const [tissue, selectedIds] of Object.entries(selectedCellTypeIds)) {
       for (const selectedId of selectedIds) {
