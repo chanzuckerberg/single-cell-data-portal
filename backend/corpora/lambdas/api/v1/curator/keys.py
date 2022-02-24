@@ -1,5 +1,5 @@
-import string
 import secrets
+import string
 
 import requests
 from flask import make_response
@@ -7,40 +7,36 @@ from flask import make_response
 from backend.corpora.common.authorizer import CorporaAuthConfig
 from backend.corpora.common.utils import json
 from backend.corpora.common.utils.exceptions import NotFoundHTTPException
+from backend.corpora.common.utils.singleton import Singleton
 
 
-domain = CorporaAuthConfig.domain
+class Auth0ManagementSession(metaclass=Singleton):
 
+    def __init__(self, domain: str = None):
+        self.domain = domain if domain else CorporaAuthConfig.domain
+        session = requests.Session()
 
-class Auth0ManagementSession:
-    session = None
+        def _refresh_token(r, *args, **kwargs):
+            if r.status_code == 401:
+                token = Auth0ManagementSession.get_auth0_management_token()
+                session.headers.update({"Authorization": token})
+                r.request.headers["Authorization"] = session.headers["Authorization"]
+                return session.send(r.request)
 
-    def __init__(self):
-        if not self.session:
-            session = requests.Session()
-
-            def refresh_token(r, *args, **kwargs):
-                if r.status_code == 401:
-                    token = Auth0ManagementSession.get_auth0_management_token()
-                    session.headers.update({"Authorization": token})
-                    r.request.headers["Authorization"] = session.headers["Authorization"]
-                    return session.send(r.request)
-
-            session.hooks["response"].append(refresh_token)
-            self.session = session
+        session.hooks["response"].append(_refresh_token)
+        self.session = session
 
     def __getattr__(self, item):
         return getattr(self, item, getattr(self.session, item))
 
-    @staticmethod
-    def get_auth0_management_token() -> str:
+    def get_auth0_management_token(self) -> str:
         ## Generate management token
         payload = json.dumps(
             dict(
                 client_id=CorporaAuthConfig.mgmt_client_id,
                 client_secret=CorporaAuthConfig.mgmt_client_secret,
                 grant_type="client_credentials",
-                audience=f"https://{domain}/api/v2/",
+                audience=f"https://{self.domain}/api/v2/",
             )
         )
         headers = {
@@ -48,7 +44,7 @@ class Auth0ManagementSession:
             "content-type": "application/json",
         }
 
-        response = requests.post(f"https://{domain}/oauth/token", data=payload, headers=headers)
+        response = requests.post(f"https://{self.domain}/oauth/token", data=payload, headers=headers)
         token = response.json()
         return "{} {}".format(token["token_type"], token["access_token"])
 
@@ -93,9 +89,9 @@ class Auth0ManagementSession:
         response = self.session.post(f"https://{domain}/api/v2/users/{user}/identities", data=payload)
         response.raise_for_status()
 
-    def generate_access_token(self, user_name: str, password: str) -> None:
+    def generate_access_token(self, user_name: str, password: str) -> dict:
         response = self.session.post(
-            f"https://{CorporaAuthConfig.domain}/oauth/token",
+            f"https://{self.domain}/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
             data=dict(
                 grant_type="http://auth0.com/oauth/grant-type/password-realm",
