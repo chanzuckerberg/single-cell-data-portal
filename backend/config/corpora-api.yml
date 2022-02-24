@@ -548,7 +548,13 @@ paths:
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
-                    created_at:
+                    name: 
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                    revised_at:
                       type: number
         "400":
           $ref: "#/components/responses/400"
@@ -1040,6 +1046,8 @@ components:
           type: string
         data_submission_policy_version:
           type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         datasets:
           type: array
           items:
@@ -1048,6 +1056,36 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/gene_set"
+    publisher_metadata:
+      type: object
+      required:
+        - authors
+        - is_preprint
+        - journal
+        - published_year
+      properties:
+        authors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              given:
+                type: string
+              family:
+                type: string
+        is_preprint:
+          type: boolean
+        journal:
+          type: string
+        published_day:
+          type: number
+        published_month:
+          type: number
+        published_year:
+          type: number
+
     ontology_element:
       type: object
       properties:
