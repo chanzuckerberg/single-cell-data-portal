@@ -215,13 +215,19 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
-  const handleClose = (_, reason: AutocompleteCloseReason) => {
+  const handleClose = (
+    _: React.ChangeEvent<Record<string, never>>,
+    reason: AutocompleteCloseReason
+  ) => {
     if (reason === "toggleInput") {
       return;
     }
     setOpen(false);
   };
-  const handleChange = (_, newValue: DefaultMenuSelectOption[] | null) => {
+  const handleChange = (
+    _: React.ChangeEvent<Record<string, never>>,
+    newValue: DefaultMenuSelectOption[] | null
+  ) => {
     return setSelectedGenes(newValue as Gene[]);
   };
   const handleClick = () => {
@@ -311,9 +317,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           }}
           value={selectedGenes}
           onChange={handleChange}
-          onInputChange={(_, value, reason) => {
-            if (reason === "input") setInput(value);
-          }}
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={handleEnter}
@@ -326,6 +329,11 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           renderOption={(option) => option.name}
           onPaste={handlePaste}
           InputBaseProps={{
+            onChange: (
+              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+            ) => {
+              setInput(event.target.value);
+            },
             placeholder: "Search or paste comma separated gene names",
           }}
         />
