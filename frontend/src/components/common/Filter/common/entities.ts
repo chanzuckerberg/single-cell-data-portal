@@ -21,6 +21,7 @@ export interface CategoryConfig {
  * Possible types of category filters, matches React Table's filter types.
  */
 export enum CATEGORY_FILTER_TYPE {
+  "BETWEEN" = "between",
   "INCLUDES_SOME" = "includesSome",
 }
 
@@ -29,6 +30,7 @@ export enum CATEGORY_FILTER_TYPE {
  */
 export enum CATEGORY_KEY {
   "ASSAY" = "assay",
+  "CELL_COUNT" = "cell_count",
   "CELL_TYPE" = "cell_type",
   "DISEASE" = "disease",
   "IS_PRIMARY_DATA" = "is_primary_data",
@@ -47,6 +49,11 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
     categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+  },
+  {
+    categoryKey: CATEGORY_KEY.CELL_COUNT,
+    categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    multiselect: false,
   },
   {
     categoryKey: CATEGORY_KEY.CELL_TYPE,
@@ -106,15 +113,6 @@ export const CATEGORY_CONFIGS_BY_CATEGORY_KEY: KeyedCategoryConfigs =
   );
 
 /**
- * Metadata values grouped by metadata key.
- */
-export interface CategoryView {
-  key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
-  values: CategoryValueView[];
-}
-
-/**
  * "value" prop passed to react-table's Cell function
  */
 export type CellPropsValue<T> = { value: CellValue<T> };
@@ -131,6 +129,11 @@ export interface Categories {
   sex: Ontology[];
   tissue: Ontology[];
 }
+
+/**
+ * View model of category.
+ */
+export type CategoryView = RangeCategoryView | SelectCategoryView;
 
 /**
  * Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
@@ -152,16 +155,6 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
 export type CategoryValueKey = string;
 
 /**
- * View model of metadata value, selected state and count.
- */
-export interface CategoryValueView {
-  count: number;
-  key: CategoryValueKey;
-  label: string;
-  selected: boolean;
-}
-
-/**
  * Join of dataset and collection information, optimized for filtering datasets.
  */
 export interface DatasetRow extends Categories, PublisherMetadataCategories {
@@ -181,16 +174,16 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
  * Function returns filtered category values when category key contains filter category input value.
  */
 export type FilterCategoryValuesFn = (
-  values: CategoryValueView[],
+  values: SelectCategoryValueView[],
   searchValue: string
-) => CategoryValueView[];
+) => SelectCategoryValueView[];
 
 /**
  * Function returns filtered category values with a count greater than zero.
  */
 export type FilterCategoryValuesWithCountFn = (
-  values: CategoryValueView[]
-) => CategoryValueView[];
+  values: SelectCategoryValueView[]
+) => SelectCategoryValueView[];
 
 /**
  * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
@@ -212,6 +205,7 @@ export enum IS_PRIMARY_DATA_LABEL {
  */
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
+  | CATEGORY_KEY.CELL_COUNT
   | CATEGORY_KEY.IS_PRIMARY_DATA
   | CATEGORY_KEY.PUBLICATION_DATE_VALUES
   | CATEGORY_KEY.PUBLICATION_AUTHORS
@@ -220,8 +214,9 @@ export type OntologyCategoryKey = keyof Omit<
 /**
  * Display value of category labels.
  */
-export enum CATEGORY_LABEL {
+export enum CATEGORY_LABEL { // TODO(cc) combine with config
   assay = "Assay",
+  cell_count = "Cell Count",
   cell_type = "Cell Type",
   disease = "Disease",
   is_primary_data = "Data Source",
@@ -233,11 +228,11 @@ export enum CATEGORY_LABEL {
 }
 
 /**
- * Function invoked when selected state of a category value is toggled.
+ * Function invoked when selected state of a category value is toggled or range is selected.
  */
 export type OnFilterFn = (
   categoryKey: CategoryKey,
-  categoryValueKey: CategoryValueKey
+  selectedValue: CategoryValueKey | Range
 ) => void;
 
 /**
@@ -247,6 +242,23 @@ export type OnUpdateSearchValueFn = (
   changeEvent: ChangeEvent<HTMLInputElement>,
   setSearchValue: SetSearchValueFn
 ) => void;
+
+/**
+ * Min and max values selected in range category.
+ */
+export type Range = [number, number];
+
+/**
+ * View model of range metadata key.
+ */
+export interface RangeCategoryView {
+  key: CATEGORY_KEY;
+  label: string;
+  max: number;
+  min: number;
+  selectedMax?: number;
+  selectedMin?: number;
+}
 
 /**
  * Possible set of values that publication dates can be binned into.
@@ -277,6 +289,25 @@ export interface PublisherMetadataCategories {
  * "row" prop passed to react-table's Cell function.
  */
 export type RowPropsValue<T extends Categories> = { row: Row<T> };
+
+/**
+ * View model of metadata value, selected state and count for single or multiselect categories.
+ */
+export interface SelectCategoryValueView {
+  key: CategoryValueKey;
+  count: number;
+  label: string;
+  selected: boolean;
+}
+
+/**
+ * Metadata values grouped by metadata key, for single or multiselect categories.
+ */
+export interface SelectCategoryView {
+  key: CATEGORY_KEY;
+  label: CATEGORY_LABEL;
+  values: SelectCategoryValueView[];
+}
 
 /**
  * Function invoked to update state for the filter category input value.

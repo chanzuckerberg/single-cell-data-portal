@@ -1,8 +1,11 @@
 import { ChangeEvent } from "react";
+import { isCategoryTypeBetween } from "src/common/hooks/useCategoryFilter";
 import {
-  CategoryValueView,
   CategoryView,
   OnFilterFn,
+  RangeCategoryView,
+  SelectCategoryValueView,
+  SelectCategoryView,
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
@@ -19,7 +22,33 @@ interface Props {
 export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>
-      {categories.map(({ label, key, values }) => {
+      {categories.map((categoryView: CategoryView) => {
+        if (isCategoryTypeBetween(categoryView.key)) {
+          // Send [] to clear filter.
+          const { max, min, selectedMax, selectedMin } =
+            categoryView as RangeCategoryView;
+          return (
+            <div key={categoryView.key}>
+              <div>
+                <span onClick={() => onFilter(categoryView.key, [5000, max])}>
+                  {min}
+                </span>
+                {" - "}
+                <span
+                  onClick={() =>
+                    onFilter(categoryView.key, [min, max - 300000])
+                  }
+                >
+                  {max}
+                </span>
+              </div>
+              <span>
+                {selectedMin} - {selectedMax}
+              </span>
+            </div>
+          );
+        }
+        const { label, key, values } = categoryView as SelectCategoryView;
         const isDisabled = isCategoryNA(values);
         return (
           <BasicFilter
@@ -59,9 +88,9 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
  * @returns array of category values filtered by the given search value
  */
 function filterCategoryValues(
-  values: CategoryValueView[],
+  values: SelectCategoryValueView[],
   searchValue: string
-): CategoryValueView[] {
+): SelectCategoryValueView[] {
   return values.filter(({ key }) => key.toLowerCase().includes(searchValue));
 }
 
@@ -71,8 +100,8 @@ function filterCategoryValues(
  * @returns category values with a count
  */
 function filterCategoryValuesWithCount(
-  values: CategoryValueView[]
-): CategoryValueView[] {
+  values: SelectCategoryValueView[]
+): SelectCategoryValueView[] {
   return values.filter(({ count }) => count > 0);
 }
 
@@ -82,8 +111,8 @@ function filterCategoryValuesWithCount(
  * @returns selected category values
  */
 function filterSelectedValues(
-  values: CategoryValueView[]
-): CategoryValueView[] {
+  values: SelectCategoryValueView[]
+): SelectCategoryValueView[] {
   return values.filter((value) => value.selected);
 }
 
@@ -92,7 +121,7 @@ function filterSelectedValues(
  * @param values
  * @returns true when all category values have a count of 0
  */
-function isCategoryNA(values: CategoryValueView[]) {
+function isCategoryNA(values: SelectCategoryValueView[]) {
   return values.every((value) => value.count === 0);
 }
 

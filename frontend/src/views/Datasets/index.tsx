@@ -129,6 +129,7 @@ export default function Datasets(): JSX.Element {
         ),
         Header: <RightAlignCell>Cells</RightAlignCell>,
         accessor: "cell_count",
+        filter: "between",
       },
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
@@ -235,6 +236,7 @@ export default function Datasets(): JSX.Element {
     state: { filters },
   } = tableInstance;
 
+  // TODO(cc) specify set of categories for datasets. same with collections.
   const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
 
   // Hide datasets behind feature flag - start
