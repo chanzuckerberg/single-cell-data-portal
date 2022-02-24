@@ -5,6 +5,9 @@ paths:
   /curation/auth/key:
     post:
       summary: Generate the curator's API key -- for use with Data Portal UI
+      description: >-
+        Generate and return a curator API key for the user. If there is already a key associated with the
+        user's auth profile, replace it with the new key.
       security:
         - cxguserCookie: []
       responses:
