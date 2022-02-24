@@ -36,6 +36,11 @@ const COLLECTION_ID = "id";
 const COLLECTION_NAME = "name";
 
 /**
+ * Collection summary citation object key.
+ */
+const COLLECTION_SUMMARY_CITATION = "summaryCitation";
+
+/**
  * Key identifying recency sort by column.
  */
 const COLUMN_ID_RECENCY = "recency";
@@ -82,6 +87,13 @@ export default function Collections(): JSX.Element {
         },
         Header: "Collection",
         accessor: COLLECTION_NAME,
+      },
+      {
+        Cell: ({ row }: RowPropsValue<CollectionRow>) => {
+          return <div>{row.values.summaryCitation || "No publication"}</div>;
+        },
+        Header: "Publication",
+        accessor: COLLECTION_SUMMARY_CITATION,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
