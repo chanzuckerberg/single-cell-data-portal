@@ -553,8 +553,6 @@ components:
           enum: [H5AD, RDS, CXG]
         filename:
           type: string
-        s3_uri:
-          type: string
     ontology_element:
       type: object
       properties:
