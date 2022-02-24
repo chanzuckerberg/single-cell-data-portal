@@ -337,8 +337,6 @@ paths:
                         type: string
         "401":
           $ref: "#/components/responses/401"
-        "404":
-          $ref: "#/components/responses/404"
 
   /curation/collections/{collection_uuid}/datasets/status:
     get:
