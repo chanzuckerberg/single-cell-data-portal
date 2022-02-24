@@ -21,6 +21,8 @@ export interface State {
   selectedTissues: string[];
 }
 
+// (thuang): If you have derived states based on the state, use `useMemo`
+// to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
   cellTypeIdsToDelete: [],
   genesToDelete: [],
@@ -78,15 +80,19 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
 
   const { selectedGenes, selectedCellTypeIds } = state;
 
-  const newSelectedGenes = deleteByItems<State["selectedGenes"][number]>(
-    selectedGenes,
-    genesToDelete
-  );
+  const newSelectedGenes = genesToDelete.length
+    ? deleteByItems<State["selectedGenes"][number]>(
+        selectedGenes,
+        genesToDelete
+      )
+    : selectedGenes;
 
-  const newSelectedCellTypeIds = deleteSelectedCellTypeIdsByMetadata(
-    selectedCellTypeIds,
-    cellTypeIdsToDelete
-  );
+  const newSelectedCellTypeIds = cellTypeIdsToDelete.length
+    ? deleteSelectedCellTypeIdsByMetadata(
+        selectedCellTypeIds,
+        cellTypeIdsToDelete
+      )
+    : selectedCellTypeIds;
 
   return {
     ...state,
