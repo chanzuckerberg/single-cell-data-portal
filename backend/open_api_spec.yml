@@ -75,7 +75,8 @@ paths:
       summary: Fetch Collections metadata.
       description: Fetch all Collections metadata. Authorization required for private collections.
       security:
-        - cxg
+        - cxguserCookie: []
+        - {}
       parameters:
         - $ref: "#/components/parameters/query_visibility"
       responses:
