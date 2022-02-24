@@ -283,7 +283,7 @@ paths:
   /curation/collections/{collection_uuid}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
-      description: Upload a Dataset. The Dataset will be downloaded from the provided link.
+      description: Upload a Dataset. The Dataset will be uploaded from the provided link.
       security:
         - cxguserCookie: []
       parameters:
