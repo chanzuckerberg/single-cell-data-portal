@@ -545,9 +545,6 @@ components:
     dataset_asset:
       type: object
       properties:
-        id:
-          description: A uuid for a Dataset Asset
-          type: string
         filetype:
           type: string
           enum: [H5AD, RDS, CXG]
