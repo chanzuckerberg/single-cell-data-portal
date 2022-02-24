@@ -18,7 +18,7 @@
     "@types/d3-scale-chromatic": "^3.0.0",
     "babel-plugin-styled-components": "^1.13.3",
     "clipboard-copy": "^4.0.1",
-    "czifui": "^1.7.0",
+    "czifui": "^1.12.1",
     "d3-scale-chromatic": "^3.0.0",
     "echarts": "^5.2.2",
     "jschardet": "^2.3.0",
