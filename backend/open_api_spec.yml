@@ -57,8 +57,6 @@ paths:
       description: >-
         Returns a bearer access token that must be passed as a parameter to requests that
         require authorization such as creating a new Collection.
-      security:
-        - apiKey: []
       responses:
         "201":
           description: Created
@@ -77,7 +75,7 @@ paths:
       summary: Fetch Collections metadata.
       description: Fetch all Collections metadata. Authorization required for private collections.
       security:
-        - cxguserCookieLenient: []
+        - cxg
       parameters:
         - $ref: "#/components/parameters/query_visibility"
       responses:
@@ -134,6 +132,7 @@ paths:
       description: Create a new Collection
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       requestBody:
         content:
           application/json:
@@ -172,7 +171,9 @@ paths:
       summary: Fetch a Collection with Datasets
       description: Fetch Collection metadata and associated Datasets, public and private.
       security:
-        - cxguserCookieLenient: []
+        - cxguserCookie: []
+        - curatorAccess: []
+        - {}
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_visibility"
@@ -205,6 +206,7 @@ paths:
       description: Start a revision of a Collection. Update any included Collection metadata fields.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
@@ -230,6 +232,7 @@ paths:
       description: Delete a private Dataset.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/optional_query_curator_tag"
@@ -253,6 +256,7 @@ paths:
         tag OR the Dataset uuid.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/optional_query_curator_tag"
@@ -283,6 +287,7 @@ paths:
       description: Upload a Dataset. The Dataset will be uploaded from the provided link.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       requestBody:
@@ -316,6 +321,7 @@ paths:
         or update Datasets for the specified Collection.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
@@ -344,6 +350,7 @@ paths:
       description: Get the processing status for a Dataset.
       security:
         - cxguserCookie: []
+        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/optional_query_curator_tag"
@@ -711,8 +718,8 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func
-    cxguserCookieLenient:
-      type: apiKey
-      in: cookie
-      name: cxguser
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
+    curatorAccess:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func
