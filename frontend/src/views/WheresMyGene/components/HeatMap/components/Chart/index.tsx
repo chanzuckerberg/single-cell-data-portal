@@ -30,7 +30,7 @@ import { ChartContainer, Wrapper } from "./style";
 
 interface Props {
   cellTypes: CellTypeSummary[];
-  selectedGeneData: GeneExpressionSummary[];
+  selectedGeneData: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
       [tissue: Tissue]: boolean;
@@ -39,7 +39,9 @@ interface Props {
   tissue: Tissue;
 }
 
-const DEBOUNCE_MS = 2 * 1000;
+const BASE_DEBOUNCE_MS = 200;
+
+const MAX_DEBOUNCE_MS = 2 * 1000;
 
 export default memo(function Chart({
   cellTypes,
@@ -93,13 +95,13 @@ export default memo(function Chart({
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
-      (cellTypes: CellTypeSummary[], geneData) => {
+      (cellTypes: CellTypeSummary[], geneData: Props["selectedGeneData"]) => {
         setCellTypeSummaries(integrateCelTypesAndGenes(cellTypes, geneData));
       },
-      DEBOUNCE_MS,
+      getDebounceMs(selectedGeneData.length),
       { leading: false }
     );
-  }, []);
+  }, [selectedGeneData]);
 
   // Cancel debounce when unmounting
   useEffect(() => {
@@ -109,7 +111,7 @@ export default memo(function Chart({
   /**
    * Performance optimization:
    * We only format and `setCellTypeSummaries()` after the watch list has stopped changing for
-   * `DEBOUNCE_MS`
+   * `getDebounceMs()`
    */
   useEffect(() => {
     debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
@@ -120,7 +122,7 @@ export default memo(function Chart({
     return debounce(
       (
         cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: GeneExpressionSummary[]
+        selectedGeneData: Props["selectedGeneData"]
       ) => {
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(cellTypeSummaries),
@@ -137,10 +139,10 @@ export default memo(function Chart({
           };
         });
       },
-      DEBOUNCE_MS,
+      getDebounceMs(selectedGeneData.length),
       { leading: false }
     );
-  }, [setIsLoading, tissue]);
+  }, [setIsLoading, tissue, selectedGeneData]);
 
   useEffect(() => {
     debouncedDataToChartFormat(cellTypeSummaries, selectedGeneData);
@@ -163,7 +165,7 @@ export default memo(function Chart({
  */
 function integrateCelTypesAndGenes(
   cellTypeSummaries: CellTypeSummary[],
-  geneExpressionSummaries: GeneExpressionSummary[]
+  geneExpressionSummaries: Props["selectedGeneData"]
 ): CellTypeSummary[] {
   const geneMaps = geneExpressionSummaries.map((geneExpressionSummary) =>
     rawGeneDataToMap(geneExpressionSummary)
@@ -190,12 +192,23 @@ function integrateCelTypesAndGenes(
 }
 
 function rawGeneDataToMap(
-  gene: GeneExpressionSummary
+  gene?: GeneExpressionSummary
 ): [string, Map<string, CellTypeGeneExpressionSummaryData>] {
+  if (!gene) return ["", new Map()];
+
   const { cellTypeGeneExpressionSummaries, name } = gene;
 
   return [
     name,
     new Map(cellTypeGeneExpressionSummaries?.map((row) => [row.id, row])),
   ];
+}
+
+const BROWSER_PARALLEL_CALL_LIMIT = 10;
+
+function getDebounceMs(geneCount: number): number {
+  if (geneCount <= BROWSER_PARALLEL_CALL_LIMIT) return 0;
+  if (geneCount >= 100) return MAX_DEBOUNCE_MS;
+
+  return Math.floor(geneCount / BROWSER_PARALLEL_CALL_LIMIT) * BASE_DEBOUNCE_MS;
 }

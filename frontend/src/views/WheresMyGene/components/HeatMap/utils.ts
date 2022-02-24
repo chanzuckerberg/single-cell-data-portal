@@ -306,7 +306,7 @@ export interface ChartFormat {
 
 export function dataToChartFormat(
   cellTypeSummaries: CellTypeSummary[],
-  genes: GeneExpressionSummary[]
+  genes: (GeneExpressionSummary | undefined)[]
 ): ChartFormat[] {
   let min = Infinity;
   let max = -Infinity;
@@ -342,7 +342,7 @@ export function dataToChartFormat(
 
       const scaledMeanExpression = (meanExpression - min) / oldRange;
 
-      const geneIndex = genes.findIndex((gene) => gene.name === geneName);
+      const geneIndex = genes.findIndex((gene) => gene?.name === geneName);
 
       const cellTypeIndex = cellTypeSummaries.findIndex(
         (cellTypeSummary) => cellTypeSummary.id === dataPoint.id
@@ -372,7 +372,7 @@ const HEAT_MAP_BASE_CELL_PX = 20;
  * of the number of genes selected.
  */
 export function getHeatmapWidth(
-  genes: GeneExpressionSummary[] | State["selectedGenes"]
+  genes: (GeneExpressionSummary | undefined)[] | State["selectedGenes"]
 ): number {
   return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
 }
@@ -426,6 +426,8 @@ export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
 /**
  * Value format: `${name}`
  */
-export function getGeneNames(genes: { name: string }[]): string[] {
-  return genes.map(({ name }) => name);
+export function getGeneNames(
+  genes: ({ name: string } | undefined)[]
+): string[] {
+  return genes.map((gene) => gene?.name || "");
 }
