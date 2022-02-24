@@ -125,14 +125,8 @@ paths:
                           type: number
                         description:
                           type: string
-                        obfuscated_uuid:
-                          type: string
                         data_submission_policy_version:
                           type: string
-                        genesets:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/gene_set"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -517,10 +511,6 @@ components:
                 properties:
                   url:
                     type: string
-            linked_genesets:
-              type: array
-              items:
-                type: string
             cell_type:
               $ref: "#/components/schemas/ontology_element_array"
             cell_count:
@@ -567,19 +557,6 @@ components:
           type: string
         s3_uri:
           type: string
-    gene_set:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        description:
-          type: string
-        linked_datasets:
-          type: array
-          items:
-            type: string
     ontology_element:
       type: object
       properties:
