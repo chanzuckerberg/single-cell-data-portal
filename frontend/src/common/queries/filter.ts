@@ -704,8 +704,9 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
     (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
       // Check for fields that don't require sanitizing.
       if (
-        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS
+        categoryKey === CATEGORY_KEY.CELL_COUNT ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
       ) {
         return accum;
       }

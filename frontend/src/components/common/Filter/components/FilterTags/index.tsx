@@ -1,15 +1,15 @@
 import { Tag } from "@blueprintjs/core";
 import {
-  CategoryValueView,
   CATEGORY_KEY,
   OnFilterFn,
+  SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import { SelectedTags } from "./style";
 
 interface Props {
   categoryKey: CATEGORY_KEY;
   onFilter: OnFilterFn;
-  selectedValues: CategoryValueView[];
+  selectedValues: SelectCategoryValueView[];
 }
 
 export default function FilterTags({
