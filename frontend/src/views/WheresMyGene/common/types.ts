@@ -1,3 +1,4 @@
+import { DefaultMenuSelectOption } from "czifui";
 import { CSSProperties } from "react";
 
 /** tissue name */
@@ -56,4 +57,12 @@ export interface Gene {
   id: string;
   name: string;
   style?: CSSProperties;
+}
+
+export interface Filters {
+  datasets?: DefaultMenuSelectOption[];
+  developmentStages?: DefaultMenuSelectOption[];
+  diseases?: DefaultMenuSelectOption[];
+  ethnicities?: DefaultMenuSelectOption[];
+  sexes?: DefaultMenuSelectOption[];
 }

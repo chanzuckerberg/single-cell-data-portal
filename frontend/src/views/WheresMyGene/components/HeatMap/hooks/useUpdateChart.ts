@@ -1,36 +1,34 @@
-import { EChartsOption } from "echarts";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo } from "react";
 import { createChartOptions } from "../utils";
 import { UPDATE_THROTTLE_MS } from "./common/constants";
 import { ChartProps } from "./common/types";
 
-export function useUpdateChart({
-  chart,
-  chartProps,
-  commonOptions,
-  isEchartGLAvailable,
-}: {
+interface Props {
   chart: echarts.ECharts | null;
   chartProps: ChartProps | null;
-  commonOptions: EChartsOption;
-  isEchartGLAvailable: boolean;
-}): void {
+}
+
+export function useUpdateChart({ chart, chartProps }: Props): void {
   const throttledUpdateChart = useMemo(() => {
     return throttle(
-      ({ chart, chartProps, isEchartGLAvailable, commonOptions }) => {
-        if (!chart || !chartProps || !isEchartGLAvailable) {
+      ({ chart, chartProps }: Props) => {
+        if (!chart || !chartProps) {
           return;
         }
 
-        const { cellTypeNames, geneNames } = chartProps;
+        const { cellTypeMetadata, geneNames, chartData } = chartProps;
 
         // (thuang): resize() needs to be called before setOption() to prevent
         // TypeError: Cannot read properties of undefined (reading 'shouldBePainted')
         chart.resize();
 
         chart.setOption(
-          createChartOptions({ cellTypeNames, commonOptions, geneNames })
+          createChartOptions({
+            cellTypeMetadata,
+            chartData,
+            geneNames,
+          })
         );
       },
       UPDATE_THROTTLE_MS,
@@ -49,14 +47,6 @@ export function useUpdateChart({
     throttledUpdateChart({
       chart,
       chartProps,
-      commonOptions,
-      isEchartGLAvailable,
     });
-  }, [
-    chart,
-    commonOptions,
-    isEchartGLAvailable,
-    chartProps,
-    throttledUpdateChart,
-  ]);
+  }, [chart, chartProps, throttledUpdateChart]);
 }
