@@ -556,7 +556,7 @@ components:
       properties:
         filetype:
           type: string
-          enum: [H5AD, RDS, CXG]
+          enum: [H5AD, RDS]
         filename:
           type: string
     ontology_element:
