@@ -452,7 +452,7 @@ components:
         Determines the visibility of the collection, that will either make the collection visible on the public
         sites or only viewable through obfuscated URLs.
       type: string
-      enum: [PUBLIC, PRIVATE]
+      enum: [PUBLIC, PRIVATE, REVISION]
     distribution:
       description: >-
         Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
