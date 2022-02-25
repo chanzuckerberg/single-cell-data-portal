@@ -422,9 +422,6 @@ paths:
 
 components:
   schemas:
-    user_uuid:
-      description: A unique identifier of a logged in User of Corpora.
-      type: string
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
@@ -635,12 +632,6 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_uuid"
-    query_user_uuid:
-      name: user_uuid
-      description: an ID that represents the user.
-      in: query
-      schema:
-        $ref: "#/components/schemas/user_uuid"
     query_visibility:
       name: visibility
       in: query
