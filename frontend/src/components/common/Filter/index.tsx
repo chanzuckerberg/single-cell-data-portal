@@ -45,6 +45,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
               <span>
                 {selectedMin} - {selectedMax}
               </span>
+              <span onClick={() => onFilter(categoryView.key, [])}>x</span>
             </div>
           );
         }
