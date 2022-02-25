@@ -1,5 +1,7 @@
 openapi: 3.0.0
 info:
+  version: "1.0.0"
+  title: Chan Zuckerburg Initiative cellxgene Data Portal Curator API
 servers:
 paths:
   /curation/auth/key:
