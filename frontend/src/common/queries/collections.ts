@@ -453,29 +453,30 @@ export function useEditCollection(collectionID?: Collection["id"]) {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
       // though update did not occur.
-      if (newCollection) {
-        queryClient.setQueryData(
-          [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
-          () => {
-            let revision_diff;
-            if (isTombstonedCollection(newCollection)) {
-              return newCollection;
-            } else if (
-              !isTombstonedCollection(collection) &&
-              !isTombstonedCollection(publishedCollection) &&
-              collection?.has_revision &&
-              publishedCollection
-            ) {
-              revision_diff = checkForRevisionChange(
-                newCollection,
-                publishedCollection
-              );
-
-              return { ...collection, ...newCollection, revision_diff };
-            }
-          }
-        );
+      if (!newCollection) {
+        return;
       }
+      queryClient.setQueryData(
+        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
+        () => {
+          let revision_diff;
+          if (isTombstonedCollection(newCollection)) {
+            return newCollection;
+          } else if (
+            !isTombstonedCollection(collection) &&
+            !isTombstonedCollection(publishedCollection) &&
+            collection?.has_revision &&
+            publishedCollection
+          ) {
+            revision_diff = checkForRevisionChange(
+              newCollection,
+              publishedCollection
+            );
+
+            return { ...collection, ...newCollection, revision_diff };
+          }
+        }
+      );
     },
   });
 }
@@ -559,5 +560,7 @@ export function useReuploadDataset(collectionId: string) {
  * @returns True if DOI has been identified as invalid by the BE.
  */
 function isInvalidDOI(status: number, detail?: string): boolean {
-  return status === 400 && detail === INVALID_DOI_MESSAGE;
+  return (
+    status === HTTP_STATUS_CODE.BAD_REQUEST && detail === INVALID_DOI_MESSAGE
+  );
 }
