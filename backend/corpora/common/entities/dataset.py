@@ -183,6 +183,7 @@ class Dataset(Entity):
             DbDataset.ethnicity,
             DbDataset.development_stage,
             DbDataset.is_primary_data,
+            DbDataset.mean_genes_per_cell,
             DbDataset.schema_version,  # Required for schema manipulation
             DbDataset.explorer_url,
             DbDataset.published_at,
