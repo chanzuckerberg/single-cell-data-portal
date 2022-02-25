@@ -59,6 +59,12 @@ paths:
       description: >-
         Returns a bearer access token that must be passed as a parameter to requests that
         require authorization such as creating a new Collection.
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
       responses:
         "201":
           description: Created
@@ -220,8 +226,10 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     put:
-      summary: Start or update a revision
-      description: Start a revision of a Collection. Update any included Collection metadata fields.
+      summary: Update a Collection's metadata.
+      description: >-
+        Start a revision of a public Collection, or update its existing revision. Update a private Collection in-place.
+        The Collection metadata fields included in the body of the request are updated.
       security:
         - cxguserCookie: []
         - curatorAccess: []
