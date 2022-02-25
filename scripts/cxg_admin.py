@@ -21,10 +21,12 @@ from backend.corpora.common.corpora_orm import (
     CollectionLinkType,
     CollectionVisibility,
     DbCollection,
+    DbCollectionLink,
     DbDataset,
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetArtifact,
+    DbProjectLink,
     ProcessingStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
@@ -746,9 +748,6 @@ def refresh_preprint_doi(ctx):
             abort=True,
         )
 
-        import time
-        import traceback
-
         provider = crossref_provider.CrossrefProvider()
 
         for record in session.query(DbCollection):
@@ -765,11 +764,15 @@ def refresh_preprint_doi(ctx):
                 try:
                     published_doi = provider.fetch_preprint_published_doi(normalized_doi)
                     print(collection_id, normalized_doi, published_doi)
+                    doi_record = session.query(DbCollectionLink).filter(
+                        DbCollectionLink.collection_id == record.id, 
+                        DbCollectionLink.collection_visibility == record.visibility,
+                        DbCollectionLink.link_type ==  CollectionLinkType.DOI
+                    )
+                    doi_record.link_url = published_doi
                 except Exception as e:
                     print(e)
 
-                time.sleep(2)
-                
 
 
 def get_database_uri() -> str:
