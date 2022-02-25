@@ -1,5 +1,5 @@
 import { Button, Classes } from "@blueprintjs/core";
-import { BLUE, PRIMARY_BLUE } from "src/components/common/theme";
+import { BLUE, PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
 /* Basic styled button. */
@@ -10,6 +10,18 @@ const StyledButton = styled(Button)`
     font-weight: 500;
     letter-spacing: -0.1px;
     line-height: 18px;
+
+    :focus {
+      outline: none;
+    }
+  }
+`;
+
+/* Basic default button with no visual intent color applied to element. */
+export const StyledDefaultButton = styled(StyledButton)`
+  &.${Classes.BUTTON} {
+    background-image: none;
+    color: ${PT_TEXT_COLOR};
   }
 `;
 
@@ -42,6 +54,21 @@ export const StyledOutlineButton = styled(StyledButton)`
       border-color: rgba(0, 95, 198, 0.2);
       /* maintains BP disabled color specification; BLUE.B with 50% opacity */
       color: rgba(0, 95, 198, 0.5);
+    }
+  }
+`;
+
+/* Basic styled primary anchor button (to be used in conjunction with minimal prop). */
+export const StyledPrimaryAnchorButton = styled(StyledButton)`
+  &.${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.INTENT_PRIMARY} {
+    border-radius: 0; /* overrides basic styled button border radius specification */
+    color: ${PRIMARY_BLUE};
+    height: unset; /* overrides bp button height specification */
+    min-height: unset; /* overrides bp button min height specification */
+    padding: 0; /* overrides basic styled button padding specification */
+
+    &:hover {
+      background: none;
     }
   }
 `;
