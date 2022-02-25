@@ -1,11 +1,12 @@
 import json
 import unittest
-import uuid
-from pprint import pprint
+from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
 from backend.wmg.api import v1
+from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
 
 class WmgApiV1Tests(unittest.TestCase):
@@ -32,7 +33,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
     def test__query__minimal_valid_request_returns_200(self):
         request = dict(
-            filter=dict(gene_term_ids=["gene1"], organism_term_id="organism1", tissue_term_ids=["tissuetype1"]),
+            filter=dict(organism_term_id="organism_term_id_0", tissue_term_ids=["tissue_term_id_0"]),
             response_option="include_filter_dims_include_dataset_links",
         )
 
@@ -40,60 +41,92 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
 
-    def test__query__valid_request_returns_valid_response_body(self):
+    def test__query__empty_request_returns_400(self):
+        response = self.app.post(f"/wmg/v1/query", json={})
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
+
+    def test__query__missing_organism_request_returns_400(self):
         request = dict(
-            filter=dict(
-                gene_term_ids=["gene1", "gene2"],
-                organism_term_id="organism1",
-                tissue_term_ids=["tissuetype1", "tissuetype2"],
-            ),
+            filter=dict(tissue_term_ids=["tissue_term_id_0"]),
             response_option="include_filter_dims_include_dataset_links",
         )
 
         response = self.app.post(f"/wmg/v1/query", json=request)
 
-        expected = {
-            "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
-            "expression_summary": {
-                "gene1": {
-                    "tissuetype1": [
-                        {"id": "CL00000", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00001", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00002", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                    ],
-                    "tissuetype2": [
-                        {"id": "CL00000", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00001", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00002", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                    ],
-                },
-                "gene2": {
-                    "tissuetype1": [
-                        {"id": "CL00000", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00001", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00002", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                    ],
-                    "tissuetype2": [
-                        {"id": "CL00000", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00001", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                        {"id": "CL00002", "me": 0.0, "n": 0, "pc": 0.0, "tpc": 0.0},
-                    ],
-                },
-            },
-            "term_id_labels": {
-                "cell_types": [
-                    {"CL00000": "CL00000_label"},
-                    {"CL00001": "CL00001_label"},
-                    {"CL00002": "CL00002_label"},
-                ],
-                "genes": [{"gene1": "gene1_label"}, {"gene2": "gene2_label"}],
-            },
-        }
-        pprint(expected)
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(400, response.status_code)
 
-    def test__query__invalid_request_returns_400(self):
-        response = self.app.post(f"/wmg/v1/query", json={})
+    def test__query__missing_tissue_request_returns_400(self):
+        request = dict(
+            filter=dict(organism_term_id="organism_term_id_0"),
+            response_option="include_filter_dims_include_dataset_links",
+        )
+
+        response = self.app.post(f"/wmg/v1/query", json=request)
 
         self.assertEqual(400, response.status_code)
-        self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
+
+    @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
+    def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot):
+        dim_size = 3
+        with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
+            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
+            # response
+            find_cube_latest_snapshot.return_value = all_ones_cube
+
+            request = dict(
+                filter=dict(
+                    gene_term_ids=["gene_term_id_0", "gene_term_id_1", "gene_term_id_2"],
+                    organism_term_id="organism_ontology_term_id_0",
+                    tissue_term_ids=["tissue_ontology_term_id_0"],
+                ),
+                response_option="include_filter_dims_include_dataset_links",
+            )
+
+            response = self.app.post(f"/wmg/v1/query", json=request)
+
+            # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
+            # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
+            # changed
+            expected_cell_count_per_cell_type = \
+                dim_size ** len(set(cube_non_indexed_dims).difference({'cell_type_ontology_term_id'}))
+            assert expected_cell_count_per_cell_type == 729
+
+            expected = {
+                "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
+                "expression_summary": {
+                    'gene_term_id_0': {
+                        'tissue_ontology_term_id_0': [
+                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                        ]
+                    },
+                    'gene_term_id_1': {
+                        'tissue_ontology_term_id_0': [
+                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                        ]
+                    },
+                    'gene_term_id_2': {
+                        'tissue_ontology_term_id_0': [
+                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
+                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                        ]
+                    }
+                },
+                "term_id_labels": {
+                    "cell_types": [
+                        {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                        {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                        {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                    ],
+                    "genes": [{"gene_term_id_0": "gene_term_id_0_label"},
+                              {"gene_term_id_1": "gene_term_id_1_label"},
+                              {"gene_term_id_2": "gene_term_id_2_label"}]
+                },
+            }
+            self.assertEqual(expected, json.loads(response.data))

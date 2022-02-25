@@ -1,44 +1,53 @@
 import unittest
 
-import numpy as np
-
-from unit.backend.wmg.fixtures.cube import create_temp_cube
+from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
+from backend.wmg.data.schema import cube_non_indexed_dims
+from unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
 
 class QueryTest(unittest.TestCase):
-
-    def test__ad_hoc_query(self):
-        with create_temp_cube() as cube:
-            feature_ids = cube.query(dims=["feature_id"],
-                                     attrs=['n_cells'],
-                                     use_arrow=False).df[:]
-            print(feature_ids)
-
     def test__query_single_gene_organism_and_tissue__returns_correct_result(self):
-        def attr_values(coords):
-            attr_vals = {
-                'nnz': np.zeros(len(coords)),
-                'n_cells': np.zeros(len(coords)),
-                'sum': np.zeros(len(coords))
-            }
-            for i, coord in enumerate(coords):
-                if (coord[0] == 'feature_id_0'
-                    and coord[2] == 'tissue_ontology_term_id_0'
-                        and coord[3] == 'organism_ontology_term_id_0'):
-                    attr_vals['nnz'][i] = 1
-                    attr_vals['n_cells'][i] = 10
-                    attr_vals['sum'][i] = 3.0
-            return attr_vals
+        criteria = WmgQueryCriteria(organism_term_id='organism_ontology_term_id_0',
+                                    tissue_term_ids=['tissue_ontology_term_id_0'])
 
-        with create_temp_cube(dim_size=2, attr_vals_fn=attr_values) as cube:
-            qry = cube.query()
+        dim_size = 3
+        with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
+            result = WmgQuery(cube).execute(criteria)
 
-            res = qry.df['feature_id_0', 'tissue_ontology_term_id_0', 'organism_ontology_term_id_0']
-            assert all(res['nnz'] == 1)
-            assert all(res['n_cells'] == 10)
-            assert all(res['sum'] == 3.0)
+        # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
+        # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
+        # changed
+        expected_cell_count_per_cell_type = \
+            dim_size ** len(set(cube_non_indexed_dims).difference({'cell_type_ontology_term_id'}))
+        assert expected_cell_count_per_cell_type == 729
 
-            res = qry.df['feature_id_1', 'tissue_ontology_term_id_0', 'organism_ontology_term_id_0']
-            assert all(res['nnz'] == 0)
-            assert all(res['n_cells'] == 0)
-            assert all(res['sum'] == 0)
+        expected = \
+            {'n_cells': {(b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                         (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                         (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729,
+                         (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                         (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                         (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729,
+                         (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                         (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                         (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729},
+             'nnz': {(b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                     (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                     (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729},
+             'sum': {(b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729.0,
+                     (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729.0,
+                     (b'gene_term_id_0', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729.0,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729.0,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729.0,
+                     (b'gene_term_id_1', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729.0,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_0'): 729.0,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_1'): 729.0,
+                     (b'gene_term_id_2', b'tissue_ontology_term_id_0', b'cell_type_ontology_term_id_2'): 729.0}}
+
+        self.assertEqual(expected, result.to_dict())

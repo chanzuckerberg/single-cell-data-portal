@@ -1,25 +1,36 @@
-from typing import List, Dict
+from typing import List
 
-DUMMY_CELL_TYPE_TERM_IDS = [f"CL{n:05d}" for n in range(3)]
-
-
-def build_viz_dot(cell_type_term_id: str, me: float, pc: float, n: int, tpc: float) -> dict:
-    return dict(id=cell_type_term_id, me=me, pc=pc, n=n, tpc=tpc)
+from pandas import DataFrame
+from pydantic import BaseModel, Field
+from tiledb import Array
 
 
-def build_viz_dots(cell_type_term_ids: List[str]) -> List[dict]:
-    return [build_viz_dot(cell_type_term_id, me=0.0, pc=0.0, n=0, tpc=0.0) for cell_type_term_id in cell_type_term_ids]
+class WmgQueryCriteria(BaseModel):
+    gene_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    organism_term_id: str
+    tissue_term_ids: list[str] = Field(min_items=1, unique_items=True)
+    dataset_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    assay_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    development_stage_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    ethnicity_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
 
 
-def build_tissues_types(tissue_term_ids: List[str], cell_type_term_ids) -> Dict[str, List]:
-    return dict(
-            [(tissue_term_id, build_viz_dots(cell_type_term_ids)) for tissue_term_id in tissue_term_ids]
-    )
+class WmgQuery:
 
+    def __init__(self, cube: Array) -> None:
+        super().__init__()
+        self._cube = cube
 
-def build_genes(gene_term_ids: List[str], tissue_term_ids: List[str], cell_type_term_ids) -> Dict[str, dict]:
-    return dict([(gene_term_id, build_tissues_types(tissue_term_ids, cell_type_term_ids))
-                 for gene_term_id in gene_term_ids])
+    def execute(self, criteria: WmgQueryCriteria) -> DataFrame:
+        # Aggregate cube data by gene, tissue, cell type
+        return \
+            DataFrame(self._cube.multi_index[criteria.gene_term_ids,
+                      criteria.tissue_term_ids,
+                      criteria.organism_term_id]). \
+                groupby(["gene_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]). \
+                sum()
 
 
 def build_gene_id_label_mapping(gene_term_ids) -> List[dict]:
@@ -27,6 +38,5 @@ def build_gene_id_label_mapping(gene_term_ids) -> List[dict]:
 
 
 def build_cell_type_id_label_mapping(cell_type_term_ids) -> List[dict]:
-    return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in cell_type_term_ids]
-
+    return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in sorted(cell_type_term_ids)]
 

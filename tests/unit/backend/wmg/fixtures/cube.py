@@ -1,9 +1,12 @@
 import contextlib
 import tempfile
+from os import PathLike
 from typing import List, Callable, Dict
 
+import numpy as np
 import tiledb
 from numpy.random import random, randint
+from tiledb import Array
 
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
@@ -14,6 +17,15 @@ def random_attr_values(coords):
         'n_cells': randint(size=len(coords), low=0, high=1000),
         'sum': random(size=len(coords)) * 10
     }
+
+
+def all_ones_attr_values(coords):
+    attr_vals = {
+        'nnz': np.ones(len(coords)),
+        'n_cells': np.ones(len(coords)),
+        'sum': np.ones(len(coords))
+    }
+    return attr_vals
 
 
 @contextlib.contextmanager
@@ -27,7 +39,7 @@ def create_temp_cube(dim_size=3,
 
 def create_cube(cube_dir,
                 dim_size=3,
-                attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values):
+                attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values) -> None:
     if tiledb.array_exists(cube_dir):
         raise FileExistsError(cube_dir)
 

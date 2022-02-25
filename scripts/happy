@@ -928,7 +928,7 @@ def create(ctx, stack_name, tag, wait, force):
 
     stack = stackmgr.add(stack_name)
     stack._meta = stack_meta  # TODO(mbarrien): Hack!
-    success = stack.apply(wait)
+    success = stack.execute(wait)
     if not success:
         raise CliError("Apply failed, skipping migrations")
     if should_auto_migrate(ctx):
@@ -980,7 +980,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
     # Reset the configsecret if it has changed
     stack_meta.load({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
     stack_meta.update(tag, stackmgr)
-    success = stack.apply(wait or not skip_migrations)
+    success = stack.execute(wait or not skip_migrations)
     if not success:
         raise CliError("Apply failed, skipping migrations")
     if not skip_migrations and should_auto_migrate(ctx):

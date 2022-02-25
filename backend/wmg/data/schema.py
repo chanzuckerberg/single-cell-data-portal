@@ -3,13 +3,13 @@ import numpy as np
 import tiledb
 
 cube_indexed_dims = [
-    "feature_id",
-    "cell_type_ontology_term_id",
+    "gene_term_id",
     "tissue_ontology_term_id",
     "organism_ontology_term_id",
 ]
 
 cube_non_indexed_dims = [
+    "cell_type_ontology_term_id",
     "dataset_id",
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
@@ -19,7 +19,7 @@ cube_non_indexed_dims = [
 ]
 cube_logical_dims = cube_indexed_dims + cube_non_indexed_dims
 
-filters = [tiledb.ZstdFilter(level=-22)] # TODO: Confirm -22 is _max_ compression
+filters = [tiledb.ZstdFilter(level=+22)]
 
 domain = tiledb.Domain(
     [
