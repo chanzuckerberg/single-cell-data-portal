@@ -1,40 +1,28 @@
-import { ECharts, EChartsOption } from "echarts";
+import { ECharts } from "echarts";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo } from "react";
-import { createYAxisOptions } from "../utils";
+import { CellTypeMetadata, createYAxisOptions } from "../utils";
 import { UPDATE_THROTTLE_MS } from "./common/constants";
-import { ChartProps } from "./common/types";
+
+interface Props {
+  cellTypeIdsToDelete: string[];
+  cellTypeMetadata: CellTypeMetadata[];
+  heatmapHeight: number;
+  yAxisChart: ECharts | null;
+}
 
 export function useUpdateYAxisChart({
   cellTypeIdsToDelete,
-  chartProps,
-  commonOptions,
-  isEchartGLAvailable,
-  tissuesWithDeletedCellTypes,
+  cellTypeMetadata,
+  heatmapHeight,
   yAxisChart,
-}: {
-  cellTypeIdsToDelete: string[];
-  chartProps: ChartProps | null;
-  commonOptions: EChartsOption;
-  isEchartGLAvailable: boolean;
-  tissuesWithDeletedCellTypes: string[];
-  yAxisChart: ECharts | null;
-}): void {
+}: Props): void {
   const throttledUpdateYAxisChart = useMemo(() => {
     return throttle(
-      ({
-        cellTypeIdsToDelete,
-        chartProps,
-        isEchartGLAvailable,
-        tissuesWithDeletedCellTypes,
-        yAxisChart,
-        commonOptions,
-      }) => {
-        if (!chartProps || !yAxisChart || !isEchartGLAvailable) {
+      ({ cellTypeIdsToDelete, cellTypeMetadata = [], yAxisChart }: Props) => {
+        if (!cellTypeMetadata.length || !yAxisChart) {
           return;
         }
-
-        const { cellTypeNames, geneNames } = chartProps;
 
         // (thuang): resize() needs to be called before setOption() to prevent
         // TypeError: Cannot read properties of undefined (reading 'shouldBePainted')
@@ -43,10 +31,7 @@ export function useUpdateYAxisChart({
         yAxisChart.setOption(
           createYAxisOptions({
             cellTypeIdsToDelete,
-            cellTypeNames,
-            commonOptions,
-            geneNames,
-            tissuesWithDeletedCellTypes,
+            cellTypeMetadata,
           })
         );
       },
@@ -65,18 +50,16 @@ export function useUpdateYAxisChart({
   useEffect(() => {
     throttledUpdateYAxisChart({
       cellTypeIdsToDelete,
-      chartProps,
-      commonOptions,
-      isEchartGLAvailable,
-      tissuesWithDeletedCellTypes,
+      cellTypeMetadata,
+      heatmapHeight,
       yAxisChart,
     });
   }, [
     cellTypeIdsToDelete,
-    chartProps,
-    commonOptions,
-    isEchartGLAvailable,
-    tissuesWithDeletedCellTypes,
+    cellTypeMetadata,
+    // (thuang): `heatmapHeight` is needed to make sure the chart resizes AFTER
+    // the DOM height has been updated
+    heatmapHeight,
     yAxisChart,
     throttledUpdateYAxisChart,
   ]);
