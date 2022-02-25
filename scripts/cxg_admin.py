@@ -755,7 +755,6 @@ def refresh_preprint_doi(ctx):
             if not collection: 
                 continue
             collection_id = record.id
-            dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
             normalized_doi = collection.get_doi()
 
             if record.publisher_metadata and record.publisher_metadata.get("is_preprint"):
