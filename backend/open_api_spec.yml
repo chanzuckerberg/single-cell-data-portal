@@ -124,8 +124,6 @@ paths:
                           type: number
                         description:
                           type: string
-                        data_submission_policy_version:
-                          type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
         "401":
@@ -214,8 +212,6 @@ paths:
                   published_at:
                     type: number
                   description:
-                    type: string
-                  data_submission_policy_version:
                     type: string
                   publisher_metadata:
                     $ref: "#/components/schemas/publisher_metadata"
