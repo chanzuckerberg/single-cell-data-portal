@@ -264,7 +264,8 @@ paths:
           description: Accepted
           content:
             application/json:
-              type: string
+              schema:
+                type: string
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -494,15 +495,6 @@ components:
       allOf:
         - $ref: "#/components/schemas/dataset_preview"
         - type: object
-          required:
-            - name
-            - revision
-            - collection_id
-            - collection_visibility
-            - revised_at
-            - is_primary_data
-            - X_normalization
-            - dataset_assets
           properties:
             name:
               type: string
@@ -545,14 +537,6 @@ components:
               type: string
     dataset_preview:
       type: object
-      required:
-        - id
-        - curator_tag
-        - tissue
-        - assay
-        - disease
-        - organism
-        - tombstone
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
