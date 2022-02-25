@@ -96,7 +96,7 @@ paths:
                       type: object
                       properties:
                         id:
-                          $ref: "#/components/schemas/uuid"
+                          $ref: "#/components/schemas/collection_uuid"
                         name:
                           type: string
                         visibility:
@@ -147,7 +147,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uuid"
+                $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -322,7 +322,7 @@ paths:
                 curator_tag:
                   type: string
                 id:
-                  $ref: "#/components/schemas/uuid"
+                  $ref: "#/components/schemas/dataset_uuid"
                 link:
                   $ref: "#/components/schemas/upload_link"
       responses:
@@ -419,7 +419,7 @@ paths:
                 type: object
                 properties:
                   dataset_uuid:
-                    $ref: "#/components/schemas/uuid"
+                    $ref: "#/components/schemas/dataset_uuid"
                   curator_tag:
                     $ref: "#/components/schemas/curator_tag"
                   assets:
@@ -442,12 +442,18 @@ paths:
 
 components:
   schemas:
+    collection_uuid:
+      description: A unique identifier of a Collection.
+      type: string
     conversion_status:
       description: Status of a dataset file conversion
       type: string
       enum: [ CONVERTED, CONVERTING, FAILED, NA, UPLOADING, UPLOADED, SKIPPED ]
     curator_tag:
       description: A curator-provided tag that is unique within a Collection.
+      type: string
+    dataset_uuid:
+      description: A unique identifier of a Dataset.
       type: string
     visibility:
       description: >-
@@ -503,7 +509,7 @@ components:
             revision:
               type: integer
             collection_id:
-              $ref: "#/components/schemas/uuid"
+              $ref: "#/components/schemas/collection_uuid"
             collection_visibility:
               $ref: "#/components/schemas/visibility"
             revised_at:
@@ -549,7 +555,7 @@ components:
         - tombstone
       properties:
         id:
-          $ref: "#/components/schemas/uuid"
+          $ref: "#/components/schemas/dataset_uuid"
         curator_tag:
           $ref: "#/components/schemas/curator_tag"
         tissue:
@@ -650,9 +656,6 @@ components:
     upload_link:
       description: A user-provided link to the dataset source file.
       type: string
-    uuid:
-      description: A universally unique identifier
-      type: string
 
   parameters:
     optional_query_curator_tag:
@@ -668,7 +671,7 @@ components:
       in: query
       required: false
       schema:
-        $ref: "#/components/schemas/uuid"
+        $ref: "#/components/schemas/dataset_uuid"
     path_collection_uuid:
       name: collection_uuid
       description: >
@@ -677,7 +680,7 @@ components:
       in: path
       required: true
       schema:
-        $ref: "#/components/schemas/uuid"
+        $ref: "#/components/schemas/collection_uuid"
     query_visibility:
       name: visibility
       in: query
