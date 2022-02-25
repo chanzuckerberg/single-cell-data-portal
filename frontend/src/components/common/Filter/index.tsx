@@ -1,5 +1,8 @@
 import { ChangeEvent } from "react";
-import { isCategoryTypeBetween } from "src/common/hooks/useCategoryFilter";
+import {
+  CategoryKey,
+  isCategoryTypeBetween,
+} from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
@@ -8,11 +11,13 @@ import {
   SelectCategoryView,
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
+import { formatNumberToMagnitude } from "src/components/common/Filter/common/utils";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
+import FilterRange from "src/components/common/Filter/components/FilterRange";
 import BasicFilter from "./components/BasicFilter";
 import FilterLabel from "./components/FilterLabel";
 import FilterMenu from "./components/FilterMenu";
-import FilterTags from "./components/FilterTags";
+import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
   categories: CategoryView[];
@@ -23,55 +28,44 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>
       {categories.map((categoryView: CategoryView) => {
-        if (isCategoryTypeBetween(categoryView.key)) {
-          // Send [] to clear filter.
-          const { max, min, selectedMax, selectedMin } =
-            categoryView as RangeCategoryView;
-          return (
-            <div key={categoryView.key}>
-              <div>
-                <span onClick={() => onFilter(categoryView.key, [5000, max])}>
-                  {min}
-                </span>
-                {" - "}
-                <span
-                  onClick={() =>
-                    onFilter(categoryView.key, [min, max - 300000])
-                  }
-                >
-                  {max}
-                </span>
-              </div>
-              <span>
-                {selectedMin} - {selectedMax}
-              </span>
-              <span onClick={() => onFilter(categoryView.key, [])}>x</span>
-            </div>
-          );
-        }
-        const { label, key, values } = categoryView as SelectCategoryView;
-        const isDisabled = isCategoryNA(values);
+        const { key, label } = categoryView;
+        const { values } = categoryView as SelectCategoryView;
+        const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
             content={
-              <FilterMenu
-                categoryKey={key}
-                filterCategoryValues={filterCategoryValues}
-                filterCategoryValuesWithCount={filterCategoryValuesWithCount}
-                isMultiselect={true} // Can possibly be single select with future filter types
-                isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
-                onFilter={onFilter}
-                onUpdateSearchValue={onUpdateSearchValue}
-                values={values}
-              />
+              isCategoryTypeBetween(key) ? (
+                <FilterRange
+                  categoryView={categoryView as RangeCategoryView}
+                  onFilter={onFilter}
+                />
+              ) : (
+                <FilterMenu
+                  categoryKey={key}
+                  filterCategoryValues={filterCategoryValues}
+                  filterCategoryValuesWithCount={filterCategoryValuesWithCount}
+                  isMultiselect={true} // Can possibly be single select with future filter types
+                  isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
+                  onFilter={onFilter}
+                  onUpdateSearchValue={onUpdateSearchValue}
+                  values={values}
+                />
+              )
             }
             isDisabled={isDisabled}
             key={key}
             tags={
               <FilterTags
-                categoryKey={key}
-                onFilter={onFilter}
-                selectedValues={filterSelectedValues(values)}
+                rangeCategoryTag={buildRangeCategoryTag(
+                  categoryView,
+                  key,
+                  onFilter
+                )}
+                selectCategoryTags={buildSelectCategoryTags(
+                  categoryView,
+                  key,
+                  onFilter
+                )}
               />
             }
             target={<FilterLabel isDisabled={isDisabled} label={label} />}
@@ -80,6 +74,65 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
       })}
     </>
   );
+}
+
+/**
+ * Returns range category tag with tag label (the selected range) and corresponding Tag onRemove function.
+ * @param categoryView
+ * @param categoryKey
+ * @param onFilter
+ * @returns range category tag.
+ */
+function buildRangeCategoryTag(
+  categoryView: CategoryView,
+  categoryKey: CategoryKey,
+  onFilter: OnFilterFn
+): CategoryTag | undefined {
+  const { selectedMax, selectedMin } = categoryView as RangeCategoryView;
+  if (!selectedMin && !selectedMax) {
+    return;
+  }
+  if (selectedMin && selectedMax) {
+    return {
+      label: createTagLabel(selectedMin, selectedMax),
+      onRemove: () => onFilter(categoryKey, []),
+    };
+  }
+}
+
+/**
+ * Returns selected category tags with tag label (the selected metadata label) and corresponding Tag onRemove function.
+ * @param categoryView
+ * @param categoryKey
+ * @param onFilter
+ * @returns selected category tags.
+ */
+function buildSelectCategoryTags(
+  categoryView: CategoryView,
+  categoryKey: CategoryKey,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  const { values } = categoryView as SelectCategoryView;
+  if (!values) {
+    return;
+  }
+  return values
+    .filter((value) => value.selected)
+    .map(({ key, label }) => {
+      return { label: label, onRemove: () => onFilter(categoryKey, key) };
+    });
+}
+
+/**
+ * Returns filter tag label for the selected range of the slider.
+ * @param min
+ * @param max
+ * @returns string portraying the selected range of the slider.
+ */
+function createTagLabel(min: number, max: number): string {
+  const minLabel = formatNumberToMagnitude(min);
+  const maxLabel = formatNumberToMagnitude(max);
+  return `${minLabel} - ${maxLabel}`;
 }
 
 /**
@@ -107,23 +160,35 @@ function filterCategoryValuesWithCount(
 }
 
 /**
- * Returns selected category values.
- * @param values
- * @returns selected category values
+ * Returns true if category is not applicable.
+ * @param categoryView
+ * @returns true when category  is not applicable.
  */
-function filterSelectedValues(
-  values: SelectCategoryValueView[]
-): SelectCategoryValueView[] {
-  return values.filter((value) => value.selected);
+function isCategoryNA(categoryView: CategoryView): boolean {
+  if (isCategoryTypeBetween(categoryView.key)) {
+    return isRangeCategoryNA(categoryView);
+  }
+  return isSelectCategoryNA(categoryView);
 }
 
 /**
- * Returns true if category is not applicable, that is, all values have a count of 0.
- * @param values
- * @returns true when all category values have a count of 0
+ * Returns true if range category is not applicable, that is, range min and max are both 0 or both equal.
+ * @param categoryView
+ * @returns true when range min and max are both 0 or both equal.
  */
-function isCategoryNA(values: SelectCategoryValueView[]) {
-  return values.every((value) => value.count === 0);
+function isRangeCategoryNA(categoryView: CategoryView): boolean {
+  const { max, min } = categoryView as RangeCategoryView;
+  return (min === 0 && max === 0) || min === max;
+}
+
+/**
+ * Returns true if select category is not applicable, that is, all values have a count of 0.
+ * @param categoryView
+ * @returns true when all category values have a count of 0.
+ */
+function isSelectCategoryNA(categoryView: CategoryView): boolean {
+  const { values } = categoryView as SelectCategoryView;
+  return values?.every((value) => value.count === 0);
 }
 
 /**
