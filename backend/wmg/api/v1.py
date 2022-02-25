@@ -9,8 +9,13 @@ from flask import jsonify
 from pandas import DataFrame
 
 from backend.wmg.data.config import fast_config, create_ctx
-from backend.wmg.data.query import build_gene_id_label_mapping, build_cell_type_id_label_mapping, \
-    WmgQuery, WmgQueryCriteria
+from backend.wmg.data.query import (
+    build_gene_id_label_mapping,
+    build_cell_type_id_label_mapping,
+    WmgQuery,
+    WmgQueryCriteria,
+)
+
 # TODO: Replace with real snapshot uuid
 from unit.backend.wmg.fixtures.cube import create_cube
 
@@ -46,10 +51,10 @@ def find_cube_latest_snapshot():
 def query():
     request = connexion.request.json
 
-    criteria = WmgQueryCriteria(**request['filter'])
+    criteria = WmgQueryCriteria(**request["filter"])
     query_result = WmgQuery(find_cube_latest_snapshot()).execute(criteria)
 
-    cell_type_term_ids = {key[2].decode('ascii') for key in query_result.index}
+    cell_type_term_ids = {key[2].decode("ascii") for key in query_result.index}
 
     return jsonify(
         dict(
@@ -66,14 +71,17 @@ def query():
 def build_expression_summary_json(query_result: DataFrame) -> str:
     # Create nested dicts with gene_term_id, tissue_ontology_term_id keys, respectively
     structured_result = defaultdict(lambda: defaultdict(list))
-    for group_by_key, cell_type_stats in query_result.to_dict('index').items():
-        gene_term_id, tissue_ontology_term_id, cell_type_ontology_term_id = [s.decode('ascii') for s in group_by_key]
+    for group_by_key, cell_type_stats in query_result.to_dict("index").items():
+        gene_term_id, tissue_ontology_term_id, cell_type_ontology_term_id = [s.decode("ascii") for s in group_by_key]
         structured_result[gene_term_id][tissue_ontology_term_id].append(
-                dict(id=cell_type_ontology_term_id,
-                     n=cell_type_stats['nnz'],
-                     me=cell_type_stats['sum'] / cell_type_stats['n_cells'],
-                     # TODO
-                     pc=0.0,
-                     # TODO
-                     tpc=0.0))
+            dict(
+                id=cell_type_ontology_term_id,
+                n=cell_type_stats["nnz"],
+                me=cell_type_stats["sum"] / cell_type_stats["n_cells"],
+                # TODO
+                pc=0.0,
+                # TODO
+                tpc=0.0,
+            )
+        )
     return structured_result

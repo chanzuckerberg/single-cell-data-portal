@@ -24,9 +24,9 @@ class WmgApiV1Tests(unittest.TestCase):
         response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-                snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
-                organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
-                tissue_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
+            snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
+            organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
+            tissue_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
         )
 
         self.assertEqual(expected, json.loads(response.data))
@@ -89,34 +89,35 @@ class WmgApiV1Tests(unittest.TestCase):
             # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
             # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
             # changed
-            expected_cell_count_per_cell_type = \
-                dim_size ** len(set(cube_non_indexed_dims).difference({'cell_type_ontology_term_id'}))
+            expected_cell_count_per_cell_type = dim_size ** len(
+                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+            )
             assert expected_cell_count_per_cell_type == 729
 
             expected = {
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
                 "expression_summary": {
-                    'gene_term_id_0': {
-                        'tissue_ontology_term_id_0': [
-                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                    "gene_term_id_0": {
+                        "tissue_ontology_term_id_0": [
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                         ]
                     },
-                    'gene_term_id_1': {
-                        'tissue_ontology_term_id_0': [
-                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                    "gene_term_id_1": {
+                        "tissue_ontology_term_id_0": [
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                         ]
                     },
-                    'gene_term_id_2': {
-                        'tissue_ontology_term_id_0': [
-                            {'id': 'cell_type_ontology_term_id_0', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_1', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0},
-                            {'id': 'cell_type_ontology_term_id_2', 'n': 729, 'me': 1.0, 'pc': 0.0, 'tpc': 0.0}
+                    "gene_term_id_2": {
+                        "tissue_ontology_term_id_0": [
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                         ]
-                    }
+                    },
                 },
                 "term_id_labels": {
                     "cell_types": [
@@ -124,9 +125,11 @@ class WmgApiV1Tests(unittest.TestCase):
                         {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
                         {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
                     ],
-                    "genes": [{"gene_term_id_0": "gene_term_id_0_label"},
-                              {"gene_term_id_1": "gene_term_id_1_label"},
-                              {"gene_term_id_2": "gene_term_id_2_label"}]
+                    "genes": [
+                        {"gene_term_id_0": "gene_term_id_0_label"},
+                        {"gene_term_id_1": "gene_term_id_1_label"},
+                        {"gene_term_id_2": "gene_term_id_2_label"},
+                    ],
                 },
             }
             self.assertEqual(expected, json.loads(response.data))

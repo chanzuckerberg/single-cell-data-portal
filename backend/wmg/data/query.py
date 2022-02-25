@@ -18,19 +18,19 @@ class WmgQueryCriteria(BaseModel):
 
 
 class WmgQuery:
-
     def __init__(self, cube: Array) -> None:
         super().__init__()
         self._cube = cube
 
     def execute(self, criteria: WmgQueryCriteria) -> DataFrame:
         # Aggregate cube data by gene, tissue, cell type
-        return \
-            DataFrame(self._cube.multi_index[criteria.gene_term_ids,
-                      criteria.tissue_term_ids,
-                      criteria.organism_term_id]). \
-                groupby(["gene_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]). \
-                sum()
+        return (
+            DataFrame(
+                self._cube.multi_index[criteria.gene_term_ids, criteria.tissue_term_ids, criteria.organism_term_id]
+            )
+            .groupby(["gene_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"])
+            .sum()
+        )
 
 
 def build_gene_id_label_mapping(gene_term_ids) -> List[dict]:
@@ -39,4 +39,3 @@ def build_gene_id_label_mapping(gene_term_ids) -> List[dict]:
 
 def build_cell_type_id_label_mapping(cell_type_term_ids) -> List[dict]:
     return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in sorted(cell_type_term_ids)]
-
