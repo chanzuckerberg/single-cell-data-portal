@@ -246,7 +246,7 @@ export type OnUpdateSearchValueFn = (
 /**
  * Min and max values selected in range category.
  */
-export type Range = [number, number];
+export type Range = [number, number] | []; // TODO(cc) revisit []
 
 /**
  * View model of range metadata key.
