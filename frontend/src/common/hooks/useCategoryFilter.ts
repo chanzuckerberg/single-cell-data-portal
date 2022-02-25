@@ -38,7 +38,8 @@ export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
 
 /**
- * Internal model of a single or multiselect category value. // TODO(cc) revisit naming here
+ * Internal model of a single or multiselect category value: category value keyed by category value key (for easy
+ * look-up when summarizing category).
  */
 type KeyedSelectCategoryValue = Map<CategoryValueKey, SelectCategoryValue>;
 
@@ -95,6 +96,7 @@ type SetFilterFn = (columnId: string, updater: any) => void;
 /**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
  * @returns Object containing filter accessor (view model of filter state) and filter mutator (function to modify react-
@@ -102,6 +104,7 @@ type SetFilterFn = (columnId: string, updater: any) => void;
  */
 export function useCategoryFilter<T extends Categories>(
   originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>,
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
@@ -118,8 +121,8 @@ export function useCategoryFilter<T extends Categories>(
     if (!originalRows.length || categorySet) {
       return;
     }
-    setCategorySet(buildCategorySet(originalRows));
-  }, [originalRows, categorySet]);
+    setCategorySet(buildCategorySet(originalRows, categoryKeys));
+  }, [originalRows, categoryKeys, categorySet]);
 
   // Build next filter state on change of filter.
   useEffect(() => {
@@ -129,11 +132,12 @@ export function useCategoryFilter<T extends Categories>(
     }
     const nextFilterState = buildNextFilterState(
       originalRows,
+      categoryKeys,
       filters,
       categorySet
     );
     setFilterState(nextFilterState);
-  }, [categorySet, filters, originalRows]);
+  }, [categoryKeys, categorySet, filters, originalRows]);
 
   // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
@@ -241,13 +245,15 @@ function between(rowValue: string | string[], filter: CategoryFilter): boolean {
  * Set up model of original, complete set of categories and their values. Only required for single and multiselect
  * categories (and not range categories).
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @returns Sets of category values keyed by their category.
  */
 function buildCategorySet<T extends Categories>(
-  originalRows: Row<T>[]
+  originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>
 ): CategorySet {
   // Build up category values for each category
-  return Object.values(CATEGORY_KEY).reduce(
+  return Array.from(categoryKeys.values()).reduce(
     (accum: CategorySet, categoryKey: CategoryKey) => {
       // Initial state of range types are not required.
       if (isCategoryTypeBetween(categoryKey)) {
@@ -373,17 +379,19 @@ function buildNextCategoryFilters<T extends Categories>(
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
  * Retain category values with 0 counts from given category set.
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>,
   filters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
   // Build set of filters that are applicable to each category.
-  const queries = buildQueries(filters);
+  const queries = buildQueries(categoryKeys, filters);
 
   // Build up base filter state of categories, category values and counts.
   const nextFilterState = summarizeCategories(originalRows, queries);
@@ -400,11 +408,15 @@ function buildNextFilterState<T extends Categories>(
 /**
  * Determine the set of filters that are applicable to each category. That is, for a category, all selected filters
  * other than the selected filters for that category can be applied to the result set to determine the counts for.
+ * @param categories - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of query models representing of the selected filters applicable for each category.
  */
-function buildQueries<T extends Categories>(filters: Filters<T>): Query<T>[] {
-  return Object.values(CATEGORY_KEY).reduce(
+function buildQueries<T extends Categories>(
+  categories: Set<CATEGORY_KEY>,
+  filters: Filters<T>
+): Query<T>[] {
+  return Array.from(categories.values()).reduce(
     (accum: Query<T>[], categoryKey: CategoryKey) => {
       // Determine the filters that are applicable to this category.
       const filtersExcludingSelf = filters.filter((filter: CategoryFilter) => {
@@ -662,13 +674,13 @@ function summarizeRangeCategory<T extends Categories>(
   categoryKey: CategoryKey,
   filteredRows: Row<T>[]
 ): RangeCategory {
-  const cellCounts = filteredRows
-    .map((filteredRow) => filteredRow.values.cell_count)
-    .filter((cellCount) => !!cellCount || cellCount === 0); // Remove bad data, just in case!
+  const counts = filteredRows
+    .map((filteredRow) => filteredRow.values[categoryKey])
+    .filter((count) => !!count || count === 0); // Remove bad data, just in case!
   return {
     key: categoryKey,
-    max: cellCounts.length ? Math.max(...cellCounts) : 0, // TODO(cc) handle bad data? disable if 0,0? (also, what if 320 - 320?)
-    min: cellCounts.length ? Math.min(...cellCounts) : 0,
+    max: counts.length ? Math.max(...counts) : 0, // TODO(cc) handle bad data? disable if 0,0? (also, what if 320 - 320?)
+    min: counts.length ? Math.min(...counts) : 0,
   };
 }
 

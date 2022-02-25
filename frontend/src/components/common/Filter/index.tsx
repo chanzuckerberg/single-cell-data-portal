@@ -24,6 +24,7 @@ interface Props {
   onFilter: OnFilterFn;
 }
 
+// TODO(cc) add type guard to prevent "as XXX"
 export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>

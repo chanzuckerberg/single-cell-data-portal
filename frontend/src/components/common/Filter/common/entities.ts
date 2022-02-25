@@ -34,6 +34,7 @@ export enum CATEGORY_KEY {
   "CELL_TYPE" = "cell_type",
   "DISEASE" = "disease",
   "IS_PRIMARY_DATA" = "is_primary_data",
+  "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
   "ORGANISM" = "organism",
   "PUBLICATION_AUTHORS" = "publicationAuthors",
   "PUBLICATION_DATE_VALUES" = "publicationDateValues",
@@ -64,6 +65,11 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+  },
+  {
+    categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
+    categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    multiselect: false,
   },
   {
     categoryKey: CATEGORY_KEY.IS_PRIMARY_DATA,
@@ -164,6 +170,7 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   explorer_url: string;
   id: string;
   isOverMaxCellCount: boolean;
+  mean_genes_per_cell: number | null;
   name: string;
   published_at: number;
   recency: number; // Used by sort
@@ -206,6 +213,7 @@ export enum IS_PRIMARY_DATA_LABEL {
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
   | CATEGORY_KEY.CELL_COUNT
+  | CATEGORY_KEY.MEAN_GENES_PER_CELL
   | CATEGORY_KEY.IS_PRIMARY_DATA
   | CATEGORY_KEY.PUBLICATION_DATE_VALUES
   | CATEGORY_KEY.PUBLICATION_AUTHORS
@@ -214,12 +222,13 @@ export type OntologyCategoryKey = keyof Omit<
 /**
  * Display value of category labels.
  */
-export enum CATEGORY_LABEL { // TODO(cc) combine with config
+export enum CATEGORY_LABEL {
   assay = "Assay",
   cell_count = "Cell Count",
   cell_type = "Cell Type",
   disease = "Disease",
   is_primary_data = "Data Source",
+  mean_genes_per_cell = "Gene Count",
   publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",
   organism = "Organism",
@@ -244,9 +253,9 @@ export type OnUpdateSearchValueFn = (
 ) => void;
 
 /**
- * Min and max values selected in range category.
+ * Min and max values selected in range category. Empty array if no range is specified (e.g. on clear of range).
  */
-export type Range = [number, number] | []; // TODO(cc) revisit []
+export type Range = [number, number] | [];
 
 /**
  * View model of range metadata key.

@@ -6,7 +6,7 @@ import {
   PT_TEXT_COLOR,
 } from "src/components/common/theme";
 
-/* eslint sort-keys: 0 */ /* TODO(cc) */
+/* eslint-disable sort-keys -- ignore object key order for style objects */
 export const useSliderStyles = makeStyles({
   root: {
     color: PRIMARY_BLUE,
@@ -71,3 +71,4 @@ export const useSliderStyles = makeStyles({
     },
   },
 });
+/* eslint-enable sort-keys -- ignore object key order for style objects */

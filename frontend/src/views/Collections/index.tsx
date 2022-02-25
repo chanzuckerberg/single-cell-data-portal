@@ -5,7 +5,10 @@ import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
-import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
+import {
+  CategoryKey,
+  useCategoryFilter,
+} from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchCollectionRows } from "src/common/queries/filter";
 import { useExplainTombstoned } from "src/components/Collections/common/utils";
@@ -201,6 +204,20 @@ export default function Collections(): JSX.Element {
     useSortBy
   );
 
+  // Determine the set of categories to display for the datasets view.
+  const categories = useMemo<Set<CATEGORY_KEY>>(() => {
+    return Object.values(CATEGORY_KEY)
+      .filter(
+        (categoryKey: CategoryKey) =>
+          categoryKey !== CATEGORY_KEY.CELL_COUNT &&
+          categoryKey !== CATEGORY_KEY.MEAN_GENES_PER_CELL
+      )
+      .reduce((accum, categoryKey: CategoryKey) => {
+        accum.add(categoryKey);
+        return accum;
+      }, new Set<CATEGORY_KEY>());
+  }, []);
+
   // Filter init.
   const {
     preFilteredRows,
@@ -208,7 +225,12 @@ export default function Collections(): JSX.Element {
     setFilter,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
+  const filterInstance = useCategoryFilter(
+    preFilteredRows,
+    categories,
+    filters,
+    setFilter
+  );
 
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);

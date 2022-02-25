@@ -88,6 +88,7 @@ export interface DatasetResponse {
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
+  mean_genes_per_cell: number | null;
   name: string;
   organism: Ontology[];
   published_at: number;
@@ -705,6 +706,7 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       // Check for fields that don't require sanitizing.
       if (
         categoryKey === CATEGORY_KEY.CELL_COUNT ||
+        categoryKey === CATEGORY_KEY.MEAN_GENES_PER_CELL ||
         categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
         categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
       ) {

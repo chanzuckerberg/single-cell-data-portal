@@ -9,7 +9,7 @@ import { formatNumberToMagnitude } from "src/components/common/Filter/common/uti
 import { useSliderStyles } from "src/components/common/Filter/components/FilterRange/style";
 
 type SliderEl = HTMLSpanElement; /* TODO(cc) review */
-type SliderRange = number | number[];
+type SliderRange = number | number[]; // TODO(cc) combine with range?
 
 interface Props {
   categoryView: RangeCategoryView;
@@ -39,6 +39,7 @@ export default function FilterRange({
     selectedMax || max,
   ]);
   const marks = buildMarks([min, max]);
+  const step = Math.floor((max - min) / 100); // TODO(cc) Only makes sense if diff is > 100?
 
   const onChangeSliderRange = (
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -66,6 +67,7 @@ export default function FilterRange({
       onChange={onChangeSliderRange}
       onChangeCommitted={onCommittedSliderRange}
       ref={sliderRef} // TODO(cc) for wrapper component
+      step={step}
       value={range}
       valueLabelFormat={formatNumberToMagnitude}
       valueLabelDisplay="on"

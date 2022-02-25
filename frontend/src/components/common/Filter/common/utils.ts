@@ -25,27 +25,23 @@ export function ontologyCellAccessorFn(
 
 /**
  * Returns formatted number with corresponding magnitude.
- * Based off https://stackoverflow.com/a/9462382.
- * @param num
- * @returns string (a displayable number with corresponding magnitude).
+ * @param num - Number to format.
+ * @returns String containing number with corresponding magnitude.
  */
 export function formatNumberToMagnitude(num: number): string {
-  const si = [
-    { symbol: "", value: 1 },
-    { symbol: "k", value: 1e3 },
-    { symbol: "M", value: 1e6 },
-    { symbol: "G", value: 1e9 },
-    { symbol: "T", value: 1e12 },
-    { symbol: "PB", value: 1e15 },
-    { symbol: "E", value: 1e18 },
-  ];
-  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-  let i;
-  for (i = si.length - 1; i > 0; i--) {
-    if (num >= si[i].value) {
-      break;
-    }
-  }
-  const symbol = si[i].symbol;
-  return (num / si[i].value).toFixed(1).replace(rx, "$1") + symbol;
+  // TODO(cc) demo code only - must be productionalized.
+  const magnitude = num < 100000 ? 1000 : 1000000;
+  const precision = num < 1000000 ? 1 : 2;
+  const symbol = magnitude === 1000 ? "k" : "M";
+  return `${roundToPrecision(precision, num) / magnitude}${symbol}`;
+}
+
+/**
+ * Round the given number to the given significant digits.
+ * @param precision - Number of significant digits.
+ * @param num - Number to round to significant digits.
+ * @returns Rounded number to the given significant digits.
+ */
+function roundToPrecision(precision: number, num: number): number {
+  return parseFloat(num.toPrecision(precision));
 }
