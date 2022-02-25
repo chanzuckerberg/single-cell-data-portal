@@ -257,8 +257,8 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/optional_query_curator_tag"
-        - $ref: "#/components/parameters/optional_query_dataset_uuid"
+        - $ref: "#/components/parameters/query_curator_tag"
+        - $ref: "#/components/parameters/query_dataset_uuid"
       responses:
         "202":
           description: Accepted
@@ -282,8 +282,8 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/optional_query_curator_tag"
-        - $ref: "#/components/parameters/optional_query_dataset_uuid"
+        - $ref: "#/components/parameters/query_curator_tag"
+        - $ref: "#/components/parameters/query_dataset_uuid"
       requestBody:
         content:
           application/json:
@@ -376,8 +376,8 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/optional_query_curator_tag"
-        - $ref: "#/components/parameters/optional_query_dataset_uuid"
+        - $ref: "#/components/parameters/query_curator_tag"
+        - $ref: "#/components/parameters/query_dataset_uuid"
       responses:
         "200":
           description: OK
@@ -409,8 +409,9 @@ paths:
         Request to download a file which on success will generate and return a pre-signed URL to download the dataset.
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/optional_query_curator_tag"
-        - $ref: "#/components/parameters/optional_query_dataset_uuid"
+        - $ref: "#/components/parameters/query_curator_tag"
+        - $ref: "#/components/parameters/query_dataset_uuid"
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -642,14 +643,14 @@ components:
       type: string
 
   parameters:
-    optional_query_curator_tag:
+    query_curator_tag:
       name: curator_tag
       description: A curator-provided tag. Must be unique within a given Collection.
       in: query
       required: false
       schema:
         $ref: "#/components/schemas/curator_tag"
-    optional_query_dataset_uuid:
+    query_dataset_uuid:
       name: dataset_uuid
       description: The uuid of the Dataset.
       in: query
@@ -668,6 +669,7 @@ components:
     query_visibility:
       name: visibility
       in: query
+      required: false
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
