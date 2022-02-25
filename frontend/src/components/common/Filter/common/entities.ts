@@ -253,7 +253,7 @@ export type Range = [number, number] | []; // TODO(cc) revisit []
  */
 export interface RangeCategoryView {
   key: CATEGORY_KEY;
-  label: string;
+  label: CATEGORY_LABEL;
   max: number;
   min: number;
   selectedMax?: number;

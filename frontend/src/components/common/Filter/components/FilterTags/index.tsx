@@ -1,32 +1,28 @@
 import { Tag } from "@blueprintjs/core";
-import {
-  CATEGORY_KEY,
-  OnFilterFn,
-  SelectCategoryValueView,
-} from "src/components/common/Filter/common/entities";
+import React from "react";
 import { SelectedTags } from "./style";
 
+type OnRemoveFn = () => void;
+
+export interface CategoryTag {
+  label: string;
+  onRemove: OnRemoveFn;
+}
+
 interface Props {
-  categoryKey: CATEGORY_KEY;
-  onFilter: OnFilterFn;
-  selectedValues: SelectCategoryValueView[];
+  rangeCategoryTag?: CategoryTag;
+  selectCategoryTags?: CategoryTag[];
 }
 
 export default function FilterTags({
-  categoryKey,
-  onFilter,
-  selectedValues,
+  rangeCategoryTag,
+  selectCategoryTags,
 }: Props): JSX.Element | null {
-  return selectedValues.length ? (
+  const tags = rangeCategoryTag ? [rangeCategoryTag] : selectCategoryTags;
+  return tags && tags.length ? (
     <SelectedTags>
-      {selectedValues.map(({ key, label }) => (
-        <Tag
-          key={key}
-          large
-          minimal
-          multiline
-          onRemove={() => onFilter(categoryKey, key)}
-        >
+      {tags.map(({ label, onRemove }) => (
+        <Tag key={label} large minimal multiline onRemove={onRemove}>
           {label}
         </Tag>
       ))}
