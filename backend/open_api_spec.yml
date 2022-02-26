@@ -132,6 +132,8 @@ paths:
                           type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
+                        tombstone:
+                          type: boolean
         "401":
           $ref: "#/components/responses/401"
     post:
