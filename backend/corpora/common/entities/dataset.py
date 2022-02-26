@@ -39,13 +39,13 @@ class Dataset(Entity):
 
     @classmethod
     def create(
-        cls,
-        session,
-        revision: int = 0,
-        name: str = "",
-        artifacts: list = None,
-        processing_status: dict = None,
-        **kwargs,
+            cls,
+            session,
+            revision: int = 0,
+            name: str = "",
+            artifacts: list = None,
+            processing_status: dict = None,
+            **kwargs,
     ) -> "Dataset":
         """
         Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
@@ -89,6 +89,30 @@ class Dataset(Entity):
                     self.session.add(new_obj)
 
         super().update(commit=commit, **kwargs)
+
+
+    @classmethod
+    def list_ids_for_cube(cls, session):
+        from sqlalchemy import func, column, Text, Boolean
+        items = func.jsonb_to_recordset(cls.table.assay).table_valued(
+            column("ontology_term_id", Text).render_derived(with_types=True))
+
+        # TODO make dict of ontology ids and human readable names, store as a const elsewhere (in rds?)
+        included_assay_ontology_ids = ['EFO:0008722', 'EFO:0010010', 'EFO:0010550', 'EFO:0010961', 'EFO:0030002', 'EFO:0009901', 'EFO:0011025',  'EFO:0009899', 'EFO:0009900', 'EFO:0009922', 'EFO_0030003', 'EFO:0030004', 'EFO:0008919']
+        in_expression = items.c.ontology_term_id.in_(included_assay_ontology_ids)
+        query = session.query(
+            cls.table.id,
+            items.c.ontology_term_id)\
+            .filter(
+            cls.assay != 'nulll',
+            cls.published == True,
+            cls.is_primary_data == 'PRIMARY',
+            cls.collection_visibiltiy == 'PUBLIC',
+            cls.tombstone == 'f',
+            in_expression
+
+        )
+
 
     @classmethod
     def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
@@ -318,10 +342,10 @@ class Dataset(Entity):
         filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
         artifact = (
             self.session.query(DbDatasetArtifact)
-            .filter(*filters)
-            .order_by(DbDatasetArtifact.created_at.desc())
-            .limit(1)
-            .all()
+                .filter(*filters)
+                .order_by(DbDatasetArtifact.created_at.desc())
+                .limit(1)
+                .all()
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
@@ -346,8 +370,8 @@ class Dataset(Entity):
                 # connect revised artifacts with published dataset
                 for artifact in revision.artifacts:
                     if (
-                        artifact.filetype == DatasetArtifactFileType.RDS
-                        and revision.processing_status.rds_status == ConversionStatus.SKIPPED
+                            artifact.filetype == DatasetArtifactFileType.RDS
+                            and revision.processing_status.rds_status == ConversionStatus.SKIPPED
                     ):
                         # Delete old .rds (Seurat) dataset artifact clones if rds_status for dataset revision is SKIPPED
                         DatasetAsset(artifact).delete(commit=False)

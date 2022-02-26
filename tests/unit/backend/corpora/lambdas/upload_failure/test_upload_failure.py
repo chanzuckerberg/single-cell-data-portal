@@ -6,7 +6,7 @@ import tempfile
 import boto3
 from moto import mock_s3
 
-from backend.corpora.common.utils.aws import delete_many_from_s3
+from backend.corpora.common.utils.aws import s3_delete_many
 
 
 class TestUploadFailureHandling(TestCase):
@@ -59,23 +59,23 @@ class TestUploadFailureHandling(TestCase):
     def test_delete_from_s3_deletes_all_files(self):
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
         self.assertGreater(len(resp["Contents"]), 0)
-        delete_many_from_s3(self.bucket_name, self.uuid)
+        s3_delete_many(self.bucket_name, self.uuid)
 
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
         self.assertNotIn("Contents", resp)
 
     def test_delete_from_s3_handles_no_files(self):
         # delete files
-        delete_many_from_s3(self.bucket_name, self.uuid)
+        s3_delete_many(self.bucket_name, self.uuid)
         resp = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
 
         self.assertNotIn("Contents", resp)
         # this should not raise any errors
-        delete_many_from_s3(self.bucket_name, self.uuid)
+        s3_delete_many(self.bucket_name, self.uuid)
 
     def test_delete_from_s3_raises_error_for_missing_dataset_uuid(self):
         with self.assertRaises(ValueError):
-            delete_many_from_s3(self.bucket_name, "")
+            s3_delete_many(self.bucket_name, "")
 
         response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.uuid)
 
