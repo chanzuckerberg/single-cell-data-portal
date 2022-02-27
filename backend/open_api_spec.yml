@@ -194,6 +194,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  id:
+                    $ref: "#/components/schemas/collection_uuid"
                   name:
                     type: string
                   visibility:
@@ -559,10 +561,6 @@ components:
               type: string
             revision:
               type: integer
-            collection_id:
-              $ref: "#/components/schemas/collection_uuid"
-            collection_visibility:
-              $ref: "#/components/schemas/visibility"
             revised_at:
               type: number
             is_primary_data:
