@@ -394,6 +394,23 @@ paths:
 
         * If there is an existing Dataset with tag `<curator_tag>` in `<collection_uuid>`, the existing Dataset
         SHALL be replaced.
+
+
+        The response contains the credentials required for uploading to our AWS S3 bucket:
+
+        * access_key
+
+        * secret_access_key
+
+        * session_token
+
+
+        To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
+        processed and added to the Collection (specified in the S3 key path) with no further user action required.
+        Include an email address in the S3 file upload metadata to receive processing and error notifications.
+        Alternatively, use `/curation/collections/{collection_uuid}/datasets/status` to check on the processing
+        status for a given Dataset.
+
       security:
         - cxguserCookie: []
         - curatorAccess: []
