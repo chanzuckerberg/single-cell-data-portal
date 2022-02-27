@@ -64,6 +64,7 @@ paths:
           name: Authorization
           schema:
             type: string
+            example: "Bearer <YOUR-API-KEY>"
           required: true
       responses:
         "201":
