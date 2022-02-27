@@ -378,8 +378,8 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /curation/collections/{collection_uuid}/datasets/upload-s3:
-    put:
+  /curation/collections/{collection_uuid}/datasets/s3-upload-credentials:
+    get:
       summary: Get credentials for uploading local files
       description: >
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
