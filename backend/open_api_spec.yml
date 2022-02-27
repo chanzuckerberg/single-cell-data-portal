@@ -292,6 +292,8 @@ paths:
             application/json:
               schema:
                 type: string
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -473,6 +475,10 @@ paths:
                       rds:
                         description: status for rds/seurat conversion
                         $ref: "#/components/schemas/conversion_status"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
 
   /curation/collections/{collection_uuid}/asset:
     get:
