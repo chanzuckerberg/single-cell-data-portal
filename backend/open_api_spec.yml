@@ -336,9 +336,10 @@ paths:
     put:
       summary: Upload a Dataset by providing a link
       description: >-
-        Upload a Dataset. The Dataset will be uploaded from the provided link. SHOULD include a **curator_tag** in the
+        Upload a Dataset. The Dataset will be uploaded from the provided link. MUST include a **curator_tag** in the
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
-        Dataset will be added. MAY include the **id** of an existing Dataset; the existing Dataset SHALL be replaced.
+        Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
+        SHALL be replaced.
       security:
         - cxguserCookie: []
         - curatorAccess: []
