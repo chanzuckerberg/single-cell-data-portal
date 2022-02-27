@@ -64,8 +64,9 @@ paths:
           name: Authorization
           schema:
             type: string
-            example: "Bearer <YOUR-API-KEY>"
+            example: "Bearer <YOUR-CURATOR-API-KEY>"
           required: true
+          description: Your curator API key with `Bearer` prepended, joined by a single space.
       responses:
         "201":
           description: Created
@@ -463,6 +464,7 @@ paths:
                 properties:
                   status:
                     type: string
+                    description: Processing status for a Dataset
                     enum: [FAILURE, PENDING, SUCCESS]
                   file_statuses:
                     type: object
@@ -531,8 +533,8 @@ components:
       type: string
       example: fedcba98-7654-3210-fedc-ba9876543210
     conversion_status:
-      description: Status of a dataset file conversion
       type: string
+      description: Status for a Dataset asset generated during initial Dataset source file processing
       enum: [CONVERTED, CONVERTING, FAILED, NA, UPLOADING, UPLOADED, SKIPPED]
     curator_tag:
       description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
@@ -722,7 +724,9 @@ components:
   parameters:
     query_curator_tag:
       name: curator_tag
-      description: A curator-provided tag. Must be unique within a given Collection.
+      description: >-
+        A curator-provided tag. MUST be unique within a given Collection. MAY be used to uniquely identify a Dataset
+        when using the Curator API. SHALL default to null for Datasets created using the Data Portal UI.
       in: query
       required: false
       schema:
@@ -745,12 +749,15 @@ components:
         $ref: "#/components/schemas/collection_uuid"
     query_visibility:
       name: visibility
+      description: >-
+        The 'visibility' of a Collection (and its constituent Datasets). `PUBLIC`, `PRIVATE`, or `REVISION`, which is a
+        private version of a public Collection; a revision SHALL NOT be visible to other users until the revision itself
+        is explicitly published by its curator.
       in: query
       required: false
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
-
   responses:
     200:
       description: OK
