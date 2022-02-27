@@ -232,8 +232,9 @@ paths:
     put:
       summary: Update a Collection's metadata.
       description: >-
-        Start a revision of a public Collection, or update its existing revision. Update a private Collection in-place.
-        The Collection metadata fields included in the body of the request are updated.
+        Start a revision of a published Collection or update its existing revision. Update a private Collection
+        in-place. If any Collection metadata fields are included in the body of the request, these fields SHALL be
+        updated for the specified Collection.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -244,6 +245,19 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/collection_form_metadata"
+            examples:
+              update_name:
+                summary: Update the name
+                value:
+                  name: "New Collection name"
+              update_description:
+                summary: Update the description
+                value:
+                  description: "New Collection description"
+              start_new_revision:
+                summary: Start revision without making updates
+                value: {}
+
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -259,7 +273,9 @@ paths:
   /curation/collections/{collection_uuid}/datasets:
     delete:
       summary: Delete a private Dataset
-      description: Delete a private Dataset.
+      description: >-
+        Delete a Dataset. The Dataset MUST NOT belong to a published Collection. MUST indicate the Dataset by providing
+        *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -283,8 +299,8 @@ paths:
     patch:
       summary: Update a Dataset's curator tag.
       description: >-
-        Update a Dataset's curator-provided tag. Must indicate the Dataset by providing either the current curator
-        tag OR the Dataset uuid.
+        Update a Dataset's curator-provided tag. The Dataset MUST NOT belong to a published Collection. MUST indicate
+        the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -302,6 +318,8 @@ paths:
                 curator_tag:
                   type: string
                   description: curator-provided tag
+            example:
+              curator_tag: "new/curator_tag"
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -315,7 +333,10 @@ paths:
   /curation/collections/{collection_uuid}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
-      description: Upload a Dataset. The Dataset will be uploaded from the provided link.
+      description: >-
+        Upload a Dataset. The Dataset will be uploaded from the provided link. SHOULD include a **curator_tag** in the
+        request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
+        Dataset will be added. MAY include the **id** of an existing Dataset; the existing Dataset SHALL be replaced.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -334,6 +355,17 @@ paths:
                   $ref: "#/components/schemas/dataset_uuid"
                 link:
                   $ref: "#/components/schemas/upload_link"
+            examples:
+              tag:
+                summary: Using the tag
+                value:
+                  curator_tag: "<new_or_existing_tag>"
+                  link: "<download_link_for_data_source_file>"
+              id:
+                summary: Using the dataset uuid
+                value:
+                  id: "<existing_dataset_uuid>"
+                  link: "<download_link_for_data_source_file>"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -350,6 +382,16 @@ paths:
       description: >
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
         or update Datasets for the specified Collection.
+
+        * Uploads to <root_bucket> MUST take the form of `s3://<root_bucket>/<collection_uuid>/<curator_tag>`.
+
+        * `<collection_uuid>` MUST NOT be a published Collection. Only uploads to private Collections
+        (unpublished OR ongoing revision of published) will be processed.
+
+        * If there is no Dataset with tag `<curator_tag>` in `<collection_uuid>`, a new Dataset SHALL be added.
+
+        * If there is an existing Dataset with tag `<curator_tag>` in `<collection_uuid>`, the existing Dataset
+        SHALL be replaced.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -378,7 +420,9 @@ paths:
   /curation/collections/{collection_uuid}/datasets/status:
     get:
       summary: Get a Dataset's processing status
-      description: Get the processing status for a Dataset.
+      description: >-
+        Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
+        **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -414,7 +458,8 @@ paths:
     get:
       summary: Retrieve links for downloading a dataset
       description: >-
-        Request to download a file which on success will generate and return a pre-signed URL to download the dataset.
+        Request to download a file which on success will generate and return a pre-signed URL to download
+        the dataset. MUST include *one* of the **curator_tag** and **dataset_uuid** parameters.
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -443,6 +488,8 @@ paths:
                           type: string
                         file_size:
                           type: number
+                        filetype:
+                          type: string
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -455,16 +502,19 @@ components:
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
+      example: fedcba98-7654-3210-fedc-ba9876543210
     conversion_status:
       description: Status of a dataset file conversion
       type: string
-      enum: [ CONVERTED, CONVERTING, FAILED, NA, UPLOADING, UPLOADED, SKIPPED ]
+      enum: [CONVERTED, CONVERTING, FAILED, NA, UPLOADING, UPLOADED, SKIPPED]
     curator_tag:
-      description: A curator-provided tag that is unique within a Collection.
+      description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
       type: string
+      example: an/example/curator.tag
     dataset_uuid:
       description: A unique identifier of a Dataset.
       type: string
+      example: 01234567-89ab-cdef-0123-456789abcdef
     visibility:
       description: >-
         Determines the visibility of the collection, that will either make the collection visible on the public
@@ -627,7 +677,6 @@ components:
         - description
         - contact_name
         - contact_email
-        - curator_name
       properties:
         name:
           type: string
@@ -641,9 +690,6 @@ components:
         contact_email:
           type: string
           description: email of contact person for the collection
-        curator_name:
-          type: string
-          description: name of the curator of the collection.
         links:
           $ref: "#/components/schemas/links"
     upload_link:
@@ -668,7 +714,7 @@ components:
     path_collection_uuid:
       name: collection_uuid
       description: >
-        The uuid of a collection. To specify the private revision of a public
+        The uuid of a collection. To specify an ongoing revision of a public
         collection, use the uuid of the public collection.
       in: path
       required: true
