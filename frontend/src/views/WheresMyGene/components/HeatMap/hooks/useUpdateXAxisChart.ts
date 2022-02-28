@@ -1,37 +1,27 @@
-import { EChartsOption } from "echarts";
 import throttle from "lodash/throttle";
 import { useEffect, useMemo } from "react";
 import { createXAxisOptions } from "../utils";
 import { UPDATE_THROTTLE_MS } from "./common/constants";
-import { ChartProps } from "./common/types";
+
+interface Props {
+  geneNames?: string[];
+  genesToDelete: string[];
+  heatmapWidth: number;
+  xAxisChart: echarts.ECharts | null;
+}
 
 export function useUpdateXAxisChart({
-  chartProps,
-  commonOptions,
+  geneNames,
   genesToDelete,
-  isEchartGLAvailable,
+  heatmapWidth,
   xAxisChart,
-}: {
-  chartProps: ChartProps | null;
-  commonOptions: EChartsOption;
-  genesToDelete: string[];
-  isEchartGLAvailable: boolean;
-  xAxisChart: echarts.ECharts | null;
-}): void {
+}: Props): void {
   const throttledUpdateXAxisChart = useMemo(() => {
     return throttle(
-      ({
-        chartProps,
-        genesToDelete,
-        isEchartGLAvailable,
-        xAxisChart,
-        commonOptions,
-      }) => {
-        if (!chartProps || !xAxisChart || !isEchartGLAvailable) {
+      ({ geneNames = [], genesToDelete, xAxisChart }: Props) => {
+        if (!geneNames.length || !xAxisChart) {
           return;
         }
-
-        const { cellTypeNames, geneNames } = chartProps;
 
         // (thuang): resize() needs to be called before setOption() to prevent
         // TypeError: Cannot read properties of undefined (reading 'shouldBePainted')
@@ -39,8 +29,6 @@ export function useUpdateXAxisChart({
 
         xAxisChart.setOption(
           createXAxisOptions({
-            cellTypeNames,
-            commonOptions,
             geneNames,
             genesToDelete,
           })
@@ -60,18 +48,18 @@ export function useUpdateXAxisChart({
   // Update xAxis chart
   useEffect(() => {
     throttledUpdateXAxisChart({
-      chartProps,
-      commonOptions,
+      geneNames,
       genesToDelete,
-      isEchartGLAvailable,
+      heatmapWidth,
       xAxisChart,
     });
   }, [
-    chartProps,
+    geneNames,
     genesToDelete,
-    isEchartGLAvailable,
+    // (thuang): `heatmapWidth` is needed to make sure the chart resizes AFTER
+    // the DOM width has been updated
+    heatmapWidth,
     xAxisChart,
-    commonOptions,
     throttledUpdateXAxisChart,
   ]);
 }

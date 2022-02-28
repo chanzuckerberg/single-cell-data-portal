@@ -16,12 +16,12 @@ class WmgApiV1Tests(unittest.TestCase):
             self.app = app.test_client(use_cookies=False)
 
     def test__primary_filter_dimensions__returns_200(self):
-        response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
+        response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         self.assertEqual(200, response.status_code)
 
     def test__primary_filter_dimensions__returns_valid_response_body(self):
-        response = self.app.get(f"/wmg/v1/primary_filter_dimensions")
+        response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
             snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
@@ -37,7 +37,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response_option="include_filter_dims_include_dataset_links",
         )
 
-        response = self.app.post(f"/wmg/v1/query", json=request)
+        response = self.app.post("/wmg/v1/query", json=request)
 
         self.assertEqual(200, response.status_code)
 
@@ -63,9 +63,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response_option="include_filter_dims_include_dataset_links",
         )
 
-        response = self.app.post(f"/wmg/v1/query", json=request)
-
-        self.assertEqual(400, response.status_code)
+        response = self.app.post("/wmg/v1/query", json=request)
 
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
     def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot):

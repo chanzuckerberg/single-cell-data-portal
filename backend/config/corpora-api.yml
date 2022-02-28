@@ -847,6 +847,8 @@ paths:
                       type: integer
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
+                    mean_genes_per_cell:
+                      type: number
         "400":
           $ref: "#/components/responses/400"
 
@@ -980,6 +982,7 @@ paths:
                 filter:
                   type: object
                   required:
+                    - gene_term_ids
                     - organism_term_id
                     - tissue_term_ids
                   properties:

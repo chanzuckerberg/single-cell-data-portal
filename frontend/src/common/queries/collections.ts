@@ -5,6 +5,7 @@ import {
   UseQueryResult,
 } from "react-query";
 import { Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { buildSummaryCitation } from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -17,6 +18,28 @@ import {
   JSON_BODY_FETCH_OPTIONS,
 } from "./common";
 import { ENTITIES } from "./entities";
+
+/**
+ * Error text returned from BE when DOI is identified as invalid.
+ */
+const INVALID_DOI_MESSAGE = "DOI cannot be found on Crossref";
+
+/**
+ * Model returned from create collection: collection ID if create was successful, otherwise flag indicating invalid DOI.
+ */
+export interface CollectionCreateResponse {
+  collectionId?: string;
+  isInvalidDOI?: boolean;
+}
+
+/**
+ * Model returned from edit collection: the collection itself if edit was successful, otherwise flag indicating invalid
+ * DOI.
+ */
+export interface CollectionEditResponse {
+  collection?: Collection;
+  isInvalidDOI?: boolean;
+}
 
 export const USE_COLLECTIONS = {
   entities: [ENTITIES.COLLECTION],
@@ -150,6 +173,12 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
         publishedCounterpart
       );
     }
+
+    // Add summary citation to collection.
+    collection.summaryCitation = buildSummaryCitation(
+      collection.publisher_metadata
+    );
+
     return collection;
   };
 }
@@ -171,7 +200,9 @@ export function useCollection({
   );
 }
 
-export async function createCollection(payload: string): Promise<string> {
+export async function createCollection(
+  payload: string
+): Promise<CollectionCreateResponse> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -182,11 +213,19 @@ export async function createCollection(payload: string): Promise<string> {
 
   const json = await response.json();
 
+  // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
+  // are validated by the BE.
+  if (isInvalidDOI(response.status, json.detail)) {
+    return { isInvalidDOI: true };
+  }
+
   if (!response.ok) {
     throw json;
   }
 
-  return json.collection_uuid;
+  return {
+    collectionId: json.collection_uuid,
+  };
 }
 
 export function useCreateCollection() {
@@ -361,7 +400,7 @@ const editCollection = async function ({
 }: {
   id: string;
   payload: string;
-}): Promise<Collection> {
+}): Promise<CollectionEditResponse> {
   idError(id);
 
   if (!payload) {
@@ -379,9 +418,19 @@ const editCollection = async function ({
 
   const result = await response.json();
 
-  if (!response.ok) throw result;
+  // Check for validation errors. Currently only DOI is validated by the BE; this can be generalized once all fields
+  // are validated by the BE.
+  if (isInvalidDOI(response.status, result.detail)) {
+    return { isInvalidDOI: true };
+  }
 
-  return result;
+  if (!response.ok) {
+    throw result;
+  }
+
+  return {
+    collection: result,
+  };
 };
 
 export function useEditCollection(collectionID?: Collection["id"]) {
@@ -400,7 +449,13 @@ export function useEditCollection(collectionID?: Collection["id"]) {
   });
 
   return useMutation(editCollection, {
-    onSuccess: (newCollection) => {
+    onSuccess: ({ collection: newCollection }) => {
+      // Check for updated collection: it's possible server-side validation errors have occurred where the error has
+      // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
+      // though update did not occur.
+      if (!newCollection) {
+        return;
+      }
       queryClient.setQueryData(
         [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
         () => {
@@ -494,4 +549,18 @@ export function useReuploadDataset(collectionId: string) {
       ]);
     },
   });
+}
+
+/**
+ * Determine if a submitted DOI has failed validation on the BE. Expected response for invalid DOI:
+ * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ * @param status - Response status returned from server.
+ * @param detail - Response error text, if any.
+ * @returns True if DOI has been identified as invalid by the BE.
+ */
+function isInvalidDOI(status: number, detail?: string): boolean {
+  return (
+    status === HTTP_STATUS_CODE.BAD_REQUEST && detail === INVALID_DOI_MESSAGE
+  );
 }

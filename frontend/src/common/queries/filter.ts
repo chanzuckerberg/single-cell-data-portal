@@ -304,11 +304,17 @@ function buildCollectionRows(
       collection?.publisher_metadata
     );
 
+    // Build the summary citation from the collection's publication metadata, if any.
+    const summaryCitation = buildSummaryCitation(
+      collection?.publisher_metadata
+    );
+
     // Create collection row from aggregated collection category values and core collection information.
     const collectionRow = sortCategoryValues({
       ...collection,
       ...aggregatedCategoryValues,
       recency,
+      summaryCitation,
     });
     collectionRows.push(collectionRow);
   }
@@ -375,6 +381,42 @@ function buildDatasetRow(
     recency,
   };
   return sortCategoryValues(datasetRow);
+}
+
+/**
+ * Build summary citation format from given publisher metadata:
+ * Last name of first author (publication year) journal abbreviation such as Ren et al. (2021) Cell.
+ * @param publisherMetadata - Publication metadata of a collection.
+ */
+export function buildSummaryCitation(
+  publisherMetadata?: PublisherMetadata
+): string {
+  if (!publisherMetadata) {
+    return "";
+  }
+
+  const citationTokens = [];
+
+  // Add author to citation - family name if first author is a person, name if first author is a consortium.
+  const { authors, journal, published_year: publishedYear } = publisherMetadata;
+  const [firstAuthor] = authors ?? [];
+  if (firstAuthor) {
+    if (isAuthorPerson(firstAuthor)) {
+      citationTokens.push(firstAuthor.family);
+    } else {
+      citationTokens.push(firstAuthor.name);
+    }
+
+    if (authors.length > 1) {
+      citationTokens.push("et al.");
+    }
+  }
+
+  // Add year and journal.
+  citationTokens.push(`(${publishedYear})`);
+  citationTokens.push(journal);
+
+  return citationTokens.join(" ");
 }
 
 /**

@@ -120,6 +120,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.session,
             id="test_dataset_id_for_index",
             cell_count=42,
+            mean_genes_per_cell=0.05,
             published_at=datetime.now(),
             revised_at=datetime.now(),
         )
@@ -151,6 +152,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["cell_count"], dataset.cell_count)
         self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
         self.assertEqual(actual_dataset["is_primary_data"], dataset.is_primary_data.name)
+        self.assertEqual(actual_dataset["mean_genes_per_cell"], dataset.mean_genes_per_cell)
         self.assertEqual(actual_dataset["explorer_url"], dataset.explorer_url)
         self.assertEqual(actual_dataset["published_at"], dataset.published_at.timestamp())
         self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
