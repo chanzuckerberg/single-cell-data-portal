@@ -77,6 +77,10 @@ class CrossrefProvider(object):
             published_date = (
                 message.get("published-print") or message.get("published") or message.get("published-online")
             )
+
+            if published_date is None:
+                raise CrossrefParseException("Date node missing")
+
             published_year, published_month, published_day = self.parse_date_parts(published_date)
 
             dates = []
@@ -94,7 +98,7 @@ class CrossrefProvider(object):
                 elif "institution" in message:
                     journal = message["institution"][0]["name"]
             except Exception:
-                journal = None
+                raise CrossrefParseException("Journal node missing")
 
             # Authors
             # Note: make sure that the order is preserved, as it is a relevant information
