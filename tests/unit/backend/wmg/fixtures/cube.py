@@ -40,7 +40,7 @@ def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List
 
     with tiledb.open(cube_dir, mode="w") as cube:
         n_dims = len(cube_logical_dims)
-        n_coords = dim_size ** n_dims
+        n_coords = dim_size**n_dims
 
         def dim_domain_values(i_dim: int, dim_size_: int) -> List[str]:
             domain_values = [f"{cube_logical_dims[i_dim]}_{i}" for i in range(dim_size_)]
@@ -50,7 +50,7 @@ def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List
         all_dims_domain_values = [dim_domain_values(i_dim, dim_size) for i_dim in range(n_dims)]
         # create all possible coordinate values (dim_size ^ n_dims)
         coords = [
-            [all_dims_domain_values[i_dim][(i_row // dim_size ** i_dim) % dim_size] for i_row in range(n_coords)]
+            [all_dims_domain_values[i_dim][(i_row // dim_size**i_dim) % dim_size] for i_row in range(n_coords)]
             for i_dim in range(n_dims)
         ]
 
