@@ -5,11 +5,20 @@ import {
   Range,
   RangeCategoryView,
 } from "src/components/common/Filter/common/entities";
-import { formatNumberToMagnitude } from "src/components/common/Filter/common/utils";
+import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import { useSliderStyles } from "src/components/common/Filter/components/FilterRange/style";
 
 type SliderEl = HTMLSpanElement; /* TODO(cc) review */
-type SliderRange = number | number[]; // TODO(cc) combine with range?
+
+/**
+ * Value returned on change events from MUI Slider.
+ */
+type SliderRange = number | number[];
+
+/**
+ * Slider step size.
+ */
+const STEP_SIZE = 100;
 
 interface Props {
   categoryView: RangeCategoryView;
@@ -23,7 +32,7 @@ interface Props {
  */
 function buildMarks(values: number[]): Mark[] {
   return values.map((value) => {
-    return { label: formatNumberToMagnitude(value), value: value };
+    return { label: formatNumberToScale(value), value: value };
   });
 }
 
@@ -39,19 +48,19 @@ export default function FilterRange({
     selectedMax || max,
   ]);
   const marks = buildMarks([min, max]);
-  const step = Math.floor((max - min) / 100); // TODO(cc) Only makes sense if diff is > 100?
+  const step = Math.floor((max - min) / STEP_SIZE);
 
   const onChangeSliderRange = (
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    _changeEvent: ChangeEvent<{}>, // TODO(cc)
+    // eslint-disable-next-line @typescript-eslint/ban-types -- {} as per Mui spec.
+    _changeEvent: ChangeEvent<{}>,
     newRange: SliderRange
   ): void => {
     setRange(newRange);
   };
 
   const onCommittedSliderRange = (
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    _changeEvent: ChangeEvent<{}>, // TODO(cc)
+    // eslint-disable-next-line @typescript-eslint/ban-types -- {} as per Mui spec.
+    _changeEvent: ChangeEvent<{}>,
     committedRange: SliderRange
   ): void => {
     onFilter(key, committedRange as Range);
@@ -69,7 +78,7 @@ export default function FilterRange({
       ref={sliderRef} // TODO(cc) for wrapper component
       step={step}
       value={range}
-      valueLabelFormat={formatNumberToMagnitude}
+      valueLabelFormat={formatNumberToScale}
       valueLabelDisplay="on"
     />
   );

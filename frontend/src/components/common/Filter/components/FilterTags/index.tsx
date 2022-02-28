@@ -10,15 +10,10 @@ export interface CategoryTag {
 }
 
 interface Props {
-  rangeCategoryTag?: CategoryTag;
-  selectCategoryTags?: CategoryTag[];
+  tags?: CategoryTag[];
 }
 
-export default function FilterTags({
-  rangeCategoryTag,
-  selectCategoryTags,
-}: Props): JSX.Element | null {
-  const tags = rangeCategoryTag ? [rangeCategoryTag] : selectCategoryTags;
+export default function FilterTags({ tags }: Props): JSX.Element | null {
   return tags && tags.length ? (
     <SelectedTags>
       {tags.map(({ label, onRemove }) => (

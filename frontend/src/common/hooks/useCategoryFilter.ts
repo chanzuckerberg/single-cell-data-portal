@@ -399,8 +399,8 @@ function buildNextFilterState<T extends Categories>(
   // Always display category values even if their count is 0; add back any category values that have been filtered out.
   addEmptyCategoryValues(nextFilterState, categorySet);
 
-  // Update selected flag for the selected category values.
-  flagSelectedCategoryValues(nextFilterState, filters);
+  // Update selected flag for the selected category values, or selected ranged for range categories.
+  setSelectedStates(nextFilterState, filters);
 
   return nextFilterState;
 }
@@ -484,12 +484,92 @@ function buildSelectCategoryView(
 }
 
 /**
+ * Find and return the selected values for the given category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param filters - Current set of selected category values (values) keyed by category (id).
+ * @returns Array of filters
+ */
+function getCategoryFilter<T extends Categories>(
+  categoryKey: CategoryKey,
+  filters: Filters<T>
+): CategoryFilter | undefined {
+  return filters.find((filter) => filter.id === categoryKey);
+}
+
+/**
+ * Determine the rows that have values matching the given filters. Row must have at least one selected value across each
+ * category. Mimics react-query's includeSome functionality.
+ * @param rowValue - Value to filter row by.
+ * @param filter - Selected filter to apply to row.
+ * @returns Filtered array of rows.
+ */
+function includesSome(
+  rowValue: string | string[],
+  filter: CategoryFilter
+): boolean {
+  // "or" across category values (that is, inside a category).
+  return (
+    rowValue &&
+    rowValue.length &&
+    filter.value.some((val: string) => rowValue.includes(val)) // Handles string or array values
+  );
+}
+
+/**
+ * Check if the given category's type is "between".
+ * @param categoryKey - Key of category to check type of.
+ * @returns True if the given category's type is "between".
+ */
+export function isCategoryTypeBetween(categoryKey: CategoryKey): boolean {
+  return (
+    CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].categoryType ===
+    CATEGORY_FILTER_TYPE.BETWEEN
+  );
+}
+
+/**
+ * Determine if given filters are identical.
+ * @param filters0 - First filter to compare.
+ * @param filters1 - Second filter to compare.
+ */
+function isFilterEqual<T extends Categories>(
+  filters0: Filters<T>,
+  filters1: Filters<T>
+): boolean {
+  return (
+    filters0.length === filters1.length &&
+    filters0.every((val) => filters1.includes(val))
+  );
+}
+
+/**
+ * Determine if the given selected value is a selected category value key (and not a range).
+ * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
+ * @returns True if given selected value is a selected category value.
+ */
+function isCategoryValueKey(
+  selectedValue: CategoryValueKey | Range
+): selectedValue is CategoryValueKey {
+  return !Array.isArray(selectedValue);
+}
+
+/**
+ * Determine if the given category value is a select category value (and not a range category value).
+ * @param categoryValue - Range or select category value.
+ * @returns True if category value is a select category value.
+ */
+function isSelectCategoryValue(
+  categoryValue: RangeCategory | KeyedSelectCategoryValue
+): categoryValue is KeyedSelectCategoryValue {
+  return (categoryValue as KeyedSelectCategoryValue).get !== undefined;
+}
+
+/**
  * Update selected state of categories to match the current set of selected filters.
  * @param nextFilterState - Filter state being built on select of filter.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
- * TODO(cc) rename?
  */
-function flagSelectedCategoryValues<T extends Categories>(
+function setSelectedStates<T extends Categories>(
   nextFilterState: FilterState,
   filters: Filters<T>
 ) {
@@ -527,87 +607,6 @@ function flagSelectedCategoryValues<T extends Categories>(
     categoryFilterState.selectedMin = selectedMin;
     categoryFilterState.selectedMax = selectedMax;
   });
-}
-
-/**
- * Find and return the selected values for the given category.
- * @param categoryKey - Key of category to find selected filters of.
- * @param filters - Current set of selected category values (values) keyed by category (id).
- * @returns Array of filters
- */
-function getCategoryFilter<T extends Categories>(
-  categoryKey: CategoryKey,
-  filters: Filters<T>
-): CategoryFilter | undefined {
-  return filters.find((filter) => filter.id === categoryKey);
-}
-
-/**
- * Determine the rows that have values matching the given filters. Row must have at least one selected value across each
- * category. Mimics react-query's includeSome functionality.
- * @param rowValue - Value to filter row by.
- * @param filter - Selected filter to apply to row.
- * @returns Filtered array of rows.
- */
-function includesSome(
-  rowValue: string | string[],
-  filter: CategoryFilter
-): boolean {
-  // "or" across category values (that is, inside a category).
-  return (
-    rowValue &&
-    rowValue.length &&
-    filter.value.some((val: string) => rowValue.includes(val)) // Handles string or array values
-  );
-}
-
-/**
- * Check if the given category's type is "between".
- * @param categoryKey - Key of category to check type of.
- * @returns True if the given category's type is "between".
- * TODO(cc) move to utils?
- */
-export function isCategoryTypeBetween(categoryKey: CategoryKey): boolean {
-  return (
-    CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].categoryType ===
-    CATEGORY_FILTER_TYPE.BETWEEN
-  );
-}
-
-/**
- * Determine if given filters are identical.
- * @param filters0 - First filter to compare.
- * @param filters1 - Second filter to compare.
- */
-function isFilterEqual<T extends Categories>(
-  filters0: Filters<T>,
-  filters1: Filters<T>
-): boolean {
-  return (
-    filters0.length === filters1.length &&
-    filters0.every((val) => filters1.includes(val))
-  );
-}
-
-/**
- * Determine if the given selected value is a selected category value key (and not a range).
- * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
- */
-function isCategoryValueKey(
-  selectedValue: CategoryValueKey | Range
-): selectedValue is CategoryValueKey {
-  return !Array.isArray(selectedValue);
-}
-
-/**
- * Determine if the given category value is a select category value (and not a range category value).
- * @param categoryValue - Range or select category value.
- * @returns True if category value is a select category value.
- */
-function isSelectCategoryValue(
-  categoryValue: RangeCategory | KeyedSelectCategoryValue
-): categoryValue is KeyedSelectCategoryValue {
-  return (categoryValue as KeyedSelectCategoryValue).get !== undefined;
 }
 
 /**
@@ -677,9 +676,12 @@ function summarizeRangeCategory<T extends Categories>(
   const counts = filteredRows
     .map((filteredRow) => filteredRow.values[categoryKey])
     .filter((count) => !!count || count === 0); // Remove bad data, just in case!
+
+  // Return the model of the range category. If there are no counts (i.e. there's only bad data), set 0 for both the min
+  // and the max which will automatically disable the range filter.
   return {
     key: categoryKey,
-    max: counts.length ? Math.max(...counts) : 0, // TODO(cc) handle bad data? disable if 0,0? (also, what if 320 - 320?)
+    max: counts.length ? Math.max(...counts) : 0,
     min: counts.length ? Math.min(...counts) : 0,
   };
 }
