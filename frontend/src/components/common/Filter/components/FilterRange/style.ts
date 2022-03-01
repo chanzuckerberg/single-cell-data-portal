@@ -13,8 +13,8 @@ export const useSliderStyles = makeStyles({
     display: "block",
     height: 4,
     margin: 0,
-    marginLeft: 13, // TODO(cc) temporary
-    marginRight: 13, // TODO(cc) temporary
+    marginLeft: 24, // TODO(cc) temporary
+    marginRight: 24, // TODO(cc) temporary
     paddingBottom: 30, // TODO(cc) temporary; use 24
     paddingTop: 34, // TODO(cc) temporary; use 28
     width: 220, // TODO(cc) temporary
@@ -26,7 +26,7 @@ export const useSliderStyles = makeStyles({
       fontSize: 12,
       letterSpacing: "normal",
       lineHeight: "15px",
-      top: 41,
+      top: 47, // TODO(cc) temporary; use 41
     },
     "& .MuiSlider-rail": {
       borderRadius: 2,
