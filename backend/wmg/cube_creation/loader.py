@@ -15,7 +15,12 @@ from .rankit import rankit
 logger = logging.getLogger(__name__)
 
 
-def load(dataset_files, group_name, validate):
+def load(dataset_files: List, group_name: str, validate: bool):
+    """
+    Given a list of dataset file locations (or a directory) and a group name, call the cube loading function 
+    on all files listed (or stored in given directory), loading/concatenating all of the datasets together
+    under the group name
+    """
     with tiledb.scope_ctx(create_fast_ctx()):
         if len(dataset_files) == 1 and os.path.isdir(dataset_files[0]):
             for dataset in os.listdir(dataset_files[0]):
@@ -43,8 +48,12 @@ def load(dataset_files, group_name, validate):
 
 
 def load_h5ad(h5ad, group_name, validate):
+    """
+    Given the location of a h5ad dataset and a group name, check the dataset is not already loaded 
+    then read the dataset into the tiledb object (under group name), updating the var and feature indexes 
+    to avoid collisions within the larger tiledb object
+    """
     import anndata
-
     logger.info(f"Loading {h5ad}...")
 
     dataset_id = os.path.splitext(os.path.split(h5ad)[1])[0]
@@ -276,19 +285,19 @@ def validate_load(ad, group_name, dataset_id):
                     gc.collect()
 
 
-def roundHalfToEven(a: np.ndarray, keepbits: int) -> np.ndarray:
+def roundHalfToEven(numpy_array: np.ndarray, keepbits: int) -> np.ndarray:
     """
     Generate reduced precision floating point array.
 
-    Ref: https://gmd.copernicus.org/articles/14/377/2021/gmd-14-377-2021.html
+        Ref: https://gmd.copernicus.org/articles/14/377/2021/gmd-14-377-2021.html
     """
-    assert a.dtype == np.float32
+    assert numpy_array.dtype == np.float32
     if keepbits < 1 or keepbits >= 23:
-        return a
-    b = a.view(dtype=np.int32)
+        return numpy_array
+    array_view = numpy_array.view(dtype=np.int32)
     maskbits = 23 - keepbits
     mask = (0xFFFFFFFF >> maskbits) << maskbits
     half_quantum1 = (1 << (maskbits - 1)) - 1
-    b += ((b >> maskbits) & 1) + half_quantum1
-    b &= mask
-    return a
+    array_view += ((array_view >> maskbits) & 1) + half_quantum1
+    array_view &= mask
+    return numpy_array

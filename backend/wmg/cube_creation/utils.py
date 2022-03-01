@@ -52,6 +52,6 @@ def create_fast_ctx(config_overrides: dict = {}) -> tiledb.Ctx:
     return create_ctx(fast_config(config_overrides))
 
 
-def logmsg(*args) -> None:
-    fmt = "%Y-%m-%d:%H:%M:%S"
-    print(f"[{datetime.datetime.now().strftime(fmt)}]:", *args)
+# def logmsg(*args) -> None:
+#     fmt = "%Y-%m-%d:%H:%M:%S"
+#     print(f"[{datetime.datetime.now().strftime(fmt)}]:", *args)

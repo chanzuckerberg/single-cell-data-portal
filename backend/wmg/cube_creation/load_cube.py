@@ -1,9 +1,11 @@
+import logging
 import os
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
-
+from backend.wmg.cube_creation.loader import load
+logger = logging.getLogger(__name__)
 
 def get_s3_uris():
     with db_session_manager() as session:
@@ -18,6 +20,12 @@ def copy_datasets_to_instance():
         sync_command = f"aws s3 sync {s3_uris[dataset]} ./wmg-datasets/{dataset}/local.h5ad"
         os.subprocess(sync_command) # TODO parallelize this step
 
+
+def load_datasets_into_corpus():
+    try:
+        load('wmg-datasets/', "wmg-group", True)
+    except Exception as e:
+        logger.error(f"Issue loading datasets into corpus: {e}")
 
 
 def copy_corpus_to_s3():
