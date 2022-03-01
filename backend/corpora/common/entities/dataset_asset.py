@@ -72,14 +72,14 @@ class DatasetAsset(Entity):
 
     @classmethod
     def create(
-        cls,
-        session,
-        dataset_id: str,
-        filename: str,
-        filetype: DatasetArtifactFileType,
-        type_enum: DatasetArtifactType,
-        user_submitted: bool,
-        s3_uri: str,
+            cls,
+            session,
+            dataset_id: str,
+            filename: str,
+            filetype: DatasetArtifactFileType,
+            type_enum: DatasetArtifactType,
+            user_submitted: bool,
+            s3_uri: str,
     ):
 
         db_object = cls.table(
@@ -103,10 +103,10 @@ class DatasetAsset(Entity):
 
     @classmethod
     def upload(
-        cls,
-        file_name: str,
-        bucket_prefix: str,
-        artifact_bucket: str,
+            cls,
+            file_name: str,
+            bucket_prefix: str,
+            artifact_bucket: str,
     ) -> str:
         file_base = basename(file_name)
         buckets.portal_client.upload_file(
@@ -116,3 +116,10 @@ class DatasetAsset(Entity):
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
         return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
+
+    @classmethod
+    def list_s3_uris_for_datasets(cls, session, dataset_ids, file_type=None):
+        s3_uris = session.query(cls.table.s3_uri).filter(cls.table.dataset_id.in_(dataset_ids))
+        if file_type:
+            s3_uris = s3_uris.filter(cls.table.filetype == file_type)
+        return [x[0] for x in s3_uris.all()]

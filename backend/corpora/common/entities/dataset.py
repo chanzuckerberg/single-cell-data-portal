@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import PurePosixPath
 from collections import OrderedDict
 
+from sqlalchemy.dialects.postgresql import JSONB
+
 from ..utils.ontology_mapping import ontology_mapping
 
 from .dataset_asset import DatasetAsset
@@ -93,26 +95,27 @@ class Dataset(Entity):
 
     @classmethod
     def list_ids_for_cube(cls, session):
-        from sqlalchemy import func, column, Text, Boolean
-        items = func.jsonb_to_recordset(cls.table.assay).table_valued(
-            column("ontology_term_id", Text).render_derived(with_types=True))
 
-        # TODO make dict of ontology ids and human readable names, store as a const elsewhere (in rds?)
+        # TODO make dict of ontology ids and human readable names, store as a const elsewhere (in rds for easy updates?)
         included_assay_ontology_ids = ['EFO:0008722', 'EFO:0010010', 'EFO:0010550', 'EFO:0010961', 'EFO:0030002', 'EFO:0009901', 'EFO:0011025',  'EFO:0009899', 'EFO:0009900', 'EFO:0009922', 'EFO_0030003', 'EFO:0030004', 'EFO:0008919']
-        in_expression = items.c.ontology_term_id.in_(included_assay_ontology_ids)
-        query = session.query(
+
+        dataset_ids = []
+        published_dataset_non_null_assays = session.query(
             cls.table.id,
-            items.c.ontology_term_id)\
-            .filter(
-            cls.assay != 'nulll',
-            cls.published == True,
-            cls.is_primary_data == 'PRIMARY',
-            cls.collection_visibiltiy == 'PUBLIC',
-            cls.tombstone == 'f',
-            in_expression
+            cls.table.assay
+        ).filter(
+            cls.table.assay != 'null',
+            cls.table.published == 'TRUE',
+            cls.table.is_primary_data == 'PRIMARY',
+            cls.table.collection_visibility == 'PUBLIC',
+            cls.table.tombstone == 'f'
+        ).all()
+        for dataset in published_dataset_non_null_assays:
+            for assay in dataset[1]:
+                if assay['ontology_term_id'] in included_assay_ontology_ids:
+                    dataset_ids.append(dataset[0])
 
-        )
-
+        return dataset_ids
 
     @classmethod
     def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
