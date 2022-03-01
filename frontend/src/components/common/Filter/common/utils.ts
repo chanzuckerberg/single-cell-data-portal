@@ -54,9 +54,9 @@ export function ontologyCellAccessorFn(
  * @returns String containing number, possibly rounded, with corresponding scale symbol.
  */
 export function formatNumberToScale(num: number): string {
-  // Return numbers less than 100 as is.
-  if (num < 100) {
-    return `${num}`;
+  // Return numbers less than 1000 rounded.
+  if (num < 1000) {
+    return `${Math.round(num)}`;
   }
 
   // Handle numbers smaller than 10,000: format to thousands. For example, 1400 becomes 1.4k.

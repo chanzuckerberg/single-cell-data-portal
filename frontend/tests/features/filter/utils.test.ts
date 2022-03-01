@@ -28,51 +28,19 @@ describe("filter", () => {
         value: 60,
       },
       {
-        formatted: `0.1${SYMBOL_THOUSAND}`,
+        formatted: "140",
         value: 140,
       },
       {
-        formatted: `0.2${SYMBOL_THOUSAND}`,
+        formatted: "150",
         value: 150,
       },
       {
-        formatted: `0.2${SYMBOL_THOUSAND}`,
+        formatted: "160",
         value: 160,
       },
       {
-        formatted: `0.2${SYMBOL_THOUSAND}`,
-        value: 190,
-      },
-      {
-        formatted: `0.2${SYMBOL_THOUSAND}`,
-        value: 240,
-      },
-      {
-        formatted: `0.3${SYMBOL_THOUSAND}`,
-        value: 250,
-      },
-      {
-        formatted: `0.3${SYMBOL_THOUSAND}`,
-        value: 260,
-      },
-      {
-        formatted: `0.9${SYMBOL_THOUSAND}`,
-        value: 899,
-      },
-      {
-        formatted: `0.9${SYMBOL_THOUSAND}`,
-        value: 940,
-      },
-      {
-        formatted: `1${SYMBOL_THOUSAND}`,
-        value: 950,
-      },
-      {
-        formatted: `1${SYMBOL_THOUSAND}`,
-        value: 960,
-      },
-      {
-        formatted: `1${SYMBOL_THOUSAND}`,
+        formatted: "999",
         value: 999,
       },
       {
