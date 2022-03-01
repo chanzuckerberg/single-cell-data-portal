@@ -14,12 +14,9 @@ def get_s3_uris():
 
 def copy_datasets_to_instance():
     s3_uris = get_s3_uris()
-
-    import os
-
-    for uri in s3_uris:
-        sync_command = f"aws s3 sync {uri} ./wmg-datasets"
-    os.subprocess(sync_command)
+    for dataset in s3_uris.keys():
+        sync_command = f"aws s3 sync {s3_uris[dataset]} ./wmg-datasets/{dataset}/local.h5ad"
+        os.subprocess(sync_command) # TODO parallelize this step
 
 
 
