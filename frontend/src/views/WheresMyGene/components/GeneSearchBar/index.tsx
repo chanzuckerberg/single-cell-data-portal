@@ -328,8 +328,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           }
           renderOption={(option) => option.name}
           onPaste={handlePaste}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO(cc) revisit
-          // @ts-ignore -- TODO(cc) revisit
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint errors
+          // @ts-ignore -- TODO revisit lint errors
           InputBaseProps={{
             onChange: (
               event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
