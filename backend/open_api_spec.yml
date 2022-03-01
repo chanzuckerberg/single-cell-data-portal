@@ -618,6 +618,8 @@ components:
               type: integer
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
+            mean_genes_per_cell:
+              type: number
             schema_version:
               type: string
     dataset_preview:
