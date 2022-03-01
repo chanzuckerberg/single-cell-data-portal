@@ -13,7 +13,7 @@ from backend.wmg.data.query import (
     build_gene_id_label_mapping,
     build_cell_type_id_label_mapping,
     WmgQuery,
-    WmgQueryCriteria,
+    WmgQueryCriteria
 )
 
 # TODO: Replace with real snapshot uuid
@@ -54,14 +54,14 @@ def query():
     criteria = WmgQueryCriteria(**request["filter"])
     query_result = WmgQuery(find_cube_latest_snapshot()).execute(criteria)
 
-    cell_type_term_ids = {key[2].decode("ascii") for key in query_result.index}
+    cell_type_term_ids = {key[2] for key in query_result.index}
 
     return jsonify(
         dict(
             snapshot_id=DUMMY_SNAPSHOT_UUID,
             expression_summary=build_expression_summary_json(query_result),
             term_id_labels=dict(
-                genes=build_gene_id_label_mapping(criteria.gene_term_ids),
+                genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_cell_type_id_label_mapping(cell_type_term_ids),
             ),
         )
@@ -69,11 +69,11 @@ def query():
 
 
 def build_expression_summary_json(query_result: DataFrame) -> str:
-    # Create nested dicts with gene_term_id, tissue_ontology_term_id keys, respectively
+    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
     structured_result = defaultdict(lambda: defaultdict(list))
     for group_by_key, cell_type_stats in query_result.to_dict("index").items():
-        gene_term_id, tissue_ontology_term_id, cell_type_ontology_term_id = [s.decode("ascii") for s in group_by_key]
-        structured_result[gene_term_id][tissue_ontology_term_id].append(
+        gene_ontology_term_id, tissue_ontology_term_id, cell_type_ontology_term_id = [s for s in group_by_key]
+        structured_result[gene_ontology_term_id][tissue_ontology_term_id].append(
             dict(
                 id=cell_type_ontology_term_id,
                 n=cell_type_stats["nnz"],

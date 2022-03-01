@@ -982,15 +982,14 @@ paths:
                 filter:
                   type: object
                   required:
-                    - gene_term_ids
-                    - organism_term_id
-                    - tissue_term_ids
+                    - organism_ontology_term_id
+                    - tissue_ontology_term_ids
                   properties:
-                      gene_term_ids:
+                      gene_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      organism_term_id:
+                      organism_ontology_term_id:
                         type: string
-                      tissue_term_ids:
+                      tissue_ontology_term_ids:
                         minItems: 1
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       dataset_ids:
@@ -998,13 +997,13 @@ paths:
                         items:
                           type: string
                           format: uuid
-                      disease_term_ids:
+                      disease_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_term_ids:
+                      sex_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_stage_term_ids:
+                      development_ontology_stage_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      ethnicity_term_ids:
+                      ethnicity_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                 response_option:
                   type: string

@@ -2,7 +2,7 @@ import numpy as np
 import tiledb
 
 cube_indexed_dims = [
-    "gene_term_id",
+    "gene_ontology_term_id",
     "tissue_ontology_term_id",
     "organism_ontology_term_id",
 ]
