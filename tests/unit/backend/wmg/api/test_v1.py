@@ -33,8 +33,10 @@ class WmgApiV1Tests(unittest.TestCase):
 
     def test__query__minimal_valid_request_returns_200(self):
         request = dict(
-            filter=dict(organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"]),
+            filter=dict(
+                organism_ontology_term_id="organism_ontology_term_id_0",
+                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+            ),
             response_option="include_filter_dims_include_dataset_links",
         )
 
@@ -76,7 +78,11 @@ class WmgApiV1Tests(unittest.TestCase):
 
             request = dict(
                 filter=dict(
-                    gene_ontology_term_ids=["gene_ontology_term_id_0", "gene_ontology_term_id_1", "gene_ontology_term_id_2"],
+                    gene_ontology_term_ids=[
+                        "gene_ontology_term_id_0",
+                        "gene_ontology_term_id_1",
+                        "gene_ontology_term_id_2",
+                    ],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                 ),
