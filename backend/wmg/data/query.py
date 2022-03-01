@@ -10,8 +10,8 @@ UNFILTERED_SLICE = slice(None)
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    organism_ontology_term_id: str
-    tissue_ontology_term_ids: list[str] = Field(unique_items=True, min_items=1)
+    organism_ontology_term_id: str   # required!
+    tissue_ontology_term_ids: list[str] = Field(unique_items=True, min_items=1)  # required!
     dataset_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
     assay_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
     development_stage_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
@@ -71,12 +71,15 @@ class WmgQuery:
         )
 
 
-def build_gene_id_label_mapping(gene_ontology_term_ids) -> List[dict]:
-    return [{gene_ontology_term_id: f"{gene_ontology_term_id}_label"} for gene_ontology_term_id in gene_ontology_term_ids]
+def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
+    return [{gene_ontology_term_id: f"{gene_ontology_term_id}_label"}
+            for gene_ontology_term_id in gene_ontology_term_ids]
 
 
-def build_cell_type_id_label_mapping(cell_type_term_ids) -> List[dict]:
-    return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in sorted(cell_type_term_ids)]
+def build_cell_type_id_label_mapping(cell_type_term_ids: List[str]) -> List[dict]:
+    return [{cell_type_term_id: f"{cell_type_term_id}_label"}
+            for cell_type_term_id in sorted(cell_type_term_ids)]
+
 
 def depluralize(attr_name):
     return attr_name[:-1]
