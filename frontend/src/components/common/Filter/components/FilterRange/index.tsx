@@ -1,5 +1,5 @@
 import { Mark, Slider } from "@material-ui/core";
-import React, { ChangeEvent, useRef, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import {
   OnFilterFn,
   Range,
@@ -7,8 +7,6 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import { useSliderStyles } from "src/components/common/Filter/components/FilterRange/style";
-
-type SliderEl = HTMLSpanElement; /* TODO(cc) review */
 
 /**
  * Value returned on change events from MUI Slider.
@@ -42,7 +40,6 @@ export default function FilterRange({
 }: Props): JSX.Element {
   const { key, max, min, selectedMax, selectedMin } = categoryView;
   const classes = useSliderStyles();
-  const sliderRef = useRef<SliderEl>(null);
   const [range, setRange] = useState<SliderRange>([
     selectedMin || min,
     selectedMax || max,
@@ -75,7 +72,6 @@ export default function FilterRange({
       min={min}
       onChange={onChangeSliderRange}
       onChangeCommitted={onCommittedSliderRange}
-      ref={sliderRef} // TODO(cc) for wrapper component
       step={step}
       value={range}
       valueLabelFormat={formatNumberToScale}
