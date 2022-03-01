@@ -164,7 +164,7 @@ paths:
   /curation/collections/{collection_uuid}:
     delete:
       summary: Delete a private Collection
-      description: Delete a private Collection. Delete an existing revision for a public Collection.
+      description: Delete a private Collection or a private revision of a public Collection.
       security:
         - cxguserCookie: []
       parameters:
@@ -278,8 +278,9 @@ paths:
     delete:
       summary: Delete a private Dataset
       description: >-
-        Delete a Dataset. The Dataset MUST NOT belong to a published Collection. MUST indicate the Dataset by providing
-        *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
+        Delete a Dataset. The **collection_uuid** MUST reference either a private Collection OR a private revision of
+        a public Collection. MUST indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR
+        the **dataset_uuid** parameters.
       security:
         - cxguserCookie: []
         - curatorAccess: []
