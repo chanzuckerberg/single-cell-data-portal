@@ -283,21 +283,3 @@ def validate_load(ad, group_name, dataset_id):
 
                     del h5ad_X_slice_remapped, tdb_X_slice_remapped
                     gc.collect()
-
-
-def roundHalfToEven(numpy_array: np.ndarray, keepbits: int) -> np.ndarray:
-    """
-    Generate reduced precision floating point array.
-
-        Ref: https://gmd.copernicus.org/articles/14/377/2021/gmd-14-377-2021.html
-    """
-    assert numpy_array.dtype == np.float32
-    if keepbits < 1 or keepbits >= 23:
-        return numpy_array
-    array_view = numpy_array.view(dtype=np.int32)
-    maskbits = 23 - keepbits
-    mask = (0xFFFFFFFF >> maskbits) << maskbits
-    half_quantum1 = (1 << (maskbits - 1)) - 1
-    array_view += ((array_view >> maskbits) & 1) + half_quantum1
-    array_view &= mask
-    return numpy_array
