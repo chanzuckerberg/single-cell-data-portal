@@ -72,28 +72,20 @@ describe("filter", () => {
         value: 81572,
       },
       {
-        formatted: `0.1${SYMBOL_MILLION}`,
+        formatted: `140${SYMBOL_THOUSAND}`,
         value: 140000,
       },
       {
-        formatted: `0.2${SYMBOL_MILLION}`,
+        formatted: `160${SYMBOL_THOUSAND}`,
         value: 160000,
       },
       {
-        formatted: `0.2${SYMBOL_MILLION}`,
+        formatted: `190${SYMBOL_THOUSAND}`,
         value: 190000,
       },
       {
-        formatted: `0.2${SYMBOL_MILLION}`,
+        formatted: `240${SYMBOL_THOUSAND}`,
         value: 240000,
-      },
-      {
-        formatted: `0.3${SYMBOL_MILLION}`,
-        value: 250000,
-      },
-      {
-        formatted: `0.3${SYMBOL_MILLION}`,
-        value: 260000,
       },
       {
         formatted: `1.4${SYMBOL_MILLION}`,

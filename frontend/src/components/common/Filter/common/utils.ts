@@ -65,8 +65,8 @@ export function formatNumberToScale(num: number): string {
     return `${formatted}${SYMBOL_THOUSAND}`;
   }
 
-  // Handle numbers smaller than 100,000: format to thousands and round. For example, 14,500 becomes 15k.
-  if (num < 100000) {
+  // Handle numbers smaller than 1,000,000: format to thousands and round. For example, 14,500 becomes 15k.
+  if (num < 1000000) {
     const rounded = Math.round(scaleAndFix(num, SCALE_THOUSAND, FIXED_TO));
     return `${rounded}${SYMBOL_THOUSAND}`;
   }
