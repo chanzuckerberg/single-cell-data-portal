@@ -1,6 +1,5 @@
 import contextlib
 import os.path
-import pathlib
 import sys
 import tempfile
 from typing import List, Callable, Dict
@@ -70,7 +69,7 @@ def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List
 
 # CLI invocation for use by setup_dev_data.sh, to create a cube for Docker-based dev & test envs
 if __name__ == '__main__':
-    cube_dir = sys.argv[1]
-    if not os.path.isdir(cube_dir):
-        sys.exit(f"invalid dir {cube_dir} for cube")
-    create_cube(cube_dir)
+    output_cube_dir = sys.argv[1]
+    if not os.path.isdir(output_cube_dir):
+        sys.exit(f"invalid dir {output_cube_dir} for cube")
+    create_cube(output_cube_dir)
