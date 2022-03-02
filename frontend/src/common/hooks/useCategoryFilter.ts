@@ -43,13 +43,13 @@ type CategorySet = { [K in CATEGORY_KEY]: CategorySetValue };
 type CategorySetValue = Set<CategoryValueKey> | Range;
 
 /**
- * Internal model of a single or multiselect category value: category value keyed by category value key (for easy
+ * Internal filter model of a single or multiselect category value: category value keyed by category value key (for easy
  * look-up when summarizing category).
  */
 type KeyedSelectCategoryValue = Map<CategoryValueKey, SelectCategoryValue>;
 
 /**
- * Metadata value, count and selected state if a single or multiselect category.
+ * Internal filter model of a single or multiselect category.
  */
 export interface SelectCategoryValue {
   key: CategoryValueKey;
@@ -149,7 +149,7 @@ export function useCategoryFilter<T extends Categories>(
     (categoryKey: CategoryKey, selectedValue: CategoryValueKey | Range) => {
       // Handle filter of single or multiselect categories.
       if (isCategoryValueKey(selectedValue)) {
-        const nextCategoryFilters = buildNextCategoryFilters(
+        const nextCategoryFilters = buildNextSelectCategoryFilters(
           categoryKey,
           selectedValue,
           filters
@@ -191,8 +191,8 @@ function addEmptyCategoryValues(
     // Grab the expected set of category values.
     const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
     if (
-      !isCategorySetCategoryKeyValue(allCategoryValueKeys) || // Error state - should be category key value.
-      !allCategoryValueKeys // Error state - all category values for this category can't be found.
+      !allCategoryValueKeys || // Error state - all category values for this category can't be found.
+      !isCategorySetCategoryKeyValue(allCategoryValueKeys) // Error state - should be category key value.
     ) {
       return;
     }
@@ -228,8 +228,8 @@ function addRangeCategories(
     // Grab the expected range for this category.
     const categorySetRange = categorySet[categoryKey];
     if (
-      isCategorySetCategoryKeyValue(categorySetRange) || // Error state - should be a range.
-      !categorySetRange // Error state - original range for this category can't be found.
+      !categorySetRange || // Error state - original range for this category can't be found.
+      isCategorySetCategoryKeyValue(categorySetRange) // Error state - should be a range.
     ) {
       return;
     }
@@ -238,8 +238,8 @@ function addRangeCategories(
     const [originalMin, originalMax] = categorySetRange;
     nextFilterState[categoryKey] = {
       key: categoryKey,
-      max: originalMax ?? 0, // 0 is possible if original range is invalid
-      min: originalMin ?? 0, // 0 is possible if original range is invalid
+      max: originalMax ?? 0,
+      min: originalMin ?? 0,
     };
   });
 }
@@ -282,8 +282,7 @@ function between(rowValue: string | string[], filter: CategoryFilter): boolean {
 }
 
 /**
- * Set up model of original, complete set of categories and their values. Only required for single and multiselect
- * categories (and not range categories).
+ * Set up model of original, complete set of categories and their values.
  * @param originalRows - Original result set before filtering.
  * @param categoryKeys - Set of category keys to include for this filter instance.
  * @returns Sets of category values keyed by their category.
@@ -400,7 +399,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
  */
-function buildNextCategoryFilters<T extends Categories>(
+function buildNextSelectCategoryFilters<T extends Categories>(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
@@ -459,15 +458,15 @@ function buildNextFilterState<T extends Categories>(
 /**
  * Determine the set of filters that are applicable to each category. That is, for a category, all selected filters
  * other than the selected filters for that category can be applied to the result set to determine the counts for.
- * @param categories - Set of category keys to include for this filter instance.
+ * @param categoriesKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of query models representing of the selected filters applicable for each category.
  */
 function buildQueries<T extends Categories>(
-  categories: Set<CATEGORY_KEY>,
+  categoriesKeys: Set<CATEGORY_KEY>,
   filters: Filters<T>
 ): Query<T>[] {
-  return Array.from(categories.values()).reduce(
+  return Array.from(categoriesKeys.values()).reduce(
     (accum: Query<T>[], categoryKey: CategoryKey) => {
       // Determine the filters that are applicable to this category.
       const filtersExcludingSelf = filters.filter((filter: CategoryFilter) => {
@@ -495,24 +494,30 @@ function buildQueries<T extends Categories>(
 
 /**
  * Build view model of range category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param rangeCategory - Internal filter model of range category.
+ * @returns Range view model.
  */
 function buildRangeCategoryView(
   categoryKey: CategoryKey,
-  rangeCategoryValue: RangeCategory
+  rangeCategory: RangeCategory
 ): RangeCategoryView {
   // Return completed view model of this category.
   return {
     key: categoryKey as CategoryKey,
     label: CATEGORY_LABEL[categoryKey],
-    max: rangeCategoryValue.max,
-    min: rangeCategoryValue.min,
-    selectedMax: rangeCategoryValue.selectedMax,
-    selectedMin: rangeCategoryValue.selectedMin,
+    max: rangeCategory.max,
+    min: rangeCategory.min,
+    selectedMax: rangeCategory.selectedMax,
+    selectedMin: rangeCategory.selectedMin,
   };
 }
 
 /**
  * Build view model of single or multiselect category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryValueByValue - Internal filter model of single or multiselect category.
+ * @returns Range view model.
  */
 function buildSelectCategoryView(
   categoryKey: CategoryKey,
