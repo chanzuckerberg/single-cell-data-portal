@@ -1,12 +1,10 @@
 import contextlib
 import tempfile
-from os import PathLike
 from typing import List, Callable, Dict
 
 import numpy as np
 import tiledb
 from numpy.random import random, randint
-from tiledb import Array
 
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 

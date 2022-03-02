@@ -9,15 +9,15 @@ UNFILTERED_SLICE = slice(None)
 
 
 class WmgQueryCriteria(BaseModel):
-    gene_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: list[str] = Field(unique_items=True, min_items=1)  # required!
-    dataset_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    assay_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    development_stage_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    ethnicity_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: list[str] = Field(default=[], unique_items=True, min_items=0)
+    tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
+    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
 indexed_dims = {"gene_ontology_term_ids", "organism_ontology_term_id", "tissue_ontology_term_ids"}

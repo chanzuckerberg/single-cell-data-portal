@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict
 from tempfile import mkdtemp
 from uuid import uuid4
@@ -13,9 +12,8 @@ from backend.wmg.data.query import (
     build_gene_id_label_mapping,
     build_cell_type_id_label_mapping,
     WmgQuery,
-    WmgQueryCriteria
+    WmgQueryCriteria,
 )
-
 # TODO: Replace with real snapshot uuid
 from unit.backend.wmg.fixtures.cube import create_cube
 

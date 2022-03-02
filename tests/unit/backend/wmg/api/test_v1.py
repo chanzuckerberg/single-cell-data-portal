@@ -45,7 +45,7 @@ class WmgApiV1Tests(unittest.TestCase):
         self.assertEqual(200, response.status_code)
 
     def test__query__empty_request_returns_400(self):
-        response = self.app.post(f"/wmg/v1/query", json={})
+        response = self.app.post("/wmg/v1/query", json={})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
@@ -56,7 +56,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response_option="include_filter_dims_include_dataset_links",
         )
 
-        response = self.app.post(f"/wmg/v1/query", json=request)
+        response = self.app.post("/wmg/v1/query", json=request)
 
         self.assertEqual(400, response.status_code)
 
@@ -67,6 +67,8 @@ class WmgApiV1Tests(unittest.TestCase):
         )
 
         response = self.app.post("/wmg/v1/query", json=request)
+
+        self.assertEqual(400, response.status_code)
 
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
     def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot):
@@ -89,7 +91,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 response_option="include_filter_dims_include_dataset_links",
             )
 
-            response = self.app.post(f"/wmg/v1/query", json=request)
+            response = self.app.post("/wmg/v1/query", json=request)
 
             # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
             # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
