@@ -17,8 +17,19 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
+def generate_mock_publisher_metadata(journal_override = None):
+    return {
+        "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+        "published_year": 2021,
+        "published_month": 11,
+        "published_day": 10,
+        "journal": journal_override or "Nature",
+        "is_preprint": False,
+    }
+
 
 class TestCollection(BaseAuthAPITest):
+
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
@@ -567,16 +578,7 @@ class TestCollection(BaseAuthAPITest):
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
 
-        publisher_metadata = {
-            "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
-            "published_year": 2021,
-            "published_month": 11,
-            "published_day": 10,
-            "journal": "Nature",
-            "is_preprint": False,
-        }
-
-        mock_provider.return_value = publisher_metadata
+        mock_provider.return_value = generate_mock_publisher_metadata()
 
         test_url = furl(path="/dp/v1/collections/")
         data = {
@@ -597,7 +599,7 @@ class TestCollection(BaseAuthAPITest):
         collection = Collection.get_collection(
             self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
         )
-        self.assertEqual(collection.publisher_metadata, publisher_metadata)
+        self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
     def test__post_collection_fails_with_extra_fields(self):
         test_url = furl(path="/dp/v1/collections/")
@@ -770,7 +772,7 @@ class TestCollection(BaseAuthAPITest):
             self.session,
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
-            publisher_metadata={"journal": "Nature"},
+            publisher_metadata=generate_mock_publisher_metadata(),
         )
 
         collection_id_private = self.generate_collection(
@@ -1129,11 +1131,11 @@ class TestUpdateCollection(BaseAuthAPITest):
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_new_doi_updates_metadata(self, mock_provider):
         # The Crossref provider will always return "New Journal"
-        mock_provider.return_value = {"journal": "New Journal"}
+        mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
         collection = self.generate_collection(
             self.session,
             links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
-            publisher_metadata={"journal": "Old Journal"},
+            publisher_metadata=generate_mock_publisher_metadata("Old Journal"),
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
@@ -1154,11 +1156,11 @@ class TestUpdateCollection(BaseAuthAPITest):
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_remove_doi_deletes_metadata(self, mock_provider):
-        mock_provider.return_value = {"journal": "New Journal"}
+        mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
         collection = self.generate_collection(
             self.session,
             links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
-            publisher_metadata={"journal": "Old Journal"},
+            publisher_metadata=generate_mock_publisher_metadata("Old Journal"),
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
@@ -1180,11 +1182,11 @@ class TestUpdateCollection(BaseAuthAPITest):
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_same_doi_does_not_update_metadata(self, mock_provider):
-        mock_provider.return_value = {"journal": "New Journal"}
+        mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
         collection = self.generate_collection(
             self.session,
             links=[{"link_name": "Link 1", "link_url": "http://doi.org/123", "link_type": "DOI"}],
-            publisher_metadata={"journal": "Old Journal"},
+            publisher_metadata=generate_mock_publisher_metadata("Old Journal"),
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
