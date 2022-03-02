@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from datetime import time
 from typing import Dict
 
@@ -59,7 +60,7 @@ def generate_cell_ordering(cell_type_by_tissue):
     pass
 
 
-def update_cube():
+def update_s3_resources():
     time_stamp = time.time()
     # copy cell ordering
     # copy corpus
@@ -68,8 +69,10 @@ def update_cube():
     remove_oldest_datasets()
     pass
 
+
 def remove_oldest_datasets():
     pass
+
 
 def update_latest_snapshot(time_stamp):
     pass
@@ -84,5 +87,9 @@ def load_data_and_create_cube():
         logger.error(f"Issue creating the cube: {e}")
     cell_type_by_tissue = get_cells_by_tissue_type("wmg-group")
     generate_cell_ordering(cell_type_by_tissue)
+    update_s3_resources()
 
 
+if __name__ == "__main__":
+    rv = load_data_and_create_cube()
+    sys.exit(rv)

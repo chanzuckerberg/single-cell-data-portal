@@ -17,13 +17,10 @@ RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21
 RUN pip3 install cellxgene-schema==2.1.0
 
 ADD requirements.txt requirements.txt
-ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
 RUN pip3 install -r requirements.txt
 
 ADD backend/__init__.py backend/__init__.py
-ADD backend/corpora/__init__.py backend/corpora/__init__.py
-ADD backend/corpora/dataset_processing backend/corpora/dataset_processing
-ADD backend/corpora/common backend/corpora/common
+ADD backend/wmg backend/wmg
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -32,4 +29,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.corpora.dataset_processing.process"]
+CMD ["python3", "-m", "backend.wmg.cube_creation.load_cube"]
