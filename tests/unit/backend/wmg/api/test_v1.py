@@ -6,7 +6,7 @@ from backend.corpora.api_server.app import app
 from backend.wmg.api import v1
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
+from tests.unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
 
 class WmgApiV1Tests(unittest.TestCase):
