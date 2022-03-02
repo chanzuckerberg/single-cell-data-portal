@@ -34,3 +34,7 @@ def fast_config(config_overrides: dict = {}) -> dict:
     }
     config.update(config_overrides)
     return config
+
+
+def create_fast_ctx(config_overrides: dict = {}) -> tiledb.Ctx:
+    return create_ctx(fast_config(config_overrides))

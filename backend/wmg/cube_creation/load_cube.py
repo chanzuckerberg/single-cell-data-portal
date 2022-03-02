@@ -1,11 +1,15 @@
 import logging
 import os
+from datetime import time
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.cube_creation.loader import load
 logger = logging.getLogger(__name__)
+
+# TODO - does writing and reading directly from s3 slow down compute? test
+
 
 def get_s3_uris():
     with db_session_manager() as session:
@@ -27,12 +31,25 @@ def load_datasets_into_corpus():
     except Exception as e:
         logger.error(f"Issue loading datasets into corpus: {e}")
 
-
-def copy_corpus_to_s3():
+def create_cube():
     pass
 
-def copy_cube_to_s3():
+def generate_cell_ordering():
     pass
 
-def update_latest_snapshot():
+
+def update_cube():
+    time_stamp = time.time()
+    # create timestamp
+    # copy cell ordering
+    # copy corpus
+    # copy cube
+    update_latest_snapshot(time_stamp)
+    remove_oldest_datasets()
+    pass
+
+def remove_oldest_datasets():
+    pass
+
+def update_latest_snapshot(time_stamp):
     pass

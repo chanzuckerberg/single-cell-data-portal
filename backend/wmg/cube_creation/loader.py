@@ -8,7 +8,8 @@ import pandas as pd
 from scipy import sparse
 import tiledb
 
-from .utils import get_all_dataset_ids, create_fast_ctx
+from .utils import get_all_dataset_ids
+from backend.wmg.data.config import create_fast_ctx
 from .schema import obs_labels, var_labels
 from .rankit import rankit
 
