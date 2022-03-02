@@ -1,7 +1,7 @@
 import unittest
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
-from backend.wmg.data.schema import cube_non_indexed_dims
+from backend.wmg.data.cube_schema import cube_non_indexed_dims
 from unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
 

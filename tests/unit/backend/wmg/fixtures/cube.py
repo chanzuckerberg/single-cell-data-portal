@@ -8,7 +8,7 @@ import tiledb
 from numpy.random import random, randint
 from tiledb import Array
 
-from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
+from backend.wmg.data.cube_schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
 
 def random_attr_values(coords):

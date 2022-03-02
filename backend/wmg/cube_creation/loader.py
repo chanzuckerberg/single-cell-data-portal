@@ -10,37 +10,26 @@ import tiledb
 
 from .utils import get_all_dataset_ids
 from backend.wmg.data.config import create_fast_ctx
-from .schema import obs_labels, var_labels
+from .corpus_schema import obs_labels, var_labels
 from .rankit import rankit
 
 logger = logging.getLogger(__name__)
 
 
-def load(dataset_files: List, group_name: str, validate: bool):
+def load(dataset_directory: List, group_name: str, validate: bool):
     """
-    Given a list of dataset file locations (or a directory) and a group name, call the cube loading function 
-    on all files listed (or stored in given directory), loading/concatenating all of the datasets together
-    under the group name
+    Given the path to a directory containing one or more h5ad files and a group name, call the cube loading function
+    on all files, loading/concatenating all of the datasets together under the group name
     """
     with tiledb.scope_ctx(create_fast_ctx()):
-        if len(dataset_files) == 1 and os.path.isdir(dataset_files[0]):
-            for dataset in os.listdir(dataset_files[0]):
-                file_path = f"{dataset_files[0]}/{dataset}/local.h5ad"
-                try:
-                    load_h5ad(file_path, group_name, validate)
-                except Exception as e:
-                    logger.warning(f"Issue loading file: {dataset}, {e}")
-                finally:
-                    gc.collect()
-
-        else:
-            for dataset in dataset_files:
-                try:
-                    load_h5ad(dataset, group_name, validate)
-                except Exception as e:
-                    logger.warning(f"Issue loading file: {dataset}, {e}")
-                finally:
-                    gc.collect()
+        for dataset in os.listdir(dataset_directory):
+            file_path = f"{dataset_directory}/{dataset}/local.h5ad"
+            try:
+                load_h5ad(file_path, group_name, validate)
+            except Exception as e:
+                logger.warning(f"Issue loading file: {dataset}, {e}")
+            finally:
+                gc.collect()
 
         logger.info("all loaded, now consolidating.")
         for arr_name in [f"{group_name}/{name}" for name in ["obs", "var", "raw", "X"]]:
@@ -64,39 +53,38 @@ def load_h5ad(h5ad, group_name, validate):
         logger.info("oops, that dataset is already loaded!")
         return
 
-    ad = anndata.read_h5ad(h5ad)
-    logger.info(f"loaded: shape={ad.shape}")
-    if not sparse.issparse(ad.X):
+    anndata_object = anndata.read_h5ad(h5ad)
+    logger.info(f"loaded: shape={anndata_object.shape}")
+    if not sparse.issparse(anndata_object.X):
         logger.warning("oops, no dense handling yet, not loading")
         return
-    if ad.uns.get("schema_version", None) != "2.0.0":
+    if anndata_object.uns.get("schema_version", None) != "2.0.0":
         logger.warning("oops, unknown schema, not loading")
         return
 
-    var_df = update_global_var(group_name, ad.var)
+    var_df = update_global_var(group_name, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
-    global_var_index = np.zeros((ad.shape[1],), dtype=np.uint32)
+    global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
     var_feature_to_coord_map = {k: v for k, v in var_df[["feature_id", "var_idx"]].to_dict("split")["data"]}
-    for idx in range(ad.shape[1]):
-        feature_id = ad.var.index.values[idx]
+    for idx in range(anndata_object.shape[1]):
+        feature_id = anndata_object.var.index.values[idx]
         global_coord = var_feature_to_coord_map[feature_id]
         global_var_index[idx] = global_coord
 
-    obs = ad.obs
+    obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{group_name}/obs", obs_labels)
-    save_raw(ad, group_name, global_var_index, first_obs_idx)
-    save_X(ad, group_name, global_var_index, first_obs_idx)
+    save_raw(anndata_object, group_name, global_var_index, first_obs_idx)
+    save_X(anndata_object, group_name, global_var_index, first_obs_idx)
 
     if validate:
-        validate_load(ad, group_name, dataset_id)
+        validate_load(anndata_object, group_name, dataset_id)
 
 
 def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Update the global var (feature) array. Adds any missing features we have
-    not seen before.
+    Update the global var (gene) array. Adds any gene_ids we have not seen before.
 
     Returns the global var array as dataframe
     """
@@ -136,6 +124,9 @@ def create_local_to_global_feature_coord_index(
 
 
 def save_axes_labels(df, array_name, label_info) -> int:
+    """
+
+    """
     logger.info(f"saving {array_name}...", end="", flush=True)
 
     with tiledb.open(array_name) as array:
@@ -213,18 +204,17 @@ def save_X(ad, group_name, global_var_index, first_obs_idx):
 
     logger.info("saved.")
 
-
 def validate_load(ad, group_name, dataset_id):
     """
     Validate that the load looks sane
     """
 
-    logmsg("validating...")
+    logger.info(f"validating...{group_name}, {dataset_id}")
     with tiledb.open(f"{group_name}/var") as var:
         with tiledb.open(f"{group_name}/obs") as obs:
             with tiledb.open(f"{group_name}/raw") as raw_X:
 
-                print("\tchecking var...")
+                logger.info("\tchecking var...")
                 all_features = var.query().df[:]
                 ## confirm no duplicates in gene table (var)
                 assert all_features.shape[0] == len(set(all_features["feature_id"]))
@@ -232,7 +222,7 @@ def validate_load(ad, group_name, dataset_id):
                 assert all_features[all_features["feature_id"].isin(ad.var.index.values)].shape[0] == ad.n_vars
 
                 ## validate obs
-                print("\tchecking obs...")
+                logger.info("\tchecking obs...")
                 tdb_obs = obs.df[dataset_id].sort_values(by=["obs_idx"], ignore_index=True)
                 start_coord = tdb_obs.iloc[0].obs_idx
                 assert start_coord == tdb_obs.obs_idx.min()
@@ -253,7 +243,7 @@ def validate_load(ad, group_name, dataset_id):
                 assert obs_idx.max() - obs_idx.min() + 1 == obs_idx.shape[0]
 
                 ## Validate X
-                print("\tchecking raw X...")
+                logger.info("\tchecking raw X...")
                 var_idx_map = create_local_to_global_feature_coord_index(all_features, ad.var.index)
                 stride = 100_000
                 starting_obs_idx = obs.df[dataset_id].obs_idx.min()
