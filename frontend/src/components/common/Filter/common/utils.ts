@@ -11,7 +11,7 @@ import {
 type OntologyCellAccessorFn = (categories: Categories) => string[];
 
 /**
- * Number of digits to format digits to.
+ * Number of digits to format decmial points to.
  */
 const FIXED_TO = 1;
 
@@ -26,12 +26,12 @@ const SCALE_MILLION = 1000000;
 const SCALE_THOUSAND = 1000;
 
 /**
- * Magnitude symbol for million.
+ * Scale symbol for million.
  */
 export const SYMBOL_MILLION = "M";
 
 /**
- * Magnitude symbol for million.
+ * Scale symbol for million.
  */
 export const SYMBOL_THOUSAND = "k";
 
@@ -49,9 +49,9 @@ export function ontologyCellAccessorFn(
 }
 
 /**
- * Formatted number to the correct scale and possibly rounded.
+ * Format number to the correct scale and possibly round.
  * @param num - Number to format.
- * @returns String containing number, possibly rounded, with corresponding scale symbol.
+ * @returns String representation of given number, possibly rounded, with corresponding scale symbol.
  */
 export function formatNumberToScale(num: number): string {
   // Return numbers less than 1000 rounded.
@@ -71,7 +71,7 @@ export function formatNumberToScale(num: number): string {
     return `${rounded}${SYMBOL_THOUSAND}`;
   }
 
-  // Handle numbers larger than 100,000: format to millions. For example, 1,450,000 becomes 1.5M.
+  // Handle numbers larger than 1,000,000: format to millions. For example, 1,450,000 becomes 1.5M.
   const formatted = scaleAndFix(num, SCALE_MILLION, FIXED_TO);
   return `${formatted}${SYMBOL_MILLION}`;
 }

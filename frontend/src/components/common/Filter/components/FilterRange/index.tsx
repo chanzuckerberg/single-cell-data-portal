@@ -14,7 +14,7 @@ import { useSliderStyles } from "src/components/common/Filter/components/FilterR
 type SliderRange = number | number[];
 
 /**
- * Slider step size.
+ * Slider step size - default to 100.
  */
 const STEP_SIZE = 100;
 

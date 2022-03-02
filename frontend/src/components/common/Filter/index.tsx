@@ -86,7 +86,7 @@ function buildRangeCategoryTag(
     // singleton array.
     return [
       {
-        label: createTagLabel(selectedMin, selectedMax),
+        label: createRangeTagLabel(selectedMin, selectedMax),
         onRemove: () => onFilter(categoryKey, []),
       },
     ];
@@ -122,10 +122,10 @@ function buildSelectCategoryTags(
  * @param max
  * @returns string portraying the selected range of the slider.
  */
-function createTagLabel(min: number, max: number): string {
+function createRangeTagLabel(min: number, max: number): [string, string] {
   const minLabel = formatNumberToScale(min);
   const maxLabel = formatNumberToScale(max);
-  return `${minLabel} - ${maxLabel}`;
+  return [minLabel, maxLabel];
 }
 
 /**

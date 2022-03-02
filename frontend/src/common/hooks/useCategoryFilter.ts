@@ -35,7 +35,12 @@ export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 /*
  * Set of all category values in the full result set, keyed by their corresponding category.
  */
-type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
+type CategorySet = { [K in CATEGORY_KEY]: CategorySetValue };
+
+/**
+ * Possible category set values, either a set of category key values (for single or multiselect categories) or a range.
+ */
+type CategorySetValue = Set<CategoryValueKey> | Range;
 
 /**
  * Internal model of a single or multiselect category value: category value keyed by category value key (for easy
@@ -185,8 +190,11 @@ function addEmptyCategoryValues(
 
     // Grab the expected set of category values.
     const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
-    if (!allCategoryValueKeys) {
-      return; // Error state - all category values for this category can't be found.
+    if (
+      !isCategorySetCategoryKeyValue(allCategoryValueKeys) || // Error state - should be category key value.
+      !allCategoryValueKeys // Error state - all category values for this category can't be found.
+    ) {
+      return;
     }
 
     // If expected category value is missing from this category's category values, add it back in with a count of 0.
@@ -202,6 +210,38 @@ function addEmptyCategoryValues(
       }
     );
   }
+}
+
+/**
+ * Add range categories to the next filter state. Range categories are not summarized and must be explicitly added from
+ * the original category set state.
+ * @param nextFilterState - Filter state currently being built due to change in filter.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
+ * @param categorySet - Original, unfiltered sets of category values keyed by their category.
+ */
+function addRangeCategories(
+  categoryKeys: Set<CATEGORY_KEY>,
+  nextFilterState: FilterState,
+  categorySet: CategorySet
+) {
+  Array.from(categoryKeys.values()).forEach((categoryKey) => {
+    // Grab the expected range for this category.
+    const categorySetRange = categorySet[categoryKey];
+    if (
+      isCategorySetCategoryKeyValue(categorySetRange) || // Error state - should be a range.
+      !categorySetRange // Error state - original range for this category can't be found.
+    ) {
+      return;
+    }
+
+    // Add range to next filter state.
+    const [originalMin, originalMax] = categorySetRange;
+    nextFilterState[categoryKey] = {
+      key: categoryKey,
+      max: originalMax ?? 0, // 0 is possible if original range is invalid
+      min: originalMin ?? 0, // 0 is possible if original range is invalid
+    };
+  });
 }
 
 /**
@@ -255,14 +295,22 @@ function buildCategorySet<T extends Categories>(
   // Build up category values for each category
   return Array.from(categoryKeys.values()).reduce(
     (accum: CategorySet, categoryKey: CategoryKey) => {
-      // Initial state of range types are not required.
+      // Calculate the initial state of range categories.
       if (isCategoryTypeBetween(categoryKey)) {
+        const counts = originalRows
+          .map((originalRow) => originalRow.values[categoryKey])
+          .filter((count) => !!count || count === 0); // Remove bad data, just in case!
+
+        accum[categoryKey] = [
+          counts.length ? Math.min(...counts) : 0,
+          counts.length ? Math.max(...counts) : 0,
+        ];
         return accum;
       }
       // Check category value for this category, in every row.
       originalRows.forEach((originalRow: Row<T>) => {
         // Grab the category values already added for this category, create new set if it hasn't already been created.
-        let categoryValueSet = accum[categoryKey];
+        let categoryValueSet = accum[categoryKey] as Set<CategoryValueKey>;
         if (!categoryValueSet) {
           categoryValueSet = new Set<CategoryValueKey>();
           accum[categoryKey] = categoryValueSet;
@@ -398,6 +446,9 @@ function buildNextFilterState<T extends Categories>(
 
   // Always display category values even if their count is 0; add back any category values that have been filtered out.
   addEmptyCategoryValues(nextFilterState, categorySet);
+
+  // Add range categories to next filter state.
+  addRangeCategories(categoryKeys, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
   setSelectedStates(nextFilterState, filters);
@@ -555,6 +606,17 @@ function isCategoryValueKey(
 
 /**
  * Determine if the given category value is a select category value (and not a range category value).
+ * @param categorySetValue - Range or category set value.
+ * @returns True if category set value is a set of category value keys.
+ */
+function isCategorySetCategoryKeyValue(
+  categorySetValue: CategorySetValue
+): categorySetValue is Set<CategoryValueKey> {
+  return (categorySetValue as Set<CategoryValueKey>).has !== undefined;
+}
+
+/**
+ * Determine if the given category value is a select category value (and not a range category value).
  * @param categoryValue - Range or select category value.
  * @returns True if category value is a select category value.
  */
@@ -651,39 +713,15 @@ function summarizeCategories<T extends Categories>(
     // Apply the filters on the original result set
     const rows = applyFilters(originalRows, query.filters);
 
-    // Count the category value occurrences in each category that shares this filter.
+    // Count the category value occurrences in each category that shares this filter. Range categories are not
+    // summarized; they always use the full range of the original result set.
     query.categoryKeys.forEach((categoryKey: CategoryKey) => {
-      if (isCategoryTypeBetween(categoryKey)) {
-        accum[categoryKey] = summarizeRangeCategory(categoryKey, rows);
-      } else {
+      if (!isCategoryTypeBetween(categoryKey)) {
         accum[categoryKey] = summarizeSelectCategory(categoryKey, rows);
       }
     });
     return accum;
   }, {} as FilterState);
-}
-
-/**
- * Find the min and max values across the result set for the given range category.
- * @param categoryKey - Category to find min and max category values of.
- * @param filteredRows - Array of rows containing category values to find min and max of.
- * @return Min and max values for the given category.
- */
-function summarizeRangeCategory<T extends Categories>(
-  categoryKey: CategoryKey,
-  filteredRows: Row<T>[]
-): RangeCategory {
-  const counts = filteredRows
-    .map((filteredRow) => filteredRow.values[categoryKey])
-    .filter((count) => !!count || count === 0); // Remove bad data, just in case!
-
-  // Return the model of the range category. If there are no counts (i.e. there's only bad data), set 0 for both the min
-  // and the max which will automatically disable the range filter.
-  return {
-    key: categoryKey,
-    max: counts.length ? Math.max(...counts) : 0,
-    min: counts.length ? Math.min(...counts) : 0,
-  };
 }
 
 /**
