@@ -498,13 +498,10 @@ paths:
                     type: object
                     properties:
                       cxg:
-                        description: status for cxg conversion
                         $ref: "#/components/schemas/conversion_status"
                       h5ad:
-                        description: status for h5ad conversion
                         $ref: "#/components/schemas/conversion_status"
                       rds:
-                        description: status for rds/seurat conversion
                         $ref: "#/components/schemas/conversion_status"
         "400":
           $ref: "#/components/responses/400"
