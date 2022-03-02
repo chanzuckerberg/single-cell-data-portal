@@ -617,7 +617,7 @@ function isCategoryValueKey(
 function isCategorySetCategoryKeyValue(
   categorySetValue: CategorySetValue
 ): categorySetValue is Set<CategoryValueKey> {
-  return (categorySetValue as Set<CategoryValueKey>).has !== undefined;
+  return categorySetValue instanceof Set;
 }
 
 /**
