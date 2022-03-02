@@ -19,7 +19,7 @@ def base_config() -> dict:
 
 
 def create_ctx(config: dict = {}) -> tiledb.Ctx:
-    cfg = tiledb.Config(base_config() | config)
+    cfg = tiledb.Config({**base_config(), **config})
     ctx = tiledb.Ctx(config=cfg)
     return ctx
 
@@ -36,11 +36,11 @@ def fast_config(config_overrides: dict = {}) -> dict:
         (int(frac_mem(0.1) / io_concurrency_level) + (1024**3 - 1)) // (1024**3) * (1024**3)
     )
 
-    config = base_config() | {
-        "py.init_buffer_bytes": 16 * 1024**3,  # needs to be at least 8GB
-        "sm.tile_cache_size": frac_mem(0.5),
-        "sm.consolidation.buffer_size": consolidation_buffer_size,
-        "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
-    }
+    config = {**base_config(),
+              "py.init_buffer_bytes": 16 * 1024**3,  # needs to be at least 8GB
+              "sm.tile_cache_size": frac_mem(0.5),
+              "sm.consolidation.buffer_size": consolidation_buffer_size,
+              "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
+              }
     config.update(config_overrides)
     return config
