@@ -40,11 +40,12 @@ def consolidation_buffer_size(vm_fraction: float) -> int:
 
 
 def fast_config(config_overrides: dict = {}) -> dict:
-    config = {**base_config(),
-              "py.init_buffer_bytes": 16 * GB,  # needs to be at least 8GB
-              "sm.tile_cache_size": virtual_memory_size(0.5),
-              "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
-              "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
-              }
+    config = {
+        **base_config(),
+        "py.init_buffer_bytes": 16 * GB,  # needs to be at least 8GB
+        "sm.tile_cache_size": virtual_memory_size(0.5),
+        "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+        "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
+    }
     config.update(config_overrides)
     return config

@@ -14,6 +14,7 @@ class WmgApiV1Tests(unittest.TestCase):
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
     temporary WMG cube on local filesystem to avoid dependency on localstack S3.
     """
+
     def setUp(self):
         super().setUp()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
@@ -57,10 +58,7 @@ class WmgApiV1Tests(unittest.TestCase):
             expected_response = {
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
                 "expression_summary": {},
-                "term_id_labels": {
-                    'cell_types': [],
-                    'genes': []
-                },
+                "term_id_labels": {"cell_types": [], "genes": []},
             }
 
             self.assertEqual(expected_response, json.loads(response.data))
@@ -106,8 +104,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         "gene_ontology_term_id_2",
                     ],
                     organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_1",
-                                              "tissue_ontology_term_id_2"],
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"],
                 ),
                 response_option="include_filter_dims_include_dataset_links",
             )
@@ -135,7 +132,7 @@ class WmgApiV1Tests(unittest.TestCase):
                             {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                        ]
+                        ],
                     },
                     "gene_ontology_term_id_2": {
                         "tissue_ontology_term_id_1": [
@@ -147,7 +144,7 @@ class WmgApiV1Tests(unittest.TestCase):
                             {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                        ]
+                        ],
                     },
                 },
                 "term_id_labels": {

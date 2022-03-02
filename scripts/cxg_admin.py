@@ -686,8 +686,7 @@ def update_curator_names(ctx, access_token):
 @cli.command()
 @click.pass_context
 def add_publisher_metadata(ctx):
-    """Add publisher metadata to the current records
-    """
+    """Add publisher metadata to the current records"""
 
     from backend.corpora.common.providers import crossref_provider
     from backend.corpora.common.providers.crossref_provider import CrossrefException
@@ -696,7 +695,6 @@ def add_publisher_metadata(ctx):
         url = f"https://dx.doi.org/{doi}"
         res = requests.head(url, allow_redirects=True)
         return res.status_code
-
 
     with db_session_manager() as session:
         click.confirm(
@@ -712,7 +710,7 @@ def add_publisher_metadata(ctx):
 
         for record in session.query(DbCollection):
             collection = Collection.get_collection(session, record.id, record.visibility)
-            if not collection: 
+            if not collection:
                 continue
             collection_id = record.id
             dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
@@ -723,7 +721,7 @@ def add_publisher_metadata(ctx):
                 continue
 
             if normalized_doi:
-                if not '/' in normalized_doi:
+                if not "/" in normalized_doi:
                     continue
 
                 try:
@@ -733,10 +731,9 @@ def add_publisher_metadata(ctx):
                 except Exception as e:
                     print(record.id, normalized_doi, record.name, e)
                     print(traceback.format_exc())
-                    record.publisher_metadata = {"error" : str(e.__cause__)}
+                    record.publisher_metadata = {"error": str(e.__cause__)}
 
                 time.sleep(2)
-                
 
 
 def get_database_uri() -> str:
