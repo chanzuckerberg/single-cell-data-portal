@@ -1,5 +1,5 @@
+import logging
 from collections import defaultdict
-from tempfile import mkdtemp
 from uuid import uuid4
 
 import connexion
@@ -14,9 +14,8 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
-# TODO: Replace with real snapshot uuid
-from unit.backend.wmg.fixtures.cube import create_cube
 
+# TODO: Replace with real snapshot uuid
 DUMMY_SNAPSHOT_UUID = uuid4().hex
 
 
@@ -35,15 +34,22 @@ def find_cube_latest_snapshot():
     global cube
 
     if cube is None:
-        # TODO: Replace with S3 location
-        cube_tmp_dir = mkdtemp()
-        create_cube(cube_dir=cube_tmp_dir, dim_size=3)
-
         # TODO: Remove tiledb dependency from this module
         # TODO: Okay to keep open indefinitely? Is it faster than re-opening each request?
-        cube = tiledb.open(cube_tmp_dir, ctx=create_ctx(fast_config()))
+        cube_uri = build_cube_uri()
+        logging.info(f"Opening WMG cube at {cube_uri}")
+        cube = tiledb.open(cube_uri, ctx=create_ctx(fast_config()))
 
     return cube
+
+
+def build_cube_uri():
+    # TODO: Retrieve from app config
+    cube_base_uri = "s3://wmg-dev"
+    # TODO: Retrieve from s3://wmg-<env>/latest_snapshot_uuid
+    cube_latest_snapshot = "dummy-snapshot"
+    cube_uri = f"{cube_base_uri}/{cube_latest_snapshot}/cube/"
+    return cube_uri
 
 
 def query():

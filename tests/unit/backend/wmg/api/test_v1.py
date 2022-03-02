@@ -10,6 +10,10 @@ from unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_value
 
 
 class WmgApiV1Tests(unittest.TestCase):
+    """
+    Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
+    temporary WMG cube on local filesystem to avoid dependency on localstack S3.
+    """
     def setUp(self):
         super().setUp()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
@@ -31,18 +35,24 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(expected, json.loads(response.data))
 
-    def test__query__minimal_valid_request_returns_200(self):
-        request = dict(
-            filter=dict(
-                organism_ontology_term_id="organism_ontology_term_id_0",
-                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            ),
-            response_option="include_filter_dims_include_dataset_links",
-        )
+    @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
+    def test__query__minimal_valid_request_returns_200(self, find_cube_latest_snapshot):
+        with create_temp_cube() as cube:
+            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
+            # response
+            find_cube_latest_snapshot.return_value = cube
 
-        response = self.app.post("/wmg/v1/query", json=request)
+            request = dict(
+                filter=dict(
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                ),
+                response_option="include_filter_dims_include_dataset_links",
+            )
 
-        self.assertEqual(200, response.status_code)
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
 
     def test__query__empty_request_returns_400(self):
         response = self.app.post("/wmg/v1/query", json={})

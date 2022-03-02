@@ -2,9 +2,11 @@ import psutil
 import tiledb
 
 
-def base_config():
+def base_config() -> dict:
     return {
         "vfs.s3.region": "us-west-2",
+        # TODO: os.getenv("BOTO_ENDPOINT_URL")
+        "vfs.s3.endpoint_override": "localhost:4566"
     }
 
 
