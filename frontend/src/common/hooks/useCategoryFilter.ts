@@ -628,7 +628,7 @@ function isCategorySetCategoryKeyValue(
 function isSelectCategoryValue(
   categoryValue: RangeCategory | KeyedSelectCategoryValue
 ): categoryValue is KeyedSelectCategoryValue {
-  return (categoryValue as KeyedSelectCategoryValue).get !== undefined;
+  return categoryValue instanceof Map;
 }
 
 /**
