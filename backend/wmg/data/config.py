@@ -1,12 +1,20 @@
+import os
+
 import psutil
 import tiledb
 
 
 def base_config() -> dict:
+    if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):
+        return {
+            "vfs.s3.endpoint_override": boto_endpoint_url,
+            # localstack does not support S3 virtual addressing (per
+            # https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html)
+            "vfs.s3.use_virtual_addressing": "false",
+        }
+
     return {
         "vfs.s3.region": "us-west-2",
-        # TODO: os.getenv("BOTO_ENDPOINT_URL")
-        "vfs.s3.endpoint_override": "localhost:4566"
     }
 
 
