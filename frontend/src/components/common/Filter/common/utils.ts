@@ -55,18 +55,18 @@ export function ontologyCellAccessorFn(
  */
 export function formatNumberToScale(num: number): string {
   // Return numbers less than 1000 rounded.
-  if (num < 1000) {
+  if (num < SCALE_THOUSAND) {
     return `${Math.round(num)}`;
   }
 
   // Handle numbers smaller than 10,000: format to thousands. For example, 1400 becomes 1.4k.
-  if (num < 10000) {
+  if (num < 10 * SCALE_THOUSAND) {
     const formatted = scaleAndFix(num, SCALE_THOUSAND, FIXED_TO);
     return `${formatted}${SYMBOL_THOUSAND}`;
   }
 
   // Handle numbers smaller than 1,000,000: format to thousands and round. For example, 14,500 becomes 15k.
-  if (num < 1000000) {
+  if (num < SCALE_MILLION) {
     const rounded = Math.round(scaleAndFix(num, SCALE_THOUSAND, FIXED_TO));
     return `${rounded}${SYMBOL_THOUSAND}`;
   }
