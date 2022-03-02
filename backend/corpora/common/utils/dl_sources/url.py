@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from urllib.parse import urlparse, ParseResult
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
