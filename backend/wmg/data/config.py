@@ -3,6 +3,8 @@ import os
 import psutil
 import tiledb
 
+from backend.corpora.common.utils.math_utils import MB, GB
+
 
 def base_config() -> dict:
     if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):
@@ -24,22 +26,24 @@ def create_ctx(config: dict = {}) -> tiledb.Ctx:
     return ctx
 
 
-def frac_mem(f):
-    mem_size = psutil.virtual_memory().total
-    return int(f * mem_size) // (1024**2) * (1024**2)
+def virtual_memory_size(vm_fraction: float) -> int:
+    mem_size_bytes = psutil.virtual_memory().total
+    fractional_mem_bytes = int(vm_fraction * mem_size_bytes)
+    return fractional_mem_bytes // MB * MB  # round down to MB boundary
+
+
+def consolidation_buffer_size(vm_fraction: float) -> int:
+    # consolidation buffer heuristic to prevent thrashing: total_mem/io_concurrency_level, rounded to GB
+    io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
+    buffer_size = int(virtual_memory_size(vm_fraction) / io_concurrency_level) + (GB - 1)
+    return buffer_size // GB * GB  # round down to GB boundary
 
 
 def fast_config(config_overrides: dict = {}) -> dict:
-    # consolidation buffer heuristic to prevent thrashing: total_mem/io_concurrency_level, rounded to GB
-    io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
-    consolidation_buffer_size = (
-        (int(frac_mem(0.1) / io_concurrency_level) + (1024**3 - 1)) // (1024**3) * (1024**3)
-    )
-
     config = {**base_config(),
-              "py.init_buffer_bytes": 16 * 1024**3,  # needs to be at least 8GB
-              "sm.tile_cache_size": frac_mem(0.5),
-              "sm.consolidation.buffer_size": consolidation_buffer_size,
+              "py.init_buffer_bytes": 16 * GB,  # needs to be at least 8GB
+              "sm.tile_cache_size": virtual_memory_size(0.5),
+              "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
               "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
               }
     config.update(config_overrides)
