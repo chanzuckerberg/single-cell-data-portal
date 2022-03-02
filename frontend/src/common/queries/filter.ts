@@ -399,7 +399,7 @@ export function buildSummaryCitation(
 
   // Add author to citation - family name if first author is a person, name if first author is a consortium.
   const { authors, journal, published_year: publishedYear } = publisherMetadata;
-  const [firstAuthor] = authors;
+  const [firstAuthor] = authors ?? [];
   if (firstAuthor) {
     if (isAuthorPerson(firstAuthor)) {
       citationTokens.push(firstAuthor.family);

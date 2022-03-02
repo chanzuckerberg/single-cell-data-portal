@@ -11,7 +11,7 @@ import styled, { css } from "styled-components";
 export const formField = css`
   border-radius: 3px;
   color: ${PT_TEXT_COLOR};
-  height: 32px;
+  height: auto; /* required; upholds line height and height specification (where padding and line height determine overall height) */
   letter-spacing: -0.1px;
   line-height: 18px;
   padding: 6px 8px;
@@ -46,6 +46,7 @@ export const StyledFormLabel = styled(Label)`
 
   /* Text area */
   textarea.${Classes.INPUT} {
+    height: 32px; /* required; used by TextArea component to set the height of the component on first mount */
     min-height: 32px;
     min-width: 100%;
   }
