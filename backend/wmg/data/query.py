@@ -5,7 +5,8 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
-UNFILTERED_SLICE = slice(None)
+ALL_DIM_VALUES = slice(None)
+EMPTY_DIM_VALUES = ""
 
 
 class WmgQueryCriteria(BaseModel):
@@ -48,9 +49,9 @@ class WmgQuery:
         attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
 
         tiledb_dims_query = (
-            criteria.gene_ontology_term_ids or UNFILTERED_SLICE,
-            criteria.tissue_ontology_term_ids or UNFILTERED_SLICE,
-            criteria.organism_ontology_term_id or UNFILTERED_SLICE,
+            criteria.gene_ontology_term_ids or EMPTY_DIM_VALUES,  # at least one gene required for a non-empty result
+            criteria.tissue_ontology_term_ids or ALL_DIM_VALUES,
+            criteria.organism_ontology_term_id or ALL_DIM_VALUES,
         )
         query_result_df = self._cube.query(attr_cond=attr_cond).df[tiledb_dims_query]
 

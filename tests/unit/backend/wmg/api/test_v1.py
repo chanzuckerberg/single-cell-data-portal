@@ -36,7 +36,7 @@ class WmgApiV1Tests(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.data))
 
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__minimal_valid_request_returns_200(self, find_cube_latest_snapshot):
+    def test__query__minimal_valid_request_returns_200_and_empty_expr_summary(self, find_cube_latest_snapshot):
         with create_temp_cube() as cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
@@ -53,6 +53,17 @@ class WmgApiV1Tests(unittest.TestCase):
             response = self.app.post("/wmg/v1/query", json=request)
 
             self.assertEqual(200, response.status_code)
+
+            expected_response = {
+                "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
+                "expression_summary": {},
+                "term_id_labels": {
+                    'cell_types': [],
+                    'genes': []
+                },
+            }
+
+            self.assertEqual(expected_response, json.loads(response.data))
 
     def test__query__empty_request_returns_400(self):
         response = self.app.post("/wmg/v1/query", json={})
@@ -92,11 +103,11 @@ class WmgApiV1Tests(unittest.TestCase):
                 filter=dict(
                     gene_ontology_term_ids=[
                         "gene_ontology_term_id_0",
-                        "gene_ontology_term_id_1",
                         "gene_ontology_term_id_2",
                     ],
                     organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_1",
+                                              "tissue_ontology_term_id_2"],
                 ),
                 response_option="include_filter_dims_include_dataset_links",
             )
@@ -115,21 +126,24 @@ class WmgApiV1Tests(unittest.TestCase):
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
-                        "tissue_ontology_term_id_0": [
+                        "tissue_ontology_term_id_1": [
                             {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                        ]
-                    },
-                    "gene_ontology_term_id_1": {
-                        "tissue_ontology_term_id_0": [
+                        ],
+                        "tissue_ontology_term_id_2": [
                             {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                         ]
                     },
                     "gene_ontology_term_id_2": {
-                        "tissue_ontology_term_id_0": [
+                        "tissue_ontology_term_id_1": [
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                        ],
+                        "tissue_ontology_term_id_2": [
                             {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
                             {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
@@ -144,7 +158,6 @@ class WmgApiV1Tests(unittest.TestCase):
                     ],
                     "genes": [
                         {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
-                        {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
                         {"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"},
                     ],
                 },
