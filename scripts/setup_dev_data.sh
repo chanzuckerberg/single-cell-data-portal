@@ -35,6 +35,7 @@ local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
 ${local_aws} s3api create-bucket --bucket corpora-data-dev &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket artifact-bucket &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket cellxgene-bucket &>/dev/null || true
+${local_aws} s3api create-bucket --bucket wmg-dev &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/auth0-secret &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &>/dev/null || true
@@ -80,6 +81,16 @@ echo "Writing test file to s3"
 dd if=/dev/zero of=fake-h5ad-file.h5ad bs=1024 count=1024 &>/dev/null
 ${local_aws} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
 rm fake-h5ad-file.h5ad
+
+# Make a WMG cube
+echo "Writing WMG cube to s3"
+tmp_cube_dir=`mktemp -d`
+# TODO: Also generate & store:
+#  * s3://wmg-<env>/latest_snapshot_uuid
+#  * cell type orderings
+#  * total cell counts cube
+python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
+${local_aws} s3 cp --recursive ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/
 
 echo "Populating test db"
 export CORPORA_LOCAL_DEV=true

@@ -1,12 +1,12 @@
 import contextlib
+import os.path
+import sys
 import tempfile
-from os import PathLike
 from typing import List, Callable, Dict
 
 import numpy as np
 import tiledb
 from numpy.random import random, randint
-from tiledb import Array
 
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
@@ -65,3 +65,11 @@ def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List
         }
         physical_attr_values.update(logical_attr_values)
         cube[tuple(physical_dim_values)] = physical_attr_values
+
+
+# CLI invocation for use by setup_dev_data.sh, to create a cube for Docker-based dev & test envs
+if __name__ == '__main__':
+    output_cube_dir = sys.argv[1]
+    if not os.path.isdir(output_cube_dir):
+        sys.exit(f"invalid dir {output_cube_dir} for cube")
+    create_cube(output_cube_dir)
