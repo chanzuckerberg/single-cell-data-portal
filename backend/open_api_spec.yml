@@ -574,6 +574,7 @@ components:
         sites or only viewable through obfuscated URLs.
       type: string
       enum: [PUBLIC, PRIVATE]
+      default: PUBLIC
     distribution:
       description: >-
         Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
@@ -785,7 +786,6 @@ components:
       required: false
       schema:
         $ref: "#/components/schemas/visibility"
-        default: PUBLIC
   responses:
     200:
       description: OK
