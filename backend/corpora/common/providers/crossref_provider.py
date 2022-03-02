@@ -42,13 +42,7 @@ class CrossrefProvider(object):
         day = date_parts[2] if len(date_parts) > 2 else 1
         return (year, month, day)
 
-    def fetch_metadata(self, doi):
-        """
-        Fetches and extracts publisher metadata from Crossref for a specified DOI.
-        If the Crossref API URI isn't in the configuration, we will just return an empty object.
-        This is to avoid calling Crossref in non-production environments.
-        """
-
+    def _fetch_crossref_payload(self, doi):
         # Remove the https://doi.org part
         parsed = urlparse(doi)
         if parsed.scheme and parsed.netloc:
@@ -69,6 +63,17 @@ class CrossrefProvider(object):
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
+
+        return res
+
+    def fetch_metadata(self, doi):
+        """
+        Fetches and extracts publisher metadata from Crossref for a specified DOI.
+        If the Crossref API URI isn't in the configuration, we will just return an empty object.
+        This is to avoid calling Crossref in non-production environments.
+        """
+
+        res = self._fetch_crossref_payload(doi)
 
         try:
             message = res.json()["message"]
@@ -123,3 +128,17 @@ class CrossrefProvider(object):
             }
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
+
+    def fetch_preprint_published_doi(self, doi):
+
+        res = self._fetch_crossref_payload(doi)
+        message = res.json()["message"]
+        is_preprint = message.get("subtype") == "preprint"
+
+        if is_preprint:
+            try:
+                published_doi = message["relation"]["is-preprint-of"]
+                if published_doi[0]["id-type"] == "doi":
+                    return published_doi[0]["id"]
+            except Exception:
+                pass
