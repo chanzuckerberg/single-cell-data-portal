@@ -748,7 +748,7 @@ function summarizeSelectCategory<T extends Categories>(
       categoryValues = [categoryValues];
     }
 
-    // Init category value it doesn't already exist. Default selected state to false (selected state is updated
+    // Init category value if it doesn't already exist. Default selected state to false (selected state is updated
     // from the filter state at a later point).
     categoryValues.forEach((categoryValueKey: CategoryValueKey) => {
       let categoryValue = accum.get(categoryValueKey);
