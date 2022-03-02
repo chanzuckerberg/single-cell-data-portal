@@ -45,7 +45,6 @@ class LabelType(
         # else, simple dataframe column extraction
         col = self._get_col(df)
         if col is None:
-            # return np.full((df.shape[0],), b"undefined", dtype="O")
             return np.full((df.shape[0],), b"", dtype="O")
         elif self.dtype is str:
             return col.to_numpy(dtype=str)
