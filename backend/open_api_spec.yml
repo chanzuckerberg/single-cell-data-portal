@@ -134,6 +134,8 @@ paths:
                           type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
+                        revision_of:
+                          type: string
                         tombstone:
                           type: boolean
         "401":
@@ -227,6 +229,8 @@ paths:
                     type: string
                   publisher_metadata:
                     $ref: "#/components/schemas/publisher_metadata"
+                  revision_of:
+                    type: string
                   tombstone:
                     type: boolean
         "401":
@@ -261,7 +265,6 @@ paths:
               start_new_revision:
                 summary: Start revision without making updates
                 value: {}
-
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -273,6 +276,35 @@ paths:
           $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
+
+  /curation/collections/{public_collection_uuid}/revision:
+    post:
+      summary: Start a revision of a published Collection
+      description: >-
+        This starts a Revision of a published Collection. A Revision is a private Collection that is a copy of a
+        published Collection. When published, a Revision replaces the original published Collection in-place. Only one
+        ongoing Revision may exist per published Collection at any given time.
+
+        All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
+      security:
+        - cxguserCookie: []
+        - curatorAccess: []
+      parameters:
+        - $ref: "#/components/parameters/path_public_collection_uuid"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revision_id:
+                    $ref: "#/components/schemas/collection_uuid"
+        "401":
+          $ref: "#/components/responses/401"
+        "409":
+          $ref: "#/components/responses/409"
 
   /curation/collections/{collection_uuid}/datasets:
     delete:
@@ -550,7 +582,7 @@ components:
         Determines the visibility of the collection, that will either make the collection visible on the public
         sites or only viewable through obfuscated URLs.
       type: string
-      enum: [PUBLIC, PRIVATE, REVISION]
+      enum: [PUBLIC, PRIVATE]
     distribution:
       description: >-
         Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
@@ -743,19 +775,21 @@ components:
         $ref: "#/components/schemas/dataset_uuid"
     path_collection_uuid:
       name: collection_uuid
-      description: >
-        The uuid of a collection. To specify an ongoing revision of a public
-        collection, use the uuid of the public collection.
+      description: The uuid of a Collection.
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/collection_uuid"
+    path_public_collection_uuid:
+      name: public_collection_uuid
+      description: The uuid of a public Collection.
       in: path
       required: true
       schema:
         $ref: "#/components/schemas/collection_uuid"
     query_visibility:
       name: visibility
-      description: >-
-        The 'visibility' of a Collection (and its constituent Datasets). `PUBLIC`, `PRIVATE`, or `REVISION`, which is a
-        private version of a public Collection; a revision SHALL NOT be visible to other users until the revision itself
-        is explicitly published by its curator.
+      description: The 'visibility' of a Collection (and its constituent Datasets).
       in: query
       required: false
       schema:
