@@ -216,7 +216,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   }, [onGenesChange, selectedGenes]);
 
   const handleClose = (
-    _: React.ChangeEvent<Record<string, never>>,
+    _: React.ChangeEvent<unknown>,
     reason: AutocompleteCloseReason
   ) => {
     if (reason === "toggleInput") {
@@ -225,7 +225,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     setOpen(false);
   };
   const handleChange = (
-    _: React.ChangeEvent<Record<string, never>>,
+    _: React.ChangeEvent<unknown>,
     newValue: DefaultMenuSelectOption[] | null
   ) => {
     return setSelectedGenes(newValue as Gene[]);
@@ -321,11 +321,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           disableListWrap
           onKeyDownCapture={handleEnter}
           options={genes}
-          ListboxComponent={
-            ListboxComponent as React.ComponentType<
-              React.HTMLAttributes<HTMLElement>
-            >
-          }
+          ListboxComponent={ListboxComponent as never}
           renderOption={(option) => option.name}
           onPaste={handlePaste}
           InputBaseProps={{
