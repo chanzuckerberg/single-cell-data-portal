@@ -18,7 +18,7 @@ const FIXED_TO = 1;
 /**
  * Value to divide numbers by when scaling by million.
  */
-const SCALE_MILLION = 1000000;
+const SCALE_MILLION = 1_000_000;
 
 /**
  * Value to divide numbers by when scaling by thousand.
