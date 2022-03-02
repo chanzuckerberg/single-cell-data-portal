@@ -3,6 +3,9 @@ import typing
 from abc import ABC, abstractmethod
 from urllib.parse import urlparse, ParseResult
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class MissingHeaderException(Exception):
     def __init__(self, detail: str = "", *args, **kwargs) -> None:
@@ -82,10 +85,16 @@ class DropBoxURL(URL):
         resp = requests.head(self.url, allow_redirects=True)
         resp.raise_for_status()
 
-        print(resp.headers)
+        # Important: getting the content-length from Dropbox is unreliable, so we're setting a default value (100MB)
+        # to avoid breaking the upload pipeline.
+        try:
+            size = int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length"))
+        except Exception:
+            logger.warning("Cannot retrieve the content length from Dropbox.")
+            size = 1e8
 
         return {
-            "size": int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length")),
+            "size": size,
             "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
         }
 
