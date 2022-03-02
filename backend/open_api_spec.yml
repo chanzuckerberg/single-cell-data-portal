@@ -166,7 +166,7 @@ paths:
   /curation/collections/{collection_uuid}:
     delete:
       summary: Delete a private Collection
-      description: Delete a private Collection or a private revision of a public Collection.
+      description: Delete a private Collection or a revision of a public Collection.
       security:
         - cxguserCookie: []
       parameters:
@@ -239,9 +239,8 @@ paths:
     put:
       summary: Update a Collection's metadata.
       description: >-
-        Start a revision of a published Collection or update its existing revision. Update a private Collection
-        in-place. If any Collection metadata fields are included in the body of the request, these fields SHALL be
-        updated for the specified Collection.
+        Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
+        request, these fields SHALL be updated for the specified Collection.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -261,9 +260,6 @@ paths:
                 summary: Update the description
                 value:
                   description: "New Collection description"
-              start_new_revision:
-                summary: Start revision without making updates
-                value: {}
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -309,9 +305,9 @@ paths:
     delete:
       summary: Delete a private Dataset
       description: >-
-        Delete a Dataset. The **collection_uuid** MUST reference either a private Collection OR a private revision of
-        a public Collection. MUST indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR
-        the **dataset_uuid** parameters.
+        Delete a Dataset. The **collection_uuid** MUST reference either a private Collection OR a Revision. MUST
+        indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid**
+        parameters.
       security:
         - cxguserCookie: []
         - curatorAccess: []
@@ -425,7 +421,7 @@ paths:
         * Uploads to <root_bucket> MUST take the form of `s3://<root_bucket>/<collection_uuid>/<curator_tag>`.
 
         * `<collection_uuid>` MUST NOT be a published Collection. Only uploads to private Collections
-        (unpublished OR ongoing revision of published) will be processed.
+        (unpublished OR ongoing Revision) will be processed.
 
         * If there is no Dataset with tag `<curator_tag>` in `<collection_uuid>`, a new Dataset SHALL be added.
 
