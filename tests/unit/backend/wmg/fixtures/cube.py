@@ -36,12 +36,13 @@ def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[s
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
-# Functions that can be used to generate a set of valid ontology term ids, sampled from real ontologies. While these
-# ontology terms from the real ontologies, they are not always ones that would be admissable w.r.t. to the cellxgene
-# dataset schema. This is still useful to ensure that id-to-label mapping lookups will return a real label. Note that
-# this implementation is wildly inefficient and in many cases does not return values that would be allowed in our
-# real datasets, but it is good enough for test code.
 def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
+    """
+    Returns a set of ontology term ids, sampled from real ontologies. While these ontology terms
+    from the real ontologies, they are not necessarily ones that would be admissible w.r.t. to the cellxgene dataset
+    schema. This is still useful to ensure that id-to-label mapping lookups will return a real label. Note that this
+    implementation is wildly inefficient, but it is good enough for test code.
+    """
     # must import lazily
     import backend.wmg.data.ontology_labels as ontology_labels
 
