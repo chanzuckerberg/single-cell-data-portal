@@ -13,12 +13,19 @@ from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
-logger = logging.getLogger(__name__)
 
 # TODO - does writing and reading directly from s3 slow down compute? test
 
-logger.level('DEBUG')
+Log_Format = "%(levelname)s %(asctime)s - %(message)s"
 
+logging.basicConfig(filename = "logfile.log",
+                    stream = sys.stdout,
+                    filemode = "w",
+                    format = Log_Format,
+                    level = logging.DEBUG)
+# logger.level('DEBUG')
+
+logger = logging.getLogger(__name__)
 
 def get_s3_uris():
     with db_session_manager() as session:
