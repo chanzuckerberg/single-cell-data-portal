@@ -2,6 +2,7 @@ import {
   AnchorButton,
   Button,
   Menu,
+  MenuDivider,
   MenuItem,
   Popover,
 } from "@blueprintjs/core";
@@ -13,6 +14,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { AuthButtonWrapper } from "src/components/Header/style";
 import { API_URL } from "src/configs/configs";
+import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
 
 const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -49,12 +51,13 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
   function Content() {
     return (
       <Menu>
-        <MenuItem data-testid="user-email" text={`Logged in as: ${email}`} />
+        <CuratorAPIKeyGenerator />
+        <MenuDivider />
         <MenuItem
           data-testid="log-out"
           text="Log Out"
           href={`${API_URL}${API.LOG_OUT}`}
-          icon={IconNames.LOG_OUT}
+          label={email}
         />
       </Menu>
     );
