@@ -114,7 +114,6 @@ class CrossrefProvider(object):
                 "published_year": published_year,
                 "published_month": published_month,
                 "published_day": published_day,
-                "dates": dates,
                 "journal": journal,
                 "is_preprint": is_preprint,
             }

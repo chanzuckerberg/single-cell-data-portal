@@ -38,6 +38,35 @@ class ProgressTracker:
         self.stop_updater.set()
 
 
+class NoOpProgressTracker:
+    """
+    This progress tracker should be used if file_size isn't available.
+    It will return a progress of 1 if no errors occurred
+    during the download (i.e. if self.error was never set), otherwise it will return 0.
+    """
+
+    def __init__(self) -> None:
+        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
+        self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
+        self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
+        self.error: Exception = None  # Track errors
+        self.tombstoned: bool = False  # Track if dataset tombstoned
+
+    def progress(self):
+        if self.error:
+            return 0
+        else:
+            return 1
+
+    def update(self, progress):
+        pass
+
+    def cancel(self):
+        self.tombstoned = True
+        self.stop_downloader.set()
+        self.stop_updater.set()
+
+
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
     """
     Download the file pointed at by the URL to the local path.
@@ -150,12 +179,15 @@ def download(
     with db_session_manager() as session:
         logger.info("Setting up download.")
         logger.info(f"file_size: {file_size}")
-        if file_size >= shutil.disk_usage("/")[2]:
+        if file_size and file_size >= shutil.disk_usage("/")[2]:
             raise ProcessingFailed("Insufficient disk space.")
         processing_status = Dataset.get(session, dataset_uuid).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
-        progress_tracker = ProgressTracker(file_size)
+        if file_size is not None:
+            progress_tracker = ProgressTracker(file_size)
+        else:
+            progress_tracker = NoOpProgressTracker()
 
         progress_thread = threading.Thread(
             target=updater,

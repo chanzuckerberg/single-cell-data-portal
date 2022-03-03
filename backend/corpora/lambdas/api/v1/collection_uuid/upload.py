@@ -43,7 +43,8 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
         raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
     except MissingHeaderException as ex:
         raise InvalidParametersHTTPException(ex.detail)
-    if resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
+
+    if resp.get("size") is not None and resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
         raise TooLargeHTTPException()
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
