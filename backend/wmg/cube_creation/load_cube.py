@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 # TODO - does writing and reading directly from s3 slow down compute? test
 
+logger.level('DEBUG')
+
 
 def get_s3_uris():
     with db_session_manager() as session:
