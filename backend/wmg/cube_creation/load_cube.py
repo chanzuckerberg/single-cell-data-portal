@@ -18,7 +18,7 @@ from backend.wmg.cube_creation.wmg_cube import create_cube
 
 Log_Format = "%(levelname)s %(asctime)s - %(message)s"
 
-logging.basicConfig(filename = "logfile.log",
+logging.basicConfig(
                     stream = sys.stdout,
                     filemode = "w",
                     format = Log_Format,
