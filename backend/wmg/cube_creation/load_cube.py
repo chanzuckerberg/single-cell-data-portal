@@ -13,6 +13,8 @@ from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
+from pronto import Ontology
+import pygraphviz as pgv
 
 # TODO - does writing and reading directly from s3 slow down compute? test
 
@@ -66,9 +68,46 @@ def get_cells_by_tissue_type(tdb_group: str) -> Dict:
     return cell_type_by_tissue
 
 def generate_cell_ordering(cell_type_by_tissue):
-    ## TODO port code from Emanuele notebook
-    pass
+    onto = Ontology.from_obo_library("cl.obo")
 
+    def compute_ordering(cells, root):
+        ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
+        ancestors = [i for s in ancestors for i in s]
+        ancestors = set(ancestors)
+
+        G = pgv.AGraph()
+        for a in ancestors:
+            for s in a.subclasses(with_self=False, distance=1):
+                if s in ancestors:
+                    G.add_edge(a.id, s.id)
+        
+        G.layout(prog="dot")
+
+        positions = {}
+        for n in G.iternodes():
+            pos = n.attr["pos"].split(",")
+            positions[n] = (float(pos[0]), float(pos[1]))
+
+        ancestor_ids = [a.id for a in ancestors]
+
+        def recurse(node):
+            if node in cells:
+                yield(node)
+            children = [(c, pos[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids]
+            sorted_children = sorted(children, key = lambda x: x[1][0])
+            for child in sorted_children:
+                yield from recurse(child[0].id)
+
+        ordered_list = list(dict.fromkeys(recurse(root))) # TODO: what is root in this context?
+        return ordered_list
+
+    mapping = {}
+    for tissue, cell_df in cell_type_by_tissue.items():
+        cells = list(cell_df)
+        ordered_cells = compute_ordering(cells, cells[0]) # TODO: what is root in this context?
+        mapping[tissue] = ordered_cells
+
+    return mapping
 
 def update_s3_resources():
     time_stamp = time.time()
