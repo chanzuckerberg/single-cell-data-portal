@@ -2,6 +2,8 @@
 import { Ontology } from "src/common/entities";
 import {
   Categories,
+  DevelopmentStageNode,
+  DEVELOPMENT_STAGES,
   OntologyCategoryKey,
 } from "src/components/common/Filter/common/entities";
 
@@ -49,6 +51,38 @@ export function ontologyCellAccessorFn(
 }
 
 /**
+ * Development stage leaf node ontology IDs keyed by each ancestor node ontology ID, used to facilitate ancestor-leaf
+ * lookups.
+ */
+export const DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR = Object.values(
+  DEVELOPMENT_STAGES
+).reduce((accum, developmentStages) => {
+  developmentStages.forEach((developmentStage) => {
+    setLeafOntologyIdsForDevelopmentStage(accum, developmentStage);
+  });
+  return accum;
+}, new Map<string, Set<string>>());
+
+/**
+ * Find all leaf node (ontology IDs) for the given development stage node.
+ * @param developmentStage - Development stage node to find leaf node ontology IDs of.
+ * @param leafOntologyIds - Set of leaf node ontology IDs found for the given development stage.
+ */
+function findLeafNodeOntologyIds(
+  developmentStage: DevelopmentStageNode,
+  leafOntologyIds: Set<string>
+) {
+  // If this development stage node has no children, we have found a leaf! Add ontology ID to set.
+  if (!developmentStage.children) {
+    leafOntologyIds.add(developmentStage.ontology_term_id);
+    return;
+  }
+  developmentStage.children.forEach((childDevelopmentStage) =>
+    findLeafNodeOntologyIds(childDevelopmentStage, leafOntologyIds)
+  );
+}
+
+/**
  * Format number to the correct scale and possibly round.
  * @param num - Number to format.
  * @returns String representation of given number, possibly rounded, with corresponding scale symbol.
@@ -85,4 +119,32 @@ export function formatNumberToScale(num: number): string {
  */
 function scaleAndFix(num: number, scale: number, fixTo: number): number {
   return parseFloat((num / scale + Number.EPSILON).toFixed(fixTo));
+}
+
+/**
+ * Find the leaf nodes for non-leaf development stage nodes in the tree of the given node and add to map.
+ * @param leafOntologyIdsByAncestor - Map of leaf ontology IDs keyed by ancestor development stage ontology ID.
+ * @param developmentStage - Development stage node to find leaf node ontology IDs of.
+ */
+function setLeafOntologyIdsForDevelopmentStage(
+  leafOntologyIdsByAncestor: Map<string, Set<string>>,
+  developmentStage: DevelopmentStageNode
+) {
+  // Node itself a leaf.
+  if (!developmentStage.children) {
+    return;
+  }
+
+  // Find the leaf nodes for this development stage node.
+  const leafNodes = new Set<string>();
+  findLeafNodeOntologyIds(developmentStage, leafNodes);
+  leafOntologyIdsByAncestor.set(developmentStage.ontology_term_id, leafNodes);
+
+  // Find the leaf nodes for children of this development stage node, if any.
+  developmentStage.children.forEach((childDevelopmentStage) =>
+    setLeafOntologyIdsForDevelopmentStage(
+      leafOntologyIdsByAncestor,
+      childDevelopmentStage
+    )
+  );
 }

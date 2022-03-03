@@ -10,14 +10,20 @@ import {
   CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
   CATEGORY_LABEL,
+  DevelopmentStageNode,
+  DEVELOPMENT_STAGES,
   IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
+  OntologyCategorySpeciesView,
+  OntologyCategoryValueView,
+  OntologyCategoryView,
   PUBLICATION_DATE_LABELS,
   Range,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
+import { DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR } from "src/components/common/Filter/common/utils";
 
 /**
  * Entry in react-table's filters arrays, models selected category values in a category.
@@ -149,7 +155,11 @@ export function useCategoryFilter<T extends Categories>(
     (categoryKey: CategoryKey, selectedValue: CategoryValueKey | Range) => {
       // Handle filter of single or multiselect categories.
       if (isCategoryValueKey(selectedValue)) {
-        const nextCategoryFilters = buildNextSelectCategoryFilters(
+        const filterFn =
+          categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS // TODO(cc) create special indicator in config for this?
+            ? buildNextOntologyCategoryFilters
+            : buildNextSelectCategoryFilters;
+        const nextCategoryFilters = filterFn(
           categoryKey,
           selectedValue,
           filters
@@ -377,6 +387,14 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
 
       // Handle single or multiselect categories.
       if (isSelectCategoryValue(categoryValueByValue)) {
+        if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
+          // TODO(cc) create special indicator in config for this?
+          return buildOntologyCategoryView(
+            categoryKey as CategoryKey,
+            categoryValueByValue
+          );
+        }
+
         return buildSelectCategoryView(
           categoryKey as CategoryKey,
           categoryValueByValue
@@ -390,35 +408,6 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
       );
     })
     .sort(sortCategoryViews);
-}
-
-/**
- * Build updated set of selected filters for the given single or multiselect category and the selected category value.
- * @param categoryKey - Category key (i.e. "disease") of selected category value.
- * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
- * @param filters - Current set of selected category values.
- * @returns Array of selected category values for the given category.
- */
-function buildNextSelectCategoryFilters<T extends Categories>(
-  categoryKey: CategoryKey,
-  categoryValueKey: CategoryValueKey,
-  filters: Filters<T>
-): CategoryValueKey[] {
-  // Grab the current selected values for the category.
-  const categoryFilters = getCategoryFilter(categoryKey, filters);
-
-  // Currently no filters already selected for this category; add category value as first.
-  if (!categoryFilters) {
-    return [categoryValueKey];
-  }
-
-  // Create new array of selected category value keys, with the selected state of the given category value toggled.
-  const multiselect = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].multiselect;
-  return toggleCategoryValueSelected(
-    categoryValueKey,
-    categoryFilters.value,
-    multiselect
-  );
 }
 
 /**
@@ -456,6 +445,82 @@ function buildNextFilterState<T extends Categories>(
 }
 
 /**
+ * Build updated set of selected filters for the given ontology tree category and the selected category value.
+ * @param categoryKey - Category key (i.e. "development stage") of selected category value.
+ * @param categoryValueKey - Category value key (e.g. "Infant (1–23 months)") to toggle selected state of.
+ * @param filters - Current set of selected category values.
+ * @returns Array of selected category values for the given category.
+ */
+function buildNextOntologyCategoryFilters<T extends Categories>(
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+): CategoryValueKey[] {
+  // Grab the leaves for the selected value.
+  const leafOntologyIds =
+    DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(categoryValueKey);
+
+  // If the selected value is a parent node, use its leaf ontology IDs as the selected value/s. Otherwise, the selected
+  // value is a leaf node, use it as is as the selected value.
+  const valuesToSelect = leafOntologyIds
+    ? [...leafOntologyIds.values()]
+    : [categoryValueKey];
+
+  // Grab the current selected values for the category.
+  const categoryFilters = getCategoryFilter(categoryKey, filters);
+
+  // If there are currently no selected values for this category, return the selected values as is.
+  if (!categoryFilters || categoryFilters.value.length === 0) {
+    return valuesToSelect;
+  }
+
+  // Determine if all of the selected values are currently selected and if so, toggle (remove) all of them, but keep
+  // any other selected value unrelated to this node. Otherwise only some values are currently selected; add the missing
+  // ones to the set of selected values.
+  const allSelected = valuesToSelect.every(
+    (selectedValue) => categoryFilters.value.indexOf(selectedValue) >= 0
+  );
+  const currentSelected = new Set<CategoryValueKey>(categoryFilters.value);
+  valuesToSelect.forEach((valueToSelect) => {
+    if (allSelected) {
+      currentSelected.delete(valueToSelect);
+    } else {
+      currentSelected.add(valueToSelect);
+    }
+  });
+  return [...currentSelected.values()];
+}
+
+/**
+ * Build updated set of selected filters for the given single or multiselect category and the selected category value.
+ * @param categoryKey - Category key (i.e. "disease") of selected category value.
+ * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
+ * @param filters - Current set of selected category values.
+ * @returns Array of selected category values for the given category.
+ */
+function buildNextSelectCategoryFilters<T extends Categories>(
+  categoryKey: CategoryKey,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+): CategoryValueKey[] {
+  // Grab the current selected values for the category.
+  const categoryFilters = getCategoryFilter(categoryKey, filters);
+
+  // Currently no filters already selected for this category; add category value as first.
+  if (!categoryFilters) {
+    return [categoryValueKey];
+  }
+
+  // Create new array of selected category value keys, with the selected state of the given category value toggled.
+  const multiselect = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].multiselect;
+  return toggleCategoryValueSelected(
+    categoryValueKey,
+    categoryFilters.value,
+    multiselect
+  );
+}
+
+/**
  * Determine the set of filters that are applicable to each category. That is, for a category, all selected filters
  * other than the selected filters for that category can be applied to the result set to determine the counts for.
  * @param categoriesKeys - Set of category keys to include for this filter instance.
@@ -490,6 +555,75 @@ function buildQueries<T extends Categories>(
     },
     []
   );
+}
+
+/**
+ * Build view model of ontology tree category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryValueByValue - Internal filter model of ontology category. // TODO(cc) update categoryValueByKey comments to include ontology categories
+ * @returns Ontology view model.
+ */
+function buildOntologyCategoryView(
+  categoryKey: CategoryKey,
+  categoryValueByValue: KeyedSelectCategoryValue
+): OntologyCategoryView {
+  // Build tree view model.
+  const speciesViews = Object.keys(DEVELOPMENT_STAGES).reduce(
+    (accum, speciesKey: string) => {
+      const developmentStages = DEVELOPMENT_STAGES[speciesKey];
+      const children = developmentStages.map((developmentStage) =>
+        buildOntologyCategoryValueView(developmentStage, categoryValueByValue)
+      );
+
+      accum.push({
+        children,
+        label: speciesKey,
+      });
+      return accum;
+    },
+    [] as OntologyCategorySpeciesView[]
+  );
+
+  return {
+    key: categoryKey,
+    label: CATEGORY_LABEL[categoryKey],
+    species: speciesViews,
+  };
+}
+
+/**
+ * Build view model of node of ontology tree category.
+ * @param developmentStage - Development stage node to build view model for.
+ * @param categoryValueByValue - Internal filter model of ontology category. // TODO(cc) update categoryValueByKey comments to include ontology categories
+ * @returns Ontology view model.
+ */
+function buildOntologyCategoryValueView(
+  developmentStage: DevelopmentStageNode,
+  categoryValueByValue: KeyedSelectCategoryValue
+): OntologyCategoryValueView {
+  const { ontology_term_id: categoryValueKey } = developmentStage;
+  const categoryValue = categoryValueByValue.get(categoryValueKey);
+
+  // Check if development stage has children and if so, build view models for each child.
+  let children;
+  if (developmentStage.children) {
+    children = developmentStage.children.map((childDevelopmentStage) =>
+      buildOntologyCategoryValueView(
+        childDevelopmentStage,
+        categoryValueByValue
+      )
+    );
+  }
+
+  // Build up view model for this development node
+  return {
+    children,
+    count: categoryValue?.count ?? 0, // Default to 0 if there is no category value for this development stage.
+    key: categoryValueKey,
+    label: developmentStage.label,
+    partialSelected: false,
+    selected: categoryValue?.selected ?? false, // Default to false if there is no category value for this development stage.
+  };
 }
 
 /**

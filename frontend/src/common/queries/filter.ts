@@ -84,6 +84,7 @@ export interface DatasetResponse {
   cell_count: number | null;
   cell_type: Ontology[];
   collection_id: string;
+  development_stage_ancestors: string[];
   disease: Ontology[];
   explorer_url: string;
   id: string;
@@ -712,7 +713,10 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       ) {
         return accum;
       }
-      if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
+      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
+        accum.development_stage_ancestors =
+          dataset.development_stage_ancestors ?? [];
+      } else if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
       } else {
         accum[categoryKey] = dataset[categoryKey] ?? [];

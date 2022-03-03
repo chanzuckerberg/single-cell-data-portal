@@ -3,6 +3,7 @@ import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
+  OntologyCategoryView,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
@@ -165,16 +166,16 @@ function isCategoryNA(categoryView: CategoryView): boolean {
 }
 
 /**
- * Determine if the given category view is a selected category view and not a range category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
+ * Determine if the given category view is an ontology category view and not a select or range category view.
+ * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
+ * ontology tree.
  * @returns True if the given category view is a select category view.
  */
-function isSelectCategoryView(
-  categoryView: SelectCategoryView | RangeCategoryView
-): categoryView is SelectCategoryView {
-  return (categoryView as SelectCategoryView).values !== undefined;
+function isOntologyCategoryView(
+  categoryView: CategoryView
+): categoryView is OntologyCategoryView {
+  return (categoryView as OntologyCategoryView).species !== undefined;
 }
-
 /**
  * Returns true if range category is not applicable, that is, range min and max are both 0 or both equal.
  * @param categoryView
@@ -193,6 +194,18 @@ function isRangeCategoryNA(categoryView: RangeCategoryView): boolean {
 function isSelectCategoryNA(categoryView: SelectCategoryView): boolean {
   const { values } = categoryView;
   return values?.every((value) => value.count === 0);
+}
+
+/**
+ * Determine if the given category view is a selected category view and not an ontology or range category view.
+ * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
+ * ontology tree.
+ * @returns True if the given category view is a select category view.
+ */
+function isSelectCategoryView(
+  categoryView: CategoryView
+): categoryView is SelectCategoryView {
+  return (categoryView as SelectCategoryView).values !== undefined;
 }
 
 /**
