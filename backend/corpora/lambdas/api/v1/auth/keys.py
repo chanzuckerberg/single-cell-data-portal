@@ -1,0 +1,46 @@
+import secrets
+import string
+
+from flask import make_response
+
+from backend.corpora.common.auth0_management_session import Auth0ManagementSession
+from backend.corpora.common.utils.exceptions import NotFoundHTTPException
+
+
+def get(user: str):
+    session = Auth0ManagementSession()
+    identity = session.get_user_api_key_identity(user)
+    if not identity:
+        raise NotFoundHTTPException()
+    return make_response({"key_id": identity["username"]})
+
+
+def random_string(length: int) -> str:
+    return "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+
+
+def post(user: int, token_info: dict):
+    session = Auth0ManagementSession()
+
+    # Check if a key already exists
+    identity = session.get_user_api_key_identity(user)
+    if identity:
+        # Delete if it exists
+        session.delete_api_key(user, identity)
+
+    # Generate a new key
+    user_name = random_string(8)
+    password = random_string(16)
+
+    api_key_id = session.generate_api_key(user_name, password, token_info)
+    session.link_api_key(user, api_key_id)
+    return make_response({"id": user_name, "api_key": f"{user_name}.{password}"}, 202)
+
+
+def delete(user: str):
+    session = Auth0ManagementSession()
+    identity = session.get_user_api_key_identity(user)
+    if not identity:
+        return make_response(404)
+    session.delete_api_key(user, identity)
+    return make_response(201)

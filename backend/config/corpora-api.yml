@@ -204,7 +204,7 @@ paths:
                   description: email of contact person for the collection
                 curator_name:
                   type: string
-                  description: name of the curator of the collection.
+                  description: name of the auth of the collection.
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -311,7 +311,7 @@ paths:
                   description: email of contact person for the collection
                 curator_name:
                   type: string
-                  description: name of the curator of the collection
+                  description: name of the auth of the collection
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -932,7 +932,57 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
+  /dp/v1/auth/key:
+    post:
+      summary: Generate the auth's API key -- for use with Data Portal UI
+      description: >-
+        Generate and return a curator API key for the user. If there is already a key associated with the
+        user's auth profile, replace it with the new key.
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.post
+      security:
+        - cxguserCookie: []
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  id:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
+    get:
+      summary: Fetch the identifier of the auth's active API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+    delete:
+      summary: Delete the auth's API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.delete
+      security:
+        - cxguserCookie: []
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
   /dp/v1/deployed_version:
     get:
       summary: Returns version information
