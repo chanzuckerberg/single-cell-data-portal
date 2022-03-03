@@ -1,5 +1,5 @@
 import contextlib
-import os.path
+import os
 import sys
 import tempfile
 from typing import List, Callable, Dict
@@ -8,6 +8,7 @@ import numpy as np
 import tiledb
 from numpy.random import random, randint
 
+from backend.wmg.data.ontology_labels import __load_ontologies, __load_genes
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
 
@@ -32,7 +33,53 @@ def create_temp_cube(dim_size=3, attr_vals_fn: Callable[[List], Dict[str, list]]
             yield cube
 
 
-def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values) -> None:
+def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
+    return [f"{dimension_name}_{i}" for i in range(n_terms)]
+
+
+# Functions that can be used to generate a set of valid ontology term ids, sampled from real ontologies
+# This ensures that id-to-label mapping lookups will return a real label.
+# This is wildly inefficient and in many cases does not return values that would be allowed in our real datasets, but
+# it is good enough for testing purposes
+def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
+    # must import lazily
+    import backend.wmg.data.ontology_labels as ontology_labels
+
+    if ontology_labels.ontology_term_id_labels is None:
+        ontology_labels.__load_ontologies()
+    if ontology_labels.gene_term_id_labels is None:
+        ontology_labels.__load_genes()
+
+    deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())
+
+    if dimension_name == "gene_ontology_term_id":
+        return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:n_terms]
+    if dimension_name == "tissue_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('UBERON')][:n_terms]
+    if dimension_name == "organism_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('NCBITaxon')][:n_terms]
+    if dimension_name == "cell_type_ontology_term_id":
+        return[term_id for term_id in deterministic_term_ids if term_id.startswith('CL')][:n_terms]
+    if dimension_name == "dataset_id":
+        return [f"dataset_id_{i}" for i in range(n_terms)]
+    if dimension_name == "assay_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('EFO')][:n_terms]
+    if dimension_name == "development_stage_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids
+                if term_id.startswith('Hsap') or term_id.startswith('MmusDev')][:n_terms]
+    if dimension_name == "disease_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('MONDO')][:n_terms]
+    if dimension_name == "ethnicity_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('HANCESTRO')][:n_terms]
+    if dimension_name == "sex_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith('PATO')][:n_terms]
+    raise AssertionError(f"unknown dimension name {dimension_name}")
+
+
+def create_cube(cube_dir, dim_size=3,
+                attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values,
+                dim_ontology_term_ids_generator_fn: Callable[
+                    [str, int], List[str]] = simple_ontology_terms_generator) -> None:
     if tiledb.array_exists(cube_dir):
         raise FileExistsError(cube_dir)
 
@@ -43,7 +90,8 @@ def create_cube(cube_dir, dim_size=3, attr_vals_fn: Callable[[List[tuple]], List
         n_coords = dim_size**n_dims
 
         def dim_domain_values(i_dim: int, dim_size_: int) -> List[str]:
-            domain_values = [f"{cube_logical_dims[i_dim]}_{i}" for i in range(dim_size_)]
+            dim_name = cube_logical_dims[i_dim]
+            domain_values = dim_ontology_term_ids_generator_fn(dim_name, dim_size_)
             assert len(set(domain_values)) == dim_size
             return domain_values
 
@@ -72,4 +120,4 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cube(output_cube_dir)
+    create_cube(output_cube_dir, dim_ontology_term_ids_generator_fn=semi_real_ontology_terms_generator)

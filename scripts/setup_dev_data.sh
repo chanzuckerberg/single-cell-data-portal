@@ -90,7 +90,7 @@ tmp_cube_dir=`mktemp -d`
 #  * cell type orderings
 #  * total cell counts cube
 python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
-${local_aws} s3 cp --recursive ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/
+${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/
 
 echo "Populating test db"
 export CORPORA_LOCAL_DEV=true

@@ -89,13 +89,22 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(400, response.status_code)
 
+    @patch("backend.wmg.data.query.gene_term_label")
+    @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot):
+    def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot, ontology_term_label,
+                                                               gene_term_label):
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
             find_cube_latest_snapshot.return_value = all_ones_cube
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
             request = dict(
                 filter=dict(

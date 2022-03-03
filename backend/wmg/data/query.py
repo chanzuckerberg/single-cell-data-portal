@@ -5,6 +5,8 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+
 ALL_DIM_VALUES = slice(None)
 EMPTY_DIM_VALUES = ""
 
@@ -76,12 +78,14 @@ class WmgQuery:
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
     return [
-        {gene_ontology_term_id: f"{gene_ontology_term_id}_label"} for gene_ontology_term_id in gene_ontology_term_ids
+        {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)} for gene_ontology_term_id in
+        gene_ontology_term_ids
     ]
 
 
 def build_cell_type_id_label_mapping(cell_type_term_ids: List[str]) -> List[dict]:
-    return [{cell_type_term_id: f"{cell_type_term_id}_label"} for cell_type_term_id in sorted(cell_type_term_ids)]
+    return [{cell_type_term_id: ontology_term_label(cell_type_term_id)} for cell_type_term_id in
+            sorted(cell_type_term_ids)]
 
 
 def depluralize(attr_name):
