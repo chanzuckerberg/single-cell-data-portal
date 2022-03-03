@@ -21,10 +21,12 @@ from backend.corpora.common.corpora_orm import (
     CollectionLinkType,
     CollectionVisibility,
     DbCollection,
+    DbCollectionLink,
     DbDataset,
     DatasetArtifactFileType,
     DatasetArtifactType,
     DbDatasetArtifact,
+    DbProjectLink,
     ProcessingStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
@@ -686,17 +688,9 @@ def update_curator_names(ctx, access_token):
 @cli.command()
 @click.pass_context
 def add_publisher_metadata(ctx):
-    """Add publisher metadata to the current records
-    """
+    """Add publisher metadata to the current records"""
 
     from backend.corpora.common.providers import crossref_provider
-    from backend.corpora.common.providers.crossref_provider import CrossrefException
-
-    def check_doi(doi):
-        url = f"https://dx.doi.org/{doi}"
-        res = requests.head(url, allow_redirects=True)
-        return res.status_code
-
 
     with db_session_manager() as session:
         click.confirm(
@@ -712,18 +706,18 @@ def add_publisher_metadata(ctx):
 
         for record in session.query(DbCollection):
             collection = Collection.get_collection(session, record.id, record.visibility)
-            if not collection: 
+            if not collection:
                 continue
             collection_id = record.id
             dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
-            normalized_doi = collection.get_normalized_doi()
+            normalized_doi = collection.get_doi()
 
             if record.publisher_metadata:
                 print("Already has metadata, skipping...")
                 continue
 
             if normalized_doi:
-                if not '/' in normalized_doi:
+                if not "/" in normalized_doi:
                     continue
 
                 try:
@@ -733,10 +727,48 @@ def add_publisher_metadata(ctx):
                 except Exception as e:
                     print(record.id, normalized_doi, record.name, e)
                     print(traceback.format_exc())
-                    record.publisher_metadata = {"error" : str(e.__cause__)}
+                    record.publisher_metadata = {"error": str(e.__cause__)}
 
                 time.sleep(2)
-                
+
+
+@cli.command()
+@click.pass_context
+def refresh_preprint_doi(ctx):
+    """Add publisher metadata to the current records"""
+
+    from backend.corpora.common.providers import crossref_provider
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to run this script? It will populate publisher_metadata for all "
+            "datasets. This will also do N calls to Crossref.",
+            abort=True,
+        )
+
+        provider = crossref_provider.CrossrefProvider()
+
+        for record in session.query(DbCollection):
+            collection = Collection.get_collection(session, record.id, record.visibility)
+            if not collection:
+                continue
+            collection_id = record.id
+            normalized_doi = collection.get_doi()
+
+            if record.publisher_metadata and record.publisher_metadata.get("is_preprint"):
+                print(f"{normalized_doi}: is_preprint")
+
+                try:
+                    published_doi = provider.fetch_preprint_published_doi(normalized_doi)
+                    print(collection_id, normalized_doi, published_doi)
+                    doi_record = session.query(DbCollectionLink).filter(
+                        DbCollectionLink.collection_id == record.id,
+                        DbCollectionLink.collection_visibility == record.visibility,
+                        DbCollectionLink.link_type == CollectionLinkType.DOI,
+                    )
+                    doi_record.link_url = published_doi
+                except Exception as e:
+                    print(e)
 
 
 def get_database_uri() -> str:
