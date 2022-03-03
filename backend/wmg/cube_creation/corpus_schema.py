@@ -117,8 +117,8 @@ def create_axes_label_dims(labels: List[LabelType]) -> List[tiledb.Dim]:
     return dims
 
 
-def create_tdb(args):
-    name = args.tdb_group
+def create_tdb(tdb_group):
+    name = tdb_group
     tiledb.group_create(name)
 
     X_capacity = 128000

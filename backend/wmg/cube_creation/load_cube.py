@@ -9,6 +9,7 @@ import tiledb
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
+from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
@@ -78,14 +79,16 @@ def update_latest_snapshot(time_stamp):
     pass
 
 
-def load_data_and_create_cube(path_to_datasetst):
+def load_data_and_create_cube(path_to_datasetst, group_name):
+    if not tiledb.VFS().is_dir(group_name):
+        create_tdb(group_name)
     # copy_datasets_to_instance('wmg-datasets')
-    load_datasets_into_corpus(path_to_datasetst, 'wmg-group')
+    load_datasets_into_corpus(path_to_datasetst, group_name)
     try:
-        create_cube("wmg-group")
+        create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
-    cell_type_by_tissue = get_cells_by_tissue_type("wmg-group")
+    cell_type_by_tissue = get_cells_by_tissue_type(group_name)
     generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources()
     return True
