@@ -49,10 +49,15 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
   );
 
   function Content() {
+    const curatorAPIFeature = get(FEATURES.CURATOR_API);
     return (
       <Menu>
-        <CuratorAPIKeyGenerator />
-        <MenuDivider />
+        {curatorAPIFeature && (
+          <>
+            <CuratorAPIKeyGenerator />
+            <MenuDivider />
+          </>
+        )}
         <MenuItem
           data-testid="log-out"
           text="Log Out"
