@@ -54,7 +54,11 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
         onClick={handleOpen}
         shouldDismissPopover={false}
       />
-      <Dialog isOpen={isOpen} onClose={handleClose}>
+      <Dialog
+        isOpen={isOpen}
+        onClose={handleClose}
+        canOutsideClickClose={false}
+      >
         <DialogTitle title="API Key" />
         <DialogContent>
           <FullWidthCallout intent="info">
