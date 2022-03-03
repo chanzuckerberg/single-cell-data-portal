@@ -162,6 +162,9 @@ function isCategoryNA(categoryView: CategoryView): boolean {
   if (isSelectCategoryView(categoryView)) {
     return isSelectCategoryNA(categoryView);
   }
+  if (isOntologyCategoryView(categoryView)) {
+    return isOntologyCategoryViewNA(categoryView);
+  }
   return isRangeCategoryNA(categoryView);
 }
 
@@ -176,6 +179,16 @@ function isOntologyCategoryView(
 ): categoryView is OntologyCategoryView {
   return (categoryView as OntologyCategoryView).species !== undefined;
 }
+
+/**
+ * Returns true if ontology category is not applicable, that is, there are species ontology trees.
+ * @param categoryView
+ * @returns true when range min and max are both 0 or both equal.
+ */
+function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
+  return !categoryView.species || categoryView.species.length === 0;
+}
+
 /**
  * Returns true if range category is not applicable, that is, range min and max are both 0 or both equal.
  * @param categoryView
