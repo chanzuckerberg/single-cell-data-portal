@@ -102,7 +102,7 @@ def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame
         var_df = var.df[:]
         var_df.index = var_df.feature_id
 
-    logger.info("\tglobal var index length: ", var_df.shape)
+    logger.info(f"Global var index length: {var_df.shape}")
     return var_df
 
 

@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from datetime import time
+import time
 from typing import Dict
 
 import tiledb
@@ -23,9 +23,9 @@ logging.basicConfig(
                     filemode = "w",
                     format = Log_Format,
                     level = logging.DEBUG)
-# logger.level('DEBUG')
 
 logger = logging.getLogger(__name__)
+
 
 def get_s3_uris():
     with db_session_manager() as session:
@@ -104,6 +104,5 @@ def load_data_and_create_cube(path_to_datasetst, group_name):
 
 
 if __name__ == "__main__":
-    logger.level('DEBUG')
     rv = load_data_and_create_cube()
     sys.exit(rv)
