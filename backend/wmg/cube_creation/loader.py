@@ -110,7 +110,7 @@ def save_axes_labels(df, array_name, label_info) -> int:
     """
     # TODO
     """
-    logger.info(f"saving {array_name}...", end="", flush=True)
+    logger.info(f"saving {array_name}...")
 
     with tiledb.open(array_name) as array:
         next_join_index = array.meta.get("next_join_index", 0)
@@ -147,7 +147,7 @@ def save_raw(ad, group_name, global_var_index, first_obs_idx):
     """
     array_name = f"{group_name}/raw"
     X = get_X_raw(ad)
-    logger.info(f"saving {array_name}...", end="", flush=True)
+    logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / X.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, X.shape[0], stride):
@@ -177,7 +177,7 @@ def save_X(ad, group_name, global_var_index, first_obs_idx):
     """
     array_name = f"{group_name}/X"
     X = ad.X
-    logger.info(f"saving {array_name}...", end="", flush=True)
+    logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / X.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, X.shape[0], stride):
