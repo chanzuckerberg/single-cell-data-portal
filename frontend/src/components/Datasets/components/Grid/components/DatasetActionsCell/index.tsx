@@ -40,7 +40,8 @@ export default function DatasetsActionsCell({
       />
       <Tooltip
         boundary="viewport"
-        content={exploreTooltipContent}
+        content={exploreTooltipContent}frontend/src/views/Datasets/index.tsx
+
         disabled={explorerDisabled}
         intent={exploreTooltipIntent}
         position={Position.TOP}
