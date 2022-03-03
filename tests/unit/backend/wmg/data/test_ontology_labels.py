@@ -17,7 +17,7 @@ class OntologyLabelTests(unittest.TestCase):
             "NCBITaxon:10001": "Sciurus",
             "MmusDv:0000000": "mouse life cycle stage",
             "MONDO:0000001": "disease or disorder",
-            "UBERON:0002539": "pharyngeal arch"
+            "UBERON:0002539": "pharyngeal arch",
         }
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
             with self.subTest(ontology_term_id):
@@ -41,5 +41,5 @@ class OntologyLabelTests(unittest.TestCase):
                 self.assertEqual(gene_term_label(gene_id), expected_gene_label)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

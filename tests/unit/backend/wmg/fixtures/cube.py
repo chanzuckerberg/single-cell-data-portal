@@ -8,7 +8,6 @@ import numpy as np
 import tiledb
 from numpy.random import random, randint
 
-from backend.wmg.data.ontology_labels import __load_ontologies, __load_genes
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
 
@@ -37,10 +36,11 @@ def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[s
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
-# Functions that can be used to generate a set of valid ontology term ids, sampled from real ontologies
-# This ensures that id-to-label mapping lookups will return a real label.
-# This is wildly inefficient and in many cases does not return values that would be allowed in our real datasets, but
-# it is good enough for testing purposes
+# Functions that can be used to generate a set of valid ontology term ids, sampled from real ontologies. While these
+# ontology terms from the real ontologies, they are not always ones that would be admissable w.r.t. to the cellxgene
+# dataset schema. This is still useful to ensure that id-to-label mapping lookups will return a real label. Note that
+# this implementation is wildly inefficient and in many cases does not return values that would be allowed in our
+# real datasets, but it is good enough for test code.
 def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
     # must import lazily
     import backend.wmg.data.ontology_labels as ontology_labels
@@ -55,31 +55,34 @@ def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> Lis
     if dimension_name == "gene_ontology_term_id":
         return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:n_terms]
     if dimension_name == "tissue_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('UBERON')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:n_terms]
     if dimension_name == "organism_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('NCBITaxon')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("NCBITaxon")][:n_terms]
     if dimension_name == "cell_type_ontology_term_id":
-        return[term_id for term_id in deterministic_term_ids if term_id.startswith('CL')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:n_terms]
     if dimension_name == "dataset_id":
         return [f"dataset_id_{i}" for i in range(n_terms)]
     if dimension_name == "assay_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('EFO')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:n_terms]
     if dimension_name == "development_stage_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids
-                if term_id.startswith('Hsap') or term_id.startswith('MmusDev')][:n_terms]
+        return [
+            term_id for term_id in deterministic_term_ids if term_id.startswith("Hsap") or term_id.startswith("MmusDev")
+        ][:n_terms]
     if dimension_name == "disease_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('MONDO')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:n_terms]
     if dimension_name == "ethnicity_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('HANCESTRO')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("HANCESTRO")][:n_terms]
     if dimension_name == "sex_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith('PATO')][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:n_terms]
     raise AssertionError(f"unknown dimension name {dimension_name}")
 
 
-def create_cube(cube_dir, dim_size=3,
-                attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values,
-                dim_ontology_term_ids_generator_fn: Callable[
-                    [str, int], List[str]] = simple_ontology_terms_generator) -> None:
+def create_cube(
+    cube_dir,
+    dim_size=3,
+    attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values,
+    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+) -> None:
     if tiledb.array_exists(cube_dir):
         raise FileExistsError(cube_dir)
 

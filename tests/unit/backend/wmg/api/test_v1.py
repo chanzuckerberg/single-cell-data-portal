@@ -92,8 +92,9 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__valid_request_returns_valid_response_body(self, find_cube_latest_snapshot, ontology_term_label,
-                                                               gene_term_label):
+    def test__query__valid_request_returns_valid_response_body(
+        self, find_cube_latest_snapshot, ontology_term_label, gene_term_label
+    ):
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
