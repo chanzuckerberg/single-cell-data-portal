@@ -16,7 +16,8 @@ class WmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
+    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -70,10 +71,14 @@ class WmgQuery:
             multi_valued_attr_conds = [f"{k} in {v}" for k, v in multi_valued_attrs.items()]
             query_result_df = query_result_df.query(" and ".join(multi_valued_attr_conds))
 
-        # Aggregate cube data by gene, tissue, cell type
-        return query_result_df.groupby(
-            ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
-        ).sum()
+        return query_result_df
+
+
+def build_dot_plot_matrix(query_result: DataFrame) -> DataFrame:
+    # Aggregate cube data by gene, tissue, cell type
+    return query_result.groupby(
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
+    ).sum()
 
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
@@ -83,7 +88,7 @@ def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]
     ]
 
 
-def build_cell_type_id_label_mapping(cell_type_term_ids: List[str]) -> List[dict]:
+def build_ontology_term_id_label_mapping(cell_type_term_ids: List[str]) -> List[dict]:
     return [
         {cell_type_term_id: ontology_term_label(cell_type_term_id)} for cell_type_term_id in sorted(cell_type_term_ids)
     ]

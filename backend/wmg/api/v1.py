@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from typing import Dict, List
 from uuid import uuid4
 
 import connexion
@@ -10,12 +11,13 @@ from pandas import DataFrame
 from backend.wmg.data.config import fast_config, create_ctx
 from backend.wmg.data.query import (
     build_gene_id_label_mapping,
-    build_cell_type_id_label_mapping,
+    build_ontology_term_id_label_mapping,
     WmgQuery,
-    WmgQueryCriteria,
+    WmgQueryCriteria, build_dot_plot_matrix,
 )
-
 # TODO: Replace with real snapshot uuid
+from backend.wmg.data.schema import cube_non_indexed_dims
+
 DUMMY_SNAPSHOT_UUID = uuid4().hex
 
 
@@ -57,19 +59,48 @@ def query():
 
     criteria = WmgQueryCriteria(**request["filter"])
     query_result = WmgQuery(find_cube_latest_snapshot()).execute(criteria)
+    dot_plot_matrix_df = build_dot_plot_matrix(query_result)
+    all_filter_dims_values = extract_filter_dims_values(query_result)
+    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values)
 
-    cell_type_term_ids = {key[2] for key in query_result.index}
+    cell_type_term_ids = all_filter_dims_values['cell_type_ontology_term_id']
 
     return jsonify(
         dict(
             snapshot_id=DUMMY_SNAPSHOT_UUID,
-            expression_summary=build_expression_summary(query_result),
+            expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_cell_type_id_label_mapping(cell_type_term_ids),
+                cell_types=build_ontology_term_id_label_mapping(cell_type_term_ids),
             ),
+            filter_dims=response_filter_dims_values
         )
     )
+
+
+def build_datasets(dataset_ids: List[str]) -> List[Dict]:
+    return [dict(id=dataset_id,
+                 # TODO: retrieve from db or API
+                 label='',
+                 # TODO: retrieve from db or API
+                 collection_label='',
+                 # TODO: retrieve from db or API
+                 collection_url=''
+                 ) for dataset_id in dataset_ids]
+
+
+def build_filter_dims_values(all_filter_dims_values):
+    response_filter_dims_values = dict(
+            datasets=build_datasets(all_filter_dims_values["dataset_id"]),
+            disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
+            sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
+            development_stage_terms=build_ontology_term_id_label_mapping(
+                    all_filter_dims_values["development_stage_ontology_term_id"]),
+            ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
+            # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
+            # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
+    )
+    return response_filter_dims_values
 
 
 def build_expression_summary(query_result: DataFrame) -> dict:
@@ -89,3 +120,11 @@ def build_expression_summary(query_result: DataFrame) -> dict:
             )
         )
     return structured_result
+
+
+def extract_filter_dims_values(query_result: DataFrame) -> dict:
+    """
+    Return unique values for each dimension in the specified query result
+    """
+    return {col: query_result.groupby(col).groups.keys()
+            for col in set(query_result.columns) & set(cube_non_indexed_dims)}

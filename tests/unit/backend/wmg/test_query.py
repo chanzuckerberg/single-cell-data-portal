@@ -1,6 +1,6 @@
 import unittest
 
-from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
+from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
@@ -14,7 +14,7 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         expected = {
             "n_cells": {},
@@ -33,14 +33,12 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** len(
-            set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
-        )
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1)
         assert expected_cell_count_per_cell_type == 729
 
         expected = {
@@ -90,7 +88,7 @@ class QueryTest(unittest.TestCase):
                 ),
             },
         }
-
+        self.maxDiff = None
         self.assertEqual(expected, result.to_dict())
 
     def test__query_all_indexed_dims_multi_valued__returns_correct_result(self):
@@ -102,14 +100,12 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** len(
-            set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
-        )
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1)
         assert expected_cell_count_per_cell_type == 729
 
         expected = {
@@ -289,14 +285,12 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 2
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** len(
-            set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id", "dataset_id"})
-        )
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2)
         assert expected_cell_count_per_cell_type == 32
 
         expected = {
@@ -346,14 +340,12 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = (
-            dim_size ** len(set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id", "dataset_id"})) * 2
-        )
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2) * 2
         assert expected_cell_count_per_cell_type == 486
 
         expected = {
@@ -411,27 +403,18 @@ class QueryTest(unittest.TestCase):
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
             organism_ontology_term_id="organism_ontology_term_id_0",
             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            assay_ontology_term_ids=["assay_ontology_term_id_1"],  # <-- non-indexed dim, single-valued
+            ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],  # <-- non-indexed dim, single-valued
             dataset_ids=["dataset_id_1", "dataset_id_0"],  # <-- non-indexed dim, multi-valued
         )
 
         dim_size = 3
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as cube:
-            result = WmgQuery(cube).execute(criteria)
+            result = build_dot_plot_matrix(WmgQuery(cube).execute(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = (
-            dim_size
-            ** len(
-                set(cube_non_indexed_dims).difference(
-                    {"cell_type_ontology_term_id", "assay_ontology_term_id", "dataset_id"}
-                )
-            )
-            * 1
-            * 2
-        )
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 3) * 1 * 2
         assert expected_cell_count_per_cell_type == 162
 
         expected = {
