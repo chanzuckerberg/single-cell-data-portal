@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def get_s3_uris():
     with db_session_manager() as session:
         dataset_ids = Dataset.list_ids_for_cube(session)
-        s3_uris = DatasetAsset.list_s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
+        s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris
 
 
@@ -78,9 +78,9 @@ def update_latest_snapshot(time_stamp):
     pass
 
 
-def load_data_and_create_cube():
-    copy_datasets_to_instance('wmg-datasets')
-    load_datasets_into_corpus('wmg-datasets/', 'wmg-group')
+def load_data_and_create_cube(path_to_datasetst):
+    # copy_datasets_to_instance('wmg-datasets')
+    load_datasets_into_corpus(path_to_datasetst, 'wmg-group')
     try:
         create_cube("wmg-group")
     except Exception as e:
@@ -88,8 +88,10 @@ def load_data_and_create_cube():
     cell_type_by_tissue = get_cells_by_tissue_type("wmg-group")
     generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources()
+    return True
 
 
 if __name__ == "__main__":
+    logger.level('DEBUG')
     rv = load_data_and_create_cube()
     sys.exit(rv)

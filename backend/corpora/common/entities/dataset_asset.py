@@ -118,7 +118,7 @@ class DatasetAsset(Entity):
         return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
 
     @classmethod
-    def s3_uris_for_datasets(cls, session, dataset_ids, file_type=None) -> typing.Dict[str:str]:
+    def s3_uris_for_datasets(cls, session, dataset_ids, file_type=None) -> typing.Dict:
         """
         Returns a dictionary of dataset_id : s3_uri for a given list of dataset ids
         also filters on file_type if specified
