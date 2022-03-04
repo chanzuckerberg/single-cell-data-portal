@@ -70,6 +70,6 @@ def __open_ontology_resource(file) -> IO:
     # return gzip.open(path)
 
     # Python 3.8 hack. Likely a cleaner way to do this, but it works, and best to just use above after upgrading to 3.9
-    with resources.path('cellxgene_schema', 'cli.py') as cellxgene_schema_abs_dir:
-        ontology_file = os.path.join(os.path.dirname(cellxgene_schema_abs_dir), 'ontology_files', file)
+    with resources.path("cellxgene_schema", "cli.py") as cellxgene_schema_abs_dir:
+        ontology_file = os.path.join(os.path.dirname(cellxgene_schema_abs_dir), "ontology_files", file)
         return gzip.open(ontology_file)

@@ -1,11 +1,11 @@
 import logging
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Dict, List
 from uuid import uuid4
 
 import connexion
 import tiledb
-from flask import jsonify, request
+from flask import jsonify
 from pandas import DataFrame
 
 from backend.corpora.common.corpora_orm import DbDataset
@@ -19,6 +19,7 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     build_dot_plot_matrix,
 )
+
 # TODO: Replace with real snapshot uuid
 from backend.wmg.data.schema import cube_non_indexed_dims
 
@@ -92,10 +93,9 @@ def fetch_datasets(dataset_ids: List[str]) -> List[Dict]:
     # We return a DTO because the db entity can't access its attributes after the db session ends,
     # and we want to keep session management out of the calling method
     def result(dataset: DbDataset):
-        return dict(id=dataset.id,
-                    name=dataset.name,
-                    collection=dict(id=dataset.collection.id,
-                                    name=dataset.collection.name))
+        return dict(
+            id=dataset.id, name=dataset.name, collection=dict(id=dataset.collection.id, name=dataset.collection.name)
+        )
 
     with db_session_manager() as session:
         return [result(Dataset.get(session, dataset_id).db_object) for dataset_id in dataset_ids]
@@ -105,10 +105,10 @@ def build_datasets(dataset_ids: List[str]) -> List[Dict]:
     datasets = fetch_datasets(dataset_ids)
     return [
         dict(
-                id=dataset['id'],
-                label=dataset['name'],
-                collection_id=dataset['collection']['id'],
-                collection_label=dataset['collection']['name'],
+            id=dataset["id"],
+            label=dataset["name"],
+            collection_id=dataset["collection"]["id"],
+            collection_label=dataset["collection"]["name"],
         )
         for dataset in datasets
     ]

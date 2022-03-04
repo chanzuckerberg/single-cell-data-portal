@@ -50,14 +50,14 @@ def create_dataset(dataset_id_ordinal: int) -> str:
             id=coll_id,
             visibility=CollectionVisibility.PUBLIC.name,
             name=f"dataset_id_{dataset_id_ordinal}_coll_name",
-            owner="owner"
+            owner="owner",
         )
         session.add(collection)
         dataset = DbDataset(
-                id=f"dataset_id_{dataset_id_ordinal}",
-                name=f"dataset_name_{dataset_id_ordinal}",
-                collection_id=coll_id,
-                collection_visibility=CollectionVisibility.PUBLIC,
+            id=f"dataset_id_{dataset_id_ordinal}",
+            name=f"dataset_name_{dataset_id_ordinal}",
+            collection_id=coll_id,
+            collection_visibility=CollectionVisibility.PUBLIC,
         )
         session.add(dataset)
         return dataset.id

@@ -1,6 +1,5 @@
 import json
 import unittest
-from unittest import mock
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
@@ -59,7 +58,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
                 "expression_summary": {},
                 "term_id_labels": {"cell_types": [], "genes": []},
-                "filter_dims": {}
+                "filter_dims": {},
             }
 
             self.assertEqual(expected_response, json.loads(response.data))
@@ -199,22 +198,31 @@ class WmgApiV1Tests(unittest.TestCase):
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                 ),
                 # matters for this test
-                include_filter_dims=True
+                include_filter_dims=True,
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             expected = {
                 "datasets": [
-                    {"id": "dataset_id_0", "label": "dataset_id_0_name",
-                     "collection_label": "dataset_id_0_coll_name",
-                     "collection_id": "dataset_id_0_coll_id"},
-                    {"id": "dataset_id_1", "label": "dataset_id_1_name",
-                     "collection_label": "dataset_id_1_coll_name",
-                     "collection_id": "dataset_id_1_coll_id"},
-                    {"id": "dataset_id_2", "label": "dataset_id_2_name",
-                     "collection_label": "dataset_id_2_coll_name",
-                     "collection_id": "dataset_id_2_coll_id"},
+                    {
+                        "id": "dataset_id_0",
+                        "label": "dataset_id_0_name",
+                        "collection_label": "dataset_id_0_coll_name",
+                        "collection_id": "dataset_id_0_coll_id",
+                    },
+                    {
+                        "id": "dataset_id_1",
+                        "label": "dataset_id_1_name",
+                        "collection_label": "dataset_id_1_coll_name",
+                        "collection_id": "dataset_id_1_coll_id",
+                    },
+                    {
+                        "id": "dataset_id_2",
+                        "label": "dataset_id_2_name",
+                        "collection_label": "dataset_id_2_coll_name",
+                        "collection_id": "dataset_id_2_coll_id",
+                    },
                 ],
                 "development_stage_terms": [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
@@ -237,7 +245,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"sex_ontology_term_id_2": "sex_ontology_term_id_2_label"},
                 ],
             }
-            self.assertEqual(expected, json.loads(response.data)['filter_dims'])
+            self.assertEqual(expected, json.loads(response.data)["filter_dims"])
 
     @patch("backend.wmg.api.v1.fetch_datasets")
     @patch("backend.wmg.data.query.gene_term_label")
@@ -271,16 +279,19 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
                     ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
                 ),
-                include_filter_dims=True
+                include_filter_dims=True,
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             expected_filter_dims = {
                 "datasets": [
-                    {"id": "dataset_id_0", "label": "dataset_id_0_name",
-                     "collection_label": "dataset_id_0_coll_name",
-                     "collection_id": "dataset_id_0_coll_id"},
+                    {
+                        "id": "dataset_id_0",
+                        "label": "dataset_id_0_name",
+                        "collection_label": "dataset_id_0_coll_name",
+                        "collection_id": "dataset_id_0_coll_id",
+                    },
                 ],
                 "disease_terms": [
                     {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
@@ -303,8 +314,11 @@ class WmgApiV1Tests(unittest.TestCase):
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify
 # with real datasets
 def mock_datasets(dataset_ids):
-    return [dict(id=dataset_id,
-                 name=f"{dataset_id}_name",
-                 collection=dict(id=f"{dataset_id}_coll_id",
-                                 name=f"{dataset_id}_coll_name"))
-            for dataset_id in dataset_ids]
+    return [
+        dict(
+            id=dataset_id,
+            name=f"{dataset_id}_name",
+            collection=dict(id=f"{dataset_id}_coll_id", name=f"{dataset_id}_coll_name"),
+        )
+        for dataset_id in dataset_ids
+    ]
