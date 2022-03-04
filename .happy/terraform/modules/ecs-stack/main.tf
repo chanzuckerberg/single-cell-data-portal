@@ -33,6 +33,7 @@ locals {
   upload_image_repo            = local.secret["ecrs"]["processing"]["url"]
   lambda_upload_success_repo   = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo           = local.secret["ecrs"]["upload_failures"]["url"]
+  wmg_upload_image_repo        = local.secret["ecrs"]["wmg_processing"]["url"]
   batch_role_arn               = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                = local.secret["batch_queues"]["upload"]["queue_arn"]
   external_dns                 = local.secret["external_zone_name"]
@@ -160,6 +161,38 @@ module upload_batch {
   cellxgene_bucket  = local.cellxgene_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
+}
+
+# TODO: arguments to the upload-cube job go here
+module wmg_batch {
+  source            = "../wmg-batch"
+  image             = "${local.wmg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn    = local.batch_role_arn
+  cmd               = ""
+  custom_stack_name = local.custom_stack_name
+  remote_dev_prefix = local.remote_dev_prefix
+  deployment_stage  = local.deployment_stage
+  artifact_bucket   = local.artifact_bucket
+  cellxgene_bucket  = local.cellxgene_bucket
+  batch_container_memory_limit = local.batch_container_memory_limit
+}
+
+resource "aws_cloudwatch_event_rule" "rule" {
+  name = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-schedule"
+
+  schedule_expression = "cron(0 0 ? * SUN *)" 
+  is_enabled          = 1
+}
+
+resource "aws_cloudwatch_event_target" "target" {
+  rule      = aws_cloudwatch_event_rule.rule.name
+  target_id = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-batch"
+  arn       = module.wmg_batch.batch_job_definition
+
+  batch_target {
+    job_definition  = module.wmg_batch.batch_job_definition
+    job_name        = "wmg-processing"
+  }
 }
 
 module upload_success_lambda {

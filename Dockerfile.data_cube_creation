@@ -16,7 +16,10 @@ ENV PIP_NO_CACHE_DIR=1
 RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
 RUN pip3 install cellxgene-schema==2.1.0
 
+WORKDIR /
+
 ADD requirements.txt requirements.txt
+ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
 RUN pip3 install -r requirements.txt
 
 ADD backend/__init__.py backend/__init__.py
