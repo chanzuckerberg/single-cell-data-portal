@@ -11,6 +11,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
+import FilterMultiPanel from "src/components/common/Filter/components/FilterMultiPanel";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import BasicFilter from "./components/BasicFilter";
 import FilterLabel from "./components/FilterLabel";
@@ -28,11 +29,18 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
       {categories.map((categoryView: CategoryView) => {
         const { key, label } = categoryView;
         const { values } = categoryView as SelectCategoryView;
-        const isDisabled = isCategoryNA(categoryView);
+        const { species } = categoryView as OntologyCategoryView;
+        const isDisabled = isCategoryNA(categoryView); // TODO(cc) check isOntologyCategoryViewNA method return value
         return (
           <BasicFilter
             content={
-              isSelectCategoryView(categoryView) ? (
+              isOntologyCategoryView(categoryView) ? (
+                <FilterMultiPanel
+                  categoryKey={key}
+                  onFilter={onFilter}
+                  species={species}
+                />
+              ) : isSelectCategoryView(categoryView) ? (
                 <FilterMenu
                   categoryKey={key}
                   filterCategoryValues={filterCategoryValues}
@@ -183,10 +191,10 @@ function isOntologyCategoryView(
 /**
  * Returns true if ontology category is not applicable, that is, there are species ontology trees.
  * @param categoryView
- * @returns true when range min and max are both 0 or both equal.
+ * @returns true when range min and max are both 0 or both equal. // TODO(cc) review return statement
  */
 function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
-  return !categoryView.species || categoryView.species.length === 0;
+  return !categoryView.species || categoryView.species.length === 0; // TODO(cc) review return
 }
 
 /**
