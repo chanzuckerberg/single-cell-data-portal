@@ -28,11 +28,13 @@ import {
   GeneExpressionSummary,
   Tissue,
 } from "./common/types";
+import Beta from "./components/Beta";
 import Filters from "./components/Filters";
 import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
+import GetStarted from "./components/GetStarted";
 import HeatMap from "./components/HeatMap";
-import { Wrapper } from "./style";
+import { Top, Wrapper } from "./style";
 
 const WheresMyGene = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -161,6 +163,13 @@ const WheresMyGene = (): JSX.Element => {
     []
   );
 
+  const hasSelectedGeneData = selectedGeneData.length > 0;
+  const hasSelectedCellTypeIds = Object.keys(selectedCellTypeIds).length > 0;
+
+  const shouldShowHeatMap = useMemo(() => {
+    return hasSelectedGeneData && hasSelectedCellTypeIds;
+  }, [hasSelectedGeneData, hasSelectedCellTypeIds]);
+
   return (
     <DispatchContext.Provider value={dispatch}>
       <StateContext.Provider value={state}>
@@ -183,15 +192,22 @@ const WheresMyGene = (): JSX.Element => {
 
         <View hideOverflow>
           <Wrapper>
-            <GeneSearchBar onGenesChange={handleGenesOnchange} />
+            <Top>
+              <GeneSearchBar onGenesChange={handleGenesOnchange} />
+              <Beta />
+            </Top>
 
-            <HeatMap
-              cellTypes={selectedCellTypes}
-              genes={selectedGenes}
-              selectedGeneData={selectedGeneData}
-              tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
-              allTissueCellTypes={cellTypes}
-            />
+            {shouldShowHeatMap ? (
+              <HeatMap
+                cellTypes={selectedCellTypes}
+                genes={selectedGenes}
+                selectedGeneData={selectedGeneData}
+                tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
+                allTissueCellTypes={cellTypes}
+              />
+            ) : (
+              <GetStarted />
+            )}
 
             {selectedGenes.map((selectedGene) => {
               return (
