@@ -82,10 +82,13 @@ class DropBoxURL(URL):
         resp = requests.head(self.url, allow_redirects=True)
         resp.raise_for_status()
 
-        print(resp.headers)
+        try:
+            size = int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length"))
+        except Exception:
+            size = None
 
         return {
-            "size": int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length")),
+            "size": size,
             "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
         }
 

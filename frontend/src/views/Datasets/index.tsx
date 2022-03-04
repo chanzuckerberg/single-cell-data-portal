@@ -3,7 +3,10 @@ import React, { useMemo } from "react";
 import { Column, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { FEATURES } from "src/common/featureFlags/features";
-import { useCategoryFilter } from "src/common/hooks/useCategoryFilter";
+import {
+  CategoryKey,
+  useCategoryFilter,
+} from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useFetchDatasetRows } from "src/common/queries/filter";
@@ -128,7 +131,8 @@ export default function Datasets(): JSX.Element {
           </RightAlignCell>
         ),
         Header: <RightAlignCell>Cells</RightAlignCell>,
-        accessor: "cell_count",
+        accessor: CATEGORY_KEY.CELL_COUNT,
+        filter: "between",
       },
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
@@ -177,6 +181,11 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.MEAN_GENES_PER_CELL,
+        filter: "between",
+      },
+      // Hidden, required for filter.
+      {
         accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
         filter: "includesSome",
         id: CATEGORY_KEY.PUBLICATION_AUTHORS,
@@ -210,6 +219,7 @@ export default function Datasets(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.IS_PRIMARY_DATA,
+          CATEGORY_KEY.MEAN_GENES_PER_CELL,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
@@ -235,7 +245,24 @@ export default function Datasets(): JSX.Element {
     state: { filters },
   } = tableInstance;
 
-  const filterInstance = useCategoryFilter(preFilteredRows, filters, setFilter);
+  // Determine the set of categories to display for the datasets view.
+  const categories = useMemo<Set<CATEGORY_KEY>>(() => {
+    return Object.values(CATEGORY_KEY).reduce(
+      (accum, categoryKey: CategoryKey) => {
+        accum.add(categoryKey);
+        return accum;
+      },
+      new Set<CATEGORY_KEY>()
+    );
+  }, []);
+
+  // Set up filter instance.
+  const filterInstance = useCategoryFilter(
+    preFilteredRows,
+    categories,
+    filters,
+    setFilter
+  );
 
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
