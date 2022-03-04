@@ -77,7 +77,7 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
         )}
         <LogOutAnchor href={`${API_URL}${API.LOG_OUT}`}>
           <MenuItem data-testid="log-out">
-            <LogOutText>Log Out</LogOutText>
+            <LogOutText>Logout</LogOutText>
             <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
           </MenuItem>
         </LogOutAnchor>
