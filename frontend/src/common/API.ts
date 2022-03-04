@@ -1,4 +1,5 @@
 export enum API {
+  CURATOR_AUTH_KEY = "/dp/v1/curator/auth/key",
   DATASET = "/dp/v1/datasets/{dataset_uuid}",
   DATASET_ASSETS = "/dp/v1/datasets/{dataset_uuid}/assets",
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}",
