@@ -1,9 +1,11 @@
-import { Dialog, Intent, MenuItem } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import {
   Button as SDSButton,
+  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
 } from "czifui";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -33,7 +35,11 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
       });
     }
   }, [isOpen]);
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback((_, reason) => {
+    if (reason === "backdropClick") return;
+
+    setIsOpen(false);
+  }, []);
 
   const copyAPIKey = useCallback(() => {
     navigator.clipboard.writeText(apiKeyResponse.current.key || "");
@@ -46,19 +52,10 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
 
   return (
     <>
-      <MenuItem
-        data-testid="get-api-key"
-        text={`${
-          apiKeyResponse.current.id !== "" ? "Regenerate" : "Generate"
-        } API Key`}
-        onClick={handleOpen}
-        shouldDismissPopover={false}
-      />
-      <Dialog
-        isOpen={isOpen}
-        onClose={handleClose}
-        canOutsideClickClose={false}
-      >
+      <MenuItem data-testid="get-api-key" onClick={handleOpen}>
+        {apiKeyResponse.current.id !== "" ? "Regenerate" : "Generate"} API Key
+      </MenuItem>
+      <Dialog open={isOpen} onClose={handleClose}>
         <DialogTitle title="API Key" />
         <DialogContent>
           <FullWidthCallout intent="info">
