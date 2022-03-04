@@ -1,11 +1,7 @@
-import {
-  AnchorButton,
-  Button,
-  Menu,
-  MenuItem,
-  Popover,
-} from "@blueprintjs/core";
+import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import { Menu, MenuItem } from "czifui";
+import { MouseEventHandler, useState } from "react";
 import { API } from "src/common/API";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -13,6 +9,8 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { AuthButtonWrapper } from "src/components/Header/style";
 import { API_URL } from "src/configs/configs";
+import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
+import { LogOutAnchor, LogOutEmail, LogOutText } from "./style";
 
 const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -39,23 +37,50 @@ const AuthButtons = (): JSX.Element | null => {
 
 function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
   const authName = isEmail(name) ? "Account" : name;
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+
+  const handleClick: MouseEventHandler<HTMLElement> = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
-    <Popover content={<Content />}>
-      <Button minimal rightIcon={IconNames.CHEVRON_DOWN} text={authName} />
-    </Popover>
+    <>
+      <Content />
+      <Button
+        onClick={handleClick}
+        minimal
+        rightIcon={IconNames.CHEVRON_DOWN}
+        text={authName}
+      />
+    </>
   );
 
   function Content() {
+    const curatorAPIFeature = get(FEATURES.CURATOR_API);
     return (
-      <Menu>
-        <MenuItem data-testid="user-email" text={`Logged in as: ${email}`} />
-        <MenuItem
-          data-testid="log-out"
-          text="Log Out"
-          href={`${API_URL}${API.LOG_OUT}`}
-          icon={IconNames.LOG_OUT}
-        />
+      <Menu
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        getContentAnchorEl={null}
+      >
+        {curatorAPIFeature && (
+          <div>
+            <CuratorAPIKeyGenerator />
+            <MenuDivider />
+          </div>
+        )}
+        <LogOutAnchor href={`${API_URL}${API.LOG_OUT}`}>
+          <MenuItem data-testid="log-out">
+            <LogOutText>Log Out</LogOutText>
+            <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
+          </MenuItem>
+        </LogOutAnchor>
       </Menu>
     );
   }
