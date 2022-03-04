@@ -1005,15 +1005,11 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       ethnicity_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                response_option:
-                  type: string
-                  enum:
-                    - include_filter_dims_include_dataset_links
-                    - include_filter_dims_exclude_dataset_links
-                    - exclude_filter_dims
+                include_filter_dims:
+                  type: boolean
+                  default: false
               required:
                 - filter
-                - response_option
       responses:
         "200":
           description: OK

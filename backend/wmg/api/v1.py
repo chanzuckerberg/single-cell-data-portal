@@ -5,9 +5,11 @@ from uuid import uuid4
 
 import connexion
 import tiledb
-from flask import jsonify
+from flask import jsonify, request
 from pandas import DataFrame
 
+from backend.corpora.common.entities import Dataset
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.config import fast_config, create_ctx
 from backend.wmg.data.query import (
     build_gene_id_label_mapping,
@@ -16,7 +18,6 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     build_dot_plot_matrix,
 )
-
 # TODO: Replace with real snapshot uuid
 from backend.wmg.data.schema import cube_non_indexed_dims
 
@@ -63,7 +64,9 @@ def query():
     query_result = WmgQuery(find_cube_latest_snapshot()).execute(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result)
     all_filter_dims_values = extract_filter_dims_values(query_result)
-    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values)
+
+    include_filter_dims = request.get("include_filter_dims", False)
+    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
 
     cell_type_term_ids = all_filter_dims_values["cell_type_ontology_term_id"]
 
@@ -80,18 +83,26 @@ def query():
     )
 
 
+# TODO: It would be reasonable to fetch datasets via a REST API call to Data Portal, rather than coupling to the
+#  portal's db layer, considering that this is the only occasion where the backend.wmg.api package introduces a
+#  dependency on the db. There is no appropriate API call at this time and the lower of making an API call would
+#  have to be considered as well.
+def fetch_datasets(dataset_ids: List[str]) -> List[Dataset]:
+    with db_session_manager() as session:
+        return [Dataset.get(session, dataset_id) for dataset_id in dataset_ids]
+
+
 def build_datasets(dataset_ids: List[str]) -> List[Dict]:
+    datasets = fetch_datasets(dataset_ids)
     return [
         dict(
-            id=dataset_id,
-            # TODO: retrieve from db or API
-            label="",
-            # TODO: retrieve from db or API
-            collection_label="",
-            # TODO: retrieve from db or API
-            collection_url="",
+                id=dataset.id,
+                label=dataset.name,
+                collection_label=dataset.collection.name,
+                # TODO: form this URL using a canonical URL utility method
+                collection_url=f"{request.url_root}dp/v1/collections/{dataset.collection.id}",
         )
-        for dataset_id in dataset_ids
+        for dataset in datasets
     ]
 
 

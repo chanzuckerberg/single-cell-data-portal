@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest import mock
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
@@ -37,7 +38,7 @@ class WmgApiV1Tests(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.data))
 
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__minimal_valid_request_returns_200_and_empty_expr_summary(self, find_cube_latest_snapshot):
+    def test__query_minimal_valid_request__returns_200_and_empty_expr_summary(self, find_cube_latest_snapshot):
         with create_temp_cube() as cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
@@ -48,7 +49,6 @@ class WmgApiV1Tests(unittest.TestCase):
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                 ),
-                response_option="include_filter_dims_include_dataset_links",
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
@@ -59,37 +59,29 @@ class WmgApiV1Tests(unittest.TestCase):
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
                 "expression_summary": {},
                 "term_id_labels": {"cell_types": [], "genes": []},
-                "filter_dims": {
-                    "datasets": [],
-                    "development_stage_terms": [],
-                    "disease_terms": [],
-                    "ethnicity_terms": [],
-                    "sex_terms": [],
-                },
+                "filter_dims": {}
             }
 
             self.assertEqual(expected_response, json.loads(response.data))
 
-    def test__query__empty_request_returns_400(self):
+    def test__query_empty_request__returns_400(self):
         response = self.app.post("/wmg/v1/query", json={})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
 
-    def test__query__missing_organism_request_returns_400(self):
+    def test__query_missing_organism__request_returns_400(self):
         request = dict(
             filter=dict(tissue_ontology_term_ids=["tissue_ontology_term_id_0"]),
-            response_option="include_filter_dims_include_dataset_links",
         )
 
         response = self.app.post("/wmg/v1/query", json=request)
 
         self.assertEqual(400, response.status_code)
 
-    def test__query__missing_tissue_request_returns_400(self):
+    def test__query_missing_tissue_request__returns_400(self):
         request = dict(
             filter=dict(organism_ontology_term_id="organism_ontology_term_id_0"),
-            response_option="include_filter_dims_include_dataset_links",
         )
 
         response = self.app.post("/wmg/v1/query", json=request)
@@ -99,7 +91,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__request_primary_dims_only__returns_valid_response_body(
+    def test__query_request_primary_dims_only__returns_valid_response_body(
         self, find_cube_latest_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 3
@@ -123,7 +115,6 @@ class WmgApiV1Tests(unittest.TestCase):
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"],
                 ),
-                response_option="include_filter_dims_include_dataset_links",
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
@@ -175,42 +166,85 @@ class WmgApiV1Tests(unittest.TestCase):
                         {"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"},
                     ],
                 },
-                "filter_dims": {
-                    "datasets": [
-                        {"id": "dataset_id_0", "label": "", "collection_label": "", "collection_url": ""},
-                        {"id": "dataset_id_1", "label": "", "collection_label": "", "collection_url": ""},
-                        {"id": "dataset_id_2", "label": "", "collection_label": "", "collection_url": ""},
-                    ],
-                    "development_stage_terms": [
-                        {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
-                        {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
-                        {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
-                    ],
-                    "disease_terms": [
-                        {"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"},
-                        {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
-                        {"disease_ontology_term_id_2": "disease_ontology_term_id_2_label"},
-                    ],
-                    "ethnicity_terms": [
-                        {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
-                        {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
-                        {"ethnicity_ontology_term_id_2": "ethnicity_ontology_term_id_2_label"},
-                    ],
-                    "sex_terms": [
-                        {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
-                        {"sex_ontology_term_id_1": "sex_ontology_term_id_1_label"},
-                        {"sex_ontology_term_id_2": "sex_ontology_term_id_2_label"},
-                    ],
-                },
+                "filter_dims": {},
             }
-            self.maxDiff = None
             self.assertEqual(expected, json.loads(response.data))
 
+    @patch("backend.wmg.api.v1.fetch_datasets")
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query__request_with_primary_filter_dims__returns_elided_filter_dims(
-        self, find_cube_latest_snapshot, ontology_term_label, gene_term_label
+    def test__query_request_with_filter_dims__returns_valid_filter_dims(
+        self, find_cube_latest_snapshot, ontology_term_label, gene_term_label, fetch_datasets
+    ):
+        dim_size = 3
+        with create_temp_cube(dim_size=dim_size) as cube:
+            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
+            # response
+            find_cube_latest_snapshot.return_value = cube
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            fetch_datasets.return_value = mock_datasets([f"dataset_id_{i}" for i in range(dim_size)])
+
+            request = dict(
+                # doesn't matter for this test
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                ),
+                # matters for this test
+                include_filter_dims=True
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            expected = {
+                "datasets": [
+                    {"id": "dataset_id_0", "label": "dataset_id_0_name",
+                     "collection_label": "dataset_id_0_coll_name",
+                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_0_coll_id"},
+                    {"id": "dataset_id_1", "label": "dataset_id_1_name",
+                     "collection_label": "dataset_id_1_coll_name",
+                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_1_coll_id"},
+                    {"id": "dataset_id_2", "label": "dataset_id_2_name",
+                     "collection_label": "dataset_id_2_coll_name",
+                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_2_coll_id"},
+                ],
+                "development_stage_terms": [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
+                    {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
+                    {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
+                ],
+                "disease_terms": [
+                    {"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"},
+                    {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
+                    {"disease_ontology_term_id_2": "disease_ontology_term_id_2_label"},
+                ],
+                "ethnicity_terms": [
+                    {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
+                    {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
+                    {"ethnicity_ontology_term_id_2": "ethnicity_ontology_term_id_2_label"},
+                ],
+                "sex_terms": [
+                    {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
+                    {"sex_ontology_term_id_1": "sex_ontology_term_id_1_label"},
+                    {"sex_ontology_term_id_2": "sex_ontology_term_id_2_label"},
+                ],
+            }
+            self.assertEqual(expected, json.loads(response.data)['filter_dims'])
+
+    @patch("backend.wmg.api.v1.fetch_datasets")
+    @patch("backend.wmg.data.query.gene_term_label")
+    @patch("backend.wmg.data.query.ontology_term_label")
+    @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
+    def test__query_request_with_filter_dims__returns_elided_filter_dims(
+        self, find_cube_latest_snapshot, ontology_term_label, gene_term_label, fetch_datasets
     ):
         dim_size = 2
         with create_temp_cube(dim_size=dim_size) as cube:
@@ -221,6 +255,8 @@ class WmgApiV1Tests(unittest.TestCase):
             # module is separately unit tested, and here we just want to verify the response building logic is correct.
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            fetch_datasets.return_value = mock_datasets(["dataset_id_0"])
 
             request = dict(
                 filter=dict(
@@ -235,14 +271,16 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
                     ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
                 ),
-                response_option="include_filter_dims_include_dataset_links",
+                include_filter_dims=True
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             expected_filter_dims = {
                 "datasets": [
-                    {"id": "dataset_id_0", "label": "", "collection_label": "", "collection_url": ""},
+                    {"id": "dataset_id_0", "label": "dataset_id_0_name",
+                     "collection_label": "dataset_id_0_coll_name",
+                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_0_coll_id"},
                 ],
                 "disease_terms": [
                     {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
@@ -257,6 +295,22 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
                 ],
             }
-
             self.maxDiff = None
             self.assertEqual(expected_filter_dims, json.loads(response.data)["filter_dims"])
+
+
+# mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
+# we only care that we're building the response correctly from the cube; WMG API integration tests verify
+# with real datasets
+def mock_datasets(dataset_ids):
+    def mock_dataset(dataset_id):
+        dataset = mock.Mock()
+        dataset.id = dataset_id
+        dataset.name = f"{dataset_id}_name"
+        collection = mock.Mock()
+        collection.id = f"{dataset_id}_coll_id"
+        collection.name = f"{dataset_id}_coll_name"
+        dataset.collection = collection
+        return dataset
+
+    return [mock_dataset(dataset_id) for dataset_id in dataset_ids]
