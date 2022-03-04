@@ -8,6 +8,9 @@ import numpy as np
 import tiledb
 from numpy.random import random, randint
 
+from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
+from backend.corpora.common.entities import Collection
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
 
 
@@ -36,7 +39,31 @@ def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[s
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
-def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
+def create_dataset(dataset_id_ordinal: int) -> str:
+    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
+    with db_session_manager() as session:
+
+        if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
+            Collection.delete(coll)
+
+        collection = DbCollection(
+            id=coll_id,
+            visibility=CollectionVisibility.PUBLIC.name,
+            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
+            owner="owner"
+        )
+        session.add(collection)
+        dataset = DbDataset(
+                id=f"dataset_id_{dataset_id_ordinal}",
+                name=f"dataset_name_{dataset_id_ordinal}",
+                collection_id=coll_id,
+                collection_visibility=CollectionVisibility.PUBLIC,
+        )
+        session.add(dataset)
+        return dataset.id
+
+
+def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
     """
     Returns a set of ontology term ids, sampled from real ontologies. While these ontology terms
     from the real ontologies, they are not necessarily ones that would be admissible w.r.t. to the cellxgene dataset
@@ -54,27 +81,27 @@ def semi_real_ontology_terms_generator(dimension_name: str, n_terms: int) -> Lis
     deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())
 
     if dimension_name == "gene_ontology_term_id":
-        return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:n_terms]
+        return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:dim_size]
     if dimension_name == "tissue_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:dim_size]
     if dimension_name == "organism_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("NCBITaxon")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("NCBITaxon")][:dim_size]
     if dimension_name == "cell_type_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:dim_size]
     if dimension_name == "dataset_id":
-        return [f"dataset_id_{i}" for i in range(n_terms)]
+        return [create_dataset(i) for i in range(dim_size)]
     if dimension_name == "assay_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:dim_size]
     if dimension_name == "development_stage_ontology_term_id":
         return [
             term_id for term_id in deterministic_term_ids if term_id.startswith("Hsap") or term_id.startswith("MmusDev")
-        ][:n_terms]
+        ][:dim_size]
     if dimension_name == "disease_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:dim_size]
     if dimension_name == "ethnicity_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("HANCESTRO")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("HANCESTRO")][:dim_size]
     if dimension_name == "sex_ontology_term_id":
-        return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:n_terms]
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:dim_size]
     raise AssertionError(f"unknown dimension name {dimension_name}")
 
 
@@ -124,4 +151,4 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cube(output_cube_dir, dim_ontology_term_ids_generator_fn=semi_real_ontology_terms_generator)
+    create_cube(output_cube_dir, dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator)

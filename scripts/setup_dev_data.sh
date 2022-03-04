@@ -82,16 +82,6 @@ dd if=/dev/zero of=fake-h5ad-file.h5ad bs=1024 count=1024 &>/dev/null
 ${local_aws} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
 rm fake-h5ad-file.h5ad
 
-# Make a WMG cube
-echo "Writing WMG cube to s3"
-tmp_cube_dir=`mktemp -d`
-# TODO: Also generate & store:
-#  * s3://wmg-<env>/latest_snapshot_uuid
-#  * cell type orderings
-#  * total cell counts cube
-python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
-${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/
-
 echo "Populating test db"
 export CORPORA_LOCAL_DEV=true
 export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
@@ -101,3 +91,13 @@ echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"
 echo "  Backend: ${BACKEND_URL}"
+
+# Make a WMG cube
+echo "Writing WMG cube to s3"
+tmp_cube_dir=`mktemp -d`
+# TODO: Also generate & store:
+#  * s3://wmg-<env>/latest_snapshot_uuid
+#  * cell type orderings
+#  * total cell counts cube
+python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
+${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/

@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Union
 from uuid import uuid4
 
 import connexion
@@ -8,6 +8,7 @@ import tiledb
 from flask import jsonify, request
 from pandas import DataFrame
 
+from backend.corpora.common.corpora_orm import DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.config import fast_config, create_ctx
@@ -87,20 +88,27 @@ def query():
 #  portal's db layer, considering that this is the only occasion where the backend.wmg.api package introduces a
 #  dependency on the db. There is no appropriate API call at this time and the lower of making an API call would
 #  have to be considered as well.
-def fetch_datasets(dataset_ids: List[str]) -> List[Dataset]:
+def fetch_datasets(dataset_ids: List[str]) -> List[Dict]:
+    # We return a DTO because the db entity can't access its attributes after the db session ends,
+    # and we want to keep session management out of the calling method
+    def result(dataset: DbDataset):
+        return dict(id=dataset.id,
+                    name=dataset.name,
+                    collection=dict(id=dataset.collection.id,
+                                    name=dataset.collection.name))
+
     with db_session_manager() as session:
-        return [Dataset.get(session, dataset_id) for dataset_id in dataset_ids]
+        return [result(Dataset.get(session, dataset_id).db_object) for dataset_id in dataset_ids]
 
 
 def build_datasets(dataset_ids: List[str]) -> List[Dict]:
     datasets = fetch_datasets(dataset_ids)
     return [
         dict(
-                id=dataset.id,
-                label=dataset.name,
-                collection_label=dataset.collection.name,
-                # TODO: form this URL using a canonical URL utility method
-                collection_url=f"{request.url_root}dp/v1/collections/{dataset.collection.id}",
+                id=dataset['id'],
+                label=dataset['name'],
+                collection_id=dataset['collection']['id'],
+                collection_label=dataset['collection']['name'],
         )
         for dataset in datasets
     ]

@@ -208,13 +208,13 @@ class WmgApiV1Tests(unittest.TestCase):
                 "datasets": [
                     {"id": "dataset_id_0", "label": "dataset_id_0_name",
                      "collection_label": "dataset_id_0_coll_name",
-                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_0_coll_id"},
+                     "collection_id": "dataset_id_0_coll_id"},
                     {"id": "dataset_id_1", "label": "dataset_id_1_name",
                      "collection_label": "dataset_id_1_coll_name",
-                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_1_coll_id"},
+                     "collection_id": "dataset_id_1_coll_id"},
                     {"id": "dataset_id_2", "label": "dataset_id_2_name",
                      "collection_label": "dataset_id_2_coll_name",
-                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_2_coll_id"},
+                     "collection_id": "dataset_id_2_coll_id"},
                 ],
                 "development_stage_terms": [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
@@ -280,7 +280,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 "datasets": [
                     {"id": "dataset_id_0", "label": "dataset_id_0_name",
                      "collection_label": "dataset_id_0_coll_name",
-                     "collection_url": "http://localhost/dp/v1/collections/dataset_id_0_coll_id"},
+                     "collection_id": "dataset_id_0_coll_id"},
                 ],
                 "disease_terms": [
                     {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
@@ -303,14 +303,8 @@ class WmgApiV1Tests(unittest.TestCase):
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify
 # with real datasets
 def mock_datasets(dataset_ids):
-    def mock_dataset(dataset_id):
-        dataset = mock.Mock()
-        dataset.id = dataset_id
-        dataset.name = f"{dataset_id}_name"
-        collection = mock.Mock()
-        collection.id = f"{dataset_id}_coll_id"
-        collection.name = f"{dataset_id}_coll_name"
-        dataset.collection = collection
-        return dataset
-
-    return [mock_dataset(dataset_id) for dataset_id in dataset_ids]
+    return [dict(id=dataset_id,
+                 name=f"{dataset_id}_name",
+                 collection=dict(id=f"{dataset_id}_coll_id",
+                                 name=f"{dataset_id}_coll_name"))
+            for dataset_id in dataset_ids]
