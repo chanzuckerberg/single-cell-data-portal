@@ -204,7 +204,7 @@ paths:
                   description: email of contact person for the collection
                 curator_name:
                   type: string
-                  description: name of the auth of the collection.
+                  description: name of the curator of the collection.
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -311,7 +311,7 @@ paths:
                   description: email of contact person for the collection
                 curator_name:
                   type: string
-                  description: name of the auth of the collection
+                  description: name of the curator of the collection
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -934,7 +934,7 @@ paths:
           $ref: "#/components/responses/403"
   /dp/v1/auth/key:
     get:
-      summary: Fetch the identifier of the auth's active API key -- for use with Data Portal UI
+      summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.get
       security:
         - cxguserCookie: [ ]
@@ -953,10 +953,10 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     post:
-      summary: Generate the auth's API key -- for use with Data Portal UI
+      summary: Generate the curator's API key -- for use with Data Portal UI
       description: >-
         Generate and return a curator API key for the user. If there is already a key associated with the
-        user's auth profile, replace it with the new key.
+        user's curator profile, replace it with the new key.
       operationId: backend.corpora.lambdas.api.v1.auth.keys.post
       security:
         - cxguserCookie: []
@@ -977,7 +977,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
     delete:
-      summary: Delete the auth's API key -- for use with Data Portal UI
+      summary: Delete the curator's API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.delete
       security:
         - cxguserCookie: []
