@@ -1,0 +1,108 @@
+import json
+
+from mock import patch, DEFAULT
+
+from backend.corpora.common.auth0_manager import session
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+
+
+class TestKeys(BaseAuthAPITest):
+    @classmethod
+    def setUpClass(cls):
+        session.domain = "localhost"  # setting this so CorporaAuthConfig isn't used in the test
+        super().setUpClass()
+        cls.api_key_id = "auth0_generate_api_key_id"
+        cls.user_name = "test_user_id"
+        cls.fake_random_value = "ABCDEFG"
+        cls.email = "fake_user@email.com"
+
+    @patch.multiple("backend.corpora.lambdas.api.v1.auth.keys.session",
+                    get_user_api_key_identity=DEFAULT, store_api_key=DEFAULT, link_api_key=DEFAULT, delete_api_key=DEFAULT)
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.random_string")
+    def test__create_key__202(self, mock_random_string, get_user_api_key_identity, store_api_key,  link_api_key, delete_api_key):
+        get_user_api_key_identity.return_value = None
+        store_api_key.return_value = self.api_key_id
+        link_api_key.return_value = None
+        delete_api_key.return_value = None
+        mock_random_string.return_value = self.fake_random_value
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post("/dp/v1/auth/key", headers=headers)
+
+        self.assertEqual(202, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body['id'], self.fake_random_value)
+        self.assertEqual(body['api_key'], f"{self.fake_random_value}.{self.fake_random_value}")
+        delete_api_key.assert_not_called()
+        store_api_key.assert_called_once_with(self.fake_random_value, self.fake_random_value, self.email)
+        link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
+        get_user_api_key_identity.assert_called_once_with(self.user_name)
+
+    def test__create_key__401(self):
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.post("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(response.status_code, 401)
+
+    @patch.multiple("backend.corpora.lambdas.api.v1.auth.keys.session",
+                    get_user_api_key_identity=DEFAULT, store_api_key=DEFAULT, link_api_key=DEFAULT, delete_api_key=DEFAULT)
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.random_string")
+    def test__regenerate_key__202(self, mock_random_string, get_user_api_key_identity, store_api_key,  link_api_key, delete_api_key):
+        get_user_api_key_identity.return_value ={"user_id": self.api_key_id, "username": self.fake_random_value}
+        delete_api_key.return_value = None
+        store_api_key.return_value = self.api_key_id
+        link_api_key.return_value = None
+        mock_random_string.return_value = self.fake_random_value
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.post("/dp/v1/auth/key", headers=headers)
+
+        self.assertEqual(202, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body['id'], self.fake_random_value)
+        self.assertEqual(body['api_key'], f"{self.fake_random_value}.{self.fake_random_value}")
+        get_user_api_key_identity.assert_called_once_with(self.user_name)
+        delete_api_key.assert_called_once()
+        store_api_key.assert_called_once_with(self.fake_random_value, self.fake_random_value, "fake_user@email.com")
+        link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
+
+    @patch.multiple("backend.corpora.lambdas.api.v1.auth.keys.session", get_user_api_key_identity=DEFAULT, delete_api_key=DEFAULT)
+    def test__delete_key__201(self, get_user_api_key_identity, delete_api_key):
+        get_user_api_key_identity.return_value ={"user_id": self.api_key_id, "username": self.fake_random_value}
+        delete_api_key.return_value = None
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(response.status_code, 201)
+
+    def test__delete_key__401(self):
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.delete("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(response.status_code, 401)
+
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    def test__delete_key__404(self, get_user_api_key_identity):
+        get_user_api_key_identity.return_value = None
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.delete("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(404, response.status_code)
+
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    def test__get_key__200(self, get_user_api_key_identity):
+        get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": self.fake_random_value}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.get("/dp/v1/auth/key", headers=headers)
+        print(response.data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(json.loads(response.data), {"id": self.fake_random_value})
+        get_user_api_key_identity.assert_called_once()
+
+    def test__get_key__401(self):
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(response.status_code, 401)
+
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    def test__get_key__404(self, get_user_api_key_identity):
+        get_user_api_key_identity.return_value = None
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        response = self.app.get("/dp/v1/auth/key", headers=headers)
+        self.assertEqual(404, response.status_code)
+        get_user_api_key_identity.assert_called_once()

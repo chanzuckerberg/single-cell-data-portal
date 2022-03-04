@@ -933,6 +933,25 @@ paths:
         "403":
           $ref: "#/components/responses/403"
   /dp/v1/auth/key:
+    get:
+      summary: Fetch the identifier of the auth's active API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
+      security:
+        - cxguserCookie: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key_name:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
     post:
       summary: Generate the auth's API key -- for use with Data Portal UI
       description: >-
@@ -957,22 +976,6 @@ paths:
           $ref: "#/components/responses/401"
         "400":
           $ref: "#/components/responses/400"
-    get:
-      summary: Fetch the identifier of the auth's active API key -- for use with Data Portal UI
-      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
-      security:
-        - cxguserCookie: []
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          $ref: "#/components/responses/401"
-        "404":
-          $ref: "#/components/responses/404"
     delete:
       summary: Delete the auth's API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.delete

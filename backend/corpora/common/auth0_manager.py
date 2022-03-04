@@ -2,27 +2,42 @@ import requests
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils import json
-from backend.corpora.common.utils.singleton import Singleton
 
 
-class Auth0ManagementSession(metaclass=Singleton):
+class Auth0ManagementSession:
     """
     A wrapper around the Auth0 Management API. https://auth0.com/docs/api/management/v2
     """
+    _session = None
+    _domain = None
 
-    def __init__(self, domain: str = None):
-        self.domain = domain if domain else CorporaAuthConfig.domain
-        session = requests.Session()
+    @property
+    def session(self):
+        if not self._session:
+            domain = self.domain
+            session = requests.Session()
 
-        def _refresh_token(r, *args, **kwargs):
-            if r.status_code == 401:
-                token = self.get_auth0_management_token(domain)
-                session.headers.update({"Authorization": token})
-                r.request.headers["Authorization"] = session.headers["Authorization"]
-                return session.send(r.request)
+            def _refresh_token(r, *args, **kwargs):
+                """Automatically refresh the auth0 management token if it expires."""
+                if r.status_code == 401:
+                    token = self.get_auth0_management_token(domain)
+                    session.headers.update({"Authorization": token})
+                    r.request.headers["Authorization"] = session.headers["Authorization"]
+                    return session.send(r.request)
 
-        session.hooks["response"].append(_refresh_token)
-        self.session = session
+            session.hooks["response"].append(_refresh_token)
+            self._session = session
+        return self._session
+
+    @property
+    def domain(self):
+        if not self._domain:
+            self._domain = CorporaAuthConfig.domain or "test"
+        return self._domain
+
+    @domain.setter
+    def domain(self, domain):
+        self._domain = domain
 
     def __getattr__(self, item):
         return getattr(self.session, item)
@@ -55,6 +70,7 @@ class Auth0ManagementSession(metaclass=Singleton):
         for i in body["identities"]:
             if i["connection"] == CorporaAuthConfig.api_key_connection_name:
                 identity = i
+                break
         return identity
 
     def delete_api_key(self, primary_id: str, identity: dict) -> None:
@@ -68,11 +84,11 @@ class Auth0ManagementSession(metaclass=Singleton):
         response = self.session.delete(f"https://{self.domain}/api/v2/users/{provider}|{user_id}")
         response.raise_for_status()
 
-    def generate_api_key(self, user_name: str, password: str, token_info: dict) -> str:
+    def store_api_key(self, user_name: str, password: str, email: str) -> str:
         # Add key to Auth0
         payload = json.dumps(
             dict(
-                email=token_info["email"],
+                email=email,
                 username=user_name,
                 password=password,
                 connection=CorporaAuthConfig.api_key_connection_name,
@@ -107,3 +123,6 @@ class Auth0ManagementSession(metaclass=Singleton):
         )
         response.raise_for_status()
         return response.json()
+
+
+session = Auth0ManagementSession()

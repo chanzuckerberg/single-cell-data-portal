@@ -3,16 +3,15 @@ import string
 
 from flask import make_response
 
-from backend.corpora.common.auth0_management_session import Auth0ManagementSession
+from backend.corpora.common.auth0_manager import session
 from backend.corpora.common.utils.exceptions import NotFoundHTTPException
 
 
 def get(user: str):
-    session = Auth0ManagementSession()
     identity = session.get_user_api_key_identity(user)
     if not identity:
         raise NotFoundHTTPException()
-    return make_response({"key_id": identity["username"]})
+    return make_response({"id": identity["username"]}, 200)
 
 
 def random_string(length: int) -> str:
@@ -20,8 +19,6 @@ def random_string(length: int) -> str:
 
 
 def post(user: int, token_info: dict):
-    session = Auth0ManagementSession()
-
     # Check if a key already exists
     identity = session.get_user_api_key_identity(user)
     if identity:
@@ -29,18 +26,17 @@ def post(user: int, token_info: dict):
         session.delete_api_key(user, identity)
 
     # Generate a new key
-    user_name = random_string(8)
+    key_name = random_string(8)
     password = random_string(16)
 
-    api_key_id = session.generate_api_key(user_name, password, token_info)
+    api_key_id = session.store_api_key(key_name, password, token_info['email'])
     session.link_api_key(user, api_key_id)
-    return make_response({"id": user_name, "api_key": f"{user_name}.{password}"}, 202)
+    return make_response({"id": key_name, "api_key": f"{key_name}.{password}"}, 202)
 
 
 def delete(user: str):
-    session = Auth0ManagementSession()
     identity = session.get_user_api_key_identity(user)
     if not identity:
-        return make_response(404)
+        raise NotFoundHTTPException
     session.delete_api_key(user, identity)
-    return make_response(201)
+    return make_response("", 201)
