@@ -62,7 +62,8 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
                 tags={
                   isSelectCategoryView(categoryView)
                     ? buildSelectCategoryTags(categoryView, key, onFilter)
-                    : buildRangeCategoryTag(categoryView, key, onFilter)
+                    : // @ts-expect-error -- TODO(cc) revisit lint errors
+                      buildRangeCategoryTag(categoryView, key, onFilter)
                 }
               />
             }
