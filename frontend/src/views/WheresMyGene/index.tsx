@@ -34,7 +34,10 @@ import GeneFetcher from "./components/GeneFetcher";
 import GeneSearchBar from "./components/GeneSearchBar";
 import GetStarted from "./components/GetStarted";
 import HeatMap from "./components/HeatMap";
+import InfoPanel from "./components/InfoPanel";
 import { Top, Wrapper } from "./style";
+
+const INFO_PANEL_WIDTH_PX = 320;
 
 const WheresMyGene = (): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -181,13 +184,13 @@ const WheresMyGene = (): JSX.Element => {
           <Filters filters={filters} onFiltersChange={handleFiltersChange} />
         </SideBar>
 
-        <SideBar label="Info" isOpen position={Position.RIGHT}>
-          <span>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-            autem deserunt assumenda repudiandae repellat quis sunt quae, aut
-            vero rem itaque labore praesentium iure exercitationem minus iste
-            laudantium sed aliquid.
-          </span>
+        <SideBar
+          width={INFO_PANEL_WIDTH_PX}
+          label="Info"
+          isOpen
+          position={Position.RIGHT}
+        >
+          <InfoPanel />
         </SideBar>
 
         <View hideOverflow>
