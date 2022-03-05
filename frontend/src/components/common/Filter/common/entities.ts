@@ -524,16 +524,17 @@ export type Range = [number, number] | [];
  * View model of species-specific ontology tree.
  */
 export interface OntologyCategorySpeciesView {
+  children: OntologyCategoryValueView[]; // TODO(cc) rename to development type?
   label: string;
-  children: OntologyCategoryValueView[];
 }
 
 /**
  * View model of category value, selected state, children, children selected state and count for ontology categories.
  */
 export interface OntologyCategoryValueView extends SelectCategoryValueView {
-  partialSelected: boolean; // True if value is a parent node and some children node are selected.
   children?: OntologyCategoryValueView[];
+  selectedTag?: boolean; // True if value, if selected, is to be included in the selected set of tags.
+  partialSelected: boolean; // True if value is a parent node and some children node are selected. // TODO(cc) selectedPartial?
 }
 
 /**

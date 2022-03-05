@@ -64,6 +64,24 @@ export const DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR = Object.values(
 }, new Map<string, Set<string>>());
 
 /**
+ * Set of all development stage ontology IDs, used by filter functionality to determine the full set of possible
+ * ontology IDs.
+ * TODO(cc) share recursion with setLeafOntologyIdsForDevelopmentStage but without passing in accum?
+ * TODO(cc) test
+ */
+export const DEVELOPMENT_STAGE_ONTOLOGY_IDS = [
+  ...DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.keys(),
+].reduce((accum, ontologyId) => {
+  accum.add(ontologyId);
+  DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ontologyId)?.forEach(
+    (childOntologyId) => {
+      accum.add(childOntologyId);
+    }
+  );
+  return accum;
+}, new Set<string>());
+
+/**
  * Find all leaf node (ontology IDs) for the given development stage node.
  * @param developmentStage - Development stage node to find leaf node ontology IDs of.
  * @param leafOntologyIds - Set of leaf node ontology IDs found for the given development stage.
