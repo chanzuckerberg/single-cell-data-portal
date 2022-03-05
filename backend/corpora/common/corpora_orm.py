@@ -239,6 +239,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
+    kuni_test = Column(JSON, nullable=True)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")

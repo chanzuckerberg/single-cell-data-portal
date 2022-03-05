@@ -61,8 +61,7 @@ make local-start
 1. Import the remote database schema into your local database:
 ```shell
 cd $REPOSITORY_ROOT/backend
-export DEPLOYMENT_STAGE=test
-make db/import FROM=corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>  # exclude the .sqlc extension
+DEPLOYMENT_STAGE=test make db/import FROM=corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>  # exclude the .sqlc extension
 ```
 where the `FROM` parameter is the base name of the `.sqlc` file downloaded from the `make db/download` step above. For example 
 ```shell
@@ -74,7 +73,7 @@ You may need to run this a few times, until there are no significant errors.
  - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error
 1. Run the migration test:
 ```shell
-make db/test_migration
+AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE=test make db/test_migration
 ``` 
 This test will:
 1. Dump the current schema (before)
