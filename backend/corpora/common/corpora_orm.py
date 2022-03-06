@@ -3,6 +3,7 @@ import enum
 from datetime import datetime
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     Enum,
@@ -228,7 +229,8 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
-    visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
+    id = Column(String, primary_key=True, default=generate_uuid)
+    visibility = Column(Enum(CollectionVisibility), nullable=False)
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
     description = Column(StrippedString)
@@ -239,11 +241,17 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
+    revision_of = Column(String, nullable=True)
 
     # Relationships
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
     genesets = relationship("DbGeneset", back_populates="collection", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        ForeignKeyConstraint((revision_of,), (id,)),
+        CheckConstraint("revision_of IS NULL OR visibility = 'PRIVATE'", "ck_project_private_revision"),
+    )
 
 
 class DbProjectLink(Base, AuditMixin):
@@ -255,7 +263,6 @@ class DbProjectLink(Base, AuditMixin):
     __tablename__ = "project_link"
 
     collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     link_name = Column(StrippedString)
     link_url = Column(StrippedString)
     link_type = Column(Enum(CollectionLinkType))
@@ -264,10 +271,7 @@ class DbProjectLink(Base, AuditMixin):
     collection = relationship("DbCollection", uselist=False, back_populates="links")
 
     # Composite FK
-    __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        {},
-    )
+    __table_args__ = (ForeignKeyConstraint((collection_id,), (DbCollection.id,)),)
 
 
 # provide a consistent name
@@ -297,7 +301,6 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     is_valid = Column(Boolean, default=False)
     is_primary_data = Column(Enum(IsPrimaryData))
     collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
@@ -316,10 +319,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
 
     # Composite FK
-    __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        {},
-    )
+    __table_args__ = (ForeignKeyConstraint((collection_id,), (DbCollection.id,)),)
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]
@@ -456,13 +456,12 @@ class DbGeneset(Base, AuditMixin):
     description = Column(String)
     genes = Column(JSONB)
     collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
     datasets = relationship("DbDataset", secondary="geneset_dataset_link", back_populates="genesets")
 
     __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        UniqueConstraint("name", "collection_id", "collection_visibility", name="_geneset_name__collection_uc"),
+        ForeignKeyConstraint((collection_id,), (DbCollection.id,)),
+        UniqueConstraint("name", "collection_id", name="_geneset_name__collection_uc"),
     )
 
     def to_dict(self, *args, **kwargs):
@@ -479,5 +478,5 @@ class DbGenesetDatasetLink(Base, AuditMixin):
 
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
-    dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
+    geneset_id = Column(String, ForeignKey("geneset.id"), index=True, nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), index=True, nullable=False)
