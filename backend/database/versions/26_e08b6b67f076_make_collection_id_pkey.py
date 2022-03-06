@@ -1,6 +1,6 @@
 """make_collection_id_pkey
 
-Revision ID: e08b6b67f076
+Revision ID: 25_e08b6b67f076
 Revises: 25_43e20ba9f9f0
 Create Date: 2022-03-04 21:54:51.795657
 
