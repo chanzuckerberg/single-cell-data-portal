@@ -21,6 +21,6 @@ export const StyledDangerIcon = styled(Icon)`
   &.${Classes.ICON} {
     position: absolute;
     right: 8px;
-    top: 8px;
+    top: 15px;
   }
 `;
