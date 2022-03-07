@@ -83,7 +83,7 @@ def make_cube_index(tdb_group, cube_dims):
     pdb.set_trace()
     cell_labels = pd.DataFrame(
         # Todo previously cube dimensions did not include the feature_id (gene_ontology_id) now its  included ... breaking change?
-        data={k: cell_labels[k].astype("category") for k in cube_dims},
+        data={k: cell_labels[k].astype("category") for k in cube_indexed_dims_no_gene_ontology},
         index=cell_labels.obs_idx,
     )
 
