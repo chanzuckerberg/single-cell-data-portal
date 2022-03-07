@@ -76,6 +76,8 @@ def make_cube_index(tdb_group, cube_dims):
     """
     with tiledb.open(f"{tdb_group}/obs") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
+    with tiledb.open(f"{tdb_group}/var") as var:
+        something_else = var.query(use_arrow=False).df[:]
     cell_labels.sort_values(by=['obs_idx'], inplace=True, ignore_index=True)
     import pdb
     pdb.set_trace()
