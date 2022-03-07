@@ -62,6 +62,7 @@ def load_h5ad(h5ad, group_name, validate):
     if anndata_object.uns.get("schema_version", None) != "2.0.0":
         logger.warning("oops, unknown schema, not loading")
         return
+
     anndata_object.var.rename(columns={"feature_id": "gene_ontology_term_id"}, inplace=True)
     var_df = update_global_var(group_name, anndata_object.var)
 
@@ -79,8 +80,8 @@ def load_h5ad(h5ad, group_name, validate):
     save_raw(anndata_object, group_name, global_var_index, first_obs_idx)
     save_X(anndata_object, group_name, global_var_index, first_obs_idx)
 
-    # if validate:
-    #     validate_load(anndata_object, group_name, dataset_id)
+    if validate:
+        validate_load(anndata_object, group_name, dataset_id)
 
 
 def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
