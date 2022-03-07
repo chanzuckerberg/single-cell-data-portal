@@ -3,6 +3,7 @@ import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
+  OntologyCategoryValueView,
   OntologyCategoryView,
   RangeCategoryView,
   SelectCategoryValueView,
@@ -60,10 +61,11 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
             tags={
               <FilterTags
                 tags={
-                  isSelectCategoryView(categoryView)
+                  isOntologyCategoryView(categoryView)
+                    ? buildOntologyCategoryTags(categoryView, key, onFilter)
+                    : isSelectCategoryView(categoryView)
                     ? buildSelectCategoryTags(categoryView, key, onFilter)
-                    : // @ts-expect-error -- TODO(cc) revisit lint errors
-                      buildRangeCategoryTag(categoryView, key, onFilter)
+                    : buildRangeCategoryTag(categoryView, key, onFilter)
                 }
               />
             }
@@ -73,6 +75,66 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
       })}
     </>
   );
+}
+
+/**
+ * Returns selected ontology category tag with tag label and corresponding Tag onRemove function.
+ * Any category value with a "selectedTag" will be added to the array of selected category tags.
+ * TODO(cc) method review and write up
+ * @param values
+ * @param categoryKey
+ * @param onFilter
+ * @param categoryTags
+ * @returns ontology selected category tags.
+ */
+function createOntologySelectedTags(
+  values: OntologyCategoryValueView[],
+  categoryKey: CategoryKey,
+  onFilter: OnFilterFn,
+  categoryTags: CategoryTag[] | undefined
+): CategoryTag[] | undefined {
+  for (const { children, key, label, selectedTag } of values) {
+    if (selectedTag) {
+      // Category value is a "selectedTag"; add to the array of category tags.
+      const tag = { label, onRemove: () => onFilter(categoryKey, key) };
+      categoryTags = categoryTags || []; // categoryTags value may be undefined; init as itself, or empty array if undefined.
+      categoryTags.push(tag);
+    }
+    if (children) {
+      // Category value has descendants; iterate over category value descendants.
+      categoryTags = createOntologySelectedTags(
+        children,
+        categoryKey,
+        onFilter,
+        categoryTags
+      );
+    }
+  }
+  return categoryTags;
+}
+
+/**
+ * Returns ontology category tag with tag label and corresponding Tag onRemove function.
+ * @param categoryView
+ * @param categoryKey
+ * @param onFilter
+ * @returns ontology category tag.
+ */
+function buildOntologyCategoryTags(
+  categoryView: OntologyCategoryView,
+  categoryKey: CategoryKey,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  let categoryTags = undefined;
+  for (const species of categoryView.species) {
+    categoryTags = createOntologySelectedTags(
+      species.children,
+      categoryKey,
+      onFilter,
+      categoryTags
+    );
+  }
+  return categoryTags;
 }
 
 /**
