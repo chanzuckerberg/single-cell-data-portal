@@ -42,10 +42,10 @@ def copy_datasets_to_instance(dataset_directory):
 
 
 def load_datasets_into_corpus(path_to_datasets, group_name):
-    try:
-        load(path_to_datasets, group_name, True)
-    except Exception as e:
-        logger.error(f"Issue loading datasets into corpus: {e}")
+    # try:
+    load(path_to_datasets, group_name, True)
+    # except Exception as e:
+    #     logger.error(f"Issue loading datasets into corpus: {e}")
 
 
 def get_cells_by_tissue_type(tdb_group: str) -> Dict:
