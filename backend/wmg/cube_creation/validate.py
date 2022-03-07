@@ -93,9 +93,15 @@ def create_local_to_global_feature_coord_index(
     n_features = len(gene_ontology_term_id)
     local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
     var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
+    import pdb
+    pdb.set_trace()
     for idx in range(n_features):
         gene_ontology_term_id = gene_ontology_term_id[idx]
-        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
+
+        try:
+            global_coord = var_feature_to_coord_map[gene_ontology_term_id]
+        except KeyError:
+            pdb.set_trace()
         local_to_global_feature_coord[idx] = global_coord
 
     return local_to_global_feature_coord
