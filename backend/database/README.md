@@ -39,26 +39,26 @@ export DEPLOYMENT_STAGE=test
 make db/new_migration_auto MESSAGE="purpose_of_migration"
 ```
 See [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect).
-1. Follow [How to perform a database migration](#how-to-perform-a-database-migration) starting from **step 3**.
+5. Follow [How to perform a database migration](#how-to-perform-a-database-migration) starting from **step 3**.
 
 ### Test a Migration
 The following steps will test that a migration script works on a local database using data downloaded from a deployed database. 
 
 1. [Connect to Remote RDS](#connect-to-remote-rds)
-1. Open a new terminal and download the remote database schema:
+2. Open a new terminal and download the remote database schema:
 ```shell
 cd $REPOSITORY_ROOT/backend
 export DEPLOYMENT_STAGE={dev,staging,prod}
 AWS_PROFILE=single-cell-{dev,prod} make db/download
 ```
 This will download the database into the `$REPOSITORY_ROOT/backend/database` directory in a file named `corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>.sqlc`.
-1. Close the tunnel to the remote database
-1. Start the local database environment:
+3. Close the tunnel to the remote database
+4. Start the local database environment:
 ```shell
 cd $REPOSITORY_ROOT
 make local-start
 ```
-1. Import the remote database schema into your local database:
+5. Import the remote database schema into your local database:
 ```shell
 cd $REPOSITORY_ROOT/backend
 DEPLOYMENT_STAGE=test make db/import FROM=corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>  # exclude the .sqlc extension
@@ -71,7 +71,7 @@ make db/import FROM=corpora_dev-202102221309
 
 You may need to run this a few times, until there are no significant errors.
  - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error
-1. Run the migration test:
+6. Run the migration test:
 ```shell
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE=test make db/test_migration
 ``` 
