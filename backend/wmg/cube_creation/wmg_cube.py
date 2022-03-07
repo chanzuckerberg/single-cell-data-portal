@@ -170,7 +170,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         logger.debug(grp)
 
         dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx : idx + n_vals] = cell_type_ontology_term_id
+        # dims[1][idx : idx + n_vals] = cell_type_ontology_term_id
         dims[2][idx : idx + n_vals] = tissue_ontology_term_id
         dims[3][idx : idx + n_vals] = organism_ontology_term_id
 
