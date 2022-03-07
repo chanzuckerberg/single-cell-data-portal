@@ -155,7 +155,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
     pdb.set_trace()
     for grp in cube_index.to_records():
         (
-            cell_type_ontology_term_id,
+            # cell_type_ontology_term_id,
             tissue_ontology_term_id,
             organism_ontology_term_id,
             *attr_values,
