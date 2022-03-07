@@ -147,7 +147,7 @@ def save_raw(ad, group_name, global_var_index, first_obs_idx):
     """
     array_name = f"{group_name}/raw"
     X = get_X_raw(ad)
-   print(f"saving {array_name}...", end="", flush=True)
+    print(f"saving {array_name}...", end="", flush=True)
     stride = max(int(np.power(10, np.around(np.log10(1e9 / X.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, X.shape[0], stride):
