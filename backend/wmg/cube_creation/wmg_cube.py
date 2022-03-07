@@ -77,6 +77,7 @@ def make_cube_index(tdb_group, cube_dims):
     with tiledb.open(f"{tdb_group}/obs") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
     cell_labels.sort_values(by=['obs_idx'], inplace=True, ignore_index=True)
+
     cell_labels = pd.DataFrame(
         # Todo previously cube dimensions did not include the feature_id (gene_ontology_id) now its  included ... breaking change?
         data={k: cell_labels[k].astype("category") for k in cube_dims},
@@ -155,7 +156,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
     pdb.set_trace()
     for grp in cube_index.to_records():
         (
-            # cell_type_ontology_term_id,
+            cell_type_ontology_term_id,
             tissue_ontology_term_id,
             organism_ontology_term_id,
             *attr_values,
@@ -170,7 +171,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         logger.debug(grp)
 
         dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        # dims[1][idx : idx + n_vals] = cell_type_ontology_term_id
+        dims[1][idx : idx + n_vals] = cell_type_ontology_term_id
         dims[2][idx : idx + n_vals] = tissue_ontology_term_id
         dims[3][idx : idx + n_vals] = organism_ontology_term_id
 
