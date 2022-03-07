@@ -177,8 +177,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
         vals["n_cells"][idx : idx + n_vals] = n  # wasteful
-        import pdb
-        pdb.set_trace()
+
         for i, k in enumerate(other_attrs):
             vals[k][idx : idx + n_vals] = attr_values[i]
 
