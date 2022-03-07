@@ -93,10 +93,7 @@ def load_data_and_create_cube(path_to_datasetst, group_name):
         create_tdb(group_name)
     # copy_datasets_to_instance('wmg-datasets')
     load_datasets_into_corpus(path_to_datasetst, group_name)
-    try:
-        create_cube(group_name)
-    except Exception as e:
-        logger.error(f"Issue creating the cube: {e}")
+    create_cube(group_name)
     cell_type_by_tissue = get_cells_by_tissue_type(group_name)
     generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources()
