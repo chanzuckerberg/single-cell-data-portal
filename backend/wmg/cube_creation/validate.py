@@ -25,9 +25,9 @@ def validate_load(ad, group_name, dataset_id):
                 logger.info("\tchecking var...")
                 all_features = var.query().df[:]
                 ## confirm no duplicates in gene table (var)
-                assert all_features.shape[0] == len(set(all_features["feature_id"]))
+                assert all_features.shape[0] == len(set(all_features["gene_ontology_term_id"]))
                 ## validate var
-                assert all_features[all_features["feature_id"].isin(ad.var.index.values)].shape[0] == ad.n_vars
+                assert all_features[all_features["gene_ontology_term_id"].isin(ad.var.index.values)].shape[0] == ad.n_vars
 
                 ## validate obs
                 logger.info("\tchecking obs...")
@@ -85,17 +85,17 @@ def validate_load(ad, group_name, dataset_id):
 
 
 def create_local_to_global_feature_coord_index(
-        var_df: pd.DataFrame, feature_ids: Union[List[str], np.ndarray]
+        var_df: pd.DataFrame, gene_ontology_term_id: Union[List[str], np.ndarray]
 ) -> np.ndarray:
     """
     Create an array mapping feature ids local to global index
     """
-    n_features = len(feature_ids)
+    n_features = len(gene_ontology_term_id)
     local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
-    var_feature_to_coord_map = {k: v for k, v in var_df[["feature_id", "var_idx"]].to_dict("split")["data"]}
+    var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
     for idx in range(n_features):
-        feature_id = feature_ids[idx]
-        global_coord = var_feature_to_coord_map[feature_id]
+        gene_ontology_term_id = gene_ontology_term_id[idx]
+        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
         local_to_global_feature_coord[idx] = global_coord
 
     return local_to_global_feature_coord

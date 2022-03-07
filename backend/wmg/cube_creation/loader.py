@@ -26,7 +26,7 @@ def load(dataset_directory: List, group_name: str, validate: bool):
         for dataset in os.listdir(dataset_directory):
             file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             try:
-                load_h5ad(file_path, group_name, validate) # TODO Can this be parallelized? need to be careful handling global indexes
+                load_h5ad(file_path, group_name, validate) # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             except Exception as e:
                 logger.warning(f"Issue loading file: {dataset}, {e}")
             finally:
@@ -62,15 +62,15 @@ def load_h5ad(h5ad, group_name, validate):
     if anndata_object.uns.get("schema_version", None) != "2.0.0":
         logger.warning("oops, unknown schema, not loading")
         return
-
+    anndata_object.var.rename(columns={"feature_id": "gene_ontology_term_id"}, inplace=True)
     var_df = update_global_var(group_name, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
     global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
-    var_feature_to_coord_map = {k: v for k, v in var_df[["feature_id", "var_idx"]].to_dict("split")["data"]}
+    var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
     for idx in range(anndata_object.shape[1]):
-        feature_id = anndata_object.var.index.values[idx]
-        global_coord = var_feature_to_coord_map[feature_id]
+        gene_ontology_term_id = anndata_object.var.index.values[idx]
+        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
         global_var_index[idx] = global_coord
 
     obs = anndata_object.obs
@@ -91,7 +91,7 @@ def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame
     var_array_name = f"{group_name}/var"
     with tiledb.open(var_array_name, "r") as var:
         var_df = var.df[:]
-        missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(var_df["feature_id"].to_numpy(dtype=str))
+        missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(var_df["gene_ontology_term_id"].to_numpy(dtype=str))
 
     if len(missing_var) > 0:
         logger.info(f"Adding {len(missing_var)} gene records...")
@@ -100,7 +100,7 @@ def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame
 
     with tiledb.open(var_array_name, "r") as var:
         var_df = var.df[:]
-        var_df.index = var_df.feature_id
+        var_df.index = var_df.gene_ontology_term_id
 
     logger.info(f"Global var index length: {var_df.shape}")
     return var_df
@@ -110,7 +110,7 @@ def save_axes_labels(df, array_name, label_info) -> int:
     """
     # TODO
     """
-    logger.info(f"saving {array_name}...")
+    print(f"saving {array_name}...", end="", flush=True)
 
     with tiledb.open(array_name) as array:
         next_join_index = array.meta.get("next_join_index", 0)
@@ -147,7 +147,7 @@ def save_raw(ad, group_name, global_var_index, first_obs_idx):
     """
     array_name = f"{group_name}/raw"
     X = get_X_raw(ad)
-    logger.info(f"saving {array_name}...")
+    logger.info(f"saving {array_name}...", end="", flush=True)
     stride = max(int(np.power(10, np.around(np.log10(1e9 / X.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, X.shape[0], stride):
@@ -177,7 +177,7 @@ def save_X(ad, group_name, global_var_index, first_obs_idx):
     """
     array_name = f"{group_name}/X"
     X = ad.X
-    logger.info(f"saving {array_name}...")
+    print(f"saving {array_name}...", end="", flush=True)
     stride = max(int(np.power(10, np.around(np.log10(1e9 / X.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, X.shape[0], stride):
