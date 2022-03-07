@@ -62,8 +62,8 @@ def load_h5ad(h5ad, group_name, validate):
     if anndata_object.uns.get("schema_version", None) != "2.0.0":
         logger.warning("oops, unknown schema, not loading")
         return
-
-    anndata_object.var.rename(columns={"feature_id": "gene_ontology_term_id"}, inplace=True)
+    import pdb
+    pdb.set_trace()
     var_df = update_global_var(group_name, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
