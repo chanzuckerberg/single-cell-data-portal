@@ -90,7 +90,7 @@ def create_local_to_global_feature_coord_index(
     """
     Create an array mapping feature ids local to global index
     """
-    n_features = len(gene_ontology_term_id)
+    n_features = len(gene_ontology_term_ids)
     local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
     var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
     for idx in range(n_features):
