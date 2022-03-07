@@ -5,9 +5,9 @@ import tiledb
 # TileDB `Dim`s and thus can be used for _efficiently_ querying
 # (slicing) the TileDB array. Order matters here!
 cube_indexed_dims_no_gene_ontology = [
+    "cell_type_ontology_term_id",
     "tissue_ontology_term_id",
     "organism_ontology_term_id",
-    "cell_type_ontology_term_id",
 ]
 cube_indexed_dims = [
     "gene_ontology_term_id",
