@@ -202,7 +202,8 @@ def load_data_into_cube(tdb_group, uri: str):
     ##
     ## Reduce X
     ##
-    cell_labels, cube_index = make_cube_index(tdb_group, cube_indexed_dims_no_gene_ontology) # TODO cube_indexed_dims is not an exact match to what was previously passed in, double check that this isnt a breaking change
+    big_cube_atts = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
+    cell_labels, cube_index = make_cube_index(tdb_group, big_cube_atts) # TODO cube_indexed_dims is not an exact match to what was previously passed in, double check that this isnt a breaking change
     n_groups = len(cube_index)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
