@@ -77,13 +77,14 @@ def make_cube_index(tdb_group, cube_dims):
     with tiledb.open(f"{tdb_group}/obs") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
     cell_labels.sort_values(by=['obs_idx'], inplace=True, ignore_index=True)
+    import pdb
+    pdb.set_trace()
     cell_labels = pd.DataFrame(
         # Todo previously cube dimensions did not include the feature_id (gene_ontology_id) now its  included ... breaking change?
         data={k: cell_labels[k].astype("category") for k in cube_dims},
         index=cell_labels.obs_idx,
     )
-    import pdb
-    pdb.set_trace()
+
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))
 
