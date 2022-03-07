@@ -52,6 +52,7 @@ cd $REPO_ROOT/backend
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/download
 ```
 This will download the database into the `$REPO_ROOT/backend/database` directory in a file named `corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>.sqlc`.
+
 3. Close the tunnel to the remote database
 4. Start the local database environment:
 ```shell
