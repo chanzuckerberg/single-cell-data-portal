@@ -85,7 +85,7 @@ def validate_load(ad, group_name, dataset_id):
 
 
 def create_local_to_global_feature_coord_index(
-        var_df: pd.DataFrame, gene_ontology_term_id: Union[List[str], np.ndarray]
+        var_df: pd.DataFrame, gene_ontology_term_ids: Union[List[str], np.ndarray]
 ) -> np.ndarray:
     """
     Create an array mapping feature ids local to global index
@@ -93,15 +93,9 @@ def create_local_to_global_feature_coord_index(
     n_features = len(gene_ontology_term_id)
     local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
     var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
-    import pdb
-    pdb.set_trace()
     for idx in range(n_features):
-        gene_ontology_term_id = gene_ontology_term_id[idx]
-
-        try:
-            global_coord = var_feature_to_coord_map[gene_ontology_term_id]
-        except KeyError:
-            pdb.set_trace()
+        gene_ontology_term_id = gene_ontology_term_ids[idx]
+        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
         local_to_global_feature_coord[idx] = global_coord
 
     return local_to_global_feature_coord
