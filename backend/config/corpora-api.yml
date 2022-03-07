@@ -1243,8 +1243,6 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
-        obfuscated_uuid:
-          type: string
         contact_name:
           type: string
         contact_email:
