@@ -28,13 +28,16 @@ CORPORA_LOCAL_DEV=1 DEPLOYMENT_STAGE=test make db/migrate
 
 ## How to autogenerate migration script
 
-1. Make changes to [corpora_orm.py](../corpora/common/corpora_orm.py)
-2. [Connect to Remote RDS](#connect-to-remote-rds)
-3. Autogenerate the migration:
-(See [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect))
+1. Make changes to the ORM class(es) in [corpora_orm.py](../corpora/common/corpora_orm.py)
+2. [Connect to Remote RDS](#connect-to-remote-rds). Note, generally, you should be connecting to prod
+   (`AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod`) since we want to generate 
+a migration from the database schema currently deployed in prod.
+3. Autogenerate the migration using the steps below. `AWS_PROFILE` and `DEPLOYMENT_STAGE` should be the same values
+used in the previous [Connect to Remote RDS](#connect-to-remote-rds) step. For details about Alembic's migration autogeneration, 
+see [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect)
 ```shell
 cd $REPO_ROOT/backend
-CORPORA_LOCAL_DEV=1 DEPLOYMENT_STAGE=test make db/new_migration_auto MESSAGE="purpose_of_migration"
+AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} CORPORA_LOCAL_DEV=1 make db/new_migration_auto MESSAGE="purpose_of_migration"
 ```
 4. Follow [How to perform a database migration](#how-to-perform-a-database-migration) starting from **step 3** 
 (i.e. editing the `upgrade()` and `downgrade()` functions).
@@ -43,7 +46,7 @@ CORPORA_LOCAL_DEV=1 DEPLOYMENT_STAGE=test make db/new_migration_auto MESSAGE="pu
 The following steps will test that a migration script works on a local database using data downloaded from a deployed database. 
 
 1. [Connect to Remote RDS](#connect-to-remote-rds)
-2. Open a new terminal and download the remote database schema:
+2. Open a new terminal and using the same values for `AWS_PROFILE` and `DEPLOYMENT_STAGE`, download the remote database schema:
 ```shell
 cd $REPO_ROOT/backend
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/download
