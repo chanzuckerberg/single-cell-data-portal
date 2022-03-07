@@ -82,6 +82,8 @@ def make_cube_index(tdb_group, cube_dims):
         data={k: cell_labels[k].astype("category") for k in cube_dims},
         index=cell_labels.obs_idx,
     )
+    import pdb
+    pdb.set_trace()
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))
 
@@ -192,8 +194,6 @@ def load_data_into_cube(tdb_group, uri: str):
     logger.debug(f"Start loading big cube at : {uri}")
 
     with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
-        import pdb
-        pdb.set_trace()
         gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=[], use_arrow=False).df[:]
     n_genes = len(gene_ontology_term_ids)
 
