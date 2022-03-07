@@ -15,7 +15,7 @@ import pandas as pd
 
 from backend.wmg.data.config import create_fast_ctx
 from .compute import coo_cube_pass1_into
-from ..data.cube_schema import schema, cube_indexed_dims, cube_non_indexed_dims
+from ..data.cube_schema import schema, cube_indexed_dims, cube_non_indexed_dims, cube_indexed_dims_no_gene_ontology
 
 logger = logging.getLogger(__name__)
 
