@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_column('project', 'obfuscated_uuid')
+    op.drop_column("project", "obfuscated_uuid")
 
 
 def downgrade():
-    op.add_column('project', sa.Column('obfuscated_uuid', sa.VARCHAR(), autoincrement=False, nullable=True))
+    op.add_column("project", sa.Column("obfuscated_uuid", sa.VARCHAR(), autoincrement=False, nullable=True))
