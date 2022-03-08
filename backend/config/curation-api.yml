@@ -644,6 +644,10 @@ components:
               type: integer
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
+            batch_condition:
+              type: array
+              items:
+                type: string
             mean_genes_per_cell:
               type: number
             schema_version:
