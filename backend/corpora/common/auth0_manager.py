@@ -36,14 +36,14 @@ class Auth0ManagementSession:
         return self._domain
 
     @domain.setter
-    def domain(self, domain):
+    def domain(self, domain: str):
         self._domain = domain
 
     def __getattr__(self, item):
         return getattr(self.session, item)
 
     @staticmethod
-    def get_auth0_management_token(domain) -> str:
+    def get_auth0_management_token(domain: str) -> str:
         ## Generate management token
         payload = json.dumps(
             dict(

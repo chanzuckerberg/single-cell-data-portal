@@ -14,6 +14,7 @@ def get(user: str):
 
 
 def post(user: int, token_info: dict):
+    days_to_live = CorporaAuthConfig.days_to_live
     # Check if a key already exists
     identity = session.get_user_api_key_identity(user)
     if identity:
@@ -21,7 +22,7 @@ def post(user: int, token_info: dict):
         session.delete_api_key(user, identity)
 
     # Generate a new key
-    password = generate(user, CorporaAuthConfig.api_key_secret)
+    password = generate(user, CorporaAuthConfig.api_key_secret, days_to_live)
     key_name = password.split(".")[-1]
 
     api_key_id = session.store_api_key(key_name, password, token_info["email"])

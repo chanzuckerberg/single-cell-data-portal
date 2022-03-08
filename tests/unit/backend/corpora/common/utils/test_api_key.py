@@ -7,7 +7,7 @@ class TestAPIKey(unittest.TestCase):
     def test_generate(self):
         user = "user"
         secret = "random_secret"
-        token = generate(user, secret, 1)
+        token = generate(user, secret)
         verify(token, secret)
 
 

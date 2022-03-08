@@ -34,6 +34,7 @@ class TestKeys(BaseAuthAPITest):
         link_api_key.return_value = None
         delete_api_key.return_value = None
         CorporaAuthConfig.api_key_secret = self.api_key_secret
+        CorporaAuthConfig.days_to_live = 1
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post("/dp/v1/auth/key", headers=headers)
 
@@ -66,6 +67,7 @@ class TestKeys(BaseAuthAPITest):
         self, CorporaAuthConfig, get_user_api_key_identity, store_api_key, link_api_key, delete_api_key
     ):
         CorporaAuthConfig.api_key_secret = self.api_key_secret
+        CorporaAuthConfig.days_to_live = 1
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "abcdefg"}
         delete_api_key.return_value = None
         store_api_key.return_value = self.api_key_id
