@@ -1,17 +1,14 @@
-import logging
 from collections import defaultdict
 from typing import Dict, List
-from uuid import uuid4
 
 import connexion
-import tiledb
 from flask import jsonify
 from pandas import DataFrame
 
 from backend.corpora.common.corpora_orm import DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.config import fast_config, create_ctx
+from backend.wmg.data.cube import load_cube
 from backend.wmg.data.query import (
     build_gene_id_label_mapping,
     build_ontology_term_id_label_mapping,
@@ -19,31 +16,13 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     build_dot_plot_matrix,
 )
-
-# TODO: Replace with real snapshot uuid
 from backend.wmg.data.schema import cube_non_indexed_dims
-
-DUMMY_SNAPSHOT_UUID = uuid4().hex
-
-cube = None
-
-
-def find_cube_latest_snapshot():
-    global cube
-
-    if cube is None:
-        # TODO: Remove tiledb dependency from this module
-        # TODO: Okay to keep open indefinitely? Is it faster than re-opening each request?
-        cube_uri = build_cube_uri()
-        logging.info(f"Opening WMG cube at {cube_uri}")
-        cube = tiledb.open(cube_uri, ctx=create_ctx(fast_config()))
-
-    return cube
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 def primary_filter_dimensions():
-    qry = WmgQuery(find_cube_latest_snapshot())
+    cube, snapshot_identifier = load_cube()
+    qry = WmgQuery(cube)
 
     # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
     organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
@@ -55,7 +34,7 @@ def primary_filter_dimensions():
     }
 
     result = dict(
-        snapshot_id=DUMMY_SNAPSHOT_UUID,
+        snapshot_id=snapshot_identifier,
         organism_terms=build_ontology_term_id_label_mapping(
             qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
         ),
@@ -67,20 +46,12 @@ def primary_filter_dimensions():
     return jsonify(result)
 
 
-def build_cube_uri():
-    # TODO: Retrieve from app config
-    cube_base_uri = "s3://wmg-dev"
-    # TODO: Retrieve from s3://wmg-<env>/latest_snapshot_uuid
-    cube_latest_snapshot = "dummy-snapshot"
-    cube_uri = f"{cube_base_uri}/{cube_latest_snapshot}/cube/"
-    return cube_uri
-
-
 def query():
     request = connexion.request.json
-
     criteria = WmgQueryCriteria(**request["filter"])
-    query_result = WmgQuery(find_cube_latest_snapshot()).expression_summary(criteria)
+
+    cube, snapshot_identifier = load_cube()
+    query_result = WmgQuery(cube).expression_summary(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result)
     all_filter_dims_values = extract_filter_dims_values(query_result)
 
@@ -91,7 +62,7 @@ def query():
 
     return jsonify(
         dict(
-            snapshot_id=DUMMY_SNAPSHOT_UUID,
+            snapshot_id=snapshot_identifier,
             expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),

@@ -95,9 +95,12 @@ echo "  Backend: ${BACKEND_URL}"
 # Make a WMG cube
 echo "Writing WMG cube to s3"
 tmp_cube_dir=`mktemp -d`
-# TODO: Also generate & store:
-#  * s3://wmg-<env>/latest_snapshot_uuid
-#  * cell type orderings
-#  * total cell counts cube
+snapshot_identifier='dummy_snapshot'
+wmg_bucket="wmg-test"
 python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
-${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-dev/dummy-snapshot/cube/
+${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-test/$snapshot_identifier/cube/
+echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://wmg-test/latest_snapshot_identifier
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/wmg --secret-string "{\"bucket\": \"$wmg_bucket\"}" || true
+# TODO: Also generate & store:
+#  * wmg cell type orderings
+#  * wmg "total cell counts" cube (TileDB array)
