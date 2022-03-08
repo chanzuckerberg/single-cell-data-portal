@@ -3,7 +3,7 @@ import os
 import sys
 import tempfile
 from itertools import filterfalse
-from typing import List, Callable, Dict, Tuple
+from typing import List, Callable, Tuple
 
 import numpy as np
 import tiledb
@@ -29,9 +29,11 @@ def all_ones_attr_values(coords):
 
 
 @contextlib.contextmanager
-def create_temp_cube(dim_size=3,
-                     attr_vals_fn: Callable[[List[Tuple]], List] = random_attr_values,
-                     exclude_logical_coord_fn: Callable[[Tuple], bool] = None) -> None:
+def create_temp_cube(
+    dim_size=3,
+    attr_vals_fn: Callable[[List[Tuple]], List] = random_attr_values,
+    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+) -> None:
     with tempfile.TemporaryDirectory() as cube_dir:
         create_cube(cube_dir, dim_size, attr_vals_fn=attr_vals_fn, exclude_logical_coord_fn=exclude_logical_coord_fn)
         with tiledb.open(cube_dir) as cube:

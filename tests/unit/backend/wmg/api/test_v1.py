@@ -35,18 +35,18 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__primary_filter_dimensions__returns_valid_response_body(self, find_cube_latest_snapshot,
-                                                                     ontology_term_label, gene_term_label):
+    def test__primary_filter_dimensions__returns_valid_response_body(
+        self, find_cube_latest_snapshot, ontology_term_label, gene_term_label
+    ):
 
         # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
         # without this filtering function, the cube would have the cross-product of organisms * genes
         def exclude(logical_coord: Tuple) -> bool:
-            return (logical_coord[0], logical_coord[2]) not in \
-                   {
-                       ('gene_ontology_term_id_0', 'organism_ontology_term_id_0'),
-                       ('gene_ontology_term_id_1', 'organism_ontology_term_id_1'),
-                       ('gene_ontology_term_id_2', 'organism_ontology_term_id_2'),
-                   }
+            return (logical_coord[0], logical_coord[2]) not in {
+                ("gene_ontology_term_id_0", "organism_ontology_term_id_0"),
+                ("gene_ontology_term_id_1", "organism_ontology_term_id_1"),
+                ("gene_ontology_term_id_2", "organism_ontology_term_id_2"),
+            }
 
         with create_temp_cube(exclude_logical_coord_fn=exclude) as cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
@@ -62,27 +62,26 @@ class WmgApiV1Tests(unittest.TestCase):
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-                snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
-                organism_terms=[{'organism_ontology_term_id_0': 'organism_ontology_term_id_0_label'},
-                                {'organism_ontology_term_id_1': 'organism_ontology_term_id_1_label'},
-                                {'organism_ontology_term_id_2': 'organism_ontology_term_id_2_label'}],
-                tissue_terms=[{'tissue_ontology_term_id_0': 'tissue_ontology_term_id_0_label'},
-                              {'tissue_ontology_term_id_1': 'tissue_ontology_term_id_1_label'},
-                              {'tissue_ontology_term_id_2': 'tissue_ontology_term_id_2_label'}],
-                gene_terms={
-                    'organism_ontology_term_id_0':
-                        [
-                            {'gene_ontology_term_id_0': 'gene_ontology_term_id_0_label'},
-                        ],
-                    'organism_ontology_term_id_1':
-                        [
-                            {'gene_ontology_term_id_1': 'gene_ontology_term_id_1_label'},
-                        ],
-                    'organism_ontology_term_id_2':
-                        [
-                            {'gene_ontology_term_id_2': 'gene_ontology_term_id_2_label'}
-                        ]
-                },
+            snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
+            organism_terms=[
+                {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
+                {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
+                {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
+            ],
+            tissue_terms=[
+                {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+            ],
+            gene_terms={
+                "organism_ontology_term_id_0": [
+                    {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
+                ],
+                "organism_ontology_term_id_1": [
+                    {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
+                ],
+                "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
+            },
         )
 
         self.maxDiff = None

@@ -473,11 +473,8 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
         with create_temp_cube(dim_size=dim_size) as cube:
-            result = WmgQuery(cube).list_primary_filter_dimension_term_ids('gene_ontology_term_id')
-            self.assertEquals(["gene_ontology_term_id_0",
-                               "gene_ontology_term_id_1",
-                               "gene_ontology_term_id_2"],
-                              result)
+            result = WmgQuery(cube).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
+            self.assertEquals(["gene_ontology_term_id_0", "gene_ontology_term_id_1", "gene_ontology_term_id_2"], result)
 
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
         dim_size = 3
@@ -485,20 +482,21 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
         # without this filtering function, the cube would have the cross-product of organisms * genes
         def exclude(logical_coord: Tuple) -> bool:
-            return (logical_coord[0], logical_coord[2]) not in \
-                   {
-                       ('gene_ontology_term_id_0', 'organism_ontology_term_id_0'),
-                       ('gene_ontology_term_id_1', 'organism_ontology_term_id_0'),
-                       ('gene_ontology_term_id_2', 'organism_ontology_term_id_1'),
-                   }
+            return (logical_coord[0], logical_coord[2]) not in {
+                ("gene_ontology_term_id_0", "organism_ontology_term_id_0"),
+                ("gene_ontology_term_id_1", "organism_ontology_term_id_0"),
+                ("gene_ontology_term_id_2", "organism_ontology_term_id_1"),
+            }
 
         with create_temp_cube(dim_size=dim_size, exclude_logical_coord_fn=exclude) as cube:
             result = WmgQuery(cube).list_grouped_primary_filter_dimensions_term_ids(
-                    'gene_ontology_term_id', 'organism_ontology_term_id')
+                "gene_ontology_term_id", "organism_ontology_term_id"
+            )
             self.maxDiff = None
             self.assertEquals(
-                    {
-                        'organism_ontology_term_id_0': ['gene_ontology_term_id_0', 'gene_ontology_term_id_1'],
-                        'organism_ontology_term_id_1': ['gene_ontology_term_id_2']
-                    },
-                    result)
+                {
+                    "organism_ontology_term_id_0": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
+                    "organism_ontology_term_id_1": ["gene_ontology_term_id_2"],
+                },
+                result,
+            )

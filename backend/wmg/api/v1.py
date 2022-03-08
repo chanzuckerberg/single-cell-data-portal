@@ -46,20 +46,23 @@ def primary_filter_dimensions():
     qry = WmgQuery(find_cube_latest_snapshot())
 
     # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-    organism_gene_ids: dict[str, List[str]] = \
-        qry.list_grouped_primary_filter_dimensions_term_ids(
-                'gene_ontology_term_id',
-                group_by_dim='organism_ontology_term_id')
-    organism_gene_terms = {organism_term_id: build_gene_id_label_mapping(gene_term_ids)
-                           for organism_term_id, gene_term_ids in organism_gene_ids.items()}
+    organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
+        "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
+    )
+    organism_gene_terms = {
+        organism_term_id: build_gene_id_label_mapping(gene_term_ids)
+        for organism_term_id, gene_term_ids in organism_gene_ids.items()
+    }
 
     result = dict(
-            snapshot_id=DUMMY_SNAPSHOT_UUID,
-            organism_terms=build_ontology_term_id_label_mapping(
-                    qry.list_primary_filter_dimension_term_ids('organism_ontology_term_id')),
-            tissue_terms=build_ontology_term_id_label_mapping(
-                    qry.list_primary_filter_dimension_term_ids('tissue_ontology_term_id')),
-            gene_terms=organism_gene_terms,
+        snapshot_id=DUMMY_SNAPSHOT_UUID,
+        organism_terms=build_ontology_term_id_label_mapping(
+            qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
+        ),
+        tissue_terms=build_ontology_term_id_label_mapping(
+            qry.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
+        ),
+        gene_terms=organism_gene_terms,
     )
     return jsonify(result)
 
