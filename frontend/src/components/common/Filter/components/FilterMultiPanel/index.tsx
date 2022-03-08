@@ -43,7 +43,7 @@ export default function FilterMultiPanel({
  * @param children
  * @param increment
  * @returns number of species-specific ontology tree nodes.
- * TODO(cc) review method and method name
+ * TODO(cc) review method and method name - maybe add a depth or total size to view model
  */
 function countOntologySpeciesTreeNodes(
   children: OntologyCategoryValueView[],

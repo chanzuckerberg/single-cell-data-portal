@@ -502,17 +502,19 @@ function buildNextOntologyCategoryFilters<T extends Categories>(
     DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(categoryValueKey);
 
   //  Remove any leaf ontology IDs that were not present in the original rows.
-  const filteredLeafOntologyIds = leafOntologyIds
-    ? [...leafOntologyIds].filter((leafOntologyId) =>
-        categoryValues.has(leafOntologyId)
-      )
-    : null;
+  let filteredLeafOntologyIds;
+  if (leafOntologyIds) {
+    filteredLeafOntologyIds = [...leafOntologyIds].filter((leafOntologyId) =>
+      categoryValues.has(leafOntologyId)
+    );
+  }
 
   // If the selected value is a parent node, use its leaf ontology IDs as the selected value/s. Otherwise, the selected
   // value is a leaf node, use it as is as the selected value.
-  const valuesToSelect = filteredLeafOntologyIds
-    ? filteredLeafOntologyIds
-    : [categoryValueKey];
+  const valuesToSelect =
+    filteredLeafOntologyIds && filteredLeafOntologyIds.length
+      ? filteredLeafOntologyIds
+      : [categoryValueKey];
 
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryKey, filters);

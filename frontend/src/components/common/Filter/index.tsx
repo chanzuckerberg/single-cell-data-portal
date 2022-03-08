@@ -31,7 +31,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
         const { key, label } = categoryView;
         const { values } = categoryView as SelectCategoryView;
         const { species } = categoryView as OntologyCategoryView;
-        const isDisabled = isCategoryNA(categoryView); // TODO(cc) check isOntologyCategoryViewNA method return value
+        const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
             content={
@@ -254,10 +254,10 @@ function isOntologyCategoryView(
 /**
  * Returns true if ontology category is not applicable, that is, there are species ontology trees.
  * @param categoryView
- * @returns true when range min and max are both 0 or both equal. // TODO(cc) review return statement
+ * @returns True when there are no species or the species lengths are all 0.
  */
 function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
-  return !categoryView.species || categoryView.species.length === 0; // TODO(cc) review return
+  return !categoryView.species || categoryView.species.length === 0; // TODO(cc) review return statement here (should check each)
 }
 
 /**
