@@ -22,7 +22,7 @@ logging.basicConfig(
                     stream = sys.stdout,
                     filemode = "w",
                     format = Log_Format,
-                    level = logging.DEBUG)
+                    level = logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
