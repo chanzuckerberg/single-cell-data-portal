@@ -7,12 +7,11 @@ from tiledb import Array
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 
-ALL_DIM_VALUES = slice(None)
 EMPTY_DIM_VALUES = ""
 
 
 class WmgQueryCriteria(BaseModel):
-    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -52,9 +51,11 @@ class WmgQuery:
         attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
 
         tiledb_dims_query = (
-            criteria.gene_ontology_term_ids or EMPTY_DIM_VALUES,  # at least one gene required for a non-empty result
-            criteria.tissue_ontology_term_ids or ALL_DIM_VALUES,
-            criteria.organism_ontology_term_id or ALL_DIM_VALUES,
+            # use of EMPTY_DIM_VALUES ensures an empty result if any of the primary dimensions are unspecified (
+            # avoids introducing another code path for forming an empty result return value)
+            criteria.gene_ontology_term_ids or EMPTY_DIM_VALUES,
+            criteria.tissue_ontology_term_ids or EMPTY_DIM_VALUES,
+            criteria.organism_ontology_term_id or EMPTY_DIM_VALUES,
         )
         query_result_df = self._cube.query(attr_cond=attr_cond).df[tiledb_dims_query]
 

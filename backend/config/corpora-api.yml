@@ -986,6 +986,7 @@ paths:
                 filter:
                   type: object
                   required:
+                    - gene_ontology_term_ids
                     - organism_ontology_term_id
                     - tissue_ontology_term_ids
                   properties:
@@ -994,7 +995,6 @@ paths:
                       organism_ontology_term_id:
                         type: string
                       tissue_ontology_term_ids:
-                        minItems: 1
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       dataset_ids:
                         type: array

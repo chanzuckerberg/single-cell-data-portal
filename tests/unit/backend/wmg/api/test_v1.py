@@ -87,18 +87,29 @@ class WmgApiV1Tests(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual(expected, json.loads(response.data))
 
+    @patch("backend.wmg.data.query.gene_term_label")
+    @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
-    def test__query_minimal_valid_request__returns_200_and_empty_expr_summary(self, find_cube_latest_snapshot):
-        with create_temp_cube() as cube:
+    def test__query_minimal_valid_request__returns_200_and_empty_expr_summary(self, find_cube_latest_snapshot,
+                                                                              ontology_term_label, gene_term_label):
+        dim_size = 1
+        with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
-            find_cube_latest_snapshot.return_value = cube
+            find_cube_latest_snapshot.return_value = all_ones_cube
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
             request = dict(
-                filter=dict(
-                    organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                ),
+                    filter=dict(
+                            gene_ontology_term_ids=["gene_ontology_term_id_0", ],
+                            organism_ontology_term_id="organism_ontology_term_id_0",
+                            tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    ),
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
@@ -107,11 +118,27 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected_response = {
                 "snapshot_id": v1.DUMMY_SNAPSHOT_UUID,
-                "expression_summary": {},
-                "term_id_labels": {"cell_types": [], "genes": []},
-                "filter_dims": {},
+                "expression_summary": {
+                    'gene_ontology_term_id_0':
+                        {
+                            'tissue_ontology_term_id_0': [
+                                {
+                                    'id': 'cell_type_ontology_term_id_0',
+                                    'me': 1.0,
+                                    'n': 1,
+                                    'pc': 0.0,
+                                    'tpc': 0.0
+                                }
+                            ]
+                        },
+                },
+                "term_id_labels":
+                    {
+                        'cell_types': [{'cell_type_ontology_term_id_0': 'cell_type_ontology_term_id_0_label'}],
+                        'genes': [{'gene_ontology_term_id_0': 'gene_ontology_term_id_0_label'}]
+                    },
+                    "filter_dims": {},
             }
-
             self.assertEqual(expected_response, json.loads(response.data))
 
     def test__query_empty_request__returns_400(self):
