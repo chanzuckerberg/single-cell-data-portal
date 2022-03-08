@@ -90,16 +90,11 @@ def downgrade():
     # Drop project.id as primary key
     op.drop_constraint(op.f("pk_project"), "project")
 
-    # Safety: save current project.id in extra column as backup -- BREAKS MIGRATION FLOW
-    op.add_column("project", sa.Column("id_bk", sa.String()))
-    op.execute("UPDATE project SET id_bk = id")
-    op.alter_column("project", "id_bk", nullable=False)
-
     # Reassign id for revisions
     op.execute(
         """
         UPDATE project
-            SET id = revision_of
+            SET id = revision_of, visibility = 'PRIVATE'
         WHERE revision_of IS NOT NULL
         """
     )
