@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import tiledb
 from pandas import DataFrame
@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from tiledb import Array
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.schema import cube_indexed_dims
 
 ALL_DIM_VALUES = slice(None)
 EMPTY_DIM_VALUES = ""
@@ -32,7 +33,7 @@ class WmgQuery:
         super().__init__()
         self._cube = cube
 
-    def execute(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
         # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
         # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
         # a single criterion value specified by the user. We can then perform the filtering client-side for the
@@ -72,6 +73,20 @@ class WmgQuery:
             query_result_df = query_result_df.query(" and ".join(multi_valued_attr_conds))
 
         return query_result_df
+
+    def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
+        # TODO: Query the cell counts cube, for efficiency
+        return \
+            self._cube.query(attrs=[], dims=[primary_dim_name]). \
+            df[:].groupby([primary_dim_name]).first().index.tolist()
+
+    def list_grouped_primary_filter_dimensions_term_ids(self, primary_dim_name: str, group_by_dim: str) \
+            -> Dict[str, List[str]]:
+        # TODO: Query the cell counts cube, for efficiency
+        return \
+            self._cube.query(attrs=[], dims=[primary_dim_name, group_by_dim]). \
+                df[:].drop_duplicates().groupby(group_by_dim). \
+                agg(list).to_dict()[primary_dim_name]
 
 
 def build_dot_plot_matrix(query_result: DataFrame) -> DataFrame:

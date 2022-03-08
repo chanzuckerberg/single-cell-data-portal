@@ -25,15 +25,6 @@ from backend.wmg.data.schema import cube_non_indexed_dims
 
 DUMMY_SNAPSHOT_UUID = uuid4().hex
 
-
-# TODO: add cache directives
-def primary_filter_dimensions():
-    organism_terms = [dict(oid1="olbl1"), dict(oid2="olbl2")]
-    tissue_terms = [dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")]
-    result = dict(snapshot_id=DUMMY_SNAPSHOT_UUID, organism_terms=organism_terms, tissue_terms=tissue_terms)
-    return jsonify(result)
-
-
 cube = None
 
 
@@ -50,6 +41,29 @@ def find_cube_latest_snapshot():
     return cube
 
 
+# TODO: add cache directives: no-cache (i.e. revalidate); impl etag
+def primary_filter_dimensions():
+    qry = WmgQuery(find_cube_latest_snapshot())
+
+    # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
+    organism_gene_ids: dict[str, List[str]] = \
+        qry.list_grouped_primary_filter_dimensions_term_ids(
+                'gene_ontology_term_id',
+                group_by_dim='organism_ontology_term_id')
+    organism_gene_terms = {organism_term_id: build_gene_id_label_mapping(gene_term_ids)
+                           for organism_term_id, gene_term_ids in organism_gene_ids.items()}
+
+    result = dict(
+            snapshot_id=DUMMY_SNAPSHOT_UUID,
+            organism_terms=build_ontology_term_id_label_mapping(
+                    qry.list_primary_filter_dimension_term_ids('organism_ontology_term_id')),
+            tissue_terms=build_ontology_term_id_label_mapping(
+                    qry.list_primary_filter_dimension_term_ids('tissue_ontology_term_id')),
+            gene_terms=organism_gene_terms,
+    )
+    return jsonify(result)
+
+
 def build_cube_uri():
     # TODO: Retrieve from app config
     cube_base_uri = "s3://wmg-dev"
@@ -63,7 +77,7 @@ def query():
     request = connexion.request.json
 
     criteria = WmgQueryCriteria(**request["filter"])
-    query_result = WmgQuery(find_cube_latest_snapshot()).execute(criteria)
+    query_result = WmgQuery(find_cube_latest_snapshot()).expression_summary(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result)
     all_filter_dims_values = extract_filter_dims_values(query_result)
 

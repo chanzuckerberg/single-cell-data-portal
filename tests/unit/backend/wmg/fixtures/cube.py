@@ -2,7 +2,8 @@ import contextlib
 import os
 import sys
 import tempfile
-from typing import List, Callable, Dict
+from itertools import filterfalse
+from typing import List, Callable, Dict, Tuple
 
 import numpy as np
 import tiledb
@@ -28,9 +29,11 @@ def all_ones_attr_values(coords):
 
 
 @contextlib.contextmanager
-def create_temp_cube(dim_size=3, attr_vals_fn: Callable[[List], Dict[str, list]] = random_attr_values) -> None:
+def create_temp_cube(dim_size=3,
+                     attr_vals_fn: Callable[[List[Tuple]], List] = random_attr_values,
+                     exclude_logical_coord_fn: Callable[[Tuple], bool] = None) -> None:
     with tempfile.TemporaryDirectory() as cube_dir:
-        create_cube(cube_dir, dim_size, attr_vals_fn)
+        create_cube(cube_dir, dim_size, attr_vals_fn=attr_vals_fn, exclude_logical_coord_fn=exclude_logical_coord_fn)
         with tiledb.open(cube_dir) as cube:
             yield cube
 
@@ -110,6 +113,7 @@ def create_cube(
     dim_size=3,
     attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values,
     dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
 ) -> None:
     if tiledb.array_exists(cube_dir):
         raise FileExistsError(cube_dir)
@@ -132,11 +136,16 @@ def create_cube(
             [all_dims_domain_values[i_dim][(i_row // dim_size**i_dim) % dim_size] for i_row in range(n_coords)]
             for i_dim in range(n_dims)
         ]
-
         coord_tuples = list(zip(*coords))
+
+        if exclude_logical_coord_fn:
+            coord_tuples = list(filterfalse(exclude_logical_coord_fn, coord_tuples))
+            coords = [[coord_tuple[i_dim] for coord_tuple in coord_tuples] for i_dim in range(n_dims)]
+
+        assert all([len(coords[i_dim]) == len(coord_tuples) for i_dim in range(n_dims)])
+
         logical_attr_values = attr_vals_fn(coord_tuples)
-        assert all([len(coords[i_dim]) == n_coords for i_dim in range(n_dims)])
-        assert all([len(logical_attr_values[attr.name]) == n_coords for attr in cube_logical_attrs])
+        assert all([len(logical_attr_values[attr.name]) == len(coord_tuples) for attr in cube_logical_attrs])
 
         physical_dim_values = coords[: len(cube_indexed_dims)]
         physical_attr_values = {

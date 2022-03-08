@@ -1,5 +1,6 @@
 import json
 import unittest
+from typing import Tuple
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
@@ -20,20 +21,71 @@ class WmgApiV1Tests(unittest.TestCase):
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
             self.app = app.test_client(use_cookies=False)
 
-    def test__primary_filter_dimensions__returns_200(self):
-        response = self.app.get("/wmg/v1/primary_filter_dimensions")
+    @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
+    def test__primary_filter_dimensions__returns_200(self, find_cube_latest_snapshot):
+        with create_temp_cube() as cube:
+            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
+            # response
+            find_cube_latest_snapshot.return_value = cube
+
+            response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         self.assertEqual(200, response.status_code)
 
-    def test__primary_filter_dimensions__returns_valid_response_body(self):
-        response = self.app.get("/wmg/v1/primary_filter_dimensions")
+    @patch("backend.wmg.data.query.gene_term_label")
+    @patch("backend.wmg.data.query.ontology_term_label")
+    @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
+    def test__primary_filter_dimensions__returns_valid_response_body(self, find_cube_latest_snapshot,
+                                                                     ontology_term_label, gene_term_label):
+
+        # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
+        # without this filtering function, the cube would have the cross-product of organisms * genes
+        def exclude(logical_coord: Tuple) -> bool:
+            return (logical_coord[0], logical_coord[2]) not in \
+                   {
+                       ('gene_ontology_term_id_0', 'organism_ontology_term_id_0'),
+                       ('gene_ontology_term_id_1', 'organism_ontology_term_id_1'),
+                       ('gene_ontology_term_id_2', 'organism_ontology_term_id_2'),
+                   }
+
+        with create_temp_cube(exclude_logical_coord_fn=exclude) as cube:
+            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
+            # response
+            find_cube_latest_snapshot.return_value = cube
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-            snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
-            organism_terms=[dict(oid1="olbl1"), dict(oid2="olbl2")],
-            tissue_terms=[dict(ttid1="ttlbl1"), dict(ttid2="ttlbl2")],
+                snapshot_id=v1.DUMMY_SNAPSHOT_UUID,
+                organism_terms=[{'organism_ontology_term_id_0': 'organism_ontology_term_id_0_label'},
+                                {'organism_ontology_term_id_1': 'organism_ontology_term_id_1_label'},
+                                {'organism_ontology_term_id_2': 'organism_ontology_term_id_2_label'}],
+                tissue_terms=[{'tissue_ontology_term_id_0': 'tissue_ontology_term_id_0_label'},
+                              {'tissue_ontology_term_id_1': 'tissue_ontology_term_id_1_label'},
+                              {'tissue_ontology_term_id_2': 'tissue_ontology_term_id_2_label'}],
+                gene_terms={
+                    'organism_ontology_term_id_0':
+                        [
+                            {'gene_ontology_term_id_0': 'gene_ontology_term_id_0_label'},
+                        ],
+                    'organism_ontology_term_id_1':
+                        [
+                            {'gene_ontology_term_id_1': 'gene_ontology_term_id_1_label'},
+                        ],
+                    'organism_ontology_term_id_2':
+                        [
+                            {'gene_ontology_term_id_2': 'gene_ontology_term_id_2_label'}
+                        ]
+                },
         )
 
+        self.maxDiff = None
         self.assertEqual(expected, json.loads(response.data))
 
     @patch("backend.wmg.api.v1.find_cube_latest_snapshot")
