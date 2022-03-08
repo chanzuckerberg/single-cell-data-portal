@@ -2,9 +2,11 @@ import { Classes, Colors } from "@blueprintjs/core";
 import styled, { css } from "styled-components";
 import { GRAY, PT_TEXT_COLOR } from "../common/theme";
 
+export const HEADER_HEIGHT_PX = 48;
+
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
-  height: 48px;
+  height: ${HEADER_HEIGHT_PX}px;
   position: fixed;
   top: 0;
   width: 100%;
