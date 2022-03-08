@@ -127,7 +127,7 @@ paths:
                             $ref: "#/components/schemas/dataset_preview"
                         access_type:
                           type: string
-                          enum: [ READ, WRITE ]
+                          enum: [READ, WRITE]
                         published_at:
                           type: number
                         description:
@@ -221,7 +221,7 @@ paths:
                       $ref: "#/components/schemas/dataset"
                   access_type:
                     type: string
-                    enum: [ READ, WRITE ]
+                    enum: [READ, WRITE]
                   published_at:
                     type: number
                   description:
