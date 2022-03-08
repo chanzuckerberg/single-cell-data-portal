@@ -18,6 +18,8 @@ export interface Props {
   isOpen?: boolean;
   width?: number;
   position?: typeof Position[keyof typeof Position];
+  SideBarWrapperComponent?: typeof SideBarWrapper;
+  SideBarPositionerComponent?: typeof SideBarPositioner;
 }
 
 export default function SideBar({
@@ -26,6 +28,8 @@ export default function SideBar({
   isOpen = false,
   width = EXPANDED_WIDTH_PX,
   position = Position.LEFT,
+  SideBarWrapperComponent = SideBarWrapper,
+  SideBarPositionerComponent = SideBarPositioner,
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
@@ -37,8 +41,8 @@ export default function SideBar({
     : IconNames.CHEVRON_RIGHT;
 
   return (
-    <SideBarWrapper sideBarWidth={sideBarWidth} position={position}>
-      <SideBarPositioner isExpanded={isExpanded}>
+    <SideBarWrapperComponent sideBarWidth={sideBarWidth} position={position}>
+      <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
             minimal
@@ -48,7 +52,7 @@ export default function SideBar({
           />
         </SideBarToggleButtonWrapper>
         {isExpanded ? content : null}
-      </SideBarPositioner>
-    </SideBarWrapper>
+      </SideBarPositionerComponent>
+    </SideBarWrapperComponent>
   );
 }
