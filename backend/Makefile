@@ -40,11 +40,11 @@ db/rollback:
 
 db/new_migration:
 	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
-	PYTHONPATH=.. alembic -c=./config/database.ini revision --message $(MESSAGE)
+	PYTHONPATH=.. alembic -c=./config/database.ini revision --message "$(MESSAGE)"
 
 db/new_migration_auto:
-	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
-	PYTHONPATH=.. alembic -c=./config/database.ini revision --autogenerate --message $(MESSAGE)
+	# Usage: make db/new_migration_auto MESSAGE="purpose_of_migration"
+	PYTHONPATH=.. alembic -c=./config/database.ini revision --autogenerate --message "$(MESSAGE)"
 
 db/connect:
 	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
