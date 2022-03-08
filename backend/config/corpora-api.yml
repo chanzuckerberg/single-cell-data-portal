@@ -965,6 +965,10 @@ paths:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   tissue_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  gene_terms:
+                    # TODO: specify further
+                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    type: object
         "404":
           $ref: "#/components/responses/404"
   /wmg/v1/query:
@@ -1416,9 +1420,11 @@ components:
           A single-element object with the ontology term id as the element's property name and the ontology term label
           as the element's property value.
         type: object
-        maxProperties: 1
-        additionalProperties:
-          type: string
+        # TODO: fix
+        # `{"<ontology_term_id>": "<ontology_term_label"}`
+#        maxProperties: 1
+#        additionalProperties:
+#          type: string
     wmg_ontology_term_id_list:
       type: array
       items:
