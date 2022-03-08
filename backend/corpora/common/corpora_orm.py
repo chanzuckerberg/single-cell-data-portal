@@ -228,7 +228,6 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
     visibility = Column(Enum(CollectionVisibility), nullable=False)
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
@@ -240,7 +239,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
-    revision_of = Column(String, ForeignKey(id), nullable=True)
+    revision_of = Column(String, ForeignKey("project.id"), nullable=True)
 
     # Relationships
     revision = relationship("DbCollection", cascade="all, delete-orphan", uselist=False)
@@ -259,7 +258,7 @@ class DbProjectLink(Base, AuditMixin):
     # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
-    collection_id = Column(String, ForeignKey("DbCollection.id"), nullable=False)
+    collection_id = Column(String, ForeignKey(DbCollection.id), nullable=False)
     link_name = Column(StrippedString)
     link_url = Column(StrippedString)
     link_type = Column(Enum(CollectionLinkType))
@@ -294,7 +293,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
     is_primary_data = Column(Enum(IsPrimaryData))
-    collection_id = Column(String, ForeignKey("DbCollection.id"), nullable=False)
+    collection_id = Column(String, ForeignKey(DbCollection.id), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
@@ -446,7 +445,7 @@ class DbGeneset(Base, AuditMixin):
     name = Column(String, nullable=False)
     description = Column(String)
     genes = Column(JSONB)
-    collection_id = Column(String, ForeignKey("DbCollection.id"), nullable=False)
+    collection_id = Column(String, ForeignKey(DbCollection.id), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
     datasets = relationship("DbDataset", secondary="geneset_dataset_link", back_populates="genesets")
 
