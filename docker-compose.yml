@@ -116,7 +116,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     ports:
-      - "9000:8080"
+      - "9001:8080"
     volumes:
       - ./backend/corpora/upload_success:/var/task
       - ./backend/corpora/common:/var/task/backend/corpora/common
@@ -188,7 +188,8 @@ services:
       - localstack
       - database
     ports:
-      - "5000:5000"
+      # port 5000 is 'unofficially' used by Apple's Control Center! 🤬
+      - "5001:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
