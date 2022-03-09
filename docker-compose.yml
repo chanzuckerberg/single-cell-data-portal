@@ -171,6 +171,36 @@ services:
        corporanet:
           aliases:
             - processing.corporanet.local
+  wmg_processing:
+    image: "${DOCKER_REPO}wmg-processing"
+    platform: linux/amd64
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}wmg-processing:branch-main"
+      dockerfile: Dockerfile.data_cube_creation
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+    restart: "no"
+    command: ["sleep", "infinity"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
+    networks:
+       corporanet:
+          aliases:
+            - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64

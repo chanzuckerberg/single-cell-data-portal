@@ -3,9 +3,9 @@ variable artifact_bucket {
   description = "Artifact bucket name"
 }
 
-variable cellxgene_bucket {
+variable wmg_bucket {
   type        = string
-  description = "Cellxgene bucket name"
+  description = "Where's my gene (output) bucket name"
 }
 
 variable image {
@@ -38,11 +38,6 @@ variable remote_dev_prefix {
 variable deployment_stage {
   type        = string
   description = "The name of the deployment stage of the Application"
-}
-
-variable frontend_url {
-  type        = string
-  description = "url for the frontend app"
 }
 
 variable batch_container_memory_limit {

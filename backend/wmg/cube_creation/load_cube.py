@@ -3,6 +3,8 @@ import os
 import sys
 import time
 from typing import Dict
+import subprocess
+from pathlib import Path
 
 import tiledb
 
@@ -29,16 +31,27 @@ logger = logging.getLogger(__name__)
 
 def get_s3_uris():
     with db_session_manager() as session:
+        # TODO: remove when testing is completed
+        # dataset_ids = []
         dataset_ids = Dataset.list_ids_for_cube(session)
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris
 
 
+def mock_s3_uris():
+    return {
+        # "cdd5d5f3-7ee5-44ed-95ad-54cb92aa5203": "s3://env-rdev-artifacts/ebezzi-test/cdd5d5f3-7ee5-44ed-95ad-54cb92aa5203/local.h5ad"
+        "605073c5-5eca-45d7-8be7-571bf44bf746": "s3://env-rdev-wmg/ebezzi-wmg/605073c5-5eca-45d7-8be7-571bf44bf746/local.h5ad"
+        }
+
+
 def copy_datasets_to_instance(dataset_directory):
-    s3_uris = get_s3_uris()
+    s3_uris = mock_s3_uris()
     for dataset in s3_uris.keys():
-        sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
-        os.subprocess(sync_command) # TODO parallelize this step
+        # Path(f"./{dataset_directory}/{dataset}/").mkdir(parents=True, exist_ok=True)
+        sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
+        # sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
+        subprocess.run(sync_command) # TODO parallelize this step
 
 
 def load_datasets_into_corpus(path_to_datasets, group_name):
@@ -88,21 +101,22 @@ def update_latest_snapshot(time_stamp):
     pass
 
 
-def load_data_and_create_cube(path_to_datasetst, group_name):
+def load_data_and_create_cube(path_to_datasets, group_name):
     if not tiledb.VFS().is_dir(group_name):
         create_tdb(group_name)
-    # copy_datasets_to_instance('wmg-datasets')
-    load_datasets_into_corpus(path_to_datasetst, group_name)
+    copy_datasets_to_instance(path_to_datasets)
+    load_datasets_into_corpus(path_to_datasets, group_name)
     try:
         create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
-    cell_type_by_tissue = get_cells_by_tissue_type(group_name)
-    generate_cell_ordering(cell_type_by_tissue)
-    update_s3_resources()
+    # cell_type_by_tissue = get_cells_by_tissue_type(group_name)
+    # generate_cell_ordering(cell_type_by_tissue)
+    # update_s3_resources()
+    print("Cube creation script - called")
     return True
 
 
 if __name__ == "__main__":
-    rv = load_data_and_create_cube()
+    rv = load_data_and_create_cube("datasets", "ebezzi-test-cube-wmg")
     sys.exit(rv)

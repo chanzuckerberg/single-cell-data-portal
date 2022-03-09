@@ -19,8 +19,8 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.artifact_bucket}"
     },
     {
-      "name": "CELLXGENE_BUCKET",
-      "value": "${var.cellxgene_bucket}"
+      "name": "WMG_BUCKET",
+      "value": "${var.wmg_bucket}"
     },
     {
       "name": "DEPLOYMENT_STAGE",
@@ -33,7 +33,7 @@ resource aws_batch_job_definition batch_job_def {
     {
       "name": "REMOTE_DEV_PREFIX",
       "value": "${var.remote_dev_prefix}"
-    },
+    }
   ],
   "vcpus": 2,
   "logConfiguration": {

@@ -48,6 +48,7 @@ locals {
 
   artifact_bucket              = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  wmg_bucket                   = "env-rdev-wmg"
 
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
@@ -173,27 +174,29 @@ module wmg_batch {
   remote_dev_prefix = local.remote_dev_prefix
   deployment_stage  = local.deployment_stage
   artifact_bucket   = local.artifact_bucket
-  cellxgene_bucket  = local.cellxgene_bucket
+  wmg_bucket        = local.wmg_bucket
   batch_container_memory_limit = local.batch_container_memory_limit
 }
 
-resource "aws_cloudwatch_event_rule" "rule" {
-  name = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-schedule"
+# TODO: this doesn't work yet 
 
-  schedule_expression = "cron(0 0 ? * SUN *)" 
-  is_enabled          = 1
-}
+# resource "aws_cloudwatch_event_rule" "rule" {
+#   name = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-schedule"
 
-resource "aws_cloudwatch_event_target" "target" {
-  rule      = aws_cloudwatch_event_rule.rule.name
-  target_id = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-batch"
-  arn       = module.wmg_batch.batch_job_definition
+#   schedule_expression = "cron(0 0 ? * SUN *)" 
+#   is_enabled          = "true"
+# }
 
-  batch_target {
-    job_definition  = module.wmg_batch.batch_job_definition
-    job_name        = "wmg-processing"
-  }
-}
+# resource "aws_cloudwatch_event_target" "target" {
+#   rule      = aws_cloudwatch_event_rule.rule.name
+#   target_id = "dp-${local.deployment_stage}-${local.custom_stack_name}-wmg-processing-batch"
+#   arn       = local.batch_role_arn # or arn:aws:batch:us-west-2:699936264352:job-queue/dp-rdev
+
+#   batch_target {
+#     job_definition  = module.wmg_batch.batch_job_definition
+#     job_name        = "wmg-processing"
+#   }
+# }
 
 module upload_success_lambda {
   source                = "../lambda"
