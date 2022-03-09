@@ -19,7 +19,7 @@ class TestKeys(BaseAuthAPITest):
         cls.api_key_secret = "a secret_value"
 
     @patch.multiple(
-        "backend.corpora.lambdas.api.v1.auth.keys.session",
+        "backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session",
         get_user_api_key_identity=DEFAULT,
         store_api_key=DEFAULT,
         link_api_key=DEFAULT,
@@ -56,7 +56,7 @@ class TestKeys(BaseAuthAPITest):
         self.assertEqual(response.status_code, 401)
 
     @patch.multiple(
-        "backend.corpora.lambdas.api.v1.auth.keys.session",
+        "backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session",
         get_user_api_key_identity=DEFAULT,
         store_api_key=DEFAULT,
         link_api_key=DEFAULT,
@@ -88,7 +88,7 @@ class TestKeys(BaseAuthAPITest):
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
 
     @patch.multiple(
-        "backend.corpora.lambdas.api.v1.auth.keys.session", get_user_api_key_identity=DEFAULT, delete_api_key=DEFAULT
+        "backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session", get_user_api_key_identity=DEFAULT, delete_api_key=DEFAULT
     )
     def test__delete_key__201(self, get_user_api_key_identity, delete_api_key):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
@@ -102,14 +102,14 @@ class TestKeys(BaseAuthAPITest):
         response = self.app.delete("/dp/v1/auth/key", headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__delete_key__404(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = None
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete("/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
-    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__get_key__200(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -124,7 +124,7 @@ class TestKeys(BaseAuthAPITest):
         response = self.app.get("/dp/v1/auth/key", headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    @patch("backend.corpora.lambdas.api.v1.auth.keys.session.get_user_api_key_identity")
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__get_key__404(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = None
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
