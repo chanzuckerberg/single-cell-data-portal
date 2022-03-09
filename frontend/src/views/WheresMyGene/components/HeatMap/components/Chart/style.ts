@@ -1,3 +1,5 @@
+import { css } from "@emotion/css";
+import { TooltipTable } from "czifui";
 import styled from "styled-components";
 
 export const ChartContainer = styled.div`
@@ -20,3 +22,11 @@ function getWidthAndHeight({
     height: ${height}px;
   `;
 }
+
+export const StyledTooltipTable = styled(TooltipTable)``;
+
+export const tooltipCss = css`
+  margin: 0;
+  margin-top: 20px;
+  max-width: 400px !important;
+`;
