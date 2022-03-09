@@ -6,6 +6,7 @@ import boto3
 import tiledb
 from tiledb import Array
 
+from backend.corpora.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import fast_config, create_ctx
 
@@ -45,7 +46,7 @@ def _update_latest_snapshot_identifier() -> bool:
     global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
 
     if latest_snapshot_identifier_s3obj is None:
-        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        s3 = buckets.portal_resource
         latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, "latest_snapshot_identifier")
 
     latest_snapshot_identifier_s3obj.reload()  # necessary?
