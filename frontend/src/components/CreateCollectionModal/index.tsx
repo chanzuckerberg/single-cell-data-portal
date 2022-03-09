@@ -58,7 +58,6 @@ const CreateCollection: FC<{
         isCloseButtonShown: true,
         title: "Create an account or sign-in to get started",
       };
-
   const OpenDialogButton = Button || CreateCollectionButton;
 
   return (

@@ -1,18 +1,32 @@
-import { Menu, MenuItem } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
+import { ButtonBase, Popper, Theme } from "@material-ui/core";
+import { AutocompleteCloseReason } from "@material-ui/lab";
+import { makeStyles } from "@material-ui/styles";
 import {
-  IItemListRendererProps,
-  IItemRendererProps,
-  MultiSelect,
-} from "@blueprintjs/select";
-import { forwardRef, useEffect, useState } from "react";
-import { FixedSizeList } from "react-window";
+  DefaultMenuSelectOption,
+  getColors,
+  getCorners,
+  getShadows,
+  MenuSelect,
+} from "czifui";
+import pull from "lodash/pull";
+import uniq from "lodash/uniq";
+import React, {
+  createContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
+import Toast from "src/views/Collection/components/Toast";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
-import { Container, MultiSelectWrapper } from "./style";
+import { Container } from "./style";
 
 const GENESETS = [
   [
@@ -119,18 +133,59 @@ const GENESETS = [
   ],
 ];
 
+const LISTBOX_ITEM_HEIGHT_PX = 32;
+const LISTBOX_HEIGHT_PX = 152;
+
 interface Props {
   onGenesChange: (selectedGenes: Gene[]) => void;
 }
 
-interface ExtendedItemRendererProps extends IItemRendererProps {
-  item: Gene;
-  isSelected: boolean;
+const ListBoxContext = createContext({});
+
+const OuterElementType = React.forwardRef<HTMLDivElement>(
+  function OuterElementType(props, ref) {
+    const outerProps = React.useContext(ListBoxContext);
+    return <div ref={ref} {...props} {...outerProps} />;
+  }
+);
+
+function rowRender(props: ListChildComponentProps) {
+  const { data, index, style } = props;
+  return <div style={style}>{data[index]}</div>;
 }
+
+const ListboxComponent = React.forwardRef<HTMLDivElement>(
+  function ListboxComponent(props, ref) {
+    const { children, ...other } = props;
+
+    const itemData = React.Children.toArray(children);
+    const itemCount = itemData.length;
+
+    return (
+      <div ref={ref}>
+        <ListBoxContext.Provider value={other}>
+          <FixedSizeList
+            height={LISTBOX_HEIGHT_PX}
+            itemCount={itemCount}
+            outerElementType={OuterElementType}
+            itemSize={LISTBOX_ITEM_HEIGHT_PX}
+            width="100%"
+            overscanCount={10}
+            itemData={itemData}
+          >
+            {rowRender}
+          </FixedSizeList>
+        </ListBoxContext.Provider>
+      </div>
+    );
+  }
+);
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const [open, setOpen] = useState(false);
+  const [pendingPaste, setPendingPaste] = useState(false);
   const [input, setInput] = useState("");
 
   useEffect(() => {
@@ -160,11 +215,85 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
-  useEffect(() => {
-    if (Number.isNaN(Number(input))) return;
+  const handleClose = (
+    _: React.ChangeEvent<Record<string, never>>,
+    reason: AutocompleteCloseReason
+  ) => {
+    if (reason === "toggleInput") {
+      return;
+    }
+    setOpen(false);
+  };
+  const handleChange = (
+    _: React.ChangeEvent<Record<string, never>>,
+    newValue: DefaultMenuSelectOption[] | null
+  ) => {
+    return setSelectedGenes(newValue as Gene[]);
+  };
+  const handleClick = () => {
+    setOpen(true);
+  };
 
-    setSelectedGenes(genes.slice(0, Number(input)));
-  }, [input, genes]);
+  const handlePaste = () => {
+    setPendingPaste(true);
+  };
+
+  const genesByName = useMemo(() => {
+    return genes.reduce((acc, gene) => {
+      return acc.set(gene.name, gene);
+    }, new Map<Gene["name"], Gene>());
+  }, [genes]);
+
+  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && pendingPaste) {
+      event.preventDefault();
+      const newSelectedGenes = [...selectedGenes];
+      const pastedGenes = pull(uniq(input.split(/[ ,]+/)), "");
+      pastedGenes.map((gene) => {
+        const newGene = genesByName.get(gene);
+        if (!newGene) {
+          Toast.show({
+            intent: Intent.DANGER,
+            message: `Gene not found: ${gene}`,
+          });
+        } else if (!newSelectedGenes.includes(newGene))
+          newSelectedGenes.push(newGene);
+      });
+      setPendingPaste(false);
+      setOpen(false);
+      return setSelectedGenes(newSelectedGenes);
+    }
+  };
+
+  const useStyles = makeStyles((theme: Theme) => {
+    const colors = getColors({ theme });
+    const shadows = getShadows({ theme });
+    const corners = getCorners({ theme });
+    return {
+      paper: {
+        boxShadow: "none",
+        margin: 0,
+      },
+      popper: {
+        backgroundColor: "white",
+        border: `1px solid ${colors?.gray[100]}`,
+        borderRadius: corners?.m,
+        boxShadow: shadows?.m,
+        color: "#586069",
+        fontSize: 13,
+        width: 377,
+        zIndex: 3, // The x axis wrapper is set at 2
+      },
+      popperDisablePortal: {
+        position: "relative",
+        width: "100% !important",
+      },
+    };
+  });
+
+  const classes = useStyles();
+
+  const ref = useRef(null);
 
   return (
     <Container>
@@ -172,23 +301,45 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
 
       <br />
       <br />
+      <ButtonBase disableRipple onClick={handleClick} ref={ref}>
+        <span>Add Genes</span>
+      </ButtonBase>
 
-      <label htmlFor="first-n-genes">Select first N genes</label>
-      <br />
-      <input id="first-n-genes" onChange={handleInputChange} value={input} />
-      <MultiSelectWrapper>
-        <MultiSelect
-          itemPredicate={itemPredicate}
-          onItemSelect={handleItemSelect}
-          onRemove={handleItemRemove}
-          items={genes}
-          itemRenderer={renderItem}
-          tagRenderer={TagRenderer}
-          itemsEqual={areGenesEqual}
-          selectedItems={selectedGenes}
-          itemListRenderer={itemListRenderer}
+      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
+        <MenuSelect
+          open
+          search
+          onClose={handleClose}
+          multiple
+          classes={{
+            paper: classes.paper,
+            popperDisablePortal: classes.popperDisablePortal,
+          }}
+          value={selectedGenes}
+          onChange={handleChange}
+          disableCloseOnSelect
+          disableListWrap
+          onKeyDownCapture={handleEnter}
+          options={genes}
+          ListboxComponent={
+            ListboxComponent as React.ComponentType<
+              React.HTMLAttributes<HTMLElement>
+            >
+          }
+          renderOption={(option) => option.name}
+          onPaste={handlePaste}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint errors
+          // @ts-ignore -- TODO revisit lint errors
+          InputBaseProps={{
+            onChange: (
+              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+            ) => {
+              setInput(event.target.value);
+            },
+            placeholder: "Search or paste comma separated gene names",
+          }}
         />
-      </MultiSelectWrapper>
+      </Popper>
     </Container>
   );
 
@@ -205,132 +356,4 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
         )
     );
   }
-
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    setInput(event.target.value);
-  }
-
-  function itemListRenderer(listProps: IItemListRendererProps<Gene>) {
-    const {
-      filteredItems,
-      renderItem: propRenderItem,
-      itemsParentRef,
-    } = listProps;
-
-    return (
-      <FixedSizeList
-        // eslint-disable-next-line react/display-name
-        innerElementType={forwardRef((props, ref) => {
-          return <Menu ulRef={itemsParentRef} ref={ref} {...props} />;
-        })}
-        height={300}
-        overscanCount={5}
-        width="100%"
-        itemCount={filteredItems.length}
-        itemSize={24}
-      >
-        {(props) => {
-          const { index, style } = props;
-
-          return propRenderItem({ ...filteredItems[index], style }, index);
-        }}
-      </FixedSizeList>
-    );
-  }
-
-  function handleItemSelect(gene: Gene) {
-    if (isGeneSelected(gene)) {
-      handleItemRemove(gene);
-    } else {
-      setSelectedGenes((prevSelectedGenes) => [...prevSelectedGenes, gene]);
-    }
-  }
-
-  function handleItemRemove(gene: Gene) {
-    setSelectedGenes(
-      selectedGenes.filter((selectedGene) => selectedGene.id !== gene.id)
-    );
-  }
-
-  function renderItem(gene: Gene, itemRendererProps: IItemRendererProps) {
-    return ItemRenderer({
-      isSelected: isGeneSelected(gene),
-      item: gene,
-      ...itemRendererProps,
-    });
-  }
-
-  function isGeneSelected(gene: Gene): boolean {
-    return Boolean(
-      selectedGenes.find((selectedGene) => selectedGene.id === gene.id)
-    );
-  }
-}
-
-function ItemRenderer({
-  item,
-  handleClick,
-  query,
-  isSelected,
-}: ExtendedItemRendererProps): JSX.Element | null {
-  const { name, style } = item;
-
-  return (
-    <MenuItem
-      active={isSelected}
-      key={name}
-      onClick={handleClick}
-      text={highlightText(name, query)}
-      style={{ ...style }}
-    />
-  );
-}
-
-function itemPredicate(query: string, item: Gene) {
-  return item.name.toLowerCase().indexOf(query.toLowerCase()) >= 0;
-}
-
-function highlightText(text: string, query: string) {
-  let lastIndex = 0;
-  const words = query
-    .split(/\s+/)
-    .filter((word) => word.length > 0)
-    .map(escapeRegExpChars);
-  if (words.length === 0) {
-    return [text];
-  }
-  const regexp = new RegExp(words.join("|"), "gi");
-  const tokens: React.ReactNode[] = [];
-  // eslint-disable-next-line no-constant-condition -- expected use
-  while (true) {
-    const match = regexp.exec(text);
-    if (!match) {
-      break;
-    }
-    const wordLength = match[0].length;
-    const before = text.slice(lastIndex, regexp.lastIndex - wordLength);
-    if (before.length > 0) {
-      tokens.push(before);
-    }
-    lastIndex = regexp.lastIndex;
-    tokens.push(<strong key={lastIndex}>{match[0]}</strong>);
-  }
-  const rest = text.slice(lastIndex);
-  if (rest.length > 0) {
-    tokens.push(rest);
-  }
-  return tokens;
-}
-
-function escapeRegExpChars(text: string) {
-  return text.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
-}
-
-function TagRenderer({ name }: Gene) {
-  return name;
-}
-
-function areGenesEqual(geneA: Gene, geneB: Gene) {
-  // Compare only the names (ignoring case) just for simplicity.
-  return geneA.id.toLowerCase() === geneB.id.toLowerCase();
 }

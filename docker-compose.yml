@@ -35,6 +35,7 @@ services:
             - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
+    platform: linux/amd64
     build:
       context: frontend
       cache_from:
@@ -66,6 +67,7 @@ services:
             - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -101,6 +103,7 @@ services:
             - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -113,7 +116,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     ports:
-      - "9000:8080"
+      - "9001:8080"
     volumes:
       - ./backend/corpora/upload_success:/var/task
       - ./backend/corpora/common:/var/task/backend/corpora/common
@@ -135,6 +138,7 @@ services:
             - uploadsuccess.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -169,6 +173,7 @@ services:
             - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -183,6 +188,7 @@ services:
       - localstack
       - database
     ports:
+      # port 5000 is 'unofficially' used by Apple's Control Center! 🤬
       - "5000:5000"
     environment:
       - PYTHONUNBUFFERED=1
@@ -207,6 +213,11 @@ services:
             - backend.corporanet.local
   oidc:
     image: soluto/oidc-server-mock:0.3.0
+    # For Mac M1, you may need to build this image from source.
+    # 1. Comment out `image:` line, above, and uncomment the following two lines
+    # 2. In the same directory as this file, run `git clone -b v0.3.0 git@github.com:Soluto/oidc-server-mock.git`
+    # container_name: oidc-server-mock-local
+    # build: oidc-server-mock/src
     ports:
       - "4011:80"
       - "8443:8443"

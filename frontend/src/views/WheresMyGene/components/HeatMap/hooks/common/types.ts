@@ -1,7 +1,7 @@
-import { ChartFormat } from "../../utils";
+import { CellTypeMetadata, ChartFormat } from "../../utils";
 
 export interface ChartProps {
   chartData: ChartFormat[];
   geneNames: string[];
-  cellTypeNames: string[];
+  cellTypeMetadata: CellTypeMetadata[];
 }
