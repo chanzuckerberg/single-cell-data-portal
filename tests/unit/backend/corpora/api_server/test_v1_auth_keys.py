@@ -88,7 +88,9 @@ class TestKeys(BaseAuthAPITest):
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
 
     @patch.multiple(
-        "backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session", get_user_api_key_identity=DEFAULT, delete_api_key=DEFAULT
+        "backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session",
+        get_user_api_key_identity=DEFAULT,
+        delete_api_key=DEFAULT,
     )
     def test__delete_key__201(self, get_user_api_key_identity, delete_api_key):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
