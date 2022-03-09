@@ -45,13 +45,12 @@ def _open_cube(cube_uri) -> Array:
 def _update_latest_snapshot_identifier() -> bool:
     global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
 
-    # if latest_snapshot_identifier_s3obj is None:
-        # s3 = boto3.resource('s3')
-        # latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, 'latest_snapshot_identifier')
+    if latest_snapshot_identifier_s3obj is None:
+        s3 = boto3.resource('s3', endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, 'latest_snapshot_identifier')
 
-    # latest_snapshot_identifier_object.reload() # necessary?
-    # new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()['Body'].read().decode('utf-8')
-    new_snapshot_identifier = latest_snapshot_identifier or uuid.uuid4().hex
+    latest_snapshot_identifier_s3obj.reload() # necessary?
+    new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()['Body'].read().decode('utf-8').strip()
 
     if new_snapshot_identifier != latest_snapshot_identifier:
         logger.info(f'detected snapshot update from {latest_snapshot_identifier} to {new_snapshot_identifier}')
