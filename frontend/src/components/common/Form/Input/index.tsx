@@ -1,7 +1,14 @@
 import { FormGroup, Icon, InputGroup, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import debounce from "lodash/debounce";
-import { FC, useRef, useState } from "react";
+import {
+  FC,
+  ReactElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
@@ -13,11 +20,14 @@ import { Value } from "../common/constants";
 import { LabelText, StyledIcon, StyledInputGroup, StyledLabel } from "./style";
 
 interface Props {
+  markAsError?: boolean; // True if input has server side errors
   name: string;
   text: string;
   percentage?: number;
   disabled?: boolean;
   handleChange: ({ isValid, value, name }: Value) => void;
+  isRevalidationRequired?: boolean;
+  leftElement?: ReactElement;
   syncValidation?: Array<(value: string) => true | string>;
   noNameAttr?: boolean;
   className?: string;
@@ -38,11 +48,14 @@ const ErrorIcon = (): JSX.Element => {
 };
 
 const Input: FC<Props> = ({
+  markAsError,
   name,
   text,
   percentage = 100,
   disabled,
   handleChange,
+  isRevalidationRequired = false,
+  leftElement,
   syncValidation = [],
   noNameAttr = false,
   className,
@@ -68,36 +81,7 @@ const Input: FC<Props> = ({
   const FormInputGroup = isFilterEnabled ? InputGroup : StyledInputGroup;
   const FormIcon = isFilterEnabled ? ErrorIcon : DangerIcon;
 
-  return (
-    <FormLabel htmlFor={name} {...labelProps}>
-      <FormGroup
-        helperText={errors.join(", ")}
-        intent={(!isValid && Intent.DANGER) || undefined}
-      >
-        <FormLabelText>
-          <span>{text}</span>
-          {optionalField && <i>(optional)</i>}
-        </FormLabelText>
-        <FormInputGroup
-          // (thuang): `autoComplete="off"` and `type="search"` are needed to stop autofill
-          // https://stackoverflow.com/a/30873633
-          autoComplete="off"
-          type="search"
-          inputRef={inputRef}
-          intent={(!isValid && Intent.DANGER) || undefined}
-          id={name}
-          name={noNameAttr ? undefined : name}
-          rightElement={(!isValid && <FormIcon />) || undefined}
-          disabled={disabled}
-          onChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
-          placeholder={placeholder}
-          defaultValue={defaultValue}
-        />
-      </FormGroup>
-    </FormLabel>
-  );
-
-  function handleChange_() {
+  const handleChange_ = useCallback(() => {
     if (!inputRef.current) return;
 
     const value = inputRef.current.value;
@@ -117,7 +101,53 @@ const Input: FC<Props> = ({
     if (result !== isValid) {
       setIsValid(result);
     }
-  }
+  }, [handleChange, isValid, name, syncValidation]);
+
+  // Revalidation is necessary if the link type has changed for this link to or from a DOI link type (as DOIs have
+  // different validation to the other link types). Revalidation is not required when switching between link types
+  // other than DOI as they share the same validation.
+  useEffect(() => {
+    if (isRevalidationRequired) {
+      handleChange_();
+    }
+  }, [handleChange_, isRevalidationRequired]);
+
+  // Check for server-side error messages and update error state of input if necessary.
+  useEffect(() => {
+    if (markAsError) {
+      setIsValid(false);
+    }
+  }, [markAsError]);
+
+  return (
+    <FormLabel htmlFor={name} {...labelProps}>
+      <FormGroup
+        helperText={errors.join(", ")}
+        intent={(!isValid && Intent.DANGER) || undefined}
+      >
+        <FormLabelText>
+          <span>{text}</span>
+          {optionalField && <i>(optional)</i>}
+        </FormLabelText>
+        <FormInputGroup
+          // (thuang): `autoComplete="off"` and `type="search"` are needed to stop autofill
+          // https://stackoverflow.com/a/30873633
+          autoComplete="off"
+          type="search"
+          inputRef={inputRef}
+          intent={(!isValid && Intent.DANGER) || undefined}
+          id={name}
+          leftElement={leftElement}
+          name={noNameAttr ? undefined : name}
+          rightElement={(!isValid && <FormIcon />) || undefined}
+          disabled={disabled}
+          onChange={debounce(handleChange_, DEBOUNCE_TIME_MS)}
+          placeholder={placeholder}
+          defaultValue={defaultValue}
+        />
+      </FormGroup>
+    </FormLabel>
+  );
 };
 
 export default Input;

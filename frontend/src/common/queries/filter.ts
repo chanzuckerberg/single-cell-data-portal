@@ -88,6 +88,7 @@ export interface DatasetResponse {
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
+  mean_genes_per_cell: number | null;
   name: string;
   organism: Ontology[];
   published_at: number;
@@ -399,7 +400,7 @@ export function buildSummaryCitation(
 
   // Add author to citation - family name if first author is a person, name if first author is a consortium.
   const { authors, journal, published_year: publishedYear } = publisherMetadata;
-  const [firstAuthor] = authors;
+  const [firstAuthor] = authors ?? [];
   if (firstAuthor) {
     if (isAuthorPerson(firstAuthor)) {
       citationTokens.push(firstAuthor.family);
@@ -704,8 +705,10 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
     (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
       // Check for fields that don't require sanitizing.
       if (
-        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS
+        categoryKey === CATEGORY_KEY.CELL_COUNT ||
+        categoryKey === CATEGORY_KEY.MEAN_GENES_PER_CELL ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
+        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
       ) {
         return accum;
       }

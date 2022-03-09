@@ -1,24 +1,28 @@
 import { interpolateYlOrRd } from "d3-scale-chromatic";
 import {
+  DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
 import { State } from "../../common/store";
-import { CellTypeSummary, Tissue } from "../../common/types";
-import ReplaySVG from "./icons/replay.svg";
+import {
+  CellTypeSummary,
+  GeneExpressionSummary,
+  Tissue,
+} from "../../common/types";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
-export const X_AXIS_CHART_HEIGHT = "200px";
-export const Y_AXIS_CHART_WIDTH = "300px";
+export const X_AXIS_CHART_HEIGHT_PX = 80;
+export const Y_AXIS_CHART_WIDTH_PX = 300;
 
-const REPLAY_SVG_WIDTH_PX = 12;
+const Y_AXIS_BOTTOM_PADDING = "10px";
 
-interface CreateOptionsProps {
-  geneNames: string[];
-  cellTypeNames: string[];
-  commonOptions: EChartsOption;
-}
+const COMMON_OPTIONS = {
+  animation: false,
+  hoverLayerThreshold: 10,
+  progressive: 1e6,
+};
 
 const COMMON_SERIES: ScatterSeriesOption = {
   emphasis: { itemStyle: { color: "inherit" }, scale: false },
@@ -31,29 +35,36 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
-const COMMON_AXIS_POINTER: EChartsOption["axisPointer"] = {
-  link: [
-    {
-      xAxisIndex: "all",
-    },
-  ],
-  show: true,
-  triggerOn: "click",
-  triggerTooltip: false,
-};
+interface CreateChartOptionsProps {
+  cellTypeMetadata: string[];
+  chartData: ChartFormat[];
+  geneNames: string[];
+}
 
 export function createChartOptions({
+  cellTypeMetadata,
+  chartData,
   geneNames,
-  cellTypeNames,
-  commonOptions,
-}: CreateOptionsProps): EChartsOption {
+}: CreateChartOptionsProps): EChartsOption {
   return {
-    ...commonOptions,
-    axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
+    ...COMMON_OPTIONS,
+    axisPointer: {
+      label: { show: false },
+      link: [
+        {
+          xAxisIndex: "all",
+        },
+      ],
+      show: true,
+      triggerOn: "mousemove",
+    },
+    dataset: {
+      source: chartData as DatasetComponentOption["source"],
+    },
     grid: {
-      bottom: "100px",
-      left: Y_AXIS_CHART_WIDTH,
-      top: X_AXIS_CHART_HEIGHT,
+      bottom: Y_AXIS_BOTTOM_PADDING,
+      left: Y_AXIS_CHART_WIDTH_PX + "px",
+      top: X_AXIS_CHART_HEIGHT_PX + "px",
     },
     series: [
       {
@@ -74,36 +85,6 @@ export function createChartOptions({
         },
       },
     ],
-    tooltip: {
-      formatter(props) {
-        const { name: cellTypeMetadata, data } = props as unknown as {
-          name: string;
-          data: ChartFormat;
-        };
-
-        if (!data) return "";
-
-        const { geneIndex, percentage, meanExpression, scaledMeanExpression } =
-          data;
-
-        const { name } = deserializeCellTypeMetadata(
-          cellTypeMetadata as CellTypeMetadata
-        );
-
-        return `
-          cell type: ${name}
-          <br />
-          gene: ${geneNames[geneIndex]}
-          <br />
-          percentage: ${percentage}
-          <br />
-          mean expression: ${meanExpression}
-          <br />
-          scaledMeanExpression: ${scaledMeanExpression}
-        `;
-      },
-      position: "top",
-    },
     xAxis: [
       {
         axisLabel: { fontSize: 0, rotate: 90 },
@@ -116,7 +97,7 @@ export function createChartOptions({
         boundaryGap: true,
         data: geneNames,
         splitLine: {
-          show: true,
+          show: false,
         },
         type: "category",
       },
@@ -131,28 +112,26 @@ export function createChartOptions({
           show: false,
         },
         boundaryGap: true,
-        data: cellTypeNames,
+        data: cellTypeMetadata,
         splitLine: {
-          show: true,
+          show: false,
         },
       },
     ],
   };
 }
 
-interface CreateXAxisOptionsProps extends CreateOptionsProps {
+interface CreateXAxisOptionsProps {
+  geneNames: string[];
   genesToDelete: string[];
 }
 
 export function createXAxisOptions({
   geneNames,
-  cellTypeNames,
-  commonOptions,
   genesToDelete,
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
-    ...commonOptions,
-    axisPointer: { ...COMMON_AXIS_POINTER },
+    ...COMMON_OPTIONS,
     grid: {
       bottom: "0",
       left: "300px",
@@ -183,7 +162,7 @@ export function createXAxisOptions({
           width: 200,
         },
         axisTick: {
-          alignWithLabel: true,
+          show: false,
         },
         boundaryGap: true,
         data: geneNames,
@@ -201,8 +180,6 @@ export function createXAxisOptions({
         axisTick: {
           show: false,
         },
-        boundaryGap: true,
-        data: cellTypeNames,
         splitLine: {
           show: false,
         },
@@ -211,23 +188,19 @@ export function createXAxisOptions({
   };
 }
 
-interface CreateYAxisOptionsProps extends CreateOptionsProps {
+interface CreateYAxisOptionsProps {
+  cellTypeMetadata: CellTypeMetadata[];
   cellTypeIdsToDelete: string[];
-  tissuesWithDeletedCellTypes: string[];
 }
 
 export function createYAxisOptions({
-  geneNames,
-  cellTypeNames,
-  commonOptions,
+  cellTypeMetadata,
   cellTypeIdsToDelete,
-  tissuesWithDeletedCellTypes,
 }: CreateYAxisOptionsProps): EChartsOption {
   return {
-    ...commonOptions,
-    axisPointer: { ...COMMON_AXIS_POINTER },
+    ...COMMON_OPTIONS,
     grid: {
-      bottom: "300px",
+      bottom: Y_AXIS_BOTTOM_PADDING,
       left: "300px",
       right: 0,
       top: 0,
@@ -247,8 +220,6 @@ export function createYAxisOptions({
         axisTick: {
           show: false,
         },
-        boundaryGap: true,
-        data: geneNames,
         splitLine: {
           show: false,
         },
@@ -263,35 +234,13 @@ export function createYAxisOptions({
               value as CellTypeMetadata
             );
 
-            const isTissue = checkIsTissue(value as CellTypeMetadata);
-            const tissueHasDeletedCellTypes =
-              tissuesWithDeletedCellTypes.includes(name);
-
-            if (isTissue) {
-              return tissueHasDeletedCellTypes
-                ? `{tissue|${capitalize(name)}}{reset|}`
-                : `{tissue|${capitalize(name)}}`;
-            }
-
             return cellTypeIdsToDelete.includes(value)
               ? `{selected|${name}}`
               : name;
           },
           rich: {
-            reset: {
-              backgroundColor: {
-                image: ReplaySVG.src,
-              },
-              width: REPLAY_SVG_WIDTH_PX,
-            },
             selected: {
               color: "red",
-              fontWeight: "bold",
-            },
-            tissue: {
-              align: "left",
-              color: "black",
-              fontSize: 13,
               fontWeight: "bold",
             },
           },
@@ -300,10 +249,10 @@ export function createYAxisOptions({
           show: false,
         },
         axisTick: {
-          alignWithLabel: true,
+          show: false,
         },
         boundaryGap: true,
-        data: cellTypeNames,
+        data: cellTypeMetadata,
         splitLine: {
           show: false,
         },
@@ -322,15 +271,14 @@ export interface ChartFormat {
 }
 
 export function dataToChartFormat(
-  data: CellTypeSummary[],
-  cellTypes: CellTypeSummary[],
-  genes: State["selectedGenes"]
+  cellTypeSummaries: CellTypeSummary[],
+  genes: (GeneExpressionSummary | undefined)[]
 ): ChartFormat[] {
   let min = Infinity;
   let max = -Infinity;
 
-  for (const dataPoint of Object.values(data)) {
-    const { geneExpressions } = dataPoint;
+  for (const cellTypeSummary of cellTypeSummaries) {
+    const { geneExpressions } = cellTypeSummary;
 
     if (!geneExpressions) continue;
 
@@ -344,7 +292,7 @@ export function dataToChartFormat(
 
   const oldRange = max - min;
 
-  const result = data.flatMap((dataPoint) => {
+  const result = cellTypeSummaries.flatMap((dataPoint) => {
     return toChartFormat(dataPoint);
   });
 
@@ -360,15 +308,18 @@ export function dataToChartFormat(
 
       const scaledMeanExpression = (meanExpression - min) / oldRange;
 
-      const geneIndex = genes.findIndex((gene) => gene === geneName);
+      const geneIndex = genes.findIndex((gene) => gene?.name === geneName);
 
-      const cellTypeIndex = cellTypes.findIndex(
-        (cellType) => cellType.id === dataPoint.id
+      const cellTypeIndex = cellTypeSummaries.findIndex(
+        (cellTypeSummary) => cellTypeSummary.id === dataPoint.id
       );
+
+      const id = `${dataPoint.id}-${geneName}`;
 
       return {
         cellTypeIndex,
         geneIndex,
+        id,
         meanExpression,
         percentage,
         scaledMeanExpression,
@@ -386,14 +337,16 @@ const HEAT_MAP_BASE_CELL_PX = 20;
  * This is used to make sure the table cell size stays the same regardless
  * of the number of genes selected.
  */
-export function getHeatmapWidth(genes: State["selectedGenes"]): number {
+export function getHeatmapWidth(
+  genes: (GeneExpressionSummary | undefined)[] | State["selectedGenes"]
+): number {
   return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
 }
 
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellTypeSummary[]): number {
+export function getHeatmapHeight(cellTypes: CellTypeSummary[] = []): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
@@ -439,10 +392,8 @@ export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
 /**
  * Value format: `${name}`
  */
-export function getGeneNames(genes: State["selectedGenes"]): string[] {
-  return genes;
-}
-
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export function getGeneNames(
+  genes: ({ name: string } | undefined)[]
+): string[] {
+  return genes.map((gene) => gene?.name || "");
 }

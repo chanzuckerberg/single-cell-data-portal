@@ -2,12 +2,12 @@ import { InputGroup, Menu, MenuItem } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
-  CategoryValueView,
   CATEGORY_KEY,
   FilterCategoryValuesFn,
   FilterCategoryValuesWithCountFn,
   OnFilterFn,
   OnUpdateSearchValueFn,
+  SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import {
   InputGroupWrapper,
@@ -26,7 +26,7 @@ interface Props {
   isSearchable: boolean;
   onFilter: OnFilterFn;
   onUpdateSearchValue: OnUpdateSearchValueFn;
-  values: CategoryValueView[];
+  values: SelectCategoryValueView[];
 }
 
 const ADDITIONAL_MENU_WIDTH = 8;

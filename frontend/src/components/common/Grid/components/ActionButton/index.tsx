@@ -3,7 +3,7 @@ import React, { ReactElement } from "react";
 import { ActionButton as StyledActionButton } from "src/components/common/Grid/components/ActionButton/style";
 
 interface Props {
-  iconSvg: ReactElement; // TODO(cc) check type
+  iconSvg: ReactElement;
   isAnchorButton?: boolean;
 }
 
