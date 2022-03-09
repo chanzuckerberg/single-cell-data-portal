@@ -15,7 +15,7 @@ import pandas as pd
 
 from backend.wmg.data.config import create_fast_ctx
 from .compute import coo_cube_pass1_into
-from ..data.cube_schema import schema, cube_indexed_dims, cube_non_indexed_dims
+from ..data.cube_schema import schema, cube_indexed_dims, cube_non_indexed_dims, cube_indexed_dims_no_gene_ontology
 
 logger = logging.getLogger(__name__)
 
@@ -77,11 +77,13 @@ def make_cube_index(tdb_group, cube_dims):
     with tiledb.open(f"{tdb_group}/obs") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
     cell_labels.sort_values(by=['obs_idx'], inplace=True, ignore_index=True)
+
     cell_labels = pd.DataFrame(
         # Todo previously cube dimensions did not include the feature_id (gene_ontology_id) now its  included ... breaking change?
         data={k: cell_labels[k].astype("category") for k in cube_dims},
         index=cell_labels.obs_idx,
     )
+
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))
 
@@ -139,7 +141,6 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
-        np.empty((total_vals,), dtype=object),
     ]
     vals = {
         "sum": np.empty((total_vals,)),
@@ -150,9 +151,9 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
 
     # populate buffers
     idx = 0
+
     for grp in cube_index.to_records():
         (
-            cell_type_ontology_term_id,
             tissue_ontology_term_id,
             organism_ontology_term_id,
             *attr_values,
@@ -167,9 +168,8 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         logger.debug(grp)
 
         dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx : idx + n_vals] = cell_type_ontology_term_id
-        dims[2][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[3][idx : idx + n_vals] = organism_ontology_term_id
+        dims[1][idx : idx + n_vals] = tissue_ontology_term_id
+        dims[2][idx : idx + n_vals] = organism_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
@@ -198,7 +198,8 @@ def load_data_into_cube(tdb_group, uri: str):
     ##
     ## Reduce X
     ##
-    cell_labels, cube_index = make_cube_index(tdb_group, cube_indexed_dims) # TODO cube_indexed_dims is not an exact match to what was previously passed in, double check that this isnt a breaking change
+    big_cube_atts = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
+    cell_labels, cube_index = make_cube_index(tdb_group, big_cube_atts) # TODO cube_indexed_dims is not an exact match to what was previously passed in, double check that this isnt a breaking change
     n_groups = len(cube_index)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)

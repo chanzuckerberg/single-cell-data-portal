@@ -94,7 +94,7 @@ obs_labels = [
 var_labels = [
     # var_idx is the join index with the X array
     LabelType("var_idx", np.uint32, domain=uint32_domain, custom_decoder=gen_idx),
-    LabelType("feature_id", "ascii", decode_from_index=True, encode_as_dim=True),
+    LabelType("gene_ontology_term_id", "ascii", decode_from_index=True, encode_as_dim=True),
     LabelType("feature_reference", "ascii", var=True),
     LabelType("feature_name", "ascii", var=True),
 ]

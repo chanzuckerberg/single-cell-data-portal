@@ -15,6 +15,9 @@ from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
+# from pronto import Ontology
+# import pygraphviz as pgv
+import json
 
 # TODO - does writing and reading directly from s3 slow down compute? test
 
@@ -24,7 +27,7 @@ logging.basicConfig(
                     stream = sys.stdout,
                     filemode = "w",
                     format = Log_Format,
-                    level = logging.DEBUG)
+                    level = logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +58,10 @@ def copy_datasets_to_instance(dataset_directory):
 
 
 def load_datasets_into_corpus(path_to_datasets, group_name):
-    try:
-        load(path_to_datasets, group_name, True)
-    except Exception as e:
-        logger.error(f"Issue loading datasets into corpus: {e}")
+    # try:
+    load(path_to_datasets, group_name, True)
+    # except Exception as e:
+    #     logger.error(f"Issue loading datasets into corpus: {e}")
 
 
 def get_cells_by_tissue_type(tdb_group: str) -> Dict:
@@ -79,9 +82,47 @@ def get_cells_by_tissue_type(tdb_group: str) -> Dict:
     return cell_type_by_tissue
 
 def generate_cell_ordering(cell_type_by_tissue):
-    ## TODO port code from Emanuele notebook
-    pass
+    onto = Ontology.from_obo_library("cl-basic.obo")
 
+    def compute_ordering(cells, root):
+        ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
+        ancestors = [i for s in ancestors for i in s]
+        ancestors = set(ancestors)
+
+        G = pgv.AGraph()
+        for a in ancestors:
+            for s in a.subclasses(with_self=False, distance=1):
+                if s in ancestors:
+                    G.add_edge(a.id, s.id)
+        
+        G.layout(prog="dot")
+
+        positions = {}
+        for n in G.iternodes():
+            pos = n.attr["pos"].split(",")
+            positions[n] = (float(pos[0]), float(pos[1]))
+
+        ancestor_ids = [a.id for a in ancestors]
+
+        def recurse(node):
+            if node in cells:
+                yield(node)
+            children = [(c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids]
+            sorted_children = sorted(children, key = lambda x: x[1][0])
+            for child in sorted_children:
+                yield from recurse(child[0].id)
+
+        ordered_list = list(dict.fromkeys(recurse(root)))
+        return ordered_list
+
+    mapping = {}
+    for tissue, cell_df in cell_type_by_tissue.items():
+        cells = list(cell_df)
+        ordered_cells = compute_ordering(cells, "CL:0000003") # TODO: is this the right root?
+        mapping[tissue] = ordered_cells
+
+    with open("ordered-cells.json", "w") as f:
+        json.dump(mapping, f)
 
 def update_s3_resources():
     time_stamp = time.time()
@@ -113,7 +154,7 @@ def load_data_and_create_cube(path_to_datasets, group_name):
     # cell_type_by_tissue = get_cells_by_tissue_type(group_name)
     # generate_cell_ordering(cell_type_by_tissue)
     # update_s3_resources()
-    print("Cube creation script - called")
+    print("Cube creation script - completed")
     return True
 
 
