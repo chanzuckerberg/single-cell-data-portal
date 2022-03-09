@@ -700,11 +700,6 @@ components:
           type: string
     publisher_metadata:
       type: object
-      required:
-        - authors
-        - is_preprint
-        - journal
-        - published_year
       properties:
         authors:
           type: array
