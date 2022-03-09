@@ -110,6 +110,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     raise AssertionError(f"unknown dimension name {dimension_name}")
 
 
+# TODO: refactor for readability
 def create_cube(
     cube_dir,
     dim_size=3,
