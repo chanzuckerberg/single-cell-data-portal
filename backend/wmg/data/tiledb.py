@@ -2,7 +2,6 @@ import os
 
 import psutil
 import tiledb
-from tiledb import Array
 
 from backend.corpora.common.utils.math_utils import MB, GB
 

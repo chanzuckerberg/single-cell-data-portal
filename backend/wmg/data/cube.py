@@ -1,6 +1,5 @@
 import logging
 import os
-import uuid
 from typing import Tuple
 
 import boto3
@@ -10,7 +9,7 @@ from tiledb import Array
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import fast_config, create_ctx
 
-logger = logging.getLogger('wmg')
+logger = logging.getLogger("wmg")
 
 # Cached cube
 cube = None
@@ -46,28 +45,25 @@ def _update_latest_snapshot_identifier() -> bool:
     global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
 
     if latest_snapshot_identifier_s3obj is None:
-        s3 = boto3.resource('s3', endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
-        latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, 'latest_snapshot_identifier')
+        s3 = boto3.resource("s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"))
+        latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, "latest_snapshot_identifier")
 
-    latest_snapshot_identifier_s3obj.reload() # necessary?
-    new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()['Body'].read().decode('utf-8').strip()
+    latest_snapshot_identifier_s3obj.reload()  # necessary?
+    new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()["Body"].read().decode("utf-8").strip()
 
     if new_snapshot_identifier != latest_snapshot_identifier:
-        logger.info(f'detected snapshot update from {latest_snapshot_identifier} to {new_snapshot_identifier}')
+        logger.info(f"detected snapshot update from {latest_snapshot_identifier} to {new_snapshot_identifier}")
         latest_snapshot_identifier = new_snapshot_identifier
         return True
     else:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f'latest snapshot identifier={latest_snapshot_identifier}')
+            logger.debug(f"latest snapshot identifier={latest_snapshot_identifier}")
         return False
 
 
 def build_latest_snapshot_uri(data_root_uri: str):
-    return os.path.join(data_root_uri, 'latest_snapshot_identifier')
+    return os.path.join(data_root_uri, "latest_snapshot_identifier")
 
 
 def build_cube_uri(bucket: str, snapshot_identifier: str):
-    return os.path.join("s3://", bucket, snapshot_identifier, 'cube')
-
-
-
+    return os.path.join("s3://", bucket, snapshot_identifier, "cube")
