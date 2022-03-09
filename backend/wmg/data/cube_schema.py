@@ -5,7 +5,6 @@ import tiledb
 # TileDB `Dim`s and thus can be used for _efficiently_ querying
 # (slicing) the TileDB array. Order matters here!
 cube_indexed_dims_no_gene_ontology = [
-    "cell_type_ontology_term_id",
     "tissue_ontology_term_id",
     "organism_ontology_term_id",
 ]
@@ -17,6 +16,7 @@ cube_indexed_dims = [
 # TileDB `Attrs` (i.e. (non-indexed") and thus will require
 # client-side filtering, which may result in less efficient querying.
 cube_non_indexed_dims = [
+    "cell_type_ontology_term_id",
     "dataset_id",
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
