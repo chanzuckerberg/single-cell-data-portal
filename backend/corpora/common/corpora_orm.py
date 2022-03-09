@@ -239,7 +239,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
-    revision_of = Column(String, ForeignKey("project.id"), nullable=True)
+    revision_of = Column(String, ForeignKey("project.id"), nullable=True, unique=True)
 
     # Relationships
     revision = relationship("DbCollection", cascade="all, delete-orphan", uselist=False)

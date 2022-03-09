@@ -32,7 +32,7 @@ def upgrade():
     op.create_unique_constraint(op.f("_geneset_name__collection_uc"), "geneset", ["name", "collection_id"])
 
     # Add project.revision_of
-    op.add_column("project", sa.Column("revision_of", sa.String(), nullable=True))
+    op.add_column("project", sa.Column("revision_of", sa.String(), nullable=True, unique=True))
 
     # Drop project composite primary key; add project.id as primary key
     op.drop_constraint("project_pkey", "project")
