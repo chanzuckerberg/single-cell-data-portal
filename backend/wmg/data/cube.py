@@ -1,4 +1,6 @@
 import logging
+import os
+import uuid
 from typing import Tuple
 
 import boto3
@@ -15,6 +17,7 @@ cube = None
 latest_snapshot_identifier_s3obj = None
 latest_snapshot_identifier = None
 
+
 def load_cube() -> Tuple[Array, str]:
     """
     Loads and caches the WMG cube (TileDB Array). Reloads the cube if the latest_snapshot_identifier S3 object has
@@ -24,7 +27,7 @@ def load_cube() -> Tuple[Array, str]:
 
     global cube, latest_snapshot_identifier
 
-    if cube is None or _update_latest_snapshot_identifier():
+    if _update_latest_snapshot_identifier() or cube is None:
         # TODO: Okay to keep open indefinitely? Is it faster than re-opening each request?
         cube_uri = build_cube_uri(WmgConfig().bucket, latest_snapshot_identifier)
         logger.info(f"Opening WMG cube at {cube_uri}")
@@ -42,12 +45,13 @@ def _open_cube(cube_uri) -> Array:
 def _update_latest_snapshot_identifier() -> bool:
     global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
 
-    if latest_snapshot_identifier_s3obj is None:
-        s3 = boto3.resource('s3')
-        latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, 'latest_snapshot_identifier')
+    # if latest_snapshot_identifier_s3obj is None:
+        # s3 = boto3.resource('s3')
+        # latest_snapshot_identifier_s3obj = s3.Object(WmgConfig().bucket, 'latest_snapshot_identifier')
 
     # latest_snapshot_identifier_object.reload() # necessary?
-    new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()['Body'].read().decode('utf-8')
+    # new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()['Body'].read().decode('utf-8')
+    new_snapshot_identifier = latest_snapshot_identifier or uuid.uuid4().hex
 
     if new_snapshot_identifier != latest_snapshot_identifier:
         logger.info(f'detected snapshot update from {latest_snapshot_identifier} to {new_snapshot_identifier}')
@@ -55,11 +59,8 @@ def _update_latest_snapshot_identifier() -> bool:
         return True
     else:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f'latest snapshot identifier={latest_snapshot_identifier')
+            logger.debug(f'latest snapshot identifier={latest_snapshot_identifier}')
         return False
-
-
-
 
 
 def build_latest_snapshot_uri(data_root_uri: str):

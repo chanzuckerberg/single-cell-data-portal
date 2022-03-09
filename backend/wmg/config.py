@@ -1,4 +1,5 @@
-from backend.corpora.api_server.app import DEPLOYMENT_STAGE
+import os
+
 from backend.corpora.common.utils.secret_config import SecretConfig
 
 
@@ -8,8 +9,9 @@ class WmgConfig(SecretConfig):
         super().__init__("backend", secret_name="wmg_config", **kwargs)
 
     def get_defaults_template(self):
+        deployment_stage = os.getenv('DEPLOYMENT_STAGE', 'test')
         defaults_template = {
-            "bucket": f"wmg-{DEPLOYMENT_STAGE}"
+            "bucket": f"wmg-{deployment_stage}"
         }
         return defaults_template
 
