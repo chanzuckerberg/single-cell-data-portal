@@ -61,7 +61,13 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "callback_base_url": "'"${BACKEND_URL}"'",
     "redirect_to_frontend": "'"${FRONTEND_URL}"'",
     "test_account_username": '"${TEST_ACCOUNT_USERNAME}"',
-    "test_account_password": '"${TEST_ACCOUNT_PASSWORD}"'
+    "test_account_password": '"${TEST_ACCOUNT_PASSWORD}"',
+    "domain":"https://localhost:1234",
+    "api_key_secret": "a random secret",
+    "days_to_live": 60,
+    "mgmt_client_id": "test_mgmt_client_id",
+    "mgmt_client_secret": "test_mgmt_client_secret",
+    "api_key_connection_name": "api-key-database"
 }' || true
 
 
