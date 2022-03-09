@@ -100,7 +100,8 @@ wmg_bucket="wmg-test"
 python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
 ${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://wmg-test/$snapshot_identifier/cube/
 echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://wmg-test/latest_snapshot_identifier
-${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/wmg --secret-string "{\"bucket\": \"$wmg_bucket\"}" || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/wmg_config &>/dev/null || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/wmg_config --secret-string "{\"bucket\": \"$wmg_bucket\"}" || true
 # TODO: Also generate & store:
 #  * wmg cell type orderings
 #  * wmg "total cell counts" cube (TileDB array)
