@@ -1,16 +1,9 @@
-# Corpora Data Portal
+# Single Cell Data Portal
 
+![Push Tests](https://github.com/chanzuckerberg/single-cell-data-portal/workflows/Push%20Tests/badge.svg)
+[![codecov](https://codecov.io/gh/chanzuckerberg/single-cell-data-portal/branch/main/graph/badge.svg?token=iIXh8Rw0CH)](https://codecov.io/gh/chanzuckerberg/single-cell-data-portal)
 
-![Push Tests](https://github.com/chanzuckerberg/corpora-data-portal/workflows/Push%20Tests/badge.svg)
-[![codecov](https://codecov.io/gh/chanzuckerberg/corpora-data-portal/branch/main/graph/badge.svg)](https://codecov.io/gh/chanzuckerberg/corpora-data-portal)
-[![Maintainability](https://api.codeclimate.com/dp/v1/badges/9416c313de4d0457a5cc/maintainability)](https://codeclimate.com/github/chanzuckerberg/corpora-data-portal/maintainability)
-
-The Corpora Data Portal (CDP) enables the publication, discovery and exploration of interoperable
-single-cell datasets. Data contributors can upload, review and publish datasets for private or
-public use. Via the portal, data consumers are able to discover, download and connect data to visualization tools
-such as [cellxgene](https://chanzuckerberg.github.io/cellxgene/posts/cellxgene_cziscience_com) to perform further
-analysis. The goal of the CDP is to catalyze distributed collaboration of single-cell research by providing a large,
-well-labeled repository of interoperable datasets.
+The Single Cell Data Portal enables the publication, discovery and exploration of interoperable single-cell datasets. Data contributors can upload, review and publish datasets for private or public use. Via the portal, data consumers are able to discover, download and connect data to visualization tools such as [cellxgene](https://chanzuckerberg.github.io/cellxgene/posts/cellxgene_cziscience_com) to perform further analysis. The goal of the Data Portal is to catalyze distributed collaboration of single-cell research by providing a large, well-labeled repository of interoperable datasets.
 
 ## Developers
 
@@ -22,14 +15,13 @@ well-labeled repository of interoperable datasets.
 4. [Install pyenv](https://github.com/pyenv/pyenv). Make sure you choose the most recent python version from `pyenv`. If `pyenv` is already installed on your machine, you might have to delete and reinstall it.
 5. Run `source venv/bin/activate` to start up a virtual environment.
 
-
 ### Development quickstart
+
 **Note:** Make sure you are running your virtual environment from Step 5 above before going through the development guides.
 
 See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
 
 See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
-
 
 ### Environment variables
 
