@@ -31,6 +31,7 @@ class WmgQuery:
         super().__init__()
         self._cube = cube
 
+    # TODO: refactor for readability
     def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
         # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
         # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
