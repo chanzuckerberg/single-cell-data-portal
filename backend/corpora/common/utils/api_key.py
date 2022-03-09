@@ -14,4 +14,4 @@ def generate(user_id: str, secret: str, days_to_live: int = 1) -> str:
 
 
 def verify(token: str, secret: str):
-    jwt.decode(token, secret, algorithms=["HS256"])
+    return jwt.decode(token, secret, algorithms=["HS256"])

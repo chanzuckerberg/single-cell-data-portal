@@ -8,7 +8,8 @@ class TestAPIKey(unittest.TestCase):
         user = "user"
         secret = "random_secret"
         token = generate(user, secret)
-        verify(token, secret)
+        decoded_token = verify(token, secret)
+        self.assertEqual(user, decoded_token["sub"])
 
 
 if __name__ == "__main__":

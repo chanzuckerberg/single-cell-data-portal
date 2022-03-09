@@ -3,7 +3,7 @@ import json
 from jose import jws
 from mock import patch, DEFAULT
 
-from backend.corpora.common.auth0_manager import session
+from backend.corpora.common.auth0_manager import auth0_management_session
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
@@ -11,7 +11,7 @@ from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 class TestKeys(BaseAuthAPITest):
     @classmethod
     def setUpClass(cls):
-        session.domain = "localhost"  # setting this so CorporaAuthConfig isn't used in the test
+        auth0_management_session.domain = "localhost"  # setting this so CorporaAuthConfig isn't used in the test
         super().setUpClass()
         cls.api_key_id = "auth0_generate_api_key_id"
         cls.user_name = "test_user_id"
@@ -40,13 +40,13 @@ class TestKeys(BaseAuthAPITest):
 
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
-        api_key = body["api_key"]
-        key_name = api_key.split(".")[-1]
-        payload = jws.verify(api_key, self.api_key_secret, algorithms=["HS256"])
+        key = body["key"]
+        key_name = key.split(".")[-1]
+        payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
         delete_api_key.assert_not_called()
-        store_api_key.assert_called_once_with(key_name, api_key, self.email)
+        store_api_key.assert_called_once_with(key_name, key, self.email)
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
         get_user_api_key_identity.assert_called_once_with(self.user_name)
 
@@ -77,14 +77,14 @@ class TestKeys(BaseAuthAPITest):
 
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
-        api_key = body["api_key"]
-        key_name = api_key.split(".")[-1]
-        payload = jws.verify(api_key, self.api_key_secret, algorithms=["HS256"])
+        key = body["key"]
+        key_name = key.split(".")[-1]
+        payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
         get_user_api_key_identity.assert_called_once_with(self.user_name)
         delete_api_key.assert_called_once()
-        store_api_key.assert_called_once_with(key_name, api_key, self.email)
+        store_api_key.assert_called_once_with(key_name, key, self.email)
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
 
     @patch.multiple(

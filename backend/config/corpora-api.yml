@@ -946,7 +946,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  key_name:
+                  id:
                     type: string
         "401":
           $ref: "#/components/responses/401"
@@ -986,6 +986,8 @@ paths:
           $ref: "#/components/responses/202"
         "401":
           $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
   /dp/v1/deployed_version:
     get:
       summary: Returns version information

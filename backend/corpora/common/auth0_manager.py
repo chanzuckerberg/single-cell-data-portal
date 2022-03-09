@@ -1,13 +1,15 @@
+import json
+
 import requests
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
-from backend.corpora.common.utils import json
 
 
 class Auth0ManagementSession:
     """
     A wrapper around the Auth0 Management API. https://auth0.com/docs/api/management/v2
     """
+
     _session = None
     _domain = None
 
@@ -32,7 +34,7 @@ class Auth0ManagementSession:
     @property
     def domain(self):
         if not self._domain:
-            self._domain = CorporaAuthConfig.domain or "test"
+            self._domain = CorporaAuthConfig().auth0_domain
         return self._domain
 
     @domain.setter
@@ -44,7 +46,7 @@ class Auth0ManagementSession:
 
     @staticmethod
     def get_auth0_management_token(domain: str) -> str:
-        ## Generate management token
+        # Generate management token
         payload = json.dumps(
             dict(
                 client_id=CorporaAuthConfig.mgmt_client_id,
@@ -59,6 +61,7 @@ class Auth0ManagementSession:
         }
 
         response = requests.post(f"https://{domain}/oauth/token", data=payload, headers=headers)
+        response.raise_for_status()
         token = response.json()
         return "{} {}".format(token["token_type"], token["access_token"])
 
@@ -95,6 +98,7 @@ class Auth0ManagementSession:
             )
         )
         response = self.session.post(f"https://{self.domain}/api/v2/users", data=payload)
+        response.raise_for_status()
         body = response.json()
         return body["identities"][0]["user_id"]
 
@@ -125,4 +129,4 @@ class Auth0ManagementSession:
         return response.json()
 
 
-session = Auth0ManagementSession()
+auth0_management_session = Auth0ManagementSession()

@@ -65,7 +65,8 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "api_key_secret": "a random secret",
     "days_to_live": 60,
     "mgmt_client_id": "test_mgmt_client_id",
-    "mgmt_client_secret": "test_mgmt_client_secret"
+    "mgmt_client_secret": "test_mgmt_client_secret",
+    "api_key_connection_name": "api-key-database"
 }' || true
 
 
