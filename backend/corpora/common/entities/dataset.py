@@ -117,32 +117,6 @@ class Dataset(Entity):
 
         return dataset
 
-    @classmethod
-    def list_ids_for_cube(cls, session):
-
-        # TODO make dict of ontology ids and human readable names, store as a const elsewhere (in rds for easy updates?)
-        included_assay_ontology_ids = ['EFO:0008722', 'EFO:0010010', 'EFO:0010550', 'EFO:0010961', 'EFO:0030002',
-                                       'EFO:0009901', 'EFO:0011025', 'EFO:0009899', 'EFO:0009900', 'EFO:0009922',
-                                       'EFO_0030003', 'EFO:0030004', 'EFO:0008919']
-
-        dataset_ids = []
-        published_dataset_non_null_assays = session.query(
-            cls.table.id,
-            cls.table.assay
-        ).filter(
-            cls.table.assay != 'null',
-            cls.table.published == 'TRUE',
-            cls.table.is_primary_data == 'PRIMARY',
-            cls.table.collection_visibility == 'PUBLIC',
-            cls.table.tombstone == 'f'
-        ).all()
-        for dataset in published_dataset_non_null_assays:
-            for assay in dataset[1]:
-                if assay['ontology_term_id'] in included_assay_ontology_ids:
-                    dataset_ids.append(dataset[0])
-
-        return dataset_ids
-
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.

@@ -2,7 +2,7 @@ import unittest
 from typing import Tuple
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
-from tests.unit.backend.wmg.fixtures.cube import (
+from tests.unit.backend.wmg.fixtures.test_cube import (
     create_temp_wmg_cubes,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
