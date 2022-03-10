@@ -1,30 +1,13 @@
 import { Intent } from "@blueprintjs/core";
-import { ButtonBase, Popper, Theme } from "@material-ui/core";
-import { AutocompleteCloseReason } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/styles";
-import {
-  DefaultMenuSelectOption,
-  getColors,
-  getCorners,
-  getShadows,
-  MenuSelect,
-} from "czifui";
-import pull from "lodash/pull";
-import uniq from "lodash/uniq";
-import React, {
-  createContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { Dropdown } from "czifui";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
 import Toast from "src/views/Collection/components/Toast";
 import { Gene } from "../../common/types";
+import QuickSelect from "../QuickSelect";
 import GeneSets from "./components/Genesets";
 import { Container } from "./style";
 
@@ -133,60 +116,48 @@ const GENESETS = [
   ],
 ];
 
-const LISTBOX_ITEM_HEIGHT_PX = 32;
-const LISTBOX_HEIGHT_PX = 152;
-
 interface Props {
   onGenesChange: (selectedGenes: Gene[]) => void;
 }
 
-const ListBoxContext = createContext({});
+// DEBUG
+// DEBUG
+// DEBUG
+// DEBUG
 
-const OuterElementType = React.forwardRef<HTMLDivElement>(
-  function OuterElementType(props, ref) {
-    const outerProps = React.useContext(ListBoxContext);
-    return <div ref={ref} {...props} {...outerProps} />;
-  }
-);
-
-function rowRender(props: ListChildComponentProps) {
-  const { data, index, style } = props;
-  return <div style={style}>{data[index]}</div>;
+interface Tissue {
+  name: string;
+}
+function useFetchTissues() {
+  return {
+    data: [
+      { name: "lung" },
+      { name: "heart" },
+      { name: "kidney" },
+      { name: "brain" },
+    ],
+  };
+}
+interface Organism {
+  name: string;
+}
+function useFetchOrganisms() {
+  return { data: [{ name: "Homo sapiens" }, { name: "mus musculus" }] };
 }
 
-const ListboxComponent = React.forwardRef<HTMLDivElement>(
-  function ListboxComponent(props, ref) {
-    const { children, ...other } = props;
-
-    const itemData = React.Children.toArray(children);
-    const itemCount = itemData.length;
-
-    return (
-      <div ref={ref}>
-        <ListBoxContext.Provider value={other}>
-          <FixedSizeList
-            height={LISTBOX_HEIGHT_PX}
-            itemCount={itemCount}
-            outerElementType={OuterElementType}
-            itemSize={LISTBOX_ITEM_HEIGHT_PX}
-            width="100%"
-            overscanCount={10}
-            itemData={itemData}
-          >
-            {rowRender}
-          </FixedSizeList>
-        </ListBoxContext.Provider>
-      </div>
-    );
-  }
-);
+// END DEBUG
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [open, setOpen] = useState(false);
-  const [pendingPaste, setPendingPaste] = useState(false);
-  const [input, setInput] = useState("");
+
+  const { data: tissues } = useFetchTissues();
+  const { data: organisms } = useFetchOrganisms();
+
+  const [selectedTissue, setSelectedTissue] = useState<Tissue>(EMPTY_ARRAY);
+  const [selectedOrganism, setSelectedOrganism] = useState<Organism>({
+    name: "Homo sapiens",
+  });
 
   useEffect(() => {
     fetchGenes();
@@ -215,85 +186,23 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
-  const handleClose = (
-    _: React.ChangeEvent<Record<string, never>>,
-    reason: AutocompleteCloseReason
-  ) => {
-    if (reason === "toggleInput") {
-      return;
-    }
-    setOpen(false);
-  };
-  const handleChange = (
-    _: React.ChangeEvent<Record<string, never>>,
-    newValue: DefaultMenuSelectOption[] | null
-  ) => {
-    return setSelectedGenes(newValue as Gene[]);
-  };
-  const handleClick = () => {
-    setOpen(true);
-  };
-
-  const handlePaste = () => {
-    setPendingPaste(true);
-  };
-
   const genesByName = useMemo(() => {
     return genes.reduce((acc, gene) => {
       return acc.set(gene.name, gene);
     }, new Map<Gene["name"], Gene>());
   }, [genes]);
+  const tissuesByName = useMemo(() => {
+    return tissues.reduce((acc, tissue) => {
+      return acc.set(tissue.name, tissue);
+    }, new Map<Tissue["name"], Tissue>());
+  }, [tissues]);
 
-  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && pendingPaste) {
-      event.preventDefault();
-      const newSelectedGenes = [...selectedGenes];
-      const pastedGenes = pull(uniq(input.split(/[ ,]+/)), "");
-      pastedGenes.map((gene) => {
-        const newGene = genesByName.get(gene);
-        if (!newGene) {
-          Toast.show({
-            intent: Intent.DANGER,
-            message: `Gene not found: ${gene}`,
-          });
-        } else if (!newSelectedGenes.includes(newGene))
-          newSelectedGenes.push(newGene);
-      });
-      setPendingPaste(false);
-      setOpen(false);
-      return setSelectedGenes(newSelectedGenes);
-    }
-  };
-
-  const useStyles = makeStyles((theme: Theme) => {
-    const colors = getColors({ theme });
-    const shadows = getShadows({ theme });
-    const corners = getCorners({ theme });
-    return {
-      paper: {
-        boxShadow: "none",
-        margin: 0,
-      },
-      popper: {
-        backgroundColor: "white",
-        border: `1px solid ${colors?.gray[100]}`,
-        borderRadius: corners?.m,
-        boxShadow: shadows?.m,
-        color: "#586069",
-        fontSize: 13,
-        width: 377,
-        zIndex: 3, // The x axis wrapper is set at 2
-      },
-      popperDisablePortal: {
-        position: "relative",
-        width: "100% !important",
-      },
-    };
-  });
-
-  const classes = useStyles();
-
-  const ref = useRef(null);
+  const handleGeneNotFound = useCallback((geneName: string): void => {
+    Toast.show({
+      intent: Intent.DANGER,
+      message: `Gene not found: ${geneName}`,
+    });
+  }, []);
 
   return (
     <Container>
@@ -301,45 +210,29 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
 
       <br />
       <br />
-      <ButtonBase disableRipple onClick={handleClick} ref={ref}>
-        <span>Add Genes</span>
-      </ButtonBase>
-
-      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
-        <MenuSelect
-          open
-          search
-          onClose={handleClose}
-          multiple
-          classes={{
-            paper: classes.paper,
-            popperDisablePortal: classes.popperDisablePortal,
-          }}
-          value={selectedGenes}
-          onChange={handleChange}
-          disableCloseOnSelect
-          disableListWrap
-          onKeyDownCapture={handleEnter}
-          options={genes}
-          ListboxComponent={
-            ListboxComponent as React.ComponentType<
-              React.HTMLAttributes<HTMLElement>
-            >
-          }
-          renderOption={(option) => option.name}
-          onPaste={handlePaste}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint errors
-          // @ts-ignore -- TODO revisit lint errors
-          InputBaseProps={{
-            onChange: (
-              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-            ) => {
-              setInput(event.target.value);
-            },
-            placeholder: "Search or paste comma separated gene names",
-          }}
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <Dropdown
+          label={selectedOrganism.name}
+          value={selectedOrganism}
+          onChange={(options) => setSelectedOrganism(options as Organism)}
+          options={organisms}
+          InputDropdownProps={{ sdsStyle: "square" }}
         />
-      </Popper>
+        <QuickSelect
+          items={tissues}
+          itemsByName={tissuesByName}
+          selected={selectedTissue}
+          setSelected={setSelectedTissue}
+        />
+        <QuickSelect
+          items={genes}
+          itemsByName={genesByName}
+          selected={selectedGenes}
+          pasteMultiple
+          setSelected={setSelectedGenes}
+          onItemNotFound={handleGeneNotFound}
+        />
+      </div>
     </Container>
   );
 
