@@ -15,8 +15,8 @@ from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
-# from pronto import Ontology
-# import pygraphviz as pgv
+from pronto import Ontology
+import pygraphviz as pgv
 import json
 
 # TODO - does writing and reading directly from s3 slow down compute? test
@@ -31,11 +31,21 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# Stack name for rdev
+stack_name = os.environ.get('REMOTE_DEV_PREFIX')
+wmg_bucket_name = os.environ.get('WMG_BUCKET')
+artifact_bucket_name = os.environ.get('ARTIFACT_BUCKET')
+
+
+def get_wmg_bucket_path():
+    if stack_name:
+        return f"s3://{wmg_bucket_name}{stack_name}"
+    else:
+        return f"s3://{wmg_bucket_name}"
+
 
 def get_s3_uris():
     with db_session_manager() as session:
-        # TODO: remove when testing is completed
-        # dataset_ids = []
         dataset_ids = Dataset.list_ids_for_cube(session)
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris
@@ -124,12 +134,13 @@ def generate_cell_ordering(cell_type_by_tissue):
     with open("ordered-cells.json", "w") as f:
         json.dump(mapping, f)
 
-def update_s3_resources():
+def update_s3_resources(group_name):
     time_stamp = time.time()
     # copy cell ordering
     # copy corpus
     # copy cube
-    update_latest_snapshot(time_stamp)
+    update_latest_snapshot(group_name, time_stamp)
+    update_cell_ordering()
     remove_oldest_datasets()
     pass
 
@@ -138,8 +149,14 @@ def remove_oldest_datasets():
     pass
 
 
-def update_latest_snapshot(time_stamp):
-    pass
+def update_latest_snapshot(group_name, time_stamp):
+    # TODO: use the right bucket name
+    sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{get_wmg_bucket_path()}/cube"]
+    subprocess.run(sync_command)
+
+def update_cell_ordering():
+    sync_command = ["aws", "s3", "cp", f"ordered-cells.json", f"{get_wmg_bucket_path()}/ordered-cells.json"]
+    subprocess.run(sync_command)
 
 
 def load_data_and_create_cube(path_to_datasets, group_name):
@@ -151,13 +168,13 @@ def load_data_and_create_cube(path_to_datasets, group_name):
         create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
-    # cell_type_by_tissue = get_cells_by_tissue_type(group_name)
-    # generate_cell_ordering(cell_type_by_tissue)
-    # update_s3_resources()
+    cell_type_by_tissue = get_cells_by_tissue_type(group_name)
+    generate_cell_ordering(cell_type_by_tissue)
+    update_s3_resources(group_name)
     print("Cube creation script - completed")
-    return True
+    return 0
 
 
 if __name__ == "__main__":
-    rv = load_data_and_create_cube("datasets", "ebezzi-test-cube-wmg")
+    rv = load_data_and_create_cube("datasets", "full-cube")
     sys.exit(rv)
