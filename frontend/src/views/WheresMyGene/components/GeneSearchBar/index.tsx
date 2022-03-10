@@ -9,7 +9,7 @@ import { Gene } from "../../common/types";
 import QuickSelect from "../QuickSelect";
 import GeneSets from "./components/Genesets";
 import Organism from "./components/Organism";
-import { Container } from "./style";
+import { ActionWrapper, Container } from "./style";
 
 const GENESETS = [
   [
@@ -210,7 +210,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
 
       <br />
       <br />
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <ActionWrapper>
         <Organism />
 
         <QuickSelect
@@ -227,7 +227,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           setSelected={setSelectedGenes}
           onItemNotFound={handleGeneNotFound}
         />
-      </div>
+      </ActionWrapper>
     </Container>
   );
 
