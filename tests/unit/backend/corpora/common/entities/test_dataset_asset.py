@@ -160,6 +160,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         first_uri = "some_uri_0"
         second_uri = "some_uri_1"
         third_uri = "this_shouldnt_be_returned"
+
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.H5AD,
@@ -217,3 +218,4 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
         self.assertTrue(set(s3_uri_dataset_dict.values()).issuperset(set([first_uri, second_uri])))
         self.assertNotIn(third_uri, s3_uri_dataset_dict.values())
+

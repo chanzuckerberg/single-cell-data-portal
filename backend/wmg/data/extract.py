@@ -20,7 +20,6 @@ included_assay_ontologies = {
     "EFO:0008919": "Seq-Well S3",
 }
 
-
 def get_dataset_s3_uris():
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
@@ -45,6 +44,7 @@ def get_dataset_s3_uris():
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris.values()
+
 
 
 def copy_datasets_to_instance(s3_uris, dataset_directory):
