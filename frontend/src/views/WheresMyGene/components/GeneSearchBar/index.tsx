@@ -6,9 +6,9 @@ import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
 import Toast from "src/views/Collection/components/Toast";
 import { Gene } from "../../common/types";
-import QuickSelect from "../QuickSelect";
 import GeneSets from "./components/Genesets";
 import Organism from "./components/Organism";
+import QuickSelect from "./components/QuickSelect";
 import { ActionWrapper, Container } from "./style";
 
 const GENESETS = [
@@ -206,6 +206,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
 
   return (
     <Container>
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
       <GeneSets onSelect={handleGenesetsSelect} />
 
       <br />
@@ -218,7 +221,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           itemsByName={tissuesByName}
           selected={selectedTissue}
           setSelected={setSelectedTissue}
+          label="Add Tissue"
         />
+
         <QuickSelect
           items={genes}
           itemsByName={genesByName}
@@ -226,6 +231,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           pasteMultiple
           setSelected={setSelectedGenes}
           onItemNotFound={handleGeneNotFound}
+          label="Add Gene"
         />
       </ActionWrapper>
     </Container>

@@ -1,17 +1,20 @@
 import { Theme } from "@emotion/react";
-import { ButtonBase, makeStyles, Popper } from "@material-ui/core";
+import { makeStyles, Popper } from "@material-ui/core";
 import { AutocompleteCloseReason } from "@material-ui/lab";
 import {
   DefaultMenuSelectOption,
   getColors,
   getCorners,
   getShadows,
+  Icon,
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
 import React, { createContext, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { noop } from "src/common/constants/utils";
+import { Label } from "../../style";
+import { ButtonWrapper, StyledIconButton } from "./style";
 
 const LISTBOX_ITEM_HEIGHT_PX = 32;
 const LISTBOX_HEIGHT_PX = 152;
@@ -66,11 +69,12 @@ export type Value<T, Multiple> = Multiple extends undefined | false ? T : T[];
 
 interface Props<T, Multiple> {
   items: T[];
-  pasteMultiple: Multiple;
+  pasteMultiple?: Multiple;
   setSelected: (selected: Value<T, Multiple>) => void;
   selected: T[] | T;
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
+  label: string;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -82,6 +86,7 @@ export default function QuickSelect<
   selected,
   itemsByName,
   onItemNotFound,
+  label,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -166,9 +171,12 @@ export default function QuickSelect<
 
   return (
     <>
-      <ButtonBase disableRipple onClick={handleClick} ref={ref}>
-        <span>Add Genes</span>
-      </ButtonBase>
+      <ButtonWrapper>
+        <Label>{label}</Label>
+        <StyledIconButton ref={ref} onClick={handleClick} sdsType="primary">
+          <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
+        </StyledIconButton>
+      </ButtonWrapper>
       <Popper open={open} className={classes.popper} anchorEl={ref.current}>
         <MenuSelect
           open

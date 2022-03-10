@@ -1,5 +1,5 @@
-import { Dropdown } from "czifui";
-import styled from "styled-components";
+import styled from "@emotion/styled";
+import { Dropdown, fontBodyXxxs, getColors } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
@@ -14,4 +14,16 @@ export const StyledDropdown = styled(Dropdown)`
 export const ActionWrapper = styled.div`
   display: flex;
   gap: 16px;
+`;
+
+export const Label = styled.label`
+  ${fontBodyXxxs}
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      color: ${colors?.gray[500]}
+    `;
+  }}
 `;

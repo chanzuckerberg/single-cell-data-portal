@@ -6,7 +6,8 @@ import { useReducer } from "react";
 import { INITIAL_STATE, reducer } from "src/views/WheresMyGene/common/store";
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
-import { Label, StyledDropdown, Wrapper } from "./style";
+import { Label } from "../../style";
+import { StyledDropdown, Wrapper } from "./style";
 
 const ORGANISMS: IOrganism[] = [
   { name: "Homo sapiens" },
