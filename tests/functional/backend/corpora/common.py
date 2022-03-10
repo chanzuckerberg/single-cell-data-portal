@@ -33,7 +33,6 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        config = CorporaAuthConfig()
         self.api = API_URL.get(self.deployment_stage)
         self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
         self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
