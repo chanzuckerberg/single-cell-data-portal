@@ -3,7 +3,7 @@ from typing import Tuple
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
 from backend.wmg.data.schemas import cube_non_indexed_dims
-from tests.unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
+from tests.unit.backend.wmg.fixtures.test_cube import create_temp_cube, all_ones_attr_values
 
 
 class QueryTest(unittest.TestCase):
