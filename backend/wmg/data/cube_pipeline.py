@@ -1,12 +1,14 @@
+import logging
 import sys
-from typing import Dict, List
+from typing import List
 
-import tiledb
-
-from backend.wmg.data.extract import copy_datasets_to_instance
+from backend.wmg.data.extract import copy_datasets_to_instance, get_s3_uris
 from backend.wmg.data.load import update_s3_resources
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
-from tests.unit.backend.wmg.fixtures.cube import create_cube
+from backend.wmg.data.wmg_cube import create_cube
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def load(dataset_directory: List, group_name: str, validate: bool):
@@ -28,9 +30,10 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     A per tissue mapping of cell ontologies is generated and the files are copied to s3 under a shared timestamp,.
     On success the least recent set of files are removed from s3
     """
-    copy_datasets_to_instance(path_to_datasets)
+    s3_uris = get_s3_uris()
+    copy_datasets_to_instance(s3_uris, path_to_datasets)
     load(path_to_datasets, corpus_name)
-    create_cube(corpus_name)
+    create_cube(corpus_name)  # Todo dry up with create cube func in fixtures
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_name)
     generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources()
