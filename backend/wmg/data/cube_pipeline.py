@@ -1,7 +1,9 @@
 import logging
+
 import sys
 from typing import List
 from backend.wmg.data import extract
+
 from backend.wmg.data.load import update_s3_resources
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cube
