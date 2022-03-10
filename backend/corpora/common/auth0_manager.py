@@ -49,8 +49,8 @@ class Auth0ManagementSession:
         # Generate management token
         payload = json.dumps(
             dict(
-                client_id=CorporaAuthConfig().mgmt_client_id,
-                client_secret=CorporaAuthConfig().mgmt_client_secret,
+                client_id=CorporaAuthConfig().client_id,
+                client_secret=CorporaAuthConfig().client_secret,
                 grant_type="client_credentials",
                 audience=f"https://{domain}/api/v2/",
             )
@@ -119,8 +119,8 @@ class Auth0ManagementSession:
                 username=user_name,
                 password=password,
                 scope="profile email",
-                client_id=CorporaAuthConfig().api_client_id,
-                client_secret=CorporaAuthConfig().api_client_secret,
+                client_id=CorporaAuthConfig().curator_api_client_id,
+                client_secret=CorporaAuthConfig().curator_api_client_secret,
                 realm=CorporaAuthConfig().api_key_connection,
                 audience=CorporaAuthConfig().audience,
             ),
