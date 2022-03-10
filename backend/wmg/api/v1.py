@@ -16,7 +16,7 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     build_dot_plot_matrix,
 )
-from backend.wmg.data.schema import cube_non_indexed_dims
+from backend.wmg.data.schemas import cube_non_indexed_dims
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag

@@ -12,7 +12,7 @@ from numpy.random import random, randint
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
+from backend.wmg.data.schemas import cube_logical_dims, cube_schema, cube_indexed_dims, cube_logical_attrs
 
 
 def random_attr_values(coords):

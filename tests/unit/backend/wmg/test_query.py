@@ -2,7 +2,7 @@ import unittest
 from typing import Tuple
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
-from backend.wmg.data.schema import cube_non_indexed_dims
+from backend.wmg.data.schemas import cube_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
 
 
