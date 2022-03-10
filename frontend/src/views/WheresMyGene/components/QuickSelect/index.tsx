@@ -57,22 +57,34 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
   }
 );
 
-interface Props<T> {
+// (thuang): Value's type is based on generic type placeholder (T) and Multiple
+// type. If Multiple is true, Value's type is T[].
+// Otherwise, Value's type is T.
+// Conditional Type
+// https://www.typescriptlang.org/docs/handbook/2/conditional-types.html
+export type Value<T, Multiple> = Multiple extends undefined | false
+  ? T
+  : Array<T>;
+
+interface Props<T, Multiple> {
   items: T[];
-  pasteMultiple: boolean;
-  setSelected: (selected: T[] | T) => void;
+  pasteMultiple: Multiple;
+  setSelected: (selected: Value<T, Multiple>) => void;
   selected: T[] | T;
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
 }
-export default function QuickSelect<T extends DefaultMenuSelectOption>({
+export default function QuickSelect<
+  T extends DefaultMenuSelectOption,
+  Multiple extends boolean | undefined = false
+>({
   items,
   pasteMultiple,
   setSelected,
   selected,
   itemsByName,
   onItemNotFound,
-}: Props<T>): JSX.Element {
+}: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
   const [input, setInput] = useState("");
