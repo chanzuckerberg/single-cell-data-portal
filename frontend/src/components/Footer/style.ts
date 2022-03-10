@@ -2,14 +2,18 @@ import { fontStyle, OLD_BLUE } from "src/components/common/theme";
 import styled from "styled-components";
 import { layout } from "../common/layout";
 
+export const FOOTER_HEIGHT_PX = 56;
+
 export const Wrapper = styled.div`
   width: 100%;
-  height: 56px;
+  height: ${FOOTER_HEIGHT_PX}px;
   padding-left: 15px;
   display: flex;
   flex: none;
   align-items: center;
   border-top: 1px solid #dbdcdd;
+  z-index: 1;
+  background: white;
 `;
 
 export const MainWrapper = styled.div`

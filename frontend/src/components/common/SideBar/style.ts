@@ -1,5 +1,6 @@
 import { Classes } from "@blueprintjs/core";
 import { LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import styled from "styled-components";
 
 export enum Position {
@@ -31,13 +32,13 @@ export const SideBar = styled.div<Props>`
 
 export const SideBarPositioner = styled.div<PositionerProps>`
   max-height: calc(
-    100vh - 48px
+    100vh - ${HEADER_HEIGHT_PX}px
   ); /* required for sidebar scrolling  where header height is 48px */
   overflow-y: ${(props) =>
     props.isExpanded ? "overlay" : undefined}; /* overlay is deprecated */
   padding: ${(props) => (props.isExpanded ? "24px 16px" : undefined)};
   position: sticky;
-  top: 48px;
+  top: ${HEADER_HEIGHT_PX}px;
   width: inherit; /* inherits sidebar container width specification */
 
   &::-webkit-scrollbar {
