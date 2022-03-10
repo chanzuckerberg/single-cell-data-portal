@@ -13,7 +13,7 @@ from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, 
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.cube import WmgCubes
-from backend.wmg.data.schema import (
+from backend.wmg.data.schemas.cube_schema import (
     cube_indexed_dims,
     cube_logical_attrs,
     cube_logical_dims,
@@ -24,6 +24,7 @@ from backend.wmg.data.schema import (
     cell_counts_logical_dims,
 )
 from backend.wmg.data.tiledb import create_ctx
+
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:

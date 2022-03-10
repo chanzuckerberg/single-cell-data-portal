@@ -2,12 +2,13 @@ import unittest
 from typing import Tuple
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
-from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.cube import (
     create_temp_wmg_cubes,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
 )
+from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+
 
 
 @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
