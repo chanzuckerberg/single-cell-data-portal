@@ -216,7 +216,7 @@ export default memo(function Chart({
       },
       {
         dataRows: [
-          { label: "Cell Name", value: cellType.name },
+          { label: "Cell Type", value: cellType.name },
           { label: "Tissue Composition", value: "" },
         ],
       },

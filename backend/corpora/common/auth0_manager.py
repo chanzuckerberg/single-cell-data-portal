@@ -49,8 +49,8 @@ class Auth0ManagementSession:
         # Generate management token
         payload = json.dumps(
             dict(
-                client_id=CorporaAuthConfig.mgmt_client_id,
-                client_secret=CorporaAuthConfig.mgmt_client_secret,
+                client_id=CorporaAuthConfig().mgmt_client_id,
+                client_secret=CorporaAuthConfig().mgmt_client_secret,
                 grant_type="client_credentials",
                 audience=f"https://{domain}/api/v2/",
             )
@@ -71,7 +71,7 @@ class Auth0ManagementSession:
         body = response.json()
         identity = None
         for i in body["identities"]:
-            if i["connection"] == CorporaAuthConfig.api_key_connection_name:
+            if i["connection"] == CorporaAuthConfig().api_key_connection_name:
                 identity = i
                 break
         return identity
@@ -94,7 +94,7 @@ class Auth0ManagementSession:
                 email=email,
                 username=user_name,
                 password=password,
-                connection=CorporaAuthConfig.api_key_connection_name,
+                connection=CorporaAuthConfig().api_key_connection_name,
             )
         )
         response = self.session.post(f"https://{self.domain}/api/v2/users", data=payload)
@@ -105,7 +105,7 @@ class Auth0ManagementSession:
     def link_api_key(self, user: str, api_key_id: str) -> None:
         # link the user to the api key.
         payload = json.dumps(
-            {"provider": "auth0", "connection_id": CorporaAuthConfig.api_key_connection, "user_id": api_key_id}
+            {"provider": "auth0", "connection_id": CorporaAuthConfig().api_key_connection, "user_id": api_key_id}
         )
         response = self.session.post(f"https://{self.domain}/api/v2/users/{user}/identities", data=payload)
         response.raise_for_status()
@@ -119,10 +119,10 @@ class Auth0ManagementSession:
                 username=user_name,
                 password=password,
                 scope="profile email",
-                client_id=CorporaAuthConfig.api_client_id,
-                client_secret=CorporaAuthConfig.api_client_secret,
-                realm=CorporaAuthConfig.api_key_connection,
-                audience=CorporaAuthConfig.audience,
+                client_id=CorporaAuthConfig().api_client_id,
+                client_secret=CorporaAuthConfig().api_client_secret,
+                realm=CorporaAuthConfig().api_key_connection,
+                audience=CorporaAuthConfig().audience,
             ),
         )
         response.raise_for_status()
