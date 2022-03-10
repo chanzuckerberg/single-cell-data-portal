@@ -1,14 +1,17 @@
 import logging
+
 import sys
 from typing import List
+
 
 from backend.wmg.data.extract import copy_datasets_to_instance
 from backend.wmg.data.load import update_s3_resources
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
-from tests.unit.backend.wmg.fixtures.cube import create_cube
+from backend.wmg.data.wmg_cube import create_cube
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 
 def load(dataset_directory: List, group_name: str, validate: bool):
