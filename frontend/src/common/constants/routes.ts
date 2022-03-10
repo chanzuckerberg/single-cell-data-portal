@@ -8,6 +8,7 @@ export enum ROUTES {
   TOS = "/tos/",
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",
+  WHERE_IS_MY_GENE = "/wmg",
 }
 
 export enum EXTERNAL_LINKS {

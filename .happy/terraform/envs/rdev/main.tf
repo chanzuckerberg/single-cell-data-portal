@@ -14,6 +14,8 @@ module stack {
   batch_container_memory_limit = 28000
   backend_instance_count       = 1
   frontend_instance_count      = 1
+  # WMG ("Where's My Gene") API (backend container) requires more memory due to use of TileDB
+  backend_memory               = length(regexall("wmg", var.stack_name)) > 0 ? 8192 : 1536
 
   wait_for_steady_state        = var.wait_for_steady_state
 }
