@@ -46,7 +46,7 @@ const REQUIRED_FIELD_TEXT = "Required";
  * Text displayed when BE has identified DOI as invalid.
  */
 const INVALID_DOI_ERROR_MESSAGE =
-  "We could not resolve this DOI. Please correct or remove it.";
+  "This DOI could not be found. Please correct or remove it.";
 
 interface Props {
   onClose: () => void;
