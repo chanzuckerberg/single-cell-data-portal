@@ -127,4 +127,3 @@ class DatasetAsset(Entity):
         if file_type:
             s3_uris = s3_uris.filter(cls.table.filetype == file_type)
         return {x[0]: x[1] for x in s3_uris.all()}
-

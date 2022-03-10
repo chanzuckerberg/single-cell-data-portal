@@ -2,7 +2,6 @@ import logging
 import sys
 from typing import List
 from backend.wmg.data import extract
-
 from backend.wmg.data.load import update_s3_resources
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cube
@@ -31,13 +30,12 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     On success the least recent set of files are removed from s3
     """
 
-<<<<<<< HEAD
+
     s3_uris = extract.get_dataset_s3_uris()
     extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
-=======
-    s3_uris = get_dataset_s3_uris()
-    copy_datasets_to_instance(s3_uris, path_to_datasets)
->>>>>>> a55c2c17 (save point for data loading)
+
+    s3_uris = extract.get_dataset_s3_uris()
+    extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
     logger.info("Copied datasets to instance")
 
     load(path_to_datasets, corpus_name)

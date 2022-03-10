@@ -20,6 +20,7 @@ included_assay_ontologies = {
     "EFO:0008919": "Seq-Well S3",
 }
 
+
 def get_dataset_s3_uris():
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
@@ -29,14 +30,14 @@ def get_dataset_s3_uris():
         dataset_ids = []
         published_dataset_non_null_assays = (
             session.query(Dataset.table.id, Dataset.table.assay)
-            .filter(
+                .filter(
                 Dataset.table.assay != "null",
                 Dataset.table.published == "TRUE",
                 Dataset.table.is_primary_data == "PRIMARY",
                 Dataset.table.collection_visibility == "PUBLIC",
                 Dataset.table.tombstone == "FALSE",
             )
-            .all()
+                .all()
         )
         for dataset in published_dataset_non_null_assays:
             if dataset[1]["ontology_term_id"] in included_assay_ontologies:
@@ -44,7 +45,6 @@ def get_dataset_s3_uris():
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris.values()
-
 
 
 def copy_datasets_to_instance(s3_uris, dataset_directory):
