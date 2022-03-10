@@ -14,6 +14,7 @@ import {
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import {
+  CellType,
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
   GeneExpressionSummary,
@@ -36,7 +37,7 @@ import {
 } from "./style";
 
 interface Props {
-  cellTypes: CellTypeSummary[];
+  cellTypes: CellType[];
   selectedGeneData: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
@@ -44,6 +45,8 @@ interface Props {
     }>
   >;
   tissue: Tissue;
+  scaledMeanExpressionMax: number;
+  scaledMeanExpressionMin: number;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -57,6 +60,8 @@ export default memo(function Chart({
   selectedGeneData,
   setIsLoading,
   tissue,
+  scaledMeanExpressionMax,
+  scaledMeanExpressionMin,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -83,6 +88,8 @@ export default memo(function Chart({
     return throttle((params, chart) => {
       const { offsetX, offsetY, event } = params;
       const { pageX, pageY } = event;
+
+      if (!chart) return;
 
       const pointInGrid = chart.convertFromPixel("grid", [offsetX, offsetY]);
 
@@ -127,8 +134,13 @@ export default memo(function Chart({
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
-      (cellTypes: CellTypeSummary[], geneData: Props["selectedGeneData"]) => {
-        setCellTypeSummaries(integrateCelTypesAndGenes(cellTypes, geneData));
+      (cellTypes: CellType[], geneData: Props["selectedGeneData"]) => {
+        setCellTypeSummaries(
+          integrateCelTypesAndGenes({
+            cellTypes,
+            geneExpressionSummaries: geneData,
+          })
+        );
       },
       getDebounceMs(selectedGeneData.length),
       { leading: false }
@@ -157,8 +169,16 @@ export default memo(function Chart({
         selectedGeneData: Props["selectedGeneData"]
       ) => {
         const result = {
-          cellTypeMetadata: getAllSerializedCellTypeMetadata(cellTypeSummaries),
-          chartData: dataToChartFormat(cellTypeSummaries, selectedGeneData),
+          cellTypeMetadata: getAllSerializedCellTypeMetadata(
+            cellTypeSummaries,
+            tissue
+          ),
+          chartData: dataToChartFormat({
+            cellTypeSummaries,
+            genes: selectedGeneData,
+            scaledMeanExpressionMax,
+            scaledMeanExpressionMin,
+          }),
           geneNames: getGeneNames(selectedGeneData),
         };
 
@@ -169,7 +189,13 @@ export default memo(function Chart({
       getDebounceMs(selectedGeneData.length),
       { leading: false }
     );
-  }, [selectedGeneData, setIsLoading, tissue]);
+  }, [
+    selectedGeneData,
+    setIsLoading,
+    tissue,
+    scaledMeanExpressionMax,
+    scaledMeanExpressionMin,
+  ]);
 
   useEffect(() => {
     debouncedDataToChartFormat(cellTypeSummaries, selectedGeneData);
@@ -245,6 +271,7 @@ export default memo(function Chart({
         placement="right-start"
         classes={tooltipClasses}
         title={tooltipContent || <>No data</>}
+        leaveDelay={0}
         PopperProps={{
           anchorEl: {
             clientHeight: 0,
@@ -273,19 +300,22 @@ export default memo(function Chart({
 });
 
 /**
- * Adds gene expressions to the cell types.
+ * Adds gene expressions to the selected cell types.
  */
-function integrateCelTypesAndGenes(
-  cellTypeSummaries: CellTypeSummary[],
-  geneExpressionSummaries: Props["selectedGeneData"]
-): CellTypeSummary[] {
+function integrateCelTypesAndGenes({
+  cellTypes,
+  geneExpressionSummaries,
+}: {
+  cellTypes: CellType[];
+  geneExpressionSummaries: Props["selectedGeneData"];
+}): CellTypeSummary[] {
   const geneMaps = geneExpressionSummaries.map((geneExpressionSummary) =>
     rawGeneDataToMap(geneExpressionSummary)
   );
 
-  const newCellTypeSummaries = cloneDeep(cellTypeSummaries);
+  const cellTypeSummaries: CellTypeSummary[] = cloneDeep(cellTypes);
 
-  return newCellTypeSummaries.map((cellTypeSummary) => {
+  return cellTypeSummaries.map((cellTypeSummary) => {
     const { id } = cellTypeSummary;
 
     for (const [name, geneMap] of geneMaps) {
