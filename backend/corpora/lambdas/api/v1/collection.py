@@ -10,7 +10,11 @@ import logging
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
-from ....common.utils.exceptions import InvalidParametersHTTPException, ForbiddenHTTPException, ConflictException
+from ....common.utils.exceptions import (
+    InvalidParametersHTTPException,
+    ForbiddenHTTPException,
+    ConflictException,
+)
 from ....api_server.db import dbconnect
 from backend.corpora.lambdas.api.v1.authorization import has_scope
 
@@ -56,12 +60,12 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
 
 
 @dbconnect
-def get_collection_details(collection_uuid: str, visibility: str, user: str):
+def get_collection_details(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
+    collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
     if not collection:
         raise ForbiddenHTTPException()
-    if collection.tombstone and visibility == CollectionVisibility.PUBLIC.name:
+    if collection.tombstone:
         result = ""
         response = 410
     else:
@@ -100,13 +104,12 @@ def post_collection_revision(collection_uuid: str, user: str):
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
-        CollectionVisibility.PUBLIC.name,
         owner=_owner_or_allowed(user),
     )
     if not collection:
         raise ForbiddenHTTPException()
     try:
-        collection_revision = collection.revision()
+        collection_revision = collection.create_revision()
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
@@ -189,42 +192,27 @@ def get_collection_dataset(dataset_uuid: str):
 
 
 @dbconnect
-def delete_collection(collection_uuid: str, visibility: str, user: str):
+def delete_collection(collection_uuid: str, user: str):
     db_session = g.db_session
-    if visibility == CollectionVisibility.PUBLIC.name:
-        pub_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            visibility,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-        priv_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            CollectionVisibility.PRIVATE.name,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-
-        if pub_collection:
-            if not pub_collection.tombstone:
-                pub_collection.tombstone_collection()
-            if priv_collection:
-                if not priv_collection.tombstone:
-                    priv_collection.delete()
+    collection = Collection.get_collection(
+        db_session,
+        collection_uuid,
+        owner=_owner_or_allowed(user),
+        include_tombstones=True,
+    )
+    if collection:
+        if collection.visibility == CollectionVisibility.PUBLIC:
+            revision = Collection.get_collection(
+                db_session,
+                revision_of=collection_uuid,
+                owner=_owner_or_allowed(user),
+            )
+            if revision:
+                revision.delete()
+            collection.tombstone_collection()
             return "", 204
-    else:
-        priv_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            CollectionVisibility.PRIVATE.name,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-        if priv_collection:
-            if not priv_collection.tombstone:
-                priv_collection.delete()
+        else:
+            collection.delete()
             return "", 204
     return "", 403
 
@@ -235,7 +223,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
-        CollectionVisibility.PRIVATE.name,
+        # CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
     if not collection:

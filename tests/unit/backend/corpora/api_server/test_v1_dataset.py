@@ -125,7 +125,11 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             revised_at=datetime.now(),
         )
         self.generate_dataset(self.session, id="test_dataset_id_for_index_tombstone", tombstone=True)
-        self.generate_dataset(self.session, id="test_dataset_id_for_index_private", collection_visibility="PRIVATE")
+        self.generate_dataset(
+            self.session,
+            id="test_dataset_id_for_index_private",
+            collection_id="test_collection_id_revision",
+        )
         test_url = furl(path="/dp/v1/datasets/index")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
