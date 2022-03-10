@@ -155,3 +155,43 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         )
         artifact = dataset.get_most_recent_artifact(DatasetArtifactFileType.CXG)
         self.assertEqual(artifact.s3_uri, second_uri)
+
+    def test_get_list_of_s3_uris_for_associated_dataset_ids(self):
+        first_uri = "some_uri_0"
+        second_uri = "some_uri_1"
+        artifact_params_0 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=first_uri,
+        )
+        artifact_params_1 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        dataset_0 = self.generate_dataset(self.session, artifacts=[artifact_params_0])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_0.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=first_uri,
+        )
+        dataset_1 = self.generate_dataset(self.session, artifacts=[artifact_params_1])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_1.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        s3_uris = DatasetAsset.s3_uris_for_datasets(self.session, [dataset_0.id, dataset_1.id])
+        self.assertEqual(s3_uris, {dataset_0.id: first_uri, dataset_1.id: second_uri})
