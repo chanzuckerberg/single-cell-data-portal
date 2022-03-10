@@ -113,6 +113,7 @@ module backend_service {
   security_groups   = local.security_groups
   task_role_arn     = local.ecs_role_arn
   service_port      = 5000
+  # WMG ("Where's My Gene") API (backend container) requires more memory due to use of TileDB
   memory            = length(regexall("wmg", local.custom_stack_name)) > 0 ? 8192 : 1536
   cmd               = local.backend_cmd
   deployment_stage  = local.deployment_stage
