@@ -1,5 +1,6 @@
 import styled, { css } from "styled-components";
 import { layout } from "../common/layout";
+import { HEADER_HEIGHT_PX } from "../Header/style";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -16,7 +17,7 @@ export const contentWrapper = css`
 export const MainWrapper = styled.div`
   display: grid; /* required: ensures any remaining viewport height allocated to main content is observed; ancestor component heights are unspecified and so any height specification will revert to "auto" */
   flex: 1; /* sticks footer to bottom of viewport and initial render of main content is at full viewport height while data is loading. */
-  margin-top: 48px; /* positions content below fixed header */
+  margin-top: ${HEADER_HEIGHT_PX}px; /* positions content below fixed header */
 `;
 
 export const DefaultMainWrapper = styled(MainWrapper)`
