@@ -62,9 +62,7 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
 // Otherwise, Value's type is T.
 // Conditional Type
 // https://www.typescriptlang.org/docs/handbook/2/conditional-types.html
-export type Value<T, Multiple> = Multiple extends undefined | false
-  ? T
-  : Array<T>;
+export type Value<T, Multiple> = Multiple extends undefined | false ? T : T[];
 
 interface Props<T, Multiple> {
   items: T[];

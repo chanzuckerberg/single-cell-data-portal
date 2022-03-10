@@ -1,5 +1,4 @@
 import { Intent } from "@blueprintjs/core";
-import { Dropdown } from "czifui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -9,6 +8,7 @@ import Toast from "src/views/Collection/components/Toast";
 import { Gene } from "../../common/types";
 import QuickSelect from "../QuickSelect";
 import GeneSets from "./components/Genesets";
+import Organism from "./components/Organism";
 import { Container } from "./style";
 
 const GENESETS = [
@@ -211,13 +211,8 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       <br />
       <br />
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <Dropdown
-          label={selectedOrganism.name}
-          value={selectedOrganism}
-          onChange={(options) => setSelectedOrganism(options as Organism)}
-          options={organisms}
-          InputDropdownProps={{ sdsStyle: "square" }}
-        />
+        <Organism />
+
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
