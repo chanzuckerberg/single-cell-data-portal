@@ -40,10 +40,10 @@ def consolidation_buffer_size(vm_fraction: float) -> int:
     return buffer_size // GB * GB  # round down to GB boundary
 
 
-def fast_config(config_overrides: dict = {}) -> dict:
+def fast_config(config_overrides: dict = {}, tiledb_mem_gb: float=1) -> dict:
     config = {
         **base_config(),
-        "py.init_buffer_bytes": int(float(WmgConfig().tiledb_mem_gb) * GB),  # needs to be at least 8GB
+        "py.init_buffer_bytes": int(float(tiledb_mem_gb) * GB),
         "sm.tile_cache_size": virtual_memory_size(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
         "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
