@@ -156,6 +156,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         first_uri = "some_uri_0"
         second_uri = "some_uri_1"
         third_uri = "this_shouldnt_be_returned"
+
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.H5AD,
