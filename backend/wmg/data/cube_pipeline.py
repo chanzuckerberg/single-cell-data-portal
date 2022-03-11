@@ -1,9 +1,14 @@
+import gc
 import logging
+import os
 import sys
 from typing import List
 
-from backend.wmg.data import extract
-from backend.wmg.data.load import update_s3_resources
+import tiledb
+
+from backend.wmg.config import create_fast_ctx
+from backend.wmg.data.load_cube import update_s3_resources
+from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cube
 
@@ -16,7 +21,16 @@ def load(dataset_directory: List, group_name: str, validate: bool):
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name
     """
-    pass
+    with tiledb.scope_ctx(create_fast_ctx()):
+        for dataset in os.listdir(dataset_directory):
+            file_path = f"{dataset_directory}/{dataset}/local.h5ad"
+            load_h5ad(file_path, group_name, validate) # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
+            gc.collect()
+
+        logger.info("all loaded, now consolidating.")
+        for arr_name in [f"{group_name}/{name}" for name in ["obs", "var", "raw", "X"]]:
+            tiledb.consolidate(arr_name)
+            tiledb.vacuum(arr_name)
 
 
 def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level):

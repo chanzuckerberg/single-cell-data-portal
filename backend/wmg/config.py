@@ -1,5 +1,7 @@
 import os
 
+import tiledb
+
 from backend.corpora.common.utils.secret_config import SecretConfig
 
 
@@ -11,3 +13,7 @@ class WmgConfig(SecretConfig):
         deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
         defaults_template = {"bucket": f"wmg-{deployment_stage}"}
         return defaults_template
+
+
+def create_fast_ctx(config_overrides: dict = {}) -> tiledb.Ctx:
+    return create_ctx(fast_config(config_overrides))
