@@ -41,12 +41,11 @@ class TestKeys(BaseAuthAPITest):
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
-        key_name = key.split(".")[-1]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
         delete_api_key.assert_not_called()
-        store_api_key.assert_called_once_with(key_name, key, self.email)
+        store_api_key.assert_called_once_with(key, self.email)
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
         get_user_api_key_identity.assert_called_once_with(self.user_name)
 
@@ -68,7 +67,7 @@ class TestKeys(BaseAuthAPITest):
     ):
         CorporaAuthConfig().api_key_secret = self.api_key_secret
         CorporaAuthConfig().days_to_live = 1
-        get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "abcdefg"}
+        get_user_api_key_identity.return_value = {"user_id": self.api_key_id}
         delete_api_key.return_value = None
         store_api_key.return_value = self.api_key_id
         link_api_key.return_value = None
@@ -78,13 +77,12 @@ class TestKeys(BaseAuthAPITest):
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
-        key_name = key.split(".")[-1]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
         get_user_api_key_identity.assert_called_once_with(self.user_name)
         delete_api_key.assert_called_once()
-        store_api_key.assert_called_once_with(key_name, key, self.email)
+        store_api_key.assert_called_once_with(key, self.email)
         link_api_key.assert_called_once_with(self.user_name, self.api_key_id)
 
     @patch.multiple(
@@ -113,12 +111,10 @@ class TestKeys(BaseAuthAPITest):
 
     @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__get_key__200(self, get_user_api_key_identity):
-        get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
+        get_user_api_key_identity.return_value = {"user_id": self.api_key_id}
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get("/dp/v1/auth/key", headers=headers)
-        print(response.data)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(json.loads(response.data), {"id": "ABCDEF"})
         get_user_api_key_identity.assert_called_once()
 
     def test__get_key__401(self):
