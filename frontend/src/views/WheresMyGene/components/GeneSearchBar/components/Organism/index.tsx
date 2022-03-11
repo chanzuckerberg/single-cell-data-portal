@@ -33,6 +33,7 @@ export default function Organism(): JSX.Element {
         options={ORGANISMS}
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={InputDropdownProps}
+        data-test-id="add-organism"
       />
     </Wrapper>
   );
