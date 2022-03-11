@@ -370,7 +370,7 @@ def make_cxg(local_filename):
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
         h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
-        h5ad_data_file.to_cxg(cxg_output_container, 10.0)
+        h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0)
     except Exception as ex:
         msg = "CXG conversion failed."
         logger.exception(msg)

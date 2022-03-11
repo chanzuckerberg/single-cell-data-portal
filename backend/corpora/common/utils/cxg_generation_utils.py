@@ -113,44 +113,54 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
     tiledb.consolidate(ndarray_name, ctx=ctx)
 
 
-def convert_matrix_to_cxg_array(
-    matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
-):
+def convert_matrix_to_cxg_array(matrix_name, matrix, encode_as_sparse_array, ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
     is true or not. Note that when the matrix is encoded as a SparseArray, it only writes the values that are
     nonzero. This means that if you count the number of elements in the SparseArray, it will not equal the total
     number of elements in the matrix, only the number of nonzero elements.
-
-    Furthermore, if the `column_shift_for_sparse_encoding` matrix is not None, this function will subtract the sparse
-    encoding from the original given matrix and as previously stated, only write the nonzero values to the TileDB
-    SparseArray.
     """
 
-    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array):
-        filters = tiledb.FilterList([tiledb.ZstdFilter()])
-        attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
-        if encode_as_sparse_array:
-            domain = tiledb.Domain(
-                tiledb.Dim(name="obs", domain=(0, number_of_rows - 1), tile=min(number_of_rows, 512), dtype=np.uint32),
-                tiledb.Dim(
-                    name="var", domain=(0, number_of_columns - 1), tile=min(number_of_columns, 2048), dtype=np.uint32
-                ),
+    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22):
+        attrs = [
+            tiledb.Attr(
+                dtype=np.float32,
+                filters=tiledb.FilterList([
+                    tiledb.ZstdFilter(level=compression)
+                ])
             )
-        else:
-            domain = tiledb.Domain(
-                tiledb.Dim(name="obs", domain=(0, number_of_rows - 1), tile=min(number_of_rows, 50), dtype=np.uint32),
-                tiledb.Dim(
-                    name="var", domain=(0, number_of_columns - 1), tile=min(number_of_columns, 100), dtype=np.uint32
-                ),
-            )
-        schema = tiledb.ArraySchema(
-            domain=domain, sparse=encode_as_sparse_array, attrs=attrs, cell_order="row-major", tile_order="col-major"
+        ]
+        domain = tiledb.Domain(
+            tiledb.Dim(
+                name="obs",
+                domain=(0, number_of_rows - 1),
+                tile=min(number_of_rows, 256),
+                dtype=np.uint32,
+                filters=tiledb.FilterList([
+                    tiledb.ZstdFilter(level=compression)
+                ]),
+            ),
+            tiledb.Dim(
+                name="var",
+                domain=(0, number_of_columns - 1),
+                tile=min(number_of_columns, 2048),
+                dtype=np.uint32,
+                filters=tiledb.FilterList([
+                    tiledb.ByteShuffleFilter(),
+                    tiledb.ZstdFilter(level=compression)
+                ]),
+            ),
         )
-        if encode_as_sparse_array:
-            tiledb.SparseArray.create(matrix_name, schema)
-        else:
-            tiledb.DenseArray.create(matrix_name, schema)
+        schema = tiledb.ArraySchema(
+            domain=domain,
+            sparse=encode_as_sparse_array,
+            allows_duplicates=True if encode_as_sparse_array else False,
+            attrs=attrs,
+            cell_order="row-major",
+            tile_order="col-major",
+            capacity=128000 if encode_as_sparse_array else 0,
+        )
+        tiledb.Array.create(matrix_name, schema)
 
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
@@ -158,24 +168,15 @@ def convert_matrix_to_cxg_array(
 
     create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array)
 
-    if encode_as_sparse_array:
-        with tiledb.SparseArray(matrix_name, mode="w", ctx=ctx) as array:
-            for start_row_index in range(0, number_of_rows, stride):
-                end_row_index = min(start_row_index + stride, number_of_rows)
-                matrix_subset = matrix[start_row_index:end_row_index, :]
-                if not isinstance(matrix_subset, np.ndarray):
-                    matrix_subset = matrix_subset.toarray()
-                if column_shift_for_sparse_encoding is not None:
-                    matrix_subset = matrix_subset - column_shift_for_sparse_encoding
+    with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
+        for start_row_index in range(0, number_of_rows, stride):
+            end_row_index = min(start_row_index + stride, number_of_rows)
+            matrix_subset = matrix[start_row_index:end_row_index, :]
+            if not isinstance(matrix_subset, np.ndarray):
+                matrix_subset = matrix_subset.toarray()
+            if encode_as_sparse_array:
                 indices = np.nonzero(matrix_subset)
                 trow = indices[0] + start_row_index
                 array[trow, indices[1]] = matrix_subset[indices[0], indices[1]]
-
-    else:
-        with tiledb.DenseArray(matrix_name, mode="w", ctx=ctx) as array:
-            for start_row_index in range(0, number_of_rows, stride):
-                end_row_index = min(start_row_index + stride, number_of_rows)
-                matrix_subset = matrix[start_row_index:end_row_index, :]
-                if not isinstance(matrix_subset, np.ndarray):
-                    matrix_subset = matrix_subset.toarray()
+            else:
                 array[start_row_index:end_row_index, :] = matrix_subset

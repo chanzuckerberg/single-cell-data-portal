@@ -174,7 +174,6 @@ class TestH5ADDataFile(unittest.TestCase):
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
         obs_array_location = f"{cxg_directory}/obs"
         var_array_location = f"{cxg_directory}/var"
-        x_col_shift_array_location = f"{cxg_directory}/X_col_shift"
 
         # Assert CXG structure
         self.assertEqual(tiledb.object_type(cxg_directory), "group")
@@ -183,9 +182,6 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(main_x_array_location), "array")
         self.assertEqual(tiledb.object_type(embedding_array_location), "group")
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
-
-        if has_column_encoding:
-            self.assertEqual(tiledb.object_type(x_col_shift_array_location), "array")
 
         # Validate metadata
         metadata_array = tiledb.DenseArray(metadata_array_location, mode="r")
