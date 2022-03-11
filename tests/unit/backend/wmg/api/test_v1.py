@@ -4,7 +4,6 @@ from typing import Tuple
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
-from backend.wmg.api import v1
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.cube import create_temp_cube, all_ones_attr_values
@@ -26,7 +25,7 @@ class WmgApiV1Tests(unittest.TestCase):
         # This test appears to be hitting a TileDB (<=0.13.1) bug and fails (intermittently) if dim_size=3
         with create_temp_cube(dim_size=1) as cube:
             # setup up API endpoints to use a mocked cube
-            load_cube.return_value = (cube, 'dummy-snapshot')
+            load_cube.return_value = (cube, "dummy-snapshot")
 
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
@@ -52,7 +51,7 @@ class WmgApiV1Tests(unittest.TestCase):
         with create_temp_cube(exclude_logical_coord_fn=exclude, dim_size=1) as cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
-            load_cube.return_value = (cube, 'dummy-snapshot')
+            load_cube.return_value = (cube, "dummy-snapshot")
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -63,7 +62,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-            snapshot_id='dummy-snapshot',
+            snapshot_id="dummy-snapshot",
             organism_terms=[
                 {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
                 # {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
@@ -97,7 +96,7 @@ class WmgApiV1Tests(unittest.TestCase):
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
-            load_cube.return_value = (all_ones_cube, 'dummy-snapshot')
+            load_cube.return_value = (all_ones_cube, "dummy-snapshot")
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -120,7 +119,7 @@ class WmgApiV1Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             expected_response = {
-                "snapshot_id": 'dummy-snapshot',
+                "snapshot_id": "dummy-snapshot",
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_0": [
@@ -170,7 +169,7 @@ class WmgApiV1Tests(unittest.TestCase):
         with create_temp_cube(dim_size=dim_size, attr_vals_fn=all_ones_attr_values) as all_ones_cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
-            load_cube.return_value = (all_ones_cube, 'dummy-snapshot')
+            load_cube.return_value = (all_ones_cube, "dummy-snapshot")
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -200,7 +199,7 @@ class WmgApiV1Tests(unittest.TestCase):
             assert expected_cell_count_per_cell_type == 729
 
             expected = {
-                "snapshot_id": 'dummy-snapshot',
+                "snapshot_id": "dummy-snapshot",
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_1": [
@@ -253,7 +252,7 @@ class WmgApiV1Tests(unittest.TestCase):
         with create_temp_cube(dim_size=dim_size) as cube:
             # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
             # response
-            load_cube.return_value = (cube, 'dummy-snapshot')
+            load_cube.return_value = (cube, "dummy-snapshot")
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -320,7 +319,7 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.assertEqual(expected, json.loads(response.data)["filter_dims"])
 
-            @patch("backend.wmg.api.v1.fetch_datasets_metadata")
+    @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
     @patch("backend.wmg.api.v1.load_cube")
@@ -329,7 +328,7 @@ class WmgApiV1Tests(unittest.TestCase):
     ):
         dim_size = 2
         with create_temp_cube(dim_size=dim_size) as cube:
-            load_cube.return_value = (cube, 'dummy-snapshot')
+            load_cube.return_value = (cube, "dummy-snapshot")
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -389,10 +388,10 @@ class WmgApiV1Tests(unittest.TestCase):
 def mock_datasets_metadata(dataset_ids):
     return [
         dict(
-                id=dataset_id,
-                label=f"{dataset_id}_name",
-                collection_id=f"{dataset_id}_coll_id",
-                collection_label=f"{dataset_id}_coll_name",
+            id=dataset_id,
+            label=f"{dataset_id}_name",
+            collection_id=f"{dataset_id}_coll_id",
+            collection_label=f"{dataset_id}_coll_name",
         )
         for dataset_id in dataset_ids
     ]

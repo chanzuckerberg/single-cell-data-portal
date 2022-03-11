@@ -82,14 +82,18 @@ def fetch_datasets_metadata(dataset_ids: List[str]) -> List[Dict]:
     # and we want to keep session management out of the calling method
 
     with db_session_manager() as session:
+
         def get_dataset(dataset_id_):
             dataset = Dataset.get(session, dataset_id_)
             if dataset is None:
                 # Handle possible missing dataset due to db state evolving past wmg snapshot
-                return dict(id=dataset_id_, label='', collection_id='', collection_label='')
-            return dict(id=dataset.id, label=dataset.name,
-                        collection_id=dataset.collection.id,
-                        collection_label=dataset.collection.name)
+                return dict(id=dataset_id_, label="", collection_id="", collection_label="")
+            return dict(
+                id=dataset.id,
+                label=dataset.name,
+                collection_id=dataset.collection.id,
+                collection_label=dataset.collection.name,
+            )
 
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 

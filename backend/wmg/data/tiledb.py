@@ -17,16 +17,20 @@ def create_ctx(tiledb_mem_gb: float = 1.0) -> tiledb.Ctx:
     }
 
     if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):
-        cfg.update({
-            "vfs.s3.endpoint_override": boto_endpoint_url,
-            # localstack does not support S3 virtual addressing (per
-            # https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html)
-            "vfs.s3.use_virtual_addressing": "false",
-        })
+        cfg.update(
+            {
+                "vfs.s3.endpoint_override": boto_endpoint_url,
+                # localstack does not support S3 virtual addressing (per
+                # https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html)
+                "vfs.s3.use_virtual_addressing": "false",
+            }
+        )
     else:
-        cfg.update({
-            "vfs.s3.region": "us-west-2",
-        })
+        cfg.update(
+            {
+                "vfs.s3.region": "us-west-2",
+            }
+        )
 
     return tiledb.Ctx(config=tiledb.Config(cfg))
 
