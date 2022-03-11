@@ -11,6 +11,7 @@ import tiledb
 from anndata._core.views import ArrayView
 from scipy import sparse
 
+from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels
 from backend.wmg.data.utils import get_all_dataset_ids
 from backend.wmg.data.validation import validate_corpus_load
