@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from backend.corpora.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
+from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
 
 
 class TestMatrixUtils(unittest.TestCase):
@@ -36,24 +36,6 @@ class TestMatrixUtils(unittest.TestCase):
             # Because the function returns early a log will output the _estimate_ instead of the _exact_ percentage of
             # non-zero elements in the matrix.
             self.assertIn("Percentage of non-zero elements (estimate)", logger.output[0])
-
-    def test__is_matrix_sparse_with_column_shift_encoding__regular_sparse_returns_true(self):
-        matrix = np.zeros([2, 2])
-        matrix[0][0] = 1.0
-
-        self.assertIsNotNone(get_column_shift_encode_for_matrix(matrix, 50))
-
-    def test__is_matrix_sparse_with_column_shift_encoding__column_shift_returns_same_value(self):
-        matrix = np.ones([2, 2])
-        expected_column_shift = [1, 1]
-
-        actual_column_shift = get_column_shift_encode_for_matrix(matrix, 50)
-        self.assertTrue((expected_column_shift == actual_column_shift).all())
-
-    def test__is_matrix_sparse_with_column_shift_encoding__impossible_column_shift_returns_none(self):
-        matrix = np.array([[1, 2], [3, 4]])
-
-        self.assertIsNone(get_column_shift_encode_for_matrix(matrix, 50))
 
     def test__is_matrix_sparse_with_column_shift_encoding__giant_matrix_returns_false_early(self):
         matrix = np.random.rand(20000, 20)
