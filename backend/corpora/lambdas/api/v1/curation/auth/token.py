@@ -8,13 +8,13 @@ from backend.corpora.common.utils.exceptions import UnauthorizedError
 
 
 def post():
-    api_key = request.headers['x-api-key']
+    api_key = request.headers["x-api-key"]
     config = CorporaAuthConfig()
     try:
         verify(api_key, config.api_key_secret)
     except JWTError:
         raise UnauthorizedError("The API key is invalid")
     else:
-        username = api_key.split('.')[-1]
+        username = api_key.split(".")[-1]
         token = auth0_management_session.generate_access_token(username, api_key)
         return make_response(token, 201)
