@@ -129,7 +129,7 @@ paths:
                             $ref: "#/components/schemas/dataset_preview"
                         access_type:
                           type: string
-                          enum: [ READ, WRITE ]
+                          enum: [READ, WRITE]
                         published_at:
                           type: number
                         description:
@@ -225,7 +225,7 @@ paths:
                       $ref: "#/components/schemas/dataset"
                   access_type:
                     type: string
-                    enum: [ READ, WRITE ]
+                    enum: [READ, WRITE]
                   published_at:
                     type: number
                   description:
@@ -648,6 +648,10 @@ components:
               type: integer
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
+            batch_condition:
+              type: array
+              items:
+                type: string
             mean_genes_per_cell:
               type: number
             schema_version:
@@ -700,11 +704,6 @@ components:
           type: string
     publisher_metadata:
       type: object
-      required:
-        - authors
-        - is_preprint
-        - journal
-        - published_year
       properties:
         authors:
           type: array
