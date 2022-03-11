@@ -14,7 +14,8 @@ def get(user: str):
 
 
 def post(user: str, token_info: dict):
-    days_to_live = CorporaAuthConfig().days_to_live
+    config = CorporaAuthConfig()
+    days_to_live = config.days_to_live
     if not isinstance(days_to_live, (int, float)):
         days_to_live = int(days_to_live)
 
@@ -25,7 +26,7 @@ def post(user: str, token_info: dict):
         auth0_management_session.delete_api_key(user, identity)
 
     # Generate a new key
-    password = generate(user, CorporaAuthConfig().api_key_secret, days_to_live)
+    password = generate(user, config.api_key_secret, days_to_live)
     key_name = password.split(".")[-1]
 
     api_key_id = auth0_management_session.store_api_key(key_name, password, token_info["email"])
