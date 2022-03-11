@@ -180,9 +180,6 @@ def check_token(token: dict) -> dict:
     """
     try:
         payload = assert_authorized_token(token.get("access_token"))
-        id_token = token.get("access_token")
-        if id_token:
-            payload['id_token'] = assert_authorized_token(id_token)
     except ExpiredSignatureError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
@@ -226,11 +223,15 @@ def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
         return {}
 
 
-def userinfo() -> Response:
-    """API call: retrieve the user info from the id token stored in the cookie"""
+def get_userinfo():
     config = CorporaAuthConfig()
     token = get_token(config.cookie_name)
-    userinfo = get_userinfo_from_auth0(token.get("access_token"))
+    return get_userinfo_from_auth0(token.get("access_token"))
+
+
+def userinfo() -> Response:
+    """API call: retrieve the user info from the id token stored in the cookie"""
+    userinfo = get_userinfo()
     return make_response(jsonify(userinfo))
 
 
