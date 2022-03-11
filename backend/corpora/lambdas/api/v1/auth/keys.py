@@ -4,6 +4,7 @@ from backend.corpora.common.auth0_manager import auth0_management_session
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils.api_key import generate
 from backend.corpora.common.utils.exceptions import NotFoundHTTPException
+from backend.corpora.lambdas.api.v1.authentication import get_userinfo
 
 
 def get(user: str):
@@ -13,7 +14,8 @@ def get(user: str):
     return make_response({"id": identity["username"]}, 200)
 
 
-def post(user: str, token_info: dict):
+def post(user: str):
+    userinfo = get_userinfo()
     days_to_live = CorporaAuthConfig().days_to_live
     if not isinstance(days_to_live, (int, float)):
         days_to_live = int(days_to_live)
@@ -28,7 +30,7 @@ def post(user: str, token_info: dict):
     password = generate(user, CorporaAuthConfig().api_key_secret, days_to_live)
     key_name = password.split(".")[-1]
 
-    api_key_id = auth0_management_session.store_api_key(key_name, password, token_info["email"])
+    api_key_id = auth0_management_session.store_api_key(key_name, password, userinfo["email"])
     auth0_management_session.link_api_key(user, api_key_id)
     return make_response({"id": key_name, "key": password}, 202)
 
