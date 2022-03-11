@@ -57,4 +57,3 @@ def is_matrix_sparse(matrix: np.ndarray, sparse_threshold):
 
     is_sparse = (100.0 * number_of_non_zero_elements / total_number_of_matrix_elements) < sparse_threshold
     return is_sparse
-
