@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: Chan Zuckerburg Initiative cellxgene Data Portal Curator API
+servers:
+paths:
+  dp/v1/curation/auth/token:
+    post:
+      summary: Generate an access token
+      description: >-
+        Returns a bearer access token that must be passed as a parameter to requests that
+        require authorization such as creating a new Collection.
+      operationId: backend.corpora.lambdas.api.v1.curation.auth.token
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+            example: "<YOUR-CURATOR-API-KEY>"
+          required: true
+          description: Your curator API key.
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
