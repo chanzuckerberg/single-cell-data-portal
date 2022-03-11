@@ -41,7 +41,6 @@ class TestKeys(BaseAuthAPITest):
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
-        key_name = key.split(".")[-1]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
@@ -78,7 +77,6 @@ class TestKeys(BaseAuthAPITest):
         self.assertEqual(202, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
-        key_name = key.split(".")[-1]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
         payload = json.loads(payload.decode("utf-8"))
         self.assertEqual(self.user_name, payload["sub"])
