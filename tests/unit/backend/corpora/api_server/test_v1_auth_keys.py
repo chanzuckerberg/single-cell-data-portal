@@ -26,7 +26,7 @@ class TestKeys(BaseAuthAPITest):
         delete_api_key=DEFAULT,
     )
     @patch("backend.corpora.lambdas.api.v1.auth.keys.CorporaAuthConfig")
-    def test__create_key__202(
+    def test__create_key__201(
         self, CorporaAuthConfig, get_user_api_key_identity, store_api_key, link_api_key, delete_api_key
     ):
         get_user_api_key_identity.return_value = None
@@ -38,7 +38,7 @@ class TestKeys(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post("/dp/v1/auth/key", headers=headers)
 
-        self.assertEqual(202, response.status_code)
+        self.assertEqual(201, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
@@ -62,7 +62,7 @@ class TestKeys(BaseAuthAPITest):
         delete_api_key=DEFAULT,
     )
     @patch("backend.corpora.lambdas.api.v1.auth.keys.CorporaAuthConfig")
-    def test__regenerate_key__202(
+    def test__regenerate_key__201(
         self, CorporaAuthConfig, get_user_api_key_identity, store_api_key, link_api_key, delete_api_key
     ):
         CorporaAuthConfig().api_key_secret = self.api_key_secret
@@ -74,7 +74,7 @@ class TestKeys(BaseAuthAPITest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.post("/dp/v1/auth/key", headers=headers)
 
-        self.assertEqual(202, response.status_code)
+        self.assertEqual(201, response.status_code)
         body = json.loads(response.data)
         key = body["key"]
         payload = jws.verify(key, self.api_key_secret, algorithms=["HS256"])
@@ -90,12 +90,12 @@ class TestKeys(BaseAuthAPITest):
         get_user_api_key_identity=DEFAULT,
         delete_api_key=DEFAULT,
     )
-    def test__delete_key__201(self, get_user_api_key_identity, delete_api_key):
+    def test__delete_key__202(self, get_user_api_key_identity, delete_api_key):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
         delete_api_key.return_value = None
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete("/dp/v1/auth/key", headers=headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 202)
 
     def test__delete_key__401(self):
         headers = {"host": "localhost", "Content-Type": "application/json"}
