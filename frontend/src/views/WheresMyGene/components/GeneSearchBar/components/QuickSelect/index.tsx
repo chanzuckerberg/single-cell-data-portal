@@ -1,8 +1,13 @@
 import { Theme } from "@emotion/react";
 import { makeStyles, Popper } from "@material-ui/core";
-import { AutocompleteCloseReason } from "@material-ui/lab";
+import {
+  AutocompleteCloseReason,
+  AutocompleteRenderOptionState,
+} from "@material-ui/lab";
 import {
   DefaultMenuSelectOption,
+  DropdownPaper,
+  DropdownPopper,
   getColors,
   getCorners,
   getShadows,
@@ -14,9 +19,9 @@ import React, { createContext, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledIconButton } from "./style";
+import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
-const LISTBOX_ITEM_HEIGHT_PX = 32;
+const LISTBOX_ITEM_HEIGHT_PX = 48;
 const LISTBOX_HEIGHT_PX = 152;
 
 const ListBoxContext = createContext({});
@@ -30,6 +35,7 @@ const OuterElementType = React.forwardRef<HTMLDivElement>(
 
 function rowRender(props: ListChildComponentProps) {
   const { data, index, style } = props;
+
   return <div style={style}>{data[index]}</div>;
 }
 
@@ -180,9 +186,11 @@ export default function QuickSelect<
       <Popper open={open} className={classes.popper} anchorEl={ref.current}>
         <MenuSelect
           open
+          PopperComponent={DropdownPopper}
+          PaperComponent={DropdownPaper}
           search
           onClose={handleClose}
-          multiple={"length" in selected}
+          multiple={multiple}
           classes={{
             paper: classes.paper,
             popperDisablePortal: classes.popperDisablePortal,
@@ -198,7 +206,7 @@ export default function QuickSelect<
               React.HTMLAttributes<HTMLElement>
             >
           }
-          renderOption={(option) => option.name}
+          renderOption={renderOption}
           onPaste={handlePaste}
           InputBaseProps={{
             onChange: (
@@ -212,4 +220,19 @@ export default function QuickSelect<
       </Popper>
     </>
   );
+
+  function renderOption(
+    option: T,
+    { selected }: AutocompleteRenderOptionState
+  ) {
+    return (
+      <StyledMenuItem
+        {...{ component: "div" }}
+        isMultiSelect={multiple}
+        selected={selected}
+      >
+        {option.name}
+      </StyledMenuItem>
+    );
+  }
 }

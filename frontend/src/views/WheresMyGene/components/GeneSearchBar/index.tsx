@@ -1,9 +1,9 @@
 import { Intent } from "@blueprintjs/core";
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
-  useReducer,
   useState,
 } from "react";
 import { API } from "src/common/API";
@@ -11,8 +11,8 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
 import Toast from "src/views/Collection/components/Toast";
-import { INITIAL_STATE, reducer } from "../../common/store";
-import { selectTissues } from "../../common/store/actions";
+import { DispatchContext, StateContext } from "../../common/store";
+import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
 import Organism from "./components/Organism";
@@ -124,10 +124,6 @@ const GENESETS = [
   ],
 ];
 
-interface Props {
-  onGenesChange: (selectedGenes: Gene[]) => void;
-}
-
 // DEBUG
 // DEBUG
 // DEBUG
@@ -152,17 +148,10 @@ interface Organism {
 
 // END DEBUG
 
-export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-  const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
+export default function GeneSearchBar(): JSX.Element {
+  const dispatch = useContext(DispatchContext);
+  const { selectedGenes, selectedTissues } = useContext(StateContext);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-
-  const { selectedTissues } = state;
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log("----selectedTissues", selectedTissues);
 
   const { data: tissues } = useFetchTissues();
 
@@ -183,6 +172,12 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       return tissuesByName.get(tissue) as Tissue;
     });
   }, [selectedTissues, tissuesByName]);
+
+  const selectedGeneOptions: Gene[] = useMemo(() => {
+    return selectedGenes.map((gene: string) => {
+      return genesByName.get(gene) as Gene;
+    });
+  }, [selectedGenes, genesByName]);
 
   useEffect(() => {
     fetchGenes();
@@ -206,10 +201,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
       setGenes(allGenes);
     }
   }, []);
-
-  useEffect(() => {
-    onGenesChange(selectedGenes);
-  }, [onGenesChange, selectedGenes]);
 
   const handleGeneNotFound = useCallback((geneName: string): void => {
     Toast.show({
@@ -242,9 +233,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
         <QuickSelect
           items={genes}
           itemsByName={genesByName}
-          selected={selectedGenes}
+          selected={selectedGeneOptions}
           multiple
-          setSelected={setSelectedGenes}
+          setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
         />
@@ -255,7 +246,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   function handleGenesetsSelect(genesetIndex: number) {
     const geneset = GENESETS[genesetIndex];
 
-    setSelectedGenes(
+    handleSelectGenes(
       genes
         .filter((gene) => geneset.includes(gene.name))
         .sort(
@@ -267,6 +258,14 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
   }
 
   function handleSelectTissues(tissues: Tissue[]) {
+    if (!dispatch) return;
+
     dispatch(selectTissues(tissues.map((tissue) => tissue.name)));
+  }
+
+  function handleSelectGenes(genes: Gene[]) {
+    if (!dispatch) return;
+
+    dispatch(selectGenes(genes.map((gene) => gene.name)));
   }
 }

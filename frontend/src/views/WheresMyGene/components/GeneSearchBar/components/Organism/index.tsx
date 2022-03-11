@@ -2,8 +2,11 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import { useReducer } from "react";
-import { INITIAL_STATE, reducer } from "src/views/WheresMyGene/common/store";
+import { useContext } from "react";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { Label } from "../../style";
@@ -19,9 +22,8 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 };
 
 export default function Organism(): JSX.Element {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-
-  const { selectedOrganism } = state;
+  const dispatch = useContext(DispatchContext);
+  const { selectedOrganism } = useContext(StateContext);
 
   return (
     <Wrapper>
@@ -36,6 +38,8 @@ export default function Organism(): JSX.Element {
   );
 
   function handleOnChange(organism: DefaultMenuSelectOption | null): void {
+    if (!dispatch) return;
+
     dispatch(selectOrganism(organism?.name || null));
   }
 }
