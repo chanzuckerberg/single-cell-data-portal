@@ -180,6 +180,9 @@ def check_token(token: dict) -> dict:
     """
     try:
         payload = assert_authorized_token(token.get("access_token"))
+        id_token = token.get("access_token")
+        if id_token:
+            payload['id_token'] = assert_authorized_token(id_token)
     except ExpiredSignatureError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
