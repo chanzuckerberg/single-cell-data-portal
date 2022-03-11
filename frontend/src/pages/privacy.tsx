@@ -31,23 +31,10 @@ const Privacy = (): JSX.Element => {
           <main>
             <h1>Privacy Policy</h1>
 
-            <p>Last updated: Oct 19, 2021.</p>
+            <p>Last updated: Mar 11, 2022.</p>
 
             <br />
 
-            <b>Summary of key changes in this Oct 19, 2021 update:</b>
-
-            <br />
-
-            <span>
-              We no longer use Google Analytics for web analytics. Instead, we
-              have transitioned to use the privacy-friendly Plausible service to
-              collect basic analytics about our Site traffic to understand how
-              it’s used. As a result, we collect less personal data about you.
-            </span>
-
-            <br />
-            <br />
 
             <h2>Introduction</h2>
 
