@@ -144,8 +144,10 @@ class WmgApiV1Tests(unittest.TestCase):
 
     def test__query_missing_organism__request_returns_400(self):
         request = dict(
-            filter=dict(gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"]),
+            filter=dict(
+                gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+            ),
         )
 
         response = self.app.post("/wmg/v1/query", json=request)
@@ -154,8 +156,10 @@ class WmgApiV1Tests(unittest.TestCase):
 
     def test__query_missing_tissue_request__returns_400(self):
         request = dict(
-            filter=dict(gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0"),
+            filter=dict(
+                gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                organism_ontology_term_id="organism_ontology_term_id_0",
+            ),
         )
 
         response = self.app.post("/wmg/v1/query", json=request)
