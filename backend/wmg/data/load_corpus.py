@@ -12,6 +12,8 @@ from anndata._core.views import ArrayView
 from scipy import sparse
 
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels
+from backend.wmg.data.utils import get_all_dataset_ids
+from backend.wmg.data.validation import validate_corpus_load
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -74,7 +76,7 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
     save_X(anndata_object, group_name, global_var_index, first_obs_idx)
 
     if validate:
-        validate_load(anndata_object, group_name, dataset_id)
+        validate_corpus_load(anndata_object, group_name, dataset_id)
 
 
 def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
