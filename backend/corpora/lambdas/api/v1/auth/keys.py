@@ -15,6 +15,9 @@ def get(user: str):
 
 def post(user: str, token_info: dict):
     days_to_live = CorporaAuthConfig().days_to_live
+    if not isinstance(days_to_live, (int, float)):
+        days_to_live = int(days_to_live)
+
     # Check if a key already exists
     identity = auth0_management_session.get_user_api_key_identity(user)
     if identity:

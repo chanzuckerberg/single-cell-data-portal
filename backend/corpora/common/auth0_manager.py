@@ -120,7 +120,7 @@ class Auth0ManagementSession:
                 password=password,
                 scope="profile email",
                 client_id=CorporaAuthConfig().curator_api_client_id,
-                client_secret=CorporaAuthConfig().curator_api_client_id,
+                client_secret=CorporaAuthConfig().curator_api_client_secret,
                 realm=CorporaAuthConfig().api_key_connection,
                 audience=CorporaAuthConfig().audience,
             ),
