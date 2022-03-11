@@ -1,13 +1,20 @@
-import { FC } from "react";
 import Layout from "src/components/Layout";
 import { SidebarMainWrapper } from "../style";
 
-const SidebarLayout: FC = ({ children }): JSX.Element => {
+interface Props {
+  children: JSX.Element;
+  SidebarMainWrapperComponent?: typeof SidebarMainWrapper;
+}
+
+const SidebarLayout = ({
+  children,
+  SidebarMainWrapperComponent = SidebarMainWrapper,
+}: Props): JSX.Element => {
   return (
     <Layout>
-      <SidebarMainWrapper>
+      <SidebarMainWrapperComponent>
         <main>{children}</main>
-      </SidebarMainWrapper>
+      </SidebarMainWrapperComponent>
     </Layout>
   );
 };

@@ -21,6 +21,7 @@ class MockOauthApp:
         # mock flask app
         self.app = Flask("mock_oauth_app")
 
+        self.app.add_url_rule("/test-refresh", view_func=self.test_refresh)
         self.app.add_url_rule("/authorize", view_func=self.api_authorize)
         self.app.add_url_rule("/oauth/token", view_func=self.api_oauth_token, methods=["POST"])
         self.app.add_url_rule("/v2/logout", view_func=self.api_logout)
@@ -82,6 +83,13 @@ class MockOauthApp:
             kid="fake_kid",
         )
         return make_response(jsonify(dict(keys=[data])))
+
+    def test_refresh(self):
+        token = request.headers.get("Authorization")
+        if token == "Bearer good":
+            return make_response("", 200)
+        else:
+            return make_response("", 401)
 
 
 class MockOauthServer:

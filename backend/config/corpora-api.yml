@@ -934,7 +934,62 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
+  /dp/v1/auth/key:
+    get:
+      summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
+      security:
+        - cxguserCookie: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+    post:
+      summary: Generate the curator's API key -- for use with Data Portal UI
+      description: >-
+        Generate and return a curator API key for the user. If there is already a key associated with the
+        user's curator profile, replace it with the new key.
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.post
+      security:
+        - cxguserCookie: []
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  id:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
+    delete:
+      summary: Delete the curator's API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.delete
+      security:
+        - cxguserCookie: []
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
   /dp/v1/deployed_version:
     get:
       summary: Returns version information
