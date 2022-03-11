@@ -18,7 +18,6 @@ import {
 } from "./common/store";
 import {
   deleteSelectedGenesAndSelectedCellTypeIds,
-  selectGenes,
   tissueCellTypesFetched,
 } from "./common/store/actions";
 import {
@@ -134,13 +133,6 @@ const WheresMyGene = (): JSX.Element => {
     }
   }, [setCellTypes]);
 
-  const handleGenesOnchange = useCallback(
-    (genes: Gene[]) => {
-      dispatch(selectGenes(genes.map((gene) => gene.name)));
-    },
-    [dispatch]
-  );
-
   // Listen to delete keyboard press event
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
@@ -203,7 +195,7 @@ const WheresMyGene = (): JSX.Element => {
         <View hideOverflow>
           <Wrapper>
             <Top>
-              <GeneSearchBar onGenesChange={handleGenesOnchange} />
+              <GeneSearchBar />
               <Beta />
             </Top>
 
