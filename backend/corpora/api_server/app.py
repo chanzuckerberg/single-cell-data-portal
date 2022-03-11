@@ -19,8 +19,9 @@ def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
-    swagger_spec_path = f"{APP_NAME}.yml"
-    connexion_app.add_api(swagger_spec_path, validate_responses=True)
+    swagger_spec_path = [f"{APP_NAME}.yml", "curator-api.yml"]
+    for spec in swagger_spec_path:
+        connexion_app.add_api(spec, validate_responses=True)
     return connexion_app.app
 
 
