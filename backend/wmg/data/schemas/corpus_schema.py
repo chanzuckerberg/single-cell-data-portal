@@ -1,4 +1,3 @@
-
 """
 Learning: TileDB push-down queries do not currently support conditions on variable length unicode strings.
 It is a roadmap item.  Currently supported:
@@ -6,7 +5,6 @@ It is a roadmap item.  Currently supported:
     * ASCII, variable length
 Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
-
 
 # Hints on how to map between H5AD and TDB schemas.
 from collections import namedtuple
@@ -36,7 +34,7 @@ class LabelType(
         else:
             return None
 
-    def decode(self, df, *args, **kwargs) -> np.ndarray:
+    def decode(self, df: pd.DataFrame, *args, **kwargs) -> np.ndarray:
         if self.custom_decoder:
             return self.custom_decoder(self, df, *args, **kwargs)
 
@@ -89,7 +87,6 @@ obs_labels = [
     LabelType("dataset_local_cell_id", "ascii", var=True, decode_from_index=True),
 ]
 
-
 # order matters for dimensions
 var_labels = [
     # var_idx is the join index with the X array
@@ -99,15 +96,6 @@ var_labels = [
     LabelType("feature_name", "ascii", var=True),
 ]
 
-
-# order matters for dimensions
-var_labels = [
-    # var_idx is the join index with the X array
-    LabelType("var_idx", np.uint32, domain=uint32_domain, custom_decoder=gen_idx),
-    LabelType("gene_ontology_term_id", "ascii", decode_from_index=True, encode_as_dim=True),
-    LabelType("feature_reference", "ascii", var=True),
-    LabelType("feature_name", "ascii", var=True),
-]
 
 def create_tdb(tdb_group: str):
     """
