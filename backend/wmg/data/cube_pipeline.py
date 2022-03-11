@@ -7,8 +7,10 @@ from typing import List
 import tiledb
 
 from backend.wmg.config import create_fast_ctx
+from backend.wmg.data import extract
 from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
+from backend.wmg.data.schemas.corpus_schema import create_tdb
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cube
 
@@ -44,9 +46,12 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     A per tissue mapping of cell ontologies is generated and the files are copied to s3 under a shared timestamp,.
     On success the least recent set of files are removed from s3
     """
+
+    if not tiledb.VFS().is_dir(corpus_name):
+        create_tdb(corpus_name)
     s3_uris = extract.get_s3_uris()
     extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
-    load(path_to_datasets, corpus_name)
+    load(path_to_datasets, corpus_name, True)
     create_cube(corpus_name)  # Todo dry up with create cube func in fixtures
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_name)
     generate_cell_ordering(cell_type_by_tissue)

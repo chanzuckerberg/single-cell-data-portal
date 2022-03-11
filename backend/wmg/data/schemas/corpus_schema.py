@@ -10,10 +10,11 @@ Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 
 # Hints on how to map between H5AD and TDB schemas.
 from collections import namedtuple
-from typing import Union
+from typing import Union, List
 
 import numpy as np
 import pandas as pd
+import tiledb
 
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
@@ -107,3 +108,137 @@ var_labels = [
     LabelType("feature_reference", "ascii", var=True),
     LabelType("feature_name", "ascii", var=True),
 ]
+
+def create_tdb(tdb_group: str):
+    """
+    Create the empty tiledb object for the corpus
+    ## TODO break out each array
+    """
+    name = tdb_group
+    tiledb.group_create(name)
+
+    X_capacity = 128000
+    X_extent = [512, 2048]  # guess - needs tuning
+    filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
+
+    """ Optional array, normalized X from original dataset. """
+    tiledb.Array.create(
+        f"{name}/X",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(
+                [
+                    tiledb.Dim(
+                        name="obs_idx",
+                        domain=uint32_domain,
+                        tile=X_extent[0],
+                        dtype=np.uint32,
+                        filters=filters,
+                    ),
+                    tiledb.Dim(
+                        name="var_idx",
+                        domain=uint32_domain,
+                        tile=X_extent[1],
+                        dtype=np.uint32,
+                        filters=filters,
+                    ),
+                ]
+            ),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[tiledb.Attr(name="data", dtype=np.float32, filters=filters)],
+            cell_order="row-major",
+            tile_order="col-major",
+            capacity=X_capacity,
+        ),
+    )
+
+    """ Raw expression and its rankit. """
+    tiledb.Array.create(
+        f"{name}/raw",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(
+                [
+                    tiledb.Dim(
+                        name="obs_idx",
+                        domain=uint32_domain,
+                        tile=X_extent[0],
+                        dtype=np.uint32,
+                        filters=filters,
+                    ),
+                    tiledb.Dim(
+                        name="var_idx",
+                        domain=uint32_domain,
+                        tile=X_extent[1],
+                        dtype=np.uint32,
+                        filters=filters,
+                    ),
+                ]
+            ),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[
+                tiledb.Attr(name="data", dtype=np.float32, filters=filters),
+                tiledb.Attr(name="rankit", dtype=np.float32, filters=filters),
+            ],
+            cell_order="row-major",
+            tile_order="col-major",
+            capacity=X_capacity,
+        ),
+    )
+
+    """
+    obs/cell axes labels
+    """
+    tiledb.Array.create(
+        f"{name}/obs",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(create_axes_label_dims(obs_labels)),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[
+                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
+                for lbl in obs_labels
+                if lbl.encode_as_dim is False
+            ],
+            cell_order="row-major",
+            tile_order="row-major",
+            capacity=10000,
+        ),
+    )
+
+    """
+    var/feature/gene axes labels.
+    """
+    tiledb.Array.create(
+        f"{name}/var",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(create_axes_label_dims(var_labels)),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[
+                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
+                for lbl in var_labels
+                if lbl.encode_as_dim is False
+            ],
+            cell_order="row-major",
+            tile_order="row-major",
+            capacity=10000,
+        ),
+    )
+
+
+def create_axes_label_dims(labels: List[LabelType]) -> List[tiledb.Dim]:
+    dims = []
+    extent = 1024  # guess - needs tuning
+    filters = tiledb.FilterList([tiledb.ZstdFilter(level=22)])
+    for lbl in labels:
+        if not lbl.encode_as_dim:
+            continue
+        if lbl.encode_as_dim and lbl.dtype in [np.bytes_, "ascii"]:  # special case strings
+            dim = tiledb.Dim(name=lbl.key, domain=None, tile=None, dtype=lbl.dtype, filters=filters, var=lbl.var)
+        else:
+            dim = tiledb.Dim(
+                name=lbl.key, domain=lbl.domain, tile=extent, dtype=lbl.dtype, var=lbl.var, filters=filters
+            )
+        dims.append(dim)
+    return dims
