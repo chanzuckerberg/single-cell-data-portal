@@ -3,14 +3,13 @@ import logging
 import os
 import sys
 from typing import List
-from backend.wmg.data import extract
-from backend.wmg.data.load_cube import update_s3_resources
-
-
 import tiledb
 
 from backend.wmg.config import create_fast_ctx
+from backend.wmg.data import extract
+from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
+from backend.wmg.data.schemas.corpus_schema import create_tdb
 from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cube
 
@@ -47,18 +46,17 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     On success the least recent set of files are removed from s3
     """
 
-
-    s3_uris = extract.get_dataset_s3_uris()
-    extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
-
+    if not tiledb.VFS().is_dir(corpus_name):
+        create_tdb(corpus_name)
     s3_uris = extract.get_dataset_s3_uris()
     extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
     logger.info("Copied datasets to instance")
 
-    load(path_to_datasets, corpus_name)
+    load(path_to_datasets, corpus_name, True)
     logger.info("Loaded datasets into corpus")
     create_cube(corpus_name)
     logger.info("Built expression summary cube")
+
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_name)
     generate_cell_ordering(cell_type_by_tissue)
     logger.info("Generated cell ordering json file")
