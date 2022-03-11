@@ -31,7 +31,7 @@ def post(user: str):
     password = generate(user, config.api_key_secret, days_to_live)
     api_key_id = auth0_management_session.store_api_key(password, userinfo["email"])
     auth0_management_session.link_api_key(user, api_key_id)
-    return make_response({"key": password}, 202)
+    return make_response({"key": password}, 201)
 
 
 def delete(user: str):
@@ -39,4 +39,4 @@ def delete(user: str):
     if not identity:
         raise NotFoundHTTPException
     auth0_management_session.delete_api_key(user, identity)
-    return make_response("", 201)
+    return make_response("", 202)

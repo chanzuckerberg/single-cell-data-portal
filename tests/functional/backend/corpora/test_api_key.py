@@ -11,6 +11,10 @@ class TestApiKey(BaseFunctionalTestCase):
 
     def test_api_key_crud(self):
         headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        def _cleanup():
+            requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
+        self.addCleanup(_cleanup)
+
         response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
