@@ -15,5 +15,6 @@ def post():
     except JWTError:
         raise UnauthorizedError("The API key is invalid")
     else:
-        token = auth0_management_session.generate_access_token(username, api_key)
+        identity = auth0_management_session.get_user_api_key_identity(token["sub"])
+        token = auth0_management_session.generate_access_token(identity["email"], api_key)
         return make_response(token, 201)
