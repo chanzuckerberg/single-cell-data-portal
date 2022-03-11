@@ -109,8 +109,6 @@ paths:
                           type: string
                         visibility:
                           $ref: "#/components/schemas/visibility"
-                        collection_url:
-                          type: string
                         contact_name:
                           type: string
                         contact_email:
@@ -205,8 +203,6 @@ paths:
                     type: string
                   visibility:
                     $ref: "#/components/schemas/visibility"
-                  collection_url:
-                    type: string
                   contact_name:
                     type: string
                   contact_email:
