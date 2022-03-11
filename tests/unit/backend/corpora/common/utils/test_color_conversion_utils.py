@@ -11,7 +11,7 @@ from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_p
 
 
 class TestColorConversionUtils(unittest.TestCase):
-    """ Test color conversion helper functions """
+    """Test color conversion helper functions"""
 
     def test_convert_color_to_hex_format(self):
         self.assertEqual(convert_color_to_hex_format("wheat"), "#f5deb3")

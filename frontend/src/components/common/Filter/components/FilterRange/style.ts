@@ -38,6 +38,9 @@ export const useSliderStyles = makeStyles({
       height: 14,
       marginLeft: -7,
       width: 14,
+      "&:focus": {
+        outline: "none",
+      },
       "&:hover": {
         boxShadow: "none",
       },

@@ -18,7 +18,6 @@ import {
 } from "./common/store";
 import {
   deleteSelectedGenesAndSelectedCellTypeIds,
-  selectGenes,
   tissueCellTypesFetched,
 } from "./common/store/actions";
 import {
@@ -35,7 +34,7 @@ import GeneSearchBar from "./components/GeneSearchBar";
 import GetStarted from "./components/GetStarted";
 import HeatMap from "./components/HeatMap";
 import InfoPanel from "./components/InfoPanel";
-import { Top, Wrapper } from "./style";
+import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "./style";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -134,13 +133,6 @@ const WheresMyGene = (): JSX.Element => {
     }
   }, [setCellTypes]);
 
-  const handleGenesOnchange = useCallback(
-    (genes: Gene[]) => {
-      dispatch(selectGenes(genes.map((gene) => gene.name)));
-    },
-    [dispatch]
-  );
-
   // Listen to delete keyboard press event
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
@@ -180,7 +172,12 @@ const WheresMyGene = (): JSX.Element => {
           <title>cellxgene | Where&apos;s My Gene</title>
         </Head>
 
-        <SideBar label="Filters" isOpen>
+        <SideBar
+          label="Filters"
+          isOpen
+          SideBarWrapperComponent={SideBarWrapper}
+          SideBarPositionerComponent={SideBarPositioner}
+        >
           <Filters filters={filters} onFiltersChange={handleFiltersChange} />
         </SideBar>
 
@@ -189,6 +186,8 @@ const WheresMyGene = (): JSX.Element => {
           label="Info"
           isOpen
           position={Position.RIGHT}
+          SideBarWrapperComponent={SideBarWrapper}
+          SideBarPositionerComponent={SideBarPositioner}
         >
           <InfoPanel />
         </SideBar>
@@ -196,7 +195,7 @@ const WheresMyGene = (): JSX.Element => {
         <View hideOverflow>
           <Wrapper>
             <Top>
-              <GeneSearchBar onGenesChange={handleGenesOnchange} />
+              <GeneSearchBar />
               <Beta />
             </Top>
 
