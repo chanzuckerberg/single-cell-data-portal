@@ -69,9 +69,9 @@ export type Value<T, Multiple> = Multiple extends undefined | false ? T : T[];
 
 interface Props<T, Multiple> {
   items: T[];
-  pasteMultiple?: Multiple;
+  multiple?: Multiple;
   setSelected: (selected: Value<T, Multiple>) => void;
-  selected: T[] | T;
+  selected: Value<T, Multiple>;
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
   label: string;
@@ -81,7 +81,7 @@ export default function QuickSelect<
   Multiple extends boolean | undefined = false
 >({
   items,
-  pasteMultiple,
+  multiple,
   setSelected,
   selected,
   itemsByName,
@@ -123,12 +123,12 @@ export default function QuickSelect<
   // `HandleEnter()` handles the enter key press when there is a pending paste in the search bar
   // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>
   const handleEnter =
-    !pasteMultiple || !("length" in selected) || onItemNotFound === undefined
+    !multiple || !("length" in selected) || onItemNotFound === undefined
       ? noop
       : (event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === "Enter" && pendingPaste) {
             event.preventDefault();
-            const newSelected = [...selected];
+            const newSelected = [...(selected as T[])];
             const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
             parsedPaste.map((item) => {
               const newItem = itemsByName.get(item);
@@ -139,7 +139,7 @@ export default function QuickSelect<
             });
             setPendingPaste(false);
             setOpen(false);
-            return setSelected(newSelected);
+            return setSelected(newSelected as Value<T, Multiple>);
           }
         };
 
@@ -160,7 +160,7 @@ export default function QuickSelect<
     _: React.ChangeEvent<Record<string, never>>,
     newValue: T[] | T | null
   ) => {
-    return setSelected(newValue as T[] | T);
+    return setSelected(newValue as Value<T, Multiple>);
   };
 
   const handleClick = () => {
@@ -191,7 +191,7 @@ export default function QuickSelect<
           onChange={handleChange}
           disableCloseOnSelect
           disableListWrap
-          onKeyDownCapture={pasteMultiple ? handleEnter : undefined}
+          onKeyDownCapture={multiple ? handleEnter : undefined}
           options={items}
           ListboxComponent={
             ListboxComponent as React.ComponentType<

@@ -1,10 +1,18 @@
 import { Intent } from "@blueprintjs/core";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { API } from "src/common/API";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { API_URL } from "src/configs/configs";
 import Toast from "src/views/Collection/components/Toast";
+import { INITIAL_STATE, reducer } from "../../common/store";
+import { selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
 import Organism from "./components/Organism";
@@ -141,23 +149,40 @@ function useFetchTissues() {
 interface Organism {
   name: string;
 }
-function useFetchOrganisms() {
-  return { data: [{ name: "Homo sapiens" }, { name: "mus musculus" }] };
-}
 
 // END DEBUG
 
 export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
   const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
 
-  const { data: tissues } = useFetchTissues();
-  const { data: organisms } = useFetchOrganisms();
+  const { selectedTissues } = state;
 
-  const [selectedTissue, setSelectedTissue] = useState<Tissue>(EMPTY_ARRAY);
-  const [selectedOrganism, setSelectedOrganism] = useState<Organism>({
-    name: "Homo sapiens",
-  });
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log("----selectedTissues", selectedTissues);
+
+  const { data: tissues } = useFetchTissues();
+
+  const genesByName = useMemo(() => {
+    return genes.reduce((acc, gene) => {
+      return acc.set(gene.name, gene);
+    }, new Map<Gene["name"], Gene>());
+  }, [genes]);
+
+  const tissuesByName = useMemo(() => {
+    return tissues.reduce((acc, tissue) => {
+      return acc.set(tissue.name, tissue);
+    }, new Map<Tissue["name"], Tissue>());
+  }, [tissues]);
+
+  const selectedTissueOptions: Tissue[] = useMemo(() => {
+    return selectedTissues.map((tissue: string) => {
+      return tissuesByName.get(tissue) as Tissue;
+    });
+  }, [selectedTissues, tissuesByName]);
 
   useEffect(() => {
     fetchGenes();
@@ -186,17 +211,6 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     onGenesChange(selectedGenes);
   }, [onGenesChange, selectedGenes]);
 
-  const genesByName = useMemo(() => {
-    return genes.reduce((acc, gene) => {
-      return acc.set(gene.name, gene);
-    }, new Map<Gene["name"], Gene>());
-  }, [genes]);
-  const tissuesByName = useMemo(() => {
-    return tissues.reduce((acc, tissue) => {
-      return acc.set(tissue.name, tissue);
-    }, new Map<Tissue["name"], Tissue>());
-  }, [tissues]);
-
   const handleGeneNotFound = useCallback((geneName: string): void => {
     Toast.show({
       intent: Intent.DANGER,
@@ -219,8 +233,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
-          selected={selectedTissue}
-          setSelected={setSelectedTissue}
+          multiple
+          selected={selectedTissueOptions}
+          setSelected={handleSelectTissues}
           label="Add Tissue"
         />
 
@@ -228,7 +243,7 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
           items={genes}
           itemsByName={genesByName}
           selected={selectedGenes}
-          pasteMultiple
+          multiple
           setSelected={setSelectedGenes}
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
@@ -249,5 +264,9 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             geneset.findIndex((gene) => gene === b.name)
         )
     );
+  }
+
+  function handleSelectTissues(tissues: Tissue[]) {
+    dispatch(selectTissues(tissues.map((tissue) => tissue.name)));
   }
 }

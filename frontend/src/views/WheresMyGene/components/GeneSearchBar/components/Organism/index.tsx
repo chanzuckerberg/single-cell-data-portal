@@ -9,7 +9,7 @@ import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { Label } from "../../style";
 import { StyledDropdown, Wrapper } from "./style";
 
-const ORGANISMS: IOrganism[] = [
+const ORGANISMS: { name: IOrganism }[] = [
   { name: "Homo sapiens" },
   { name: "mus musculus" },
 ];
@@ -27,7 +27,7 @@ export default function Organism(): JSX.Element {
     <Wrapper>
       <Label>Organism</Label>
       <StyledDropdown
-        label={selectedOrganism?.name || ""}
+        label={selectedOrganism || "Select"}
         options={ORGANISMS}
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={InputDropdownProps}
@@ -36,7 +36,7 @@ export default function Organism(): JSX.Element {
   );
 
   function handleOnChange(organism: DefaultMenuSelectOption | null): void {
-    dispatch(selectOrganism(organism));
+    dispatch(selectOrganism(organism?.name || null));
   }
 }
 
