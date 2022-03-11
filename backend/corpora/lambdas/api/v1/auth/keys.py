@@ -28,7 +28,6 @@ def post(user: str):
 
     # Generate a new key
     password = generate(user, CorporaAuthConfig().api_key_secret, days_to_live)
-
     api_key_id = auth0_management_session.store_api_key(password, userinfo["email"])
     auth0_management_session.link_api_key(user, api_key_id)
     return make_response({"key": password}, 202)
