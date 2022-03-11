@@ -13,6 +13,7 @@ from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, 
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
+from backend.wmg.data.tiledb import create_ctx
 
 
 def random_attr_values(coords):
@@ -36,7 +37,7 @@ def create_temp_cube(
 ) -> None:
     with tempfile.TemporaryDirectory() as cube_dir:
         create_cube(cube_dir, dim_size, attr_vals_fn=attr_vals_fn, exclude_logical_coord_fn=exclude_logical_coord_fn)
-        with tiledb.open(cube_dir) as cube:
+        with tiledb.open(cube_dir, ctx=create_ctx()) as cube:
             yield cube
 
 

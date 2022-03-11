@@ -5,10 +5,9 @@ from typing import Tuple
 import tiledb
 from tiledb import Array
 
-from backend.corpora.common.utils.math_utils import GB
 from backend.corpora.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.tiledb import fast_config, create_ctx
+from backend.wmg.data.tiledb import create_ctx
 
 logger = logging.getLogger("wmg")
 
@@ -37,7 +36,7 @@ def load_cube() -> Tuple[Array, str]:
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(fast_config(tiledb_mem_gb=float(WmgConfig().tiledb_mem_gb))))
+    return tiledb.open(cube_uri, ctx=create_ctx(tiledb_mem_gb=float(WmgConfig().tiledb_mem_gb)))
 
 
 # TODO: Worth doing this on a thread, continuously, rather than on-demand, in order to proactively open a new cube (

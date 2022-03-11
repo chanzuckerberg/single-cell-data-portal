@@ -4,27 +4,31 @@ import psutil
 import tiledb
 
 from backend.corpora.common.utils.math_utils import MB, GB
-from backend.wmg.config import WmgConfig
 
 
-def base_config() -> dict:
+def create_ctx(tiledb_mem_gb: float = 1.0) -> tiledb.Ctx:
+    cfg = {
+        "py.init_buffer_bytes": int(float(tiledb_mem_gb) * GB),
+        "sm.tile_cache_size": virtual_memory_size(0.5),
+        "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+        "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
+        # "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "false",
+        # "py.use_arrow": False,
+    }
+
     if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):
-        return {
+        cfg.update({
             "vfs.s3.endpoint_override": boto_endpoint_url,
             # localstack does not support S3 virtual addressing (per
             # https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html)
             "vfs.s3.use_virtual_addressing": "false",
-        }
+        })
+    else:
+        cfg.update({
+            "vfs.s3.region": "us-west-2",
+        })
 
-    return {
-        "vfs.s3.region": "us-west-2",
-    }
-
-
-def create_ctx(config: dict = {}) -> tiledb.Ctx:
-    cfg = tiledb.Config({**base_config(), **config})
-    ctx = tiledb.Ctx(config=cfg)
-    return ctx
+    return tiledb.Ctx(config=tiledb.Config(cfg))
 
 
 def virtual_memory_size(vm_fraction: float) -> int:
@@ -38,15 +42,3 @@ def consolidation_buffer_size(vm_fraction: float) -> int:
     io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
     buffer_size = int(virtual_memory_size(vm_fraction) / io_concurrency_level) + (GB - 1)
     return buffer_size // GB * GB  # round down to GB boundary
-
-
-def fast_config(config_overrides: dict = {}, tiledb_mem_gb: float=1) -> dict:
-    config = {
-        **base_config(),
-        "py.init_buffer_bytes": int(float(tiledb_mem_gb) * GB),
-        "sm.tile_cache_size": virtual_memory_size(0.5),
-        "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
-        "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
-    }
-    config.update(config_overrides)
-    return config
