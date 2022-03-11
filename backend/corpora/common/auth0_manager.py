@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
@@ -48,11 +46,11 @@ class Auth0ManagementSession:
     def get_auth0_management_token(domain: str) -> str:
         # Generate management token
         payload = dict(
-                client_id=CorporaAuthConfig().client_id,
-                client_secret=CorporaAuthConfig().client_secret,
-                grant_type="client_credentials",
-                audience=f"https://{domain}/api/v2/",
-            )
+            client_id=CorporaAuthConfig().client_id,
+            client_secret=CorporaAuthConfig().client_secret,
+            grant_type="client_credentials",
+            audience=f"https://{domain}/api/v2/",
+        )
         headers = {
             "cache-control": "no-cache",
             "content-type": "application/json",
@@ -88,10 +86,10 @@ class Auth0ManagementSession:
     def store_api_key(self, password: str, email: str) -> str:
         # Add key to Auth0
         payload = dict(
-                email=email,
-                password=password,
-                connection=CorporaAuthConfig().api_key_connection_name,
-            )
+            email=email,
+            password=password,
+            connection=CorporaAuthConfig().api_key_connection_name,
+        )
 
         response = self.session.post(f"https://{self.domain}/api/v2/users", json=payload)
         response.raise_for_status()
