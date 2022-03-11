@@ -11,7 +11,7 @@ def get(user: str):
     identity = auth0_management_session.get_user_api_key_identity(user)
     if not identity:
         raise NotFoundHTTPException()
-    return make_response({"id": identity["username"]}, 200)
+    return make_response("", 200)
 
 
 def post(user: str):
@@ -28,11 +28,10 @@ def post(user: str):
 
     # Generate a new key
     password = generate(user, CorporaAuthConfig().api_key_secret, days_to_live)
-    key_name = password.split(".")[-1]
 
-    api_key_id = auth0_management_session.store_api_key(key_name, password, userinfo["email"])
+    api_key_id = auth0_management_session.store_api_key(password, userinfo["email"])
     auth0_management_session.link_api_key(user, api_key_id)
-    return make_response({"id": key_name, "key": password}, 202)
+    return make_response({"key": password}, 202)
 
 
 def delete(user: str):

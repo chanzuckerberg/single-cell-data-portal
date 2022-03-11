@@ -47,20 +47,18 @@ class Auth0ManagementSession:
     @staticmethod
     def get_auth0_management_token(domain: str) -> str:
         # Generate management token
-        payload = json.dumps(
-            dict(
+        payload = dict(
                 client_id=CorporaAuthConfig().client_id,
                 client_secret=CorporaAuthConfig().client_secret,
                 grant_type="client_credentials",
                 audience=f"https://{domain}/api/v2/",
             )
-        )
         headers = {
             "cache-control": "no-cache",
             "content-type": "application/json",
         }
 
-        response = requests.post(f"https://{domain}/oauth/token", data=payload, headers=headers)
+        response = requests.post(f"https://{domain}/oauth/token", json=payload, headers=headers)
         response.raise_for_status()
         token = response.json()
         return "{} {}".format(token["token_type"], token["access_token"])
@@ -87,34 +85,30 @@ class Auth0ManagementSession:
         response = self.session.delete(f"https://{self.domain}/api/v2/users/{provider}|{user_id}")
         response.raise_for_status()
 
-    def store_api_key(self, user_name: str, password: str, email: str) -> str:
+    def store_api_key(self, password: str, email: str) -> str:
         # Add key to Auth0
-        payload = json.dumps(
-            dict(
+        payload = dict(
                 email=email,
-                username=user_name,
                 password=password,
                 connection=CorporaAuthConfig().api_key_connection_name,
             )
-        )
-        response = self.session.post(f"https://{self.domain}/api/v2/users", data=payload)
+
+        response = self.session.post(f"https://{self.domain}/api/v2/users", json=payload)
         response.raise_for_status()
         body = response.json()
         return body["identities"][0]["user_id"]
 
     def link_api_key(self, user: str, api_key_id: str) -> None:
         # link the user to the api key.
-        payload = json.dumps(
-            {"provider": "auth0", "connection_id": CorporaAuthConfig().api_key_connection, "user_id": api_key_id}
-        )
-        response = self.session.post(f"https://{self.domain}/api/v2/users/{user}/identities", data=payload)
+        payload = {"provider": "auth0", "connection_id": CorporaAuthConfig().api_key_connection, "user_id": api_key_id}
+        response = self.session.post(f"https://{self.domain}/api/v2/users/{user}/identities", json=payload)
         response.raise_for_status()
 
     def generate_access_token(self, user_name: str, password: str) -> dict:
         response = self.session.post(
             f"https://{self.domain}/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
-            data=dict(
+            json=dict(
                 grant_type="http://auth0.com/oauth/grant-type/password-realm",
                 username=user_name,
                 password=password,
