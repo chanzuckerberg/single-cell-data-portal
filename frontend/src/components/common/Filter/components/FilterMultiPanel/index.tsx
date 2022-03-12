@@ -22,7 +22,6 @@ export default function FilterMultiPanel({
   const speciesToDisplay = species.filter(
     (s) => s.children && s.children.length > 0
   );
-  console.log(speciesToDisplay);
   return (
     <MultiPanelSelector>
       {speciesToDisplay.map(({ label, children }, i) => (
