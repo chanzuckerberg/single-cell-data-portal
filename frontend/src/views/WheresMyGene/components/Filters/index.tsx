@@ -1,6 +1,11 @@
-import { ComplexFilter, DefaultMenuSelectOption } from "czifui";
+import {
+  ComplexFilter,
+  ComplexFilterInputDropdown,
+  DefaultMenuSelectOption,
+} from "czifui";
 import { memo, useMemo } from "react";
 import { Filters as IFilters } from "../../common/types";
+import { StyledComplexFilterInputDropdown } from "./style";
 
 interface Props {
   filters: IFilters;
@@ -56,6 +61,9 @@ export default memo(function Filters({
         options={MOCK_DATASETS}
         onChange={handleDatasetsChange}
         value={filters.datasets}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
       />
       <ComplexFilter
         multiple
@@ -63,6 +71,9 @@ export default memo(function Filters({
         options={MOCK_DEVELOPMENT_STAGES}
         onChange={handleDevelopmentStagesChange}
         value={filters.developmentStages}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
       />
       <ComplexFilter
         multiple
@@ -70,6 +81,9 @@ export default memo(function Filters({
         options={MOCK_DISEASES}
         onChange={handleDiseasesChange}
         value={filters.diseases}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
       />
       <ComplexFilter
         multiple
@@ -77,6 +91,9 @@ export default memo(function Filters({
         options={MOCK_ETHNICITIES}
         onChange={handleEthnicitiesChange}
         value={filters.ethnicities}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
       />
       <ComplexFilter
         multiple
@@ -84,6 +101,9 @@ export default memo(function Filters({
         options={MOCK_SEXES}
         onChange={handleSexesChange}
         value={filters.sexes}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
       />
     </div>
   );

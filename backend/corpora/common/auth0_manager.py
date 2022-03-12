@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
