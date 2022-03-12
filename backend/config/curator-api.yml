@@ -3,14 +3,20 @@ info:
   version: "1.0.0"
   title: Chan Zuckerburg Initiative cellxgene Data Portal Curator API
 servers:
+  - description: Production environment
+    url: https://api.corpora.cziscience.com
+  - description: Development environment
+    url: https://api.dev.corpora.cziscience.com
+  - description: Staging environment
+    url: https://api.staging.corpora.cziscience.com
 paths:
-  dp/v1/curation/auth/token:
+  /auth/token:
     post:
       summary: Generate an access token
       description: >-
         Returns a bearer access token that must be passed as a parameter to requests that
         require authorization such as creating a new Collection.
-      operationId: backend.corpora.lambdas.api.v1.curation.auth.token
+      operationId: backend.corpora.lambdas.api.v1.curation.auth.token.post
       parameters:
         - in: header
           name: x-api-key
@@ -31,3 +37,22 @@ paths:
                     type: string
         "401":
           $ref: "#/components/responses/401"
+components:
+  schemas:
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+  responses:
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
