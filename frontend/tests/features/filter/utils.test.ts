@@ -2,9 +2,13 @@
  * Test suite for filter-related utils.
  */
 
+import { DEVELOPMENT_STAGE_ONTOLOGY_VIEW } from "src/components/common/Filter/common/entities";
 import {
-  DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR,
+  findOntologyDescendantIds,
+  findOntologyNodeById,
+  findOntologyParentNode,
   formatNumberToScale,
+  getOntologySpeciesKey,
   SYMBOL_MILLION,
   SYMBOL_THOUSAND,
 } from "src/components/common/Filter/common/utils";
@@ -114,153 +118,183 @@ describe("filter", () => {
       }
     );
   });
-  describe("Development Stage Leaf Ontology IDs", () => {
-    it("finds leaf nodes for HsapDv:0000045", () => {
-      const ancestorOntologyId = "HsapDv:0000045";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(7);
-      expect(leafOntologyIds?.has("HsapDv:0000003")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000004")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000006")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000010")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000012")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000015")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000037")).toBeTruthy();
+  describe("Ontology", () => {
+    const ONTOLOGY_ID_HUMAN_PRENATAL = "HsapDv:0000045";
+    const ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN = "HsapDv:0000002";
+    const ONTOLOGY_ID_HUMAN_CARNEGIE_CS1 = "HsapDv:0000003";
+    const ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2 = "HsapDv:0000004";
+    const ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5 = "HsapDv:0000006";
+    const ONTOLOGY_ID_HUMAN_GASTRULA_CS6 = "HsapDv:0000010";
+    const ONTOLOGY_ID_HUMAN_NEURULA_CS7_8 = "HsapDv:0000012";
+    const ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23 = "HsapDv:0000015";
+    const ONTOLOGY_ID_HUMAN_FETAL = "HsapDv:0000037";
+    const ONTOLOGY_ID_HUMAN_HUMAN_ADULT = "HsapDv:0000087";
+
+    const ONTOLOGY_ID_MOUSE_PRENATAL = "MmusDv:0000042";
+    const ONTOLOGY_ID_OTHER_EMBRYO = "UBERON:0000068";
+
+    describe("getOntologyKey", () => {
+      it(`returns HsapDv for ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+        const key = "HsapDv";
+        const actual = getOntologySpeciesKey(`${key}:000045`);
+        expect(actual).toEqual(key);
+      });
+      it(`returns MmusDv for ${ONTOLOGY_ID_MOUSE_PRENATAL}`, () => {
+        const key = "MmusDv";
+        const actual = getOntologySpeciesKey(`${key}:000045`);
+        expect(actual).toEqual(key);
+      });
+      it(`returns UBERON for ${ONTOLOGY_ID_OTHER_EMBRYO}`, () => {
+        const key = "UBERON";
+        const actual = getOntologySpeciesKey(`${key}:000045`);
+        expect(actual).toEqual(key);
+      });
     });
-    it("finds leaf nodes for HsapDv:0000002", () => {
-      const ancestorOntologyId = "HsapDv:0000002";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(6);
-      expect(leafOntologyIds?.has("HsapDv:0000003")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000004")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000006")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000010")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000012")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000015")).toBeTruthy();
+    describe("findOntologyNodeById", () => {
+      [
+        ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
+        ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
+        ONTOLOGY_ID_HUMAN_FETAL,
+        ONTOLOGY_ID_HUMAN_HUMAN_ADULT,
+      ].forEach((ontologyId) => {
+        it(`finds ontology node with ID ${ontologyId}`, () => {
+          const ontologyKey = getOntologySpeciesKey(ontologyId);
+          const ontologyNode = findOntologyNodeById(
+            DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
+            ontologyId
+          );
+          expect(ontologyNode).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+          expect(ontologyNode!.ontology_term_id).toEqual(ontologyId);
+        });
+      });
     });
-    it("finds leaf nodes for HsapDv:0000080", () => {
-      const ancestorOntologyId = "HsapDv:0000080";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(3);
-      expect(leafOntologyIds?.has("HsapDv:0000082")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000083")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000081")).toBeTruthy();
+    describe("findOntologyDescendants", () => {
+      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyNode = findOntologyNodeById(
+          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const descendants = findOntologyDescendantIds(ontologyNode!);
+        expect(descendants.length).toEqual(8);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_CARNEGIE_CS1)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_GASTRULA_CS6)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_NEURULA_CS7_8)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_FETAL)
+        ).toBeGreaterThanOrEqual(0);
+      });
+      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyNode = findOntologyNodeById(
+          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const descendants = findOntologyDescendantIds(ontologyNode!);
+        expect(descendants.length).toEqual(6);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_CARNEGIE_CS1)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_GASTRULA_CS6)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_NEURULA_CS7_8)
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          descendants.indexOf(ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23)
+        ).toBeGreaterThanOrEqual(0);
+      });
+      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_FETAL}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_FETAL;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyNode = findOntologyNodeById(
+          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const descendants = findOntologyDescendantIds(ontologyNode!);
+        expect(descendants.length).toEqual(0);
+      });
     });
-    it("finds leaf nodes for HsapDv:0000204", () => {
-      const ancestorOntologyId = "HsapDv:0000204";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(3);
-      expect(leafOntologyIds?.has("HsapDv:0000086")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000088")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000091")).toBeTruthy();
-    });
-    it("finds leaf nodes for HsapDv:0000087", () => {
-      const ancestorOntologyId = "HsapDv:0000087";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(2);
-      expect(leafOntologyIds?.has("HsapDv:0000088")).toBeTruthy();
-      expect(leafOntologyIds?.has("HsapDv:0000091")).toBeTruthy();
-    });
-    it("finds leaf nodes for MmusDv:0000042", () => {
-      const ancestorOntologyId = "MmusDv:0000042";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(7);
-      expect(leafOntologyIds?.has("MmusDv:0000003")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000004")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000007")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000013")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000017")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000018")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000031")).toBeTruthy();
-    });
-    it("finds leaf nodes for MmusDv:0000002", () => {
-      const ancestorOntologyId = "MmusDv:0000002";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(6);
-      expect(leafOntologyIds?.has("MmusDv:0000003")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000004")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000007")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000013")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000017")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000018")).toBeTruthy();
-    });
-    it("finds leaf nodes for MmusDv:0000092", () => {
-      const ancestorOntologyId = "MmusDv:0000092";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(4);
-      expect(leafOntologyIds?.has("MmusDv:0000036")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000112")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000061")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000097")).toBeTruthy();
-    });
-    it("finds leaf nodes for MmusDv:0000043", () => {
-      const ancestorOntologyId = "MmusDv:0000043";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(2);
-      expect(leafOntologyIds?.has("MmusDv:0000036")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000112")).toBeTruthy();
-    });
-    it("finds leaf nodes for MmusDv:0000110", () => {
-      const ancestorOntologyId = "MmusDv:0000110";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(2);
-      expect(leafOntologyIds?.has("MmusDv:0000061")).toBeTruthy();
-      expect(leafOntologyIds?.has("MmusDv:0000097")).toBeTruthy();
-    });
-    it("finds leaf nodes for UBERON:0000068", () => {
-      const ancestorOntologyId = "UBERON:0000068";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(7);
-      expect(leafOntologyIds?.has("UBERON:0000106")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000107")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000108")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000109")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000110")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000111")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0007220")).toBeTruthy();
-    });
-    it("finds leaf nodes for UBERON:0000092", () => {
-      const ancestorOntologyId = "UBERON:0000092";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(5);
-      expect(leafOntologyIds?.has("UBERON:0000069")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000070")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0018685")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000112")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000113")).toBeTruthy();
-    });
-    it("finds leaf nodes for UBERON:0000066", () => {
-      const ancestorOntologyId = "UBERON:0000066";
-      const leafOntologyIds =
-        DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ancestorOntologyId);
-      expect(leafOntologyIds).toBeTruthy();
-      expect(leafOntologyIds?.size).toEqual(2);
-      expect(leafOntologyIds?.has("UBERON:0000112")).toBeTruthy();
-      expect(leafOntologyIds?.has("UBERON:0000113")).toBeTruthy();
+    describe("findOntologyParentNode", () => {
+      it(`finds parent of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(
+          ontologyRootNodes,
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        expect(parent).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        expect(parent!.ontology_term_id).toEqual(ONTOLOGY_ID_HUMAN_PRENATAL);
+      });
+      it(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(
+          ontologyRootNodes,
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        expect(parent).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        expect(parent!.ontology_term_id).toEqual(
+          ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN
+        );
+      });
+      it(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(
+          ontologyRootNodes,
+          ontologyId
+        );
+        expect(ontologyNode).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        expect(parent).toBeFalsy();
+      });
     });
   });
 });

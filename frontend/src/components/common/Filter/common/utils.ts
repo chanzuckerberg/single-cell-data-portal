@@ -2,9 +2,9 @@
 import { Ontology } from "src/common/entities";
 import {
   Categories,
-  DEVELOPMENT_STAGE_ONTOLOGY_TREE,
   OntologyCategoryKey,
   OntologyNode,
+  SPECIES_KEY,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -38,6 +38,89 @@ export const SYMBOL_MILLION = "M";
 export const SYMBOL_THOUSAND = "k";
 
 /**
+ * Find the node with the given ontology ID.
+ * @param rootNodes - Top-level nodes in ontology tree to search for ontology ID in.
+ * @param ontologyId - The ontology ID of the node to find.
+ */
+export function findOntologyNodeById(
+  rootNodes: OntologyNode[],
+  ontologyId: string
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    const rootNode = rootNodes[i];
+    if (rootNode.ontology_term_id === ontologyId) {
+      return rootNode;
+    }
+    const node = findOntologyNodeById(rootNode.children ?? [], ontologyId);
+    if (node) {
+      return node;
+    }
+  }
+}
+
+/**
+ * Find the IDs of all descendants of the given ontology.
+ * @param ontologyNode - Node to of ontology to find descendants of.
+ * @param descendants - The set of descendants of the given ontology ID.
+ * @returns Array of ontology IDs of nodes that are descendants of the given ontology ID.
+ */
+export function findOntologyDescendantIds(
+  ontologyNode: OntologyNode,
+  descendants: string[] = []
+): string[] {
+  if (!ontologyNode.children) {
+    return descendants;
+  }
+
+  ontologyNode.children.forEach((childNode) => {
+    descendants.push(childNode.ontology_term_id);
+    findOntologyDescendantIds(childNode, descendants);
+  });
+
+  return descendants;
+}
+
+/**
+ * Determine the ontology key of the given ontology ID. For example, "HsapDv:0000003" returns "HsapDv".
+ * @param ontologyId - ID to determine ontology key from.
+ * @returns String containing ontology key.
+ */
+export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
+  return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
+}
+
+/**
+ * Find the parent node of the given node.
+ * @param rootNodes - Node tree structure to find parent in.
+ * @param ontologyNode - Node to find parent of.
+ * @returns Ontology node that is the parent of the given ontology node.
+ */
+export function findOntologyParentNode(
+  rootNodes: OntologyNode[],
+  ontologyNode: OntologyNode
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    // Check if this node is the parent.
+    const rootNode = rootNodes[i];
+    const isParent = rootNode.children?.find(
+      (childNode) => childNode === ontologyNode
+    );
+    if (isParent) {
+      return rootNode;
+    }
+
+    // Otherwise, check each child to see if they are the parent.
+    const parentNode = findOntologyParentNode(
+      rootNode.children ?? [],
+      ontologyNode
+    );
+    if (parentNode) {
+      return parentNode;
+    }
+  }
+}
+
+/**
  * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
  * metadata (ontology label and key) values.
  * @param categoryKey - Object key of value to display in cell.
@@ -48,76 +131,6 @@ export function ontologyCellAccessorFn(
 ): OntologyCellAccessorFn {
   return (categories: Categories) =>
     categories[categoryKey].map((o: Ontology) => o.label);
-}
-
-/**
- * Development stage leaf node ontology IDs by each ancestor node ontology ID, used to facilitate ancestor-leaf lookups. For example:
- *
- * [{
- *     label: a,
- *     children: [{
- *         label: b
- *     },
- *     {
- *         label: c
- *         children: [{
- *             label: d
- *         }]
- *     }]
- * }]
- *
- * maps to:
- *
- * a => b, d
- * c => d
- *
- * Note, b and d are not added as keys to the map as they are both node leaves. c is added as a key in the map as it
- * has a single child: d. However, c is not added as a child of a as it is not a leaf node.
- */
-export const DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR = Object.values(
-  DEVELOPMENT_STAGE_ONTOLOGY_TREE
-).reduce((accum, developmentStages) => {
-  developmentStages.forEach((developmentStage) => {
-    setLeafOntologyIdsForDevelopmentStage(accum, developmentStage);
-  });
-  return accum;
-}, new Map<string, Set<string>>());
-
-/**
- * Set of all development stage ontology IDs, used by filter functionality to determine the full set of possible
- * ontology IDs.
- * TODO(cc) share recursion with setLeafOntologyIdsForDevelopmentStage but without passing in accum?
- * TODO(cc) test
- */
-export const DEVELOPMENT_STAGE_ONTOLOGY_IDS = [
-  ...DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.keys(),
-].reduce((accum, ontologyId) => {
-  accum.add(ontologyId);
-  DEVELOPMENT_STAGE_LEAF_ONTOLOGY_IDS_BY_ANCESTOR.get(ontologyId)?.forEach(
-    (childOntologyId) => {
-      accum.add(childOntologyId);
-    }
-  );
-  return accum;
-}, new Set<string>());
-
-/**
- * Find all leaf node (ontology IDs) for the given development stage node.
- * @param ontologyNode - Node to find leaf node ontology IDs of.
- * @param leafOntologyIds - Set of leaf node ontology IDs found for the given development stage.
- */
-function findLeafNodeOntologyIds(
-  ontologyNode: OntologyNode,
-  leafOntologyIds: Set<string>
-) {
-  // If this development stage node has no children, we have found a leaf! Add ontology ID to set.
-  if (!ontologyNode.children) {
-    leafOntologyIds.add(ontologyNode.ontology_term_id);
-    return;
-  }
-  ontologyNode.children.forEach((childDevelopmentStage) =>
-    findLeafNodeOntologyIds(childDevelopmentStage, leafOntologyIds)
-  );
 }
 
 /**
@@ -157,32 +170,4 @@ export function formatNumberToScale(num: number): string {
  */
 function scaleAndFix(num: number, scale: number, fixTo: number): number {
   return parseFloat((num / scale + Number.EPSILON).toFixed(fixTo));
-}
-
-/**
- * Find the leaf nodes for non-leaf development stage nodes in the tree of the given node and add to map.
- * @param leafOntologyIdsByAncestor - Map of leaf ontology IDs keyed by ancestor development stage ontology ID.
- * @param ontologyNode - Node to find leaf node ontology IDs of.
- */
-function setLeafOntologyIdsForDevelopmentStage(
-  leafOntologyIdsByAncestor: Map<string, Set<string>>,
-  ontologyNode: OntologyNode
-) {
-  // Node itself a leaf.
-  if (!ontologyNode.children) {
-    return;
-  }
-
-  // Find the leaf nodes for this development stage node.
-  const leafNodes = new Set<string>();
-  findLeafNodeOntologyIds(ontologyNode, leafNodes);
-  leafOntologyIdsByAncestor.set(ontologyNode.ontology_term_id, leafNodes);
-
-  // Find the leaf nodes for children of this development stage node, if any.
-  ontologyNode.children.forEach((childDevelopmentStage) =>
-    setLeafOntologyIdsForDevelopmentStage(
-      leafOntologyIdsByAncestor,
-      childDevelopmentStage
-    )
-  );
 }

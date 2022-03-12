@@ -1,9 +1,8 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, ReactNode } from "react";
 import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
-  OntologyCategoryValueView,
   OntologyCategoryView,
   RangeCategoryView,
   SelectCategoryValueView,
@@ -11,12 +10,12 @@ import {
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
+import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterMultiPanel from "src/components/common/Filter/components/FilterMultiPanel";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import BasicFilter from "./components/BasicFilter";
 import FilterLabel from "./components/FilterLabel";
-import FilterMenu from "./components/FilterMenu";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
@@ -29,46 +28,13 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
     <>
       {categories.map((categoryView: CategoryView) => {
         const { key, label } = categoryView;
-        const { values } = categoryView as SelectCategoryView;
-        const { species } = categoryView as OntologyCategoryView;
         const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
-            content={
-              isOntologyCategoryView(categoryView) ? (
-                <FilterMultiPanel
-                  categoryKey={key}
-                  onFilter={onFilter}
-                  species={species}
-                />
-              ) : isSelectCategoryView(categoryView) ? (
-                <FilterMenu
-                  categoryKey={key}
-                  filterCategoryValues={filterCategoryValues}
-                  filterCategoryValuesWithCount={filterCategoryValuesWithCount}
-                  isMultiselect // Can possibly be single select with future filter types
-                  isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
-                  onFilter={onFilter}
-                  onUpdateSearchValue={onUpdateSearchValue}
-                  values={values}
-                />
-              ) : (
-                <FilterRange categoryView={categoryView} onFilter={onFilter} />
-              )
-            }
+            content={buildBasicFilterContent(categoryView, onFilter)}
             isDisabled={isDisabled}
             key={key}
-            tags={
-              <FilterTags
-                tags={
-                  isOntologyCategoryView(categoryView)
-                    ? buildOntologyCategoryTags(categoryView, key, onFilter)
-                    : isSelectCategoryView(categoryView)
-                    ? buildSelectCategoryTags(categoryView, key, onFilter)
-                    : buildRangeCategoryTag(categoryView, key, onFilter)
-                }
-              />
-            }
+            tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
             target={<FilterLabel isDisabled={isDisabled} label={label} />}
           />
         );
@@ -78,39 +44,73 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
 }
 
 /**
- * Returns selected ontology category tag with tag label and corresponding Tag onRemove function.
- * Any category value with a "selectedTag" will be added to the array of selected category tags.
- * TODO(cc) method review and write up
- * @param values
- * @param categoryKey
- * @param onFilter
- * @param categoryTags
- * @returns ontology selected category tags.
+ * Build content model of basic filter depending on category type.
+ * @param categoryView - View model of category to display.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
+ * @returns React node representing content to display inside basic filter menu.
  */
-function createOntologySelectedTags(
-  values: OntologyCategoryValueView[],
-  categoryKey: CategoryKey,
-  onFilter: OnFilterFn,
-  categoryTags: CategoryTag[] | undefined
-): CategoryTag[] | undefined {
-  for (const { children, key, label, selectedTag } of values) {
-    if (selectedTag) {
-      // Category value is a "selectedTag"; add to the array of category tags.
-      const tag = { label, onRemove: () => onFilter(categoryKey, key) };
-      categoryTags = categoryTags || []; // categoryTags value may be undefined; init as itself, or empty array if undefined.
-      categoryTags.push(tag);
-    }
-    if (children) {
-      // Category value has descendants; iterate over category value descendants.
-      categoryTags = createOntologySelectedTags(
-        children,
-        categoryKey,
-        onFilter,
-        categoryTags
-      );
-    }
+function buildBasicFilterContent(
+  categoryView: CategoryView,
+  onFilter: OnFilterFn
+): ReactNode {
+  const { key } = categoryView;
+
+  // Handle ontology categories.
+  if (isOntologyCategoryView(categoryView)) {
+    return (
+      <FilterMultiPanel
+        categoryKey={key}
+        onFilter={onFilter}
+        species={categoryView.species}
+      />
+    );
   }
-  return categoryTags;
+
+  // Handle select categories
+  if (isSelectCategoryView(categoryView)) {
+    const { values } = categoryView;
+    return (
+      <FilterMenu
+        categoryKey={key}
+        filterCategoryValues={filterCategoryValues}
+        filterCategoryValuesWithCount={filterCategoryValuesWithCount}
+        isMultiselect // Can possibly be single select with future filter types
+        isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
+        onFilter={onFilter}
+        onUpdateSearchValue={onUpdateSearchValue}
+        values={values}
+      />
+    );
+  }
+
+  // Otherwise, handle range categories
+  return <FilterRange categoryView={categoryView} onFilter={onFilter} />;
+}
+
+/**
+ * Build up the set of selected filter tags depending on category type.
+ * @param categoryView - View model of category to display.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
+ * @returns Array of category tags to be displayed as selected tags.
+ */
+function buildFilterTags(
+  categoryView: CategoryView,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  const { key } = categoryView;
+
+  // Handle ontology categories
+  if (isOntologyCategoryView(categoryView)) {
+    return buildOntologyCategoryTags(categoryView, key, onFilter);
+  }
+
+  // Handle select categories
+  if (isSelectCategoryView(categoryView)) {
+    return buildSelectCategoryTags(categoryView, key, onFilter);
+  }
+
+  // Otherwise, handle range categories
+  return buildRangeCategoryTag(categoryView, key, onFilter);
 }
 
 /**
@@ -125,16 +125,12 @@ function buildOntologyCategoryTags(
   categoryKey: CategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  let categoryTags = undefined;
-  for (const species of categoryView.species) {
-    categoryTags = createOntologySelectedTags(
-      species.children,
-      categoryKey,
-      onFilter,
-      categoryTags
-    );
-  }
-  return categoryTags;
+  return categoryView.species?.reduce((accum, species) => {
+    species.selectedViews.forEach(({ key, label }) => {
+      accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
+    });
+    return accum;
+  }, [] as CategoryTag[]);
 }
 
 /**
@@ -252,12 +248,16 @@ function isOntologyCategoryView(
 }
 
 /**
- * Returns true if ontology category is not applicable, that is, there are species ontology trees.
+ * Returns true if ontology category is not applicable, that is, there are no species ontology trees.
  * @param categoryView
- * @returns True when there are no species or the species lengths are all 0.
+ * @returns True when there are no species or the count of children for each species is 0.
  */
 function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
-  return !categoryView.species || categoryView.species.length === 0; // TODO(cc) review return statement here (should check each)
+  const { species } = categoryView;
+  if (!species || species.length === 0) {
+    return true;
+  }
+  return !species.some((s) => s.children.length > 0);
 }
 
 /**

@@ -15,7 +15,13 @@ export interface CategoryConfig {
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
   multiselect: boolean; // True if category can have multiple values selected.
-  ontology?: OntologyTree; // TODO(cc) revisit - remove? or add type guard?
+}
+
+/**
+ * Configuration model of ontology category.
+ */
+export interface OntologyCategoryConfig extends CategoryConfig {
+  ontology: OntologyView;
 }
 
 /**
@@ -113,13 +119,30 @@ export interface DevelopmentStageTree {
   [key: string]: DevelopmentStageNode[];
 }
 
+/*
+ * Ontology keys for species. For exmaple, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
+ */
+export enum SPECIES_KEY {
+  "HsapDv" = "HsapDv",
+  "MmusDv" = "MmusDv",
+  "UBERON" = "UBERON",
+}
+
+/**
+ * Labels for displaying species.
+ */
+export enum SPECIES_LABEL {
+  "HsapDv" = "Homo Sapiens",
+  "MmusDv" = "Mus Musculus",
+  "UBERON" = "Other Organisms",
+}
+
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
-export const DEVELOPMENT_STAGE_ONTOLOGY_TREE: OntologyTree = {
-  // TODO(cc) rename
-  "Homo sapiens": [
+export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
+  [SPECIES_KEY.HsapDv]: [
     {
       label: "Prenatal (conception–birth)",
       ontology_term_id: "HsapDv:0000045",
@@ -203,7 +226,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TREE: OntologyTree = {
       ],
     },
   ],
-  "Mus musculus": [
+  [SPECIES_KEY.MmusDv]: [
     {
       label: "Prenatal",
       ontology_term_id: "MmusDv:0000042",
@@ -279,7 +302,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TREE: OntologyTree = {
       ],
     },
   ],
-  "Other organisms": [
+  [SPECIES_KEY.UBERON]: [
     {
       label: "Embryo",
       ontology_term_id: "UBERON:0000068",
@@ -353,7 +376,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TREE: OntologyTree = {
 /**
  * Configuration for each category.
  */
-const CATEGORY_CONFIGS: CategoryConfig[] = [
+const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
     categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
@@ -373,7 +396,7 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
     categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
-    ontology: DEVELOPMENT_STAGE_ONTOLOGY_TREE,
+    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
   },
   {
     categoryKey: CATEGORY_KEY.DISEASE,
@@ -584,15 +607,15 @@ export type Range = [number, number] | [];
 export interface OntologyCategorySpeciesView {
   children: OntologyCategoryValueView[];
   label: string;
+  selectedViews: OntologyCategoryValueView[];
 }
 
 /**
- * View model of category value, selected state, children, children selected state and count for ontology categories.
+ * View model of category value, selected and partial selected state, count and children for ontology categories.
  */
 export interface OntologyCategoryValueView extends SelectCategoryValueView {
   children?: OntologyCategoryValueView[];
-  selectedTag?: boolean; // True if value, if selected, is to be included in the selected set of tags.
-  partialSelected: boolean; // True if value is a parent node and some children node are selected. // TODO(cc) selectedPartial?
+  selectedPartial: boolean; // True if value is a parent node and some children node are selected.
 }
 
 /**
@@ -612,11 +635,9 @@ export interface OntologyNode extends Ontology {
 }
 
 /**
- * Ontology tree structure, keyed by organism.
+ * Development stage ontology tree structures, keyed by organism.
  */
-export interface OntologyTree {
-  [key: string]: OntologyNode[];
-}
+export type OntologyView = { [K in SPECIES_KEY]: OntologyNode[] };
 
 /**
  * View model of range metadata key.

@@ -34,7 +34,7 @@ export default function FilterPanelList({
       subheader={PanelHeader}
     >
       {values.map(
-        ({ key, children, count, label, partialSelected, selected }) => (
+        ({ key, children, count, label, selectedPartial, selected }) => (
           <Fragment key={key}>
             {/* List item */}
             <ListItem
@@ -52,7 +52,7 @@ export default function FilterPanelList({
                 icon={
                   selected
                     ? IconNames.TICK
-                    : partialSelected
+                    : selectedPartial
                     ? IconNames.MINUS
                     : IconNames.BLANK
                 }

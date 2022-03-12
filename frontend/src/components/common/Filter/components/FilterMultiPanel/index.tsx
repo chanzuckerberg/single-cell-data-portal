@@ -19,17 +19,19 @@ export default function FilterMultiPanel({
   onFilter,
   species,
 }: Props): JSX.Element {
+  const speciesToDisplay = species.filter(
+    (s) => s.children && s.children.length > 0
+  );
+  console.log(speciesToDisplay);
   return (
     <MultiPanelSelector>
-      {species.map(({ label, children }, i) => (
+      {speciesToDisplay.map(({ label, children }, i) => (
         <FilterPanel
           categoryKey={categoryKey}
           key={label}
           label={label}
           onFilter={onFilter}
-          scrollable={
-            countOntologySpeciesTreeNodes(children) > MAX_DISPLAYABLE_LIST_ITEMS
-          }
+          scrollable={countViews(children) > MAX_DISPLAYABLE_LIST_ITEMS}
           showPanelDivider={i !== 0}
           values={children}
         />
@@ -39,20 +41,19 @@ export default function FilterMultiPanel({
 }
 
 /**
- * Returns a count of all species-specific ontology tree nodes.
+ * Returns a count of all views in the given view tree.
  * @param children
  * @param increment
  * @returns number of species-specific ontology tree nodes.
- * TODO(cc) review method and method name - maybe add a depth or total size to view model
  */
-function countOntologySpeciesTreeNodes(
+function countViews(
   children: OntologyCategoryValueView[],
   increment = 0
 ): number {
   return children.reduce((acc, child) => {
     acc++;
     if (child.children) {
-      return countOntologySpeciesTreeNodes(child.children, acc);
+      return countViews(child.children, acc);
     }
     return acc;
   }, increment);
