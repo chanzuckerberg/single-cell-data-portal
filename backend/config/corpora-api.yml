@@ -1560,7 +1560,7 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
-    "413":
+    413:
       description: Exceed File Size Limit
       content:
         application/problem+json:
