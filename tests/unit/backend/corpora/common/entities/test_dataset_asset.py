@@ -159,6 +159,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def test_get_list_of_s3_uris_for_associated_dataset_ids(self):
         first_uri = "some_uri_0"
         second_uri = "some_uri_1"
+        third_uri = "this_shouldnt_be_returned"
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.H5AD,
@@ -167,11 +168,18 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             s3_uri=first_uri,
         )
         artifact_params_1 = dict(
-            filename="filename_x",
+            filename="filename_y",
             filetype=DatasetArtifactFileType.H5AD,
             type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=second_uri,
+        )
+        artifact_params_2 = dict(
+            filename="filename_z",
+            filetype=DatasetArtifactFileType.H5AD,
+            type=DatasetArtifactType.ORIGINAL,
+            user_submitted=True,
+            s3_uri=third_uri,
         )
         dataset_0 = self.generate_dataset(self.session, artifacts=[artifact_params_0])
         DatasetAsset.create(
@@ -193,5 +201,20 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             user_submitted=True,
             s3_uri=second_uri,
         )
-        s3_uris = DatasetAsset.s3_uris_for_datasets(self.session, [dataset_0.id, dataset_1.id])
-        self.assertEqual(s3_uris, {dataset_0.id: first_uri, dataset_1.id: second_uri})
+        dataset_2 = self.generate_dataset(self.session, artifacts=[artifact_params_1])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_2.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            type_enum=DatasetArtifactType.REMIX,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        s3_uri_dataset_dict = DatasetAsset.s3_uris_for_datasets(self.session, [dataset_0.id, dataset_1.id])
+
+        self.assertIn(s3_uri_dataset_dict.keys(), [dataset_0.id, dataset_1.id])
+        self.assertNotIn(s3_uri_dataset_dict.keys(), dataset_2.id)
+
+        self.assertIn(s3_uri_dataset_dict.values(), [first_uri, second_uri])
+        self.assertNotIn(s3_uri_dataset_dict.values(), third_uri)
