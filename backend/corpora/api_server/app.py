@@ -25,7 +25,7 @@ def create_flask_app():
     curator_api = super(connexion.FlaskApp, connexion_app).add_api(
         "curator-api.yml", validate_responses=True, options={"swagger_ui": True}
     )
-    connexion_app.app.register_blueprint(dataportal_api.blueprint, url_prefix="/dp", name="data-portal")
+    connexion_app.app.register_blueprint(dataportal_api.blueprint, url_prefix="/", name="data-portal")
     connexion_app.app.register_blueprint(curator_api.blueprint, url_prefix="/curator", name="curator")
     return connexion_app.app
 
