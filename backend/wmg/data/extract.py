@@ -29,9 +29,8 @@ def get_s3_uris():
             Dataset.table.tombstone == 'f'
         ).all()
         for dataset in published_dataset_non_null_assays:
-            for assay in dataset[1]:
-                if assay['ontology_term_id'] in included_assay_ontology_ids:
-                    dataset_ids.append(dataset[0])
+            if dataset[1]['ontology_term_id'] in included_assay_ontology_ids:
+                dataset_ids.append(dataset[0])
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris.keys()
