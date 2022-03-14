@@ -66,7 +66,7 @@ export default function FilterPanelList({
                     component="span"
                     flex={1}
                     fontWeight={selected ? 500 : undefined}
-                    mr={1}
+                    mr={4}
                   >
                     {label}
                   </Box>

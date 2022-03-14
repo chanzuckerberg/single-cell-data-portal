@@ -10,11 +10,14 @@ const PANEL_MAX_HEIGHT =
   (MAX_DISPLAYABLE_LIST_ITEMS + 0.5) * LIST_HEIGHT + LIST_SUBHEADER_HEIGHT;
 
 interface Props {
+  panelWidth: number;
   scrollable: boolean;
 }
 
 export const Panel = styled.div<Props>`
   max-height: ${PANEL_MAX_HEIGHT}px;
+  min-width: ${(props) =>
+    `${props.panelWidth}px`}; /* required; makes allowances for list item selected state font weight changes by maintaining panel min width */
   overflow-y: auto;
   padding-right: ${(props) => (props.scrollable ? "8px" : undefined)};
   ${scrollbar};
@@ -31,7 +34,7 @@ export const useFilterPanelStyles = makeStyles({
     color: GRAY.A,
     cursor: "default",
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 500,
     letterSpacing: "0.03em",
     lineHeight: "15px",
     marginBottom: 8,

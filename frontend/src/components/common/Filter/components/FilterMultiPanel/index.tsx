@@ -43,7 +43,7 @@ export default function FilterMultiPanel({
  * Returns a count of all views in the given view tree.
  * @param children
  * @param increment
- * @returns number of species-specific ontology tree nodes.
+ * @returns number of all views in the given view tree.
  */
 function countViews(
   children: OntologyCategoryValueView[],
