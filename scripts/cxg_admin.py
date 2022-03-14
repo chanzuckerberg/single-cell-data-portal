@@ -688,8 +688,7 @@ def update_curator_names(ctx, access_token):
 @cli.command()
 @click.pass_context
 def add_publisher_metadata(ctx):
-    """Add publisher metadata to the current records
-    """
+    """Add publisher metadata to the current records"""
 
     from backend.corpora.common.providers import crossref_provider
 
@@ -707,7 +706,7 @@ def add_publisher_metadata(ctx):
 
         for record in session.query(DbCollection):
             collection = Collection.get_collection(session, record.id, record.visibility)
-            if not collection: 
+            if not collection:
                 continue
             collection_id = record.id
             dois = [link.link_url for link in collection.links if link.link_type == CollectionLinkType.DOI]
@@ -718,7 +717,7 @@ def add_publisher_metadata(ctx):
                 continue
 
             if normalized_doi:
-                if not '/' in normalized_doi:
+                if not "/" in normalized_doi:
                     continue
 
                 try:
@@ -728,7 +727,7 @@ def add_publisher_metadata(ctx):
                 except Exception as e:
                     print(record.id, normalized_doi, record.name, e)
                     print(traceback.format_exc())
-                    record.publisher_metadata = {"error" : str(e.__cause__)}
+                    record.publisher_metadata = {"error": str(e.__cause__)}
 
                 time.sleep(2)
 
@@ -736,8 +735,7 @@ def add_publisher_metadata(ctx):
 @cli.command()
 @click.pass_context
 def refresh_preprint_doi(ctx):
-    """Add publisher metadata to the current records
-    """
+    """Add publisher metadata to the current records"""
 
     from backend.corpora.common.providers import crossref_provider
 
@@ -752,7 +750,7 @@ def refresh_preprint_doi(ctx):
 
         for record in session.query(DbCollection):
             collection = Collection.get_collection(session, record.id, record.visibility)
-            if not collection: 
+            if not collection:
                 continue
             collection_id = record.id
             normalized_doi = collection.get_doi()
@@ -764,14 +762,13 @@ def refresh_preprint_doi(ctx):
                     published_doi = provider.fetch_preprint_published_doi(normalized_doi)
                     print(collection_id, normalized_doi, published_doi)
                     doi_record = session.query(DbCollectionLink).filter(
-                        DbCollectionLink.collection_id == record.id, 
+                        DbCollectionLink.collection_id == record.id,
                         DbCollectionLink.collection_visibility == record.visibility,
-                        DbCollectionLink.link_type ==  CollectionLinkType.DOI
+                        DbCollectionLink.link_type == CollectionLinkType.DOI,
                     )
                     doi_record.link_url = published_doi
                 except Exception as e:
                     print(e)
-
 
 
 def get_database_uri() -> str:
