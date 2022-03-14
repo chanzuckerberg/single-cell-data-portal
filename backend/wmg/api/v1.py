@@ -19,6 +19,8 @@ from backend.wmg.data.schema import cube_non_indexed_dims
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
+#  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
+#  -portal/2132
 def primary_filter_dimensions():
     cube, snapshot_identifier = load_cube()
     qry = WmgQuery(cube)
@@ -72,11 +74,9 @@ def query():
     )
 
 
-# TODO: It would be reasonable to fetch datasets via a REST API call to Data Portal, rather than coupling to the
-#  portal's db layer, considering that this is the only occasion where the backend.wmg.api package introduces a
-#  dependency on the db. There is no appropriate API call at this time and the lower of making an API call would
-#  have to be considered as well.
-# TODO: This needs a test, but since we are likely to replace it (see above TODO), it is currently not tested
+# TODO: Read this from generated data artifact instead of DB.
+#  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
+#  -portal/2086. This code is without a unit test, but we are intending to replace it.
 def fetch_datasets_metadata(dataset_ids: List[str]) -> List[Dict]:
     # We return a DTO because the db entity can't access its attributes after the db session ends,
     # and we want to keep session management out of the calling method
@@ -123,9 +123,11 @@ def build_expression_summary(query_result: DataFrame) -> dict:
                 id=cell_type_ontology_term_id,
                 n=cell_type_stats["nnz"],
                 me=cell_type_stats["sum"] / cell_type_stats["n_cells"],
-                # TODO
+                # TODO (https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg
+                #  /single-cell-data-portal/2054)
                 pc=0.0,
-                # TODO
+                # TODO (https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg
+                #  /single-cell-data-portal/2054)
                 tpc=0.0,
             )
         )
@@ -136,6 +138,6 @@ def extract_filter_dims_values(query_result: DataFrame) -> dict:
     """
     Return unique values for each dimension in the specified query result
     """
-    return {
-        col: query_result.groupby(col).groups.keys() for col in set(query_result.columns) & set(cube_non_indexed_dims)
-    }
+    dims: set = set(query_result.columns) & set(cube_non_indexed_dims)
+    dim_uniq_values: dict = {dim: query_result.groupby(dim).groups.keys() for dim in dims}
+    return dim_uniq_values

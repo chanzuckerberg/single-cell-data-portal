@@ -31,7 +31,8 @@ class WmgQuery:
         super().__init__()
         self._cube = cube
 
-    # TODO: refactor for readability
+    # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
+    #  /chanzuckerberg/single-cell-data-portal/2133
     def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
         # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
         # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
@@ -76,7 +77,9 @@ class WmgQuery:
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
-        # TODO: Query the cell counts cube, for efficiency
+        # TODO: Query the cell counts cube, for efficiency:
+        #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
+        #  -data-portal/2134
         return (
             self._cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
         )
@@ -84,7 +87,9 @@ class WmgQuery:
     def list_grouped_primary_filter_dimensions_term_ids(
         self, primary_dim_name: str, group_by_dim: str
     ) -> Dict[str, List[str]]:
-        # TODO: Query the cell counts cube, for efficiency
+        # TODO: Query the cell counts cube, for efficiency:
+        #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
+        #  -data-portal/2134
         return (
             self._cube.query(attrs=[], dims=[primary_dim_name, group_by_dim])
             .df[:]

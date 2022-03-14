@@ -12,8 +12,6 @@ def create_ctx(tiledb_mem_gb: float = 1.0) -> tiledb.Ctx:
         "sm.tile_cache_size": virtual_memory_size(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
         "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
-        # "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "false",
-        # "py.use_arrow": False,
     }
 
     if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):

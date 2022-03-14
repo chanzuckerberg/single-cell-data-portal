@@ -28,6 +28,8 @@ def load_cube() -> Tuple[Array, str]:
 
     if _update_latest_snapshot_identifier() or cube is None:
         # TODO: Okay to keep open indefinitely? Is it faster than re-opening each request?
+        #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
+        #  -data-portal/2134
         cube_uri = build_cube_uri(WmgConfig().bucket, latest_snapshot_identifier)
         logger.info(f"Opening WMG cube at {cube_uri}")
         cube = _open_cube(cube_uri)
@@ -40,7 +42,9 @@ def _open_cube(cube_uri) -> Array:
 
 
 # TODO: Worth doing this on a thread, continuously, rather than on-demand, in order to proactively open a new cube (
-#  and maybe warm the TileDB cache?) before a user needs to query it
+#  and maybe warm the TileDB cache?) before a user needs to query it:
+#  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
+#  -portal/2134
 def _update_latest_snapshot_identifier() -> bool:
     global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
 
@@ -56,8 +60,7 @@ def _update_latest_snapshot_identifier() -> bool:
         latest_snapshot_identifier = new_snapshot_identifier
         return True
     else:
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"latest snapshot identifier={latest_snapshot_identifier}")
+        logger.debug(f"latest snapshot identifier={latest_snapshot_identifier}")
         return False
 
 

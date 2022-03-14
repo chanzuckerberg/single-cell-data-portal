@@ -1021,7 +1021,7 @@ paths:
                   tissue_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   gene_terms:
-                    # TODO: specify further
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
                     # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
                     type: object
         "404":
@@ -1475,7 +1475,7 @@ components:
           A single-element object with the ontology term id as the element's property name and the ontology term label
           as the element's property value.
         type: object
-        # TODO: fix
+        # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
         # `{"<ontology_term_id>": "<ontology_term_label"}`
 #        maxProperties: 1
 #        additionalProperties:
