@@ -59,6 +59,45 @@ export function findOntologyNodeById(
 }
 
 /**
+ * //TODO(cc)
+ * Find the IDs of all ancestors of the given ontology.
+ * @param ontologyNode - Node to of ontology to find ancestors of.
+ * @param ancestors - The set of ancestors of the given ontology ID.
+ * @returns Array of ontology IDs of nodes that are ancestors of the given ontology ID.
+ */
+export function findOntologyAncestorIds(
+  rootNodes: OntologyNode[],
+  ontologyNode: OntologyNode,
+  ancestors: string[]
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    const rootNode = rootNodes[i];
+    if (rootNode === ontologyNode) {
+      return ontologyNode;
+    }
+    if (!rootNode.children) {
+      continue;
+    }
+    let descendantNode;
+    for (let j = 0; j < rootNode.children.length; j++) {
+      const childNode = rootNode.children[j];
+      descendantNode = findOntologyAncestorIds(
+        [childNode],
+        ontologyNode,
+        ancestors
+      );
+      if (descendantNode) {
+        break;
+      }
+    }
+    if (descendantNode) {
+      ancestors.push(rootNode.ontology_term_id);
+      return descendantNode;
+    }
+  }
+}
+
+/**
  * Find the IDs of all descendants of the given ontology.
  * @param ontologyNode - Node to of ontology to find descendants of.
  * @param descendants - The set of descendants of the given ontology ID.

@@ -29,6 +29,7 @@ import {
   SPECIES_LABEL,
 } from "src/components/common/Filter/common/entities";
 import {
+  findOntologyAncestorIds,
   findOntologyDescendantIds,
   findOntologyNodeById,
   findOntologyParentNode,
@@ -538,11 +539,25 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
   const descendants = findOntologyDescendantIds(ontologyNode);
   descendants.forEach((descendant) => categoryFilters.delete(descendant));
 
-  // Add selected value to selected set.
-  categoryFilters.add(categoryValueKey);
+  // Add selected value to selected set if ancestor of value is not already selected. If an ancestor is selected, this
+  // indicates that the current selected value is implied selected and should be removed (and siblings are added).
+  const ancestors = [] as string[];
+  findOntologyAncestorIds(ontologyRootNodes, ontologyNode, ancestors);
+  const isAncestorSelected = ancestors.some((ancestor) =>
+    categoryFilters.has(ancestor)
+  );
+  const parentNode = findOntologyParentNode(ontologyRootNodes, ontologyNode);
+  if (isAncestorSelected) {
+    parentNode?.children?.forEach((childNode) => {
+      if (childNode !== ontologyNode) {
+        categoryFilters.add(childNode.ontology_term_id);
+      }
+    });
+  } else {
+    categoryFilters.add(categoryValueKey);
+  }
 
   // Reevaluate parent of selected value to see if parent can be selected instead of this node.
-  const parentNode = findOntologyParentNode(ontologyRootNodes, ontologyNode);
   if (!parentNode) {
     return [...categoryFilters.values()];
   }

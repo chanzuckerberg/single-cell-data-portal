@@ -4,6 +4,7 @@
 
 import { DEVELOPMENT_STAGE_ONTOLOGY_VIEW } from "src/components/common/Filter/common/entities";
 import {
+  findOntologyAncestorIds,
   findOntologyDescendantIds,
   findOntologyNodeById,
   findOntologyParentNode,
@@ -129,6 +130,8 @@ describe("filter", () => {
     const ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23 = "HsapDv:0000015";
     const ONTOLOGY_ID_HUMAN_FETAL = "HsapDv:0000037";
     const ONTOLOGY_ID_HUMAN_HUMAN_ADULT = "HsapDv:0000087";
+    const ONTOLOGY_ID_HUMAN_MATURE = "HsapDv:0000204";
+    const ONTOLOGY_ID_HUMAN_HUMAN_EARLY_ADULT = "HsapDv:0000088";
 
     const ONTOLOGY_ID_MOUSE_PRENATAL = "MmusDv:0000042";
     const ONTOLOGY_ID_OTHER_EMBRYO = "UBERON:0000068";
@@ -247,6 +250,73 @@ describe("filter", () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
         const descendants = findOntologyDescendantIds(ontologyNode!);
         expect(descendants.length).toEqual(0);
+      });
+    });
+    describe("findOntologyAncestors", () => {
+      it(`finds ancestors of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const rootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(rootNodes, ontologyId);
+        expect(ontologyNode).toBeTruthy();
+        const ancestorIds = [] as string[];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        findOntologyAncestorIds(rootNodes, ontologyNode!, ancestorIds);
+        expect(ancestorIds.length).toEqual(2);
+        expect(
+          ancestorIds.includes(ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN)
+        ).toBeTruthy();
+        expect(ancestorIds.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
+      });
+      it(`finds ancestors of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const rootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(rootNodes, ontologyId);
+        expect(ontologyNode).toBeTruthy();
+        const ancestorIds = [] as string[];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        findOntologyAncestorIds(rootNodes, ontologyNode!, ancestorIds);
+        expect(ancestorIds.length).toEqual(1);
+        expect(ancestorIds.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
+      });
+      it(`does not find ancestors of root node ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const rootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(rootNodes, ontologyId);
+        expect(ontologyNode).toBeTruthy();
+        const ancestorIds = [] as string[];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        findOntologyAncestorIds(rootNodes, ontologyNode!, ancestorIds);
+        expect(ancestorIds.length).toEqual(0);
+      });
+      it(`finds ancestors of ${ONTOLOGY_ID_HUMAN_HUMAN_ADULT}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_HUMAN_ADULT;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const rootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(rootNodes, ontologyId);
+        expect(ontologyNode).toBeTruthy();
+        const ancestorIds = [] as string[];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        findOntologyAncestorIds(rootNodes, ontologyNode!, ancestorIds);
+        expect(ancestorIds.length).toEqual(1);
+        expect(ancestorIds.includes(ONTOLOGY_ID_HUMAN_MATURE)).toBeTruthy();
+      });
+      it(`finds ancestors of ${ONTOLOGY_ID_HUMAN_HUMAN_EARLY_ADULT}`, () => {
+        const ontologyId = ONTOLOGY_ID_HUMAN_HUMAN_EARLY_ADULT;
+        const ontologyKey = getOntologySpeciesKey(ontologyId);
+        const rootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyNode = findOntologyNodeById(rootNodes, ontologyId);
+        expect(ontologyNode).toBeTruthy();
+        const ancestorIds = [] as string[];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        findOntologyAncestorIds(rootNodes, ontologyNode!, ancestorIds);
+        expect(ancestorIds.length).toEqual(2);
+        expect(
+          ancestorIds.includes(ONTOLOGY_ID_HUMAN_HUMAN_ADULT)
+        ).toBeTruthy();
+        expect(ancestorIds.includes(ONTOLOGY_ID_HUMAN_MATURE)).toBeTruthy();
       });
     });
     describe("findOntologyParentNode", () => {
