@@ -229,21 +229,24 @@ export function createYAxisOptions({
     yAxis: [
       {
         axisLabel: {
-          formatter(value) {
+          formatter(value: number | string) {
             const { name } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
 
-            return cellTypeIdsToDelete.includes(value)
+            return cellTypeIdsToDelete.includes(value as string)
               ? `{selected|${name}}`
               : name;
           },
+          // Turn off type checking here, because ecahrts' type is wrong
+          ["overflow" as string]: "truncate",
           rich: {
             selected: {
               color: "red",
               fontWeight: "bold",
             },
           },
+          width: 260,
         },
         axisLine: {
           show: false,
