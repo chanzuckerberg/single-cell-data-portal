@@ -62,6 +62,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 10,
+            "published_at": 1636520400.0,
             "journal": "Nature",
             "is_preprint": False,
         }
@@ -103,7 +104,8 @@ class TestCrossrefProvider(unittest.TestCase):
             "authors": [{"given": "John", "family": "Doe"}, {"name": "A Consortium"}],
             "published_year": 2021,
             "published_month": 11,
-            "published_day": 1,
+            "published_day": 10,
+            "published_at": 1636520400.0,
             "journal": "Nature",
             "is_preprint": False,
         }
