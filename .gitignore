@@ -137,9 +137,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Data files
-**/data/
-
 .terraform
 .envrc
 .env.ecr
