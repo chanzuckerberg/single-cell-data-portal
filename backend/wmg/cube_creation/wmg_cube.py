@@ -240,16 +240,16 @@ def create_cube(tdb_group):
         # load data
         dims, vals = load_data_into_cube(tdb_group, uri)
 
-        logger.debug("Saving cube to tiledb")
+        logger.info("Saving cube to tiledb")
         with tiledb.open(uri, "w") as cube:
             cube[tuple(dims)] = vals
 
-        logger.debug("Cube created, start consolidation")
+        logger.info("Cube created, start consolidation")
         tiledb.consolidate(uri)
 
-        logger.debug("Cube consolidated, start vacuumming")
+        logger.info("Cube consolidated, start vacuumming")
         tiledb.vacuum(uri)
 
-    logger.debug("Cube creation complete")
+    logger.info("Cube creation complete")
     create_cube_sec = time.time() - start_time
     logger.info(f"Big cube: time to create {create_cube_sec}, uri={uri}")

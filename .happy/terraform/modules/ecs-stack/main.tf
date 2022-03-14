@@ -175,7 +175,7 @@ module wmg_batch {
   deployment_stage  = local.deployment_stage
   artifact_bucket   = local.artifact_bucket
   wmg_bucket        = local.wmg_bucket
-  batch_container_memory_limit = local.batch_container_memory_limit
+  batch_container_memory_limit = 300000
 }
 
 # TODO: this doesn't work yet 

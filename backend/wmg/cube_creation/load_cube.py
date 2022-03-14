@@ -60,11 +60,10 @@ def mock_s3_uris():
 
 def copy_datasets_to_instance(dataset_directory):
     s3_uris = mock_s3_uris()
-    for dataset in s3_uris.keys():
-        # Path(f"./{dataset_directory}/{dataset}/").mkdir(parents=True, exist_ok=True)
-        sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
-        # sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
-        subprocess.run(sync_command) # TODO parallelize this step
+    # for dataset in s3_uris.keys():
+        # sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
+    sync_command = ["aws", "s3", "sync", "s3://env-rdev-wmg/ebezzi-wmg/wmg-datasets", f"./{dataset_directory}"]
+    subprocess.run(sync_command) # TODO parallelize this step
 
 
 def load_datasets_into_corpus(path_to_datasets, group_name):
@@ -140,7 +139,7 @@ def update_s3_resources(group_name):
     # copy corpus
     # copy cube
     update_latest_snapshot(group_name, time_stamp)
-    update_cell_ordering()
+    # update_cell_ordering()
     remove_oldest_datasets()
     pass
 
@@ -168,8 +167,8 @@ def load_data_and_create_cube(path_to_datasets, group_name):
         create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
-    cell_type_by_tissue = get_cells_by_tissue_type(group_name)
-    generate_cell_ordering(cell_type_by_tissue)
+    # cell_type_by_tissue = get_cells_by_tissue_type(group_name)
+    # generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources(group_name)
     print("Cube creation script - completed")
     return 0
