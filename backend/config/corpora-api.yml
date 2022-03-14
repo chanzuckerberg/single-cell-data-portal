@@ -943,13 +943,6 @@ paths:
       responses:
         "200":
           description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
         "401":
           $ref: "#/components/responses/401"
         "404":
@@ -971,8 +964,6 @@ paths:
                 type: object
                 properties:
                   key:
-                    type: string
-                  id:
                     type: string
         "401":
           $ref: "#/components/responses/401"
@@ -1298,8 +1289,6 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
-        obfuscated_uuid:
-          type: string
         contact_name:
           type: string
         contact_email:
