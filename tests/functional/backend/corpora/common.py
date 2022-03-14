@@ -27,10 +27,12 @@ class BaseFunctionalTestCase(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+        cls.config = CorporaAuthConfig()
+        token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
+        cls.curator_cookie = cls.make_cookie(token)
 
     def setUp(self):
         super().setUp()
-        self.get_auth_token()
         self.api = API_URL.get(self.deployment_stage)
         self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
         self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
@@ -38,30 +40,37 @@ class BaseFunctionalTestCase(unittest.TestCase):
         self.bad_file_id = "DNE"
 
     @classmethod
-    def get_auth_token(cls):
-        config = CorporaAuthConfig()
-
+    def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
+        standard_claims = "openid profile email offline"
+        if additional_claims:
+            additional_claims.append(standard_claims)
+            claims = " ".join(additional_claims)
+        else:
+            claims = standard_claims
         response = requests.post(
             "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
             data=dict(
                 grant_type="password",
-                username=config.test_account_username,
-                password=config.test_account_password,
+                username=username,
+                password=password,
                 audience=AUDIENCE.get(cls.deployment_stage),
-                scope="openid profile email offline",
-                client_id=config.client_id,
-                client_secret=config.client_secret,
+                scope=claims,
+                client_id=cls.config.client_id,
+                client_secret=cls.config.client_secret,
             ),
         )
-
         access_token = response.json()["access_token"]
         id_token = response.json()["id_token"]
         token = {"access_token": access_token, "id_token": id_token}
-        cls.cookie = base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
+        return token
+
+    @staticmethod
+    def make_cookie(token: dict) -> str:
+        return base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
     def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id=None):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         body = {"url": dropbox_url}
 
         if existing_dataset_id is None:
