@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from connexion import FlaskApi, ProblemException, problem, Api
-from flask import g, Response, jsonify
+from flask import g, jsonify
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -71,31 +71,12 @@ def configure_flask_app(flask_app):
     return flask_app
 
 
-class InterceptRequestMiddleware:
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response):
-        environ["HTTP_CXGPUBLIC"] = "dummy"
-        return self.wsgi_app(environ, start_response)
-
-
 app = configure_flask_app(create_flask_app())
-app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
 
 
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
-
-
-# with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
-#     swagger_ui_html = swagger_ui_file_object.read()
-#
-#
-# @app.route("/", methods=["GET", "HEAD"])
-# def serve_swagger_ui():
-#     return Response(swagger_ui_html, mimetype="text/html")
 
 
 @app.errorhandler(AuthError)
