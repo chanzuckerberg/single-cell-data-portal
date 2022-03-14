@@ -2,7 +2,7 @@ import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
 import { goToPage, tryUntil } from "tests/utils/helpers";
 import { TEST_ENV, TEST_URL } from "../common/constants";
-import { getText } from "../utils/selectors";
+import { getTestID, getText } from "../utils/selectors";
 
 const TEST_ENVS = ["dev", "staging"];
 
@@ -96,7 +96,7 @@ describeIfDevOrStaging("Where's My Gene", () => {
   test("Heatmap", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
-    const geneSelectorButton = await page.$("*css=button >> text='Add Genes'");
+    const geneSelectorButton = await page.$(getTestID("add-gene"));
 
     if (!geneSelectorButton) {
       throw Error("Gene selector button not found");
