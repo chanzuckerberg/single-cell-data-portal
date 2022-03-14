@@ -10,7 +10,7 @@ class TestApiKey(BaseFunctionalTestCase):
         super().setUpClass()
 
     def test_api_key_crud(self):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         def _cleanup():
             requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
