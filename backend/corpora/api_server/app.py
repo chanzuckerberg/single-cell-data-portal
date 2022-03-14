@@ -3,7 +3,7 @@ import connexion
 import json
 import logging
 import os
-from connexion import FlaskApi, ProblemException, problem
+from connexion import FlaskApi, ProblemException, problem, Api
 from flask import g, Response, jsonify
 from flask_cors import CORS
 from urllib.parse import urlparse
@@ -19,8 +19,14 @@ def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
-    connexion_app.add_api(f"{APP_NAME}.yml", validate_responses=True)
-    connexion_app.add_api("curator-api.yml", validate_responses=True, base_path="/dp/v1/curation")
+    dataportal_api = super(connexion.FlaskApp, connexion_app).add_api(
+        f"{APP_NAME}.yml", validate_responses=True, options={"swagger_ui": True}
+    )
+    curator_api = super(connexion.FlaskApp, connexion_app).add_api(
+        "curator-api.yml", validate_responses=True, options={"swagger_ui": True}
+    )
+    connexion_app.app.register_blueprint(dataportal_api.blueprint, url_prefix="/dp", name="data-portal")
+    connexion_app.app.register_blueprint(curator_api.blueprint, url_prefix="/curator", name="curator")
     return connexion_app.app
 
 
@@ -83,13 +89,13 @@ def close_db(e=None):
     g.pop("db_session", None)
 
 
-with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
-    swagger_ui_html = swagger_ui_file_object.read()
-
-
-@app.route("/", methods=["GET", "HEAD"])
-def serve_swagger_ui():
-    return Response(swagger_ui_html, mimetype="text/html")
+# with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
+#     swagger_ui_html = swagger_ui_file_object.read()
+#
+#
+# @app.route("/", methods=["GET", "HEAD"])
+# def serve_swagger_ui():
+#     return Response(swagger_ui_html, mimetype="text/html")
 
 
 @app.errorhandler(AuthError)

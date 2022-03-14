@@ -10,7 +10,7 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-  /auth/token:
+  /v1/auth/token:
     post:
       summary: Generate an access token
       description: >-

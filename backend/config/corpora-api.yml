@@ -13,7 +13,7 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-  /dp/v1/wmg/cell_types:
+  /v1/wmg/cell_types:
     get:
       tags:
         - wmg
@@ -44,7 +44,7 @@ paths:
                       type: string
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/wmg/genes:
+  /v1/wmg/genes:
     get:
       tags:
         - wmg
@@ -75,7 +75,7 @@ paths:
                       type: string
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/wmg/genes/{gene_name}:
+  /v1/wmg/genes/{gene_name}:
     get:
       tags:
         - wmg
@@ -117,7 +117,7 @@ paths:
                       format: float
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/collections:
+  /v1/collections:
     get:
       tags:
         - collections
@@ -222,7 +222,7 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /dp/v1/collections/{collection_uuid}:
+  /v1/collections/{collection_uuid}:
     get:
       tags:
         - collections
@@ -345,7 +345,7 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /dp/v1/collections/{collection_uuid}/upload-links:
+  /v1/collections/{collection_uuid}/upload-links:
     post:
       summary: Start a dataset upload
       tags:
@@ -443,7 +443,7 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /dp/v1/collections/{collection_uuid}/genesets:
+  /v1/collections/{collection_uuid}/genesets:
     post:
       tags:
         - collections
@@ -479,7 +479,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/collections/{collection_uuid}/publish:
+  /v1/collections/{collection_uuid}/publish:
     post:
       tags:
         - collections
@@ -523,7 +523,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/collections/index:
+  /v1/collections/index:
     get:
       tags:
         - collections
@@ -553,7 +553,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/datasets/{dataset_uuid}:
+  /v1/datasets/{dataset_uuid}:
     delete:
       tags:
         - datasets
@@ -577,7 +577,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
-  /dp/v1/datasets/meta:
+  /v1/datasets/meta:
     get:
       tags:
         - datasets
@@ -606,7 +606,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/assets:
+  /v1/datasets/{dataset_uuid}/assets:
     get:
       tags:
         - datasets
@@ -630,7 +630,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
+  /v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - datasets
@@ -668,7 +668,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/gene_sets:
+  /v1/datasets/{dataset_uuid}/gene_sets:
     post:
       tags:
         - datasets
@@ -713,7 +713,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/status:
+  /v1/datasets/{dataset_uuid}/status:
     get:
       tags:
         - datasets
@@ -800,7 +800,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/datasets/index:
+  /v1/datasets/index:
     get:
       tags:
         - datasets
@@ -852,7 +852,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/genesets/{geneset_uuid}:
+  /v1/genesets/{geneset_uuid}:
     delete:
       tags:
         - genesets
@@ -872,7 +872,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
-  /dp/v1/login:
+  /v1/login:
     get:
       tags:
         - authentication
@@ -886,7 +886,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/logout:
+  /v1/logout:
     get:
       tags:
         - authentication
@@ -900,7 +900,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/userinfo:
+  /v1/userinfo:
     get:
       tags:
         - authentication
@@ -921,7 +921,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/oauth2/callback:
+  /v1/oauth2/callback:
     get:
       tags:
         - authentication
@@ -934,7 +934,7 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-  /dp/v1/auth/key:
+  /v1/auth/key:
     get:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.get
@@ -981,7 +981,7 @@ paths:
           $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
-  /dp/v1/deployed_version:
+  /v1/deployed_version:
     get:
       summary: Returns version information
       operationId: backend.corpora.lambdas.api.v1.version.get
