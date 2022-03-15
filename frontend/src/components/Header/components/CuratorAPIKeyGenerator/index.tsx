@@ -1,12 +1,18 @@
 import { Intent } from "@blueprintjs/core";
+/* eslint-disable @typescript-eslint/ban-ts-comment --- TODO revisit lint errors below */
 import {
   Button as SDSButton,
+  // @ts-ignore
   Dialog,
+  // @ts-ignore
   DialogActions,
+  // @ts-ignore
   DialogContent,
+  // @ts-ignore
   DialogTitle,
   MenuItem,
 } from "czifui";
+/* eslint-enable @typescript-eslint/ban-ts-comment --- TODO revisit lint errors above */
 import { useCallback, useRef, useState } from "react";
 import {
   APIKeyResponse,
@@ -70,6 +76,8 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
           </APIDisclaimerP>
         </DialogContent>
         <DialogActions>
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint error */}
+          {/* @ts-ignore -- TODO revisit lint error */}
           <SDSButton onClick={handleClose}>Close</SDSButton>
           <SDSButton sdsType="primary" sdsStyle="square" onClick={copyAPIKey}>
             Copy API Key
