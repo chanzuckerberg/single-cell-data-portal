@@ -3,7 +3,7 @@ import os
 import sys
 import tempfile
 from itertools import filterfalse
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Dict
 
 import numpy as np
 import tiledb
@@ -12,11 +12,12 @@ from numpy.random import random, randint
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.schema import cube_logical_dims, schema, cube_indexed_dims, cube_logical_attrs
+from backend.wmg.data.schema import cube_indexed_dims, cube_logical_attrs, cube_logical_dims, expression_summary_schema, \
+    cell_counts_logical_attrs, cell_counts_schema, cell_counts_indexed_dims, cell_counts_logical_dims
 from backend.wmg.data.tiledb import create_ctx
 
 
-def random_attr_values(coords):
+def random_expression_summary_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
         "n_cells": randint(size=len(coords), low=0, high=1000),
@@ -24,21 +25,23 @@ def random_attr_values(coords):
     }
 
 
-def all_ones_attr_values(coords):
+def all_ones_expression_summary_values(coords):
     attr_vals = {"nnz": np.ones(len(coords)), "n_cells": np.ones(len(coords)), "sum": np.ones(len(coords))}
     return attr_vals
 
 
 @contextlib.contextmanager
-def create_temp_cube(
+def create_temp_wmg_cubes(
     dim_size=3,
-    attr_vals_fn: Callable[[List[Tuple]], List] = random_attr_values,
+    attr_vals_fn: Callable[[List[Tuple]], List] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
 ) -> None:
     with tempfile.TemporaryDirectory() as cube_dir:
-        create_cube(cube_dir, dim_size, attr_vals_fn=attr_vals_fn, exclude_logical_coord_fn=exclude_logical_coord_fn)
-        with tiledb.open(cube_dir, ctx=create_ctx()) as cube:
-            yield cube
+        expression_summary_cube_dir, cell_counts_cube_dir = \
+            create_cubes(cube_dir, dim_size, exclude_logical_coord_fn=exclude_logical_coord_fn,
+                         expression_summary_vals_fn=attr_vals_fn)
+        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
+            yield expression_summary_cube
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
@@ -111,52 +114,93 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     raise AssertionError(f"unknown dimension name {dimension_name}")
 
 
-# TODO: refactor for readability
-def create_cube(
-    cube_dir,
-    dim_size=3,
-    attr_vals_fn: Callable[[List[tuple]], List] = random_attr_values,
-    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-) -> None:
-    if tiledb.array_exists(cube_dir):
-        raise FileExistsError(cube_dir)
+def create_cubes(data_dir, dim_size: int = 3,
+                 dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+                 exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+                 expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values) \
+        -> Tuple[str, str]:
+    coords, dim_values = build_coords(cube_logical_dims, dim_size,
+                                      dim_ontology_term_ids_generator_fn,
+                                      exclude_logical_coord_fn)
+    expression_summary_cube_dir = create_expression_summary_cube(data_dir, coords, dim_values,
+                                                                 attr_vals_fn=expression_summary_vals_fn)
 
-    tiledb.Array.create(cube_dir, schema)
+    # coords, dim_values = build_coords(cell_counts_logical_dims, dim_size,
+    #                                   dim_ontology_term_ids_generator_fn,
+    #                                   exclude_logical_coord_fn)
+    # cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values)
+
+    return (expression_summary_cube_dir, None)
+
+def create_cell_counts_cube(data_dir, coords, dim_values) -> None:
+    cube_dir = f"{data_dir}/cell_counts"
+    tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        n_dims = len(cube_logical_dims)
-        n_coords = dim_size**n_dims
+        logical_attr_values: Dict[str, np.ndarray] = {"n_cells": randint(size=len(coords), low=1, high=100)}
+        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
 
-        def dim_domain_values(i_dim: int, dim_size_: int) -> List[str]:
-            dim_name = cube_logical_dims[i_dim]
-            domain_values = dim_ontology_term_ids_generator_fn(dim_name, dim_size_)
-            assert len(set(domain_values)) == dim_size
-            return domain_values
-
-        all_dims_domain_values = [dim_domain_values(i_dim, dim_size) for i_dim in range(n_dims)]
-        # create all possible coordinate values (dim_size ^ n_dims)
-        coords = [
-            [all_dims_domain_values[i_dim][(i_row // dim_size**i_dim) % dim_size] for i_row in range(n_coords)]
-            for i_dim in range(n_dims)
-        ]
-        coord_tuples = list(zip(*coords))
-
-        if exclude_logical_coord_fn:
-            coord_tuples = list(filterfalse(exclude_logical_coord_fn, coord_tuples))
-            coords = [[coord_tuple[i_dim] for coord_tuple in coord_tuples] for i_dim in range(n_dims)]
-
-        assert all([len(coords[i_dim]) == len(coord_tuples) for i_dim in range(n_dims)])
-
-        logical_attr_values = attr_vals_fn(coord_tuples)
-        assert all([len(logical_attr_values[attr.name]) == len(coord_tuples) for attr in cube_logical_attrs])
-
-        physical_dim_values = coords[: len(cube_indexed_dims)]
+        physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]
         physical_attr_values = {
-            cube_logical_dims[i]: coords[i] for i in range(len(cube_indexed_dims), len(cube_logical_dims))
+            cell_counts_logical_dims[i]: dim_values[i] 
+            for i in range(len(cell_counts_indexed_dims), len(cell_counts_logical_dims))
+        }
+
+        logical_attr_values = {}
+        physical_attr_values.update(logical_attr_values)
+        cube[tuple(physical_dim_values)] = physical_attr_values
+
+        return cube_dir
+
+
+def create_expression_summary_cube(
+    data_dir,
+    coords,
+    dim_values,
+    attr_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values
+) -> str:
+    cube_dir = f"{data_dir}/expression_summary"
+    tiledb.Array.create(cube_dir, expression_summary_schema, overwrite=True)
+
+    with tiledb.open(cube_dir, mode="w") as cube:
+        logical_attr_values = attr_vals_fn(coords)
+        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cube_logical_attrs])
+
+        physical_dim_values = dim_values[: len(cube_indexed_dims)]
+        physical_attr_values = {
+            cube_logical_dims[i]: dim_values[i] for i in range(len(cube_indexed_dims), len(cube_logical_dims))
         }
         physical_attr_values.update(logical_attr_values)
         cube[tuple(physical_dim_values)] = physical_attr_values
+
+    return cube_dir
+
+
+def build_coords(logical_dims,
+                 dim_size,
+                 dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+                 exclude_coord_fn: Callable[[Tuple], bool] = None) -> Tuple[List[Tuple], List[List]]:
+    n_dims = len(logical_dims)
+    n_coords = dim_size ** n_dims
+
+    def dim_domain_values(i_dim: int, dim_size_: int) -> List[str]:
+        dim_name = logical_dims[i_dim]
+        domain_values = dim_ontology_term_ids_generator_fn(dim_name, dim_size_)
+        assert len(set(domain_values)) == dim_size
+        return domain_values
+
+    all_dims_domain_values = [dim_domain_values(i_dim, dim_size) for i_dim in range(n_dims)]
+    # create all possible coordinate values (dim_size ^ n_dims)
+    dim_values = [
+        [all_dims_domain_values[i_dim][(i_row // dim_size ** i_dim) % dim_size] for i_row in range(n_coords)]
+        for i_dim in range(n_dims)
+    ]
+    coords = list(zip(*dim_values))
+    if exclude_coord_fn:
+        coords: List[Tuple] = list(filterfalse(exclude_coord_fn, coords))
+        dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]
+    assert all([len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims)])
+    return coords, dim_values
 
 
 # CLI invocation for use by setup_dev_data.sh, to create a cube for Docker-based dev & test envs
@@ -164,4 +208,4 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cube(output_cube_dir, dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator)
+    create_cubes(output_cube_dir, expression_summary_vals_fn=semi_real_dimension_values_generator)
