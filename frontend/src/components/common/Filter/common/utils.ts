@@ -38,28 +38,6 @@ export const SYMBOL_MILLION = "M";
 export const SYMBOL_THOUSAND = "k";
 
 /**
- * Find the IDs of all descendants of the given ontology.
- * @param ontologyNode - Node to of ontology to find descendants of.
- * @param descendants - The set of descendants of the given ontology ID.
- * @returns Array of ontology IDs of nodes that are descendants of the given ontology ID.
- */
-export function findOntologyDescendantIds(
-  ontologyNode: OntologyNode,
-  descendants: string[] = []
-): string[] {
-  if (!ontologyNode.children) {
-    return descendants;
-  }
-
-  ontologyNode.children.forEach((childNode) => {
-    descendants.push(childNode.ontology_term_id);
-    findOntologyDescendantIds(childNode, descendants);
-  });
-
-  return descendants;
-}
-
-/**
  * Find the node with the given ontology ID.
  * @param rootNodes - Top-level nodes in ontology tree to search for ontology ID in.
  * @param ontologyId - The ontology ID of the node to find.

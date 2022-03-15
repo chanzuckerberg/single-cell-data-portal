@@ -4,7 +4,6 @@
 
 import { DEVELOPMENT_STAGE_ONTOLOGY_VIEW } from "src/components/common/Filter/common/entities";
 import {
-  findOntologyDescendantIds,
   findOntologyNodeById,
   findOntologyParentNode,
   formatNumberToScale,
@@ -122,11 +121,6 @@ describe("filter", () => {
     const ONTOLOGY_ID_HUMAN_PRENATAL = "HsapDv:0000045";
     const ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN = "HsapDv:0000002";
     const ONTOLOGY_ID_HUMAN_CARNEGIE_CS1 = "HsapDv:0000003";
-    const ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2 = "HsapDv:0000004";
-    const ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5 = "HsapDv:0000006";
-    const ONTOLOGY_ID_HUMAN_GASTRULA_CS6 = "HsapDv:0000010";
-    const ONTOLOGY_ID_HUMAN_NEURULA_CS7_8 = "HsapDv:0000012";
-    const ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23 = "HsapDv:0000015";
     const ONTOLOGY_ID_HUMAN_FETAL = "HsapDv:0000037";
     const ONTOLOGY_ID_HUMAN_HUMAN_ADULT = "HsapDv:0000087";
 
@@ -167,86 +161,6 @@ describe("filter", () => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
           expect(ontologyNode!.ontology_term_id).toEqual(ontologyId);
         });
-      });
-    });
-    describe("findOntologyDescendants", () => {
-      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
-        const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
-        const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyNode = findOntologyNodeById(
-          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
-          ontologyId
-        );
-        expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const descendants = findOntologyDescendantIds(ontologyNode!);
-        expect(descendants.length).toEqual(8);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_CARNEGIE_CS1)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_GASTRULA_CS6)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_NEURULA_CS7_8)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_FETAL)
-        ).toBeGreaterThanOrEqual(0);
-      });
-      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
-        const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
-        const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyNode = findOntologyNodeById(
-          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
-          ontologyId
-        );
-        expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const descendants = findOntologyDescendantIds(ontologyNode!);
-        expect(descendants.length).toEqual(6);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_CARNEGIE_CS1)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_CLEAVAGE_CS2)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_BLASTULA_CS3_5)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_GASTRULA_CS6)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_NEURULA_CS7_8)
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          descendants.indexOf(ONTOLOGY_ID_HUMAN_ORGANOGENESIS_CS9_23)
-        ).toBeGreaterThanOrEqual(0);
-      });
-      it(`finds descendants of ${ONTOLOGY_ID_HUMAN_FETAL}`, () => {
-        const ontologyId = ONTOLOGY_ID_HUMAN_FETAL;
-        const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyNode = findOntologyNodeById(
-          DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
-          ontologyId
-        );
-        expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const descendants = findOntologyDescendantIds(ontologyNode!);
-        expect(descendants.length).toEqual(0);
       });
     });
     describe("findOntologyParentNode", () => {
