@@ -19,11 +19,12 @@ def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
+    options = {"swagger_ui": True, 'swagger_url': '/'}
     dataportal_api = super(connexion.FlaskApp, connexion_app).add_api(
-        f"{APP_NAME}.yml", validate_responses=True, options={"swagger_ui": True}
+        f"{APP_NAME}.yml", validate_responses=True, options=options
     )
     curator_api = super(connexion.FlaskApp, connexion_app).add_api(
-        "curation-api.yml", validate_responses=True, options={"swagger_ui": True}
+        "curation-api.yml", validate_responses=True, options=options
     )
     connexion_app.app.register_blueprint(dataportal_api.blueprint, url_prefix="/", name="data-portal")
     connexion_app.app.register_blueprint(curator_api.blueprint, url_prefix="/curation", name="curation")
