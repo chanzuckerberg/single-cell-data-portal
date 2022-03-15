@@ -25,7 +25,9 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
     with tiledb.scope_ctx(create_fast_ctx()):
         for dataset in os.listdir(dataset_directory):
             file_path = f"{dataset_directory}/{dataset}/local.h5ad"
-            load_h5ad(file_path, group_name, validate) # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
+            load_h5ad(
+                file_path, group_name, validate
+            )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
 
         logger.info("all loaded, now consolidating.")

@@ -38,15 +38,15 @@ def fast_config(config_overrides: dict = {}) -> dict:
     # consolidation buffer heuristic to prevent thrashing: total_mem/io_concurrency_level, rounded to GB
     io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
     consolidation_buffer_size = (
-            (int(frac_mem(0.1) / io_concurrency_level) + (1024 ** 3 - 1)) // (1024 ** 3) * (1024 ** 3)
+        (int(frac_mem(0.1) / io_concurrency_level) + (1024**3 - 1)) // (1024**3) * (1024**3)
     )
 
     config = {
-        "py.init_buffer_bytes": 16 * 1024 ** 3,  # needs to be at least 8GB
+        "py.init_buffer_bytes": 16 * 1024**3,  # needs to be at least 8GB
         "sm.tile_cache_size": frac_mem(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size,
         "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
-        "vfs.s3.region": "us-west-2"
+        "vfs.s3.region": "us-west-2",
     }
     config.update(config_overrides)
     return config

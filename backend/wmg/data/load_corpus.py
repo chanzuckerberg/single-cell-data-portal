@@ -29,7 +29,7 @@ def dataset_already_loaded(dataset_id: str, group_name: str) -> bool:
 
 def get_dataset_id(h5ad: str) -> str:
     dataset_id = os.path.splitext(os.path.split(h5ad)[1])[0]
-    if dataset_id == 'local':
+    if dataset_id == "local":
         dataset_id = os.path.split(os.path.split(h5ad)[0])[1]
     return dataset_id
 
@@ -85,11 +85,13 @@ def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame
     Update the global var (gene) array. Adds any gene_ids we have not seen before.
     Returns the global var array as dataframe
     """
+
     var_array_name = f"{group_name}/var"
     with tiledb.open(var_array_name, "r") as var:
         var_df = var.df[:]
         missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(
-            var_df["gene_ontology_term_id"].to_numpy(dtype=str))
+            var_df["gene_ontology_term_id"].to_numpy(dtype=str)
+        )
 
     if len(missing_var) > 0:
         logger.info(f"Adding {len(missing_var)} gene records...")
@@ -135,9 +137,7 @@ def save_X(anndata_object: anndata.AnnData, group_name: str, global_var_index: n
     array_name = f"{group_name}/X"
     expression_matrix = anndata_object.X
     logger.debug(f"saving {array_name}...\n")
-    stride = max(int(
-        np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))
-    ), 10_000)
+    stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, expression_matrix.shape[0], stride):
             end = min(start + stride, expression_matrix.shape[0])
@@ -170,9 +170,7 @@ def save_raw(anndata_object: anndata.AnnData, group_name: str, global_var_index:
     array_name = f"{group_name}/raw"
     expression_matrix = get_X_raw(anndata_object)
     logger.info(f"saving {array_name}...")
-    stride = max(int(
-        np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))
-    ), 10_000)
+    stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, expression_matrix.shape[0], stride):
             end = min(start + stride, expression_matrix.shape[0])
@@ -182,22 +180,26 @@ def save_raw(anndata_object: anndata.AnnData, group_name: str, global_var_index:
             rows = coo_sparse_raw_expression_matrix.row + start + first_obs_idx
             cols = global_var_index[coo_sparse_raw_expression_matrix.col]
             raw_data = coo_sparse_raw_expression_matrix.data
-
-            rankit_normalized_coo_sparse_raw_expression_matrix = rankit(csr_sparse_raw_expression_matrix).tocoo(copy=False)
-            assert np.array_equal(
-                coo_sparse_raw_expression_matrix.row,
-                rankit_normalized_coo_sparse_raw_expression_matrix.row
+            rankit_normalized_coo_sparse_raw_expression_matrix = rankit(csr_sparse_raw_expression_matrix).tocoo(
+                copy=False
             )
             assert np.array_equal(
-                coo_sparse_raw_expression_matrix.col,
-                rankit_normalized_coo_sparse_raw_expression_matrix.col
+                coo_sparse_raw_expression_matrix.row, rankit_normalized_coo_sparse_raw_expression_matrix.row
+            )
+            assert np.array_equal(
+                coo_sparse_raw_expression_matrix.col, rankit_normalized_coo_sparse_raw_expression_matrix.col
             )
             rankit_data = rankit_normalized_coo_sparse_raw_expression_matrix.data
 
             array[rows, cols] = {"data": raw_data, "rankit": rankit_data}
-            del coo_sparse_raw_expression_matrix, \
-                rankit_normalized_coo_sparse_raw_expression_matrix, \
-                rows, cols, raw_data, rankit_data
+            del (
+                coo_sparse_raw_expression_matrix,
+                rankit_normalized_coo_sparse_raw_expression_matrix,
+                rows,
+                cols,
+                raw_data,
+                rankit_data,
+            )
             gc.collect()
 
     logger.debug(f"Saved {array_name}.")
