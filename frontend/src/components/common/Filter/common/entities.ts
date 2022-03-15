@@ -466,6 +466,7 @@ export type CellPropsValue<T> = { value: CellValue<T> };
 export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
+  development_stage_ancestors: string[];
   disease: Ontology[];
   is_primary_data: IS_PRIMARY_DATA[];
   organism: Ontology[];
@@ -507,7 +508,6 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   cell_count: number | null;
   collection_id: Collection["id"];
   collection_name: Collection["name"];
-  development_stage_ancestors: string[];
   explorer_url: string;
   id: string;
   isOverMaxCellCount: boolean;

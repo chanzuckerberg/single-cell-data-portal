@@ -243,6 +243,10 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        development_stage_ancestors: [
+          ...accum.development_stage_ancestors,
+          ...collectionDatasetRow.development_stage_ancestors,
+        ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
         ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         is_primary_data: [
@@ -257,6 +261,7 @@ function aggregateCollectionDatasetRows(
     {
       assay: [],
       cell_type: [],
+      development_stage_ancestors: [],
       disease: [],
       ethnicity: [],
       is_primary_data: [],
@@ -270,6 +275,9 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    development_stage_ancestors: [
+      ...new Set(aggregatedCategoryValues.development_stage_ancestors),
+    ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
     ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
