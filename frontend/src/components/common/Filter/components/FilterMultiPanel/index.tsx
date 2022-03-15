@@ -20,7 +20,7 @@ export default function FilterMultiPanel({
   species,
 }: Props): JSX.Element {
   const speciesToDisplay = species.filter(
-    (s) => s.children && s.children.length > 0
+    (s) => s.children && s.children.filter((child) => child.count).length > 0
   );
   return (
     <MultiPanelSelector>

@@ -248,7 +248,8 @@ function isOntologyCategoryView(
 }
 
 /**
- * Returns true if ontology category is not applicable, that is, there are no species ontology trees.
+ * Returns true if ontology category is not applicable, that is, there are no species ontology trees or species
+ * ontology trees with values that have a count.
  * @param categoryView
  * @returns True when there are no species or the count of children for each species is 0.
  */
@@ -257,7 +258,9 @@ function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
   if (!species || species.length === 0) {
     return true;
   }
-  return !species.some((s) => s.children.length > 0);
+  return !species.some(
+    (s) => s.children.filter((child) => child.count > 0).length > 0
+  );
 }
 
 /**

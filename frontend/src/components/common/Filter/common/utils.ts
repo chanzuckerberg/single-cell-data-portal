@@ -38,66 +38,6 @@ export const SYMBOL_MILLION = "M";
 export const SYMBOL_THOUSAND = "k";
 
 /**
- * Find the node with the given ontology ID.
- * @param rootNodes - Top-level nodes in ontology tree to search for ontology ID in.
- * @param ontologyId - The ontology ID of the node to find.
- */
-export function findOntologyNodeById(
-  rootNodes: OntologyNode[],
-  ontologyId: string
-): OntologyNode | undefined {
-  for (let i = 0; i < rootNodes.length; i++) {
-    const rootNode = rootNodes[i];
-    if (rootNode.ontology_term_id === ontologyId) {
-      return rootNode;
-    }
-    const node = findOntologyNodeById(rootNode.children ?? [], ontologyId);
-    if (node) {
-      return node;
-    }
-  }
-}
-
-/**
- * //TODO(cc)
- * Find the IDs of all ancestors of the given ontology.
- * @param ontologyNode - Node to of ontology to find ancestors of.
- * @param ancestors - The set of ancestors of the given ontology ID.
- * @returns Array of ontology IDs of nodes that are ancestors of the given ontology ID.
- */
-export function findOntologyAncestorIds(
-  rootNodes: OntologyNode[],
-  ontologyNode: OntologyNode,
-  ancestors: string[]
-): OntologyNode | undefined {
-  for (let i = 0; i < rootNodes.length; i++) {
-    const rootNode = rootNodes[i];
-    if (rootNode === ontologyNode) {
-      return ontologyNode;
-    }
-    if (!rootNode.children) {
-      continue;
-    }
-    let descendantNode;
-    for (let j = 0; j < rootNode.children.length; j++) {
-      const childNode = rootNode.children[j];
-      descendantNode = findOntologyAncestorIds(
-        [childNode],
-        ontologyNode,
-        ancestors
-      );
-      if (descendantNode) {
-        break;
-      }
-    }
-    if (descendantNode) {
-      ancestors.push(rootNode.ontology_term_id);
-      return descendantNode;
-    }
-  }
-}
-
-/**
  * Find the IDs of all descendants of the given ontology.
  * @param ontologyNode - Node to of ontology to find descendants of.
  * @param descendants - The set of descendants of the given ontology ID.
@@ -120,12 +60,24 @@ export function findOntologyDescendantIds(
 }
 
 /**
- * Determine the ontology key of the given ontology ID. For example, "HsapDv:0000003" returns "HsapDv".
- * @param ontologyId - ID to determine ontology key from.
- * @returns String containing ontology key.
+ * Find the node with the given ontology ID.
+ * @param rootNodes - Top-level nodes in ontology tree to search for ontology ID in.
+ * @param ontologyId - The ontology ID of the node to find.
  */
-export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
-  return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
+export function findOntologyNodeById(
+  rootNodes: OntologyNode[],
+  ontologyId: string
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    const rootNode = rootNodes[i];
+    if (rootNode.ontology_term_id === ontologyId) {
+      return rootNode;
+    }
+    const node = findOntologyNodeById(rootNode.children ?? [], ontologyId);
+    if (node) {
+      return node;
+    }
+  }
 }
 
 /**
@@ -157,6 +109,15 @@ export function findOntologyParentNode(
       return parentNode;
     }
   }
+}
+
+/**
+ * Determine the ontology key of the given ontology ID. For example, "HsapDv:0000003" returns "HsapDv".
+ * @param ontologyId - ID to determine ontology key from.
+ * @returns String containing ontology key.
+ */
+export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
+  return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
 }
 
 /**

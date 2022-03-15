@@ -43,6 +43,7 @@ export default function FilterPanelList({
               classes={{ root: classes.listItem }}
               component="li"
               dense
+              disabled={!count}
               disableGutters
               disableRipple
               onClick={() => onFilter(categoryKey, key)}
