@@ -16,7 +16,7 @@ paths:
       description: >-
         Returns a bearer access token that must be passed as a parameter to requests that
         require authorization such as creating a new Collection.
-      operationId: backend.corpora.lambdas.api.v1.curator.auth.token.post
+      operationId: backend.corpora.lambdas.api.v1.curation.auth.token.post
       parameters:
         - in: header
           name: x-api-key
@@ -24,7 +24,7 @@ paths:
             type: string
             example: "<YOUR-CURATOR-API-KEY>"
           required: true
-          description: Your curator API key.
+          description: Your curation API key.
       responses:
         "201":
           description: Created

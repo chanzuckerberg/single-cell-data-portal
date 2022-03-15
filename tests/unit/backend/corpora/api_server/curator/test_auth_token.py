@@ -16,7 +16,7 @@ class TestAuthToken(BaseAPITest):
         auth0_management_session.get_user_api_key_identity = Mock(return_value={"email": test_email})
         auth0_management_session.generate_access_token = Mock(return_value={"access_token": "OK"})
         user_api_key = generate(test_user_id, test_secret)
-        response = self.app.post("/curator/v1/auth/token", headers={"x-api-key": user_api_key})
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(201, response.status_code)
         token = response.json()["access_token"]
         self.assertEqual("OK", token)
@@ -29,7 +29,7 @@ class TestAuthToken(BaseAPITest):
         test_user_id = "test_user_id"
         CorporaAuthConfig().api_key_secret = test_secret
         user_api_key = generate(test_user_id, "not the right secret")
-        response = self.app.post("/curator/v1/auth/token", headers={"x-api-key": user_api_key}).json()
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key}).json()
         self.assertEqual(401, response.status_code)
 
 

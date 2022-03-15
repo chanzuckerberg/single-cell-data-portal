@@ -8,5 +8,5 @@ class TestAPI(BaseAPITest):
         self.assertEqual(200, response.status_code)
 
     def test_smoke_curator(self):
-        response = self.app.get("/curator/ui/")
+        response = self.app.get("/curation/ui/")
         self.assertEqual(200, response.status_code)
