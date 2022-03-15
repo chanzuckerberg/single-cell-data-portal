@@ -1,7 +1,5 @@
 import sys
-from typing import Dict, List
-
-import tiledb
+from typing import List
 
 from backend.wmg.data.extract import copy_datasets_to_instance
 from backend.wmg.data.load import update_s3_resources
