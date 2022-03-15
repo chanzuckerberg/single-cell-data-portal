@@ -20,7 +20,8 @@ locals {
   migration_cmd                = ["make", "-C", "/corpora-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/corpora-data-portal/backend", "db/delete_remote_dev"]
   frontend_cmd                 = []
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "8", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "30", "--keep-alive", "5", "--log-level", "info"]
+  # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "30", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
   vpc_id                       = local.secret["vpc_id"]
@@ -115,7 +116,7 @@ module backend_service {
   security_groups   = local.security_groups
   task_role_arn     = local.ecs_role_arn
   service_port      = 5000
-  memory            = 1536
+  memory            = var.backend_memory
   cmd               = local.backend_cmd
   deployment_stage  = local.deployment_stage
   step_function_arn = module.upload_sfn.step_function_arn

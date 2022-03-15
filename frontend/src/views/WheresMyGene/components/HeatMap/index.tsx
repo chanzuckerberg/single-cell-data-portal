@@ -1,5 +1,5 @@
 import { Intent, Spinner } from "@blueprintjs/core";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { State } from "../../common/store";
 import {
   CellTypeSummary,
@@ -29,10 +29,6 @@ export default memo(function HeatMap({
 }: Props): JSX.Element {
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
-
-  useEffect(() => {
-    setIsLoading((isLoading) => ({ ...isLoading, lung: true }));
-  }, [genes, cellTypes]);
 
   const yAxisWrapperHeight = useMemo(() => {
     const yAxisChartHeight = Object.values(cellTypes).reduce(

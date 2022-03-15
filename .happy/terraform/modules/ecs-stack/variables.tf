@@ -93,3 +93,9 @@ variable backend_instance_count {
   description = "How many backend tasks to run"
   default     = 2
 }
+
+variable backend_memory {
+  type        = number
+  description = "Memory reservation for the backend task"
+  default     = 1536
+}

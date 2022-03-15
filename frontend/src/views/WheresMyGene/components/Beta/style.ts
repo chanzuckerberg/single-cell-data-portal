@@ -3,6 +3,7 @@ import { Callout, getColors } from "czifui";
 
 export const StyledCallout = styled(Callout)`
   width: 650px;
+  height: fit-content;
   margin-top: 0;
 
   ${(props) => {

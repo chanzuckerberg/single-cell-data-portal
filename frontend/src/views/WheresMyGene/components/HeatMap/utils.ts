@@ -35,17 +35,6 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
-const COMMON_AXIS_POINTER: EChartsOption["axisPointer"] = {
-  link: [
-    {
-      xAxisIndex: "all",
-    },
-  ],
-  show: true,
-  triggerOn: "click",
-  triggerTooltip: false,
-};
-
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
   chartData: ChartFormat[];
@@ -59,7 +48,16 @@ export function createChartOptions({
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
+    axisPointer: {
+      label: { show: false },
+      link: [
+        {
+          xAxisIndex: "all",
+        },
+      ],
+      show: true,
+      triggerOn: "mousemove",
+    },
     dataset: {
       source: chartData as DatasetComponentOption["source"],
     },
@@ -87,36 +85,6 @@ export function createChartOptions({
         },
       },
     ],
-    tooltip: {
-      formatter(props) {
-        const { name: cellTypeMetadata, data } = props as unknown as {
-          name: string;
-          data: ChartFormat;
-        };
-
-        if (!data) return "";
-
-        const { geneIndex, percentage, meanExpression, scaledMeanExpression } =
-          data;
-
-        const { name } = deserializeCellTypeMetadata(
-          cellTypeMetadata as CellTypeMetadata
-        );
-
-        return `
-          cell type: ${name}
-          <br />
-          gene: ${geneNames[geneIndex]}
-          <br />
-          percentage: ${percentage}
-          <br />
-          mean expression: ${meanExpression}
-          <br />
-          scaledMeanExpression: ${scaledMeanExpression}
-        `;
-      },
-      position: "top",
-    },
     xAxis: [
       {
         axisLabel: { fontSize: 0, rotate: 90 },
@@ -164,7 +132,6 @@ export function createXAxisOptions({
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER },
     grid: {
       bottom: "0",
       left: "300px",
@@ -232,7 +199,6 @@ export function createYAxisOptions({
 }: CreateYAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
       left: "300px",
@@ -263,21 +229,24 @@ export function createYAxisOptions({
     yAxis: [
       {
         axisLabel: {
-          formatter(value) {
+          formatter(value: number | string) {
             const { name } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
 
-            return cellTypeIdsToDelete.includes(value)
+            return cellTypeIdsToDelete.includes(value as string)
               ? `{selected|${name}}`
               : name;
           },
+          // Turn off type checking here, because ecahrts' type is wrong
+          ["overflow" as string]: "truncate",
           rich: {
             selected: {
               color: "red",
               fontWeight: "bold",
             },
           },
+          width: 260,
         },
         axisLine: {
           show: false,

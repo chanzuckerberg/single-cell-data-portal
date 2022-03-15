@@ -232,7 +232,6 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
     description = Column(StrippedString)
-    obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
     curator_name = Column(StrippedString, default="")

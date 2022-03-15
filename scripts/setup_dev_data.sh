@@ -32,6 +32,7 @@ echo " done"
 
 echo "Creating secretsmanager secrets"
 local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
+
 ${local_aws} s3api create-bucket --bucket corpora-data-dev &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket artifact-bucket &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket cellxgene-bucket &>/dev/null || true
@@ -60,7 +61,13 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "callback_base_url": "'"${BACKEND_URL}"'",
     "redirect_to_frontend": "'"${FRONTEND_URL}"'",
     "test_account_username": '"${TEST_ACCOUNT_USERNAME}"',
-    "test_account_password": '"${TEST_ACCOUNT_PASSWORD}"'
+    "test_account_password": '"${TEST_ACCOUNT_PASSWORD}"',
+    "domain":"https://localhost:1234",
+    "api_key_secret": "a random secret",
+    "days_to_live": 60,
+    "mgmt_client_id": "test_mgmt_client_id",
+    "mgmt_client_secret": "test_mgmt_client_secret",
+    "api_key_connection_name": "api-key-database"
 }' || true
 
 
@@ -86,6 +93,23 @@ export CORPORA_LOCAL_DEV=true
 export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
 cd $(dirname ${BASH_SOURCE[0]})/..
 python3 -m scripts.populate_db
+
+# Make a WMG cube
+echo "Setting up WMG data"
+tmp_cube_dir=`mktemp -d`
+snapshot_identifier='dummy_snapshot'
+wmg_bucket="wmg-test"
+wmg_config_secret_name="corpora/backend/test/wmg_config"
+python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
+${local_aws} s3api create-bucket --bucket ${wmg_bucket} &>/dev/null || true
+${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://${wmg_bucket}/$snapshot_identifier/cube/
+echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://${wmg_bucket}/latest_snapshot_identifier
+${local_aws} secretsmanager create-secret --name ${wmg_config_secret_name} &>/dev/null || true
+${local_aws} secretsmanager update-secret --secret-id ${wmg_config_secret_name} --secret-string "{\"bucket\": \"${wmg_bucket}\"}" || true
+# TODO: Also generate & store:
+#  * wmg cell type orderings
+#  * wmg "total cell counts" cube (TileDB array)
+
 echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"
