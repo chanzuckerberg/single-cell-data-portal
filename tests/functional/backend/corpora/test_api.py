@@ -20,7 +20,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertIsNotNone(res.json()["Data Portal"])
 
     def test_auth(self):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = requests.get(f"{self.api}/dp/v1/userinfo", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
@@ -55,7 +55,7 @@ class TestApi(BaseFunctionalTestCase):
             "name": "my2collection",
         }
 
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
@@ -132,7 +132,7 @@ class TestApi(BaseFunctionalTestCase):
             "name": "my2collection",
         }
 
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
@@ -172,7 +172,7 @@ class TestApi(BaseFunctionalTestCase):
             "name": "my2collection",
         }
 
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
