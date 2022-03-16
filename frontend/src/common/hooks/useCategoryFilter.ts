@@ -32,6 +32,7 @@ import {
   findOntologyNodeById,
   findOntologyParentNode,
   getOntologySpeciesKey,
+  listOntologyTreeIds,
 } from "src/components/common/Filter/common/utils";
 
 /**
@@ -184,7 +185,6 @@ export function useCategoryFilter<T extends Categories>(
           categorySet[categoryKey] as Set<CategoryValueKey>,
           config.ontology
         );
-        console.log(nextCategoryFilters);
         setFilter(categoryKey, nextCategoryFilters);
         return;
       }
@@ -261,12 +261,14 @@ function addOntologyDescendents(
   selectedCategoryValues: Set<CategoryValueKey>,
   categoryKeyValues: Set<CategoryValueKey>
 ) {
-  // For each node, add self if member of the original set of category value keys, and possibly children.
+  // For each node, add self and possibly children.
   ontologyNodes.forEach((ontologyNode) => {
     const { ontology_term_id: ontologyId } = ontologyNode;
+    // Only add self if memeber of original set of values for this category.
     if (categoryKeyValues.has(ontologyId)) {
       selectedCategoryValues.add(ontologyId);
     }
+    // Add children, if any.
     if (ontologyNode.children) {
       addOntologyDescendents(
         ontologyNode.children,
@@ -550,7 +552,7 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
     getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
   );
 
-  // Find the selected and parent node, if any, for the selected value, if any.
+  // Find the selected and parent node, if any, for the selected value.
   const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
   const ontologyRootNodes = ontology[ontologySpeciesKey];
   const selectedOntologyNode = findOntologyNodeById(
@@ -565,7 +567,7 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
     selectedOntologyNode
   );
 
-  // Toggle selected state of selected category value and reevaluate parent.
+  // Toggle selected state of selected category value.
   if (categoryFilters.has(categoryValueKey)) {
     // Selected value is already in the set of selected values, remove it.
     categoryFilters.delete(categoryValueKey);
@@ -588,7 +590,7 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
     // Add selected value to selected set.
     categoryFilters.add(categoryValueKey);
 
-    // Add all descendents of selected value, if any, and if they exist in the original full set of ontology IDs.
+    // Add all descendents of selected value, if any.
     if (selectedOntologyNode.children) {
       addOntologyDescendents(
         selectedOntologyNode.children,
@@ -846,9 +848,9 @@ function getCategoryFilter<T extends Categories>(
 
 /**
  * Reevaluate selected state of parent. It's possible all children of this parent are now selected; if so, add parent
- * and then reevaluate the parent's parent selected state.
+ * to set of seleted values and then reevaluate the parent's parent selected state.
  * @param ontologyRootNodes - Top-level nodes in ontology tree.
- * @param ontologyNode - Parent node to reevaluate selected state of.
+ * @param ontologyNode - Node to reevaluate selected state of.
  * @param selectedCategoryValues - The current set of selected values.
  * @param categoryKeyValues - Original, full set of values for this category.
  */
@@ -860,13 +862,11 @@ function handleOntologyChildAdded(
 ) {
   // Check if all children of the parent node are selected, only including children values that are present in the
   // original result set.
-  const childrenIds =
-    ontologyNode.children
-      ?.map((child) => child.ontology_term_id)
-      .filter((childId) => categoryKeyValues.has(childId)) ?? [];
-  const isEveryChildSelected =
-    childrenIds.length &&
-    childrenIds.every((childId) => selectedCategoryValues.has(childId));
+  const isEveryChildSelected = isEveryChildNodeSelected(
+    ontologyNode,
+    selectedCategoryValues,
+    categoryKeyValues
+  );
 
   // Add parent if all children are selected.
   if (isEveryChildSelected) {
@@ -899,7 +899,7 @@ function handleOntologyChildRemoved(
 ) {
   const { ontology_term_id: parentId } = ontologyNode;
   if (selectedCategoryValues.has(parentId)) {
-    // Parent is currently selected, remove
+    // Parent is currently selected, remove it from the selected set.
     selectedCategoryValues.delete(parentId);
 
     // Node's parent, if any, must now be reevaluated.
@@ -959,6 +959,30 @@ function isEthnicitySpecified(categoryValueKey: CategoryValueKey) {
   return !label;
 }
 
+/*
+ * Check if all children of the parent node are selected, only including children values that are present in the
+ * original result set.
+ * @param ontologyNode - Node to check selected state of children.
+ * @param selectedCategoryValues - The current set of selected values.
+ * @param categoryKeyValues - Original, full set of values for this category.
+ */
+function isEveryChildNodeSelected(
+  ontologyNode: OntologyNode,
+  selectedCategoryValues: Set<CategoryValueKey>,
+  categoryKeyValues: Set<CategoryValueKey>
+): boolean {
+  // Check if all children of the parent node are selected, only including children values that are present in the
+  // original result set.
+  const childrenIds =
+    ontologyNode.children
+      ?.map((child) => child.ontology_term_id)
+      .filter((childId) => categoryKeyValues.has(childId)) ?? [];
+  return Boolean(
+    childrenIds.length &&
+      childrenIds.every((childId) => selectedCategoryValues.has(childId))
+  );
+}
+
 /**
  * Determine if given filters are identical.
  * @param filters0 - First filter to compare.
@@ -1015,33 +1039,6 @@ function isSelectCategoryValue(
   categoryValue: RangeCategory | KeyedSelectCategoryValue
 ): categoryValue is KeyedSelectCategoryValue {
   return categoryValue instanceof Map;
-}
-
-/**
- * List all ontology IDs in the given ontology node.
- * @param ontologyIds - Set to add ontology IDs of node to.
- * @param node - Ontology node to list ontology IDs of.
- */
-function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
-  // Add this node to the set.
-  ontologyIds.add(node.ontology_term_id);
-
-  // Find ontology IDs for each child of this node.
-  node.children?.forEach((childNode) =>
-    listOntologyNodeIds(ontologyIds, childNode)
-  );
-}
-
-/**
- * List all ontology IDs in the given ontology tree.
- * @param ontology - Ontology view model to list ontology IDs of.
- * @returns Set of all ontology IDs present in the given ontology tree.
- */
-function listOntologyTreeIds(ontology: OntologyView): Set<string> {
-  return Object.values(ontology).reduce((accum, node) => {
-    node.forEach((node) => listOntologyNodeIds(accum, node));
-    return accum;
-  }, new Set<string>());
 }
 
 /**

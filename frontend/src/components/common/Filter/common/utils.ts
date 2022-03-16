@@ -4,6 +4,7 @@ import {
   Categories,
   OntologyCategoryKey,
   OntologyNode,
+  OntologyView,
   SPECIES_KEY,
 } from "src/components/common/Filter/common/entities";
 
@@ -96,6 +97,33 @@ export function findOntologyParentNode(
  */
 export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
   return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
+}
+
+/**
+ * List all ontology IDs in the given ontology node.
+ * @param ontologyIds - Set to add ontology IDs of node to.
+ * @param node - Ontology node to list ontology IDs of.
+ */
+function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
+  // Add this node to the set.
+  ontologyIds.add(node.ontology_term_id);
+
+  // Find ontology IDs for each child of this node.
+  node.children?.forEach((childNode) =>
+    listOntologyNodeIds(ontologyIds, childNode)
+  );
+}
+
+/**
+ * List all ontology IDs in the given ontology tree.
+ * @param ontology - Ontology view model to list ontology IDs of.
+ * @returns Set of all ontology IDs present in the given ontology tree.
+ */
+export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
+  return Object.values(ontology).reduce((accum, node) => {
+    node.forEach((node) => listOntologyNodeIds(accum, node));
+    return accum;
+  }, new Set<string>());
 }
 
 /**
