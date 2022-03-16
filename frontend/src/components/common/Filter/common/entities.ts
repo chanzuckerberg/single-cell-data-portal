@@ -33,6 +33,7 @@ export enum CATEGORY_KEY {
   "CELL_COUNT" = "cell_count",
   "CELL_TYPE" = "cell_type",
   "DISEASE" = "disease",
+  "ETHNICITY" = "ethnicity",
   "IS_PRIMARY_DATA" = "is_primary_data",
   "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
   "ORGANISM" = "organism",
@@ -63,6 +64,11 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
   },
   {
     categoryKey: CATEGORY_KEY.DISEASE,
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    multiselect: true,
+  },
+  {
+    categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
@@ -130,6 +136,7 @@ export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
   disease: Ontology[];
+  ethnicity: Ontology[];
   is_primary_data: IS_PRIMARY_DATA[];
   organism: Ontology[];
   sex: Ontology[];
@@ -175,6 +182,14 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   published_at: number;
   recency: number; // Used by sort
   revised_at?: number;
+}
+
+/**
+ * Display values of unspecified ethnicity labels.
+ */
+export enum ETHNICITY_UNSPECIFIED_LABEL {
+  "na" = "N/A",
+  "unknown" = "Unknown",
 }
 
 /**
@@ -227,6 +242,7 @@ export enum CATEGORY_LABEL {
   cell_count = "Cell Count",
   cell_type = "Cell Type",
   disease = "Disease",
+  ethnicity = "Ethnicity",
   is_primary_data = "Data Source",
   mean_genes_per_cell = "Gene Count",
   publicationAuthors = "Authors",
