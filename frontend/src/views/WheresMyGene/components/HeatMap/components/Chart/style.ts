@@ -1,6 +1,4 @@
 import { css } from "@emotion/css";
-/* eslint-disable @typescript-eslint/ban-ts-comment --- TODO revisit lint error below */
-// @ts-ignore - TODO revisit lint error
 import { TooltipTable } from "czifui";
 import styled from "styled-components";
 

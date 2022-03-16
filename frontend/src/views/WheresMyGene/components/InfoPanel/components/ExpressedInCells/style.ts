@@ -1,6 +1,4 @@
 import styled from "@emotion/styled";
-/* eslint-disable @typescript-eslint/ban-ts-comment --- TODO revisit lint error below */
-// @ts-ignore - TODO revisit lint error
 import { CommonThemeProps, getColors } from "czifui";
 
 interface DotProps extends CommonThemeProps {
@@ -15,8 +13,6 @@ export const Dot = styled.span`
   border-radius: 50%;
 
   ${(props: DotProps) => {
-    /* eslint-disable @typescript-eslint/ban-ts-comment --- TODO revisit lint error below */
-    // @ts-ignore - TODO revisit lint error
     const colors = getColors(props);
     const { size } = props;
 

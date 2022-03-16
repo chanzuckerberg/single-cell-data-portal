@@ -187,8 +187,6 @@ export default function QuickSelect<
           onClick={handleClick}
           sdsType="primary"
         >
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint errors */}
-          {/* @ts-ignore -- TODO revisit lint errors*/}
           <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
         </StyledIconButton>
       </ButtonWrapper>
@@ -217,8 +215,6 @@ export default function QuickSelect<
           }
           renderOption={renderOption}
           onPaste={handlePaste}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint error
-          // @ts-ignore -- TODO revisit lint error
           InputBaseProps={{
             onChange: (
               event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
