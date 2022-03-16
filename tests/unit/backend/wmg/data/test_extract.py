@@ -3,10 +3,11 @@ import unittest
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data import extract
 from backend.wmg.data.extract import included_assay_ontology_ids
+from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
-class TestExtract(CorporaTestCaseUsingMockAWS):
+class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     """
     Test case for extracting data to load into corpus to compute gene exression summary statistic cube
     """
@@ -97,6 +98,9 @@ class TestExtract(CorporaTestCaseUsingMockAWS):
             tombstone=False,
             assay={"ontology_term_id": included_assay_ontology_ids[0], "label": "test_assay"},
         )
+
+    def tearDown(self):
+        super().tearDown()
 
     def test_get_s3_uris_pulls_expected_datasets(self):
         """
