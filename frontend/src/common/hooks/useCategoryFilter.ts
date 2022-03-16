@@ -10,6 +10,7 @@ import {
   CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
   CATEGORY_LABEL,
+  ETHNICITY_UNSPECIFIED_LABEL,
   IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
   PUBLICATION_DATE_LABELS,
@@ -357,6 +358,15 @@ function buildCategoryValueLabel(
     ];
   }
 
+  if (
+    categoryKey === CATEGORY_KEY.ETHNICITY &&
+    !isEthnicitySpecified(categoryValueKey)
+  ) {
+    return ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    ];
+  }
+
   // Return all other category values as is.
   return categoryValueKey;
 }
@@ -581,6 +591,20 @@ export function isCategoryTypeBetween(categoryKey: CategoryKey): boolean {
     CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].categoryType ===
     CATEGORY_FILTER_TYPE.BETWEEN
   );
+}
+
+/**
+ * Determine if the given ethnicity is considered unspecified (that is, na or unknown).
+ * @param categoryValueKey - Ethnicity value to check if it's specified.
+ * @returns True if ethnicity is either na or unknown.
+ */
+
+function isEthnicitySpecified(categoryValueKey: CategoryValueKey) {
+  const label =
+    ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    ];
+  return !label;
 }
 
 /**
