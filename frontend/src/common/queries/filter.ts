@@ -85,6 +85,7 @@ export interface DatasetResponse {
   cell_type: Ontology[];
   collection_id: string;
   disease: Ontology[];
+  ethnicity: Ontology[];
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
@@ -242,6 +243,7 @@ function aggregateCollectionDatasetRows(
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
+        ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         is_primary_data: [
           ...accum.is_primary_data,
           ...collectionDatasetRow.is_primary_data,
@@ -255,6 +257,7 @@ function aggregateCollectionDatasetRows(
       assay: [],
       cell_type: [],
       disease: [],
+      ethnicity: [],
       is_primary_data: [],
       organism: [],
       sex: [],
@@ -267,6 +270,7 @@ function aggregateCollectionDatasetRows(
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
+    ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
