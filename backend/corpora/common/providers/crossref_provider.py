@@ -1,6 +1,7 @@
 import requests
 from ..corpora_config import CorporaConfig
 from urllib.parse import urlparse
+from datetime import datetime
 
 import logging
 
@@ -123,6 +124,7 @@ class CrossrefProvider(object):
                 "published_year": published_year,
                 "published_month": published_month,
                 "published_day": published_day,
+                "published_at": datetime.timestamp(datetime(published_year, published_month, published_day)),
                 "journal": journal,
                 "is_preprint": is_preprint,
             }
