@@ -404,6 +404,11 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     multiselect: true,
   },
   {
+    categoryKey: CATEGORY_KEY.ETHNICITY,
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    multiselect: true,
+  },
+  {
     categoryKey: CATEGORY_KEY.IS_PRIMARY_DATA,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
