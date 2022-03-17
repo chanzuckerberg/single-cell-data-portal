@@ -13,6 +13,7 @@ import {
   ETHNICITY_UNSPECIFIED_LABEL,
   IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
+  ORGANISM,
   PUBLICATION_DATE_LABELS,
   Range,
   RangeCategoryView,
@@ -389,7 +390,8 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
       if (isSelectCategoryValue(categoryValueByValue)) {
         return buildSelectCategoryView(
           categoryKey as CategoryKey,
-          categoryValueByValue
+          categoryValueByValue,
+          filterState
         );
       }
 
@@ -527,11 +529,14 @@ function buildRangeCategoryView(
  * Build view model of single or multiselect category.
  * @param categoryKey - Key of category to find selected filters of.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
- * @returns Range view model.
+ * @param filterState - Categories, category value and their counts with the current filter applied. Required when
+ * checking enabled state of view that is dependent on the state of another category.
+ * @returns Select category view model.
  */
 function buildSelectCategoryView(
   categoryKey: CategoryKey,
-  categoryValueByValue: KeyedSelectCategoryValue
+  categoryValueByValue: KeyedSelectCategoryValue,
+  filterState: FilterState
 ): SelectCategoryView {
   const categoryValueViews = [...categoryValueByValue.values()]
     .map(({ count, key, selected }: SelectCategoryValue) => ({
@@ -541,10 +546,23 @@ function buildSelectCategoryView(
       selected: selected,
     }))
     .sort(sortCategoryValueViews);
+
+  // Handle special cases where category may be disabled.
+  let disabled, tooltip;
+  if (
+    categoryKey === CATEGORY_KEY.ETHNICITY &&
+    !isEthnicityViewEnabled(filterState)
+  ) {
+    disabled = true;
+    tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+  }
+
   // Return completed view model of this category.
   return {
+    disabled,
     key: categoryKey as CategoryKey,
     label: CATEGORY_LABEL[categoryKey],
+    tooltip,
     values: categoryValueViews,
   };
 }
@@ -605,6 +623,19 @@ function isEthnicitySpecified(categoryValueKey: CategoryValueKey) {
       categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
     ];
   return !label;
+}
+
+/**
+ * The ethnicity filter is only view enabled if Homo sapiens is available as an option in the organism filter.
+ * @param filterState - Categories, category value and their counts with the current filter applied. Required to
+ * determine if ethnicity category should be enabled.
+ * @returns True if ethnicity is either na or unknown.
+ */
+function isEthnicityViewEnabled(filterState: FilterState) {
+  const organismCategoryValues = filterState[
+    CATEGORY_KEY.ORGANISM
+  ] as KeyedSelectCategoryValue;
+  return Boolean(organismCategoryValues.get(ORGANISM.HOMO_SAPIENS)?.count);
 }
 
 /**

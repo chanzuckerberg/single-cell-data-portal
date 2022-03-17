@@ -15,6 +15,7 @@ export interface CategoryConfig {
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
   multiselect: boolean; // True if category can have multiple values selected.
+  tooltip?: string;
 }
 
 /**
@@ -71,6 +72,8 @@ const CATEGORY_CONFIGS: CategoryConfig[] = [
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+    tooltip:
+      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
     categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
@@ -188,9 +191,13 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
  * Display values of unspecified ethnicity labels.
  */
 export enum ETHNICITY_UNSPECIFIED_LABEL {
-  "na" = "N/A",
   "unknown" = "Unknown",
 }
+
+/**
+ * List of ethnicity ontology labels to exclude from filter functionality.
+ */
+export const ETHNICITY_DENY_LIST = ["na"];
 
 /**
  * Function returns filtered category values when category key contains filter category input value.
@@ -219,6 +226,13 @@ type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
 export enum IS_PRIMARY_DATA_LABEL {
   "PRIMARY" = "primary",
   "SECONDARY" = "composed",
+}
+
+/**
+ * Possible set of organism values.
+ */
+export enum ORGANISM {
+  "HOMO_SAPIENS" = "Homo sapiens",
 }
 
 /**
@@ -329,8 +343,10 @@ export interface SelectCategoryValueView {
  * Metadata values grouped by metadata key, for single or multiselect categories.
  */
 export interface SelectCategoryView {
+  disabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
+  tooltip?: string;
   values: SelectCategoryValueView[];
 }
 
