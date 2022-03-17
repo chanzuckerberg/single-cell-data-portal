@@ -16,6 +16,7 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
+  ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
@@ -84,6 +85,7 @@ export interface DatasetResponse {
   cell_count: number | null;
   cell_type: Ontology[];
   collection_id: string;
+  development_stage_ancestors: string[];
   disease: Ontology[];
   ethnicity: Ontology[];
   explorer_url: string;
@@ -242,6 +244,10 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        development_stage_ancestors: [
+          ...accum.development_stage_ancestors,
+          ...collectionDatasetRow.development_stage_ancestors,
+        ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
         ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         is_primary_data: [
@@ -256,6 +262,7 @@ function aggregateCollectionDatasetRows(
     {
       assay: [],
       cell_type: [],
+      development_stage_ancestors: [],
       disease: [],
       ethnicity: [],
       is_primary_data: [],
@@ -269,6 +276,9 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    development_stage_ancestors: [
+      ...new Set(aggregatedCategoryValues.development_stage_ancestors),
+    ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
     ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
@@ -700,7 +710,8 @@ function processCollectionResponse(
 }
 
 /**
- * Add defaults for missing filterable values: convert missing ontology values to empty array and is_primary_data to "".
+ * Add defaults for missing filterable values: convert missing ontology values to empty array, is_primary_data to "".
+ * Remove any ethnicity values on the deny list.
  * @param dataset - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
@@ -716,11 +727,26 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       ) {
         return accum;
       }
+
+      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
+        accum.development_stage_ancestors =
+          dataset.development_stage_ancestors ?? [];
+        return accum;
+      }
+
       if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
-      } else {
-        accum[categoryKey] = dataset[categoryKey] ?? [];
+        return accum;
       }
+
+      if (categoryKey === CATEGORY_KEY.ETHNICITY) {
+        accum.ethnicity = (dataset.ethnicity ?? []).filter(
+          (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
+        );
+        return accum;
+      }
+
+      accum[categoryKey] = dataset[categoryKey] ?? [];
       return accum;
     },
     { ...dataset }

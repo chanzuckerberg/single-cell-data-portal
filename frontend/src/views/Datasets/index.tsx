@@ -180,6 +180,10 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_KEY.ETHNICITY,
       },
+      {
+        accessor: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+        filter: "includesSome",
+      },
       // Hidden, required for filter.
       {
         accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
@@ -225,6 +229,7 @@ export default function Datasets(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.ETHNICITY,
+          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
           CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.MEAN_GENES_PER_CELL,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
