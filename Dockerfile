@@ -7,7 +7,7 @@ ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y python3.9 libhdf5 gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
+    apt-get install -y python3.9 libhdf5-dev gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Make python3 the default 'python' executable.
