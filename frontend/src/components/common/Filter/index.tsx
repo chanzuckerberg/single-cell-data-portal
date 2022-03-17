@@ -26,7 +26,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
     <>
       {categories.map((categoryView: CategoryView) => {
         const { key, label } = categoryView;
-        const { values } = categoryView as SelectCategoryView;
+        const { tooltip, values } = categoryView as SelectCategoryView;
         const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
@@ -57,7 +57,13 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
                 }
               />
             }
-            target={<FilterLabel isDisabled={isDisabled} label={label} />}
+            target={
+              <FilterLabel
+                isDisabled={isDisabled}
+                label={label}
+                tooltip={tooltip}
+              />
+            }
           />
         );
       })}
@@ -186,13 +192,13 @@ function isRangeCategoryNA(categoryView: RangeCategoryView): boolean {
 }
 
 /**
- * Returns true if select category is not applicable, that is, all values have a count of 0.
+ * Returns true if select category is not applicable, that is, the category is disabled or all values have a count of 0.
  * @param categoryView
- * @returns true when all category values have a count of 0.
+ * @returns true when the category is disabled or all category values have a count of 0.
  */
 function isSelectCategoryNA(categoryView: SelectCategoryView): boolean {
-  const { values } = categoryView;
-  return values?.every((value) => value.count === 0);
+  const { disabled, values } = categoryView;
+  return disabled || values?.every((value) => value.count === 0);
 }
 
 /**
