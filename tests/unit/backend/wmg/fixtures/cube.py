@@ -18,77 +18,13 @@ from backend.wmg.data.schema import cube_indexed_dims, cube_logical_attrs, cube_
 from backend.wmg.data.tiledb import create_ctx
 
 
-def random_expression_summary_values(coords):
-    return {
-        "nnz": randint(size=len(coords), low=0, high=100),
-        "n_cells": randint(size=len(coords), low=0, high=1000),
-        "sum": random(size=len(coords)) * 10,
-    }
-
-
-def all_ones_expression_summary_values(coords):
-    attr_vals = {"nnz": np.ones(len(coords)), "n_cells": np.ones(len(coords)), "sum": np.ones(len(coords))}
-    return attr_vals
-
-
-def all_tens_cell_counts_values(coords) -> List[int]:
-    return list(np.full(shape=len(coords), fill_value=10.0))
-
-
-def random_cell_counts_values(coords) -> List[int]:
-    return list(randint(size=len(coords), low=1, high=1000))
-
-
-@contextlib.contextmanager
-def create_temp_wmg_cubes(
-    dim_size=3,
-    snapshot_name='dummy-snapshot',
-    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-    cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
-) -> WmgCubes:
-    with tempfile.TemporaryDirectory() as cube_dir:
-        expression_summary_cube_dir, cell_counts_cube_dir = \
-            create_cubes(cube_dir, dim_size,
-                         exclude_logical_coord_fn=exclude_logical_coord_fn,
-                         expression_summary_vals_fn=expression_summary_vals_fn,
-                         cell_counts_fn=cell_counts_generator_fn)
-        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
-            with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgCubes(expression_summary_cube, cell_counts_cube, snapshot_name)
-
-
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
-def create_dataset(dataset_id_ordinal: int) -> str:
-    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
-    with db_session_manager() as session:
-
-        if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
-            Collection.delete(coll)
-
-        collection = DbCollection(
-            id=coll_id,
-            visibility=CollectionVisibility.PUBLIC.name,
-            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
-            owner="owner",
-        )
-        session.add(collection)
-        dataset = DbDataset(
-            id=f"dataset_id_{dataset_id_ordinal}",
-            name=f"dataset_name_{dataset_id_ordinal}",
-            collection_id=coll_id,
-            collection_visibility=CollectionVisibility.PUBLIC,
-        )
-        session.add(dataset)
-        return dataset.id
-
-
 def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
     """
-    Returns a set of ontology term ids, sampled from real ontologies. While these ontology terms
+    Returns a set of ontology term ids, sampled from real ontologies. While these ontology terms are
     from the real ontologies, they are not necessarily ones that would be admissible w.r.t. to the cellxgene dataset
     schema. This is still useful to ensure that id-to-label mapping lookups will return a real label. Note that this
     implementation is wildly inefficient, but it is good enough for test code.
@@ -126,6 +62,77 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     if dimension_name == "sex_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:dim_size]
     raise AssertionError(f"unknown dimension name {dimension_name}")
+
+
+def random_expression_summary_values(coords):
+    return {
+        "nnz": randint(size=len(coords), low=0, high=100),
+        "n_cells": randint(size=len(coords), low=0, high=1000),
+        "sum": random(size=len(coords)) * 10,
+    }
+
+
+def all_ones_expression_summary_values(coords):
+    return {
+        "nnz": np.ones(len(coords)),
+        "n_cells": np.ones(len(coords)),
+        "sum": np.ones(len(coords))
+    }
+
+
+def all_tens_cell_counts_values(coords) -> List[int]:
+    return list(np.full(shape=len(coords), fill_value=10.0))
+
+
+def random_cell_counts_values(coords) -> List[int]:
+    return list(randint(size=len(coords), low=1, high=1000))
+
+
+def exclude_random_coords_75pct(_) -> bool:
+    return random() > 0.75
+
+
+@contextlib.contextmanager
+def create_temp_wmg_cubes(
+    dim_size=3,
+    snapshot_name='dummy-snapshot',
+    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+    cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
+) -> WmgCubes:
+    with tempfile.TemporaryDirectory() as cube_dir:
+        expression_summary_cube_dir, cell_counts_cube_dir = \
+            create_cubes(cube_dir, dim_size,
+                         exclude_logical_coord_fn=exclude_logical_coord_fn,
+                         expression_summary_vals_fn=expression_summary_vals_fn,
+                         cell_counts_fn=cell_counts_generator_fn)
+        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
+            with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
+                yield WmgCubes(expression_summary_cube, cell_counts_cube, snapshot_name)
+
+
+def create_dataset(dataset_id_ordinal: int) -> str:
+    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
+    with db_session_manager() as session:
+
+        if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
+            Collection.delete(coll)
+
+        collection = DbCollection(
+            id=coll_id,
+            visibility=CollectionVisibility.PUBLIC.name,
+            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
+            owner="owner",
+        )
+        session.add(collection)
+        dataset = DbDataset(
+            id=f"dataset_id_{dataset_id_ordinal}",
+            name=f"dataset_name_{dataset_id_ordinal}",
+            collection_id=coll_id,
+            collection_visibility=CollectionVisibility.PUBLIC,
+        )
+        session.add(dataset)
+        return dataset.id
 
 
 def create_cubes(data_dir, dim_size: int = 3,
@@ -225,4 +232,9 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cubes(output_cube_dir, expression_summary_vals_fn=semi_real_dimension_values_generator)
+    create_cubes(output_cube_dir,
+                 dim_size=4,
+                 dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
+                 exclude_logical_coord_fn=exclude_random_coords_75pct,
+                 expression_summary_vals_fn=random_expression_summary_values,
+                 cell_counts_fn=random_cell_counts_values)

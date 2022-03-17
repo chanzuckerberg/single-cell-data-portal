@@ -78,4 +78,4 @@ def build_latest_snapshot_uri(data_root_uri: str):
 
 
 def build_snapshot_base_uri(bucket: str, snapshot_identifier: str):
-    return os.path.join("s3://", bucket, snapshot_identifier, "cube")
+    return os.path.join("s3://", bucket, snapshot_identifier)
