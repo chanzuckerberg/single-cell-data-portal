@@ -6,8 +6,11 @@ from unittest.mock import patch
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.cube import create_temp_wmg_cubes, all_ones_expression_summary_values, \
-    all_tens_cell_counts_values
+from tests.unit.backend.wmg.fixtures.cube import (
+    create_temp_wmg_cubes,
+    all_ones_expression_summary_values,
+    all_tens_cell_counts_values,
+)
 
 
 @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
@@ -100,9 +103,11 @@ class WmgApiV1Tests(unittest.TestCase):
         self, load_cubes, ontology_term_label, gene_term_label
     ):
         dim_size = 1
-        with create_temp_wmg_cubes(dim_size=dim_size,
-                                   expression_summary_vals_fn=all_ones_expression_summary_values,
-                                   cell_counts_generator_fn=all_tens_cell_counts_values) as cubes:
+        with create_temp_wmg_cubes(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as cubes:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_cubes.return_value = cubes
@@ -181,9 +186,11 @@ class WmgApiV1Tests(unittest.TestCase):
         self, load_cubes, ontology_term_label, gene_term_label
     ):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size,
-                                   expression_summary_vals_fn=all_ones_expression_summary_values,
-                                   cell_counts_generator_fn=all_tens_cell_counts_values) as cubes:
+        with create_temp_wmg_cubes(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as cubes:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_cubes.return_value = cubes
@@ -220,38 +227,98 @@ class WmgApiV1Tests(unittest.TestCase):
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_1": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
                         ],
                         "tissue_ontology_term_id_2": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
                         ],
                     },
                     "gene_ontology_term_id_2": {
                         "tissue_ontology_term_id_1": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
                         ],
                         "tissue_ontology_term_id_2": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
-                             "tpc": 729 / (10 * (3 ** 7))},
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 729,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 729 / (10 * (3**7)),
+                            },
                         ],
                     },
                 },

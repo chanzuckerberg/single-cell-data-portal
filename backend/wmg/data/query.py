@@ -30,24 +30,25 @@ class WmgQuery:
         self._cubes = cubes
 
     def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
-        return self._query(self._cubes.expression_summary_cube, criteria,
-                           indexed_dims=["gene_ontology_term_ids",
-                                         "tissue_ontology_term_ids",
-                                         "organism_ontology_term_id"])
+        return self._query(
+            self._cubes.expression_summary_cube,
+            criteria,
+            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
+        )
 
     def cell_counts(self, criteria: WmgQueryCriteria):
-        cell_counts = self._query(self._cubes.cell_counts_cube,
-                                         criteria.copy(exclude={'gene_ontology_term_ids'}),
-                                         indexed_dims=["tissue_ontology_term_ids",
-                                                       "organism_ontology_term_id"])
-        cell_counts.rename(columns={'n_cells': 'n_total_cells'}, inplace=True)  # expressed & non-expressed cells
+        cell_counts = self._query(
+            self._cubes.cell_counts_cube,
+            criteria.copy(exclude={"gene_ontology_term_ids"}),
+            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
+        )
+        cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: WmgQueryCriteria,
-               indexed_dims: List[str]) -> DataFrame:
+    def _query(cube: Array, criteria: WmgQueryCriteria, indexed_dims: List[str]) -> DataFrame:
 
         # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
         # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
@@ -85,13 +86,16 @@ class WmgQuery:
 
         return query_result_df
 
-
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
         # TODO: Query the cell counts cube, for efficiency:
         #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
         #  -data-portal/2134
         return (
-            self._cubes.expression_summary_cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
+            self._cubes.expression_summary_cube.query(attrs=[], dims=[primary_dim_name])
+            .df[:]
+            .groupby([primary_dim_name])
+            .first()
+            .index.tolist()
         )
 
     def list_grouped_primary_filter_dimensions_term_ids(
@@ -113,22 +117,20 @@ class WmgQuery:
 def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by gene, tissue, cell type
     expr_summary_agg = query_result.groupby(
-            ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).sum()
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum()
 
-    cell_counts_cell_type_agg = cell_counts.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"],
-                                                    as_index=True).sum()
-    cell_counts_cell_type_agg.rename(columns={'n_total_cells': 'n_cells_cell_type'}, inplace=True)
+    cell_counts_cell_type_agg = cell_counts.groupby(
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
+    ).sum()
+    cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
 
     cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
-    cell_counts_tissue_agg.rename(columns={'n_total_cells': 'n_cells_tissue'}, inplace=True)
+    cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
 
-    return expr_summary_agg.\
-        join(cell_counts_cell_type_agg,
-             on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
-             how='left'). \
-        join(cell_counts_tissue_agg,
-             on=["tissue_ontology_term_id"],
-             how='left')
+    return expr_summary_agg.join(
+        cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+    ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")
 
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:

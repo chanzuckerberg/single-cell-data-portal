@@ -1,7 +1,7 @@
 import logging
 import os
 from collections import namedtuple
-from typing import Tuple, Optional
+from typing import Optional
 
 import tiledb
 from tiledb import Array
@@ -12,7 +12,7 @@ from backend.wmg.data.tiledb import create_ctx
 
 logger = logging.getLogger("wmg")
 
-WmgCubes = namedtuple("cubes", ['expression_summary_cube', 'cell_counts_cube', 'snapshot_identifier'])
+WmgCubes = namedtuple("cubes", ["expression_summary_cube", "cell_counts_cube", "snapshot_identifier"])
 
 # Cached cubes
 cubes: WmgCubes = None
