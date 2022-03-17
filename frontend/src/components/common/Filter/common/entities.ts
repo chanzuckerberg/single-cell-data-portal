@@ -364,13 +364,13 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
-    tooltip:
-      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+    tooltip:
+      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
     categoryKey: CATEGORY_KEY.IS_PRIMARY_DATA,
