@@ -6,10 +6,11 @@ from unittest.mock import patch
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.cube import create_temp_wmg_cubes, all_ones_expression_summary_values
+from tests.unit.backend.wmg.fixtures.cube import create_temp_wmg_cubes, all_ones_expression_summary_values, \
+    all_tens_cell_counts_values
 
 
-@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
+# @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
@@ -21,12 +22,17 @@ class WmgApiV1Tests(unittest.TestCase):
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
             self.app = app.test_client(use_cookies=False)
 
-    @patch("backend.wmg.api.v1.load_cube")
-    def test__primary_filter_dimensions__returns_200(self, load_cube):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.maxDiff = None
+
+    @patch("backend.wmg.api.v1.load_cubes")
+    def test__primary_filter_dimensions__returns_200(self, load_cubes):
         # This test appears to be hitting a TileDB (<=0.13.1) bug and fails (intermittently) if dim_size=3
-        with create_temp_wmg_cubes(dim_size=1) as cube:
+        with create_temp_wmg_cubes(dim_size=1) as cubes:
             # setup up API endpoints to use a mocked cube
-            load_cube.return_value = (cube, "dummy-snapshot")
+            load_cubes.return_value = cubes
 
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
@@ -34,9 +40,9 @@ class WmgApiV1Tests(unittest.TestCase):
 
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cube")
+    @patch("backend.wmg.api.v1.load_cubes")
     def test__primary_filter_dimensions__returns_valid_response_body(
-        self, load_cube, ontology_term_label, gene_term_label
+        self, load_cubes, ontology_term_label, gene_term_label
     ):
 
         # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
@@ -49,10 +55,10 @@ class WmgApiV1Tests(unittest.TestCase):
             }
 
         # This test appears to be hitting a TileDB (<=0.13.1) bug and fails if dim_size=3
-        with create_temp_wmg_cubes(exclude_logical_coord_fn=exclude, dim_size=1) as cube:
-            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
-            # response
-            load_cube.return_value = (cube, "dummy-snapshot")
+        with create_temp_wmg_cubes(exclude_logical_coord_fn=exclude, dim_size=1) as cubes:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_cubes.return_value = cubes
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -89,15 +95,17 @@ class WmgApiV1Tests(unittest.TestCase):
 
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cube")
+    @patch("backend.wmg.api.v1.load_cubes")
     def test__query_minimal_valid_request__returns_200_and_empty_expr_summary(
-        self, load_cube, ontology_term_label, gene_term_label
+        self, load_cubes, ontology_term_label, gene_term_label
     ):
         dim_size = 1
-        with create_temp_wmg_cubes(dim_size=dim_size, attr_vals_fn=all_ones_expression_summary_values) as all_ones_cube:
-            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
-            # response
-            load_cube.return_value = (all_ones_cube, "dummy-snapshot")
+        with create_temp_wmg_cubes(dim_size=dim_size,
+                                   expression_summary_vals_fn=all_ones_expression_summary_values,
+                                   cell_counts_generator_fn=all_tens_cell_counts_values) as cubes:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_cubes.return_value = cubes
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -124,7 +132,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_0": [
-                            {"id": "cell_type_ontology_term_id_0", "me": 1.0, "n": 1, "pc": 0.0, "tpc": 0.0}
+                            {"id": "cell_type_ontology_term_id_0", "me": 1.0, "n": 1, "pc": 0.1, "tpc": 0.1}
                         ]
                     },
                 },
@@ -168,15 +176,17 @@ class WmgApiV1Tests(unittest.TestCase):
 
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cube")
+    @patch("backend.wmg.api.v1.load_cubes")
     def test__query_request_primary_dims_only__returns_valid_response_body(
-        self, load_cube, ontology_term_label, gene_term_label
+        self, load_cubes, ontology_term_label, gene_term_label
     ):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size, attr_vals_fn=all_ones_expression_summary_values) as all_ones_cube:
-            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
-            # response
-            load_cube.return_value = (all_ones_cube, "dummy-snapshot")
+        with create_temp_wmg_cubes(dim_size=dim_size,
+                                   expression_summary_vals_fn=all_ones_expression_summary_values,
+                                   cell_counts_generator_fn=all_tens_cell_counts_values) as cubes:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_cubes.return_value = cubes
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -210,26 +220,38 @@ class WmgApiV1Tests(unittest.TestCase):
                 "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_1": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
                         ],
                         "tissue_ontology_term_id_2": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
                         ],
                     },
                     "gene_ontology_term_id_2": {
                         "tissue_ontology_term_id_1": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
                         ],
                         "tissue_ontology_term_id_2": [
-                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
-                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.0, "tpc": 0.0},
+                            {"id": "cell_type_ontology_term_id_0", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_1", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
+                            {"id": "cell_type_ontology_term_id_2", "n": 729, "me": 1.0, "pc": 0.1,
+                             "tpc": 729 / (10 * (3 ** 7))},
                         ],
                     },
                 },
@@ -251,15 +273,14 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cube")
+    @patch("backend.wmg.api.v1.load_cubes")
     def test__query_request_with_filter_dims__returns_valid_filter_dims(
-        self, load_cube, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_cubes, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size) as cube:
-            # setup up API endpoints to use a cube containing all stat values of 1, for a deterministic expected query
-            # response
-            load_cube.return_value = (cube, "dummy-snapshot")
+        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
+            # setup up API endpoints to use a mocked cube
+            load_cubes.return_value = cubes
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -329,13 +350,13 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.data.query.gene_term_label")
     @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cube")
+    @patch("backend.wmg.api.v1.load_cubes")
     def test__query_request_with_filter_dims__returns_elided_filter_dims(
-        self, load_cube, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_cubes, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 2
-        with create_temp_wmg_cubes(dim_size=dim_size) as cube:
-            load_cube.return_value = (cube, "dummy-snapshot")
+        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
+            load_cubes.return_value = cubes
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels

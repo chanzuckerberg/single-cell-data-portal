@@ -12,6 +12,7 @@ from numpy.random import random, randint
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
+from backend.wmg.data.cube import WmgCubes
 from backend.wmg.data.schema import cube_indexed_dims, cube_logical_attrs, cube_logical_dims, expression_summary_schema, \
     cell_counts_logical_attrs, cell_counts_schema, cell_counts_indexed_dims, cell_counts_logical_dims
 from backend.wmg.data.tiledb import create_ctx
@@ -30,18 +31,31 @@ def all_ones_expression_summary_values(coords):
     return attr_vals
 
 
+def all_tens_cell_counts_values(coords) -> List[int]:
+    return list(np.full(shape=len(coords), fill_value=10.0))
+
+
+def random_cell_counts_values(coords) -> List[int]:
+    return list(randint(size=len(coords), low=1, high=1000))
+
+
 @contextlib.contextmanager
 def create_temp_wmg_cubes(
     dim_size=3,
-    attr_vals_fn: Callable[[List[Tuple]], List] = random_expression_summary_values,
+    snapshot_name='dummy-snapshot',
+    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-) -> None:
+    cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
+) -> WmgCubes:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = \
-            create_cubes(cube_dir, dim_size, exclude_logical_coord_fn=exclude_logical_coord_fn,
-                         expression_summary_vals_fn=attr_vals_fn)
+            create_cubes(cube_dir, dim_size,
+                         exclude_logical_coord_fn=exclude_logical_coord_fn,
+                         expression_summary_vals_fn=expression_summary_vals_fn,
+                         cell_counts_fn=cell_counts_generator_fn)
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
-            yield expression_summary_cube
+            with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
+                yield WmgCubes(expression_summary_cube, cell_counts_cube, snapshot_name)
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
@@ -117,27 +131,31 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
 def create_cubes(data_dir, dim_size: int = 3,
                  dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
                  exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-                 expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values) \
+                 expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+                 cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values) \
         -> Tuple[str, str]:
     coords, dim_values = build_coords(cube_logical_dims, dim_size,
                                       dim_ontology_term_ids_generator_fn,
                                       exclude_logical_coord_fn)
     expression_summary_cube_dir = create_expression_summary_cube(data_dir, coords, dim_values,
-                                                                 attr_vals_fn=expression_summary_vals_fn)
+                                                                 expression_summary_vals_fn=expression_summary_vals_fn)
 
-    # coords, dim_values = build_coords(cell_counts_logical_dims, dim_size,
-    #                                   dim_ontology_term_ids_generator_fn,
-    #                                   exclude_logical_coord_fn)
-    # cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values)
+    coords, dim_values = build_coords(cell_counts_logical_dims, dim_size,
+                                      dim_ontology_term_ids_generator_fn,
+                                      exclude_logical_coord_fn)
+    cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values,
+                                                   cell_counts_fn=cell_counts_fn)
 
-    return (expression_summary_cube_dir, None)
+    return expression_summary_cube_dir, cell_counts_cube_dir
 
-def create_cell_counts_cube(data_dir, coords, dim_values) -> None:
+
+def create_cell_counts_cube(data_dir, coords, dim_values,
+                            cell_counts_fn: Callable[[List[Tuple]], List[int]]) -> str:
     cube_dir = f"{data_dir}/cell_counts"
     tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        logical_attr_values: Dict[str, np.ndarray] = {"n_cells": randint(size=len(coords), low=1, high=100)}
+        logical_attr_values: Dict[str, list] = {"n_cells": cell_counts_fn(coords)}
         assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
 
         physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]
@@ -146,7 +164,6 @@ def create_cell_counts_cube(data_dir, coords, dim_values) -> None:
             for i in range(len(cell_counts_indexed_dims), len(cell_counts_logical_dims))
         }
 
-        logical_attr_values = {}
         physical_attr_values.update(logical_attr_values)
         cube[tuple(physical_dim_values)] = physical_attr_values
 
@@ -157,13 +174,13 @@ def create_expression_summary_cube(
     data_dir,
     coords,
     dim_values,
-    attr_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values
+    expression_summary_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values
 ) -> str:
     cube_dir = f"{data_dir}/expression_summary"
     tiledb.Array.create(cube_dir, expression_summary_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        logical_attr_values = attr_vals_fn(coords)
+        logical_attr_values = expression_summary_vals_fn(coords)
         assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cube_logical_attrs])
 
         physical_dim_values = dim_values[: len(cube_indexed_dims)]
