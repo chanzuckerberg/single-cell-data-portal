@@ -35,7 +35,6 @@ const Privacy = (): JSX.Element => {
 
             <br />
 
-
             <h2>Introduction</h2>
 
             <p>
