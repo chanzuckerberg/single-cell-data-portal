@@ -223,7 +223,7 @@ def update_collection(collection_uuid: str, body: dict, user: str):
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
-        # CollectionVisibility.PRIVATE.name,
+        visibility=CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
     if not collection:

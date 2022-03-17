@@ -7,6 +7,7 @@ import boto3
 import typing
 from boto.s3.bucket import Bucket
 from moto import mock_s3
+from sqlalchemy.orm import Session
 
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
@@ -73,7 +74,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         return s3object
 
     def generate_artifact(
-        self, session, dataset_id, artifact_type=DatasetArtifactFileType.H5AD, file_name="data", upload=False
+        self, session: Session, dataset_id, artifact_type=DatasetArtifactFileType.H5AD, file_name="data", upload=False
     ) -> DatasetAsset:
         file_name = f"{file_name}.{artifact_type.name}"
         if upload:
@@ -89,7 +90,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             session, dataset_id, file_name, artifact_type, DatasetArtifactType.REMIX, False, s3_uri
         )
 
-    def create_explorer_s3_object(self, session, dataset_id, upload=False):
+    def create_explorer_s3_object(self, session: Session, dataset_id, upload=False):
         file_name = f"{dataset_id}.cxg/"
         if upload:
             with tempfile.TemporaryDirectory() as temp_path:
@@ -107,7 +108,9 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             session, dataset_id, file_name, DatasetArtifactFileType.CXG, DatasetArtifactType.REMIX, False, s3_uri
         )
 
-    def generate_dataset_with_s3_resources(self, session, artifacts=True, explorer_s3_object=True, **params) -> Dataset:
+    def generate_dataset_with_s3_resources(
+        self, session: Session, artifacts=True, explorer_s3_object=True, **params
+    ) -> Dataset:
         dataset = self.generate_dataset(session, **params)
         if artifacts:
             for ext in DatasetArtifactFileType:

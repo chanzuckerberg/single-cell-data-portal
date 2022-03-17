@@ -152,7 +152,6 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
         x.to_dict(
             remove_attr=[
                 "collection",
-                "collection_visibility",
                 "collection_id",
                 "created_at",
                 "updated_at",

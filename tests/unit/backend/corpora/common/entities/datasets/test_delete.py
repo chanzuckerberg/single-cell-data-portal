@@ -18,7 +18,6 @@ class TestDeleteDataset(TestDataset):
             self.session,
             **BogusDatasetParams.get(
                 collection_id="test_collection_id",
-                # collection_visibility=CollectionVisibility.PUBLIC.name,
                 artifacts=[{}],
             ),
         )

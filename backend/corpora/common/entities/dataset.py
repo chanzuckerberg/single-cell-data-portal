@@ -7,6 +7,7 @@ import typing
 from datetime import datetime
 from pathlib import PurePosixPath
 from collections import OrderedDict
+from sqlalchemy.orm import Session
 
 from ..utils.ontology_mapping import ontology_mapping
 
@@ -39,7 +40,7 @@ class Dataset(Entity):
     @classmethod
     def create(
         cls,
-        session,
+        session: Session,
         revision: int = 0,
         name: str = "",
         artifacts: list = None,
@@ -89,7 +90,7 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
+    def get(cls, session: Session, dataset_uuid, include_tombstones=False) -> "Dataset":
         dataset = super().get(session, dataset_uuid)
         if not include_tombstones:
             if dataset and dataset.tombstone is True:
@@ -97,7 +98,7 @@ class Dataset(Entity):
         return dataset
 
     @classmethod
-    def get_by_explorer_url(cls, session, explorer_url):
+    def get_by_explorer_url(cls, session: Session, explorer_url):
         """
         Return the most recently created dataset with the given explorer_url or None
         """

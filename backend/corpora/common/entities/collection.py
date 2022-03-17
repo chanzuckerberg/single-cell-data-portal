@@ -1,6 +1,7 @@
 import typing
 from datetime import datetime
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from . import Dataset
 from .entity import Entity
@@ -25,7 +26,7 @@ class Collection(Entity):
     @classmethod
     def create(
         cls,
-        session,
+        session: Session,
         visibility: CollectionVisibility,
         name: str = "",
         description: str = "",
@@ -64,9 +65,9 @@ class Collection(Entity):
     @classmethod
     def get_collection(
         cls,
-        session,
+        session: Session,
         collection_uuid: str = None,
-        visibility=None,
+        visibility: CollectionVisibility = None,
         revision_of: str = None,
         include_tombstones: bool = False,
         owner: typing.Optional[str] = None,
@@ -82,7 +83,6 @@ class Collection(Entity):
         owner then the collection is returned. If this parameters is not included then owner is not used as a filter.
         :return: the collection if it matches the filter.
         """
-        # session.commit()
         filters = []
         if visibility:
             filters.append(cls.table.visibility == visibility)
@@ -99,19 +99,25 @@ class Collection(Entity):
         return cls(collection) if collection else None
 
     @classmethod
-    def list_collections_in_time_range(cls, session, *args, **kwargs):
+    def list_collections_in_time_range(cls, session: Session, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             session, *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
         )
 
     @classmethod
     def list_attributes_in_time_range(
-        cls, session, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+        cls,
+        session: Session,
+        to_date: int = None,
+        from_date: int = None,
+        filters: list = None,
+        list_attributes: list = None,
     ) -> typing.List[typing.Dict]:
         """
         Queries the database for Entities that have been created within the specified time range. Return only the
         entity attributes in `list_attributes`.
 
+        :param session: The SQLAlchemy database Session
         :param to_date: If provided, only lists collections that were created before this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
         :param from_date: If provided, only lists collections that were created after this date. Format of param is Unix
@@ -145,7 +151,7 @@ class Collection(Entity):
         return results
 
     @classmethod
-    def list_public_datasets_for_index(cls, session) -> typing.List[typing.Dict]:
+    def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
         """
         Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
         inside the `dataset` table and doesn't include relationships.
@@ -181,7 +187,7 @@ class Collection(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = [~Dataset.table.tombstone, cls.table.visibility == CollectionVisibility.PUBLIC]
+        filters = [~Dataset.table.tombstone, cls.table.visibility == CollectionVisibility.PUBLIC.name]
 
         results = [
             to_dict(result)
@@ -305,9 +311,9 @@ class Collection(Entity):
         self.session.add(revision_collection)
         for link in self.links:
             self.session.add(clone(link, collection_id=revision_collection.id))
-        self.session.commit()  # why is this happening here and not after creating the Dataset revisions
         for dataset in self.datasets:
             Dataset(dataset).create_revision(revision_collection.id)
+        self.session.commit()  # why is this happening here and not after creating the Dataset revisions
         return Collection(revision_collection)
 
     def tombstone_collection(self):
@@ -329,7 +335,7 @@ class Collection(Entity):
         """
         links = links if links else []
         if not keep_links:
-            for link in self.links:  # danieljhegeman -- would handle genesets here too?
+            for link in self.links:
                 self.session.delete(link)
 
         new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]

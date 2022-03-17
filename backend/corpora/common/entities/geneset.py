@@ -1,5 +1,6 @@
 import typing
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from ..corpora_orm import DbGeneset, DbGenesetDatasetLink, DbCollectionLink
 from .entity import Entity
@@ -10,7 +11,7 @@ class Geneset(Entity):
     table = DbGeneset
 
     @classmethod
-    def create(cls, session, name: str, description: str, genes: list, dataset_ids: list = [], **kwargs):
+    def create(cls, session: Session, name: str, description: str, genes: list, dataset_ids: list = [], **kwargs):
         gene_set = DbGeneset(name=name, description=description, genes=genes, **kwargs)
         session.add(gene_set)
         session.commit()
@@ -20,7 +21,7 @@ class Geneset(Entity):
         return cls(gene_set)
 
     @classmethod
-    def retrieve_all_genesets_for_a_collection(cls, session, collection_id):
+    def retrieve_all_genesets_for_a_collection(cls, session: Session, collection_id):
         genesets = session.query(cls.table).filter(cls.table.collection_id == collection_id).all()
         reshaped_genesets = []
         for geneset in genesets:
@@ -61,14 +62,14 @@ class GenesetDatasetLink(Entity):
     table = DbGenesetDatasetLink
 
     @classmethod
-    def create(cls, session, geneset_id: str, dataset_id: str):
+    def create(cls, session: Session, geneset_id: str, dataset_id: str):
         link = DbGenesetDatasetLink(geneset_id=geneset_id, dataset_id=dataset_id)
         session.add(link)
         session.commit()
         return cls(link)
 
     @classmethod
-    def get(cls, session, geneset_id: str, dataset_id: str):
+    def get(cls, session: Session, geneset_id: str, dataset_id: str):
         link = (
             session.query(cls.table)
             .filter(cls.table.geneset_id == geneset_id, cls.table.dataset_id == dataset_id)
@@ -81,7 +82,7 @@ class GenesetDatasetLink(Entity):
 
     @classmethod
     def update_links_for_a_dataset(
-        cls, session, dataset_id: str, add: typing.Optional[list] = None, remove: typing.Optional[list] = None
+        cls, session: Session, dataset_id: str, add: typing.Optional[list] = None, remove: typing.Optional[list] = None
     ):
         for gene_set_id in remove:
             link = cls.get(session=session, dataset_id=dataset_id, geneset_id=gene_set_id)
@@ -102,12 +103,12 @@ class CollectionLink(Entity):
     table = DbCollectionLink
 
     @classmethod
-    def create(cls, session, collection_id: str, **kwargs) -> "CollectionLink":
+    def create(cls, session: Session, collection_id: str, **kwargs) -> "CollectionLink":
         link = DbCollectionLink(collection_id=collection_id, **kwargs)
         session.add(link)
         session.commit()
         return cls(link)
 
     @classmethod
-    def retrieve_all_links_for_a_collection(cls, session, collection_id: str) -> typing.List["CollectionLink"]:
+    def retrieve_all_links_for_a_collection(cls, session: Session, collection_id: str) -> typing.List["CollectionLink"]:
         return session.query(cls.table).filter(cls.table.collection_id == collection_id).all()

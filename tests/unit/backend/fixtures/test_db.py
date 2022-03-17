@@ -147,7 +147,6 @@ class TestDatabase:
             name="test_geneset",
             description="this is a geneset",
             collection_id="test_collection_id",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
         )
 
         self.session.add(geneset)
@@ -157,7 +156,6 @@ class TestDatabase:
             name="test_geneset_with_dataset",
             description="this is a geneset with a dataset",
             collection_id="test_collection_id",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
             datasets=[dataset],
         )
         self.session.add(geneset)
@@ -169,7 +167,6 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_collection_{link_type.value}_link_id",
                     collection_id="test_collection_id",
-                    # collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_name=f"test_{link_type.value}_link_name",
                     link_url=f"http://test_{link_type.value}_url.place",
                     link_type=link_type.name,
@@ -179,7 +176,6 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_collection_no_name_{link_type.value}_link_id",
                     collection_id="test_collection_id",
-                    # collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_url=f"http://test_no_link_name_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
@@ -188,7 +184,6 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_publish_revision_with_links__{link_type.value}_link",
                     collection_id="test_collection_with_link",
-                    # collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_url=f"http://test_link_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
@@ -197,7 +192,6 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_publish_revision_with_links__revision_{link_type.value}_link",
                     collection_id="test_collection_with_link_revision",
-                    # collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_url=f"http://test_link_{link_type.value}_url.place_REVISION",
                     link_type=link_type.name,
                 )
@@ -226,7 +220,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
             explorer_url="test_url",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
@@ -254,7 +247,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -278,7 +270,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -301,7 +292,6 @@ class TestDatabase:
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_not_owner",
-            # collection_visibility=CollectionVisibility.PRIVATE.name,
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
@@ -330,7 +320,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_revision",
             explorer_url="test_url_revised",
-            # collection_visibility=CollectionVisibility.PUBLIC.name,
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
