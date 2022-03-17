@@ -38,7 +38,6 @@ class TestCollection(BaseAuthAPITest):
             "datasets",
             "created_at",
             "updated_at",
-            "obfuscated_uuid",
             "contact_email",
             "contact_name",
             "curator_name",
@@ -259,7 +258,6 @@ class TestCollection(BaseAuthAPITest):
             ],
             "name": "test_collection_name",
             "visibility": "PUBLIC",
-            "obfuscated_uuid": "",
             "contact_name": "Some Body",
             "curator_name": "",
             "contact_email": "somebody@chanzuckerberg.com",
@@ -333,7 +331,6 @@ class TestCollection(BaseAuthAPITest):
                 "id": collection.id,
                 "links": [],
                 "name": "",
-                "obfuscated_uuid": "",
                 "visibility": "PUBLIC",
             }
             test_url = furl(path=f"/dp/v1/collections/{collection.id}")
@@ -572,6 +569,7 @@ class TestCollection(BaseAuthAPITest):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 10,
+            "published_at": 1636520400.0,
             "journal": "Nature",
             "is_preprint": False,
         }

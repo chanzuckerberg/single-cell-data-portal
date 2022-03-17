@@ -1,10 +1,6 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
-import {
-  GRAY,
-  LIGHT_GRAY,
-  PRIMARY_BLUE,
-  PT_TEXT_COLOR,
-} from "src/components/common/theme";
+import { scrollbar } from "src/components/common/Filter/common/style";
+import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
@@ -64,16 +60,7 @@ export const MenuItemsWrapper = styled.div`
   max-height: calc((${MAX_DISPLAYABLE_MENU_ITEMS} + 0.5) * 32px);
   overflow-y: auto;
   padding-right: 6px;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-clip: content-box;
-    background-color: ${LIGHT_GRAY.A};
-    border-radius: 4px;
-  }
+  ${scrollbar};
 `;
 
 export const NoMatches = styled(MenuItem)`
@@ -103,20 +90,6 @@ export const MenuItemWrapper = styled.span<MenuItemProps>`
 
     &:focus {
       outline: none;
-    }
-
-    .${Classes.ICON} {
-      align-items: center;
-      color: ${PRIMARY_BLUE};
-      display: flex;
-      height: 18px;
-      justify-content: center;
-      margin: 0 8px 0 0;
-
-      > svg {
-        height: 14px;
-        width: 14px;
-      }
     }
   }
 `;
