@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 import click
 from sqlalchemy import create_engine
