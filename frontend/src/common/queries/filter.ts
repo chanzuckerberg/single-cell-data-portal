@@ -84,7 +84,9 @@ export interface DatasetResponse {
   cell_count: number | null;
   cell_type: Ontology[];
   collection_id: string;
+  development_stage_ancestors: string[];
   disease: Ontology[];
+  ethnicity: Ontology[];
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
@@ -241,7 +243,12 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        development_stage_ancestors: [
+          ...accum.development_stage_ancestors,
+          ...collectionDatasetRow.development_stage_ancestors,
+        ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
+        ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         is_primary_data: [
           ...accum.is_primary_data,
           ...collectionDatasetRow.is_primary_data,
@@ -254,7 +261,9 @@ function aggregateCollectionDatasetRows(
     {
       assay: [],
       cell_type: [],
+      development_stage_ancestors: [],
       disease: [],
+      ethnicity: [],
       is_primary_data: [],
       organism: [],
       sex: [],
@@ -266,7 +275,11 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    development_stage_ancestors: [
+      ...new Set(aggregatedCategoryValues.development_stage_ancestors),
+    ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
+    ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
@@ -712,7 +725,10 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       ) {
         return accum;
       }
-      if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
+      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
+        accum.development_stage_ancestors =
+          dataset.development_stage_ancestors ?? [];
+      } else if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
       } else {
         accum[categoryKey] = dataset[categoryKey] ?? [];
