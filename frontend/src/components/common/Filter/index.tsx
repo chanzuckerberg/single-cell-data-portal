@@ -1,19 +1,21 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, ReactNode } from "react";
 import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
+  OntologyCategoryView,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
+import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
+import FilterMultiPanel from "src/components/common/Filter/components/FilterMultiPanel";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import BasicFilter from "./components/BasicFilter";
 import FilterLabel from "./components/FilterLabel";
-import FilterMenu from "./components/FilterMenu";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
@@ -26,43 +28,109 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
     <>
       {categories.map((categoryView: CategoryView) => {
         const { key, label } = categoryView;
-        const { values } = categoryView as SelectCategoryView;
         const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
-            content={
-              isSelectCategoryView(categoryView) ? (
-                <FilterMenu
-                  categoryKey={key}
-                  filterCategoryValues={filterCategoryValues}
-                  filterCategoryValuesWithCount={filterCategoryValuesWithCount}
-                  isMultiselect // Can possibly be single select with future filter types
-                  isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
-                  onFilter={onFilter}
-                  onUpdateSearchValue={onUpdateSearchValue}
-                  values={values}
-                />
-              ) : (
-                <FilterRange categoryView={categoryView} onFilter={onFilter} />
-              )
-            }
+            content={buildBasicFilterContent(categoryView, onFilter)}
             isDisabled={isDisabled}
             key={key}
-            tags={
-              <FilterTags
-                tags={
-                  isSelectCategoryView(categoryView)
-                    ? buildSelectCategoryTags(categoryView, key, onFilter)
-                    : buildRangeCategoryTag(categoryView, key, onFilter)
-                }
-              />
-            }
+            tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
             target={<FilterLabel isDisabled={isDisabled} label={label} />}
           />
         );
       })}
     </>
   );
+}
+
+/**
+ * Build content model of basic filter depending on category type.
+ * @param categoryView - View model of category to display.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
+ * @returns React node representing content to display inside basic filter menu.
+ */
+function buildBasicFilterContent(
+  categoryView: CategoryView,
+  onFilter: OnFilterFn
+): ReactNode {
+  const { key } = categoryView;
+
+  // Handle ontology categories.
+  if (isOntologyCategoryView(categoryView)) {
+    return (
+      <FilterMultiPanel
+        categoryKey={key}
+        onFilter={onFilter}
+        species={categoryView.species}
+      />
+    );
+  }
+
+  // Handle select categories
+  if (isSelectCategoryView(categoryView)) {
+    const { values } = categoryView;
+    return (
+      <FilterMenu
+        categoryKey={key}
+        filterCategoryValues={filterCategoryValues}
+        filterCategoryValuesWithCount={filterCategoryValuesWithCount}
+        isMultiselect // Can possibly be single select with future filter types
+        isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
+        onFilter={onFilter}
+        onUpdateSearchValue={onUpdateSearchValue}
+        values={values}
+      />
+    );
+  }
+
+  // Otherwise, handle range categories
+  return <FilterRange categoryView={categoryView} onFilter={onFilter} />;
+}
+
+/**
+ * Build up the set of selected filter tags depending on category type.
+ * @param categoryView - View model of category to display.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
+ * @returns Array of category tags to be displayed as selected tags.
+ */
+function buildFilterTags(
+  categoryView: CategoryView,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  const { key } = categoryView;
+
+  // Handle ontology categories
+  if (isOntologyCategoryView(categoryView)) {
+    return buildOntologyCategoryTags(categoryView, key, onFilter);
+  }
+
+  // Handle select categories
+  if (isSelectCategoryView(categoryView)) {
+    return buildSelectCategoryTags(categoryView, key, onFilter);
+  }
+
+  // Otherwise, handle range categories
+  return buildRangeCategoryTag(categoryView, key, onFilter);
+}
+
+/**
+ * Returns ontology category tag with tag label and corresponding Tag onRemove function.
+ * @param categoryView
+ * @param categoryKey
+ * @param onFilter
+ * @returns ontology category tag.
+ */
+function buildOntologyCategoryTags(
+  categoryView: OntologyCategoryView,
+  categoryKey: CategoryKey,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  return categoryView.species?.reduce((accum, species) => {
+    species.selectedViews.forEach(({ key, label }) => {
+      accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
+    });
+    return accum;
+  }, [] as CategoryTag[]);
 }
 
 /**
@@ -161,18 +229,38 @@ function isCategoryNA(categoryView: CategoryView): boolean {
   if (isSelectCategoryView(categoryView)) {
     return isSelectCategoryNA(categoryView);
   }
+  if (isOntologyCategoryView(categoryView)) {
+    return isOntologyCategoryViewNA(categoryView);
+  }
   return isRangeCategoryNA(categoryView);
 }
 
 /**
- * Determine if the given category view is a selected category view and not a range category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
+ * Determine if the given category view is an ontology category view and not a select or range category view.
+ * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
+ * ontology tree.
  * @returns True if the given category view is a select category view.
  */
-function isSelectCategoryView(
-  categoryView: SelectCategoryView | RangeCategoryView
-): categoryView is SelectCategoryView {
-  return (categoryView as SelectCategoryView).values !== undefined;
+function isOntologyCategoryView(
+  categoryView: CategoryView
+): categoryView is OntologyCategoryView {
+  return (categoryView as OntologyCategoryView).species !== undefined;
+}
+
+/**
+ * Returns true if ontology category is not applicable, that is, there are no species ontology trees or species
+ * ontology trees with values that have a count.
+ * @param categoryView
+ * @returns True when there are no species or the count of children for each species is 0.
+ */
+function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
+  const { species } = categoryView;
+  if (!species || species.length === 0) {
+    return true;
+  }
+  return !species.some(
+    (s) => s.children.filter((child) => child.count > 0).length > 0
+  );
 }
 
 /**
@@ -193,6 +281,18 @@ function isRangeCategoryNA(categoryView: RangeCategoryView): boolean {
 function isSelectCategoryNA(categoryView: SelectCategoryView): boolean {
   const { values } = categoryView;
   return values?.every((value) => value.count === 0);
+}
+
+/**
+ * Determine if the given category view is a selected category view and not an ontology or range category view.
+ * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
+ * ontology tree.
+ * @returns True if the given category view is a select category view.
+ */
+function isSelectCategoryView(
+  categoryView: CategoryView
+): categoryView is SelectCategoryView {
+  return (categoryView as SelectCategoryView).values !== undefined;
 }
 
 /**

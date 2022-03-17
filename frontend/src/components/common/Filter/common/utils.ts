@@ -3,6 +3,9 @@ import { Ontology } from "src/common/entities";
 import {
   Categories,
   OntologyCategoryKey,
+  OntologyNode,
+  OntologyView,
+  SPECIES_KEY,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -34,6 +37,94 @@ export const SYMBOL_MILLION = "M";
  * Scale symbol for million.
  */
 export const SYMBOL_THOUSAND = "k";
+
+/**
+ * Find the node with the given ontology ID.
+ * @param rootNodes - Top-level nodes in ontology tree to search for ontology ID in.
+ * @param ontologyId - The ontology ID of the node to find.
+ */
+export function findOntologyNodeById(
+  rootNodes: OntologyNode[],
+  ontologyId: string
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    const rootNode = rootNodes[i];
+    if (rootNode.ontology_term_id === ontologyId) {
+      return rootNode;
+    }
+    const node = findOntologyNodeById(rootNode.children ?? [], ontologyId);
+    if (node) {
+      return node;
+    }
+  }
+}
+
+/**
+ * Find the parent node of the given node.
+ * @param rootNodes - Node tree structure to find parent in.
+ * @param ontologyNode - Node to find parent of.
+ * @returns Ontology node that is the parent of the given ontology node.
+ */
+export function findOntologyParentNode(
+  rootNodes: OntologyNode[],
+  ontologyNode: OntologyNode
+): OntologyNode | undefined {
+  for (let i = 0; i < rootNodes.length; i++) {
+    // Check if this node is the parent.
+    const rootNode = rootNodes[i];
+    const isParent = rootNode.children?.find(
+      (childNode) => childNode === ontologyNode
+    );
+    if (isParent) {
+      return rootNode;
+    }
+
+    // Otherwise, check each child to see if they are the parent.
+    const parentNode = findOntologyParentNode(
+      rootNode.children ?? [],
+      ontologyNode
+    );
+    if (parentNode) {
+      return parentNode;
+    }
+  }
+}
+
+/**
+ * Determine the ontology key of the given ontology ID. For example, "HsapDv:0000003" returns "HsapDv".
+ * @param ontologyId - ID to determine ontology key from.
+ * @returns String containing ontology key.
+ */
+export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
+  return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
+}
+
+/**
+ * List all ontology IDs in the given ontology node.
+ * @param ontologyIds - Set to add ontology IDs of node to.
+ * @param node - Ontology node to list ontology IDs of.
+ */
+function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
+  // Add this node to the set.
+  ontologyIds.add(node.ontology_term_id);
+
+  // Find ontology IDs for each child of this node.
+  node.children?.forEach((childNode) =>
+    listOntologyNodeIds(ontologyIds, childNode)
+  );
+}
+
+/**
+ * List all ontology IDs in the given ontology tree.
+ * @param ontology - Ontology view model to list ontology IDs of.
+ * @returns Set of all ontology IDs present in the given ontology tree.
+ */
+export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
+  return Object.values(ontology).reduce((accum, node) => {
+    node.forEach((node) => listOntologyNodeIds(accum, node));
+    return accum;
+  }, new Set<string>());
+}
 
 /**
  * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
