@@ -10,7 +10,7 @@ class TestApiKey(BaseFunctionalTestCase):
         super().setUpClass()
 
     def test_api_key_crud(self):
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         def _cleanup():
             requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
@@ -23,6 +23,13 @@ class TestApiKey(BaseFunctionalTestCase):
         response = requests.post(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(201, response.status_code)
         key_1 = response.json()["key"]
+
+        response = requests.post(
+            f"{self.api}/dp/v1/curator/auth/token", headers={"x-api-key": key_1, "Content-Type": "application/json"}
+        )
+        self.assertEqual(201, response.status_code)
+        access_token = response.json()["access_token"]
+        self.assertTrue(access_token)
 
         response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(200, response.status_code)

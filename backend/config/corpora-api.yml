@@ -1009,8 +1009,12 @@ paths:
                     $ref: "#/components/schemas/wmg_snapshot_id"
                   organism_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  tissue_type_terms:
+                  tissue_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  gene_terms:
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    type: object
         "404":
           $ref: "#/components/responses/404"
   /wmg/v1/query:
@@ -1028,38 +1032,34 @@ paths:
                 filter:
                   type: object
                   required:
-                    - gene_term_ids
-                    - organism_term_id
-                    - tissue_type_term_ids
+                    - gene_ontology_term_ids
+                    - organism_ontology_term_id
+                    - tissue_ontology_term_ids
                   properties:
-                      gene_term_ids:
+                      gene_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      organism_term_id:
+                      organism_ontology_term_id:
                         type: string
-                      tissue_type_term_ids:
+                      tissue_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       dataset_ids:
                         type: array
                         items:
                           type: string
                           format: uuid
-                      disease_term_ids:
+                      disease_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_term_ids:
+                      sex_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_stage_term_ids:
+                      development_ontology_stage_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      ethnicity_term_ids:
+                      ethnicity_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                response_option:
-                  type: string
-                  enum:
-                    - include_filter_dims_include_dataset_links
-                    - include_filter_dims_exclude_dataset_links
-                    - exclude_filter_dims
+                include_filter_dims:
+                  type: boolean
+                  default: false
               required:
                 - filter
-                - response_option
       responses:
         "200":
           description: OK
@@ -1464,9 +1464,11 @@ components:
           A single-element object with the ontology term id as the element's property name and the ontology term label
           as the element's property value.
         type: object
-        maxProperties: 1
-        additionalProperties:
-          type: string
+        # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+        # `{"<ontology_term_id>": "<ontology_term_label"}`
+#        maxProperties: 1
+#        additionalProperties:
+#          type: string
     wmg_ontology_term_id_list:
       type: array
       items:

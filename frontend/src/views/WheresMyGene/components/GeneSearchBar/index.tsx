@@ -228,6 +228,7 @@ export default function GeneSearchBar(): JSX.Element {
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
           label="Add Tissue"
+          dataTestId="add-tissue"
         />
 
         <QuickSelect
@@ -238,6 +239,7 @@ export default function GeneSearchBar(): JSX.Element {
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
+          dataTestId="add-gene"
         />
       </ActionWrapper>
     </Container>
