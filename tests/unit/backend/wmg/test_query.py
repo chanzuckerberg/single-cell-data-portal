@@ -7,7 +7,7 @@ from tests.unit.backend.wmg.fixtures.cube import create_temp_wmg_cubes, all_ones
     all_tens_cell_counts_values
 
 
-# @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
+@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
     def test__query_with_no_genes__returns_empty_result(self):
         criteria = WmgQueryCriteria(

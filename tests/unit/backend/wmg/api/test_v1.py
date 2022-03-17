@@ -10,7 +10,7 @@ from tests.unit.backend.wmg.fixtures.cube import create_temp_wmg_cubes, all_ones
     all_tens_cell_counts_values
 
 
-# @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
+@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
