@@ -176,6 +176,16 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ETHNICITY),
+        filter: "includesSome",
+        id: CATEGORY_KEY.ETHNICITY,
+      },
+      {
+        accessor: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+        filter: "includesSome",
+      },
+      // Hidden, required for filter.
+      {
         accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
         filter: "includesSome",
       },
@@ -218,6 +228,8 @@ export default function Datasets(): JSX.Element {
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.CELL_TYPE,
+          CATEGORY_KEY.ETHNICITY,
+          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
           CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.MEAN_GENES_PER_CELL,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
