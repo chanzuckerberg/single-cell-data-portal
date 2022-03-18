@@ -17,6 +17,6 @@ def post():
     else:
         identity = auth0_management_session.get_user_api_key_identity(token["sub"])
         if not identity:
-            raise NotFoundHTTPException("The API key is has is no longer valid.")
-        token = auth0_management_session.generate_access_token(identity["email"], user_api_key)
+            raise NotFoundHTTPException("The API key is no longer valid.")
+        token = auth0_management_session.generate_access_token(identity["profileData"]["email"], user_api_key)
         return make_response(token, 201)

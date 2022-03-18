@@ -13,7 +13,7 @@ class TestAuthToken(BaseAPITest):
         test_email = "user@email.com"
         test_user_id = "test_user_id"
         CorporaAuthConfig().api_key_secret = test_secret
-        auth0_management_session.get_user_api_key_identity = Mock(return_value={"email": test_email})
+        auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData":{"email": test_email}})
         auth0_management_session.generate_access_token = Mock(return_value={"access_token": "OK"})
         user_api_key = generate(test_user_id, test_secret)
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
