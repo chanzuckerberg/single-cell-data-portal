@@ -43,8 +43,7 @@ paths:
       summary: Fetch Collections metadata.
       description: Fetch all Collections metadata. Authorization required for private collections.
       security:
-        - cxguserCookie: []
-        - curatorAccess: []
+        - curatorAccessLenient: []
       parameters:
         - $ref: "#/components/parameters/query_visibility"
       responses:
@@ -103,7 +102,6 @@ paths:
       summary: Create a Collection
       description: Create a new Collection
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       requestBody:
         content:
@@ -123,28 +121,11 @@ paths:
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_uuid}:
-    delete:
-      summary: Delete a private Collection
-      description: Delete a private Collection or a revision of a public Collection.
-      security:
-        - cxguserCookie: []
-      parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
-      responses:
-        "202":
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          $ref: "#/components/responses/401"
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch Collection metadata and associated Datasets, public and private.
       security:
-        - cxguserCookie: []
-        - curatorAccess: []
+        - curatorAccessLenient: []
 
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -203,7 +184,6 @@ paths:
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -245,7 +225,6 @@ paths:
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_public_collection_uuid"
@@ -272,7 +251,6 @@ paths:
         indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid**
         parameters.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -299,7 +277,6 @@ paths:
         Update a Dataset's curator-provided tag. The Dataset MUST NOT belong to a published Collection. MUST indicate
         the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -336,7 +313,6 @@ paths:
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -408,7 +384,6 @@ paths:
         status for a given Dataset.
 
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -439,7 +414,6 @@ paths:
         Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
         **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
-        - cxguserCookie: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
@@ -820,3 +794,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
       x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func
+    curatorAccessLenient:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
