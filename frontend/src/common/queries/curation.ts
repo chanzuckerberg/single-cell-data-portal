@@ -17,7 +17,7 @@ export const USE_CURATOR_AUTH_KEY = {
 export async function generateCuratorAuthKey(): Promise<APIKeyResponse | null> {
   const response = await fetch(API_URL + API.CURATOR_AUTH_KEY, {
     ...DEFAULT_FETCH_OPTIONS,
-    method: "PUT",
+    method: "POST",
   });
 
   const result = await response.json();
