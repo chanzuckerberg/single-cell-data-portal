@@ -20,7 +20,7 @@ paths:
       summary: Get WMG cell types (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
-        - { }
+
       description: >-
         JSON of all genes
       operationId: backend.corpora.lambdas.api.v1.wmg.get_cell_types
@@ -51,7 +51,7 @@ paths:
       summary: Get WMG genes (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
-        - { }
+
       description: >-
         JSON of all cell types
       operationId: backend.corpora.lambdas.api.v1.wmg.get_genes
@@ -82,7 +82,7 @@ paths:
       summary: Get WMG gene expression for a given gene name (WMG FEATURE PROTOTYPE)
       security:
         - cxguserCookieLenient: [ ]
-        - { }
+
       description: >-
         JSON of gene expression for a given gene
       operationId: backend.corpora.lambdas.api.v1.wmg.get_gene_expression
@@ -124,7 +124,7 @@ paths:
       summary: List published collections in Corpora
       security:
         - cxguserCookieLenient: []
-        - {}
+
       description: >-
         This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
@@ -229,7 +229,7 @@ paths:
       summary: Get a collection's full details
       security:
         - cxguserCookieLenient: []
-        - {}
+
       description: >-
         This will return all datasets and associated attributes.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
@@ -257,7 +257,7 @@ paths:
       summary: Start a revision of a public collection,
       security:
         - cxguserCookie: []
-        - {}
+
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
@@ -809,7 +809,7 @@ paths:
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       security:
         - cxguserCookieLenient: []
-        - {}
+
       description: >-
         STUB
       operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
@@ -1579,8 +1579,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
-    dummyAuth:
-      type: apiKey
-      in: header
-      name: cxgpublic
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_dummy_info_func
