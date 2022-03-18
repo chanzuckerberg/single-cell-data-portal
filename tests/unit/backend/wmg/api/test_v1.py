@@ -142,7 +142,8 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                 },
                 "term_id_labels": {
-                    "cell_types": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
+                    "cell_types": {"tissue_ontology_term_id_0": [
+                        {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}]},
                     "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
                 },
                 "filter_dims": {},
@@ -323,11 +324,18 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                 },
                 "term_id_labels": {
-                    "cell_types": [
-                        {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
-                        {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                        {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
-                    ],
+                    "cell_types": {
+                        "tissue_ontology_term_id_0": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                        ],
+                        "tissue_ontology_term_id_1": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                        ]
+                    },
                     "genes": [
                         {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
                         {"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"},

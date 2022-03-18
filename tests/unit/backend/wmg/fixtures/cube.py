@@ -12,7 +12,7 @@ from numpy.random import random, randint
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.cube import WmgCubes
+from backend.wmg.data.snapshot import WmgSnapshot
 from backend.wmg.data.schema import (
     cube_indexed_dims,
     cube_logical_attrs,
@@ -103,7 +103,7 @@ def create_temp_wmg_cubes(
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
-) -> WmgCubes:
+) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
@@ -114,7 +114,7 @@ def create_temp_wmg_cubes(
         )
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgCubes(expression_summary_cube, cell_counts_cube, snapshot_name)
+                yield WmgSnapshot(expression_summary_cube, cell_counts_cube, snapshot_name)
 
 
 def create_dataset(dataset_id_ordinal: int) -> str:

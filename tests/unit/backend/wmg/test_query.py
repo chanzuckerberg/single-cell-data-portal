@@ -1,7 +1,8 @@
 import unittest
 from typing import Tuple
 
-from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
+from backend.wmg.api.v1 import build_dot_plot_matrix
+from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
 from backend.wmg.data.schema import cube_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.cube import (
     create_temp_wmg_cubes,
@@ -9,6 +10,8 @@ from tests.unit.backend.wmg.fixtures.cube import (
     all_tens_cell_counts_values,
 )
 
+# TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
+#  WmgQuery methods
 
 @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
