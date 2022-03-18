@@ -19,6 +19,8 @@ from pronto import Ontology
 import pygraphviz as pgv
 import json
 
+import boto3
+
 # TODO - does writing and reading directly from s3 slow down compute? test
 
 Log_Format = "%(levelname)s %(asctime)s - %(message)s"
@@ -60,9 +62,9 @@ def mock_s3_uris():
 
 def copy_datasets_to_instance(dataset_directory):
     s3_uris = mock_s3_uris()
-    # for dataset in s3_uris.keys():
-        # sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
-    sync_command = ["aws", "s3", "sync", "s3://env-rdev-wmg/ebezzi-wmg/wmg-datasets", f"./{dataset_directory}"]
+    for dataset in s3_uris.keys():
+        sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
+    # sync_command = ["aws", "s3", "sync", "s3://env-rdev-wmg/ebezzi-wmg/wmg-datasets", f"./{dataset_directory}"]
     subprocess.run(sync_command) # TODO parallelize this step
 
 
@@ -134,28 +136,64 @@ def generate_cell_ordering(cell_type_by_tissue):
         json.dump(mapping, f)
 
 def update_s3_resources(group_name):
-    time_stamp = time.time()
+    timestamp = int(time.time())
     # copy cell ordering
     # copy corpus
     # copy cube
-    update_latest_snapshot(group_name, time_stamp)
-    # update_cell_ordering()
-    remove_oldest_datasets()
+    upload_cube_to_s3(group_name, timestamp)
+    upload_cell_ordering_to_s3(timestamp)
+    update_latest_snapshot_identifier(timestamp)
+    remove_oldest_datasets(timestamp)
     pass
 
 
-def remove_oldest_datasets():
-    pass
+def remove_oldest_datasets(timestamp):
+    s3 = boto3.resource('s3')
+    wmg_bucket = s3.Bucket(wmg_bucket_name)
+    objects = wmg_bucket.objects.filter(Prefix=stack_name.strip('/')) if stack_name else wmg_bucket.objects.all()
+
+    def enumerate_timestamps_and_objects(objects):
+        for obj in objects:
+            try:
+                tokens = obj.key.split("/")
+                timestamp_token = tokens[1] if stack_name else tokens[0]
+                is_timestamp = timestamp_token[:10].isdigit()
+                if is_timestamp:
+                    yield (timestamp_token, obj)
+            except Exception:
+                pass
+            
+    candidate_to_delete = [obj for obj in enumerate_timestamps_and_objects(objects)]
+
+    timestamps = sorted(list(set([x[0] for x in candidate_to_delete])))
+
+    if len(timestamps) > 2:
+        timestamps_to_delete = list(timestamps)[:-2]
+    else:
+        timestamps_to_delete = []
+        
+    for timestamp, object in candidate_to_delete:
+        if timestamp in timestamps_to_delete:
+            object.delete()
 
 
-def update_latest_snapshot(group_name, time_stamp):
+def upload_cube_to_s3(group_name, timestamp):
     # TODO: use the right bucket name
-    sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{get_wmg_bucket_path()}/cube"]
+    sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{get_wmg_bucket_path()}/{timestamp}/cube"]
     subprocess.run(sync_command)
 
-def update_cell_ordering():
-    sync_command = ["aws", "s3", "cp", f"ordered-cells.json", f"{get_wmg_bucket_path()}/ordered-cells.json"]
+
+def upload_cell_ordering_to_s3(timestamp):
+    sync_command = ["aws", "s3", "cp", f"ordered-cells.json", f"{get_wmg_bucket_path()}/{timestamp}/ordered-cells.json"]
     subprocess.run(sync_command)
+
+
+def update_latest_snapshot_identifier(timestamp):
+    s3 = boto3.resource('s3')
+    file_key = "latest_snapshot_identifier"
+    file_path = f"{stack_name.strip('/')}/{file_key}" if stack_name else f"{file_key}"
+    object = s3.Object(wmg_bucket_name, file_path)
+    object.put(Body=str(timestamp))
 
 
 def load_data_and_create_cube(path_to_datasets, group_name):
@@ -167,8 +205,8 @@ def load_data_and_create_cube(path_to_datasets, group_name):
         create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
-    # cell_type_by_tissue = get_cells_by_tissue_type(group_name)
-    # generate_cell_ordering(cell_type_by_tissue)
+    cell_type_by_tissue = get_cells_by_tissue_type(group_name)
+    generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources(group_name)
     print("Cube creation script - completed")
     return 0
