@@ -32,7 +32,7 @@ class Auth0ManagementSession:
     @property
     def domain(self):
         if not self._domain:
-            self._domain = CorporaAuthConfig().auth0_domain.strip("/")  # Temp hack, should remove trailing slash from secret ingit d AWS
+            self._domain = CorporaAuthConfig().auth0_domain
         return self._domain
 
     @domain.setter
