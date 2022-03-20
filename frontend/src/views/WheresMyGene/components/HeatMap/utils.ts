@@ -82,7 +82,11 @@ export function createChartOptions({
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          return Math.round(MAX_FIRST_PART_LENGTH_PX * percentage);
+          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+          const r = Math.sqrt(percentage * maxRadius ** 2);
+
+          return Math.round(2 * r);
         },
       },
     ],
