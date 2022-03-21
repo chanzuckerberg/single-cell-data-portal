@@ -4,7 +4,7 @@ import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
-import { CellTypeSummary, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import { useUpdateYAxisChart } from "../../hooks/useUpdateYAxisChart";
 import {
@@ -22,9 +22,9 @@ import {
 } from "./style";
 
 interface Props {
-  cellTypes?: CellTypeSummary[];
+  cellTypes?: CellType[];
   hasDeletedCellTypes: boolean;
-  availableCellTypes: CellTypeSummary[];
+  availableCellTypes: CellType[];
   tissue: Tissue;
 }
 
@@ -103,8 +103,8 @@ export default memo(function YAxisChart({
   ]);
 
   const cellTypeMetadata = useMemo(() => {
-    return getAllSerializedCellTypeMetadata(cellTypes);
-  }, [cellTypes]);
+    return getAllSerializedCellTypeMetadata(cellTypes, tissue);
+  }, [cellTypes, tissue]);
 
   useUpdateYAxisChart({
     cellTypeIdsToDelete,
