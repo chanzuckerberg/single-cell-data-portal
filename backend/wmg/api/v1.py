@@ -25,7 +25,7 @@ def primary_filter_dimensions():
 
     # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
     organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
-            "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
+        "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
     )
     organism_gene_terms = {
         organism_term_id: build_gene_id_label_mapping(gene_term_ids)
@@ -33,14 +33,14 @@ def primary_filter_dimensions():
     }
 
     result = dict(
-            snapshot_id=snapshot.snapshot_identifier,
-            organism_terms=build_ontology_term_id_label_mapping(
-                    qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
-            ),
-            tissue_terms=build_ontology_term_id_label_mapping(
-                    qry.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
-            ),
-            gene_terms=organism_gene_terms,
+        snapshot_id=snapshot.snapshot_identifier,
+        organism_terms=build_ontology_term_id_label_mapping(
+            qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
+        ),
+        tissue_terms=build_ontology_term_id_label_mapping(
+            qry.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
+        ),
+        gene_terms=organism_gene_terms,
     )
     return jsonify(result)
 
@@ -60,15 +60,15 @@ def query():
     response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
 
     return jsonify(
-            dict(
-                    snapshot_id=snapshot.snapshot_identifier,
-                    expression_summary=build_expression_summary(dot_plot_matrix_df),
-                    term_id_labels=dict(
-                            genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                            cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
-                    ),
-                    filter_dims=response_filter_dims_values,
-            )
+        dict(
+            snapshot_id=snapshot.snapshot_identifier,
+            expression_summary=build_expression_summary(dot_plot_matrix_df),
+            term_id_labels=dict(
+                genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
+                cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
+            ),
+            filter_dims=response_filter_dims_values,
+        )
     )
 
 
@@ -80,16 +80,17 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
     # and we want to keep session management out of the calling method
 
     with db_session_manager() as session:
+
         def get_dataset(dataset_id_):
             dataset = Dataset.get(session, dataset_id_)
             if dataset is None:
                 # Handle possible missing dataset due to db state evolving past wmg snapshot
                 return dict(id=dataset_id_, label="", collection_id="", collection_label="")
             return dict(
-                    id=dataset.id,
-                    label=dataset.name,
-                    collection_id=dataset.collection.id,
-                    collection_label=dataset.collection.name,
+                id=dataset.id,
+                label=dataset.name,
+                collection_id=dataset.collection.id,
+                collection_label=dataset.collection.name,
             )
 
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
@@ -97,15 +98,15 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
 
 def build_filter_dims_values(all_filter_dims_values: Dict[str, Iterable[str]]):
     response_filter_dims_values = dict(
-            datasets=fetch_datasets_metadata(all_filter_dims_values["dataset_id"]),
-            disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
-            sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
-            development_stage_terms=build_ontology_term_id_label_mapping(
-                    all_filter_dims_values["development_stage_ontology_term_id"]
-            ),
-            ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
-            # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-            # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
+        datasets=fetch_datasets_metadata(all_filter_dims_values["dataset_id"]),
+        disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
+        sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
+        development_stage_terms=build_ontology_term_id_label_mapping(
+            all_filter_dims_values["development_stage_ontology_term_id"]
+        ),
+        ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
+        # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
+        # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
     )
     return response_filter_dims_values
 
@@ -115,13 +116,13 @@ def build_expression_summary(query_result: DataFrame) -> dict:
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
-                dict(
-                        id=row.cell_type_ontology_term_id,
-                        n=row.nnz,
-                        me=row.sum / row.nnz,
-                        pc=row.nnz / row.n_cells_cell_type,
-                        tpc=row.nnz / row.n_cells_tissue,
-                )
+            dict(
+                id=row.cell_type_ontology_term_id,
+                n=row.nnz,
+                me=row.sum / row.nnz,
+                pc=row.nnz / row.n_cells_cell_type,
+                tpc=row.nnz / row.n_cells_tissue,
+            )
         )
     return structured_result
 
@@ -138,11 +139,11 @@ def extract_filter_dims_values(query_result: DataFrame) -> Dict[str, set]:
 def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by gene, tissue, cell type
     expr_summary_agg = query_result.groupby(
-            ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).sum()
 
     cell_counts_cell_type_agg = cell_counts.groupby(
-            ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
     ).sum()
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
 
@@ -150,7 +151,7 @@ def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> Da
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
 
     return expr_summary_agg.join(
-            cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+        cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")
 
 
@@ -162,24 +163,25 @@ def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]
 
 
 def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
-    return [
-        {ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids
-    ]
+    return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
-def build_ordered_cell_types_by_tissue(cell_counts: DataFrame, cell_type_orderings: DataFrame) -> \
-        Dict[str, List[Dict[str, str]]]:
-    distinct_tissues_cell_types: DataFrame = \
-        cell_counts.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).first()
-    joined = distinct_tissues_cell_types.merge(cell_type_orderings,
-                                           on=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
+def build_ordered_cell_types_by_tissue(
+    cell_counts: DataFrame, cell_type_orderings: DataFrame
+) -> Dict[str, List[Dict[str, str]]]:
+    distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).first()
+    joined = distinct_tissues_cell_types.merge(
+        cell_type_orderings, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+    )
     sorted = joined.sort_values(by=["tissue_ontology_term_id", "order"])
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
 
     for row in sorted.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-                {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
+            {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
         )
 
     return structured_result

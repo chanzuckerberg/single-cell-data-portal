@@ -13,6 +13,7 @@ from tests.unit.backend.wmg.fixtures.snapshot import (
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
 #  WmgQuery methods
 
+
 # @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
     def test__query_with_no_genes__returns_empty_result(self):

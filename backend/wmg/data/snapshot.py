@@ -14,11 +14,13 @@ from backend.wmg.data.tiledb import create_ctx
 
 logger = logging.getLogger("wmg")
 
+
 @dataclass
 class WmgSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
     """
+
     snapshot_identifier: str
     expression_summary_cube: Array
     cell_counts_cube: Array
@@ -49,10 +51,12 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
-    return WmgSnapshot(snapshot_identifier=new_snapshot_identifier,
-                       expression_summary_cube=_open_cube(f"{snapshot_base_uri}/expression_summary"),
-                       cell_counts_cube=_open_cube(f"{snapshot_base_uri}/cell_counts"),
-                       cell_type_orderings=_load_cell_type_order())
+    return WmgSnapshot(
+        snapshot_identifier=new_snapshot_identifier,
+        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/expression_summary"),
+        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/cell_counts"),
+        cell_type_orderings=_load_cell_type_order(),
+    )
 
 
 def _open_cube(cube_uri) -> Array:
@@ -67,6 +71,7 @@ def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     s3obj = s3.Object(WmgConfig().bucket, relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
+
 
 # TODO: Worth doing this on a thread, continuously, rather than on-demand, in order to proactively load an updated
 #  snapshot (and maybe warm the TileDB caches?) before a user needs to query the data:

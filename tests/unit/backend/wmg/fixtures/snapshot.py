@@ -117,10 +117,12 @@ def create_temp_wmg_snapshot(
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgSnapshot(snapshot_identifier=snapshot_name,
-                                  expression_summary_cube=expression_summary_cube,
-                                  cell_counts_cube=cell_counts_cube,
-                                  cell_type_orderings=cell_type_orderings)
+                yield WmgSnapshot(
+                    snapshot_identifier=snapshot_name,
+                    expression_summary_cube=expression_summary_cube,
+                    cell_counts_cube=cell_counts_cube,
+                    cell_type_orderings=cell_type_orderings,
+                )
 
 
 def create_cell_orderings(cell_counts_cube_dir) -> DataFrame:
@@ -129,17 +131,19 @@ def create_cell_orderings(cell_counts_cube_dir) -> DataFrame:
 
         # add "order" column, assigning the "cell_type_ontology_term_id" column's ordinal (numeric) suffix
         # TODO
-        tissues_and_cell_types['order'] = 1
+        tissues_and_cell_types["order"] = 1
         # tissues_and_cell_types = tissues_and_cell_types. \
         #     apply(order=lambda v: int(v.cell_type_ontology_term_id.split('_')[-1]))
 
         return tissues_and_cell_types
 
+
 def distinct_tissues_and_cell_types(cell_counts_cube) -> DataFrame:
-    return \
-        cell_counts_cube.df[:][['tissue_ontology_term_id', 'cell_type_ontology_term_id']]. \
-            groupby(['tissue_ontology_term_id', 'cell_type_ontology_term_id'], as_index=False). \
-            first()
+    return (
+        cell_counts_cube.df[:][["tissue_ontology_term_id", "cell_type_ontology_term_id"]]
+        .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False)
+        .first()
+    )
 
 
 def cell_orderings_path(snapshot_dir):

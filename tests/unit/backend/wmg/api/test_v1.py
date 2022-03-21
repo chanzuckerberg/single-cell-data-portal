@@ -142,8 +142,11 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                 },
                 "term_id_labels": {
-                    "cell_types": {"tissue_ontology_term_id_0": [
-                        {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}]},
+                    "cell_types": {
+                        "tissue_ontology_term_id_0": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}
+                        ]
+                    },
                     "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
                 },
                 "filter_dims": {},
@@ -306,7 +309,7 @@ class WmgApiV1Tests(unittest.TestCase):
                             {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
                             {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
                             {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
-                        ]
+                        ],
                     },
                     "genes": [
                         {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
@@ -358,7 +361,6 @@ class WmgApiV1Tests(unittest.TestCase):
         response = self.app.post("/wmg/v1/query", json=request)
 
         self.assertEqual(400, response.status_code)
-
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.api.v1.gene_term_label")
