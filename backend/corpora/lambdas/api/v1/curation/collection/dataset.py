@@ -33,13 +33,13 @@ duration = 3600
 def get_s3_credentials(collection_uuid, user, token):
     db_session = g.db_session
     # check if they own the collection.
-    collection = get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
+    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
     if not _is_user_owner_or_allowed(user, collection.owner):
         raise ForbiddenHTTPException()
     if collection.visibility != CollectionVisibility.PRIVATE.name:
         raise MethodNotAllowedException()
     credentials = sts_client.assume_role(
-        RoleArn="arn:aws:iam::699936264352:role/wirting-S3",
+        RoleArn="arn:aws:iam::699936264352:role/writing-S3",
         RoleSessionName=token["email"],
         Policy=policy.format(CorporaConfig().submission_bucket, collection_uuid),
         DurationSeconds=duration,

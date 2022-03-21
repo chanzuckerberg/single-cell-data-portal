@@ -11,8 +11,11 @@ class CorporaConfig(SecretConfig):
 
     def get_defaults_template(self):
 
-        template = {"upload_file_formats": ["h5ad"], "upload_max_file_size_gb": 30,
-                    "submission_bucket": "cellxgene-dataset-submissions-{}".format(os.getenv("DEPLOYMENT_STAGE", "test"))}
+        template = {
+            "upload_file_formats": ["h5ad"],
+            "upload_max_file_size_gb": 30,
+            "submission_bucket": "cellxgene-dataset-submissions-{}".format(os.getenv("DEPLOYMENT_STAGE", "test")),
+        }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:
             template["upload_sfn_arn"] = upload_snf_arn
