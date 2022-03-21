@@ -114,7 +114,10 @@ def create_temp_wmg_cubes(
         )
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgSnapshot(expression_summary_cube, cell_counts_cube, snapshot_name)
+                yield WmgSnapshot(snapshot_identifier=snapshot_name,
+                                  expression_summary_cube=expression_summary_cube,
+                                  cell_counts_cube=cell_counts_cube,
+                                  cell_type_orderings=None)
 
 
 def create_dataset(dataset_id_ordinal: int) -> str:
