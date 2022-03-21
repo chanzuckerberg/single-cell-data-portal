@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 
 EMPTY_DIM_VALUES = ""
 

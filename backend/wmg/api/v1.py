@@ -169,13 +169,13 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 def build_ordered_cell_types_by_tissue(cell_counts: DataFrame, cell_type_orderings: DataFrame) -> \
         Dict[str, List[Dict[str, str]]]:
-    uniq_tissues_cell_types: DataFrame = \
+    distinct_tissues_cell_types: DataFrame = \
         cell_counts.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).first()
-    joined = uniq_tissues_cell_types.merge(cell_type_orderings,
+    joined = distinct_tissues_cell_types.merge(cell_type_orderings,
                                            on=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
     sorted = joined.sort_values(by=["tissue_ontology_term_id", "order"])
 
-    structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(lambda: list)
+    structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
 
     for row in sorted.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(

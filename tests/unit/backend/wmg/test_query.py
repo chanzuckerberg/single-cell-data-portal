@@ -4,8 +4,8 @@ from typing import Tuple
 from backend.wmg.api.v1 import build_dot_plot_matrix
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
 from backend.wmg.data.schema import cube_non_indexed_dims
-from tests.unit.backend.wmg.fixtures.cube import (
-    create_temp_wmg_cubes,
+from tests.unit.backend.wmg.fixtures.snapshot import (
+    create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
 )
@@ -13,7 +13,7 @@ from tests.unit.backend.wmg.fixtures.cube import (
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
 #  WmgQuery methods
 
-@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
+# @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
     def test__query_with_no_genes__returns_empty_result(self):
         criteria = WmgQueryCriteria(
@@ -22,10 +22,10 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         expected = {
@@ -50,12 +50,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -117,12 +117,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -283,12 +283,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -354,12 +354,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -426,12 +426,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -492,8 +492,8 @@ class QueryTest(unittest.TestCase):
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
-            result = WmgQuery(cubes).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
+            result = WmgQuery(snapshot).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
             self.assertEquals(["gene_ontology_term_id_0", "gene_ontology_term_id_1", "gene_ontology_term_id_2"], result)
 
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
@@ -508,8 +508,8 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
                 ("gene_ontology_term_id_2", "organism_ontology_term_id_1"),
             }
 
-        with create_temp_wmg_cubes(dim_size=dim_size, exclude_logical_coord_fn=exclude) as cubes:
-            result = WmgQuery(cubes).list_grouped_primary_filter_dimensions_term_ids(
+        with create_temp_wmg_snapshot(dim_size=dim_size, exclude_logical_coord_fn=exclude) as snapshot:
+            result = WmgQuery(snapshot).list_grouped_primary_filter_dimensions_term_ids(
                 "gene_ontology_term_id", "organism_ontology_term_id"
             )
             self.assertEquals(
