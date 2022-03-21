@@ -24,20 +24,21 @@ locals {
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "30", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
-  vpc_id                       = local.secret["vpc_id"]
-  subnets                      = local.secret["private_subnets"]
-  security_groups              = local.secret["security_groups"]
-  zone                         = local.secret["zone_id"]
-  cluster                      = local.secret["cluster_arn"]
-  frontend_image_repo          = local.secret["ecrs"]["frontend"]["url"]
-  backend_image_repo           = local.secret["ecrs"]["backend"]["url"]
-  upload_image_repo            = local.secret["ecrs"]["processing"]["url"]
-  lambda_upload_success_repo   = local.secret["ecrs"]["upload_success"]["url"]
-  lambda_upload_repo           = local.secret["ecrs"]["upload_failures"]["url"]
-  batch_role_arn               = local.secret["batch_queues"]["upload"]["role_arn"]
-  job_queue_arn                = local.secret["batch_queues"]["upload"]["queue_arn"]
-  external_dns                 = local.secret["external_zone_name"]
-  internal_dns                 = local.secret["internal_zone_name"]
+  vpc_id                         = local.secret["vpc_id"]
+  subnets                        = local.secret["private_subnets"]
+  security_groups                = local.secret["security_groups"]
+  zone                           = local.secret["zone_id"]
+  cluster                        = local.secret["cluster_arn"]
+  frontend_image_repo            = local.secret["ecrs"]["frontend"]["url"]
+  backend_image_repo             = local.secret["ecrs"]["backend"]["url"]
+  upload_image_repo              = local.secret["ecrs"]["processing"]["url"]
+  lambda_upload_success_repo     = local.secret["ecrs"]["upload_success"]["url"]
+  lambda_upload_repo             = local.secret["ecrs"]["upload_failures"]["url"]
+  lambda_dataset_submission_repo = local.secret["ecrs"]["dataset_submission"]["url"]
+  batch_role_arn                 = local.secret["batch_queues"]["upload"]["role_arn"]
+  job_queue_arn                  = local.secret["batch_queues"]["upload"]["queue_arn"]
+  external_dns                   = local.secret["external_zone_name"]
+  internal_dns                   = local.secret["internal_zone_name"]
 
   frontend_listener_arn        = try(local.secret[local.alb_key]["frontend"]["listener_arn"], "")
   backend_listener_arn         = try(local.secret[local.alb_key]["backend"]["listener_arn"], "")
@@ -48,6 +49,7 @@ locals {
 
   artifact_bucket              = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  dataset_submission_bucket    = try(local.secret["s3_buckets"]["dataset_submission"]["name"], "")
 
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
@@ -200,4 +202,28 @@ module upload_sfn {
   lambda_success_handler = module.upload_success_lambda.arn
   lambda_error_handler   = module.upload_error_lambda.arn
   deployment_stage       = local.deployment_stage
+}
+
+module dataset_submission_lambda {
+  source                = "../lambda"
+  image                 = "${local.lambda_dataset_submission_repo}:${local.image_tag}"
+  name                  = "dataset-submission"
+  custom_stack_name     = local.custom_stack_name
+  remote_dev_prefix     = local.remote_dev_prefix
+  deployment_stage      = local.deployment_stage
+  artifact_bucket       = local.artifact_bucket
+  cellxgene_bucket      = local.cellxgene_bucket
+  lambda_execution_role = local.lambda_execution_role
+  subnets               = local.subnets
+  security_groups       = local.security_groups
+}
+
+resource "aws_s3_bucket_notification" "on_dataset_submission_object_created" {
+  bucket = local.dataset_submission_bucket
+
+  lambda_function {
+    lambda_function_arn = module.dataset_submission_lambda.arn
+    events = ["s3:ObjectCreated:*"]
+    filter_suffix = ".h5ad"
+  }
 }
