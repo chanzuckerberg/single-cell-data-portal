@@ -60,36 +60,29 @@ const Collection: FC = () => {
   const [userWithdrawn, setUserWithdrawn] = useState(false);
 
   let id = "";
-  let isPrivate = false;
 
+  //(seve): this captures legacy links with trailing `/private`, we should remove this when we are sure we don't need it anymore
   if (Array.isArray(params)) {
     id = params[0];
-    isPrivate = params[1] === "private";
+    window.location.pathname = "collection/" + id;
   } else if (params) {
     id = params;
   }
 
-  const visibility = isPrivate
-    ? VISIBILITY_TYPE.PRIVATE
-    : VISIBILITY_TYPE.PUBLIC;
-
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id, visibility);
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id);
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
   const collectionState = useCollection({
     id,
-    visibility,
   });
 
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    visibility
-  );
+  const { mutateAsync: deleteMutation, isLoading } =
+    useDeleteCollection(collection);
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -131,6 +124,8 @@ const Collection: FC = () => {
   if (!collection || isError || isTombstonedCollection(collection)) {
     return null;
   }
+
+  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
 
   const isRevision = isCurator && !!collection?.has_revision;
 
@@ -178,7 +173,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
-    collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE;
+    collection.has_revision && isPrivate;
   // TODO update to use buildCollectionMetadataLinks once filter feature flag is removed (#1718).
   const collectionMetadataLinksFn = isFilterEnabled
     ? buildCollectionMetadataLinks
@@ -195,7 +190,6 @@ const Collection: FC = () => {
 
     await deleteMutation({
       collectionID: id,
-      visibility: VISIBILITY_TYPE.PUBLIC,
     });
 
     router.push(ROUTES.MY_COLLECTIONS);
@@ -254,12 +248,12 @@ const Collection: FC = () => {
             collectionID={id}
             datasets={datasets}
             isRevision={isRevision}
-            visibility={visibility}
+            visibility={collection.visibility}
           />
         </ViewCollection>
       ) : (
         <ViewGrid>
-          {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
+          {collection.has_revision && isPrivate && (
             <StyledCallout intent={Intent.PRIMARY} icon={null}>
               <span data-test-id="revision-status">
                 {collection.revision_diff
@@ -318,7 +312,7 @@ const Collection: FC = () => {
                   <DatasetTab
                     collectionID={id}
                     datasets={datasets}
-                    visibility={visibility}
+                    visibility={collection.visibility}
                     isRevision={isRevision}
                   />
                 }

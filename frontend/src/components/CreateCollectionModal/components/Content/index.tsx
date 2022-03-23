@@ -2,11 +2,7 @@ import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import { FC, Fragment, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  Collection,
-  COLLECTION_LINK_TYPE,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
+import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useUserInfo } from "src/common/queries/auth";
@@ -127,11 +123,16 @@ const Content: FC<Props> = (props) => {
 
   let { data } = useCollection({
     id: props.id,
-    visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
+  const publishedID =
+    data && "revision_of" in data ? data.revision_of : undefined;
+
   const { mutateAsync: mutateCreateCollection } = useCreateCollection();
-  const { mutateAsync: mutateEditCollection } = useEditCollection(props.id);
+  const { mutateAsync: mutateEditCollection } = useEditCollection(
+    props.id,
+    publishedID
+  );
 
   // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
   if (isTombstonedCollection(data)) data = null;

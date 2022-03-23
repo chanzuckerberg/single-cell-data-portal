@@ -49,7 +49,6 @@ const conditionalPopover = (
 const CollectionRow: FC<Props> = (props) => {
   const { data: collection } = useCollection({
     id: props.id,
-    visibility: props.visibility,
   });
 
   const router = useRouter();
