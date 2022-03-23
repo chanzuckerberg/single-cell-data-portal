@@ -1,5 +1,6 @@
 import {
   useMutation,
+  UseMutationResult,
   useQuery,
   useQueryClient,
   UseQueryResult,
@@ -120,21 +121,15 @@ export interface TombstonedCollection {
 
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
-    id: string,
-    visibility: VISIBILITY_TYPE
+    id: string
   ): Promise<Collection | TombstonedCollection | null> {
     if (!id) {
       return null;
     }
 
-    const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+    const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-    const finalUrl =
-      visibility === VISIBILITY_TYPE.PRIVATE
-        ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
-        : baseUrl;
-
-    let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
+    let response = await fetch(url, DEFAULT_FETCH_OPTIONS);
     let json = await response.json();
 
     if (response.status === HTTP_STATUS_CODE.GONE) {
@@ -154,8 +149,11 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       collection.has_revision = collectionsWithID && collectionsWithID.size > 1;
     }
 
-    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision) {
-      response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
+    if (collection.revision_of) {
+      const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
+        id: collection.revision_of,
+      });
+      response = await fetch(publicCollectionURL, DEFAULT_FETCH_OPTIONS);
       json = await response.json();
 
       if (response.ok) {
@@ -167,7 +165,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     }
 
     // check for diffs between revision and published collection
-    if (collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+    if (collection.revision_of) {
       collection.revision_diff = checkForRevisionChange(
         collection,
         publishedCounterpart
@@ -185,17 +183,15 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
 
 export function useCollection({
   id = "",
-  visibility = VISIBILITY_TYPE.PUBLIC,
 }: {
   id?: string;
-  visibility: VISIBILITY_TYPE;
 }): UseQueryResult<Collection | TombstonedCollection | null> {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
 
   return useQuery<Collection | TombstonedCollection | null>(
-    [USE_COLLECTION, id, visibility, collections],
-    () => queryFn(id, visibility),
+    [USE_COLLECTION, id, collections],
+    () => queryFn(id),
     { enabled: !!collections }
   );
 }
@@ -281,32 +277,26 @@ async function collectionUploadLinks({
   return json.dataset_uuid;
 }
 
-export function useCollectionUploadLinks(
-  id: string,
-  visibility: VISIBILITY_TYPE
-) {
+export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
 
   return useMutation(collectionUploadLinks, {
     onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+      queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
 
 async function deleteCollection({
   collectionID,
-  visibility = VISIBILITY_TYPE.PRIVATE,
 }: {
   collectionID: Collection["id"];
-  visibility?: VISIBILITY_TYPE;
 }) {
-  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
+  const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
-  const finalUrl = baseUrl + `?visibility=${visibility}`;
 
-  const response = await fetch(finalUrl, DELETE_FETCH_OPTIONS);
+  const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
 
   if (!response.ok) {
     throw await response.json();
@@ -314,11 +304,18 @@ async function deleteCollection({
 }
 
 export function useDeleteCollection(
-  id = "",
-  visibility = VISIBILITY_TYPE.PRIVATE
-) {
+  collection: Collection | TombstonedCollection | null | undefined
+): UseMutationResult<
+  void,
+  unknown,
+  { collectionID: string },
+  { previousCollections: CollectionResponsesMap }
+> {
   const queryClient = useQueryClient();
-
+  const { id, visibility } =
+    collection && "visibility" in collection
+      ? collection
+      : { id: "", visibility: "" };
   return useMutation(deleteCollection, {
     onError: (
       _,
@@ -354,7 +351,7 @@ export function useDeleteCollection(
     onSuccess: () => {
       return Promise.all([
         queryClient.invalidateQueries([USE_COLLECTIONS]),
-        queryClient.removeQueries([USE_COLLECTION, id, visibility], {
+        queryClient.removeQueries([USE_COLLECTION, id], {
           exact: false,
         }),
       ]);
@@ -387,8 +384,6 @@ export function usePublishCollection() {
 
   return useMutation(publishCollection, {
     onSuccess: () => {
-      // (thuang): We don't need to invalidate `[USE_COLLECTION, id, visibility]`
-      // because `visibility` has changed from PRIVATE to PUBLIC
       queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
   });
@@ -433,19 +428,25 @@ const editCollection = async function ({
   };
 };
 
-export function useEditCollection(collectionID?: Collection["id"]) {
+export function useEditCollection(
+  collectionID?: Collection["id"],
+  publicID?: Collection["id"]
+): UseMutationResult<
+  CollectionEditResponse,
+  unknown,
+  { id: string; payload: string },
+  unknown
+> {
   const queryClient = useQueryClient();
 
   const { data: collections } = useCollections();
 
   const { data: collection } = useCollection({
     id: collectionID,
-    visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
   const { data: publishedCollection } = useCollection({
-    id: collectionID,
-    visibility: VISIBILITY_TYPE.PUBLIC,
+    id: publicID,
   });
 
   return useMutation(editCollection, {
@@ -537,7 +538,9 @@ const reuploadDataset = async function ({
   return result.dataset_uuid;
 };
 
-export function useReuploadDataset(collectionId: string) {
+export function useReuploadDataset(
+  collectionId: string
+): UseMutationResult<unknown, unknown, ReuploadLink, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation(reuploadDataset, {
