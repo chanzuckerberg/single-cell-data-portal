@@ -53,18 +53,10 @@ def get_s3_uris():
     return s3_uris
 
 
-def mock_s3_uris():
-    return {
-        # "cdd5d5f3-7ee5-44ed-95ad-54cb92aa5203": "s3://env-rdev-artifacts/ebezzi-test/cdd5d5f3-7ee5-44ed-95ad-54cb92aa5203/local.h5ad"
-        "605073c5-5eca-45d7-8be7-571bf44bf746": "s3://env-rdev-wmg/ebezzi-wmg/605073c5-5eca-45d7-8be7-571bf44bf746/local.h5ad"
-        }
-
-
 def copy_datasets_to_instance(dataset_directory):
-    s3_uris = mock_s3_uris()
+    s3_uris = get_s3_uris()
     for dataset in s3_uris.keys():
         sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
-    # sync_command = ["aws", "s3", "sync", "s3://env-rdev-wmg/ebezzi-wmg/wmg-datasets", f"./{dataset_directory}"]
     subprocess.run(sync_command) # TODO parallelize this step
 
 
@@ -137,14 +129,10 @@ def generate_cell_ordering(cell_type_by_tissue):
 
 def update_s3_resources(group_name):
     timestamp = int(time.time())
-    # copy cell ordering
-    # copy corpus
-    # copy cube
     upload_cube_to_s3(group_name, timestamp)
     upload_cell_ordering_to_s3(timestamp)
     update_latest_snapshot_identifier(timestamp)
     remove_oldest_datasets(timestamp)
-    pass
 
 
 def remove_oldest_datasets(timestamp):
@@ -178,7 +166,6 @@ def remove_oldest_datasets(timestamp):
 
 
 def upload_cube_to_s3(group_name, timestamp):
-    # TODO: use the right bucket name
     sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{get_wmg_bucket_path()}/{timestamp}/cube"]
     subprocess.run(sync_command)
 

@@ -79,7 +79,7 @@ variable wait_for_steady_state {
 variable batch_container_memory_limit {
   type        = number
   description = "Memory hard limit for the batch container"
-  default     = 200000
+  default     = 28000
 }
 
 variable frontend_instance_count {
