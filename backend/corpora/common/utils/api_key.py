@@ -10,7 +10,7 @@ def generate(user_id: str, secret: str, days_to_live: int = 1) -> str:
     iat = time.time()
     exp = iat + (seconds_in_day * days_to_live)
     sub = user_id
-    return jws.sign({"exp": exp, "ait": iat, "sub": sub}, secret, algorithm=ALGORITHMS.HS256)
+    return jws.sign({"exp": exp, "iat": iat, "sub": sub}, secret, algorithm=ALGORITHMS.HS256)
 
 
 def verify(token: str, secret: str):
