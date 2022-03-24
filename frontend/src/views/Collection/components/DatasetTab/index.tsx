@@ -38,13 +38,10 @@ const DatasetTab: FC<Props> = ({
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(
-    collectionId,
-    visibility
-  );
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(collectionId);
   const { mutateAsync: reuploadDataset } = useReuploadDataset(collectionId);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
-  const { data: collection } = useCollection({ id: collectionId, visibility });
+  const { data: collection } = useCollection({ id: collectionId });
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
 
   const queryClient = useQueryClient();

@@ -18,6 +18,7 @@ interface Props {
   id: Collection["id"];
   isPublishable: boolean;
   isRevision: boolean;
+  visibility: Collection["visibility"];
 }
 
 const ActionButtons = ({
@@ -25,12 +26,13 @@ const ActionButtons = ({
   id,
   isPublishable,
   isRevision,
+  visibility,
 }: Props): JSX.Element => {
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const Actions = isFilterEnabled ? CollectionActions : Wrapper;
   return (
     <Actions>
-      <MoreDropdown id={id} isRevision={isRevision} />
+      <MoreDropdown id={id} isRevision={isRevision} visibility={visibility} />
       <AddButton addNewFile={addNewFile} />
       <PublishCollection
         id={id}

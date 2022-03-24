@@ -81,8 +81,12 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const { mutateAsync: deleteMutation, isLoading } =
-    useDeleteCollection(collection);
+  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
+    id,
+    collection && "visibility" in collection
+      ? collection.visibility
+      : VISIBILITY_TYPE.PRIVATE
+  );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -221,6 +225,7 @@ const Collection: FC = () => {
                 addNewFile={addNewFile}
                 isPublishable={isPublishable}
                 isRevision={isRevision}
+                visibility={collection.visibility}
               />
             )}
             {shouldShowPublicWriteAction && (
@@ -288,6 +293,7 @@ const Collection: FC = () => {
               addNewFile={addNewFile}
               isPublishable={isPublishable}
               isRevision={isRevision}
+              visibility={collection.visibility}
             />
           )}
           {hasWriteAccess && !isPrivate && (
