@@ -304,7 +304,8 @@ async function deleteCollection({
 }
 
 export function useDeleteCollection(
-  collection: Collection | TombstonedCollection | null | undefined
+  id = "",
+  visibility = ""
 ): UseMutationResult<
   void,
   unknown,
@@ -312,10 +313,6 @@ export function useDeleteCollection(
   { previousCollections: CollectionResponsesMap }
 > {
   const queryClient = useQueryClient();
-  const { id, visibility } =
-    collection && "visibility" in collection
-      ? collection
-      : { id: "", visibility: "" };
   return useMutation(deleteCollection, {
     onError: (
       _,
