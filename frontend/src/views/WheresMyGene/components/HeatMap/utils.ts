@@ -126,6 +126,12 @@ export function createChartOptions({
   };
 }
 
+const SELECTED_STYLE = {
+  backgroundColor: "#F8F8F8",
+  fontWeight: "bold" as never,
+  padding: 4,
+};
+
 interface CreateXAxisOptionsProps {
   geneNames: string[];
   genesToDelete: string[];
@@ -157,10 +163,7 @@ export function createXAxisOptions({
               : value;
           },
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           rotate: 270,
           verticalAlign: "middle",
@@ -246,10 +249,7 @@ export function createYAxisOptions({
           // Turn off type checking here, because ecahrts' type is wrong
           ["overflow" as string]: "truncate",
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           width: 260,
         },
