@@ -2,12 +2,11 @@ import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import memoize from "lodash/memoize";
 import { FC, useState } from "react";
-import { MutateFunction, useQueryClient } from "react-query";
+import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
-  ReuploadLink,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
@@ -58,14 +57,7 @@ const DatasetTab: FC<Props> = ({
     () => collectionId + visibility
   );
 
-  const addNewFile = (
-    mutationFunction = uploadLink as MutateFunction<
-      string,
-      unknown,
-      ReuploadLink
-    >,
-    originalId?: string
-  ) => {
+  const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {
       if (!newFile.link) return;
 
