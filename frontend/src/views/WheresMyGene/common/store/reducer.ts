@@ -1,9 +1,10 @@
 import cloneDeep from "lodash/cloneDeep";
+import isEqual from "lodash/isEqual";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
-import { CellTypeSummary, Tissue } from "../types";
+import { CellType, Tissue } from "../types";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -17,8 +18,15 @@ export interface State {
   selectedCellTypeIds: {
     [tissue: Tissue]: string[];
   };
-  selectedOrganism: string;
+  selectedOrganismId: string | null;
   selectedTissues: string[];
+  selectedFilters: {
+    datasets?: string[];
+    developmentStages?: string[];
+    diseases?: string[];
+    ethnicities?: string[];
+    sexes?: string[];
+  };
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -27,8 +35,9 @@ export const INITIAL_STATE: State = {
   cellTypeIdsToDelete: [],
   genesToDelete: [],
   selectedCellTypeIds: {},
+  selectedFilters: {},
   selectedGenes: [],
-  selectedOrganism: "",
+  selectedOrganismId: null,
   selectedTissues: [],
 };
 
@@ -37,6 +46,7 @@ export const REDUCERS = {
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
   selectCellTypeIds,
+  selectFilters,
   selectGenes,
   selectOrganism,
   selectTissues,
@@ -103,10 +113,15 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
   };
 }
 
-function selectOrganism(state: State, action: PayloadAction<string>): State {
+function selectOrganism(
+  state: State,
+  action: PayloadAction<string | null>
+): State {
   return {
     ...state,
-    selectedOrganism: action.payload,
+    selectedGenes: [],
+    selectedOrganismId: action.payload,
+    selectedTissues: [],
   };
 }
 
@@ -230,18 +245,22 @@ function tissueCellTypesFetched(
   state: State,
   action: PayloadAction<{
     tissue: Tissue;
-    cellTypeSummaries: CellTypeSummary[];
+    cellTypes: CellType[];
   }>
 ): State {
-  const { tissue, cellTypeSummaries } = action.payload;
+  const { tissue, cellTypes } = action.payload;
 
-  const newCellTypeIds = cellTypeSummaries.map((summary) => summary.id);
+  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
+
+  const { selectedCellTypeIds } = state;
+
+  const oldCellTypeIds = selectedCellTypeIds[tissue];
 
   return {
     ...state,
     selectedCellTypeIds: {
-      ...state.selectedCellTypeIds,
-      [tissue]: newCellTypeIds,
+      ...selectedCellTypeIds,
+      [tissue]: oldCellTypeIds || newCellTypeIds,
     },
   };
 }
@@ -250,8 +269,44 @@ function resetTissueCellTypes(
   state: State,
   action: PayloadAction<{
     tissue: Tissue;
-    cellTypeSummaries: CellTypeSummary[];
+    cellTypes: CellType[];
   }>
 ): State {
-  return tissueCellTypesFetched(state, action);
+  const { tissue, cellTypes } = action.payload;
+
+  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
+
+  const { selectedCellTypeIds } = state;
+
+  return {
+    ...state,
+    selectedCellTypeIds: {
+      ...selectedCellTypeIds,
+      [tissue]: newCellTypeIds,
+    },
+  };
+}
+
+function selectFilters(
+  state: State,
+  action: PayloadAction<{
+    key: keyof State["selectedFilters"];
+    options: string[];
+  }>
+): State {
+  const { key, options } = action.payload;
+
+  const { selectedFilters } = state;
+
+  if (isEqual(selectedFilters[key], options)) return state;
+
+  const newSelectedFilters = {
+    ...state.selectedFilters,
+    [key]: options,
+  };
+
+  return {
+    ...state,
+    selectedFilters: newSelectedFilters,
+  };
 }

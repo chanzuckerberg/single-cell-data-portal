@@ -1,12 +1,16 @@
 import { DefaultMenuSelectOption } from "czifui";
 import { CSSProperties } from "react";
 
+export interface Organism {
+  id: string;
+  name: string;
+}
+
 /** tissue name */
 export type Tissue = string;
 
 /** This object holds a cell type and its gene expressions. */
 export interface CellTypeSummary {
-  tissue: Tissue;
   /** cellType id */
   id: string;
   /** cellType name */

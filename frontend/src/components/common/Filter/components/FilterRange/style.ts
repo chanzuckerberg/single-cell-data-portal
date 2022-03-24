@@ -38,6 +38,9 @@ export const useSliderStyles = makeStyles({
       height: 14,
       marginLeft: -7,
       width: 14,
+      "&:focus": {
+        outline: "none",
+      },
       "&:hover": {
         boxShadow: "none",
       },
@@ -48,7 +51,7 @@ export const useSliderStyles = makeStyles({
     },
     "& .MuiSlider-valueLabel": {
       fontSize: 12,
-      fontWeight: 600,
+      fontWeight: 500,
       left: "50%",
       letterSpacing: "normal",
       lineHeight: "15px",

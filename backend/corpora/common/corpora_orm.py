@@ -232,7 +232,6 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
     description = Column(StrippedString)
-    obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
     curator_name = Column(StrippedString, default="")
@@ -302,6 +301,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     x_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
+    curator_tag = Column(String)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
@@ -310,6 +310,11 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
+
+    # Composite FK
+    __table_args__ = (
+        UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),
+    )
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]

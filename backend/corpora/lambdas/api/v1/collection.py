@@ -59,6 +59,13 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
+def get_collection(db_session, collection_uuid, visibility, **kwargs):
+    collection = Collection.get_collection(db_session, collection_uuid, visibility, **kwargs)
+    if not collection:
+        raise ForbiddenHTTPException()
+    return collection
+
+
 @dbconnect
 def get_collection_details(collection_uuid: str, user: str):
     db_session = g.db_session
@@ -101,13 +108,11 @@ def get_collections_index():
 @dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         collection_uuid,
         owner=_owner_or_allowed(user),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
     try:
         collection_revision = collection.create_revision()
     except sqlalchemy.exc.IntegrityError as ex:
@@ -220,14 +225,12 @@ def delete_collection(collection_uuid: str, user: str):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()

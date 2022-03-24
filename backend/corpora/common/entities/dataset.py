@@ -1,15 +1,13 @@
-from urllib.parse import urlparse
-
 import csv
 import logging
 import os
 import typing
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePosixPath
-from collections import OrderedDict
 from sqlalchemy.orm import Session
 
-from ..utils.ontology_mapping import ontology_mapping
+from urllib.parse import urlparse
 
 from .dataset_asset import DatasetAsset
 from .entity import Entity
@@ -26,6 +24,7 @@ from ..corpora_orm import (
     ConversionStatus,
 )
 from ..utils.db_helpers import clone
+from ..utils.ontology_mapping import ontology_mapping
 from ..utils.s3_buckets import buckets
 
 logger = logging.getLogger(__name__)
