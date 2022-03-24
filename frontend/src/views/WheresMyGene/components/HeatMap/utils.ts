@@ -84,7 +84,14 @@ export function createChartOptions({
 
           const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
 
-          const r = Math.sqrt(percentage * maxRadius ** 2);
+          const RADIUS_OFFSET = 0.2;
+
+          const baseRadius =
+            RADIUS_OFFSET * (MAX_FIRST_PART_LENGTH_PX - RADIUS_OFFSET);
+
+          const r = Math.sqrt(
+            percentage * (maxRadius - RADIUS_OFFSET) ** 2 + baseRadius
+          );
 
           return Math.round(2 * r);
         },
