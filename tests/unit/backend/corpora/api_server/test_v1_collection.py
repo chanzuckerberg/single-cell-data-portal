@@ -778,7 +778,7 @@ class TestCollection(BaseAuthAPITest):
         ).id
 
         collection_id_tombstone = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC.name, tombstone=True, owner="test_user_id",
+            self.session, visibility=CollectionVisibility.PUBLIC.name, tombstone=True, owner="test_user_id"
         ).id
 
         test_url = furl(path="/dp/v1/collections/index")
