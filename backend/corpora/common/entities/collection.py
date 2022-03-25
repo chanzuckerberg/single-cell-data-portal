@@ -116,6 +116,9 @@ class Collection(Entity):
         def to_dict(db_object):
             _result = {}
             for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
                 _result[_field] = getattr(db_object, _field)
             return _result
 
