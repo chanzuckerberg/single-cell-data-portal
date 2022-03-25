@@ -26,17 +26,17 @@ def create_flask_app():
     def add_api(base_path, spec_file):
         api_base_paths.append(base_path)
         connexion_app.add_api(
-                spec_file,
-                validate_responses=True,
-                base_path=f"/{base_path}",
-                resolver_error=501,  # TODO: Okay to now specify this also for data-portal api?
-                options={
-                    "serve_spec": True,
-                    "swagger_path": swagger_ui_3_path,
-                    "swagger_ui": True,
-                    "swagger_url": None,
-                    "verbose": True,
-                }
+            spec_file,
+            validate_responses=True,
+            base_path=f"/{base_path}",
+            resolver_error=501,  # TODO: Okay to now specify this also for data-portal api?
+            options={
+                "serve_spec": True,
+                "swagger_path": swagger_ui_3_path,
+                "swagger_ui": True,
+                "swagger_url": None,
+                "verbose": True,
+            },
         )
 
     add_api(base_path="/dp", spec_file="corpora-api.yml")
