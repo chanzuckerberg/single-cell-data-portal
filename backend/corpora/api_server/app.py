@@ -7,7 +7,7 @@ import connexion
 from connexion import FlaskApi, ProblemException, problem
 from flask import g, jsonify
 from flask_cors import CORS
-from swagger_ui_bundle import swagger_ui_3_path
+from swagger_ui_bundle import swagger_ui_path
 
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
@@ -32,7 +32,7 @@ def create_flask_app():
             resolver_error=501,  # TODO: Okay to now specify this also for data-portal api?
             options={
                 "serve_spec": True,
-                "swagger_path": swagger_ui_3_path,
+                "swagger_path": swagger_ui_path,
                 "swagger_ui": True,
                 "swagger_url": None,
                 "verbose": True,
