@@ -111,6 +111,7 @@ def post_collection_revision(collection_uuid: str, user: str):
     collection = get_collection(
         db_session,
         collection_uuid,
+        CollectionVisibility.PUBLIC,
         owner=_owner_or_allowed(user),
     )
     try:
