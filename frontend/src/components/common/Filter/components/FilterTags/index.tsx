@@ -1,35 +1,47 @@
 import { Tag } from "@blueprintjs/core";
-import {
-  CategoryValueView,
-  CATEGORY_KEY,
-  OnFilterFn,
-} from "src/components/common/Filter/common/entities";
+import React from "react";
 import { SelectedTags } from "./style";
 
-interface Props {
-  categoryKey: CATEGORY_KEY;
-  onFilter: OnFilterFn;
-  selectedValues: CategoryValueView[];
+type OnRemoveFn = () => void;
+
+export interface CategoryTag {
+  label: string | [string, string]; // Single value ("label") or range tuple ("label[0] &ndash; label[1]")
+  onRemove: OnRemoveFn;
 }
 
-export default function FilterTags({
-  categoryKey,
-  onFilter,
-  selectedValues,
-}: Props): JSX.Element | null {
-  return selectedValues.length ? (
+interface Props {
+  tags?: CategoryTag[];
+}
+
+export default function FilterTags({ tags }: Props): JSX.Element | null {
+  return tags && tags.length ? (
     <SelectedTags>
-      {selectedValues.map(({ key, label }) => (
+      {tags.map(({ label, onRemove }) => (
         <Tag
-          key={key}
+          key={isLabelRange(label) ? label.join("") : label}
           large
           minimal
           multiline
-          onRemove={() => onFilter(categoryKey, key)}
+          onRemove={onRemove}
         >
-          {label}
+          {isLabelRange(label) ? (
+            <>
+              {label[0]} &ndash; {label[1]}
+            </>
+          ) : (
+            label
+          )}
         </Tag>
       ))}
     </SelectedTags>
   ) : null;
+}
+
+/**
+ * Returns true if the given label is multi value.
+ * @param label - Label to check if it is a single string or a string array.
+ * @returns True if label is multi value.
+ */
+function isLabelRange(label: string | string[]): label is [string, string] {
+  return Array.isArray(label);
 }

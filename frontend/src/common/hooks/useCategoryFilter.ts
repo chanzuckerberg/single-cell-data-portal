@@ -5,14 +5,18 @@ import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/c
 import {
   Categories,
   CategoryValueKey,
-  CategoryValueView,
   CategoryView,
   CATEGORY_CONFIGS_BY_CATEGORY_KEY,
+  CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
   CATEGORY_LABEL,
   IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
   PUBLICATION_DATE_LABELS,
+  Range,
+  RangeCategoryView,
+  SelectCategoryValueView,
+  SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -31,12 +35,23 @@ export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 /*
  * Set of all category values in the full result set, keyed by their corresponding category.
  */
-type CategorySet = { [K in CATEGORY_KEY]: Set<CategoryValueKey> };
+type CategorySet = { [K in CATEGORY_KEY]: CategorySetValue };
 
 /**
- * Metadata value, count and selected state.
+ * Possible category set values, either a set of category key values (for single or multiselect categories) or a range.
  */
-export interface CategoryValue {
+type CategorySetValue = Set<CategoryValueKey> | Range;
+
+/**
+ * Internal filter model of a single or multiselect category value: category value keyed by category value key (for easy
+ * look-up when summarizing category).
+ */
+type KeyedSelectCategoryValue = Map<CategoryValueKey, SelectCategoryValue>;
+
+/**
+ * Internal filter model of a single or multiselect category.
+ */
+export interface SelectCategoryValue {
   key: CategoryValueKey;
   count: number;
   selected: boolean;
@@ -54,7 +69,7 @@ export interface FilterInstance {
  * State backing filter functionality and calculations. Converted to view model for display.
  */
 type FilterState = {
-  [K in CATEGORY_KEY]: Map<CategoryValueKey, CategoryValue>;
+  [K in CATEGORY_KEY]: RangeCategory | KeyedSelectCategoryValue;
 };
 
 /**
@@ -67,6 +82,17 @@ interface Query<T extends Categories> {
 }
 
 /**
+ * Internal filter model of a range category.
+ */
+interface RangeCategory {
+  key: CategoryValueKey;
+  max: number;
+  min: number;
+  selectedMax?: number;
+  selectedMin?: number;
+}
+
+/**
  * react-table function to call when updating set of selected filters.
  */
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- function type as per react-table's setFilter. */
@@ -75,6 +101,7 @@ type SetFilterFn = (columnId: string, updater: any) => void;
 /**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
  * @returns Object containing filter accessor (view model of filter state) and filter mutator (function to modify react-
@@ -82,6 +109,7 @@ type SetFilterFn = (columnId: string, updater: any) => void;
  */
 export function useCategoryFilter<T extends Categories>(
   originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>,
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
@@ -98,8 +126,8 @@ export function useCategoryFilter<T extends Categories>(
     if (!originalRows.length || categorySet) {
       return;
     }
-    setCategorySet(buildCategorySet(originalRows));
-  }, [originalRows, categorySet]);
+    setCategorySet(buildCategorySet(originalRows, categoryKeys));
+  }, [originalRows, categoryKeys, categorySet]);
 
   // Build next filter state on change of filter.
   useEffect(() => {
@@ -109,21 +137,29 @@ export function useCategoryFilter<T extends Categories>(
     }
     const nextFilterState = buildNextFilterState(
       originalRows,
+      categoryKeys,
       filters,
       categorySet
     );
     setFilterState(nextFilterState);
-  }, [categorySet, filters, originalRows]);
+  }, [categoryKeys, categorySet, filters, originalRows]);
 
   // Update set of filters on select of category value.
   const onFilter = useCallback<OnFilterFn>(
-    (categoryKey: CategoryKey, categoryValueKey: CategoryValueKey) => {
-      const nextCategoryFilters = buildNextCategoryFilters(
-        categoryKey,
-        categoryValueKey,
-        filters
-      );
-      setFilter(categoryKey, nextCategoryFilters);
+    (categoryKey: CategoryKey, selectedValue: CategoryValueKey | Range) => {
+      // Handle filter of single or multiselect categories.
+      if (isCategoryValueKey(selectedValue)) {
+        const nextCategoryFilters = buildNextSelectCategoryFilters(
+          categoryKey,
+          selectedValue,
+          filters
+        );
+        setFilter(categoryKey, nextCategoryFilters);
+      }
+      // Handle filter of range categories.
+      else {
+        setFilter(categoryKey, selectedValue);
+      }
     },
     [filters, setFilter]
   );
@@ -147,10 +183,18 @@ function addEmptyCategoryValues(
   for (const [categoryKey, categoryValuesByKey] of Object.entries(
     nextFilterState
   )) {
+    // Adding back empty category values is only applicable to select category values.
+    if (!isSelectCategoryValue(categoryValuesByKey)) {
+      continue;
+    }
+
     // Grab the expected set of category values.
     const allCategoryValueKeys = categorySet[categoryKey as CategoryKey];
-    if (!allCategoryValueKeys) {
-      return; // Error state - all category values for this category can't be found.
+    if (
+      !allCategoryValueKeys || // Error state - all category values for this category can't be found.
+      !isCategorySetCategoryKeyValue(allCategoryValueKeys) // Error state - should be category key value.
+    ) {
+      return;
     }
 
     // If expected category value is missing from this category's category values, add it back in with a count of 0.
@@ -166,6 +210,38 @@ function addEmptyCategoryValues(
       }
     );
   }
+}
+
+/**
+ * Add range categories to the next filter state. Range categories are not summarized and must be explicitly added from
+ * the original category set state.
+ * @param nextFilterState - Filter state currently being built due to change in filter.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
+ * @param categorySet - Original, unfiltered sets of category values keyed by their category.
+ */
+function addRangeCategories(
+  categoryKeys: Set<CATEGORY_KEY>,
+  nextFilterState: FilterState,
+  categorySet: CategorySet
+) {
+  Array.from(categoryKeys.values()).forEach((categoryKey) => {
+    // Grab the expected range for this category.
+    const categorySetRange = categorySet[categoryKey];
+    if (
+      !categorySetRange || // Error state - original range for this category can't be found.
+      isCategorySetCategoryKeyValue(categorySetRange) // Error state - should be a range.
+    ) {
+      return;
+    }
+
+    // Add range to next filter state.
+    const [originalMin, originalMax] = categorySetRange;
+    nextFilterState[categoryKey] = {
+      key: categoryKey,
+      max: originalMax ?? 0,
+      min: originalMin ?? 0,
+    };
+  });
 }
 
 /**
@@ -186,26 +262,54 @@ function applyFilters<T extends Categories>(
     // "and" across categories.
     return filters.every((filter: CategoryFilter) => {
       const rowValue = row.values[filter.id];
+      if (isCategoryTypeBetween(filter.id as CategoryKey)) {
+        return between(rowValue, filter);
+      }
       return includesSome(rowValue, filter);
     });
   });
 }
 
 /**
+ * Determine the rows that have values between the given filter value. Mimics react-query's between functionality.
+ * @param rowValue - Value to filter row by.
+ * @param filter - Selected filter to apply to row.
+ * @returns Filtered array of rows.
+ */
+function between(rowValue: string | string[], filter: CategoryFilter): boolean {
+  const [min, max] = filter.value;
+  return Boolean(rowValue && rowValue >= min && rowValue <= max);
+}
+
+/**
  * Set up model of original, complete set of categories and their values.
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @returns Sets of category values keyed by their category.
  */
 function buildCategorySet<T extends Categories>(
-  originalRows: Row<T>[]
+  originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>
 ): CategorySet {
   // Build up category values for each category
-  return Object.values(CATEGORY_KEY).reduce(
+  return Array.from(categoryKeys.values()).reduce(
     (accum: CategorySet, categoryKey: CategoryKey) => {
+      // Calculate the initial state of range categories.
+      if (isCategoryTypeBetween(categoryKey)) {
+        const counts = originalRows
+          .map((originalRow) => originalRow.values[categoryKey])
+          .filter((count) => !!count || count === 0); // Remove bad data, just in case!
+
+        accum[categoryKey] = [
+          counts.length ? Math.min(...counts) : 0,
+          counts.length ? Math.max(...counts) : 0,
+        ];
+        return accum;
+      }
       // Check category value for this category, in every row.
       originalRows.forEach((originalRow: Row<T>) => {
         // Grab the category values already added for this category, create new set if it hasn't already been created.
-        let categoryValueSet = accum[categoryKey];
+        let categoryValueSet = accum[categoryKey] as Set<CategoryValueKey>;
         if (!categoryValueSet) {
           categoryValueSet = new Set<CategoryValueKey>();
           accum[categoryKey] = categoryValueSet;
@@ -270,32 +374,32 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
     .map((categoryKey: string) => {
       // Build category value view models for this category and sort.
       const categoryValueByValue = filterState[categoryKey as CategoryKey];
-      const categoryValueViews = [...categoryValueByValue.values()]
-        .map(({ count, key, selected }: CategoryValue) => ({
-          count,
-          key,
-          label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
-          selected: selected,
-        }))
-        .sort(sortCategoryValueViews);
-      // Return completed view model of this category.
-      return {
-        key: categoryKey as CategoryKey,
-        label: CATEGORY_LABEL[categoryKey as CategoryKey],
-        values: categoryValueViews,
-      };
+
+      // Handle single or multiselect categories.
+      if (isSelectCategoryValue(categoryValueByValue)) {
+        return buildSelectCategoryView(
+          categoryKey as CategoryKey,
+          categoryValueByValue
+        );
+      }
+
+      // Handle range categories.
+      return buildRangeCategoryView(
+        categoryKey as CategoryKey,
+        categoryValueByValue
+      );
     })
     .sort(sortCategoryViews);
 }
 
 /**
- * Build updated set of selected filters for the given category and the selected category value.
+ * Build updated set of selected filters for the given single or multiselect category and the selected category value.
  * @param categoryKey - Category key (i.e. "disease") of selected category value.
  * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
  */
-function buildNextCategoryFilters<T extends Categories>(
+function buildNextSelectCategoryFilters<T extends Categories>(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
@@ -322,17 +426,19 @@ function buildNextCategoryFilters<T extends Categories>(
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
  * Retain category values with 0 counts from given category set.
  * @param originalRows - Original result set before filtering.
+ * @param categoryKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
+  categoryKeys: Set<CATEGORY_KEY>,
   filters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
   // Build set of filters that are applicable to each category.
-  const queries = buildQueries(filters);
+  const queries = buildQueries(categoryKeys, filters);
 
   // Build up base filter state of categories, category values and counts.
   const nextFilterState = summarizeCategories(originalRows, queries);
@@ -340,8 +446,11 @@ function buildNextFilterState<T extends Categories>(
   // Always display category values even if their count is 0; add back any category values that have been filtered out.
   addEmptyCategoryValues(nextFilterState, categorySet);
 
-  // Update selected flag for the selected category values.
-  flagSelectedCategoryValues(nextFilterState, filters);
+  // Add range categories to next filter state.
+  addRangeCategories(categoryKeys, nextFilterState, categorySet);
+
+  // Update selected flag for the selected category values, or selected ranged for range categories.
+  setSelectedStates(nextFilterState, filters);
 
   return nextFilterState;
 }
@@ -349,11 +458,15 @@ function buildNextFilterState<T extends Categories>(
 /**
  * Determine the set of filters that are applicable to each category. That is, for a category, all selected filters
  * other than the selected filters for that category can be applied to the result set to determine the counts for.
+ * @param categoriesKeys - Set of category keys to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of query models representing of the selected filters applicable for each category.
  */
-function buildQueries<T extends Categories>(filters: Filters<T>): Query<T>[] {
-  return Object.values(CATEGORY_KEY).reduce(
+function buildQueries<T extends Categories>(
+  categoriesKeys: Set<CATEGORY_KEY>,
+  filters: Filters<T>
+): Query<T>[] {
+  return Array.from(categoriesKeys.values()).reduce(
     (accum: Query<T>[], categoryKey: CategoryKey) => {
       // Determine the filters that are applicable to this category.
       const filtersExcludingSelf = filters.filter((filter: CategoryFilter) => {
@@ -380,39 +493,50 @@ function buildQueries<T extends Categories>(filters: Filters<T>): Query<T>[] {
 }
 
 /**
- * Update selected state of category values to match the current set of selected filters.
- * @param nextFilterState - Filter state being built on select of filter.
- * @param filters - Current set of selected category values (values) keyed by category (id).
+ * Build view model of range category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param rangeCategory - Internal filter model of range category.
+ * @returns Range view model.
  */
-function flagSelectedCategoryValues<T extends Categories>(
-  nextFilterState: FilterState,
-  filters: Filters<T>
-) {
-  Object.keys(nextFilterState).forEach((categoryKey: string) => {
-    // Grab the filter state for this category.
-    const categoryFilterState = nextFilterState[categoryKey as CategoryKey];
+function buildRangeCategoryView(
+  categoryKey: CategoryKey,
+  rangeCategory: RangeCategory
+): RangeCategoryView {
+  // Return completed view model of this category.
+  return {
+    key: categoryKey as CategoryKey,
+    label: CATEGORY_LABEL[categoryKey],
+    max: rangeCategory.max,
+    min: rangeCategory.min,
+    selectedMax: rangeCategory.selectedMax,
+    selectedMin: rangeCategory.selectedMin,
+  };
+}
 
-    // Grab the filters for this category.
-    const categoryFilter = getCategoryFilter(
-      categoryKey as CategoryKey,
-      filters
-    );
-    if (!categoryFilter || !categoryFilter.value) {
-      // There are no selected values for this category
-      return;
-    }
-
-    // Create set for easy lookup of category values.
-    const selectedCategoryValues = new Set(categoryFilter.value);
-
-    // Check each category value in this category to see if it's selected.
-    for (const [
-      categoryValueKey,
-      categoryValue,
-    ] of categoryFilterState.entries()) {
-      categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
-    }
-  });
+/**
+ * Build view model of single or multiselect category.
+ * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryValueByValue - Internal filter model of single or multiselect category.
+ * @returns Range view model.
+ */
+function buildSelectCategoryView(
+  categoryKey: CategoryKey,
+  categoryValueByValue: KeyedSelectCategoryValue
+): SelectCategoryView {
+  const categoryValueViews = [...categoryValueByValue.values()]
+    .map(({ count, key, selected }: SelectCategoryValue) => ({
+      count,
+      key,
+      label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
+      selected: selected,
+    }))
+    .sort(sortCategoryValueViews);
+  // Return completed view model of this category.
+  return {
+    key: categoryKey as CategoryKey,
+    label: CATEGORY_LABEL[categoryKey],
+    values: categoryValueViews,
+  };
 }
 
 /**
@@ -448,6 +572,18 @@ function includesSome(
 }
 
 /**
+ * Check if the given category's type is "between".
+ * @param categoryKey - Key of category to check type of.
+ * @returns True if the given category's type is "between".
+ */
+export function isCategoryTypeBetween(categoryKey: CategoryKey): boolean {
+  return (
+    CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].categoryType ===
+    CATEGORY_FILTER_TYPE.BETWEEN
+  );
+}
+
+/**
  * Determine if given filters are identical.
  * @param filters0 - First filter to compare.
  * @param filters1 - Second filter to compare.
@@ -463,14 +599,92 @@ function isFilterEqual<T extends Categories>(
 }
 
 /**
+ * Determine if the given selected value is a selected category value key (and not a range).
+ * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
+ * @returns True if given selected value is a selected category value.
+ */
+function isCategoryValueKey(
+  selectedValue: CategoryValueKey | Range
+): selectedValue is CategoryValueKey {
+  return !Array.isArray(selectedValue);
+}
+
+/**
+ * Determine if the given category value is a select category value (and not a range category value).
+ * @param categorySetValue - Range or category set value.
+ * @returns True if category set value is a set of category value keys.
+ */
+function isCategorySetCategoryKeyValue(
+  categorySetValue: CategorySetValue
+): categorySetValue is Set<CategoryValueKey> {
+  return categorySetValue instanceof Set;
+}
+
+/**
+ * Determine if the given category value is a select category value (and not a range category value).
+ * @param categoryValue - Range or select category value.
+ * @returns True if category value is a select category value.
+ */
+function isSelectCategoryValue(
+  categoryValue: RangeCategory | KeyedSelectCategoryValue
+): categoryValue is KeyedSelectCategoryValue {
+  return categoryValue instanceof Map;
+}
+
+/**
+ * Update selected state of categories to match the current set of selected filters.
+ * @param nextFilterState - Filter state being built on select of filter.
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function setSelectedStates<T extends Categories>(
+  nextFilterState: FilterState,
+  filters: Filters<T>
+) {
+  Object.keys(nextFilterState).forEach((categoryKey: string) => {
+    // Grab the filter state for this category.
+    const categoryFilterState = nextFilterState[categoryKey as CategoryKey];
+
+    // Grab the filters for this category.
+    const categoryFilter = getCategoryFilter(
+      categoryKey as CategoryKey,
+      filters
+    );
+    if (!categoryFilter || !categoryFilter.value) {
+      // There are no selected values for this category
+      return;
+    }
+
+    // Handle single and multiselect categories.
+    if (isSelectCategoryValue(categoryFilterState)) {
+      // Create set for easy lookup of category values.
+      const selectedCategoryValues = new Set(categoryFilter.value);
+
+      // Check each category value in this category to see if it's selected.
+      for (const [
+        categoryValueKey,
+        categoryValue,
+      ] of categoryFilterState.entries()) {
+        categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
+      }
+      return;
+    }
+
+    // Handle range categories.
+    const [selectedMin, selectedMax] = categoryFilter.value;
+    categoryFilterState.selectedMin = selectedMin;
+    categoryFilterState.selectedMax = selectedMax;
+  });
+}
+
+/**
  * Sort category value views by key, ascending.
  * @param cvv0 - First category value view to compare.
  * @param cvv1 - Second category value view to compare.
  * @returns Number indicating sort precedence of cv0 vs cv1.
  */
 function sortCategoryValueViews(
-  cvv0: CategoryValueView,
-  cvv1: CategoryValueView
+  cvv0: SelectCategoryValueView,
+  cvv1: SelectCategoryValueView
 ): number {
   return COLLATOR_CASE_INSENSITIVE.compare(cvv0.key, cvv1.key);
 }
@@ -504,54 +718,53 @@ function summarizeCategories<T extends Categories>(
     // Apply the filters on the original result set
     const rows = applyFilters(originalRows, query.filters);
 
-    // Count the category value occurrences in each category that shares this filter.
+    // Count the category value occurrences in each category that shares this filter. Range categories are not
+    // summarized; they always use the full range of the original result set.
     query.categoryKeys.forEach((categoryKey: CategoryKey) => {
-      accum[categoryKey] = summarizeCategory(categoryKey, rows);
+      if (!isCategoryTypeBetween(categoryKey)) {
+        accum[categoryKey] = summarizeSelectCategory(categoryKey, rows);
+      }
     });
-
     return accum;
   }, {} as FilterState);
 }
 
 /**
- * Count occurrences of category values across the result set for the given category.
+ * Count occurrences of category values across the result set for the given single or multiselect category.
  * @param categoryKey - Category to count category values.
  * @param filteredRows - Array of rows containing category values to count.
  * @return Map of category values keyed by category value key.
  */
-function summarizeCategory<T extends Categories>(
+function summarizeSelectCategory<T extends Categories>(
   categoryKey: CategoryKey,
   filteredRows: Row<T>[]
-): Map<CategoryValueKey, CategoryValue> {
+): KeyedSelectCategoryValue {
   // Aggregate category value counts for each row.
-  return filteredRows.reduce(
-    (accum: Map<CategoryValueKey, CategoryValue>, row: Row<T>) => {
-      // Grab the values of the category for this dataset row.
-      let categoryValues = row.values[categoryKey];
+  return filteredRows.reduce((accum: KeyedSelectCategoryValue, row: Row<T>) => {
+    // Grab the values of the category for this dataset row.
+    let categoryValues = row.values[categoryKey];
 
-      if (!Array.isArray(categoryValues)) {
-        categoryValues = [categoryValues];
+    if (!Array.isArray(categoryValues)) {
+      categoryValues = [categoryValues];
+    }
+
+    // Init category value if it doesn't already exist. Default selected state to false (selected state is updated
+    // from the filter state at a later point).
+    categoryValues.forEach((categoryValueKey: CategoryValueKey) => {
+      let categoryValue = accum.get(categoryValueKey);
+      if (!categoryValue) {
+        categoryValue = {
+          count: 0,
+          key: categoryValueKey,
+          selected: false,
+        };
+        accum.set(categoryValueKey, categoryValue);
       }
-
-      // Init category value it doesn't already exist. Default selected state to false (selected state is updated
-      // from the filter state at a later point).
-      categoryValues.forEach((categoryValueKey: CategoryValueKey) => {
-        let categoryValue = accum.get(categoryValueKey);
-        if (!categoryValue) {
-          categoryValue = {
-            count: 0,
-            key: categoryValueKey,
-            selected: false,
-          };
-          accum.set(categoryValueKey, categoryValue);
-        }
-        // Increment category value count.
-        categoryValue.count++;
-      });
-      return accum;
-    },
-    new Map<CategoryValueKey, CategoryValue>()
-  );
+      // Increment category value count.
+      categoryValue.count++;
+    });
+    return accum;
+  }, new Map<CategoryValueKey, SelectCategoryValue>());
 }
 
 /**
