@@ -95,7 +95,6 @@ export interface Collection {
   datasets: Map<Dataset["id"], Dataset>;
   links: Link[];
   data_submission_policy_version: string;
-  obfuscated_uuid: string;
   created_at: number;
   updated_at: number;
   has_revision: boolean;

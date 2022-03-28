@@ -1,32 +1,15 @@
 import { Intent } from "@blueprintjs/core";
-import { ButtonBase, Popper, Theme } from "@material-ui/core";
-import { AutocompleteCloseReason } from "@material-ui/lab";
-import { makeStyles } from "@material-ui/styles";
-import {
-  DefaultMenuSelectOption,
-  getColors,
-  getCorners,
-  getShadows,
-  MenuSelect,
-} from "czifui";
-import pull from "lodash/pull";
-import uniq from "lodash/uniq";
-import React, {
-  createContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { FixedSizeList, ListChildComponentProps } from "react-window";
-import { API } from "src/common/API";
+import React, { useCallback, useContext, useMemo } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
-import { API_URL } from "src/configs/configs";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
+import { DispatchContext, StateContext } from "../../common/store";
+import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import GeneSets from "./components/Genesets";
-import { Container } from "./style";
+import Organism from "./components/Organism";
+import QuickSelect from "./components/QuickSelect";
+import { ActionWrapper, Container } from "./style";
 
 const GENESETS = [
   [
@@ -133,110 +116,31 @@ const GENESETS = [
   ],
 ];
 
-const LISTBOX_ITEM_HEIGHT_PX = 32;
-const LISTBOX_HEIGHT_PX = 152;
+// DEBUG
+// DEBUG
+// DEBUG
+// DEBUG
 
-interface Props {
-  onGenesChange: (selectedGenes: Gene[]) => void;
+interface Tissue {
+  name: string;
 }
 
-const ListBoxContext = createContext({});
+// END DEBUG
 
-const OuterElementType = React.forwardRef<HTMLDivElement>(
-  function OuterElementType(props, ref) {
-    const outerProps = React.useContext(ListBoxContext);
-    return <div ref={ref} {...props} {...outerProps} />;
-  }
-);
+export default function GeneSearchBar(): JSX.Element {
+  const dispatch = useContext(DispatchContext);
+  const { selectedGenes, selectedTissues, selectedOrganismId } =
+    useContext(StateContext);
 
-function rowRender(props: ListChildComponentProps) {
-  const { data, index, style } = props;
-  return <div style={style}>{data[index]}</div>;
-}
+  const { data } = usePrimaryFilterDimensions();
 
-const ListboxComponent = React.forwardRef<HTMLDivElement>(
-  function ListboxComponent(props, ref) {
-    const { children, ...other } = props;
+  const { genes: rawGenes, tissues } = data || {};
 
-    const itemData = React.Children.toArray(children);
-    const itemCount = itemData.length;
+  const genes: Gene[] = useMemo(() => {
+    if (!rawGenes) return [];
 
-    return (
-      <div ref={ref}>
-        <ListBoxContext.Provider value={other}>
-          <FixedSizeList
-            height={LISTBOX_HEIGHT_PX}
-            itemCount={itemCount}
-            outerElementType={OuterElementType}
-            itemSize={LISTBOX_ITEM_HEIGHT_PX}
-            width="100%"
-            overscanCount={10}
-            itemData={itemData}
-          >
-            {rowRender}
-          </FixedSizeList>
-        </ListBoxContext.Provider>
-      </div>
-    );
-  }
-);
-
-export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
-  const [selectedGenes, setSelectedGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
-  const [open, setOpen] = useState(false);
-  const [pendingPaste, setPendingPaste] = useState(false);
-  const [input, setInput] = useState("");
-
-  useEffect(() => {
-    fetchGenes();
-
-    async function fetchGenes(): Promise<void> {
-      const response = await fetch(
-        API_URL + API.WMG_GENES,
-        DEFAULT_FETCH_OPTIONS
-      );
-
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      // (thuang): Local test data
-      // const response = await fetch(
-      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
-      // );
-
-      const allGenes = await response.json();
-
-      setGenes(allGenes);
-    }
-  }, []);
-
-  useEffect(() => {
-    onGenesChange(selectedGenes);
-  }, [onGenesChange, selectedGenes]);
-
-  const handleClose = (
-    _: React.ChangeEvent<Record<string, never>>,
-    reason: AutocompleteCloseReason
-  ) => {
-    if (reason === "toggleInput") {
-      return;
-    }
-    setOpen(false);
-  };
-  const handleChange = (
-    _: React.ChangeEvent<Record<string, never>>,
-    newValue: DefaultMenuSelectOption[] | null
-  ) => {
-    return setSelectedGenes(newValue as Gene[]);
-  };
-  const handleClick = () => {
-    setOpen(true);
-  };
-
-  const handlePaste = () => {
-    setPendingPaste(true);
-  };
+    return rawGenes[selectedOrganismId || ""] || [];
+  }, [rawGenes, selectedOrganismId]);
 
   const genesByName = useMemo(() => {
     return genes.reduce((acc, gene) => {
@@ -244,109 +148,75 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
     }, new Map<Gene["name"], Gene>());
   }, [genes]);
 
-  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && pendingPaste) {
-      event.preventDefault();
-      const newSelectedGenes = [...selectedGenes];
-      const pastedGenes = pull(uniq(input.split(/[ ,]+/)), "");
-      pastedGenes.map((gene) => {
-        const newGene = genesByName.get(gene);
-        if (!newGene) {
-          Toast.show({
-            intent: Intent.DANGER,
-            message: `Gene not found: ${gene}`,
-          });
-        } else if (!newSelectedGenes.includes(newGene))
-          newSelectedGenes.push(newGene);
-      });
-      setPendingPaste(false);
-      setOpen(false);
-      return setSelectedGenes(newSelectedGenes);
-    }
-  };
+  const tissuesByName = useMemo(() => {
+    const result = new Map<string, Tissue>();
 
-  const useStyles = makeStyles((theme: Theme) => {
-    const colors = getColors({ theme });
-    const shadows = getShadows({ theme });
-    const corners = getCorners({ theme });
-    return {
-      paper: {
-        boxShadow: "none",
-        margin: 0,
-      },
-      popper: {
-        backgroundColor: "white",
-        border: `1px solid ${colors?.gray[100]}`,
-        borderRadius: corners?.m,
-        boxShadow: shadows?.m,
-        color: "#586069",
-        fontSize: 13,
-        width: 377,
-        zIndex: 3, // The x axis wrapper is set at 2
-      },
-      popperDisablePortal: {
-        position: "relative",
-        width: "100% !important",
-      },
-    };
-  });
+    if (!tissues) return new Map<string, Tissue>();
 
-  const classes = useStyles();
+    return tissues.reduce((acc, tissue) => {
+      return acc.set(tissue.name, tissue);
+    }, result);
+  }, [tissues]);
 
-  const ref = useRef(null);
+  const selectedTissueOptions: Tissue[] = useMemo(() => {
+    return selectedTissues.map((tissue: string) => {
+      return tissuesByName.get(tissue) as Tissue;
+    });
+  }, [selectedTissues, tissuesByName]);
+
+  const selectedGeneOptions: Gene[] = useMemo(() => {
+    return selectedGenes.map((gene: string) => {
+      return genesByName.get(gene) as Gene;
+    });
+  }, [selectedGenes, genesByName]);
+
+  const handleGeneNotFound = useCallback((geneName: string): void => {
+    Toast.show({
+      intent: Intent.DANGER,
+      message: `Gene not found: ${geneName}`,
+    });
+  }, []);
 
   return (
     <Container>
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
+      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
       <GeneSets onSelect={handleGenesetsSelect} />
 
       <br />
       <br />
-      <ButtonBase disableRipple onClick={handleClick} ref={ref}>
-        <span>Add Genes</span>
-      </ButtonBase>
+      <ActionWrapper>
+        <Organism />
 
-      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
-        <MenuSelect
-          open
-          search
-          onClose={handleClose}
+        <QuickSelect
+          items={tissues || EMPTY_ARRAY}
+          itemsByName={tissuesByName}
           multiple
-          classes={{
-            paper: classes.paper,
-            popperDisablePortal: classes.popperDisablePortal,
-          }}
-          value={selectedGenes}
-          onChange={handleChange}
-          disableCloseOnSelect
-          disableListWrap
-          onKeyDownCapture={handleEnter}
-          options={genes}
-          ListboxComponent={
-            ListboxComponent as React.ComponentType<
-              React.HTMLAttributes<HTMLElement>
-            >
-          }
-          renderOption={(option) => option.name}
-          onPaste={handlePaste}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- TODO revisit lint errors
-          // @ts-ignore -- TODO revisit lint errors
-          InputBaseProps={{
-            onChange: (
-              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-            ) => {
-              setInput(event.target.value);
-            },
-            placeholder: "Search or paste comma separated gene names",
-          }}
+          selected={selectedTissueOptions}
+          setSelected={handleSelectTissues}
+          label="Add Tissue"
+          dataTestId="add-tissue"
         />
-      </Popper>
+
+        <QuickSelect
+          items={genes}
+          itemsByName={genesByName}
+          selected={selectedGeneOptions}
+          multiple
+          setSelected={handleSelectGenes}
+          onItemNotFound={handleGeneNotFound}
+          label="Add Gene"
+          dataTestId="add-gene"
+        />
+      </ActionWrapper>
     </Container>
   );
 
   function handleGenesetsSelect(genesetIndex: number) {
     const geneset = GENESETS[genesetIndex];
 
-    setSelectedGenes(
+    handleSelectGenes(
       genes
         .filter((gene) => geneset.includes(gene.name))
         .sort(
@@ -355,5 +225,17 @@ export default function GeneSearchBar({ onGenesChange }: Props): JSX.Element {
             geneset.findIndex((gene) => gene === b.name)
         )
     );
+  }
+
+  function handleSelectTissues(tissues: Tissue[]) {
+    if (!dispatch) return;
+
+    dispatch(selectTissues(tissues.map((tissue) => tissue.name)));
+  }
+
+  function handleSelectGenes(genes: Gene[]) {
+    if (!dispatch) return;
+
+    dispatch(selectGenes(genes.map((gene) => gene.name)));
   }
 }

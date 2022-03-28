@@ -232,7 +232,6 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
     description = Column(StrippedString)
-    obfuscated_uuid = Column(String, default="")
     contact_name = Column(StrippedString, default="")
     contact_email = Column(StrippedString, default="")
     curator_name = Column(StrippedString, default="")
@@ -306,6 +305,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     x_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
+    curator_tag = Column(String)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
@@ -318,6 +318,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
+        UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),
         {},
     )
 

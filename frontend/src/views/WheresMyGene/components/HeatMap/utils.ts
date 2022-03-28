@@ -7,6 +7,7 @@ import {
 } from "echarts";
 import { State } from "../../common/store";
 import {
+  CellType,
   CellTypeSummary,
   GeneExpressionSummary,
   Tissue,
@@ -35,17 +36,6 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
-const COMMON_AXIS_POINTER: EChartsOption["axisPointer"] = {
-  link: [
-    {
-      xAxisIndex: "all",
-    },
-  ],
-  show: true,
-  triggerOn: "click",
-  triggerTooltip: false,
-};
-
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
   chartData: ChartFormat[];
@@ -59,7 +49,16 @@ export function createChartOptions({
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER, label: { show: false } },
+    axisPointer: {
+      label: { show: false },
+      link: [
+        {
+          xAxisIndex: "all",
+        },
+      ],
+      show: true,
+      triggerOn: "mousemove",
+    },
     dataset: {
       source: chartData as DatasetComponentOption["source"],
     },
@@ -83,40 +82,14 @@ export function createChartOptions({
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          return Math.round(MAX_FIRST_PART_LENGTH_PX * percentage);
+          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+          const r = Math.sqrt(percentage * maxRadius ** 2);
+
+          return Math.round(2 * r);
         },
       },
     ],
-    tooltip: {
-      formatter(props) {
-        const { name: cellTypeMetadata, data } = props as unknown as {
-          name: string;
-          data: ChartFormat;
-        };
-
-        if (!data) return "";
-
-        const { geneIndex, percentage, meanExpression, scaledMeanExpression } =
-          data;
-
-        const { name } = deserializeCellTypeMetadata(
-          cellTypeMetadata as CellTypeMetadata
-        );
-
-        return `
-          cell type: ${name}
-          <br />
-          gene: ${geneNames[geneIndex]}
-          <br />
-          percentage: ${percentage}
-          <br />
-          mean expression: ${meanExpression}
-          <br />
-          scaledMeanExpression: ${scaledMeanExpression}
-        `;
-      },
-      position: "top",
-    },
     xAxis: [
       {
         axisLabel: { fontSize: 0, rotate: 90 },
@@ -164,7 +137,6 @@ export function createXAxisOptions({
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER },
     grid: {
       bottom: "0",
       left: "300px",
@@ -232,7 +204,6 @@ export function createYAxisOptions({
 }: CreateYAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
-    axisPointer: { ...COMMON_AXIS_POINTER },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
       left: "300px",
@@ -263,21 +234,24 @@ export function createYAxisOptions({
     yAxis: [
       {
         axisLabel: {
-          formatter(value) {
+          formatter(value: number | string) {
             const { name } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
 
-            return cellTypeIdsToDelete.includes(value)
+            return cellTypeIdsToDelete.includes(value as string)
               ? `{selected|${name}}`
               : name;
           },
+          // Turn off type checking here, because ecahrts' type is wrong
+          ["overflow" as string]: "truncate",
           rich: {
             selected: {
               color: "red",
               fontWeight: "bold",
             },
           },
+          width: 260,
         },
         axisLine: {
           show: false,
@@ -304,27 +278,18 @@ export interface ChartFormat {
   scaledMeanExpression: number;
 }
 
-export function dataToChartFormat(
-  cellTypeSummaries: CellTypeSummary[],
-  genes: (GeneExpressionSummary | undefined)[]
-): ChartFormat[] {
-  let min = Infinity;
-  let max = -Infinity;
-
-  for (const cellTypeSummary of cellTypeSummaries) {
-    const { geneExpressions } = cellTypeSummary;
-
-    if (!geneExpressions) continue;
-
-    for (const geneExpression of Object.values(geneExpressions)) {
-      const { meanExpression } = geneExpression;
-
-      min = Math.min(min, meanExpression);
-      max = Math.max(max, meanExpression);
-    }
-  }
-
-  const oldRange = max - min;
+export function dataToChartFormat({
+  cellTypeSummaries,
+  genes,
+  scaledMeanExpressionMax,
+  scaledMeanExpressionMin,
+}: {
+  cellTypeSummaries: CellTypeSummary[];
+  genes: (GeneExpressionSummary | undefined)[];
+  scaledMeanExpressionMax: number;
+  scaledMeanExpressionMin: number;
+}): ChartFormat[] {
+  const oldRange = scaledMeanExpressionMax - scaledMeanExpressionMin;
 
   const result = cellTypeSummaries.flatMap((dataPoint) => {
     return toChartFormat(dataPoint);
@@ -340,7 +305,8 @@ export function dataToChartFormat(
     return Object.entries(geneExpressions).map(([geneName, geneExpression]) => {
       const { percentage, meanExpression } = geneExpression;
 
-      const scaledMeanExpression = (meanExpression - min) / oldRange;
+      const scaledMeanExpression =
+        (meanExpression - scaledMeanExpressionMin) / oldRange;
 
       const geneIndex = genes.findIndex((gene) => gene?.name === geneName);
 
@@ -380,7 +346,7 @@ export function getHeatmapWidth(
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellTypeSummary[] = []): number {
+export function getHeatmapHeight(cellTypes: CellType[] = []): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
@@ -394,9 +360,10 @@ export type CellTypeMetadata =
  * We need to encode cell type metadata here, so we can use it in onClick event
  */
 export function getAllSerializedCellTypeMetadata(
-  cellTypes: CellTypeSummary[]
+  cellTypes: CellType[],
+  tissue: Tissue
 ): CellTypeMetadata[] {
-  return cellTypes.map(({ id, name, tissue }) => {
+  return cellTypes.map(({ id, name }) => {
     return `${id}~${tissue}~${name}` as CellTypeMetadata;
   });
 }

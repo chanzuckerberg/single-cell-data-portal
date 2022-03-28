@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, Response, jsonify
+from flask import g, jsonify
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -19,8 +19,15 @@ def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
-    swagger_spec_path = f"{APP_NAME}.yml"
-    connexion_app.add_api(swagger_spec_path, validate_responses=True)
+    options = {"swagger_ui": True, "swagger_url": "/"}
+    dataportal_api = super(connexion.FlaskApp, connexion_app).add_api(
+        f"{APP_NAME}.yml", validate_responses=True, options=options
+    )
+    curator_api = super(connexion.FlaskApp, connexion_app).add_api(
+        "curation-api.yml", validate_responses=True, options=options, resolver_error=501
+    )
+    connexion_app.app.register_blueprint(dataportal_api.blueprint, url_prefix="/", name="data-portal")
+    connexion_app.app.register_blueprint(curator_api.blueprint, url_prefix="/curation", name="curation")
     return connexion_app.app
 
 
@@ -65,31 +72,12 @@ def configure_flask_app(flask_app):
     return flask_app
 
 
-class InterceptRequestMiddleware:
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response):
-        environ["HTTP_CXGPUBLIC"] = "dummy"
-        return self.wsgi_app(environ, start_response)
-
-
 app = configure_flask_app(create_flask_app())
-app.wsgi_app = InterceptRequestMiddleware(app.wsgi_app)
 
 
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
-
-
-with open(os.path.join(os.path.dirname(__file__), "index.html")) as swagger_ui_file_object:
-    swagger_ui_html = swagger_ui_file_object.read()
-
-
-@app.route("/", methods=["GET", "HEAD"])
-def serve_swagger_ui():
-    return Response(swagger_ui_html, mimetype="text/html")
 
 
 @app.errorhandler(AuthError)

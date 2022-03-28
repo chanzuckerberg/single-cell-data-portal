@@ -940,7 +940,53 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
+  /dp/v1/auth/key:
+    get:
+      summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
+      security:
+        - cxguserCookie: [ ]
+      responses:
+        "200":
+          description: OK
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+    post:
+      summary: Generate the curator's API key -- for use with Data Portal UI
+      description: >-
+        Generate and return a curator API key for the user. If there is already a key associated with the
+        user's curator profile, replace it with the new key.
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.post
+      security:
+        - cxguserCookie: []
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
+    delete:
+      summary: Delete the curator's API key -- for use with Data Portal UI
+      operationId: backend.corpora.lambdas.api.v1.auth.keys.delete
+      security:
+        - cxguserCookie: []
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
   /dp/v1/deployed_version:
     get:
       summary: Returns version information
@@ -969,8 +1015,12 @@ paths:
                     $ref: "#/components/schemas/wmg_snapshot_id"
                   organism_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  tissue_type_terms:
+                  tissue_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  gene_terms:
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    type: object
         "404":
           $ref: "#/components/responses/404"
   /wmg/v1/query:
@@ -988,38 +1038,34 @@ paths:
                 filter:
                   type: object
                   required:
-                    - gene_term_ids
-                    - organism_term_id
-                    - tissue_type_term_ids
+                    - gene_ontology_term_ids
+                    - organism_ontology_term_id
+                    - tissue_ontology_term_ids
                   properties:
-                      gene_term_ids:
+                      gene_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      organism_term_id:
+                      organism_ontology_term_id:
                         type: string
-                      tissue_type_term_ids:
+                      tissue_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       dataset_ids:
                         type: array
                         items:
                           type: string
                           format: uuid
-                      disease_term_ids:
+                      disease_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_term_ids:
+                      sex_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_stage_term_ids:
+                      development_ontology_stage_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      ethnicity_term_ids:
+                      ethnicity_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                response_option:
-                  type: string
-                  enum:
-                    - include_filter_dims_include_dataset_links
-                    - include_filter_dims_exclude_dataset_links
-                    - exclude_filter_dims
+                include_filter_dims:
+                  type: boolean
+                  default: false
               required:
                 - filter
-                - response_option
       responses:
         "200":
           description: OK
@@ -1249,8 +1295,6 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
-        obfuscated_uuid:
-          type: string
         contact_name:
           type: string
         contact_email:
@@ -1458,9 +1502,11 @@ components:
           A single-element object with the ontology term id as the element's property name and the ontology term label
           as the element's property value.
         type: object
-        maxProperties: 1
-        additionalProperties:
-          type: string
+        # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+        # `{"<ontology_term_id>": "<ontology_term_label"}`
+#        maxProperties: 1
+#        additionalProperties:
+#          type: string
     wmg_ontology_term_id_list:
       type: array
       items:
@@ -1554,7 +1600,7 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
-    "413":
+    413:
       description: Exceed File Size Limit
       content:
         application/problem+json:
@@ -1571,8 +1617,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
-    dummyAuth:
-      type: apiKey
-      in: header
-      name: cxgpublic
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_dummy_info_func
