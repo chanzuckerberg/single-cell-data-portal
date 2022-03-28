@@ -91,6 +91,7 @@ const emailValidation = (value: string) => {
   return emailRegex.test(value) || "Invalid email";
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
