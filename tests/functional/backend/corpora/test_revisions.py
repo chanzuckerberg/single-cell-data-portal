@@ -42,7 +42,7 @@ class TestRevisions(BaseFunctionalTestCase):
     @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_revision_flow(self):
 
-        headers = {"Cookie": f"cxguser={self.cookie}", "Content-Type": "application/json"}
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         collection_uuid = self.create_collection(headers)
 

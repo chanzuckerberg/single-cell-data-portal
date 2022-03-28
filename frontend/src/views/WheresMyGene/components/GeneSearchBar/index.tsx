@@ -1,15 +1,7 @@
 import { Intent } from "@blueprintjs/core";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { API } from "src/common/API";
+import React, { useCallback, useContext, useMemo } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
-import { API_URL } from "src/configs/configs";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
@@ -132,28 +124,23 @@ const GENESETS = [
 interface Tissue {
   name: string;
 }
-function useFetchTissues() {
-  return {
-    data: [
-      { name: "lung" },
-      { name: "heart" },
-      { name: "kidney" },
-      { name: "brain" },
-    ],
-  };
-}
-interface Organism {
-  name: string;
-}
 
 // END DEBUG
 
 export default function GeneSearchBar(): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const { selectedGenes, selectedTissues } = useContext(StateContext);
-  const [genes, setGenes] = useState<Gene[]>(EMPTY_ARRAY);
+  const { selectedGenes, selectedTissues, selectedOrganismId } =
+    useContext(StateContext);
 
-  const { data: tissues } = useFetchTissues();
+  const { data } = usePrimaryFilterDimensions();
+
+  const { genes: rawGenes, tissues } = data || {};
+
+  const genes: Gene[] = useMemo(() => {
+    if (!rawGenes) return [];
+
+    return rawGenes[selectedOrganismId || ""] || [];
+  }, [rawGenes, selectedOrganismId]);
 
   const genesByName = useMemo(() => {
     return genes.reduce((acc, gene) => {
@@ -162,9 +149,13 @@ export default function GeneSearchBar(): JSX.Element {
   }, [genes]);
 
   const tissuesByName = useMemo(() => {
+    const result = new Map<string, Tissue>();
+
+    if (!tissues) return new Map<string, Tissue>();
+
     return tissues.reduce((acc, tissue) => {
       return acc.set(tissue.name, tissue);
-    }, new Map<Tissue["name"], Tissue>());
+    }, result);
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
@@ -178,29 +169,6 @@ export default function GeneSearchBar(): JSX.Element {
       return genesByName.get(gene) as Gene;
     });
   }, [selectedGenes, genesByName]);
-
-  useEffect(() => {
-    fetchGenes();
-
-    async function fetchGenes(): Promise<void> {
-      const response = await fetch(
-        API_URL + API.WMG_GENES,
-        DEFAULT_FETCH_OPTIONS
-      );
-
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      // (thuang): Local test data
-      // const response = await fetch(
-      //   "https://wmg-prototype-data-dev-public.s3.amazonaws.com/lung-tissue-10x-human/lung_tissue_genes.json"
-      // );
-
-      const allGenes = await response.json();
-
-      setGenes(allGenes);
-    }
-  }, []);
 
   const handleGeneNotFound = useCallback((geneName: string): void => {
     Toast.show({
@@ -222,12 +190,13 @@ export default function GeneSearchBar(): JSX.Element {
         <Organism />
 
         <QuickSelect
-          items={tissues}
+          items={tissues || EMPTY_ARRAY}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
           label="Add Tissue"
+          dataTestId="add-tissue"
         />
 
         <QuickSelect
@@ -238,6 +207,7 @@ export default function GeneSearchBar(): JSX.Element {
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
+          dataTestId="add-gene"
         />
       </ActionWrapper>
     </Container>

@@ -103,10 +103,15 @@ local-nohostconfig:
 	  sudo -E ./scripts/happy hosts uninstall; \
 	fi
 
-.PHONY: local-init
-local-init: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig ## Launch a new local dev env and populate it with test data.
-	docker-compose $(COMPOSE_OPTS) up -d frontend backend database oidc localstack
+.PHONY: local-init-test-data
+local-init-test-data:
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /corpora-data-portal && scripts/setup_dev_data.sh"
+
+.PHONY: local-init-host
+local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig local-start
+
+.PHONY:
+local-init: local-init-host local-init-test-data ## Launch a new local dev env and populate it with test data.
 
 .PHONY: local-status
 local-status: ## Show the status of the containers in the dev environment.
