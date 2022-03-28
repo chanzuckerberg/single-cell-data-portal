@@ -196,7 +196,7 @@ export function useCollection({
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, visibility, collections],
     () => queryFn(id, visibility),
-    { enabled: !!collections }
+    { enabled: !!collections, refetchOnWindowFocus: false } // Refetch can cause loss of unsaved links during edit.
   );
 }
 
