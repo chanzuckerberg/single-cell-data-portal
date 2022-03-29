@@ -84,15 +84,10 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
   const collectionsMap: CollectionResponsesMap = new Map();
 
   for (const collection of json.collections as CollectionResponse[]) {
-    let collectionsWithID;
-    if (collection.revision_of) {
-      collectionsWithID = collectionsMap.get(collection.revision_of);
-    } else {
-      collectionsWithID = collectionsMap.get(collection.id);
-    }
-    if (!collectionsWithID) collectionsWithID = new Map();
+    const publicID = collection.revision_of || collection.id;
+    const collectionsWithID = collectionsMap.get(publicID) || new Map();
     collectionsWithID.set(collection.visibility, collection);
-    collectionsMap.set(collection.id, collectionsWithID);
+    collectionsMap.set(publicID, collectionsWithID);
   }
 
   return collectionsMap;
