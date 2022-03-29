@@ -9,7 +9,7 @@ from backend.corpora.common.utils.type_conversion_utils import (
 )
 
 
-def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata"):
+def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
     """
     Saves the contents of the dictionary to the CXG output directory specified.
 
@@ -27,7 +27,7 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
     # array.
     tiledb.from_numpy(array_name, np.zeros((1,)))
 
-    with tiledb.open(array_name, mode="w") as metadata_array:
+    with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
             metadata_array.meta[key] = value
 
