@@ -726,6 +726,15 @@ class TestCollection(BaseAuthAPITest):
         private_not_owned = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
         ).id
+        revision_not_owned = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="someone else",
+            revision_of=public_not_owned,
+        ).id
+        revision_owned = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=public_owned
+        ).id
 
         path = "/dp/v1/collections"
         with self.subTest("no auth"):
@@ -740,6 +749,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(public_not_owned, ids)
             self.assertNotIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
+            self.assertNotIn(revision_owned, ids)
 
         with self.subTest("auth"):
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -753,6 +763,11 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(public_not_owned, ids)
             self.assertIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
+            self.assertNotIn(revision_not_owned, ids)
+            self.assertIn(revision_owned, ids)
+            self.assertTrue(
+                [collection for collection in collections if collection.get("revision_of") == public_owned][0]
+            )
 
     def test__get_all_collections_for_index(self):
         collection = self.generate_collection(

@@ -40,15 +40,30 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
         db_session,
         from_date=from_date,
         to_date=to_date,
-        list_attributes=[DbCollection.id, DbCollection.visibility, DbCollection.owner, DbCollection.created_at],
+        list_attributes=[
+            DbCollection.id,
+            DbCollection.visibility,
+            DbCollection.owner,
+            DbCollection.created_at,
+            DbCollection.revision_of,
+        ],
     )
 
     collections = []
     for coll_dict in all_collections:
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
-        if visibility == CollectionVisibility.PUBLIC or _is_user_owner_or_allowed(user, owner):
+        if visibility == CollectionVisibility.PUBLIC:
             collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
+        elif _is_user_owner_or_allowed(user, owner):
+            collections.append(
+                dict(
+                    id=coll_dict["id"],
+                    created_at=coll_dict["created_at"],
+                    visibility=visibility.name,
+                    revision_of=coll_dict["revision_of"],
+                )
+            )
 
     result = {"collections": collections}
     if from_date:
