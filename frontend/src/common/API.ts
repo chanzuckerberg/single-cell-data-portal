@@ -17,4 +17,6 @@ export enum API {
   WMG_CELL_TYPES = "/dp/v1/wmg/cell_types",
   WMG_GENES = "/dp/v1/wmg/genes",
   WMG_GENE = "/dp/v1/wmg/genes/{name}",
+  WMG_PRIMARY_FILTER_DIMENSIONS = "wmg/v1/primary_filter_dimensions",
+  WMG_QUERY = "wmg/v1/query",
 }
