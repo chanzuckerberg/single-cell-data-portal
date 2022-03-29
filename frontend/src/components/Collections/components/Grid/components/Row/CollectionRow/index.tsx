@@ -54,7 +54,7 @@ const CollectionRow: FC<Props> = (props) => {
   const router = useRouter();
 
   const navigateToRevision = () => {
-    router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
+    router.push(ROUTES.COLLECTION.replace(":id", id));
   };
 
   const { mutate, isLoading } = useCreateRevision(navigateToRevision);
@@ -84,10 +84,7 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow data-test-id="collection-row">
       <StyledCell>
-        <Link
-          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
-          passHref
-        >
+        <Link href={`/collections/${id}]`} passHref>
           <CollectionTitleText data-test-id="collection-link" href="passHref">
             {name}
           </CollectionTitleText>

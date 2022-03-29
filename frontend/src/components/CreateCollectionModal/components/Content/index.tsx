@@ -362,7 +362,7 @@ const Content: FC<Props> = (props) => {
     }
 
     if (collectionId) {
-      router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
+      router.push(ROUTES.COLLECTION.replace(":id", collectionId));
     }
   }
 
