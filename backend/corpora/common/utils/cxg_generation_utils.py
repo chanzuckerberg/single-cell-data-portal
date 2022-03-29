@@ -27,7 +27,7 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
     # array.
     tiledb.from_numpy(array_name, np.zeros((1,)))
 
-    with tiledb.DenseArray(array_name, mode="w") as metadata_array:
+    with tiledb.open(array_name, mode="w") as metadata_array:
         for key, value in metadata_dict.items():
             metadata_array.meta[key] = value
 
@@ -65,7 +65,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
 
     create_dataframe_array(array_name, dataframe)
 
-    with tiledb.DenseArray(array_name, mode="w", ctx=ctx) as array:
+    with tiledb.open(array_name, mode="w", ctx=ctx) as array:
         value = {}
         schema_hints = {}
         for column_name, column_values in dataframe.items():
@@ -107,7 +107,7 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
 
     create_ndarray_array(ndarray_name, ndarray)
 
-    with tiledb.DenseArray(ndarray_name, mode="w", ctx=ctx) as array:
+    with tiledb.open(ndarray_name, mode="w", ctx=ctx) as array:
         array[:] = ndarray
 
     tiledb.consolidate(ndarray_name, ctx=ctx)
@@ -158,8 +158,8 @@ def convert_matrix_to_cxg_array(
 
     create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array)
 
-    if encode_as_sparse_array:
-        with tiledb.SparseArray(matrix_name, mode="w", ctx=ctx) as array:
+    with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
+        if encode_as_sparse_array:
             for start_row_index in range(0, number_of_rows, stride):
                 end_row_index = min(start_row_index + stride, number_of_rows)
                 matrix_subset = matrix[start_row_index:end_row_index, :]
@@ -171,8 +171,7 @@ def convert_matrix_to_cxg_array(
                 trow = indices[0] + start_row_index
                 array[trow, indices[1]] = matrix_subset[indices[0], indices[1]]
 
-    else:
-        with tiledb.DenseArray(matrix_name, mode="w", ctx=ctx) as array:
+        else:
             for start_row_index in range(0, number_of_rows, stride):
                 end_row_index = min(start_row_index + stride, number_of_rows)
                 matrix_subset = matrix[start_row_index:end_row_index, :]
