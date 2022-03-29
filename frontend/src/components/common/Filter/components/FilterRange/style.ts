@@ -51,7 +51,7 @@ export const useSliderStyles = makeStyles({
     },
     "& .MuiSlider-valueLabel": {
       fontSize: 12,
-      fontWeight: 600,
+      fontWeight: 500,
       left: "50%",
       letterSpacing: "normal",
       lineHeight: "15px",

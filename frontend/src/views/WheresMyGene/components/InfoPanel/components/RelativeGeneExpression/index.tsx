@@ -14,8 +14,8 @@ export default function RelativeGeneExpression(): JSX.Element {
           ))}
         </Dots>
         <LowHigh>
-          <span>Low</span>
-          <span>High</span>
+          <span>0.0</span>
+          <span>1.0</span>
         </LowHigh>
       </Content>
     </Wrapper>
