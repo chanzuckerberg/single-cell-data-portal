@@ -543,8 +543,6 @@ paths:
                   required:
                     - id
                     - name
-                    - published_at
-                    - revised_at
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
@@ -1565,7 +1563,7 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
-    "413":
+    413:
       description: Exceed File Size Limit
       content:
         application/problem+json:
@@ -1582,8 +1580,3 @@ components:
       in: cookie
       name: cxguser
       x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
-    dummyAuth:
-      type: apiKey
-      in: header
-      name: cxgpublic
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_dummy_info_func

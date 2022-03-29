@@ -10,12 +10,12 @@ import {
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
+import FilterLabel from "src/components/common/Filter/components/FilterLabel";
 import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterMultiPanel from "src/components/common/Filter/components/FilterMultiPanel";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import BasicFilter from "./components/BasicFilter";
-import FilterLabel from "./components/FilterLabel";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
@@ -27,7 +27,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>
       {categories.map((categoryView: CategoryView) => {
-        const { key, label } = categoryView;
+        const { key } = categoryView;
         const isDisabled = isCategoryNA(categoryView);
         return (
           <BasicFilter
@@ -35,7 +35,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
             isDisabled={isDisabled}
             key={key}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
-            target={<FilterLabel isDisabled={isDisabled} label={label} />}
+            target={buildFilterLabel(categoryView, isDisabled)}
           />
         );
       })}
@@ -85,6 +85,27 @@ function buildBasicFilterContent(
 
   // Otherwise, handle range categories
   return <FilterRange categoryView={categoryView} onFilter={onFilter} />;
+}
+
+/**
+ * Build the filter label for the given category.
+ * @param categoryView - View model of category to display.
+ * @param isDisabled - True if this category is currently disabled.
+ * @returns React node representing content to display as filter label.
+ */
+function buildFilterLabel(
+  categoryView: CategoryView,
+  isDisabled: boolean
+): ReactNode {
+  const { label } = categoryView;
+  let tooltip;
+  if (isSelectCategoryView(categoryView)) {
+    tooltip = categoryView.tooltip;
+  }
+
+  return (
+    <FilterLabel isDisabled={isDisabled} label={label} tooltip={tooltip} />
+  );
 }
 
 /**
@@ -274,13 +295,13 @@ function isRangeCategoryNA(categoryView: RangeCategoryView): boolean {
 }
 
 /**
- * Returns true if select category is not applicable, that is, all values have a count of 0.
+ * Returns true if select category is not applicable, that is, the category is disabled or all values have a count of 0.
  * @param categoryView
- * @returns true when all category values have a count of 0.
+ * @returns true when the category is disabled or all category values have a count of 0.
  */
 function isSelectCategoryNA(categoryView: SelectCategoryView): boolean {
-  const { values } = categoryView;
-  return values?.every((value) => value.count === 0);
+  const { disabled, values } = categoryView;
+  return disabled || values?.every((value) => value.count === 0);
 }
 
 /**

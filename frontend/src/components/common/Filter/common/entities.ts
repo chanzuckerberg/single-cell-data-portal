@@ -15,6 +15,7 @@ export interface CategoryConfig {
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
   multiselect: boolean; // True if category can have multiple values selected.
+  tooltip?: string;
 }
 
 /**
@@ -58,6 +59,7 @@ export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
   disease: Ontology[];
+  development_stage_ancestors: string[];
   ethnicity: Ontology[];
   is_primary_data: IS_PRIMARY_DATA[];
   organism: Ontology[];
@@ -77,46 +79,6 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
   recency: number; // Used by sort
   revised_at?: number;
   summaryCitation: string;
-}
-
-/**
- * Join of dataset and collection information, optimized for filtering datasets.
- */
-export interface DatasetRow extends Categories, PublisherMetadataCategories {
-  cell_count: number | null;
-  collection_id: Collection["id"];
-  collection_name: Collection["name"];
-  development_stage_ancestors: string[];
-  explorer_url: string;
-  id: string;
-  isOverMaxCellCount: boolean;
-  mean_genes_per_cell: number | null;
-  name: string;
-  published_at: number;
-  recency: number; // Used by sort
-  revised_at?: number;
-}
-
-/**
- * Display values of unspecified ethnicity labels.
- */
-export enum ETHNICITY_UNSPECIFIED_LABEL {
-  "na" = "N/A",
-  "unknown" = "Unknown",
-}
-
-/**
- * Node of development stage tree including ontology ID, label and any possible children.
- */
-export interface DevelopmentStageNode extends Ontology {
-  children?: DevelopmentStageNode[];
-}
-
-/**
- * Development stage tree structure, keyed by organism.
- */
-export interface DevelopmentStageTree {
-  [key: string]: DevelopmentStageNode[];
 }
 
 /*
@@ -407,6 +369,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+    tooltip:
+      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
     categoryKey: CATEGORY_KEY.IS_PRIMARY_DATA,
@@ -466,40 +430,12 @@ export const CATEGORY_CONFIGS_BY_CATEGORY_KEY: KeyedCategoryConfigs =
 export type CellPropsValue<T> = { value: CellValue<T> };
 
 /**
- * Filterable values of datasets and collections.
- */
-export interface Categories {
-  assay: Ontology[];
-  cell_type: Ontology[];
-  development_stage_ancestors: string[];
-  disease: Ontology[];
-  is_primary_data: IS_PRIMARY_DATA[];
-  organism: Ontology[];
-  sex: Ontology[];
-  tissue: Ontology[];
-}
-
-/**
  * View model of category.
  */
 export type CategoryView =
   | OntologyCategoryView
   | RangeCategoryView
   | SelectCategoryView;
-
-/**
- * Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
- * datasets grouped by collection.
- */
-export interface CollectionRow extends Categories, PublisherMetadataCategories {
-  id: string;
-  name: string;
-  published_at: number;
-  publisher_metadata?: PublisherMetadata; // Collection publication metadata
-  recency: number; // Used by sort
-  revised_at?: number;
-  summaryCitation: string;
-}
 
 /**
  * Category values to be used as keys. For example, "Homo sapiens" or "10X 3' v2 sequencing".
@@ -522,6 +458,18 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   recency: number; // Used by sort
   revised_at?: number;
 }
+
+/**
+ * Display values of unspecified ethnicity labels.
+ */
+export enum ETHNICITY_UNSPECIFIED_LABEL {
+  "unknown" = "Unknown",
+}
+
+/**
+ * List of ethnicity ontology labels to exclude from filter functionality.
+ */
+export const ETHNICITY_DENY_LIST = ["na"];
 
 /**
  * Function returns filtered category values when category key contains filter category input value.
@@ -550,6 +498,13 @@ type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
 export enum IS_PRIMARY_DATA_LABEL {
   "PRIMARY" = "primary",
   "SECONDARY" = "composed",
+}
+
+/**
+ * Possible set of organism values.
+ */
+export enum ORGANISM {
+  "HOMO_SAPIENS" = "Homo sapiens",
 }
 
 /**
@@ -700,8 +655,10 @@ export interface SelectCategoryValueView {
  * Metadata values grouped by metadata key, for single or multiselect categories.
  */
 export interface SelectCategoryView {
+  disabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
+  tooltip?: string;
   values: SelectCategoryValueView[];
 }
 

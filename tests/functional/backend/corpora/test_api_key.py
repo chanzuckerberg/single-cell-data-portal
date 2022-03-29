@@ -25,7 +25,8 @@ class TestApiKey(BaseFunctionalTestCase):
         key_1 = response.json()["key"]
 
         response = requests.post(
-            f"{self.api}/dp/v1/curator/auth/token", headers={"x-api-key": key_1, "Content-Type": "application/json"}
+            f"{self.api}/curation/v1/auth/token",
+            headers={"x-api-key": f"{key_1}", "Content-Type": "application/json"},
         )
         self.assertEqual(201, response.status_code)
         access_token = response.json()["access_token"]

@@ -13,7 +13,7 @@ class TestAuthToken(BaseAPITest):
         test_email = "user@email.com"
         test_user_id = "test_user_id"
         CorporaAuthConfig().api_key_secret = test_secret
-        auth0_management_session.get_user_api_key_identity = Mock(return_value={"email": test_email})
+        auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData": {"email": test_email}})
         auth0_management_session.generate_access_token = Mock(return_value={"access_token": "OK"})
         user_api_key = generate(test_user_id, test_secret)
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
@@ -31,6 +31,17 @@ class TestAuthToken(BaseAPITest):
         user_api_key = generate(test_user_id, "not the right secret")
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key}).json()
         self.assertEqual(401, response.status_code)
+
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session")
+    @patch("backend.corpora.lambdas.api.v1.auth.keys.CorporaAuthConfig")
+    def test__post_token__404(self, auth0_management_session, CorporaAuthConfig):
+        test_secret = "password1234"
+        test_user_id = "test_user_id"
+        CorporaAuthConfig().api_key_secret = test_secret
+        auth0_management_session.get_user_api_key_identity = Mock(return_value=None)
+        user_api_key = generate(test_user_id, test_secret)
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key}).json()
+        self.assertEqual(404, response.status_code)
 
 
 if __name__ == "__main__":
