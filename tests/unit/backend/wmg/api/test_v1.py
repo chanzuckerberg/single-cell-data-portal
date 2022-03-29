@@ -13,6 +13,7 @@ from tests.unit.backend.wmg.fixtures.snapshot import (
     reverse_cell_type_ordering,
 )
 
+
 @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
     """
