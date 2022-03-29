@@ -146,13 +146,13 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
             ].unique()
             ordering = cell_ordering_generator_fn(cell_type_ontology_term_ids)
             cell_type_orderings.append(
-                    pd.DataFrame(
-                            data={
-                                "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
-                                "cell_type_ontology_term_id": cell_type_ontology_term_ids,
-                                "order": ordering,
-                            }
-                    )
+                pd.DataFrame(
+                    data={
+                        "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
+                        "cell_type_ontology_term_id": cell_type_ontology_term_ids,
+                        "order": ordering,
+                    }
+                )
             )
     return pd.concat(cell_type_orderings)
 
@@ -290,4 +290,4 @@ if __name__ == "__main__":
         cell_counts_fn=random_cell_counts_values,
     )
     cell_counts_df = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn=forward_cell_type_ordering)
-    cell_counts_df.to_json(os.path.join(output_cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient='records')
+    cell_counts_df.to_json(os.path.join(output_cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient="records")
