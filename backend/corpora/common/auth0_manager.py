@@ -104,18 +104,18 @@ class Auth0ManagementSession:
         response.raise_for_status()
 
     def generate_access_token(self, user_name: str, password: str) -> dict:
-        response = self.session.post(
+        response = requests.post(
             f"https://{self.domain}/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
-            json=dict(
+            data=dict(
                 grant_type="http://auth0.com/oauth/grant-type/password-realm",
                 username=user_name,
                 password=password,
                 scope="profile email",
                 client_id=CorporaAuthConfig().curator_api_client_id,
                 client_secret=CorporaAuthConfig().curator_api_client_secret,
-                realm=CorporaAuthConfig().api_key_connection,
-                audience=CorporaAuthConfig().audience,
+                realm=CorporaAuthConfig().api_key_connection_name,
+                audience=CorporaAuthConfig().curation_audience,
             ),
         )
         response.raise_for_status()

@@ -97,7 +97,7 @@ python3 -m scripts.populate_db
 # Make a WMG cube
 echo "Setting up WMG data"
 tmp_cube_dir=`mktemp -d`
-snapshot_identifier='dummy_snapshot'
+snapshot_identifier='dummy-snapshot'
 wmg_bucket="wmg-test"
 wmg_config_secret_name="corpora/backend/test/wmg_config"
 python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}

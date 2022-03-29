@@ -769,6 +769,8 @@ class TestCollection(BaseAuthAPITest):
             visibility=CollectionVisibility.PUBLIC.name,
             owner="test_user_id",
             publisher_metadata={"journal": "Nature"},
+            published_at=datetime.now(),
+            revised_at=datetime.now(),
         )
 
         collection_id_private = self.generate_collection(
@@ -794,8 +796,8 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(actual_collection["id"], collection.id)
         self.assertEqual(actual_collection["name"], collection.name)
         self.assertNotIn("description", actual_collection)
-        self.assertEqual(actual_collection["published_at"], collection.published_at)
-        self.assertEqual(actual_collection["revised_at"], collection.revised_at)
+        self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
+        self.assertEqual(actual_collection["revised_at"], collection.revised_at.timestamp())
         self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
 
 
