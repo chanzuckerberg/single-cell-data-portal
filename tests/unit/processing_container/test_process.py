@@ -63,9 +63,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         """
         mock_download_from_dropbox.return_value = self.h5ad_raw
 
-        dataset = self.generate_dataset(
-            self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
-        )
+        dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
 
         process.process(
             dataset.id,
