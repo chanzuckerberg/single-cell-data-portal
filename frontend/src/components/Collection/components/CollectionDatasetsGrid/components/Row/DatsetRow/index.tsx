@@ -13,6 +13,7 @@ import {
   Collection,
   CONVERSION_STATUS,
   Dataset,
+  DatasetUploadStatus,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
   VISIBILITY_TYPE,
