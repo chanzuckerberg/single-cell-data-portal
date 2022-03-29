@@ -94,4 +94,5 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
 
 
 def _build_snapshot_base_uri(bucket: str, snapshot_identifier: str):
+    # TODO: add rdev intermediate path if in rdev env; should be able to handle that via `bucket` value (add prefix)
     return os.path.join("s3://", bucket, snapshot_identifier)

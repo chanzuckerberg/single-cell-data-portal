@@ -171,7 +171,8 @@ def build_ordered_cell_types_by_tissue(
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()
+    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id"]]
+
     joined = distinct_tissues_cell_types.merge(
         cell_type_orderings, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
     )

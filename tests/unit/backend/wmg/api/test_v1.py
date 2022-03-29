@@ -10,8 +10,8 @@ from tests.unit.backend.wmg.fixtures.snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
+    reverse_cell_type_ordering,
 )
-
 
 @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
@@ -159,7 +159,7 @@ class WmgApiV1Tests(unittest.TestCase):
     def test__query_request_multi_primary_dims_only__returns_200_and_correct_response(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
-        dim_size = 3
+        dim_size = 2
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
@@ -319,6 +319,53 @@ class WmgApiV1Tests(unittest.TestCase):
                 "filter_dims": {},
             }
             self.assertEqual(expected, json.loads(response.data))
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_explicit_cell_ordering__returns_correct_cell_ordering(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 2
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+            cell_ordering_generator_fn=reverse_cell_type_ordering,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
+                ),
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "tissue_ontology_term_id_0": [
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                ],
+                "tissue_ontology_term_id_1": [
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                ],
+            }
+            self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
     def test__query_empty_request__returns_400(self):
         response = self.app.post("/wmg/v1/query", json={})
