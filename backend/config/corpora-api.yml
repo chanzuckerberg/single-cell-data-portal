@@ -543,8 +543,6 @@ paths:
                   required:
                     - id
                     - name
-                    - published_at
-                    - revised_at
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
