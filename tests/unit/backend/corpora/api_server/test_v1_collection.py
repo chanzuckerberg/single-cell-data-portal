@@ -17,7 +17,8 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 
-def generate_mock_publisher_metadata(journal_override = None):
+
+def generate_mock_publisher_metadata(journal_override=None):
     return {
         "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
         "published_year": 2021,
@@ -30,7 +31,6 @@ def generate_mock_publisher_metadata(journal_override = None):
 
 
 class TestCollection(BaseAuthAPITest):
-
     def validate_collections_response_structure(self, body):
         self.assertIn("collections", body)
         self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
