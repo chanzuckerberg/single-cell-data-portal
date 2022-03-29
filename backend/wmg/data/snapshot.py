@@ -12,6 +12,10 @@ from backend.corpora.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import create_ctx
 
+CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
+EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
+CELL_COUNTS_CUBE_NAME = "cell_counts"
+
 logger = logging.getLogger("wmg")
 
 
@@ -53,9 +57,9 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     #  -data-portal/2134
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/expression_summary"),
-        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/cell_counts"),
-        cell_type_orderings=_load_cell_type_order(),
+        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
     )
 
 
@@ -63,8 +67,8 @@ def _open_cube(cube_uri) -> Array:
     return tiledb.open(cube_uri, ctx=create_ctx(tiledb_mem_gb=float(WmgConfig().tiledb_mem_gb)))
 
 
-def _load_cell_type_order() -> DataFrame:
-    return pd.read_json(_read_s3obj("cell_type_orderings.json"))
+def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
+    return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
 
 
 def _read_s3obj(relative_path: str) -> str:

@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 from numpy.random import random, randint
+from pandas import DataFrame
 
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
@@ -23,7 +24,7 @@ from backend.wmg.data.schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
 )
-from backend.wmg.data.snapshot import WmgSnapshot
+from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
 
 
@@ -123,25 +124,7 @@ def create_temp_wmg_snapshot(
             cell_counts_fn=cell_counts_generator_fn,
         )
 
-        cell_type_orderings = []
-        with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-            tissue_ontology_term_ids = cell_counts_cube.df[:]["tissue_ontology_term_id"].unique()
-            for tissue_ontology_term_id in tissue_ontology_term_ids:
-                cell_type_ontology_term_ids = cell_counts_cube.df[tissue_ontology_term_id][
-                    "cell_type_ontology_term_id"
-                ].unique()
-                ordering = cell_ordering_generator_fn(cell_type_ontology_term_ids)
-                cell_type_orderings.append(
-                    pd.DataFrame(
-                        data={
-                            "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
-                            "cell_type_ontology_term_id": cell_type_ontology_term_ids,
-                            "order": ordering,
-                        }
-                    )
-                )
-
-        tissue_and_cell_type_orderings = pd.concat(cell_type_orderings)
+        cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
@@ -149,8 +132,29 @@ def create_temp_wmg_snapshot(
                     snapshot_identifier=snapshot_name,
                     expression_summary_cube=expression_summary_cube,
                     cell_counts_cube=cell_counts_cube,
-                    cell_type_orderings=tissue_and_cell_type_orderings,
+                    cell_type_orderings=cell_type_orderings,
                 )
+
+
+def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:
+    cell_type_orderings = []
+    with tiledb.open(cell_counts_cube_dir_, ctx=create_ctx()) as cell_counts_cube:
+        tissue_ontology_term_ids = cell_counts_cube.df[:]["tissue_ontology_term_id"].unique()
+        for tissue_ontology_term_id in tissue_ontology_term_ids:
+            cell_type_ontology_term_ids = cell_counts_cube.df[tissue_ontology_term_id][
+                "cell_type_ontology_term_id"
+            ].unique()
+            ordering = cell_ordering_generator_fn(cell_type_ontology_term_ids)
+            cell_type_orderings.append(
+                    pd.DataFrame(
+                            data={
+                                "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
+                                "cell_type_ontology_term_id": cell_type_ontology_term_ids,
+                                "order": ordering,
+                            }
+                    )
+            )
+    return pd.concat(cell_type_orderings)
 
 
 def create_dataset(dataset_id_ordinal: int) -> str:
@@ -272,16 +276,18 @@ def build_coords(
     return coords, dim_values
 
 
-# CLI invocation for use by setup_dev_data.sh, to create a cube for Docker-based dev & test envs
+# CLI invocation for use by setup_dev_data.sh, to create a snapshot for Docker-based dev & test envs
 if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cubes(
+    _, cell_counts_cube_dir = create_cubes(
         output_cube_dir,
-        dim_size=4,
+        dim_size=2,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
         exclude_logical_coord_fn=exclude_random_coords_75pct,
         expression_summary_vals_fn=random_expression_summary_values,
         cell_counts_fn=random_cell_counts_values,
     )
+    cell_counts_df = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn=forward_cell_type_ordering)
+    cell_counts_df.to_json(os.path.join(output_cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient='records')
