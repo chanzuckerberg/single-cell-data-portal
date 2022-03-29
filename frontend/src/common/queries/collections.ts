@@ -63,7 +63,7 @@ export interface CollectionResponse {
   id: string;
   created_at: number;
   visibility: VISIBILITY_TYPE;
-  revision_id?: string;
+  revision_of?: string;
 }
 
 export interface RevisionResponse extends CollectionResponse {
@@ -84,9 +84,15 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
   const collectionsMap: CollectionResponsesMap = new Map();
 
   for (const collection of json.collections as CollectionResponse[]) {
-    const collectionsWithId = collectionsMap.get(collection.id) || new Map();
-    collectionsWithId.set(collection.visibility, collection);
-    collectionsMap.set(collection.id, collectionsWithId);
+    let collectionsWithID;
+    if (collection.revision_of) {
+      collectionsWithID = collectionsMap.get(collection.revision_of);
+    } else {
+      collectionsWithID = collectionsMap.get(collection.id);
+    }
+    if (!collectionsWithID) collectionsWithID = new Map();
+    collectionsWithID.set(collection.visibility, collection);
+    collectionsMap.set(collection.id, collectionsWithID);
   }
 
   return collectionsMap;
