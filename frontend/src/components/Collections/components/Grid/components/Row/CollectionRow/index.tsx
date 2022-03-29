@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { FC } from "react";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCreateRevision,
@@ -53,7 +53,7 @@ const CollectionRow: FC<Props> = (props) => {
 
   const router = useRouter();
 
-  const navigateToRevision = () => {
+  const navigateToRevision = (id: Collection["id"]) => {
     router.push(ROUTES.COLLECTION.replace(":id", id));
   };
 
@@ -62,10 +62,10 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    if (collection?.has_revision === false) {
+    if (!collection?.revision_id) {
       mutate(id);
     } else {
-      navigateToRevision();
+      navigateToRevision(collection.revision_id);
     }
   };
 
@@ -99,7 +99,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.has_revision && (
+            {props.revisionsEnabled && collection.revision_id && (
               <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
                 Revision Pending
               </Tag>
@@ -114,7 +114,7 @@ const CollectionRow: FC<Props> = (props) => {
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          isRevision={collection.has_revision}
+          revisionId={collection.revision_id}
           handleRevisionClick={handleRevisionClick}
           isLoading={isLoading}
         />
@@ -126,13 +126,13 @@ const CollectionRow: FC<Props> = (props) => {
 };
 
 const RevisionCell = ({
-  isRevision,
   handleRevisionClick,
   isLoading,
+  revisionId,
 }: {
-  isRevision?: boolean;
   handleRevisionClick: () => void;
   isLoading: boolean;
+  revisionId: Collection["revision_id"];
 }) => {
   return (
     <RightAlignedDetailsCell>
@@ -143,7 +143,7 @@ const RevisionCell = ({
         onClick={handleRevisionClick}
         data-test-id="revision-action-button"
       >
-        {isRevision ? "Continue" : "Start Revision"}
+        {revisionId ? "Continue" : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
   );

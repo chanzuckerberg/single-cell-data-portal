@@ -63,6 +63,7 @@ export interface CollectionResponse {
   id: string;
   created_at: number;
   visibility: VISIBILITY_TYPE;
+  revision_id?: string;
 }
 
 export interface RevisionResponse extends CollectionResponse {
@@ -139,14 +140,19 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       throw json;
     }
 
-    const collection = { ...json, datasets: generateDatasetMap(json) };
+    const collection: Collection = {
+      ...json,
+      datasets: generateDatasetMap(json),
+    };
 
     let publishedCounterpart;
 
-    if (allCollections) {
+    if (allCollections && collection.visibility === VISIBILITY_TYPE.PUBLIC) {
       const collectionsWithID = allCollections.get(id);
 
-      collection.has_revision = collectionsWithID && collectionsWithID.size > 1;
+      collection.revision_id = collectionsWithID?.get(
+        VISIBILITY_TYPE.PRIVATE
+      )?.id;
     }
 
     if (collection.revision_of) {
@@ -463,7 +469,7 @@ export function useEditCollection(
           } else if (
             !isTombstonedCollection(collection) &&
             !isTombstonedCollection(publishedCollection) &&
-            collection?.has_revision &&
+            collection?.revision_id &&
             publishedCollection
           ) {
             revision_diff = checkForRevisionChange(
@@ -492,14 +498,14 @@ const createRevision = async function (id: string) {
   return response.json();
 };
 
-export function useCreateRevision(callback: () => void) {
+export function useCreateRevision(callback: (id: Collection["id"]) => void) {
   const queryClient = useQueryClient();
 
   return useMutation(createRevision, {
     onSuccess: async (collection: Collection) => {
       await queryClient.invalidateQueries([USE_COLLECTIONS]);
       await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
-      callback();
+      callback(collection.id);
     },
   });
 }

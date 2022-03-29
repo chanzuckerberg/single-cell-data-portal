@@ -97,7 +97,7 @@ export interface Collection {
   data_submission_policy_version: string;
   created_at: number;
   updated_at: number;
-  has_revision: boolean;
+  revision_id?: Collection["id"];
   publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
   summaryCitation?: string;

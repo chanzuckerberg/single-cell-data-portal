@@ -131,7 +131,7 @@ const Collection: FC = () => {
 
   const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
 
-  const isRevision = isCurator && !!collection?.has_revision;
+  const isRevision = isCurator && !!collection?.revision_id;
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -177,7 +177,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
-    collection.has_revision && isPrivate;
+    collection.revision_id && isPrivate;
   // TODO update to use buildCollectionMetadataLinks once filter feature flag is removed (#1718).
   const collectionMetadataLinksFn = isFilterEnabled
     ? buildCollectionMetadataLinks
@@ -258,7 +258,7 @@ const Collection: FC = () => {
         </ViewCollection>
       ) : (
         <ViewGrid>
-          {collection.has_revision && isPrivate && (
+          {collection.revision_id && isPrivate && (
             <StyledCallout intent={Intent.PRIMARY} icon={null}>
               <span data-test-id="revision-status">
                 {collection.revision_diff
