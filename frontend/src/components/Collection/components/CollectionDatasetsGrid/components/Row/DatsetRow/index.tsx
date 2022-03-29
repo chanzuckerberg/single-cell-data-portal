@@ -6,7 +6,7 @@
 import { Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { CancelledError, useQueryClient } from "react-query";
+import { CancelledError, useQueryClient, UseQueryResult } from "react-query";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
@@ -69,6 +69,17 @@ const ErrorTooltip = ({ isFailed, error, type }: FailReturn) => {
   return <AsyncTooltip error={error} type={type} />;
 };
 
+const handlePossibleError = (
+  datasetStatusResult: UseQueryResult<DatasetUploadStatus, unknown>
+) => {
+  if (
+    datasetStatusResult.isError &&
+    !(datasetStatusResult.error instanceof CancelledError)
+  ) {
+    console.error(datasetStatusResult.error);
+  }
+};
+
 interface Props {
   dataset: Dataset;
   file?: UploadingFile;
@@ -79,7 +90,6 @@ interface Props {
   onUploadFile: ChooserProps["onUploadFile"];
 }
 
-/* eslint-disable sonarjs/cognitive-complexity */
 const DatasetRow: FC<Props> = ({
   dataset,
   file,
@@ -102,12 +112,7 @@ const DatasetRow: FC<Props> = ({
 
   const { upload_progress } = datasetStatus;
 
-  if (
-    datasetStatusResult.isError &&
-    !(datasetStatusResult.error instanceof CancelledError)
-  ) {
-    console.error(datasetStatusResult.error);
-  }
+  handlePossibleError(datasetStatusResult);
 
   const isNamePopulated = Boolean(dataset.name);
 
