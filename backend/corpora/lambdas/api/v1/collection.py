@@ -98,9 +98,7 @@ def get_collections_index():
 
     # Remove entries where the value is None
     for d in filtered_collection:
-        for (key, value) in d.items():
-            if value is None:
-                del d[key]
+        d.update((k, v) for k, v in d.items() if v is not None)
 
     return make_response(jsonify(filtered_collection), 200)
 
