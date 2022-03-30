@@ -130,7 +130,7 @@ const Collection: FC = () => {
 
   const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
 
-  const isRevision = isCurator && !!collection?.revision_id;
+  const isRevision = isCurator && !!collection?.revision_of;
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
