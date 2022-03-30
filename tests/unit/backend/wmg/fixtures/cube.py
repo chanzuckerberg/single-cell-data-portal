@@ -13,7 +13,7 @@ from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, 
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.cube import WmgCubes
-from backend.wmg.data.schema import (
+from backend.wmg.data.schemas.cube_schema import (
     cube_indexed_dims,
     cube_logical_attrs,
     cube_logical_dims,
@@ -23,6 +23,7 @@ from backend.wmg.data.schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
 )
+
 from backend.wmg.data.tiledb import create_ctx
 
 
@@ -120,7 +121,6 @@ def create_temp_wmg_cubes(
 def create_dataset(dataset_id_ordinal: int) -> str:
     coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
     with db_session_manager() as session:
-
         if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
             Collection.delete(coll)
 
