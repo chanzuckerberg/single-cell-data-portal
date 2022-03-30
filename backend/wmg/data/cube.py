@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Tuple
+from collections import namedtuple
+from typing import Optional
 
 import tiledb
 from tiledb import Array
@@ -11,30 +12,36 @@ from backend.wmg.data.tiledb import create_ctx
 
 logger = logging.getLogger("wmg")
 
-# Cached cube
-cube = None
+WmgCubes = namedtuple("cubes", ["expression_summary_cube", "cell_counts_cube", "snapshot_identifier"])
+
+# Cached cubes
+cubes: WmgCubes = None
 latest_snapshot_identifier_s3obj = None
-latest_snapshot_identifier = None
 
 
-def load_cube() -> Tuple[Array, str]:
+def load_cubes() -> WmgCubes:
     """
     Loads and caches the WMG cube (TileDB Array). Reloads the cube if the latest_snapshot_identifier S3 object has
     been updated.
     @return: TileDB Array and latest snapshot identifier, as a Tuple
     """
 
-    global cube, latest_snapshot_identifier
+    global cubes
 
-    if _update_latest_snapshot_identifier() or cube is None:
+    if new_snapshot_identifier := _update_latest_snapshot_identifier():
         # TODO: Okay to keep open indefinitely? Is it faster than re-opening each request?
         #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
         #  -data-portal/2134
-        cube_uri = build_cube_uri(WmgConfig().bucket, latest_snapshot_identifier)
-        logger.info(f"Opening WMG cube at {cube_uri}")
-        cube = _open_cube(cube_uri)
+        snapshot_base_uri = build_snapshot_base_uri(WmgConfig().bucket, new_snapshot_identifier)
+        logger.info(f"Opening WMG cube at {snapshot_base_uri}")
+        cubes = _open_cubes(snapshot_base_uri, new_snapshot_identifier)
+    return cubes
 
-    return cube, latest_snapshot_identifier
+
+def _open_cubes(snapshot_base_uri, new_snapshot_identifier) -> WmgCubes:
+    expression_summary = _open_cube(f"{snapshot_base_uri}/expression_summary")
+    cell_counts = _open_cube(f"{snapshot_base_uri}/cell_counts")
+    return WmgCubes(expression_summary, cell_counts, new_snapshot_identifier)
 
 
 def _open_cube(cube_uri) -> Array:
@@ -45,8 +52,8 @@ def _open_cube(cube_uri) -> Array:
 #  and maybe warm the TileDB cache?) before a user needs to query it:
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2134
-def _update_latest_snapshot_identifier() -> bool:
-    global latest_snapshot_identifier_s3obj, latest_snapshot_identifier
+def _update_latest_snapshot_identifier() -> Optional[str]:
+    global latest_snapshot_identifier_s3obj, cubes
 
     if latest_snapshot_identifier_s3obj is None:
         s3 = buckets.portal_resource
@@ -55,18 +62,20 @@ def _update_latest_snapshot_identifier() -> bool:
     latest_snapshot_identifier_s3obj.reload()  # necessary?
     new_snapshot_identifier = latest_snapshot_identifier_s3obj.get()["Body"].read().decode("utf-8").strip()
 
-    if new_snapshot_identifier != latest_snapshot_identifier:
-        logger.info(f"detected snapshot update from {latest_snapshot_identifier} to {new_snapshot_identifier}")
-        latest_snapshot_identifier = new_snapshot_identifier
-        return True
+    if cubes is None:
+        logger.info(f"using latest snapshot {new_snapshot_identifier}")
+        return new_snapshot_identifier
+    elif new_snapshot_identifier != cubes.snapshot_identifier:
+        logger.info(f"detected snapshot update from {cubes.snapshot_identifier} to {new_snapshot_identifier}")
+        return new_snapshot_identifier
     else:
-        logger.debug(f"latest snapshot identifier={latest_snapshot_identifier}")
-        return False
+        logger.debug(f"latest snapshot identifier={cubes.snapshot_identifier}")
+        return None
 
 
 def build_latest_snapshot_uri(data_root_uri: str):
     return os.path.join(data_root_uri, "latest_snapshot_identifier")
 
 
-def build_cube_uri(bucket: str, snapshot_identifier: str):
-    return os.path.join("s3://", bucket, snapshot_identifier, "cube")
+def build_snapshot_base_uri(bucket: str, snapshot_identifier: str):
+    return os.path.join("s3://", bucket, snapshot_identifier)

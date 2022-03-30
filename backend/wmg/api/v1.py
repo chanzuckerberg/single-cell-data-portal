@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import connexion
 from flask import jsonify
@@ -7,7 +7,7 @@ from pandas import DataFrame
 
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.cube import load_cube
+from backend.wmg.data.cube import load_cubes, WmgCubes
 from backend.wmg.data.query import (
     build_gene_id_label_mapping,
     build_ontology_term_id_label_mapping,
@@ -22,8 +22,8 @@ from backend.wmg.data.schema import cube_non_indexed_dims
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 def primary_filter_dimensions():
-    cube, snapshot_identifier = load_cube()
-    qry = WmgQuery(cube)
+    cubes: WmgCubes = load_cubes()
+    qry = WmgQuery(cubes)
 
     # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
     organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
@@ -35,7 +35,7 @@ def primary_filter_dimensions():
     }
 
     result = dict(
-        snapshot_id=snapshot_identifier,
+        snapshot_id=cubes.snapshot_identifier,
         organism_terms=build_ontology_term_id_label_mapping(
             qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
         ),
@@ -51,9 +51,11 @@ def query():
     request = connexion.request.json
     criteria = WmgQueryCriteria(**request["filter"])
 
-    cube, snapshot_identifier = load_cube()
-    query_result = WmgQuery(cube).expression_summary(criteria)
-    dot_plot_matrix_df = build_dot_plot_matrix(query_result)
+    cubes: WmgCubes = load_cubes()
+    query = WmgQuery(cubes)
+    query_result = query.expression_summary(criteria)
+    cell_counts = query.cell_counts(criteria)
+    dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts)
     all_filter_dims_values = extract_filter_dims_values(query_result)
 
     include_filter_dims = request.get("include_filter_dims", False)
@@ -63,7 +65,7 @@ def query():
 
     return jsonify(
         dict(
-            snapshot_id=snapshot_identifier,
+            snapshot_id=cubes.snapshot_identifier,
             expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
@@ -115,20 +117,15 @@ def build_filter_dims_values(all_filter_dims_values):
 
 def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
-    structured_result = defaultdict(lambda: defaultdict(list))
-    for group_by_key, cell_type_stats in query_result.to_dict("index").items():
-        gene_ontology_term_id, tissue_ontology_term_id, cell_type_ontology_term_id = [s for s in group_by_key]
-        structured_result[gene_ontology_term_id][tissue_ontology_term_id].append(
+    structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
+    for row in query_result.itertuples(index=False):
+        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
             dict(
-                id=cell_type_ontology_term_id,
-                n=cell_type_stats["nnz"],
-                me=cell_type_stats["sum"] / cell_type_stats["n_cells"],
-                # TODO (https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg
-                #  /single-cell-data-portal/2054)
-                pc=0.0,
-                # TODO (https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg
-                #  /single-cell-data-portal/2054)
-                tpc=0.0,
+                id=row.cell_type_ontology_term_id,
+                n=row.nnz,
+                me=row.sum / row.nnz,
+                pc=row.nnz / row.n_cells_cell_type,
+                tpc=row.nnz / row.n_cells_tissue,
             )
         )
     return structured_result
