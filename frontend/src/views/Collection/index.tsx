@@ -223,7 +223,7 @@ const Collection: FC = () => {
                 id={id}
                 addNewFile={addNewFile}
                 isPublishable={isPublishable}
-                isRevision={isRevision}
+                revisionOf={collection.revision_of}
                 visibility={collection.visibility}
               />
             )}
