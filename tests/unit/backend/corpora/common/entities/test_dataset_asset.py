@@ -212,9 +212,8 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             s3_uri=second_uri,
         )
         s3_uri_dataset_dict = DatasetAsset.s3_uris_for_datasets(self.session, [dataset_0.id, dataset_1.id])
+        self.assertTrue(set(s3_uri_dataset_dict.keys()).issuperset(set([dataset_0.id, dataset_1.id])))
+        self.assertNotIn(dataset_2.id, s3_uri_dataset_dict.keys())
 
-        self.assertIn(s3_uri_dataset_dict.keys(), [dataset_0.id, dataset_1.id])
-        self.assertNotIn(s3_uri_dataset_dict.keys(), dataset_2.id)
-
-        self.assertIn(s3_uri_dataset_dict.values(), [first_uri, second_uri])
-        self.assertNotIn(s3_uri_dataset_dict.values(), third_uri)
+        self.assertTrue(set(s3_uri_dataset_dict.values()).issuperset(set([first_uri, second_uri])))
+        self.assertNotIn(third_uri, s3_uri_dataset_dict.values())
