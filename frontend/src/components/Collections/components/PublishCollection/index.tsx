@@ -49,7 +49,9 @@ const PublishCollection: FC<Props> = ({
       {
         onSuccess: () => {
           //if revision show  revision toast
+          console.log("Successfully published!");
           if (isRevision) {
+            console.log("Published a revision");
             Toast.show({
               icon: IconNames.TICK,
               intent: Intent.SUCCESS,

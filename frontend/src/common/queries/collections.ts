@@ -370,7 +370,7 @@ export type PublishCollection = {
 
 async function publishCollection({ id, payload }: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
-
+  console.log("attempting to publish via API call");
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -388,6 +388,7 @@ export function usePublishCollection() {
 
   return useMutation(publishCollection, {
     onSuccess: () => {
+      console.log("Completed publish mutation");
       queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
   });
