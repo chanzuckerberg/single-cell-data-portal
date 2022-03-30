@@ -8,6 +8,8 @@ from pathlib import Path
 
 import tiledb
 
+import pandas as pd
+
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
@@ -25,18 +27,14 @@ import boto3
 
 Log_Format = "%(levelname)s %(asctime)s - %(message)s"
 
-logging.basicConfig(
-                    stream = sys.stdout,
-                    filemode = "w",
-                    format = Log_Format,
-                    level = logging.WARNING)
+logging.basicConfig(stream=sys.stdout, filemode="w", format=Log_Format, level=logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
 # Stack name for rdev
-stack_name = os.environ.get('REMOTE_DEV_PREFIX')
-wmg_bucket_name = os.environ.get('WMG_BUCKET')
-artifact_bucket_name = os.environ.get('ARTIFACT_BUCKET')
+stack_name = os.environ.get("REMOTE_DEV_PREFIX")
+wmg_bucket_name = os.environ.get("WMG_BUCKET")
+artifact_bucket_name = os.environ.get("ARTIFACT_BUCKET")
 
 
 def get_wmg_bucket_path():
@@ -57,7 +55,7 @@ def copy_datasets_to_instance(dataset_directory):
     s3_uris = get_s3_uris()
     for dataset in s3_uris.keys():
         sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
-    subprocess.run(sync_command) # TODO parallelize this step
+    subprocess.run(sync_command)  # TODO parallelize this step
 
 
 def load_datasets_into_corpus(path_to_datasets, group_name):
@@ -69,20 +67,21 @@ def load_datasets_into_corpus(path_to_datasets, group_name):
 
 def get_cells_by_tissue_type(tdb_group: str) -> Dict:
     with tiledb.open(f"{tdb_group}/obs", "r") as obs:
-     cell_tissue_types = (
-         obs.query(
-             attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
-         )
-         .df[:]
-         .drop_duplicates()
-         .sort_values(by="tissue_ontology_term_id")
-     )
+        cell_tissue_types = (
+            obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
+            .df[:]
+            .drop_duplicates()
+            .sort_values(by="tissue_ontology_term_id")
+        )
     unique_tissue_ontology_term_id = cell_tissue_types.tissue_ontology_term_id.unique()
     cell_type_by_tissue = {}
     for x in unique_tissue_ontology_term_id:
-        cell_type_by_tissue[x] = cell_tissue_types.loc[cell_tissue_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"]
+        cell_type_by_tissue[x] = cell_tissue_types.loc[
+            cell_tissue_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"
+        ]
 
     return cell_type_by_tissue
+
 
 def generate_cell_ordering(cell_type_by_tissue):
     onto = Ontology.from_obo_library("cl-basic.obo")
@@ -97,7 +96,7 @@ def generate_cell_ordering(cell_type_by_tissue):
             for s in a.subclasses(with_self=False, distance=1):
                 if s in ancestors:
                     G.add_edge(a.id, s.id)
-        
+
         G.layout(prog="dot")
 
         positions = {}
@@ -109,9 +108,11 @@ def generate_cell_ordering(cell_type_by_tissue):
 
         def recurse(node):
             if node in cells:
-                yield(node)
-            children = [(c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids]
-            sorted_children = sorted(children, key = lambda x: x[1][0])
+                yield (node)
+            children = [
+                (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
+            ]
+            sorted_children = sorted(children, key=lambda x: x[1][0])
             for child in sorted_children:
                 yield from recurse(child[0].id)
 
@@ -121,11 +122,17 @@ def generate_cell_ordering(cell_type_by_tissue):
     mapping = {}
     for tissue, cell_df in cell_type_by_tissue.items():
         cells = list(cell_df)
-        ordered_cells = compute_ordering(cells, "CL:0000003") # TODO: is this the right root?
+        ordered_cells = compute_ordering(cells, "CL:0000003")  # TODO: is this the right root?
         mapping[tissue] = ordered_cells
 
-    with open("ordered-cells.json", "w") as f:
-        json.dump(mapping, f)
+    data = []
+    for tissue, cells in mapping.items():
+        for cell in cells:
+            data.append((tissue, cell))
+
+    df = pd.DataFrame(data, columns=["tissue", "cell"])
+    df.to_json("ordered-cells.json")
+
 
 def update_s3_resources(group_name):
     timestamp = int(time.time())
@@ -136,9 +143,9 @@ def update_s3_resources(group_name):
 
 
 def remove_oldest_datasets(timestamp):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
     wmg_bucket = s3.Bucket(wmg_bucket_name)
-    objects = wmg_bucket.objects.filter(Prefix=stack_name.strip('/')) if stack_name else wmg_bucket.objects.all()
+    objects = wmg_bucket.objects.filter(Prefix=stack_name.strip("/")) if stack_name else wmg_bucket.objects.all()
 
     def enumerate_timestamps_and_objects(objects):
         for obj in objects:
@@ -150,7 +157,7 @@ def remove_oldest_datasets(timestamp):
                     yield (timestamp_token, obj)
             except Exception:
                 pass
-            
+
     candidate_to_delete = [obj for obj in enumerate_timestamps_and_objects(objects)]
 
     timestamps = sorted(list(set([x[0] for x in candidate_to_delete])))
@@ -159,7 +166,7 @@ def remove_oldest_datasets(timestamp):
         timestamps_to_delete = list(timestamps)[:-2]
     else:
         timestamps_to_delete = []
-        
+
     for timestamp, object in candidate_to_delete:
         if timestamp in timestamps_to_delete:
             object.delete()
@@ -176,7 +183,7 @@ def upload_cell_ordering_to_s3(timestamp):
 
 
 def update_latest_snapshot_identifier(timestamp):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
     file_key = "latest_snapshot_identifier"
     file_path = f"{stack_name.strip('/')}/{file_key}" if stack_name else f"{file_key}"
     object = s3.Object(wmg_bucket_name, file_path)
