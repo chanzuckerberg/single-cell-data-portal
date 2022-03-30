@@ -62,9 +62,8 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:dim_size]
     if dimension_name == "development_stage_ontology_term_id":
         return [
-                   term_id for term_id in deterministic_term_ids if
-                   term_id.startswith("Hsap") or term_id.startswith("MmusDev")
-               ][:dim_size]
+            term_id for term_id in deterministic_term_ids if term_id.startswith("Hsap") or term_id.startswith("MmusDev")
+        ][:dim_size]
     if dimension_name == "disease_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:dim_size]
     if dimension_name == "ethnicity_ontology_term_id":
@@ -100,11 +99,11 @@ def exclude_random_coords_75pct(_) -> bool:
 
 @contextlib.contextmanager
 def create_temp_wmg_cubes(
-        dim_size=3,
-        snapshot_name="dummy-snapshot",
-        expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-        exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-        cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
+    dim_size=3,
+    snapshot_name="dummy-snapshot",
+    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+    cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
 ) -> WmgCubes:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
@@ -143,12 +142,12 @@ def create_dataset(dataset_id_ordinal: int) -> str:
 
 
 def create_cubes(
-        data_dir,
-        dim_size: int = 3,
-        dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-        exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
-        expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-        cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
+    data_dir,
+    dim_size: int = 3,
+    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
         cube_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
@@ -186,10 +185,10 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
 
 
 def create_expression_summary_cube(
-        data_dir,
-        coords,
-        dim_values,
-        expression_summary_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values,
+    data_dir,
+    coords,
+    dim_values,
+    expression_summary_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values,
 ) -> str:
     cube_dir = f"{data_dir}/expression_summary"
     tiledb.Array.create(cube_dir, expression_summary_schema, overwrite=True)
@@ -209,10 +208,10 @@ def create_expression_summary_cube(
 
 
 def build_coords(
-        logical_dims,
-        dim_size,
-        dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-        exclude_coord_fn: Callable[[Tuple], bool] = None,
+    logical_dims,
+    dim_size,
+    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
+    exclude_coord_fn: Callable[[Tuple], bool] = None,
 ) -> Tuple[List[Tuple], List[List]]:
     n_dims = len(logical_dims)
     n_coords = dim_size ** n_dims
