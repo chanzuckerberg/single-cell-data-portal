@@ -1,5 +1,5 @@
 # TODO generalize
-def get_s3_uris():
+def get_dataset_s3_uris():
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
     """

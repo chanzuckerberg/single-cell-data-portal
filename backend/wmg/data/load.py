@@ -12,7 +12,7 @@ def remove_oldest_data():
     pass
 
 
-def update_latest_snapshot(time_stamp):
+def update_latest_snapshot_identifier(time_stamp):
     """
     Update static timestamp in s3 to match the latest
     """
