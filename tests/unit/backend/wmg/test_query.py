@@ -14,7 +14,7 @@ from tests.unit.backend.wmg.fixtures.snapshot import (
 #  WmgQuery methods
 
 
-# @unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
+@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
     def test__query_with_no_genes__returns_empty_result(self):
         criteria = WmgQueryCriteria(
