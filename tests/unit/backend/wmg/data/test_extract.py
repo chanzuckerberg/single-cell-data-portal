@@ -16,11 +16,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
         # INCLUDE
-<<<<<<< HEAD
         assay_ontologies = list(included_assay_ontologies.keys())
-=======
-        assay_ontologies = included_assay_ontologies.keys()
->>>>>>> f5e23509 (clean up)
         self.dataset_0 = self.generate_dataset_with_s3_resources(
             self.session,
             artifacts=True,
@@ -30,13 +26,8 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=False,
-<<<<<<< HEAD
-            assay={"ontology_term_id": included_assay_ontology_ids[0], "label": "test_assay"},
-
-=======
             assay={"ontology_term_id": assay_ontologies[0], "label": "test_assay"},
         )
->>>>>>> f5e23509 (clean up)
         self.dataset_1 = self.generate_dataset_with_s3_resources(
             self.session,
             artifacts=True,
@@ -47,11 +38,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             is_primary_data="PRIMARY",
             tombstone=False,
             assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
-<<<<<<< HEAD
-
-=======
         )
->>>>>>> f5e23509 (clean up)
 
         # DONT INCLUDE
         self.dataset__wrong_assay = self.generate_dataset_with_s3_resources(
@@ -75,10 +62,8 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             is_primary_data="SECONDARY",
             tombstone=True,
             assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
-<<<<<<< HEAD
-=======
+
         )
->>>>>>> f5e23509 (clean up)
 
         self.dataset__not_published = self.generate_dataset_with_s3_resources(
             self.session,
@@ -101,11 +86,8 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             is_primary_data="PRIMARY",
             tombstone=True,
             assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
-<<<<<<< HEAD
 
-=======
         )
->>>>>>> f5e23509 (clean up)
 
         private_collection = self.generate_collection(self.session, visibility="PRIVATE")
         self.dataset__private_collection = self.generate_dataset_with_s3_resources(
@@ -155,7 +137,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
         s3_uris = set(extract.get_dataset_s3_uris())
         self.assertEquals(set(expected_s3_uris), s3_uris)
-
 
         @unittest.skip
         def test_datasets_copied_to_correct_location(self):
