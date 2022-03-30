@@ -2,7 +2,7 @@ import unittest
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data import extract
-from backend.wmg.data.extract import included_assay_ontology_ids
+from backend.wmg.data.extract import included_assay_ontologies
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -16,6 +16,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
         # INCLUDE
+        assay_ontologies = included_assay_ontologies.keys()
         self.dataset_0 = self.generate_dataset_with_s3_resources(
             self.session,
             artifacts=True,
@@ -25,7 +26,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=False,
-            assay={"ontology_term_id": included_assay_ontology_ids[0], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[0], "label": "test_assay"},
         )
         self.dataset_1 = self.generate_dataset_with_s3_resources(
             self.session,
@@ -36,7 +37,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=False,
-            assay={"ontology_term_id": included_assay_ontology_ids[1], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
         )
 
         # DONT INCLUDE
@@ -60,7 +61,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="SECONDARY",
             tombstone=True,
-            assay={"ontology_term_id": included_assay_ontology_ids[1], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
         )
 
         self.dataset__not_published = self.generate_dataset_with_s3_resources(
@@ -72,7 +73,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=False,
             is_primary_data="PRIMARY",
             tombstone=False,
-            assay={"ontology_term_id": included_assay_ontology_ids[1], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
         )
         self.dataset__tombstoned = self.generate_dataset_with_s3_resources(
             self.session,
@@ -83,7 +84,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=True,
-            assay={"ontology_term_id": included_assay_ontology_ids[1], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[1], "label": "test_assay"},
         )
 
         private_collection = self.generate_collection(self.session, visibility="PRIVATE")
@@ -96,7 +97,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=False,
-            assay={"ontology_term_id": included_assay_ontology_ids[0], "label": "test_assay"},
+            assay={"ontology_term_id": assay_ontologies[0], "label": "test_assay"},
         )
 
     def tearDown(self):
