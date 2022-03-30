@@ -74,6 +74,7 @@ def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
 def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     wmg_config = WmgConfig()
+    wmg_config.load()
     prefixed_relative_path = os.path.join(
         wmg_config.data_path_prefix if "data_path_prefix" in wmg_config.config else "", relative_path or ""
     )
