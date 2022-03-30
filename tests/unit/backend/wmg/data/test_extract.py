@@ -134,11 +134,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                     expected_s3_uris.append(asset.s3_uri)
 
         s3_uris = set(extract.get_dataset_s3_uris())
-        for uri in expected_s3_uris:
-            self.assertIn(uri, s3_uris)
-        for uri in not_expected_s3_uris:
-            self.assertNotIn(uri, s3_uris)
-
+        self.assertEquals(set(expected_s3_uris), s3_uris)
         @unittest.skip
         def test_datasets_copied_to_correct_location(self):
             # TODO implement with changes from @ebezzis pipeline work
