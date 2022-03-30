@@ -127,10 +127,10 @@ def generate_cell_ordering(cell_type_by_tissue):
 
     data = []
     for tissue, cells in mapping.items():
-        for cell in cells:
-            data.append((tissue, cell))
+        for i, cell in enumerate(cells):
+            data.append((tissue, cell, i))
 
-    df = pd.DataFrame(data, columns=["tissue", "cell"])
+    df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
     df.to_json("ordered-cells.json")
 
 
