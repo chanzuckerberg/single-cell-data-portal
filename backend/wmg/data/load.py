@@ -5,7 +5,7 @@ def update_s3_resources():
     pass
 
 
-def remove_oldest_data():
+def remove_previous_snapshot():
     """
     Remove all data stored under the oldest timestamp
     """
