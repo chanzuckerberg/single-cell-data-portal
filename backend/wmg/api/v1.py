@@ -15,12 +15,14 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     build_dot_plot_matrix,
 )
-from backend.wmg.data.schema import cube_non_indexed_dims
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
+from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+
+
 def primary_filter_dimensions():
     cubes: WmgCubes = load_cubes()
     qry = WmgQuery(cubes)
