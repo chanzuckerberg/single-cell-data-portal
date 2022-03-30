@@ -36,7 +36,7 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
 
     load(path_to_datasets, corpus_name)
     logger.info("Loaded datasets into corpus")
-    create_cube(corpus_name)  # Todo dry up with create cube func in fixtures
+    create_cube(corpus_name)
     logger.info("Built expression summary cube")
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_name)
     generate_cell_ordering(cell_type_by_tissue)

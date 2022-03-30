@@ -4,22 +4,21 @@ from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 
-# TODO make dict of ontology ids and human readable names, store as a const elsewhere (in rds for easy updates?)
-included_assay_ontology_ids = [
-    "EFO:0008722",
-    "EFO:0010010",
-    "EFO:0010550",
-    "EFO:0010961",
-    "EFO:0030002",
-    "EFO:0009901",
-    "EFO:0011025",
-    "EFO:0009899",
-    "EFO:0009900",
-    "EFO:0009922",
-    "EFO_0030003",
-    "EFO:0030004",
-    "EFO:0008919",
-]
+included_assay_ontologies = {
+    "EFO:0008722": "Drop-seq", 
+    "EFO:0010010": "CEL-seq2", 
+    "EFO:0010550": "sci-RNA-seq", 
+    "EFO:0010961": "Visium Spatial Gene Expression", 
+    "EFO:0030002": "microwell-seq", 
+    "EFO:0009901": "10x 3' v1",
+    "EFO:0011025": "10x 5' v1",
+    "EFO:0009899": "10x 3' v2",
+    "EFO:0009900": "10x 5' v2",
+    "EFO:0009922": "10x 3' v3",
+    "EFO_0030003": "10x 3' transcription profiling",
+    "EFO:0030004": "10x 5' transcription profiling",
+    "EFO:0008919": "Seq-Well S3"
+}
 
 
 def get_dataset_s3_uris():
@@ -36,12 +35,12 @@ def get_dataset_s3_uris():
                 Dataset.table.published == "TRUE",
                 Dataset.table.is_primary_data == "PRIMARY",
                 Dataset.table.collection_visibility == "PUBLIC",
-                Dataset.table.tombstone == "f",
+                Dataset.table.tombstone == "FALSE",
             )
             .all()
         )
         for dataset in published_dataset_non_null_assays:
-            if dataset[1]["ontology_term_id"] in included_assay_ontology_ids:
+            if dataset[1]["ontology_term_id"] in included_assay_ontologies:
                 dataset_ids.append(dataset[0])
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
@@ -52,4 +51,4 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
         sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
-        os.subprocess(sync_command)  # TODO parallelize this step
+        os.subprocess(sync_command)  # TODO parallelize this step see https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests # noqa: E501
