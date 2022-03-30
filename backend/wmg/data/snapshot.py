@@ -56,10 +56,10 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     return WmgSnapshot(
-            snapshot_identifier=new_snapshot_identifier,
-            expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-            cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
-            cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
+        snapshot_identifier=new_snapshot_identifier,
+        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
     )
 
 
@@ -73,7 +73,11 @@ def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
 
 def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
-    s3obj = s3.Object(WmgConfig().bucket, relative_path)
+    wmg_config = WmgConfig()
+    prefixed_relative_path = os.path.join(
+        wmg_config.data_path_prefix if "data_path_prefix" in wmg_config.config else "", relative_path or ""
+    )
+    s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
 
 
@@ -99,7 +103,9 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
 
 def _build_snapshot_base_uri(snapshot_identifier: str):
     wmg_config = WmgConfig()
-    return os.path.join("s3://",
-                        wmg_config.bucket,
-                        wmg_config.data_path_prefix if 'data_path_prefix' in wmg_config.config else '',
-                        snapshot_identifier)
+    return os.path.join(
+        "s3://",
+        wmg_config.bucket,
+        wmg_config.data_path_prefix if "data_path_prefix" in wmg_config.config else "",
+        snapshot_identifier,
+    )
