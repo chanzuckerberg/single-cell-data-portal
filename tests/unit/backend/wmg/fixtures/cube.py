@@ -214,7 +214,7 @@ def build_coords(
     exclude_coord_fn: Callable[[Tuple], bool] = None,
 ) -> Tuple[List[Tuple], List[List]]:
     n_dims = len(logical_dims)
-    n_coords = dim_size ** n_dims
+    n_coords = dim_size**n_dims
 
     def dim_domain_values(i_dim: int, dim_size_: int) -> List[str]:
         dim_name = logical_dims[i_dim]
