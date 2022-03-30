@@ -50,16 +50,16 @@ def load_snapshot() -> WmgSnapshot:
 
 
 def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
-    snapshot_base_uri = _build_snapshot_base_uri(WmgConfig().bucket, new_snapshot_identifier)
+    snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     return WmgSnapshot(
-        snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
+            snapshot_identifier=new_snapshot_identifier,
+            expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+            cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+            cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
     )
 
 
@@ -97,6 +97,9 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
         return None
 
 
-def _build_snapshot_base_uri(bucket: str, snapshot_identifier: str):
-    # TODO: add rdev intermediate path if in rdev env; should be able to handle that via `bucket` value (add prefix)
-    return os.path.join("s3://", bucket, snapshot_identifier)
+def _build_snapshot_base_uri(snapshot_identifier: str):
+    wmg_config = WmgConfig()
+    return os.path.join("s3://",
+                        wmg_config.bucket,
+                        wmg_config.data_path_prefix if 'data_path_prefix' in wmg_config.config else '',
+                        snapshot_identifier)
