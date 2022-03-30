@@ -9,6 +9,8 @@ from tests.unit.backend.wmg.fixtures.cube import create_cube
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+
 def load(dataset_directory: List, group_name: str, validate: bool):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
@@ -22,8 +24,8 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
     open, transform, normalize and concatenate them together as a tiledb object with a global gene index
     under the given corpus name.
-    A cube of expression summary statistics (known as the expression summary cube) across genes (but queryable by the given dimensions/data) is then generated
-    and stored under big-cube.
+    A cube of expression summary statistics (known as the expression summary cube) across genes (but queryable by
+    the given dimensions/data) is then generated and stored under big-cube.
     ## TODO add function to get cell count totals
     A per-tissue mapping of cell ontologies is generated and the files are copied to s3 under a shared timestamp,.
     On success the least recent set of files are removed from s3
