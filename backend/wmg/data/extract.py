@@ -54,3 +54,4 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
         os.subprocess(
             sync_command
         )  # TODO parallelize this step see https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests # noqa: E501
+
