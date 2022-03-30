@@ -5,11 +5,11 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 
 included_assay_ontologies = {
-    "EFO:0008722": "Drop-seq", 
-    "EFO:0010010": "CEL-seq2", 
-    "EFO:0010550": "sci-RNA-seq", 
-    "EFO:0010961": "Visium Spatial Gene Expression", 
-    "EFO:0030002": "microwell-seq", 
+    "EFO:0008722": "Drop-seq",
+    "EFO:0010010": "CEL-seq2",
+    "EFO:0010550": "sci-RNA-seq",
+    "EFO:0010961": "Visium Spatial Gene Expression",
+    "EFO:0030002": "microwell-seq",
     "EFO:0009901": "10x 3' v1",
     "EFO:0011025": "10x 5' v1",
     "EFO:0009899": "10x 3' v2",
@@ -17,7 +17,7 @@ included_assay_ontologies = {
     "EFO:0009922": "10x 3' v3",
     "EFO_0030003": "10x 3' transcription profiling",
     "EFO:0030004": "10x 5' transcription profiling",
-    "EFO:0008919": "Seq-Well S3"
+    "EFO:0008919": "Seq-Well S3",
 }
 
 
@@ -51,4 +51,6 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
         sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
-        os.subprocess(sync_command)  # TODO parallelize this step see https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests # noqa: E501
+        os.subprocess(
+            sync_command
+        )  # TODO parallelize this step see https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests # noqa: E501
