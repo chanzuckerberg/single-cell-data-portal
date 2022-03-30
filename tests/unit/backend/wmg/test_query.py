@@ -21,8 +21,7 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values
+            dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
@@ -50,9 +49,9 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values,
-                cell_counts_generator_fn=all_tens_cell_counts_values,
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
@@ -117,9 +116,9 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values,
-                cell_counts_generator_fn=all_tens_cell_counts_values,
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
@@ -283,9 +282,9 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values,
-                cell_counts_generator_fn=all_tens_cell_counts_values,
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
@@ -354,9 +353,9 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values,
-                cell_counts_generator_fn=all_tens_cell_counts_values,
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
@@ -426,9 +425,9 @@ class QueryTest(unittest.TestCase):
 
         dim_size = 3
         with create_temp_wmg_cubes(
-                dim_size=dim_size,
-                expression_summary_vals_fn=all_ones_expression_summary_values,
-                cell_counts_generator_fn=all_tens_cell_counts_values,
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as cubes:
             query = WmgQuery(cubes)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
