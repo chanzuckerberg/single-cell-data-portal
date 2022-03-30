@@ -385,6 +385,7 @@ paths:
 
       security:
         - curatorAccess: []
+      operationId: backend.corpora.lambdas.api.v1.curation.collection.dataset.get_s3_credentials
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
