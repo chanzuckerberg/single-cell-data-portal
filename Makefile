@@ -172,11 +172,11 @@ local-unit-test-backend: # Run container-unittest target in `backend` Docker con
 			CI=true; \
 		fi; \
 	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /corpora-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    bash -c "cd /corpora-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python3,unitTest; fi"; \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-		bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+		bash -c "cd /corpora-data-portal && python3 -m unittest $(path)"; \
 	fi
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
@@ -190,7 +190,7 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 		CI=true; \
 	fi; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing \
-	bash -c "cd /corpora-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+	bash -c "cd /corpora-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python3,unitTest; fi";
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
