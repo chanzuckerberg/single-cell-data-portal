@@ -35,6 +35,9 @@ const PublishCollection: FC<Props> = ({
   const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   if (isSuccess) {
+    console.log(
+      "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
+    );
     router.push(ROUTES.COLLECTION.replace(":id", id));
   }
 
@@ -48,8 +51,7 @@ const PublishCollection: FC<Props> = ({
       { id, payload },
       {
         onSuccess: () => {
-          //if revision show  revision toast
-          console.log("Successfully published!");
+          //if revision show revision toast
           if (isRevision) {
             console.log("Published a revision");
             Toast.show({
