@@ -9,6 +9,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "updated_at",
   "revisioning_in",
   "revision_of",
+  "id",
   "revision_diff",
   "datasets",
   "genesets",
