@@ -131,7 +131,7 @@ def generate_cell_ordering(cell_type_by_tissue):
             data.append((tissue, cell, i))
 
     df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
-    df.to_json("ordered-cells.json")
+    df.to_json(CELL_TYPE_ORDERINGS_FILENAME)
 
 
 def update_s3_resources(group_name):
