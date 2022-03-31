@@ -62,10 +62,11 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    if (!collection?.revision_id) {
+    // Is there a chance we're looking at a revision here? Or is this only a public collection?
+    if (!collection?.revision_of && !collection?.revisioning_in) {
       mutate(id);
     } else {
-      navigateToRevision(collection.revision_id);
+      navigateToRevision(collection?.revisioning_in || collection.id);
     }
   };
 
@@ -99,11 +100,17 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.revision_id && (
-              <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
-                Revision Pending
-              </Tag>
-            )}
+            {props.revisionsEnabled &&
+              // Is there a chance we're looking at a revision here? Or is this only a public collection?
+              (collection.revision_of || collection.revisioning_in) && (
+                <Tag
+                  minimal
+                  intent={Intent.PRIMARY}
+                  data-test-id="revision-tag"
+                >
+                  Revision Pending
+                </Tag>
+              )}
           </TagContainer>
         )}
       </StyledCell>
@@ -114,7 +121,7 @@ const CollectionRow: FC<Props> = (props) => {
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          revisionId={collection.revision_id}
+          revisionId={collection.revisioning_in}
           handleRevisionClick={handleRevisionClick}
           isLoading={isLoading}
         />
@@ -132,7 +139,7 @@ const RevisionCell = ({
 }: {
   handleRevisionClick: () => void;
   isLoading: boolean;
-  revisionId: Collection["revision_id"];
+  revisionId: Collection["revisioning_in"];
 }) => {
   return (
     <RightAlignedDetailsCell>

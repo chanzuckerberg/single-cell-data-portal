@@ -7,7 +7,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "visibility",
   "created_at",
   "updated_at",
-  "has_revision",
+  "revisioning_in",
   "revision_diff",
   "datasets",
   "genesets",
