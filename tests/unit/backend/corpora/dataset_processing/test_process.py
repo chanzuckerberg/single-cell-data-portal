@@ -6,11 +6,11 @@ import pathlib
 import shutil
 import tempfile
 import time
+from unittest import mock
 from unittest.mock import patch
 
 import anndata
 import boto3
-import mock
 import numpy
 import pandas
 from moto import mock_s3
@@ -442,7 +442,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             )
 
         with self.subTest("invalid artifact type"):
-
             class BadEnum(enum.Enum):
                 fake = "fake"
 
@@ -574,11 +573,11 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
-        self,
-        mock_extract_metadata,
-        mock_validate_h5ad_file_and_add_labels,
-        mock_download_from_dropbox_url,
-        mock_make_cxg,
+            self,
+            mock_extract_metadata,
+            mock_validate_h5ad_file_and_add_labels,
+            mock_download_from_dropbox_url,
+            mock_make_cxg,
     ):
         # given
         mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
@@ -602,10 +601,10 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.create_artifact")
     @patch("backend.corpora.dataset_processing.process.update_db")
     def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(
-        self,
-        mock_update_db,
-        mock_create_artifact,
-        mock_make_seurat,
+            self,
+            mock_update_db,
+            mock_create_artifact,
+            mock_make_seurat,
     ):
         # given
         can_convert_to_seurat = False
@@ -626,10 +625,10 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.process.create_artifact")
     @patch("backend.corpora.dataset_processing.process.update_db")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected(
-        self,
-        mock_update_db,
-        mock_create_artifact,
-        mock_make_seurat,
+            self,
+            mock_update_db,
+            mock_create_artifact,
+            mock_make_seurat,
     ):
         # given
         can_convert_to_seurat = True

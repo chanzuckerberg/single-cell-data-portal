@@ -1,6 +1,4 @@
 import unittest
-
-import mock
 import requests
 from requests import HTTPError
 from backend.corpora.common.utils.dl_sources.url import from_url, DropBoxURL, MissingHeaderException, RegisteredSources
@@ -77,6 +75,6 @@ class TestDropbox(unittest.TestCase):
                 response.headers = {}
                 return response
 
-            with mock.patch("requests.head", return_value=make_response()):
+            with unittest.mock.patch("requests.head", return_value=make_response()):
                 negative_test = from_url("https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1")
                 self.assertRaises(MissingHeaderException, negative_test.file_info)
