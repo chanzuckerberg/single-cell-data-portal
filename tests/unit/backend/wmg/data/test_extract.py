@@ -16,7 +16,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
         # INCLUDE
-        assay_ontologies = included_assay_ontologies.keys()
+        assay_ontologies = list(included_assay_ontologies.keys())
         self.dataset_0 = self.generate_dataset_with_s3_resources(
             self.session,
             artifacts=True,
