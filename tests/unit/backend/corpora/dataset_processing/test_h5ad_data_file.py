@@ -156,7 +156,7 @@ class TestH5ADDataFile(unittest.TestCase):
         tiledb.DenseArray.create("foo", schema)
 
         try:
-            with tiledb.DenseArray("foo", mode="w") as A:
+            with tiledb.open("foo", mode="w") as A:
                 value = {}
                 value[col_name] = np.zeros((100,), dtype=np.int)
                 A[:] = value  # if there's a regression, this statement will throw a TileDBError
@@ -187,60 +187,59 @@ class TestH5ADDataFile(unittest.TestCase):
         if has_column_encoding:
             self.assertEqual(tiledb.object_type(x_col_shift_array_location), "array")
 
-        # Validate metadata
-        metadata_array = tiledb.DenseArray(metadata_array_location, mode="r")
-        self.assertIn("cxg_version", metadata_array.meta)
+        with tiledb.open(metadata_array_location, mode="r") as metadata_array:
+            # Validate metadata
+            self.assertIn("cxg_version", metadata_array.meta)
 
-        # Validate obs index
-        obs_array = tiledb.DenseArray(obs_array_location, mode="r")
-        expected_index_data = anndata_object.obs.index.to_numpy()
-        index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
-        actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
-        self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
+        with tiledb.open(obs_array_location, mode="r") as obs_array:
+            # Validate obs index
+            expected_index_data = anndata_object.obs.index.to_numpy()
+            index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
+            actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
+            self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
-        # Validate obs columns
-        expected_columns = list(anndata_object.obs.columns.values)
-        for column_name in expected_columns:
-            expected_data = anndata_object.obs[column_name].to_numpy()
-            actual_data = obs_array.query(attrs=[column_name])[:][column_name]
-            self.assertTrue(np.array_equal(expected_data, actual_data))
+            # Validate obs columns
+            expected_columns = list(anndata_object.obs.columns.values)
+            for column_name in expected_columns:
+                expected_data = anndata_object.obs[column_name].to_numpy()
+                actual_data = obs_array.query(attrs=[column_name])[:][column_name]
+                self.assertTrue(np.array_equal(expected_data, actual_data))
 
-        # Validate var index
-        var_array = tiledb.DenseArray(var_array_location, mode="r")
-        expected_index_data = anndata_object.var.index.to_numpy()
-        index_name = json.loads(var_array.meta["cxg_schema"])["index"]
-        actual_index_data = var_array.query(attrs=[index_name])[:][index_name]
-        self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
+        with tiledb.open(var_array_location, mode="r") as var_array:
+            # Validate var index
+            expected_index_data = anndata_object.var.index.to_numpy()
+            index_name = json.loads(var_array.meta["cxg_schema"])["index"]
+            actual_index_data = var_array.query(attrs=[index_name])[:][index_name]
+            self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
-        # Validate var columns
-        expected_columns = anndata_object.var.columns.values
-        for column_name in expected_columns:
-            expected_data = anndata_object.var[column_name].to_numpy()
-            actual_data = var_array.query(attrs=[column_name])[:][column_name]
-            self.assertTrue(np.array_equal(expected_data, actual_data))
+            # Validate var columns
+            expected_columns = anndata_object.var.columns.values
+            for column_name in expected_columns:
+                expected_data = anndata_object.var[column_name].to_numpy()
+                actual_data = var_array.query(attrs=[column_name])[:][column_name]
+                self.assertTrue(np.array_equal(expected_data, actual_data))
 
         # Validate embedding
         expected_embedding_data = anndata_object.obsm.get("X_awesome_embedding")
-        embedding_array = tiledb.DenseArray(specific_embedding_array_location, mode="r")
-        actual_embedding_data = embedding_array[:, 0:2]
-        self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
+        with tiledb.open(specific_embedding_array_location, mode="r") as embedding_array:
+            actual_embedding_data = embedding_array[:, 0:2]
+            self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
 
         # Validate X matrix if not column shifted
         if not has_column_encoding:
             expected_x_data = anndata_object.X
-            if is_sparse:
-                x_array = tiledb.SparseArray(main_x_array_location, mode="r")
-                actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
-            else:
-                x_array = tiledb.DenseArray(main_x_array_location, mode="r")
-                actual_x_data = x_array[:, :]
-            self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
+            with tiledb.open(main_x_array_location, mode="r") as x_array:
+                if is_sparse:
+                    actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
+                else:
+                    actual_x_data = x_array[:, :]
+                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
         var_array_location = f"{cxg_directory}/var"
-        var_array = tiledb.DenseArray(var_array_location, mode="r")
-        actual_index_name = json.loads(var_array.meta["cxg_schema"])["index"]
-        self.assertEqual(actual_index_name, expected_index_name)
+        with tiledb.open(var_array_location, mode="r") as var_array:
+            actual_index_name = json.loads(var_array.meta["cxg_schema"])["index"]
+            self.assertEqual(actual_index_name, expected_index_name)
 
     def _write_anndata_to_file(self, anndata):
         temporary_filename = fixture_file_path(f"{uuid4()}.h5ad")
