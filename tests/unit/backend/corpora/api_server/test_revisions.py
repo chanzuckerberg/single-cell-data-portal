@@ -1,7 +1,7 @@
 import json
 import typing
 from datetime import datetime
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError

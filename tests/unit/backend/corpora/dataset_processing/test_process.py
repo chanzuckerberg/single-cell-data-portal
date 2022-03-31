@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import anndata
 import boto3
-import mock
+from unittest import mock
 import numpy
 import pandas
 from moto import mock_s3
