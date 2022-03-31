@@ -12,13 +12,15 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
-from backend.wmg.data.schema import cube_non_indexed_dims
+from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
+
+
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
     qry = WmgQuery(snapshot)

@@ -1,3 +1,5 @@
+
+
 import contextlib
 import os
 import sys
@@ -14,7 +16,7 @@ from pandas import DataFrame
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.schema import (
+from backend.wmg.data.schemas.cube_schema import (
     cube_indexed_dims,
     cube_logical_attrs,
     cube_logical_dims,
@@ -160,7 +162,6 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
 def create_dataset(dataset_id_ordinal: int) -> str:
     coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
     with db_session_manager() as session:
-
         if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
             Collection.delete(coll)
 
