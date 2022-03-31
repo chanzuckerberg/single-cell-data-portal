@@ -1,5 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
+import { API_URL } from "src/configs/configs";
 import { StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
@@ -40,13 +41,7 @@ export interface PrimaryFilterDimensionsResponse {
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" +
-    API.WMG_PRIMARY_FILTER_DIMENSIONS;
+  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
 
   const response = await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 
@@ -142,12 +137,7 @@ async function fetchQuery(
 ): Promise<QueryResponse | undefined> {
   if (!query) return;
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_QUERY;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" + API.WMG_QUERY;
+  const url = API_URL + API.WMG_QUERY;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
