@@ -38,7 +38,7 @@ class TestCorpusLoad(unittest.TestCase):
         self.path_to_dataset_0 = pathlib.Path(self.tmp_dir, "small_datasets/be573215-4116-40a1-9c0f-1b21ba53482b/local.h5ad")
         self.path_to_dataset_1 = pathlib.Path(self.tmp_dir, "small_datasets/d50b8959-6ce9-4a9b-b804-99892c93b183/local.h5ad")
         self.path_to_datasets = pathlib.Path(self.tmp_dir, "small_datasets")
-        self.corpus_name = pathlib.Path(self.tmp_dir, "test-group")
+        self.corpus_name = f"{self.tmp_dir}/test-group"
 
         if not tiledb.VFS().is_dir(self.corpus_name):
             create_tdb(self.corpus_name)
@@ -80,8 +80,6 @@ class TestCorpusLoad(unittest.TestCase):
         """
         # load_h5ad(self.path_to_dataset_0, self.corpus_name, False)
         pass
-
-
 
 
     def test_axes_labels_updated_for_new_genes(self):
