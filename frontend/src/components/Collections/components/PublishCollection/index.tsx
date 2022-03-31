@@ -34,11 +34,12 @@ const PublishCollection: FC<Props> = ({
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
-  if (isSuccess && revisionOf) {
+  if (isSuccess) {
     console.log(
       "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
     );
-    router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
+    if (revisionOf) router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
+    else setIsOpen(false);
   }
 
   const toggleAlert = () => setIsOpen(!isOpen);
