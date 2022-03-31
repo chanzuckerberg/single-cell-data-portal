@@ -17,6 +17,8 @@ from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
 from backend.wmg.cube_creation.wmg_cube import create_cube
 
+from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
+
 from pronto import Ontology
 import pygraphviz as pgv
 import json
@@ -178,7 +180,7 @@ def upload_cube_to_s3(group_name, timestamp):
 
 
 def upload_cell_ordering_to_s3(timestamp):
-    sync_command = ["aws", "s3", "cp", f"ordered-cells.json", f"{get_wmg_bucket_path()}/{timestamp}/ordered-cells.json"]
+    sync_command = ["aws", "s3", "cp", CELL_TYPE_ORDERINGS_FILENAME, f"{get_wmg_bucket_path()}/{timestamp}/{CELL_TYPE_ORDERINGS_FILENAME}"]
     subprocess.run(sync_command)
 
 
