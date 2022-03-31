@@ -253,3 +253,31 @@ def create_cube(tdb_group):
     logger.info("Cube creation complete")
     create_cube_sec = time.time() - start_time
     logger.info(f"Big cube: time to create {create_cube_sec}, uri={uri}")
+
+
+def create_cell_count_cube(tdb_group):
+    """
+    Create cell count cube and write to disk
+    """
+    uri = f"{tdb_group}/cell-count-cube"
+    with tiledb.open(f"{tdb_group}/obs") as obs:
+        df = (
+            obs.df[:]
+            .groupby(
+                by=[
+                    "dataset_id",
+                    "cell_type_ontology_term_id",
+                    "tissue_ontology_term_id",
+                    "assay_ontology_term_id",
+                    "development_stage_ontology_term_id",
+                    "disease_ontology_term_id",
+                    "ethnicity_ontology_term_id",
+                    "sex_ontology_term_id",
+                    "organism_ontology_term_id",
+                ],
+                as_index=False,
+            )
+            .size()
+        )
+
+        tiledb.from_pandas(uri, df)

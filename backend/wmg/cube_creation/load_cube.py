@@ -15,7 +15,7 @@ from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.cube_creation.corpus_schema import create_tdb
 from backend.wmg.cube_creation.loader import load
-from backend.wmg.cube_creation.wmg_cube import create_cube
+from backend.wmg.cube_creation.wmg_cube import create_cell_count_cube, create_cube
 
 from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 
@@ -138,7 +138,8 @@ def generate_cell_ordering(cell_type_by_tissue):
 
 def update_s3_resources(group_name):
     timestamp = int(time.time())
-    upload_cube_to_s3(group_name, timestamp)
+    upload_cube_to_s3(group_name, "cube", timestamp)
+    upload_cube_to_s3(group_name, "cell-count-cube", timestamp)
     upload_cell_ordering_to_s3(timestamp)
     update_latest_snapshot_identifier(timestamp)
     remove_oldest_datasets(timestamp)
@@ -174,8 +175,8 @@ def remove_oldest_datasets(timestamp):
             object.delete()
 
 
-def upload_cube_to_s3(group_name, timestamp):
-    sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{get_wmg_bucket_path()}/{timestamp}/cube"]
+def upload_cube_to_s3(group_name, suffix, timestamp):
+    sync_command = ["aws", "s3", "sync", f"{group_name}/{suffix}", f"{get_wmg_bucket_path()}/{timestamp}/{suffix}"]
     subprocess.run(sync_command)
 
 
@@ -201,6 +202,10 @@ def load_data_and_create_cube(path_to_datasets, group_name):
         create_cube(group_name)
     except Exception as e:
         logger.error(f"Issue creating the cube: {e}")
+    try:
+        create_cell_count_cube(group_name)
+    except Exception as e:
+        logger.error(f"Issue creating the cell count cube: {e}")
     cell_type_by_tissue = get_cells_by_tissue_type(group_name)
     generate_cell_ordering(cell_type_by_tissue)
     update_s3_resources(group_name)
