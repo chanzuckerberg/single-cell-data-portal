@@ -116,3 +116,14 @@ class DatasetAsset(Entity):
             ExtraArgs={"ACL": "bucket-owner-full-control"},
         )
         return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
+
+    @classmethod
+    def s3_uris_for_datasets(cls, session, dataset_ids, file_type=None) -> typing.Dict:
+        """
+        Returns a dictionary of dataset_id : s3_uri for a given list of dataset ids
+        also filters on file_type if specified
+        """
+        s3_uris = session.query(cls.table.dataset_id, cls.table.s3_uri).filter(cls.table.dataset_id.in_(dataset_ids))
+        if file_type:
+            s3_uris = s3_uris.filter(cls.table.filetype == file_type)
+        return {x[0]: x[1] for x in s3_uris.all()}

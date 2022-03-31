@@ -6,7 +6,7 @@ from unittest.mock import patch
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.cube import (
+from tests.unit.backend.wmg.fixtures.test_cube import (
     create_temp_wmg_cubes,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
