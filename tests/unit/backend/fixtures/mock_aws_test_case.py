@@ -4,8 +4,6 @@ import os
 
 import botocore
 import boto3
-import typing
-from boto.s3.bucket import Bucket
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
@@ -116,21 +114,21 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
             self.create_explorer_s3_object(session, dataset.id, upload=True)
         return dataset
 
-    def get_s3_object_paths_from_dataset(self, dataset: Dataset) -> typing.List[typing.Tuple[Bucket, str]]:
+    def get_s3_object_paths_from_dataset(self, dataset: Dataset):
         s3_objects = []
         for art in dataset.artifacts:
             artifact = DatasetAsset(art)
             s3_objects.append((artifact.bucket_name, artifact.get_bucket_path()))
         return s3_objects
 
-    def assertS3FileExists(self, bucket: typing.Union[Bucket, str], file_name: str):
+    def assertS3FileExists(self, bucket, file_name: str):
         bucket = self.s3_resource.Bucket(bucket) if isinstance(bucket, str) else bucket
         if file_name.endswith("/"):
             self.assertGreater(len([*bucket.objects.filter(Prefix=file_name)]), 0)
         else:
             self.assertGreater(bucket.Object(file_name).content_length, 1)
 
-    def assertS3FileDoesNotExist(self, bucket: typing.Union[Bucket, str], file_name: str, msg: str = None):
+    def assertS3FileDoesNotExist(self, bucket, file_name: str, msg: str = None):
         bucket = self.s3_resource.Bucket(bucket) if isinstance(bucket, str) else bucket
         msg = msg if msg else f"s3://{bucket.name}/{file_name} found."
         if file_name.endswith("/"):
