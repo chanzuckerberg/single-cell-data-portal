@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 import tiledb
+import scanpy
 
 from .utils import get_all_dataset_ids
 from backend.wmg.data.config import create_fast_ctx
@@ -55,6 +56,11 @@ def load_h5ad(h5ad, group_name, validate):
         return
 
     anndata_object = anndata.read_h5ad(h5ad)
+
+    # Apply a low expression gene cell filtering. 
+    # Will get rid of all cells that have less than 500 expressed genes
+    scanpy.pp.filter_cells(anndata_object, min_genes=500)
+
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not sparse.issparse(anndata_object.X):
         logger.warning("oops, no dense handling yet, not loading")
