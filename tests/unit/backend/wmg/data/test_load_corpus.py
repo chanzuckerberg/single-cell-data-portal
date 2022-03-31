@@ -1,30 +1,29 @@
 import os
 import shutil
+import tempfile
 import unittest
 from unittest.mock import patch
+import pathlib
 
-import anndata
 import tiledb
 
 from backend.wmg.data.cube_pipeline import load
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
-relative_fixtures_path = f"../fixtures/"
 
 
 class TestCorpusLoad(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUp(cls)
-        cls.tmp_file = f"{relative_fixtures_path}tmp"
-        os.mkdir(cls.tmp_file)
+        cls.tmp_dir = tempfile.mkdtemp()
 
         basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
         larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
 
-        cls.path_to_basic_anndata_test_object = f"{cls.tmp_file}/basic_test_dataset.h5ad"
-        cls.path_to_larger_test_anndata_object = f"{cls.tmp_file}/larger_test_dataset.h5ad"
+        cls.path_to_basic_anndata_test_object = pathlib.Path(cls.tmp_dir, "basic_test_dataset.h5ad")
+        cls.path_to_larger_test_anndata_object = pathlib.Path(cls.tmp_dir, "larger_test_dataset.h5ad")
 
         basic_test_anndata_object.write(cls.path_to_basic_anndata_test_object, compression="gzip")
         larger_test_anndata_object.write(cls.path_to_larger_test_anndata_object, compression="gzip")
@@ -32,14 +31,14 @@ class TestCorpusLoad(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         super().tearDownClass()
-        shutil.rmtree(cls.tmp_file)
+        shutil.rmtree(cls.tmp_dir)
 
     def setUp(self) -> None:
         super().setUp()
-        self.path_to_dataset_0 = f"{relative_fixtures_path}small_datasets/be573215-4116-40a1-9c0f-1b21ba53482b/local.h5ad"
-        self.path_to_dataset_1 = f"{relative_fixtures_path}small_datasets/d50b8959-6ce9-4a9b-b804-99892c93b183/local.h5ad"
-        self.path_to_datasets = f"{relative_fixtures_path}small_datasets"
-        self.corpus_name = f"{self.tmp_file}/test-group"
+        self.path_to_dataset_0 = pathlib.Path(self.tmp_dir, "small_datasets/be573215-4116-40a1-9c0f-1b21ba53482b/local.h5ad")
+        self.path_to_dataset_1 = pathlib.Path(self.tmp_dir, "small_datasets/d50b8959-6ce9-4a9b-b804-99892c93b183/local.h5ad")
+        self.path_to_datasets = pathlib.Path(self.tmp_dir, "small_datasets")
+        self.corpus_name = pathlib.Path(self.tmp_dir, "test-group")
 
         if not tiledb.VFS().is_dir(self.corpus_name):
             create_tdb(self.corpus_name)
