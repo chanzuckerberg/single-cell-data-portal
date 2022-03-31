@@ -61,7 +61,6 @@ const Collection: FC = () => {
 
   let id = "";
 
-  //(seve): this captures legacy links with trailing `/private`, we should remove this when we are sure we don't need it anymore
   if (Array.isArray(params)) {
     id = params[0];
   } else if (params) {

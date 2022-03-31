@@ -62,8 +62,7 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    // Is there a chance we're looking at a revision here? Or is this only a public collection?
-    if (!collection?.revision_of && !collection?.revisioning_in) {
+    if (!collection?.revisioning_in) {
       mutate(id);
     } else {
       navigateToRevision(collection?.revisioning_in || collection.id);
@@ -100,17 +99,11 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled &&
-              // Is there a chance we're looking at a revision here? Or is this only a public collection?
-              (collection.revision_of || collection.revisioning_in) && (
-                <Tag
-                  minimal
-                  intent={Intent.PRIMARY}
-                  data-test-id="revision-tag"
-                >
-                  Revision Pending
-                </Tag>
-              )}
+            {props.revisionsEnabled && collection.revisioning_in && (
+              <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
+                Revision Pending
+              </Tag>
+            )}
           </TagContainer>
         )}
       </StyledCell>
