@@ -151,7 +151,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     if (allCollections && collection.visibility === VISIBILITY_TYPE.PUBLIC) {
       const collectionsWithID = allCollections.get(id);
 
-      collection.revision_id = collectionsWithID?.get(
+      collection.revisioning_in = collectionsWithID?.get(
         VISIBILITY_TYPE.PRIVATE
       )?.id;
     }
@@ -444,17 +444,20 @@ export function useEditCollection(
 > {
   const queryClient = useQueryClient();
 
-  const { data: collections } = useCollections();
+  const { data: collections } = useCollections(); //all collections
 
   const { data: collection } = useCollection({
+    //revision
     id: collectionID,
   });
 
   const { data: publishedCollection } = useCollection({
+    //published collection
     id: publicID,
   });
 
   return useMutation(editCollection, {
+    // newCollection is the result of the PUT on the revision
     onSuccess: ({ collection: newCollection }) => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
@@ -463,7 +466,7 @@ export function useEditCollection(
         return;
       }
       queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
+        [USE_COLLECTION, collectionID, collections],
         () => {
           let revision_diff;
           if (isTombstonedCollection(newCollection)) {
@@ -471,7 +474,7 @@ export function useEditCollection(
           } else if (
             !isTombstonedCollection(collection) &&
             !isTombstonedCollection(publishedCollection) &&
-            collection?.revision_id &&
+            collection?.revision_of &&
             publishedCollection
           ) {
             revision_diff = checkForRevisionChange(
@@ -550,11 +553,7 @@ export function useReuploadDataset(
 
   return useMutation(reuploadDataset, {
     onSuccess: () => {
-      queryClient.invalidateQueries([
-        USE_COLLECTION,
-        collectionId,
-        VISIBILITY_TYPE.PRIVATE,
-      ]);
+      queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
     },
   });
 }

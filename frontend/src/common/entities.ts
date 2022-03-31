@@ -102,6 +102,7 @@ export interface Collection {
   summaryCitation?: string;
   tombstone?: boolean;
   revision_of?: Collection["id"];
+  revisioning_in?: Collection["id"];
 }
 
 /**
