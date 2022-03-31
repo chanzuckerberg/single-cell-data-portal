@@ -1,5 +1,5 @@
 import unittest
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from backend.corpora.common.auth0_manager import auth0_management_session
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
