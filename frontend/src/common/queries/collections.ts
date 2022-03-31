@@ -381,15 +381,17 @@ async function publishCollection({ id, payload }: PublishCollection) {
   if (!response.ok) {
     throw await response.json();
   }
+  return id;
 }
 
 export function usePublishCollection() {
   const queryClient = useQueryClient();
 
   return useMutation(publishCollection, {
-    onSuccess: () => {
+    onSuccess: (id) => {
       console.log("Completed publish mutation");
       queryClient.invalidateQueries([USE_COLLECTIONS]);
+      queryClient.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
