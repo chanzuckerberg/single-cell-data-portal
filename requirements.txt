@@ -23,7 +23,7 @@ s3fs==0.4.2
 scanpy
 scipy==1.7.3
 tenacity
-tiledb==0.13.1  # Portal's tiledb version should always be the same or older than Explorer's
+tiledb==0.13.2  # Portal's tiledb version should always be the same or older than Explorer's
 click==8.0.1
 -r ./backend/corpora/api_server/requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
