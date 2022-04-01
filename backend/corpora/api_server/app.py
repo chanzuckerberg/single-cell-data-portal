@@ -29,7 +29,7 @@ def create_flask_app():
             spec_file,
             validate_responses=True,
             base_path=f"/{base_path}",
-            resolver_error=501,  # TODO: Okay to now specify this also for data-portal api?
+            resolver_error=501,
             options={
                 "serve_spec": True,
                 "swagger_path": swagger_ui_path,
