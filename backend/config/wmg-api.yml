@@ -14,7 +14,7 @@ servers:
   - description: Staging environment
     url: https://api.staging.single-cell.czi.technology/
 paths:
-  /wmg/v1/primary_filter_dimensions:
+  /v1/primary_filter_dimensions:
     get:
       summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
       description: >-
@@ -42,7 +42,7 @@ paths:
                     type: object
         "404":
           $ref: "#/components/responses/404"
-  /wmg/v1/query:
+  /v1/query:
     post:
       tags:
         - wmg
