@@ -1,4 +1,5 @@
 import unittest
+from typing import NamedTuple
 
 from backend.wmg.api.v1 import build_dot_plot_matrix
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
@@ -7,7 +8,6 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
-    exclude_all_but_one_gene_per_organism,
 )
 
 
@@ -500,16 +500,26 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
         dim_size = 3
 
+        def exclude_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
+            # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
+            # include gene_ontology_term_id
+            if "gene_ontology_term_id" not in logical_coord._fields:
+                return False
+            return logical_coord.gene_ontology_term_id == logical_coord.organism_ontology_term_id.replace(
+                "organism", "gene"
+            )
+
         with create_temp_wmg_snapshot(
-            dim_size=dim_size, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
+            dim_size=dim_size, exclude_logical_coord_fn=exclude_one_gene_per_organism
         ) as snapshot:
             result = WmgQuery(snapshot).list_grouped_primary_filter_dimensions_term_ids(
                 "gene_ontology_term_id", "organism_ontology_term_id"
             )
             self.assertEquals(
                 {
-                    "organism_ontology_term_id_0": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
-                    "organism_ontology_term_id_1": ["gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_0": ["gene_ontology_term_id_1", "gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_1": ["gene_ontology_term_id_0", "gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_2": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
                 },
                 result,
             )
