@@ -72,7 +72,7 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS],
-    () => fetchPrimaryFilterDimensions(),
+    fetchPrimaryFilterDimensions,
     // (thuang): We don't need to refetch during the session
     { staleTime: Infinity }
   );
