@@ -12,6 +12,7 @@ from backend.corpora.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import create_ctx
 
+# Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
@@ -23,11 +24,23 @@ logger = logging.getLogger("wmg")
 class WmgSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
+    These are read from data artifacts, per the relative file names, above.
     """
 
     snapshot_identifier: str
+
+    # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
+    # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
+    # backend/wmg/data/schemas/cube_schema.py.
     expression_summary_cube: Array
+
+    # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
+    # multiple cell metadata dimensions (but no gene dimension). See the full schema at
+    # backend/wmg/data/schemas/cube_schema.py.
     cell_counts_cube: Array
+
+    # Pandas DataFrame containing per-tissue ordering of cell types.
+    # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
     cell_type_orderings: DataFrame
 
 
