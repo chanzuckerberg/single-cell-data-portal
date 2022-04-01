@@ -22,7 +22,7 @@ class QueryTest(unittest.TestCase):
             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
         )
 
-        dim_size = 3
+        dim_size = 1
         with create_temp_wmg_snapshot(
             dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
         ) as snapshot:
