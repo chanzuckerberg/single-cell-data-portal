@@ -1,20 +1,19 @@
 import json
 import unittest
-from typing import Tuple
+from typing import Tuple, List, NamedTuple
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.snapshot import (
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
-    reverse_cell_type_ordering,
+    reverse_cell_type_ordering, exclude_all_but_one_gene_per_organism,
 )
 
 
-@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
@@ -49,17 +48,8 @@ class WmgApiV1Tests(unittest.TestCase):
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
 
-        # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
-        # without this filtering function, the cube would have the cross-product of organisms * genes
-        def exclude(logical_coord: Tuple) -> bool:
-            return (logical_coord[0], logical_coord[2]) not in {
-                ("gene_ontology_term_id_0", "organism_ontology_term_id_0"),
-                ("gene_ontology_term_id_1", "organism_ontology_term_id_1"),
-                ("gene_ontology_term_id_2", "organism_ontology_term_id_2"),
-            }
-
-        # This test appears to be hitting a TileDB (<=0.13.1) bug and fails if dim_size=3
-        with create_temp_wmg_snapshot(exclude_logical_coord_fn=exclude, dim_size=1) as snapshot:
+        with create_temp_wmg_snapshot(dim_size=3,
+                                      exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_snapshot.return_value = snapshot
@@ -76,22 +66,22 @@ class WmgApiV1Tests(unittest.TestCase):
             snapshot_id="dummy-snapshot",
             organism_terms=[
                 {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
-                # {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
-                # {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
+                {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
+                {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
             ],
             tissue_terms=[
                 {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                # {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                # {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
             ],
             gene_terms={
                 "organism_ontology_term_id_0": [
                     {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
                 ],
-                # "organism_ontology_term_id_1": [
-                #     {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
-                # ],
-                # "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
+                "organism_ontology_term_id_1": [
+                    {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
+                ],
+                "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
             },
         )
 
@@ -160,7 +150,7 @@ class WmgApiV1Tests(unittest.TestCase):
     def test__query_request_multi_primary_dims_only__returns_200_and_correct_response(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
-        dim_size = 2
+        dim_size = 3
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
