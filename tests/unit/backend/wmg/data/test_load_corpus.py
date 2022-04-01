@@ -18,15 +18,19 @@ class TestCorpusLoad(unittest.TestCase):
     def setUpClass(cls) -> None:
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
+        cls.relative_fixtures_path = "../fixtures"
 
         basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
         larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
 
-        cls.path_to_basic_anndata_test_object = pathlib.Path(cls.tmp_dir, "basic_test_dataset.h5ad")
-        cls.path_to_larger_test_anndata_object = pathlib.Path(cls.tmp_dir, "larger_test_dataset.h5ad")
+        cls.small_anndata_filename = pathlib.Path(cls.tmp_dir, "basic_test_dataset.h5ad")
+        cls.large_anndata_filename = pathlib.Path(cls.tmp_dir, "larger_test_dataset.h5ad")
 
-        basic_test_anndata_object.write(cls.path_to_basic_anndata_test_object, compression="gzip")
-        larger_test_anndata_object.write(cls.path_to_larger_test_anndata_object, compression="gzip")
+        cls.small_anndata_filename.touch()
+        cls.large_anndata_filename.touch()
+
+        basic_test_anndata_object.write(cls.small_anndata_filename, compression="gzip")
+        larger_test_anndata_object.write(cls.large_anndata_filename, compression="gzip")
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -35,10 +39,10 @@ class TestCorpusLoad(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.path_to_dataset_0 = pathlib.Path(self.tmp_dir, "small_datasets/be573215-4116-40a1-9c0f-1b21ba53482b/local.h5ad")
-        self.path_to_dataset_1 = pathlib.Path(self.tmp_dir, "small_datasets/d50b8959-6ce9-4a9b-b804-99892c93b183/local.h5ad")
-        self.path_to_datasets = pathlib.Path(self.tmp_dir, "small_datasets")
-        self.corpus_name = f"{self.tmp_dir}/test-group"
+        self.path_to_dataset_0 = pathlib.Path(self.relative_fixtures_path, "small_datasets/be573215-4116-40a1-9c0f-1b21ba53482b/local.h5ad")
+        self.path_to_dataset_1 = pathlib.Path(self.relative_fixtures_path, "small_datasets/d50b8959-6ce9-4a9b-b804-99892c93b183/local.h5ad")
+        self.path_to_datasets = pathlib.Path(self.relative_fixtures_path, "small_datasets/")
+        self.corpus_name = "test-group"
 
         if not tiledb.VFS().is_dir(self.corpus_name):
             create_tdb(self.corpus_name)
