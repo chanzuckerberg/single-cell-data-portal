@@ -1,4 +1,4 @@
-import os
+import subprocess
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, DatasetAsset
@@ -50,8 +50,5 @@ def get_dataset_s3_uris():
 def copy_datasets_to_instance(s3_uris, dataset_directory):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
-        sync_command = f"aws s3 sync {s3_uris[dataset]} ./{dataset_directory}/{dataset}/local.h5ad"
-        os.subprocess(
-            sync_command
-        )  # TODO parallelize this step see https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#max-concurrent-requests # noqa: E501
-
+        sync_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
+        subprocess.run(sync_command)

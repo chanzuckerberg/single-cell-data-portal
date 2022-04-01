@@ -62,7 +62,7 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str, log_level
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_name)
     generate_cell_ordering(cell_type_by_tissue)
     logger.info("Generated cell ordering json file")
-    update_s3_resources()
+    update_s3_resources(corpus_name)
     logger.info("Copied snapshot to s3")
 
 
