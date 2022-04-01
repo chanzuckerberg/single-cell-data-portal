@@ -6,7 +6,7 @@ import tiledb
 from backend.corpora.common.utils.math_utils import MB, GB
 
 
-def create_ctx(tiledb_mem_gb: float = 0.1) -> tiledb.Ctx:
+def create_ctx(tiledb_mem_gb: float = 0.5) -> tiledb.Ctx:
     cfg = {
         "py.init_buffer_bytes": int(float(tiledb_mem_gb) * GB),
         "sm.tile_cache_size": virtual_memory_size(0.5),
