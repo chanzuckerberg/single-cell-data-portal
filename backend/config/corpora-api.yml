@@ -988,7 +988,6 @@ paths:
           $ref: "#/components/responses/200"
 
 
-
 components:
   schemas:
     user_uuid:

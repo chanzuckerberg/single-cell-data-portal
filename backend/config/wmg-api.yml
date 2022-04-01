@@ -13,6 +13,7 @@ servers:
     url: https://api.dev.single-cell.czi.technology/
   - description: Staging environment
     url: https://api.staging.single-cell.czi.technology/
+
 paths:
   /v1/primary_filter_dimensions:
     get:
@@ -195,7 +196,10 @@ paths:
                       genes:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       cell_types:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                        type: object
+                        # TODO: specify further (grouped by tissue now): https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+#                        items:
+#                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   filter_dimensions:
                     type: object
                     properties:
