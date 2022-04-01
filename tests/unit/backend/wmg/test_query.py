@@ -41,13 +41,11 @@ class QueryTest(unittest.TestCase):
         }
         self.assertEqual(expected, result.to_dict())
 
-    # This test appears to be hitting a TileDB (<=0.13.1) bug and may fail intermittently
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
         criteria = WmgQueryCriteria(
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
             organism_ontology_term_id="organism_ontology_term_id_1",
-            tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            # TODO: TileDB query bug hit when this is `*_id_2`!
+            tissue_ontology_term_ids=["tissue_ontology_term_id_2"],
         )
 
         dim_size = 3
@@ -68,7 +66,7 @@ class QueryTest(unittest.TestCase):
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
@@ -78,7 +76,7 @@ class QueryTest(unittest.TestCase):
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
@@ -88,7 +86,7 @@ class QueryTest(unittest.TestCase):
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
