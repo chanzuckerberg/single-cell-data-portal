@@ -94,21 +94,18 @@ export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
 cd $(dirname ${BASH_SOURCE[0]})/..
 python3 -m scripts.populate_db
 
-# Make a WMG cube
-echo "Setting up WMG data"
-tmp_cube_dir=`mktemp -d`
+# Make a WMG snapshot
+echo "Setting up WMG snapshot data"
+tmp_snapshot_dir=`mktemp -d`
 snapshot_identifier='dummy-snapshot'
 wmg_bucket="wmg-test"
 wmg_config_secret_name="corpora/backend/test/wmg_config"
-python3 -m tests.unit.backend.wmg.fixtures.cube ${tmp_cube_dir}
+python3 -m tests.unit.backend.wmg.fixtures.snapshot ${tmp_snapshot_dir}
 ${local_aws} s3api create-bucket --bucket ${wmg_bucket} &>/dev/null || true
-${local_aws} s3 sync --delete --quiet ${tmp_cube_dir} s3://${wmg_bucket}/$snapshot_identifier/cube/
+${local_aws} s3 sync --delete --quiet ${tmp_snapshot_dir} s3://${wmg_bucket}/$snapshot_identifier/
 echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://${wmg_bucket}/latest_snapshot_identifier
 ${local_aws} secretsmanager create-secret --name ${wmg_config_secret_name} &>/dev/null || true
 ${local_aws} secretsmanager update-secret --secret-id ${wmg_config_secret_name} --secret-string "{\"bucket\": \"${wmg_bucket}\"}" || true
-# TODO: Also generate & store:
-#  * wmg cell type orderings
-#  * wmg "total cell counts" cube (TileDB array)
 
 echo
 echo "Dev env is up and running!"
