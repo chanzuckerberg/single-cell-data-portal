@@ -9,5 +9,5 @@ class WmgConfig(SecretConfig):
 
     def get_defaults_template(self):
         deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
-        defaults_template = {"bucket": f"wmg-{deployment_stage}", "tiledb_mem_gb": "16"}
+        defaults_template = {"bucket": f"wmg-{deployment_stage}", "data_path_prefix": "", "tiledb_mem_gb": "1"}
         return defaults_template
