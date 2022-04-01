@@ -1,6 +1,5 @@
 import json
 import unittest
-from typing import Tuple, List, NamedTuple
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
@@ -10,7 +9,8 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
-    reverse_cell_type_ordering, exclude_all_but_one_gene_per_organism,
+    reverse_cell_type_ordering,
+    exclude_all_but_one_gene_per_organism,
 )
 
 
@@ -48,8 +48,9 @@ class WmgApiV1Tests(unittest.TestCase):
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
 
-        with create_temp_wmg_snapshot(dim_size=3,
-                                      exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism) as snapshot:
+        with create_temp_wmg_snapshot(
+            dim_size=3, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
+        ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_snapshot.return_value = snapshot

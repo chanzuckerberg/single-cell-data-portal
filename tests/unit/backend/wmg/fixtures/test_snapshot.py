@@ -3,7 +3,6 @@ import os
 import sys
 import tempfile
 from collections import namedtuple
-from functools import partial
 from itertools import filterfalse
 from typing import List, Callable, Tuple, Dict, NamedTuple
 
@@ -106,9 +105,9 @@ def exclude_random_coords_75pct(_) -> bool:
 def exclude_all_but_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
     # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
     # include gene_ontology_term_id
-    if 'gene_ontology_term_id' not in logical_coord._fields:
+    if "gene_ontology_term_id" not in logical_coord._fields:
         return False
-    return logical_coord.gene_ontology_term_id != logical_coord.organism_ontology_term_id.replace('organism', 'gene')
+    return logical_coord.gene_ontology_term_id != logical_coord.organism_ontology_term_id.replace("organism", "gene")
 
 
 def forward_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
@@ -154,9 +153,9 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
     with tiledb.open(cell_counts_cube_dir_, ctx=create_ctx()) as cell_counts_cube:
         tissue_ontology_term_ids = cell_counts_cube.df[:]["tissue_ontology_term_id"].unique()
         for tissue_ontology_term_id in tissue_ontology_term_ids:
-            cell_type_ontology_term_ids = sorted(cell_counts_cube.df[tissue_ontology_term_id][
-                "cell_type_ontology_term_id"
-            ].unique())
+            cell_type_ontology_term_ids = sorted(
+                cell_counts_cube.df[tissue_ontology_term_id]["cell_type_ontology_term_id"].unique()
+            )
             ordering = cell_ordering_generator_fn(cell_type_ontology_term_ids)
             cell_type_orderings.append(
                 pd.DataFrame(
@@ -296,7 +295,7 @@ if __name__ == "__main__":
         sys.exit(f"invalid dir {output_cube_dir} for cube")
     _, cell_counts_cube_dir = create_cubes(
         output_cube_dir,
-        dim_size=2,
+        dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
         exclude_logical_coord_fn=exclude_random_coords_75pct,
         expression_summary_vals_fn=random_expression_summary_values,
