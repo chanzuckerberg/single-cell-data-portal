@@ -486,6 +486,7 @@ export function useEditCollection(
 
             return { ...collection, ...newCollection, revision_diff };
           }
+          return { ...collection, ...newCollection };
         }
       );
     },
