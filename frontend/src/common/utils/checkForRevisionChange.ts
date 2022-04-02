@@ -105,30 +105,18 @@ export default function checkForRevisionChange(
       !IGNORED_COLLECTION_FIELDS.includes(collectionKey) &&
       publishedCollection[collectionKey] !== revision[collectionKey]
     ) {
-      console.log("found diff for");
-      console.log(collectionKey);
-      console.log(publishedCollection[collectionKey]);
-      console.log(revision[collectionKey]);
       return true;
     }
   }
-  if (publishedCollection.links.length !== revision.links.length) {
-    console.log("link length diff");
-    console.log(publishedCollection.links.length);
-    console.log(revision.links.length);
-    return true;
-  }
+  if (publishedCollection.links.length !== revision.links.length) return true;
   //Check links for differences
-  if (checkListForChanges(revision.links, publishedCollection.links)) {
-    console.log("changes in link lists");
+  if (checkListForChanges(revision.links, publishedCollection.links))
     return true;
-  }
+
   if (
     checkDatasetsForChanges(revision.datasets, publishedCollection.datasets)
   ) {
-    console.log("datasets changed");
     return true;
   }
-  console.log("no changes!");
   return false;
 }
