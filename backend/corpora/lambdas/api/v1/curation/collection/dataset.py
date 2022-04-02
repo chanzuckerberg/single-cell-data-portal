@@ -30,7 +30,7 @@ duration = 3600
 
 
 @dbconnect
-def get_s3_credentials(collection_uuid, user, token):
+def get_s3_credentials(collection_uuid, user):
     db_session = g.db_session
     # check if they own the collection.
     collection = get_collection(db_session, collection_uuid, include_tombstones=True)
@@ -40,7 +40,7 @@ def get_s3_credentials(collection_uuid, user, token):
         raise MethodNotAllowedException()
     credentials = sts_client.assume_role(
         RoleArn="arn:aws:iam::699936264352:role/writing-S3",
-        RoleSessionName=token["email"],
+        RoleSessionName=user,
         Policy=policy.format(CorporaConfig().submission_bucket, collection_uuid),
         DurationSeconds=duration,
     )
