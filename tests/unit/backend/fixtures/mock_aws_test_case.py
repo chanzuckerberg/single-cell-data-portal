@@ -99,9 +99,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         explorer_url = f"http://bogus.url/d/{file_name}"
         dataset.update(explorer_url=explorer_url)
         s3_uri = f"s3://{self.cellxgene_bucket.name}/{file_name}"
-        return DatasetAsset.create(
-            session, dataset_id, file_name, DatasetArtifactFileType.CXG, False, s3_uri
-        )
+        return DatasetAsset.create(session, dataset_id, file_name, DatasetArtifactFileType.CXG, False, s3_uri)
 
     def generate_dataset_with_s3_resources(self, session, artifacts=True, explorer_s3_object=True, **params) -> Dataset:
         dataset = self.generate_dataset(session, **params)
