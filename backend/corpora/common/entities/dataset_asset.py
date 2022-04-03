@@ -85,7 +85,6 @@ class DatasetAsset(Entity):
             dataset_id=dataset_id,
             filename=filename,
             filetype=filetype,
-            type=type_enum,
             user_submitted=user_submitted,
             s3_uri=s3_uri,
         )

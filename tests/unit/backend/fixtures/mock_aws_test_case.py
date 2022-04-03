@@ -83,9 +83,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
                 s3_uri = DatasetAsset.upload(temp_file, dataset_id, self.bucket.name)
         else:
             s3_uri = DatasetAsset.make_s3_uri(self.bucket.name, dataset_id, file_name)
-        return DatasetAsset.create(
-            session, dataset_id, file_name, artifact_type, False, s3_uri
-        )
+        return DatasetAsset.create(session, dataset_id, file_name, artifact_type, False, s3_uri)
 
     def create_explorer_s3_object(self, session, dataset_id, upload=False):
         file_name = f"{dataset_id}.cxg/"
