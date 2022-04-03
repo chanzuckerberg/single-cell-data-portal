@@ -3,7 +3,6 @@ from unittest import mock
 from botocore.exceptions import ClientError
 
 from backend.corpora.common.corpora_orm import (
-    DatasetArtifactType,
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
@@ -126,7 +125,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         artifact_params = dict(
             filename="filename_1",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=f"s3://{self.bucket_name}/{file_name}",
         )
@@ -139,7 +137,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.CXG,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=first_uri,
         )
@@ -149,7 +146,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             dataset_id=dataset.id,
             filename="some file",
             filetype=DatasetArtifactFileType.CXG,
-            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=second_uri,
         )
@@ -163,21 +159,18 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=first_uri,
         )
         artifact_params_1 = dict(
             filename="filename_y",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=second_uri,
         )
         artifact_params_2 = dict(
             filename="filename_z",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=third_uri,
         )
@@ -187,7 +180,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             dataset_id=dataset_0.id,
             filename="some file",
             filetype=DatasetArtifactFileType.CXG,
-            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=first_uri,
         )
@@ -197,7 +189,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             dataset_id=dataset_1.id,
             filename="some file",
             filetype=DatasetArtifactFileType.CXG,
-            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=second_uri,
         )
@@ -207,7 +198,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             dataset_id=dataset_2.id,
             filename="some file",
             filetype=DatasetArtifactFileType.CXG,
-            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=second_uri,
         )

@@ -1,6 +1,5 @@
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
-    DatasetArtifactType,
     UploadStatus,
     ValidationStatus,
 )
@@ -18,7 +17,6 @@ class TestCreateDataset(TestDataset):
         artifact_params = dict(
             filename="filename_1",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri="some_uri",
         )
