@@ -64,6 +64,15 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
     if not validate_dataset_properties(anndata_object):
         return
 
+    # Set all values <=min_value to 0
+    min_value = 3
+    A = get_X_raw(anndata_object)
+    nonzero_mask = np.array(A[A.nonzero()] <= min_value)[0]
+    rows = A.nonzero()[0][nonzero_mask]
+    cols = A.nonzero()[1][nonzero_mask]
+    A[rows, cols] = 0
+    A.eliminate_zeros()
+
     var_df = update_global_var(group_name, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
