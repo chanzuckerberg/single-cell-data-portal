@@ -7,7 +7,7 @@ import boto3
 from moto import mock_s3
 
 from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.corpora_orm import DatasetArtifactType, DatasetArtifactFileType
+from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -83,9 +83,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
                 s3_uri = DatasetAsset.upload(temp_file, dataset_id, self.bucket.name)
         else:
             s3_uri = DatasetAsset.make_s3_uri(self.bucket.name, dataset_id, file_name)
-        return DatasetAsset.create(
-            session, dataset_id, file_name, artifact_type, DatasetArtifactType.REMIX, False, s3_uri
-        )
+        return DatasetAsset.create(session, dataset_id, file_name, artifact_type, False, s3_uri)
 
     def create_explorer_s3_object(self, session, dataset_id, upload=False):
         file_name = f"{dataset_id}.cxg/"
@@ -101,9 +99,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         explorer_url = f"http://bogus.url/d/{file_name}"
         dataset.update(explorer_url=explorer_url)
         s3_uri = f"s3://{self.cellxgene_bucket.name}/{file_name}"
-        return DatasetAsset.create(
-            session, dataset_id, file_name, DatasetArtifactFileType.CXG, DatasetArtifactType.REMIX, False, s3_uri
-        )
+        return DatasetAsset.create(session, dataset_id, file_name, DatasetArtifactFileType.CXG, False, s3_uri)
 
     def generate_dataset_with_s3_resources(self, session, artifacts=True, explorer_s3_object=True, **params) -> Dataset:
         dataset = self.generate_dataset(session, **params)
