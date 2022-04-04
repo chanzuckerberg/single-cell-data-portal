@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -485,7 +485,7 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-const EMPTY_FILTERS = {
+const EMPTY_FILTERS: State["selectedFilters"] = {
   datasets: undefined,
   developmentStages: undefined,
   diseases: undefined,
@@ -505,6 +505,11 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 
   const { data } = usePrimaryFilterDimensions();
 
+  /**
+   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
+   * any selected secondary filter options to the query, otherwise BE will return
+   * only the filtered options back to us.
+   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
 
