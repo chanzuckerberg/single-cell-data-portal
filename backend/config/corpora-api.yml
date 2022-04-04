@@ -1391,9 +1391,6 @@ components:
           enum: [H5AD, RDS, CXG]
         filename:
           type: string
-        type:
-          type: string
-          enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
     gene_set:
