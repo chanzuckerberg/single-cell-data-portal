@@ -87,6 +87,7 @@ class Auth0ManagementSession:
         # Add key to Auth0
         payload = dict(
             email=email,
+            email_verified=True,
             password=password,
             connection=CorporaAuthConfig().api_key_connection_name,
         )
