@@ -543,8 +543,6 @@ paths:
                   required:
                     - id
                     - name
-                    - published_at
-                    - revised_at
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
@@ -1170,7 +1168,10 @@ paths:
                       genes:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       cell_types:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                        type: object
+                        # TODO: specify further (grouped by tissue now): https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+#                        items:
+#                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   filter_dimensions:
                     type: object
                     properties:
@@ -1390,9 +1391,6 @@ components:
           enum: [H5AD, RDS, CXG]
         filename:
           type: string
-        type:
-          type: string
-          enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
     gene_set:

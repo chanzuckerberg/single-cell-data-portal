@@ -126,7 +126,6 @@ from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
-    DatasetArtifactType,
     ProcessingStatus,
     ValidationStatus,
 )
@@ -186,7 +185,6 @@ def create_artifact(
                 dataset_id=dataset_id,
                 filename=file_name,
                 filetype=artifact_type,
-                type_enum=DatasetArtifactType.REMIX,
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
@@ -448,7 +446,6 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 dataset_id=dataset_id,
                 filename="explorer_cxg",
                 filetype=DatasetArtifactFileType.CXG,
-                type_enum=DatasetArtifactType.REMIX,
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
