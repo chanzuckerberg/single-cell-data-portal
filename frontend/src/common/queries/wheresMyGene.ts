@@ -1,5 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
+import { API_URL } from "src/configs/configs";
 import { StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
@@ -40,13 +41,7 @@ export interface PrimaryFilterDimensionsResponse {
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" +
-    API.WMG_PRIMARY_FILTER_DIMENSIONS;
+  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
 
   const response = await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 
@@ -77,7 +72,7 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS],
-    () => fetchPrimaryFilterDimensions(),
+    fetchPrimaryFilterDimensions,
     // (thuang): We don't need to refetch during the session
     { staleTime: Infinity }
   );
@@ -129,8 +124,10 @@ interface QueryResponse {
   snapshot_id: string;
   term_id_labels: {
     cell_types: {
-      [id: string]: string;
-    }[];
+      [tissue_type_ontology_term_id: string]: {
+        [id: string]: string;
+      }[];
+    };
     genes: {
       [id: string]: string;
     }[];
@@ -142,12 +139,7 @@ async function fetchQuery(
 ): Promise<QueryResponse | undefined> {
   if (!query) return;
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_QUERY;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" + API.WMG_QUERY;
+  const url = API_URL + API.WMG_QUERY;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -296,23 +288,23 @@ export function useCellTypesByTissueName(): {
     }
 
     for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueId, expressionSummaries] of Object.entries(
+      for (const [tissueID, expressionSummaries] of Object.entries(
         expressionSummaryByTissue
       )) {
-        const cellTypes = result.get(tissueId) || new Map();
+        const cellTypes = result.get(tissueID) || new Map();
 
         for (const expressionSummary of expressionSummaries) {
           const { id } = expressionSummary;
 
           const cellType = {
             id,
-            name: termIdLabels.cell_types[id],
+            name: termIdLabels.cell_types[tissueID][id],
           };
 
           cellTypes.set(id, cellType);
         }
 
-        result.set(tissueId, cellTypes);
+        result.set(tissueID, cellTypes);
       }
     }
 
@@ -442,7 +434,7 @@ function transformCellTypeGeneExpressionSummaryData(
 }
 
 interface TermIdLabels {
-  cell_types: { [id: string]: string };
+  cell_types: { [tissueID: string]: { [id: string]: string } };
   genes: { [id: string]: string };
 }
 
@@ -464,9 +456,14 @@ export function useTermIdLabels(): {
       term_id_labels: { cell_types, genes },
     } = data;
 
+    const returnCellTypes: TermIdLabels["cell_types"] = {};
+    Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
+      returnCellTypes[tissueID] = aggregateIdLabels(cell_types);
+    });
+
     return {
       data: {
-        cell_types: aggregateIdLabels(cell_types),
+        cell_types: returnCellTypes,
         genes: aggregateIdLabels(genes),
       },
       isLoading: false,

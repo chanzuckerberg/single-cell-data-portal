@@ -59,14 +59,12 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
         <DialogTitle title="API Key" />
         <DialogContent>
           <FullWidthCallout intent="info">
-            Make sure to copy your API token now. You won’t be able to see it
+            Make sure to copy your API key now. You won’t be able to see it
             again!
           </FullWidthCallout>
           <StyledInputGroup readOnly value={apiKeyResponse.current.key} />
           <APIDisclaimerP>
-            Warning: Treat your tokens like passwords and keep them secret. When
-            working with the API, use tokens as environment variables instead of
-            hardcoding them into your programs.
+            Warning: Treat your API key like a password and keep it secret.
           </APIDisclaimerP>
         </DialogContent>
         <DialogActions>
