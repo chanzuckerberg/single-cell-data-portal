@@ -82,11 +82,7 @@ export function createChartOptions({
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
-
-          const r = Math.sqrt(percentage * maxRadius ** 2);
-
-          return Math.round(2 * r);
+          return convertPercentageToDiameter(percentage);
         },
       },
     ],
@@ -124,6 +120,20 @@ export function createChartOptions({
       },
     ],
   };
+}
+
+export function convertPercentageToDiameter(percentage: number): number {
+  const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+  const RADIUS_OFFSET = 0.2;
+
+  const baseRadius = RADIUS_OFFSET * (MAX_FIRST_PART_LENGTH_PX - RADIUS_OFFSET);
+
+  const radius = Math.sqrt(
+    percentage * (maxRadius - RADIUS_OFFSET) ** 2 + baseRadius
+  );
+
+  return Math.round(2 * radius);
 }
 
 const SELECTED_STYLE = {
