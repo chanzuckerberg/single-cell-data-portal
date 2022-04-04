@@ -82,11 +82,7 @@ export function createChartOptions({
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
-
-          const r = Math.sqrt(percentage * maxRadius ** 2);
-
-          return Math.round(2 * r);
+          return convertPercentageToDiameter(percentage);
         },
       },
     ],
@@ -126,6 +122,26 @@ export function createChartOptions({
   };
 }
 
+export function convertPercentageToDiameter(percentage: number): number {
+  const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+  const RADIUS_OFFSET = 0.2;
+
+  const baseRadius = RADIUS_OFFSET * (MAX_FIRST_PART_LENGTH_PX - RADIUS_OFFSET);
+
+  const radius = Math.sqrt(
+    percentage * (maxRadius - RADIUS_OFFSET) ** 2 + baseRadius
+  );
+
+  return Math.round(2 * radius);
+}
+
+const SELECTED_STYLE = {
+  backgroundColor: "#F8F8F8",
+  fontWeight: "bold" as never,
+  padding: 4,
+};
+
 interface CreateXAxisOptionsProps {
   geneNames: string[];
   genesToDelete: string[];
@@ -157,10 +173,7 @@ export function createXAxisOptions({
               : value;
           },
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           rotate: 270,
           verticalAlign: "middle",
@@ -246,10 +259,7 @@ export function createYAxisOptions({
           // Turn off type checking here, because ecahrts' type is wrong
           ["overflow" as string]: "truncate",
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           width: 260,
         },

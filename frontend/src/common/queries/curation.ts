@@ -1,4 +1,7 @@
 import { useQuery, UseQueryResult } from "react-query";
+import { API_URL } from "src/configs/configs";
+import { API } from "../API";
+import { DEFAULT_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
 export interface APIKeyResponse {
@@ -12,24 +15,10 @@ export const USE_CURATOR_AUTH_KEY = {
 };
 
 export async function generateCuratorAuthKey(): Promise<APIKeyResponse | null> {
-  // const response = await fetch(API_URL + API.CURATOR_AUTH_KEY, {
-  //   ...DEFAULT_FETCH_OPTIONS,
-  //   method: "PUT",
-  // });
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  const response = {
-    json: () => {
-      return {
-        id: "1234567890123456789012345678901234567890",
-        key: "1234567890123456789012345678901234567890",
-      };
-    },
-    ok: true,
-  };
+  const response = await fetch(API_URL + API.CURATOR_AUTH_KEY, {
+    ...DEFAULT_FETCH_OPTIONS,
+    method: "POST",
+  });
 
   const result = await response.json();
 
@@ -41,23 +30,10 @@ export async function generateCuratorAuthKey(): Promise<APIKeyResponse | null> {
 }
 
 async function fetchAuthKeyID(): Promise<APIKeyResponse | null> {
-  // const response = await fetch(
-  //   API_URL + API.CURATOR_AUTH_KEY,
-  //   DEFAULT_FETCH_OPTIONS
-  // );
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  const response = {
-    json: () => {
-      return {
-        id: "1234567890123456789012345678901234567890",
-      };
-    },
-    ok: true,
-  };
+  const response = await fetch(
+    API_URL + API.CURATOR_AUTH_KEY,
+    DEFAULT_FETCH_OPTIONS
+  );
 
   const result = await response.json();
 
