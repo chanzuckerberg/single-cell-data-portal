@@ -37,7 +37,6 @@ def configure_flask_app(flask_app):
     flask_app.logger.handlers = gunicorn_logger.handlers
     flask_app.logger.setLevel(gunicorn_logger.level)
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
-    logging.basicConfig(level=gunicorn_logger.level)
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"
