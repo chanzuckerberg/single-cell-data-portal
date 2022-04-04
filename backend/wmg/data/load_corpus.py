@@ -67,7 +67,7 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
 
     anndata_object = anndata.read_h5ad(h5ad)
 
-    # Apply a low expression gene cell filtering. 
+    # Apply a low expression gene cell filtering.
     scanpy.pp.filter_cells(anndata_object, min_genes=MIN_GENE_EXPRESSION_COUNT)
 
     logger.info(f"loaded: shape={anndata_object.shape}")

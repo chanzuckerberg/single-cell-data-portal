@@ -1,9 +1,6 @@
-import time
 import boto3
 import os
 import subprocess
-
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 
 
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
@@ -25,6 +22,7 @@ def update_s3_resources(snapshot_path, timestamp):
     upload_artifacts_to_s3(snapshot_path, timestamp)
     update_latest_snapshot_identifier(timestamp)
     remove_oldest_datasets(timestamp)
+
 
 def remove_oldest_datasets(timestamp):
     """
@@ -57,6 +55,7 @@ def remove_oldest_datasets(timestamp):
     for timestamp, object in candidate_to_delete:
         if timestamp in timestamps_to_delete:
             object.delete()
+
 
 def upload_artifacts_to_s3(snapshot_path, timestamp):
     sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{timestamp}"]
