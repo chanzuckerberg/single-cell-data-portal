@@ -14,7 +14,7 @@ included_assay_ontologies = {
     "EFO:0009922": "10x 3' v3",
     "EFO_0030003": "10x 3' transcription profiling",
     "EFO:0030004": "10x 5' transcription profiling",
-    "EFO:0008919": "Seq-Well S3",
+    "EFO:0008919": "Seq-Well",
     "EFO:0008995": "10x technology",
 }
 
