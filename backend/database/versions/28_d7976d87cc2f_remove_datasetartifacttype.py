@@ -18,15 +18,10 @@ depends_on = None
 
 def upgrade():
     op.drop_column("dataset_artifact", "type")
+    sa.Enum(name="datasetartifacttype").drop(op.get_bind())
 
 
 def downgrade():
-    op.add_column(
-        "dataset_artifact",
-        sa.Column(
-            "type",
-            postgresql.ENUM("ORIGINAL", "REMIX", name="datasetartifacttype"),
-            autoincrement=False,
-            nullable=True,
-        ),
-    )
+    dataset_artifact_type_enum = postgresql.ENUM("ORIGINAL", "REMIX", name="datasetartifacttype")
+    dataset_artifact_type_enum.create(op.get_bind())
+    op.add_column("dataset_artifact", sa.Column("type", dataset_artifact_type_enum, autoincrement=False, nullable=True))
