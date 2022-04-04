@@ -97,11 +97,12 @@ export interface Collection {
   data_submission_policy_version: string;
   created_at: number;
   updated_at: number;
-  has_revision: boolean;
   publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
   summaryCitation?: string;
   tombstone?: boolean;
+  revision_of?: Collection["id"];
+  revisioning_in?: Collection["id"];
 }
 
 /**

@@ -17,25 +17,27 @@ interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   id: Collection["id"];
   isPublishable: boolean;
-  isRevision: boolean;
+  revisionOf: Collection["revision_of"];
+  visibility: Collection["visibility"];
 }
 
 const ActionButtons = ({
   addNewFile,
   id,
   isPublishable,
-  isRevision,
+  revisionOf,
+  visibility,
 }: Props): JSX.Element => {
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const Actions = isFilterEnabled ? CollectionActions : Wrapper;
   return (
     <Actions>
-      <MoreDropdown id={id} isRevision={isRevision} />
+      <MoreDropdown id={id} isRevision={!!revisionOf} visibility={visibility} />
       <AddButton addNewFile={addNewFile} />
       <PublishCollection
         id={id}
         isPublishable={isPublishable}
-        isRevision={isRevision}
+        revisionOf={revisionOf}
       />
     </Actions>
   );
