@@ -29,7 +29,7 @@ def get_cells_by_tissue_type(corpus_group: str) -> Dict:
     return cell_type_by_tissue
 
 
-def generate_cell_ordering(cell_type_by_tissue: Dict) -> None:
+def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> None:
     """
     Use graphviz to map all the cells assoicated with a tissue to the ontology tree and return their correct order
     """
@@ -80,4 +80,4 @@ def generate_cell_ordering(cell_type_by_tissue: Dict) -> None:
             data.append((tissue, cell, i))
 
     df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
-    df.to_json(CELL_TYPE_ORDERINGS_FILENAME)
+    df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")

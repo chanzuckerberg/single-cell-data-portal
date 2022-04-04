@@ -18,13 +18,11 @@ def _get_wmg_bucket_path():
         return f"s3://{wmg_bucket_name}"
 
 
-def update_s3_resources(corpus_name):
+def update_s3_resources(snapshot_path, timestamp):
     """
     Copy cube and cube related files to s3 under the current timestamp
     """
-    timestamp = int(time.time())
-    upload_cube_to_s3(corpus_name, timestamp)
-    upload_cell_ordering_to_s3(timestamp)
+    upload_artifacts_to_s3(snapshot_path, timestamp)
     update_latest_snapshot_identifier(timestamp)
     remove_oldest_datasets(timestamp)
 
@@ -60,14 +58,8 @@ def remove_oldest_datasets(timestamp):
         if timestamp in timestamps_to_delete:
             object.delete()
 
-
-def upload_cube_to_s3(group_name, timestamp):
-    sync_command = ["aws", "s3", "sync", f"{group_name}/cube", f"{_get_wmg_bucket_path()}/{timestamp}/cube"]
-    subprocess.run(sync_command)
-
-
-def upload_cell_ordering_to_s3(timestamp):
-    sync_command = ["aws", "s3", "cp", CELL_TYPE_ORDERINGS_FILENAME, f"{_get_wmg_bucket_path()}/{timestamp}/{CELL_TYPE_ORDERINGS_FILENAME}"]
+def upload_artifacts_to_s3(snapshot_path, timestamp):
+    sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{timestamp}"]
     subprocess.run(sync_command)
 
 

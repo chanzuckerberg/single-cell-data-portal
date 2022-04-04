@@ -65,9 +65,9 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_
     logger.info("Built expression summary cube")
 
     cell_type_by_tissue = get_cells_by_tissue_type(corpus_path)
-    generate_cell_ordering(cell_type_by_tissue)
+    generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     logger.info("Generated cell ordering json file")
-    update_s3_resources()
+    update_s3_resources(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")
 
 
