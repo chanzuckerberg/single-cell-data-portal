@@ -1,0 +1,18 @@
+FROM public.ecr.aws/lambda/python:3.9
+
+COPY backend/corpora/dataset_submission .
+COPY backend/__init__.py ./backend/__init.py
+COPY backend/corpora/__init__.py ./backend/corpora/__init.py
+COPY backend/corpora/common ./backend/corpora/common
+COPY backend/corpora/dataset_submission ./backend/corpora/dataset_submission
+
+RUN pip3 install -r requirements.txt
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
+CMD ["app.dataset_submission_handler"]
