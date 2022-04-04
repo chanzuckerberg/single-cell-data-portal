@@ -80,12 +80,12 @@ else
 endif
 
 db/test_migration:
-	$(MAKE) db/dump_schema > /tmp/before
+	$(MAKE) db/dump_schema > /tmp/before_migration
 	$(MAKE) db/migrate
 	$(MAKE) db/dump_schema > /tmp/after_migration
 	$(MAKE) db/rollback
-	$(MAKE) db/dump_schema > /tmp/after
-	diff /tmp/{before,after} # No news is good news.
+	$(MAKE) db/dump_schema > /tmp/after_rollback
+	diff /tmp/{before_migration,after_rollback} # No news is good news.
 
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
