@@ -1,5 +1,6 @@
 import itertools
 import json
+import unittest
 from datetime import datetime
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 
@@ -765,6 +766,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
 
+    @unittest.skip("Flaky")  # TODO @mdunitz ticket 2223
     def test__get_all_collections_for_index(self):
         collection = self.generate_collection(
             self.session,
