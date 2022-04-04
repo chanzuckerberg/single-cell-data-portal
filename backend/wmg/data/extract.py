@@ -15,7 +15,7 @@ included_assay_ontologies = {
     "EFO_0030003": "10x 3' transcription profiling",
     "EFO:0030004": "10x 5' transcription profiling",
     "EFO:0008919": "Seq-Well S3",
-    "EFO:0008995": "10x technology"
+    "EFO:0008995": "10x technology",
 }
 
 
@@ -28,14 +28,14 @@ def get_dataset_s3_uris():
         dataset_ids = []
         published_dataset_non_null_assays = (
             session.query(Dataset.table.id, Dataset.table.assay)
-                .filter(
+            .filter(
                 Dataset.table.assay != "null",
                 Dataset.table.published == "TRUE",
                 Dataset.table.is_primary_data == "PRIMARY",
                 Dataset.table.collection_visibility == "PUBLIC",
                 Dataset.table.tombstone == "FALSE",
             )
-                .all()
+            .all()
         )
         for dataset in published_dataset_non_null_assays:
             if dataset[1]["ontology_term_id"] in included_assay_ontologies:
