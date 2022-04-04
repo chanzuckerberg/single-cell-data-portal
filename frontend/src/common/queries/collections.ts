@@ -196,7 +196,17 @@ export function useCollection({
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, visibility, collections],
     () => queryFn(id, visibility),
-    { enabled: !!collections }
+    {
+      enabled: !!collections,
+      // TODO review use of refetch flag below on remove of filter flag (#1718). This is set to false as a fix for #2204
+      //  where unsaved links on the collection edit form are cleared if the user clicks away and back again. The root
+      //  cause of the defect is the useEffect that was added in /components/CreateCollectionModal/components/Content/index.tsx
+      //  to handle filter flag-related functionality is re-run after the refetch causing unsaved links to be removed.
+      //  The useEffect can be reverted to useState on remove of the filter flag and will therefore remove the side
+      //  effect of the links being cleared as reported in #2204. Options going forward are to remove the refetch
+      //  option below and allow it to default to true, or to review setting the refetch option to false for all queries.
+      refetchOnWindowFocus: false,
+    }
   );
 }
 

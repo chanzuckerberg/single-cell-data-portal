@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, CollectionLinkType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator

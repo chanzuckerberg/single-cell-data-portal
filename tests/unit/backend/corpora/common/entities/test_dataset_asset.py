@@ -1,9 +1,8 @@
-import mock
+from unittest import mock
 
 from botocore.exceptions import ClientError
 
 from backend.corpora.common.corpora_orm import (
-    DatasetArtifactType,
     DatasetArtifactFileType,
 )
 from backend.corpora.common.entities.dataset_asset import DatasetAsset
@@ -126,7 +125,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         artifact_params = dict(
             filename="filename_1",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=f"s3://{self.bucket_name}/{file_name}",
         )
@@ -139,7 +137,6 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         artifact_params_0 = dict(
             filename="filename_x",
             filetype=DatasetArtifactFileType.CXG,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri=first_uri,
         )
@@ -149,9 +146,64 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             dataset_id=dataset.id,
             filename="some file",
             filetype=DatasetArtifactFileType.CXG,
-            type_enum=DatasetArtifactType.REMIX,
             user_submitted=True,
             s3_uri=second_uri,
         )
         artifact = dataset.get_most_recent_artifact(DatasetArtifactFileType.CXG)
         self.assertEqual(artifact.s3_uri, second_uri)
+
+    def test_get_list_of_s3_uris_for_associated_dataset_ids(self):
+        first_uri = "some_uri_0"
+        second_uri = "some_uri_1"
+        third_uri = "this_shouldnt_be_returned"
+        artifact_params_0 = dict(
+            filename="filename_x",
+            filetype=DatasetArtifactFileType.H5AD,
+            user_submitted=True,
+            s3_uri=first_uri,
+        )
+        artifact_params_1 = dict(
+            filename="filename_y",
+            filetype=DatasetArtifactFileType.H5AD,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        artifact_params_2 = dict(
+            filename="filename_z",
+            filetype=DatasetArtifactFileType.H5AD,
+            user_submitted=True,
+            s3_uri=third_uri,
+        )
+        dataset_0 = self.generate_dataset(self.session, artifacts=[artifact_params_0])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_0.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            user_submitted=True,
+            s3_uri=first_uri,
+        )
+        dataset_1 = self.generate_dataset(self.session, artifacts=[artifact_params_1])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_1.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        dataset_2 = self.generate_dataset(self.session, artifacts=[artifact_params_2])
+        DatasetAsset.create(
+            self.session,
+            dataset_id=dataset_2.id,
+            filename="some file",
+            filetype=DatasetArtifactFileType.CXG,
+            user_submitted=True,
+            s3_uri=second_uri,
+        )
+        s3_uri_dataset_dict = DatasetAsset.s3_uris_for_datasets(self.session, [dataset_0.id, dataset_1.id])
+        self.assertTrue(set(s3_uri_dataset_dict.keys()).issuperset(set([dataset_0.id, dataset_1.id])))
+        self.assertNotIn(dataset_2.id, s3_uri_dataset_dict.keys())
+
+        self.assertTrue(set(s3_uri_dataset_dict.values()).issuperset(set([first_uri, second_uri])))
+        self.assertNotIn(third_uri, s3_uri_dataset_dict.values())

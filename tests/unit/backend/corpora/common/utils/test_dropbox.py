@@ -1,6 +1,6 @@
 import unittest
 
-import mock
+from unittest import mock
 import requests
 from requests import HTTPError
 from backend.corpora.common.utils.dl_sources.url import from_url, DropBoxURL, MissingHeaderException, RegisteredSources
