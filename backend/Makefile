@@ -82,6 +82,7 @@ endif
 db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/before
 	$(MAKE) db/migrate
+	$(MAKE) db/dump_schema > /tmp/after_migration
 	$(MAKE) db/rollback
 	$(MAKE) db/dump_schema > /tmp/after
 	diff /tmp/{before,after} # No news is good news.
