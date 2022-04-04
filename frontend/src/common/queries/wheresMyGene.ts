@@ -191,11 +191,19 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+/**
+ * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
+ * returns all available secondary filter options for us to display
+ */
+export function useFilterDimensions(
+  options = { includeAllFilterOptions: false }
+): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const { includeAllFilterOptions } = options;
+
+  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -477,7 +485,17 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody() {
+const EMPTY_FILTERS = {
+  datasets: undefined,
+  developmentStages: undefined,
+  diseases: undefined,
+  ethnicities: undefined,
+  sexes: undefined,
+};
+
+function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
+  const { includeAllFilterOptions } = options;
+
   const {
     selectedGenes,
     selectedTissues,
@@ -488,7 +506,7 @@ function useWMGQueryRequestBody() {
   const { data } = usePrimaryFilterDimensions();
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
 
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
