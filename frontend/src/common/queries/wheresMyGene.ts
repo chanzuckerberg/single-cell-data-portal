@@ -72,7 +72,7 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS],
-    () => fetchPrimaryFilterDimensions(),
+    fetchPrimaryFilterDimensions,
     // (thuang): We don't need to refetch during the session
     { staleTime: Infinity }
   );
@@ -124,8 +124,10 @@ interface QueryResponse {
   snapshot_id: string;
   term_id_labels: {
     cell_types: {
-      [id: string]: string;
-    }[];
+      [tissue_type_ontology_term_id: string]: {
+        [id: string]: string;
+      }[];
+    };
     genes: {
       [id: string]: string;
     }[];
@@ -286,23 +288,23 @@ export function useCellTypesByTissueName(): {
     }
 
     for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueId, expressionSummaries] of Object.entries(
+      for (const [tissueID, expressionSummaries] of Object.entries(
         expressionSummaryByTissue
       )) {
-        const cellTypes = result.get(tissueId) || new Map();
+        const cellTypes = result.get(tissueID) || new Map();
 
         for (const expressionSummary of expressionSummaries) {
           const { id } = expressionSummary;
 
           const cellType = {
             id,
-            name: termIdLabels.cell_types[id],
+            name: termIdLabels.cell_types[tissueID][id],
           };
 
           cellTypes.set(id, cellType);
         }
 
-        result.set(tissueId, cellTypes);
+        result.set(tissueID, cellTypes);
       }
     }
 
@@ -432,7 +434,7 @@ function transformCellTypeGeneExpressionSummaryData(
 }
 
 interface TermIdLabels {
-  cell_types: { [id: string]: string };
+  cell_types: { [tissueID: string]: { [id: string]: string } };
   genes: { [id: string]: string };
 }
 
@@ -454,9 +456,14 @@ export function useTermIdLabels(): {
       term_id_labels: { cell_types, genes },
     } = data;
 
+    const returnCellTypes: TermIdLabels["cell_types"] = {};
+    Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
+      returnCellTypes[tissueID] = aggregateIdLabels(cell_types);
+    });
+
     return {
       data: {
-        cell_types: aggregateIdLabels(cell_types),
+        cell_types: returnCellTypes,
         genes: aggregateIdLabels(genes),
       },
       isLoading: false,
