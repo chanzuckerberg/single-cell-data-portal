@@ -3,8 +3,6 @@ import tiledb
 import pandas as pd
 
 from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
-from pronto import Ontology
-import pygraphviz as pgv
 
 
 def get_cells_by_tissue_type(corpus_group: str) -> Dict:
@@ -33,6 +31,11 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     """
     Use graphviz to map all the cells assoicated with a tissue to the ontology tree and return their correct order
     """
+    # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
+    # so that this file can be imported by tests without breaking.
+    from pronto import Ontology
+    import pygraphviz as pgv
+
     onto = Ontology.from_obo_library("cl-basic.obo")
 
     def compute_ordering(cells, root):
