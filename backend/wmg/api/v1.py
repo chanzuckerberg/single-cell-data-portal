@@ -7,7 +7,7 @@ from pandas import DataFrame
 
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.domain.ontology_labels import ontology_term_label, gene_term_label, enrich_development_stage_with_ancestors
 from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
@@ -104,7 +104,7 @@ def build_filter_dims_values(all_filter_dims_values: Dict[str, Iterable[str]]):
         disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(
-            all_filter_dims_values["development_stage_ontology_term_id"]
+            enrich_development_stage_with_ancestors(all_filter_dims_values["development_stage_ontology_term_id"])
         ),
         ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
         # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching

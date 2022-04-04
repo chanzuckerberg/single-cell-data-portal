@@ -30,6 +30,16 @@ class WmgApiV1Tests(unittest.TestCase):
         super().setUpClass()
         cls.maxDiff = None
 
+    @unittest.skip("unimplemented")
+    def test__no_snapshot_exists__primary_filter_dimensions_returns_404(self):
+        # TODO
+        pass
+
+    @unittest.skip("unimplemented")
+    def test__no_snapshot_exists__query_returns_404(self):
+        # TODO
+        pass
+
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__primary_filter_dimensions__returns_200(self, load_snapshot):
         # This test appears to be hitting a TileDB (<=0.13.1) bug and fails (intermittently) if dim_size=3
@@ -540,6 +550,47 @@ class WmgApiV1Tests(unittest.TestCase):
             self.maxDiff = None
             self.assertEqual(expected_filter_dims, json.loads(response.data)["filter_dims"])
 
+    @patch("backend.domain.ontology_labels.development_stage_ancestors_ontology_mapping",
+           {
+               "development_stage_ontology_term_id_0":
+                   ["development_stage_ontology_term_id_0", "development_stage_ontology_term_id_1"]
+           }
+           )
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query__enriches_development_stage_ontology_term_ids(self, load_snapshot, ontology_term_label):
+        dim_size = 1
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+
+            # development_stage_ancestors_ontology_mapping.return_value = {
+            #     "development_stage_ontology_term_id_0": ["development_stage_ontology_term_id_0",
+            #                                              "development_stage_ontology_term_id_1"]
+            # }
+
+            request = dict(
+                filter=dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                ),
+                include_filter_dims=True,
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            expected_development_stage_ontology_terms = [
+                {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
+                {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
+            ]
+            self.assertEqual(expected_development_stage_ontology_terms,
+                             json.loads(response.data)["filter_dims"]["development_stage_terms"])
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify

@@ -1,6 +1,6 @@
 import unittest
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.domain.ontology_labels import ontology_term_label, gene_term_label, enrich_development_stage_with_ancestors
 
 
 class OntologyLabelTests(unittest.TestCase):
@@ -39,6 +39,28 @@ class OntologyLabelTests(unittest.TestCase):
         for gene_id, expected_gene_label in test_cases.items():
             with self.subTest(gene_id):
                 self.assertEqual(gene_term_label(gene_id), expected_gene_label)
+
+    def test__enrich_development_stage_with_ancestors__no_items__expands_correctly(self):
+        self.assertEqual(
+                [],
+                enrich_development_stage_with_ancestors([""]))
+
+    def test__enrich_development_stage_witha_ancestors__single_item__expands_correctly(self):
+        self.assertEqual(
+                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+                enrich_development_stage_with_ancestors(["HsapDv:0000008"]))
+
+    def test__enrich_development_stage_with_ancestors__multiple_items__expand_correctly(self):
+        self.assertEqual(
+                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001",
+                 "HsapDv:0000033",
+                 "HsapDv:0000009"],
+                enrich_development_stage_with_ancestors(["HsapDv:0000008", "HsapDv:0000033"]))
+
+    def test__enrich_development_stage_with_ancestors__unknown_items__includes_unknown_items(self):
+        self.assertEqual(
+                ['unknown_term'],
+                enrich_development_stage_with_ancestors(["unknown_term"]))
 
 
 if __name__ == "__main__":

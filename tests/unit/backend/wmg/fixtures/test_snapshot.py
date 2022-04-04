@@ -41,7 +41,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     implementation is wildly inefficient, but it is good enough for test code.
     """
     # must import lazily
-    import backend.wmg.data.ontology_labels as ontology_labels
+    import backend.domain.ontology_labels as ontology_labels
 
     if ontology_labels.ontology_term_id_labels is None:
         ontology_labels.__load_ontologies()

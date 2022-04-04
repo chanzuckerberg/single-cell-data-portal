@@ -2,11 +2,11 @@ import csv
 import logging
 import os
 import typing
-from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
+from backend.domain import ontology_labels
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
@@ -23,7 +23,6 @@ from ..corpora_orm import (
     ConversionStatus,
 )
 from ..utils.db_helpers import clone
-from ..utils.ontology_mapping import ontology_mapping
 from ..utils.s3_buckets import buckets
 
 logger = logging.getLogger(__name__)
@@ -145,19 +144,13 @@ class Dataset(Entity):
             dataset["organism"] = [dataset["organism"]]
 
     @staticmethod
-    def enrich_development_stage_with_ancestors(dataset):
-        if "development_stage" not in dataset:
-            return
-
-        leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
+    def enrich_dataset_development_stage_with_ancestors(dataset: typing.Dict[str, typing.Any]) -> None:
+        leaves = [e["ontology_term_id"] for e in dataset.get("development_stage", [])]
 
         if not leaves:
             return
 
-        ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
-        flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
-        unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
-        if unique_ancestors:
+        if unique_ancestors := ontology_labels.enrich_development_stage_with_ancestors(leaves):
             dataset["development_stage_ancestors"] = unique_ancestors
 
     @classmethod
@@ -205,7 +198,7 @@ class Dataset(Entity):
         for result in results:
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
-            Dataset.enrich_development_stage_with_ancestors(result)
+            Dataset.enrich_dataset_development_stage_with_ancestors(result)
 
         return results
 

@@ -2,11 +2,9 @@ import csv
 import gzip
 import json
 import os.path
-from typing import IO, Dict, Optional
+from typing import IO, Dict, Optional, Iterable, List, OrderedDict
 
-# TODO: Place this module into a common ontology util package with ontology_mapping.py and
-#  extract_ontology_terms_from_owl.py. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
-#  /chanzuckerberg/single-cell-data-portal/2133
+from backend.domain.ontology_mapping import development_stage_ancestors_ontology_mapping
 
 all_ontologies_json_file = "all_ontology.json.gz"
 
@@ -39,7 +37,6 @@ def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
         __load_genes()
 
     return gene_term_id_labels.get(gene_ontology_term_id)
-
 
 def __load_ontologies() -> None:
     global ontology_term_id_labels
@@ -74,3 +71,10 @@ def __open_ontology_resource(file) -> IO:
     with resources.path("cellxgene_schema", "cli.py") as cellxgene_schema_abs_dir:
         ontology_file = os.path.join(os.path.dirname(cellxgene_schema_abs_dir), "ontology_files", file)
         return gzip.open(ontology_file)
+
+
+def enrich_development_stage_with_ancestors(ontology_term_ids: Iterable[str]) -> List[str]:
+    ancestors = [development_stage_ancestors_ontology_mapping.get(term_id, [term_id]) for term_id in ontology_term_ids]
+    flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
+    return list(OrderedDict.fromkeys(flattened_ancestors))
+
