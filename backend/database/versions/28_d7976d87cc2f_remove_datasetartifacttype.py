@@ -21,5 +21,12 @@ def upgrade():
 
 
 def downgrade():
-    op.add_column("dataset_artifact", sa.Column("type", postgresql.ENUM("ORIGINAL", "REMIX", name="datasetartifacttype"),
-            autoincrement=False, nullable=True))
+    op.add_column(
+        "dataset_artifact",
+        sa.Column(
+            "type",
+            postgresql.ENUM("ORIGINAL", "REMIX", name="datasetartifacttype"),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
