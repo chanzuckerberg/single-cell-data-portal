@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 
 from .entity import Entity
-from ..corpora_orm import DbDatasetArtifact, DatasetArtifactType, DatasetArtifactFileType
+from ..corpora_orm import DbDatasetArtifact, DatasetArtifactFileType
 from ..utils.s3_buckets import buckets
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,6 @@ class DatasetAsset(Entity):
         dataset_id: str,
         filename: str,
         filetype: DatasetArtifactFileType,
-        type_enum: DatasetArtifactType,
         user_submitted: bool,
         s3_uri: str,
     ):
@@ -86,7 +85,6 @@ class DatasetAsset(Entity):
             dataset_id=dataset_id,
             filename=filename,
             filetype=filetype,
-            type=type_enum,
             user_submitted=user_submitted,
             s3_uri=s3_uri,
         )
