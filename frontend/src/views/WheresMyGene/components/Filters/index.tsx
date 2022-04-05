@@ -36,7 +36,6 @@ export default memo(function Filters(): JSX.Element {
 
   const {
     datasets: datasetIds,
-    developmentStages,
     diseases,
     ethnicities,
     sexes,
@@ -77,7 +76,6 @@ export default memo(function Filters(): JSX.Element {
 
   const {
     datasets = EMPTY_ARRAY,
-    development_stage_terms = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     ethnicity_terms = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
@@ -86,12 +84,6 @@ export default memo(function Filters(): JSX.Element {
   const selectedDatasets = useMemo(() => {
     return datasets.filter((dataset) => datasetIds?.includes(dataset.id));
   }, [datasets, datasetIds]);
-
-  const selectedDevelopmentStages = useMemo(() => {
-    return development_stage_terms.filter((developmentStage) =>
-      developmentStages?.includes(developmentStage.id)
-    );
-  }, [development_stage_terms, developmentStages]);
 
   const selectedDiseases = useMemo(() => {
     return disease_terms.filter((disease) => diseases?.includes(disease.id));
@@ -130,11 +122,6 @@ export default memo(function Filters(): JSX.Element {
     [handleFilterChange]
   );
 
-  const handleDevelopmentStagesChange = useMemo(
-    () => handleFilterChange("developmentStages"),
-    [handleFilterChange]
-  );
-
   const handleDiseasesChange = useMemo(
     () => handleFilterChange("diseases"),
     [handleFilterChange]
@@ -158,17 +145,6 @@ export default memo(function Filters(): JSX.Element {
         options={datasets as unknown as DefaultMenuSelectOption[]}
         onChange={handleDatasetsChange}
         value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-      <ComplexFilter
-        multiple
-        label="Development Stage"
-        options={development_stage_terms}
-        onChange={handleDevelopmentStagesChange}
-        value={selectedDevelopmentStages}
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
