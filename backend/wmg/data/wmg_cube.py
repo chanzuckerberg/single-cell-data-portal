@@ -1,4 +1,5 @@
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
+from backend.corpora.common.utils.math_utils import MB
+from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 
 import concurrent
 import logging
@@ -21,7 +22,6 @@ cube_indexed_dims_no_gene_ontology = [
 ]
 
 
-
 def create_cell_count_cube(tdb_group: str):
     """
     Create cell count cube and write to disk
@@ -30,7 +30,7 @@ def create_cell_count_cube(tdb_group: str):
     with tiledb.open(f"{tdb_group}/obs") as obs:
         df = (
             obs.df[:]
-            .groupby(
+                .groupby(
                 by=[
                     "dataset_id",
                     "cell_type_ontology_term_id",
@@ -44,7 +44,7 @@ def create_cell_count_cube(tdb_group: str):
                 ],
                 as_index=False,
             )
-            .size()
+                .size()
         )
 
         tiledb.from_pandas(uri, df)
@@ -59,7 +59,7 @@ def create_expression_summary_cube(tdb_group):
     """
     Create queryable cube and write to disk
     """
-    uri = f"{tdb_group}/cube"
+    uri = f"{tdb_group}/{EXPRESSION_SUMMARY_CUBE_NAME}"
     start_time = time.time()
 
     with tiledb.scope_ctx(create_ctx()):
@@ -85,15 +85,13 @@ def create_expression_summary_cube(tdb_group):
 
 
 def create_empty_cube(uri: str):
-    """ "
+    """
     Create an empty cube with expected schema (dimensions and attributes) at given uri
     """
-    if tiledb.array_exists(uri):
-        tiledb.remove(uri)
-
     tiledb.Array.create(
         uri,
         expression_summary_schema,
+        oerwrite=True
     )
 
 
@@ -118,18 +116,16 @@ def load_data_into_cube(tdb_group, uri: str):
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
-    cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
-    cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
     # pass 1 - sum, nnz, min, max
-    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
+    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz)
 
     return build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
 
 
 def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
     """
-    Build the cube in memory, calculating the
+    Build the cube in memory, calculating the gene expression value for each combination of attributes
     """
     logger.info("Building in-mem cube")
 
@@ -165,21 +161,21 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         ) = grp.tolist()
         mask = cube_nnz[cube_idx] != 0
         n_vals = np.count_nonzero(mask)
-        if n_vals == 0:  # Todo what is the purpose of this?
+        if n_vals == 0:  # Used to maintain sparsity
             continue
 
         logger.debug(grp)
 
-        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx : idx + n_vals] = organism_ontology_term_id
+        dims[0][idx: idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+        dims[1][idx: idx + n_vals] = tissue_ontology_term_id
+        dims[2][idx: idx + n_vals] = organism_ontology_term_id
 
-        vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
-        vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
-        vals["n_cells"][idx : idx + n_vals] = n  # wasteful
+        vals["sum"][idx: idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["nnz"][idx: idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["n_cells"][idx: idx + n_vals] = n  # wasteful
 
         for i, k in enumerate(other_attrs):
-            vals[k][idx : idx + n_vals] = attr_values[i]
+            vals[k][idx: idx + n_vals] = attr_values[i]
 
         idx += n_vals
 
@@ -192,10 +188,10 @@ def reduce_X(tdb_group, start_time, cube_indices, *accum):
     """
     with concurrent.futures.ThreadPoolExecutor() as tp:
         cfg = {
-            "py.init_buffer_bytes": 512 * 1024**2,
+            "py.init_buffer_bytes": 512 * MB,
             "py.exact_init_buffer_bytes": "true",
         }
-        with tiledb.open(f"{tdb_group}/raw", ctx=create_ctx(config=cfg)) as X:
+        with tiledb.open(f"{tdb_group}/raw", ctx=create_ctx(config_overrides=cfg)) as X:
             iterable = X.query(return_incomplete=True, order="U", attrs=["data"])
             future = None
             for i, result in enumerate(iterable.df[:]):
