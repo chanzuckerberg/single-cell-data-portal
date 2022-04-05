@@ -1,3 +1,4 @@
+import { EXTERNAL_LINKS } from "src/common/constants/routes";
 import { Header } from "../../common/style";
 import { Content, Wrapper } from "./style";
 
@@ -11,7 +12,11 @@ export default function Methodology(): JSX.Element {
         counts to quantiles and obtaining the corresponding values from the
         standard normal distribution. Then normalized cell vectors are
         concatenated along the gene axis. The algorithm is summarized in detail
-        in our documentation.
+        in{" "}
+        <a href={EXTERNAL_LINKS.WMG_DOC} rel="noopener" target="_blank">
+          our documentation
+        </a>
+        .
       </Content>
     </Wrapper>
   );
