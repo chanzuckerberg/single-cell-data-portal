@@ -53,6 +53,7 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_
         timestamp = int(time.time())
         snapshot_path = f"{pathlib.Path().resolve()}/{timestamp}"
     corpus_path = f"{snapshot_path}/{corpus_name}"
+    pathlib.Path(corpus_path).mkdir(parents=True, exist_ok=True)
     if not tiledb.VFS().is_dir(corpus_path):
         create_tdb(snapshot_path, corpus_name)
     s3_uris = extract.get_dataset_s3_uris()
