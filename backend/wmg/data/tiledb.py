@@ -6,13 +6,14 @@ import tiledb
 from backend.corpora.common.utils.math_utils import MB, GB
 
 
-def create_ctx(tiledb_mem_gb: float = 0.5, config_overrides: dict = {}) -> tiledb.Ctx:
+def create_ctx(tiledb_mem_gb: float = 0.5) -> tiledb.Ctx:
     cfg = {
         "py.init_buffer_bytes": int(float(tiledb_mem_gb) * GB),
         "sm.tile_cache_size": 100 * MB if os.getenv("DEPLOYMENT_STAGE", "test") == "test" else virtual_memory_size(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
         "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",
     }
+
     if boto_endpoint_url := os.getenv("BOTO_ENDPOINT_URL"):
         cfg.update(
             {
@@ -28,7 +29,7 @@ def create_ctx(tiledb_mem_gb: float = 0.5, config_overrides: dict = {}) -> tiled
                 "vfs.s3.region": "us-west-2",
             }
         )
-    cfg.update(config_overrides)
+
     return tiledb.Ctx(config=tiledb.Config(cfg))
 
 

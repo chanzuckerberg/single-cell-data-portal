@@ -29,7 +29,7 @@ def get_cell_types_by_tissue(corpus_group: str) -> Dict:
 
 def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> None:
     """
-    Use graphviz to map all the cells associated with a tissue to the ontology tree and return their correct order
+    Use graphviz to map all the cells assoicated with a tissue to the ontology tree and return their correct order
     """
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
     # so that this file can be imported by tests without breaking.
