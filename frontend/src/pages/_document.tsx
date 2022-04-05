@@ -8,7 +8,7 @@ import RawDocument, {
 } from "next/document";
 import { ServerStyleSheet } from "styled-components";
 
-const OG_PAGE_TITLE = "cellxgene | Homepage";
+const OG_PAGE_TITLE = "Cellxgene Data Portal";
 
 export default class Document extends RawDocument {
   static async getInitialProps(
@@ -89,10 +89,11 @@ export default class Document extends RawDocument {
             content="https://cellxgene.cziscience.com/"
             key="og:url"
           />
-          {/* DEBUG */}
-          {/* DEBUG */}
-          {/* DEBUG FIGURE OUT IMAGE TO USE */}
-          {/* <meta property="og:image" content={previewImage} key="og:image" /> */}
+          <meta
+            property="og:image"
+            content={"https://cellxgene.cziscience.com/open-graph.jpg"}
+            key="og:image"
+          />
           <meta property="og:creator" content="@cziscience" key="og:creator" />
           <meta property="og:site" content="@cziscience" key="og:site" />
           <meta
@@ -101,11 +102,11 @@ export default class Document extends RawDocument {
             key="og:site_name"
           />
           <meta property="og:title" content={OG_PAGE_TITLE} key="og:title" />
-          {/* DEBUG */}
-          {/* DEBUG */}
-          {/* DEBUG */}
-          {/* FIGURE OUT DESCRIPTIONS TO USE */}
-          {/* <meta property="og:description" content={description} key="og:description" /> */}
+          <meta
+            property="og:description"
+            content="Find, download, and visually explore curated and standardized single cell datasets."
+            key="og:description"
+          />
         </Head>
         <body>
           <Main />
