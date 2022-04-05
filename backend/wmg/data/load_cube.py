@@ -47,10 +47,9 @@ def remove_oldest_datasets(timestamp):
 
     timestamps = sorted(list(set([x[0] for x in candidate_to_delete])))
 
-    if len(timestamps) > 2:
-        timestamps_to_delete = list(timestamps)[:-2]
-    else:
-        timestamps_to_delete = []
+    # keep the 2 latest snapshots
+    if len(timestamps) <= 2:
+      return
 
     for timestamp, object in candidate_to_delete:
         if timestamp in timestamps_to_delete:
