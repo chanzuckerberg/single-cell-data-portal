@@ -106,11 +106,8 @@ def create_tdb(corpus_location: str, tdb_group: str):
     Create the empty tiledb object for the corpus
     ## TODO break out each array
     """
-
     uri = f"{corpus_location}/{tdb_group}"
-    # todo drop one of these
     pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
-    os.makedirs(corpus_location, exist_ok=True)
     tiledb.group_create(uri)
 
     X_capacity = 128000
