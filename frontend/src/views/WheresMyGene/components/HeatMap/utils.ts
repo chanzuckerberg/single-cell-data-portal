@@ -295,6 +295,8 @@ export interface ChartFormat {
   percentage: number;
   meanExpression: number;
   scaledMeanExpression: number;
+  tissuePercentage: number;
+  expressedCellCount: number;
 }
 
 export function dataToChartFormat({
@@ -322,7 +324,12 @@ export function dataToChartFormat({
     if (!geneExpressions) return [];
 
     return Object.entries(geneExpressions).map(([geneName, geneExpression]) => {
-      const { percentage, meanExpression } = geneExpression;
+      const {
+        percentage,
+        meanExpression,
+        tissuePercentage,
+        expressedCellCount,
+      } = geneExpression;
 
       const scaledMeanExpression =
         (meanExpression - scaledMeanExpressionMin) / oldRange;
@@ -342,6 +349,8 @@ export function dataToChartFormat({
         meanExpression,
         percentage,
         scaledMeanExpression,
+        tissuePercentage,
+        expressedCellCount,
       } as ChartFormat;
     });
   }
