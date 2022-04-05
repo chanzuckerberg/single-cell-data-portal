@@ -30,7 +30,7 @@ def create_cell_count_cube(tdb_group: str):
     with tiledb.open(f"{tdb_group}/obs") as obs:
         df = (
             obs.df[:]
-                .groupby(
+            .groupby(
                 by=[
                     "dataset_id",
                     "cell_type_ontology_term_id",
@@ -44,7 +44,7 @@ def create_cell_count_cube(tdb_group: str):
                 ],
                 as_index=False,
             )
-                .size()
+            .size()
         )
 
         tiledb.from_pandas(uri, df)
@@ -88,11 +88,7 @@ def create_empty_cube(uri: str):
     """
     Create an empty cube with expected schema (dimensions and attributes) at given uri
     """
-    tiledb.Array.create(
-        uri,
-        expression_summary_schema,
-        oerwrite=True
-    )
+    tiledb.Array.create(uri, expression_summary_schema, oerwrite=True)
 
 
 def load_data_into_cube(tdb_group, uri: str):
@@ -166,16 +162,16 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
 
         logger.debug(grp)
 
-        dims[0][idx: idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx: idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx: idx + n_vals] = organism_ontology_term_id
+        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+        dims[1][idx : idx + n_vals] = tissue_ontology_term_id
+        dims[2][idx : idx + n_vals] = organism_ontology_term_id
 
-        vals["sum"][idx: idx + n_vals] = cube_sum[cube_idx, mask]
-        vals["nnz"][idx: idx + n_vals] = cube_nnz[cube_idx, mask]
-        vals["n_cells"][idx: idx + n_vals] = n  # wasteful
+        vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["n_cells"][idx : idx + n_vals] = n  # wasteful
 
         for i, k in enumerate(other_attrs):
-            vals[k][idx: idx + n_vals] = attr_values[i]
+            vals[k][idx : idx + n_vals] = attr_values[i]
 
         idx += n_vals
 
