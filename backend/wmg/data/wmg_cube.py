@@ -88,7 +88,7 @@ def create_empty_cube(uri: str):
     """
     Create an empty cube with expected schema (dimensions and attributes) at given uri
     """
-    tiledb.Array.create(uri, expression_summary_schema, oerwrite=True)
+    tiledb.Array.create(uri, expression_summary_schema, overwrite=True)
 
 
 def load_data_into_cube(tdb_group, uri: str):
