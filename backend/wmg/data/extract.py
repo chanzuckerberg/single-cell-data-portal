@@ -16,6 +16,8 @@ included_assay_ontologies = {
     "EFO:0030004": "10x 5' transcription profiling",
     "EFO:0008919": "Seq-Well",
     "EFO:0008995": "10x technology",
+    "EFO:0008722": "Drop-seq",
+    "EFO:0010010": "CEL-seq2",
 }
 
 
