@@ -82,6 +82,7 @@ interface Props<T, Multiple> {
   onItemNotFound?: (item: string) => void;
   label: string;
   dataTestId: string;
+  placeholder?: string;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -95,6 +96,7 @@ export default function QuickSelect<
   onItemNotFound,
   label,
   dataTestId,
+  placeholder,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -221,7 +223,7 @@ export default function QuickSelect<
             ) => {
               setInput(event.target.value);
             },
-            placeholder: "Search or paste comma separated gene names",
+            placeholder,
           }}
         />
       </Popper>

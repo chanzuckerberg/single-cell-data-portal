@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -184,11 +184,19 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+/**
+ * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
+ * returns all available secondary filter options for us to display
+ */
+export function useFilterDimensions(
+  options = { includeAllFilterOptions: false }
+): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const { includeAllFilterOptions } = options;
+
+  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -472,7 +480,17 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody() {
+const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: undefined,
+  developmentStages: undefined,
+  diseases: undefined,
+  ethnicities: undefined,
+  sexes: undefined,
+};
+
+function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
+  const { includeAllFilterOptions } = options;
+
   const {
     selectedGenes,
     selectedTissues,
@@ -482,8 +500,13 @@ function useWMGQueryRequestBody() {
 
   const { data } = usePrimaryFilterDimensions();
 
+  /**
+   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
+   * any selected secondary filter options to the query, otherwise BE will return
+   * only the filtered options back to us.
+   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
 
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
