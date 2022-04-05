@@ -112,9 +112,11 @@ def load_data_into_cube(tdb_group, uri: str):
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
+    cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
+    cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
     # pass 1 - sum, nnz, min, max
-    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz)
+    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
 
     return build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
 
