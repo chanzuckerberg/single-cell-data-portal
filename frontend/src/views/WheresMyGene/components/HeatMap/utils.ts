@@ -1,4 +1,4 @@
-import { interpolateYlOrRd } from "d3-scale-chromatic";
+import { interpolatePlasma } from "d3-scale-chromatic";
 import {
   DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
@@ -36,16 +36,20 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
+const MAX_MEAN_EXPRESSION_VALUE = 6;
+
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
   chartData: ChartFormat[];
   geneNames: string[];
+  isScaled: boolean;
 }
 
 export function createChartOptions({
   cellTypeMetadata,
   chartData,
   geneNames,
+  isScaled,
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -72,11 +76,16 @@ export function createChartOptions({
         ...COMMON_SERIES,
         itemStyle: {
           color(props: DefaultLabelFormatterCallbackParams) {
-            const { scaledMeanExpression } = props.data as {
+            const { scaledMeanExpression, meanExpression } = props.data as {
+              meanExpression: number;
               scaledMeanExpression: number;
             };
 
-            return interpolateYlOrRd(scaledMeanExpression);
+            const expressionValue = isScaled
+              ? scaledMeanExpression
+              : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
+
+            return interpolatePlasma(1 - expressionValue);
           },
         },
         symbolSize: function (props: { percentage: number }) {
