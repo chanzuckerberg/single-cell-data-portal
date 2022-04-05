@@ -3,6 +3,8 @@ import uuid
 
 from backend.corpora.common.corpora_config import CorporaCloudfrontConfig
 
+import logging
+
 client = boto3.client('cloudfront')
 
 # Since Cloudfront is only used in deployed environments (dev, staging, prod),
@@ -15,6 +17,8 @@ def create_invalidation(paths: list[str]):
     
 
 def _create_invalidation(distribution: str, paths: list[str]):
+    invalidation_id = str(uuid.uuid4())
+    logging.info(f"Requesting invalidation {invalidation_id} for distribution {distribution}")
     return client.create_invalidation(
         DistributionId=distribution,
         InvalidationBatch={
@@ -22,7 +26,7 @@ def _create_invalidation(distribution: str, paths: list[str]):
                 'Quantity': len(paths),
                 'Items': paths,
                 },
-            'CallerReference': str(uuid.uuid4())
+            'CallerReference': invalidation_id
             }
         )
 
