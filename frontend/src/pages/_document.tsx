@@ -8,6 +8,8 @@ import RawDocument, {
 } from "next/document";
 import { ServerStyleSheet } from "styled-components";
 
+const OG_PAGE_TITLE = "Cellxgene Data Portal";
+
 export default class Document extends RawDocument {
   static async getInitialProps(
     context: DocumentContext
@@ -77,6 +79,33 @@ export default class Document extends RawDocument {
           <link
             href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap"
             rel="stylesheet"
+          />
+
+          <meta name="twitter:card" content="summary" key="twcard" />
+
+          {/* Open Graph */}
+          <meta
+            property="og:url"
+            content="https://cellxgene.cziscience.com/"
+            key="og:url"
+          />
+          <meta
+            property="og:image"
+            content={"https://cellxgene.cziscience.com/open-graph.jpg"}
+            key="og:image"
+          />
+          <meta property="og:creator" content="@cziscience" key="og:creator" />
+          <meta property="og:site" content="@cziscience" key="og:site" />
+          <meta
+            property="og:site_name"
+            content={OG_PAGE_TITLE}
+            key="og:site_name"
+          />
+          <meta property="og:title" content={OG_PAGE_TITLE} key="og:title" />
+          <meta
+            property="og:description"
+            content="Find, download, and visually explore curated and standardized single cell datasets."
+            key="og:description"
           />
         </Head>
         <body>
