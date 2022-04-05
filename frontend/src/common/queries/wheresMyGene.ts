@@ -99,14 +99,7 @@ interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
-      [tissueId: string]: {
-        // cell_type_ontology_term_id
-        id: string;
-        me: number;
-        n: number;
-        pc: number;
-        tpc: number;
-      }[];
+      [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
     };
   };
   filter_dims: {
@@ -431,13 +424,15 @@ export function useGeneExpressionSummariesByTissueName(): {
 function transformCellTypeGeneExpressionSummaryData(
   data: RawCellTypeGeneExpressionSummaryData
 ): CellTypeGeneExpressionSummaryData {
-  const { id, pc, me } = data;
+  const { id, pc, me, tpc, n } = data;
 
   return {
     ...data,
     id,
     meanExpression: me,
     percentage: pc,
+    tissuePercentage: tpc,
+    expressedCellCount: n,
   };
 }
 
