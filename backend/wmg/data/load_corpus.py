@@ -10,6 +10,7 @@ import pandas as pd
 import tiledb
 from anndata._core.views import ArrayView
 from scipy import sparse
+import scanpy
 
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels
@@ -18,6 +19,11 @@ from backend.wmg.data.validation import validate_corpus_load
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+# Minimum number of expressed genes for a cell to be included in the corpus.
+# See the following document for further details:
+# https://github.com/chanzuckerberg/cellxgene-documentation/blob/pablo-gar/wheres-my-gene/scExpression/scExpression-documentation.md#removal-of-low-coverage-cells
+MIN_GENE_EXPRESSION_COUNT = 500
 
 
 def is_dataset_already_loaded(dataset_id: str, group_name: str) -> bool:
@@ -60,6 +66,10 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
         return
 
     anndata_object = anndata.read_h5ad(h5ad)
+
+    # Apply a low expression gene cell filtering.
+    scanpy.pp.filter_cells(anndata_object, min_genes=MIN_GENE_EXPRESSION_COUNT)
+
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
         return
