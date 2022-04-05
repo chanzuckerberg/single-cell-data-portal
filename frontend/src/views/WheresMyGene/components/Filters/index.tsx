@@ -51,7 +51,7 @@ export default memo(function Filters(): JSX.Element {
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions({ includeAllFilterOptions: true });
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
