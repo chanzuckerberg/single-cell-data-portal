@@ -1,5 +1,3 @@
-from importlib.metadata import distribution
-from venv import create
 import boto3
 import uuid
 
