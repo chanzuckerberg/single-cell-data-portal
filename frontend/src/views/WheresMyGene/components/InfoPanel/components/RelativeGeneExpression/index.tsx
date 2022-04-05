@@ -16,7 +16,7 @@ export default function RelativeGeneExpression({
 }: Props): JSX.Element {
   return (
     <Wrapper>
-      <Header>Relative Gene Expression</Header>
+      <Header>Gene Expression</Header>
       <ContentWrapper>
         <Content>
           <Image
