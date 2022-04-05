@@ -7,7 +7,6 @@ Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
 # Hints on how to map between H5AD and TDB schemas.
-import os
 from collections import namedtuple
 from typing import Union, List
 
