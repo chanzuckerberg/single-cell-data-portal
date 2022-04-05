@@ -7,6 +7,7 @@ Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
 # Hints on how to map between H5AD and TDB schemas.
+import os
 from collections import namedtuple
 from typing import Union, List
 
@@ -107,7 +108,9 @@ def create_tdb(corpus_location: str, tdb_group: str):
     """
 
     uri = f"{corpus_location}/{tdb_group}"
+    # todo drop one of these
     pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
+    os.makedirs(corpus_location, exist_ok=True)
     tiledb.group_create(uri)
 
     X_capacity = 128000
