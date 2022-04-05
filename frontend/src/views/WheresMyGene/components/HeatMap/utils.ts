@@ -1,4 +1,4 @@
-import { interpolateYlOrRd } from "d3-scale-chromatic";
+import { interpolatePlasma } from "d3-scale-chromatic";
 import {
   DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
@@ -36,16 +36,20 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
+const MAX_MEAN_EXPRESSION_VALUE = 6;
+
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
   chartData: ChartFormat[];
   geneNames: string[];
+  isScaled: boolean;
 }
 
 export function createChartOptions({
   cellTypeMetadata,
   chartData,
   geneNames,
+  isScaled,
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -72,21 +76,22 @@ export function createChartOptions({
         ...COMMON_SERIES,
         itemStyle: {
           color(props: DefaultLabelFormatterCallbackParams) {
-            const { scaledMeanExpression } = props.data as {
+            const { scaledMeanExpression, meanExpression } = props.data as {
+              meanExpression: number;
               scaledMeanExpression: number;
             };
 
-            return interpolateYlOrRd(scaledMeanExpression);
+            const expressionValue = isScaled
+              ? scaledMeanExpression
+              : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
+
+            return interpolatePlasma(1 - expressionValue);
           },
         },
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
-
-          const r = Math.sqrt(percentage * maxRadius ** 2);
-
-          return Math.round(2 * r);
+          return convertPercentageToDiameter(percentage);
         },
       },
     ],
@@ -124,6 +129,20 @@ export function createChartOptions({
       },
     ],
   };
+}
+
+export function convertPercentageToDiameter(percentage: number): number {
+  const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+  const RADIUS_OFFSET = 0.2;
+
+  const baseRadius = RADIUS_OFFSET * (MAX_FIRST_PART_LENGTH_PX - RADIUS_OFFSET);
+
+  const radius = Math.sqrt(
+    percentage * (maxRadius - RADIUS_OFFSET) ** 2 + baseRadius
+  );
+
+  return Math.round(2 * radius);
 }
 
 const SELECTED_STYLE = {
