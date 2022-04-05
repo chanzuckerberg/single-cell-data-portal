@@ -47,6 +47,7 @@ interface Props {
   tissue: Tissue;
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
+  isScaled: boolean;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -62,6 +63,7 @@ export default memo(function Chart({
   tissue,
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
+  isScaled,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -123,7 +125,7 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps });
+  useUpdateChart({ chart, chartProps, isScaled });
 
   // Calculate cellTypeSummaries
   /**

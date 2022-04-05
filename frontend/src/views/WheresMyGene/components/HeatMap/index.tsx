@@ -19,6 +19,7 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isLoadingAPI: boolean;
+  isScaled: boolean;
 }
 
 export default memo(function HeatMap({
@@ -30,6 +31,7 @@ export default memo(function HeatMap({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isLoadingAPI,
+  isScaled,
 }: Props): JSX.Element {
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -75,6 +77,7 @@ export default memo(function HeatMap({
         {Object.entries(cellTypes).map(([tissue, cellTypeSummaries]) => {
           return (
             <Chart
+              isScaled={isScaled}
               key={tissue}
               tissue={tissue}
               cellTypes={cellTypeSummaries}

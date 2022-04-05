@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -31,6 +31,8 @@ export default function WheresMyGene(): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
   const { selectedGenes, selectedCellTypeIds } = state;
+
+  const [isScaled, setIsScaled] = useState(true);
 
   const {
     data: rawCellTypesByTissueName,
@@ -212,6 +214,10 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedGenes && hasSelectedCellTypeIds;
   }, [hasSelectedGenes, hasSelectedCellTypeIds]);
 
+  const handleIsScaledChange = useCallback(() => {
+    setIsScaled((prevIsScaled) => !prevIsScaled);
+  }, [setIsScaled]);
+
   return (
     <>
       <Head>
@@ -235,7 +241,10 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
       >
-        <InfoPanel />
+        <InfoPanel
+          isScaled={isScaled}
+          handleIsScaledChange={handleIsScaledChange}
+        />
       </SideBar>
 
       <View hideOverflow>
@@ -247,6 +256,7 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={selectedCellTypes}
               genes={selectedGenes}
