@@ -20,7 +20,7 @@ def update_s3_resources(snapshot_path, timestamp):
     Copy cube and cube related files to s3 under the current timestamp
     """
     upload_artifacts_to_s3(snapshot_path, timestamp)
-    update_latest_snapshot_identifier(timestamp)
+    write_snapshot_id(timestamp)
     remove_oldest_datasets(timestamp)
 
 
@@ -32,24 +32,23 @@ def remove_oldest_datasets(timestamp):
     wmg_bucket = s3.Bucket(wmg_bucket_name)
     objects = wmg_bucket.objects.filter(Prefix=stack_name.strip("/")) if stack_name else wmg_bucket.objects.all()
 
-    def enumerate_timestamps_and_objects(objects):
-        for obj in objects:
-            try:
-                tokens = obj.key.split("/")
-                timestamp_token = tokens[1] if stack_name else tokens[0]
-                is_timestamp = timestamp_token[:10].isdigit()
-                if is_timestamp:
-                    yield (timestamp_token, obj)
-            except Exception:
-                pass
-
-    candidate_to_delete = [obj for obj in enumerate_timestamps_and_objects(objects)]
+    candidate_to_delete = []
+    for obj in objects:
+        try:
+            tokens = obj.key.split("/")
+            timestamp_token = tokens[1] if stack_name else tokens[0]
+            is_timestamp = timestamp_token[:10].isdigit()
+            if is_timestamp:
+                candidate_to_delete.append((timestamp_token, obj))
+        except Exception:
+            pass
 
     timestamps = sorted(list(set([x[0] for x in candidate_to_delete])))
 
-    # keep the 2 latest snapshots
-    if len(timestamps) <= 2:
-      return
+    if len(timestamps) > 2:
+        timestamps_to_delete = list(timestamps)[:-2]
+    else:
+        return
 
     for timestamp, object in candidate_to_delete:
         if timestamp in timestamps_to_delete:
@@ -61,7 +60,7 @@ def upload_artifacts_to_s3(snapshot_path, timestamp):
     subprocess.run(sync_command)
 
 
-def update_latest_snapshot_identifier(timestamp):
+def write_snapshot_id(timestamp):
     """
     Update static timestamp in s3 to match the latest
     """

@@ -5,23 +5,23 @@ import pandas as pd
 from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 
 
-def get_cells_by_tissue_type(corpus_group: str) -> Dict:
+def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     """
     Return a list of all associated cell type ontologies for each tissue contained in the
     provided corpus
     """
     with tiledb.open(f"{corpus_group}/obs", "r") as obs:
-        cell_tissue_types = (
+        tissue_cell_types = (
             obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
             .df[:]
             .drop_duplicates()
             .sort_values(by="tissue_ontology_term_id")
         )
-    unique_tissue_ontology_term_id = cell_tissue_types.tissue_ontology_term_id.unique()
+    unique_tissue_ontology_term_id = tissue_cell_types.tissue_ontology_term_id.unique()
     cell_type_by_tissue = {}
     for x in unique_tissue_ontology_term_id:
-        cell_type_by_tissue[x] = cell_tissue_types.loc[
-            cell_tissue_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"
+        cell_type_by_tissue[x] = tissue_cell_types.loc[
+            tissue_cell_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"
         ]
 
     return cell_type_by_tissue
