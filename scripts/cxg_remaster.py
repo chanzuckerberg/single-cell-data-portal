@@ -122,9 +122,8 @@ def choose_X_encoding(args, ctx):
 
 def create_new_X(args, old_schema):
     is_sparse = args.kind == "sparse"
-    dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=args.compression)])
     attr_filters = tiledb.FilterList([tiledb.ZstdFilter(level=args.compression)])
-
+    dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=args.compression)])
     old_dims = [old_schema.domain.dim(d) for d in range(old_schema.domain.ndim)]
     old_attr = old_schema.attr(0)
 
@@ -138,7 +137,7 @@ def create_new_X(args, old_schema):
                         domain=old_dims[0].domain,
                         tile=X_extent[0],
                         dtype=old_dims[0].dtype,
-                        filters=[tiledb.ZstdFilter(level=args.compression)],
+                        filters=dim_filters,
                     ),
                     tiledb.Dim(
                         name="var",

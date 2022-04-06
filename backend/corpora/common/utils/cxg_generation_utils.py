@@ -123,20 +123,21 @@ def convert_matrix_to_cxg_array(matrix_name, matrix, encode_as_sparse_array, ctx
 
     def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22):
         attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+        dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
         domain = tiledb.Domain(
             tiledb.Dim(
                 name="obs",
                 domain=(0, number_of_rows - 1),
                 tile=min(number_of_rows, 256),
                 dtype=np.uint32,
-                filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]),
+                filters=dim_filters,
             ),
             tiledb.Dim(
                 name="var",
                 domain=(0, number_of_columns - 1),
                 tile=min(number_of_columns, 2048),
                 dtype=np.uint32,
-                filters=tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)]),
+                filters=dim_filters,
             ),
         )
         schema = tiledb.ArraySchema(
