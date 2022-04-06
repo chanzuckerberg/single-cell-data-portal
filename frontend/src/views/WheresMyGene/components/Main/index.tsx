@@ -219,7 +219,7 @@ export default function WheresMyGene(): JSX.Element {
   return (
     <>
       <Head>
-        <title>cellxgene | Where&apos;s My Gene</title>
+        <title>cellxgene | scExpression</title>
       </Head>
 
       <SideBar
