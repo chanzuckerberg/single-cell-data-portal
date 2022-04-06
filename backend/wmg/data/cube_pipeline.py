@@ -12,8 +12,8 @@ from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.transform import get_cells_by_tissue_type, generate_cell_ordering
-from backend.wmg.data.wmg_cube import create_cube
+from backend.wmg.data.transform import get_cell_types_by_tissue, generate_cell_ordering
+from backend.wmg.data.wmg_cube import create_cubes
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -61,16 +61,16 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_
 
     load(path_to_datasets, corpus_path, True)
     logger.info("Loaded datasets into corpus")
-    create_cube(corpus_path)
+    create_cubes(corpus_path)
     logger.info("Built expression summary cube")
 
-    cell_type_by_tissue = get_cells_by_tissue_type(corpus_path)
-    generate_cell_ordering(cell_type_by_tissue)
+    cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
+    generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     logger.info("Generated cell ordering json file")
-    update_s3_resources()
+    update_s3_resources(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")
 
 
 if __name__ == "__main__":
-    load_data_and_create_cube()
+    load_data_and_create_cube("datasets")
     sys.exit()
