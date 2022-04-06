@@ -86,6 +86,7 @@ interface Props<T, Multiple> {
   dataTestId: string;
   placeholder?: string;
   analyticsEvent: EVENTS;
+  isLoading: boolean;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -101,6 +102,7 @@ export default function QuickSelect<
   dataTestId,
   placeholder,
   analyticsEvent,
+  isLoading,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -188,6 +190,7 @@ export default function QuickSelect<
       <ButtonWrapper>
         <Label>{label}</Label>
         <StyledIconButton
+          disabled={isLoading}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
