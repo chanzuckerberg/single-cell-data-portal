@@ -1,5 +1,6 @@
 import { Intent } from "@blueprintjs/core";
-import React, { useCallback, useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
@@ -78,6 +79,7 @@ export default function GeneSearchBar(): JSX.Element {
           label="Add Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
+          analyticsEvent={EVENTS.WMG_SELECT_TISSUE}
         />
 
         <QuickSelect
@@ -90,6 +92,7 @@ export default function GeneSearchBar(): JSX.Element {
           label="Add Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
+          analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
       </ActionWrapper>
     </Container>
