@@ -7,13 +7,16 @@ from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.data.wmg_cube import create_cell_count_cube
 from unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot
 
+
+@unittest.skip("Requires https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/"
+               "chanzuckerberg/single-cell-data-portal/2280")
 class TestWmgCube(unittest.TestCase):
     @unittest.skip
     def test_create_cube(self):
         # TODO write this test when cube creation code fully implemented
         raise NotImplementedError
 
-    def test_create_cell_counts_cube(self):
+    def test__create_cell_counts_cube__sets_schema_correctly(self):
         with create_temp_wmg_snapshot() as snapshot:
             tdb_group = os.path.dirname(snapshot.expression_summary_cube.uri)
             create_cell_count_cube(tdb_group)
