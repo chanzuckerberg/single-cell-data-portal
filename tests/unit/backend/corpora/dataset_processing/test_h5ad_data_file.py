@@ -184,7 +184,7 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
         # Validate metadata
-        with tiledb.open(metadata_array_location, mode="r") as metadata_array
+        with tiledb.open(metadata_array_location, mode="r") as metadata_array:
             self.assertIn("cxg_version", metadata_array.meta)
 
         # Validate obs index
