@@ -23,6 +23,7 @@ import GeneSearchBar from "../GeneSearchBar";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
+import Loader from "../Loader";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -207,10 +208,11 @@ export default function WheresMyGene(): JSX.Element {
   }, [dispatch]);
 
   const hasSelectedGenes = selectedGenes.length > 0;
+  const hasSelectedCellTypes = Object.keys(selectedCellTypeIds).length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes;
-  }, [hasSelectedGenes]);
+    return hasSelectedGenes && hasSelectedCellTypes;
+  }, [hasSelectedGenes, hasSelectedCellTypes]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
@@ -247,6 +249,8 @@ export default function WheresMyGene(): JSX.Element {
 
       <View hideOverflow>
         <Wrapper>
+          {isLoading && !shouldShowHeatMap && <Loader />}
+
           <Top>
             <GeneSearchBar />
             <Beta />

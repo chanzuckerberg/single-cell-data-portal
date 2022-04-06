@@ -8,18 +8,6 @@ export const Container = styled.div`
   position: relative;
 `;
 
-export const Loader = styled.div`
-  position: fixed;
-  top: 75px;
-  left: 50vw;
-  width: 120px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-`;
-
 export const XAxisWrapper = styled.div`
   ${xAxisWidth}
 

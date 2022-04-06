@@ -1,13 +1,13 @@
-import { LoadingIndicator } from "czifui";
 import { memo, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { State } from "../../common/store";
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
+import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
-import { ChartWrapper, Container, Loader, YAxisWrapper } from "./style";
+import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { getHeatmapHeight, X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
@@ -76,9 +76,7 @@ export default memo(function HeatMap({
 
   return (
     <Container>
-      {isLoadingAPI || isAnyTissueLoading(isLoading) ? (
-        <LoaderComponent />
-      ) : null}
+      {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={genes} />
 
@@ -115,14 +113,6 @@ export default memo(function HeatMap({
       </ChartWrapper>
     </Container>
   );
-
-  function LoaderComponent() {
-    return (
-      <Loader>
-        <LoadingIndicator sdsStyle="tag" />
-      </Loader>
-    );
-  }
 });
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
