@@ -32,6 +32,7 @@ duration = 3600
 @dbconnect
 def get_s3_credentials(collection_uuid, user):
     db_session = g.db_session
+    config = CorporaConfig()
     # check if they own the collection.
     collection = get_collection(db_session, collection_uuid, include_tombstones=True)
     if not _is_user_owner_or_allowed(user, collection.owner):
@@ -39,12 +40,9 @@ def get_s3_credentials(collection_uuid, user):
     if collection.visibility != CollectionVisibility.PRIVATE.name:
         raise MethodNotAllowedException()
     credentials = sts_client.assume_role(
-        RoleArn="arn:aws:iam::699936264352:role/writing-S3",
+        RoleArn=config.curator_role_arn,
         RoleSessionName=user,
-        Policy=policy.format(CorporaConfig().submission_bucket, collection_uuid),
+        Policy=policy.format(config.submission_bucket, collection_uuid),
         DurationSeconds=duration,
     )
-
-    # check if the collection can have datasets added. Private or revision.
-    # generate access token.
     return make_response(credentials, 201)
