@@ -2,6 +2,8 @@ import { AnchorButton } from "@blueprintjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -66,6 +68,7 @@ const Header: FC = () => {
                   href="passHref"
                   minimal
                   text="scExpression"
+                  onClick={handleWMGClick}
                 />
               </Link>
               <BetaChip label="Beta" size="small" />
@@ -93,6 +96,10 @@ const Header: FC = () => {
       </MainWrapper>
     </Wrapper>
   );
+
+  function handleWMGClick() {
+    track(EVENTS.WMG_CLICK_NAV);
+  }
 };
 
 /**
