@@ -38,7 +38,6 @@ def main():
     ctx = create_fast_ctx(
         {
             "py.init_buffer_bytes": 32 * 1024 ** 3,
-            "py.exact_init_buffer_bytes": "true",
             "sm.tile_cache_size": 2 * 1024 ** 3,
         }
     )
