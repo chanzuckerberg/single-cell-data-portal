@@ -1,5 +1,6 @@
 from typing import List, Dict
 
+import pandas as pd
 import tiledb
 from pandas import DataFrame
 from pydantic import BaseModel, Field
@@ -68,7 +69,15 @@ class WmgQuery:
         attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
-        query_result_df = cube.query(attr_cond=attr_cond).df[tiledb_dims_query]
+
+        # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
+        #  two queries when there should just one.
+        if len(cube.query(attr_cond=attr_cond, attrs=single_valued_attrs, dims=['organism_ontology_term_id']).
+               multi_index[tiledb_dims_query]['organism_ontology_term_id']) == 0:
+            # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
+            return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
+
+        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
 
         # Filter multi-valued attribute criteria using Pandas filtering
         multi_valued_attrs = {
