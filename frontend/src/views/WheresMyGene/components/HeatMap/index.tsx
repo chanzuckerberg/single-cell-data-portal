@@ -77,10 +77,7 @@ export default memo(function HeatMap({
   return (
     <Container>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? (
-        <Loader>
-          <Spinner intent={Intent.PRIMARY} size={20} />
-          Loading...
-        </Loader>
+        <LoaderComponent />
       ) : null}
 
       <XAxisChart geneNames={genes} />
@@ -118,6 +115,15 @@ export default memo(function HeatMap({
       </ChartWrapper>
     </Container>
   );
+
+  function LoaderComponent() {
+    return (
+      <Loader>
+        <Spinner intent={Intent.PRIMARY} size={20} />
+        Loading...
+      </Loader>
+    );
+  }
 });
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {

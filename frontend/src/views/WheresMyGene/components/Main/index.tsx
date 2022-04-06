@@ -208,11 +208,9 @@ export default function WheresMyGene(): JSX.Element {
 
   const hasSelectedGenes = selectedGenes.length > 0;
 
-  const hasSelectedCellTypeIds = Object.keys(selectedCellTypeIds).length > 0;
-
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes && hasSelectedCellTypeIds;
-  }, [hasSelectedGenes, hasSelectedCellTypeIds]);
+    return hasSelectedGenes;
+  }, [hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
