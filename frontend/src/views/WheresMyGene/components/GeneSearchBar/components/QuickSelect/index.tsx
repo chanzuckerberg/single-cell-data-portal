@@ -81,6 +81,8 @@ interface Props<T, Multiple> {
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
   label: string;
+  dataTestId: string;
+  placeholder?: string;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -93,6 +95,8 @@ export default function QuickSelect<
   itemsByName,
   onItemNotFound,
   label,
+  dataTestId,
+  placeholder,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -179,7 +183,12 @@ export default function QuickSelect<
     <>
       <ButtonWrapper>
         <Label>{label}</Label>
-        <StyledIconButton ref={ref} onClick={handleClick} sdsType="primary">
+        <StyledIconButton
+          data-test-id={dataTestId}
+          ref={ref}
+          onClick={handleClick}
+          sdsType="primary"
+        >
           <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
         </StyledIconButton>
       </ButtonWrapper>
@@ -214,7 +223,7 @@ export default function QuickSelect<
             ) => {
               setInput(event.target.value);
             },
-            placeholder: "Search or paste comma separated gene names",
+            placeholder,
           }}
         />
       </Popper>

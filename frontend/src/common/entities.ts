@@ -248,6 +248,7 @@ export interface GeneSet {
 export interface PublisherMetadata {
   authors: (Author | Consortium)[];
   journal: string;
+  published_at: number;
   published_day: number;
   published_month: number;
   published_year: number;

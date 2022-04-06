@@ -1,6 +1,6 @@
 import json
 from furl import furl
-from mock import patch
+from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from backend.corpora.common.entities import Dataset

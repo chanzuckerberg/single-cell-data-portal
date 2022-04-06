@@ -1,14 +1,16 @@
 import { DefaultMenuSelectOption } from "czifui";
 import { CSSProperties } from "react";
 
-export type Organism = string;
+export interface Organism {
+  id: string;
+  name: string;
+}
 
 /** tissue name */
 export type Tissue = string;
 
 /** This object holds a cell type and its gene expressions. */
 export interface CellTypeSummary {
-  tissue: Tissue;
   /** cellType id */
   id: string;
   /** cellType name */
@@ -40,6 +42,10 @@ export interface RawCellTypeGeneExpressionSummaryData {
   pc: number;
   /** mean expression of the current subset of cells that express this gene */
   me: number;
+  /** Expressed cell count */
+  n: number;
+  /** Tissue Composition */
+  tpc: number;
 }
 
 /**
@@ -53,6 +59,10 @@ export interface CellTypeGeneExpressionSummaryData {
   percentage: number;
   /** mean expression of the current subset of cells that express this gene */
   meanExpression: number;
+  /** Tissue Composition */
+  tissuePercentage: number;
+  /** Expressed cell count */
+  expressedCellCount: number;
 }
 
 export interface Gene {

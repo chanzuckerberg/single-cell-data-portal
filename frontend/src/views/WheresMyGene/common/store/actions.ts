@@ -4,7 +4,7 @@
  */
 
 import { CellTypeMetadata } from "../../components/HeatMap/utils";
-import { CellTypeSummary, Tissue } from "../types";
+import { CellType, Tissue } from "../types";
 import { REDUCERS, State } from "./reducer";
 
 export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
@@ -35,10 +35,10 @@ export function toggleCellTypeIdToDelete(
 }
 
 export function selectOrganism(
-  organism: State["selectedOrganism"]
+  organismId: State["selectedOrganismId"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectOrganism"]> {
   return {
-    payload: organism,
+    payload: organismId,
     type: "selectOrganism",
   };
 }
@@ -81,21 +81,31 @@ export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReduc
 
 export function tissueCellTypesFetched(
   tissue: Tissue,
-  cellTypeSummaries: CellTypeSummary[]
+  cellTypes: CellType[]
 ): GetActionTypeOfReducer<typeof REDUCERS["tissueCellTypesFetched"]> {
   return {
-    payload: { cellTypeSummaries, tissue },
+    payload: { cellTypes, tissue },
     type: "tissueCellTypesFetched",
   };
 }
 
 export function resetTissueCellTypes(
   tissue: Tissue,
-  cellTypeSummaries: CellTypeSummary[]
+  cellTypes: CellType[]
 ): GetActionTypeOfReducer<typeof REDUCERS["resetTissueCellTypes"]> {
   return {
-    payload: { cellTypeSummaries, tissue },
+    payload: { cellTypes, tissue },
     type: "resetTissueCellTypes",
+  };
+}
+
+export function selectFilters(
+  key: keyof State["selectedFilters"],
+  options: string[]
+): GetActionTypeOfReducer<typeof REDUCERS["selectFilters"]> {
+  return {
+    payload: { key, options },
+    type: "selectFilters",
   };
 }
 

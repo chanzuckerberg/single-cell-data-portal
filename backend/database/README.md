@@ -29,9 +29,10 @@ CORPORA_LOCAL_DEV=1 DEPLOYMENT_STAGE=test make db/migrate
 ## How to autogenerate migration script
 
 1. Make changes to the ORM class(es) in [corpora_orm.py](../corpora/common/corpora_orm.py)
-2. [Connect to Remote RDS](#connect-to-remote-rds). Note, generally, you should be connecting to prod
+2. [Connect to Remote RDS](#connect-to-remote-rds). Note, generally, you would be connecting to prod
    (`AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod`) since we want to generate 
-a migration from the database schema currently deployed in prod.
+a migration from the database schema currently deployed in prod. However, if there are migrations haven't been
+deployed to prod yet, you would connect to staging here.
 3. Autogenerate the migration using the steps below. `AWS_PROFILE` and `DEPLOYMENT_STAGE` should be the same values
 used in the previous [Connect to Remote RDS](#connect-to-remote-rds) step. For details about Alembic's migration autogeneration, 
 see [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect)

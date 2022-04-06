@@ -2,10 +2,8 @@ import unittest
 import uuid
 import os
 
-try:
-    from unittest.mock import PropertyMock, patch
-except ImportError:
-    from mock import patch
+from unittest.mock import PropertyMock, patch
+
 
 import boto3
 

@@ -1,5 +1,5 @@
 export enum API {
-  CURATOR_AUTH_KEY = "/dp/v1/curator/auth/key",
+  CURATOR_AUTH_KEY = "/dp/v1/auth/key",
   DATASET = "/dp/v1/datasets/{dataset_uuid}",
   DATASET_ASSETS = "/dp/v1/datasets/{dataset_uuid}/assets",
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}",
@@ -17,4 +17,6 @@ export enum API {
   WMG_CELL_TYPES = "/dp/v1/wmg/cell_types",
   WMG_GENES = "/dp/v1/wmg/genes",
   WMG_GENE = "/dp/v1/wmg/genes/{name}",
+  WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
+  WMG_QUERY = "/wmg/v1/query",
 }
