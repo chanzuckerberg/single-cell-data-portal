@@ -1,4 +1,4 @@
-import { Intent, Spinner } from "@blueprintjs/core";
+import { LoadingIndicator } from "czifui";
 import { memo, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -119,8 +119,7 @@ export default memo(function HeatMap({
   function LoaderComponent() {
     return (
       <Loader>
-        <Spinner intent={Intent.PRIMARY} size={20} />
-        Loading...
+        <LoadingIndicator sdsStyle="tag" />
       </Loader>
     );
   }
