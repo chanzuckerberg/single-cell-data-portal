@@ -89,9 +89,7 @@ def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     wmg_config = WmgConfig()
     wmg_config.load()
-    prefixed_relative_path = os.path.join(
-        wmg_config.data_path_prefix, relative_path or ""
-    )
+    prefixed_relative_path = os.path.join(wmg_config.data_path_prefix, relative_path or "")
     s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
 
