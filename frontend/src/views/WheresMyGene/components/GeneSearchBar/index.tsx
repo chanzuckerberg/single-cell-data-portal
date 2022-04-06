@@ -1,138 +1,27 @@
 import { Intent } from "@blueprintjs/core";
+import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
-import GeneSets from "./components/Genesets";
 import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
-import { ActionWrapper, Container } from "./style";
-
-const GENESETS = [
-  [
-    "AGER",
-    "FCN1",
-    "CCL5",
-    "PRF1",
-    "BMX",
-    "CCL23",
-    "MS4A2",
-    "RIMS2",
-    "TP63",
-    "FLT3",
-    "PAX5",
-  ],
-  [
-    "AGER",
-    "FCN1",
-    "CCL5",
-    "PRF1",
-    "BMX",
-    "CCL23",
-    "MS4A2",
-    "RIMS2",
-    "TP63",
-    "FLT3",
-    "PAX5",
-    "MALAT1",
-  ],
-  [
-    "LDB2",
-    "VWF",
-    "CA4",
-    "PTPRB",
-    "ADH1B",
-    "GALNT18",
-    "MAGI1",
-    "KRT5",
-    "TSPAN8",
-    "ADRB1",
-    "PLVAP",
-    "PDGFRB",
-    "MS4A1",
-    "ACKR1",
-    "RAMP3",
-    "GNLY",
-    "LTB",
-    "GPR183",
-    "PLEK",
-    "TBXAS1",
-    "AOAH",
-    "ARHGAP15",
-    "TPM2",
-    "CALD1",
-    "TACSTD2",
-    "S100A8",
-    "AIF1",
-    "MS4A6A",
-    "FGL2",
-    "LYZ",
-    "BTG1",
-    "IL7R",
-    "TAGLN",
-    "ST6GALNAC5",
-    "GPC5",
-    "PDZRN3",
-    "SFTA3_ENSG00000229415",
-    "TP63",
-    "LAMC3",
-    "CSRP3-AS1",
-    "LMNTD1",
-    "GKN2",
-    "PLA2G1B",
-    "KRT23",
-    "GABRP",
-    "CFAP126",
-    "LRRC10B",
-    "FAM3D",
-    "MUC4",
-    "RTKN2",
-    "SKAP1",
-    "BLK",
-    "SAMD3",
-    "TPRG1",
-    "DERL3",
-    "MZB1",
-    "CD68",
-    "DEFB1",
-    "HLA-DRB5",
-    "CCL7",
-    "HLA-DQA2",
-    "STAC",
-    "CP",
-    "GRHL1",
-    "MCEMP1",
-    "TREM2",
-    "RP11-1143G9.4",
-    "S100A12",
-    "CPA3",
-    "TPSAB1",
-    "TRBC2",
-    "CD8A",
-    "CD8B",
-  ],
-];
-
-// DEBUG
-// DEBUG
-// DEBUG
-// DEBUG
+import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
   name: string;
 }
-
-// END DEBUG
 
 export default function GeneSearchBar(): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
 
-  const { data } = usePrimaryFilterDimensions();
+  const { data, isLoading } = usePrimaryFilterDimensions();
 
   const { genes: rawGenes, tissues } = data || {};
 
@@ -179,15 +68,8 @@ export default function GeneSearchBar(): JSX.Element {
 
   return (
     <Container>
-      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
-      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
-      {/* DEMO ONLY WILL BE DELETED BEFORE MVP */}
-      <GeneSets onSelect={handleGenesetsSelect} />
-
-      <br />
-      <br />
       <ActionWrapper>
-        <Organism />
+        <Organism isLoading={isLoading} />
 
         <QuickSelect
           items={tissues || EMPTY_ARRAY}
@@ -197,6 +79,9 @@ export default function GeneSearchBar(): JSX.Element {
           setSelected={handleSelectTissues}
           label="Add Tissue"
           dataTestId="add-tissue"
+          placeholder="Search"
+          isLoading={isLoading}
+          analyticsEvent={EVENTS.WMG_SELECT_TISSUE}
         />
 
         <QuickSelect
@@ -208,24 +93,19 @@ export default function GeneSearchBar(): JSX.Element {
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
           dataTestId="add-gene"
+          placeholder="Search or paste comma separated gene names"
+          isLoading={isLoading}
+          analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+
+        {isLoading && (
+          <LoadingIndicatorWrapper>
+            <LoadingIndicator sdsStyle="tag" />
+          </LoadingIndicatorWrapper>
+        )}
       </ActionWrapper>
     </Container>
   );
-
-  function handleGenesetsSelect(genesetIndex: number) {
-    const geneset = GENESETS[genesetIndex];
-
-    handleSelectGenes(
-      genes
-        .filter((gene) => geneset.includes(gene.name))
-        .sort(
-          (a, b) =>
-            geneset.findIndex((gene) => gene === a.name) -
-            geneset.findIndex((gene) => gene === b.name)
-        )
-    );
-  }
 
   function handleSelectTissues(tissues: Tissue[]) {
     if (!dispatch) return;

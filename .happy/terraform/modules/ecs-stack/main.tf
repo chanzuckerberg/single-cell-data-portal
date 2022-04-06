@@ -35,6 +35,7 @@ locals {
   lambda_upload_success_repo     = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo             = local.secret["ecrs"]["upload_failures"]["url"]
   lambda_dataset_submission_repo = local.secret["ecrs"]["dataset_submission"]["url"]
+  wmg_upload_image_repo          = local.secret["ecrs"]["wmg_processing"]["url"]
   batch_role_arn                 = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                  = local.secret["batch_queues"]["upload"]["queue_arn"]
   external_dns                   = local.secret["external_zone_name"]
@@ -50,6 +51,7 @@ locals {
   artifact_bucket              = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
   dataset_submission_bucket    = try(local.secret["s3_buckets"]["dataset_submission"]["name"], "")
+  wmg_bucket                   = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
@@ -163,6 +165,19 @@ module upload_batch {
   cellxgene_bucket  = local.cellxgene_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
+}
+
+module wmg_batch {
+  source                        = "../wmg-batch"
+  image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.batch_role_arn
+  cmd                           = ""
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  wmg_bucket                    = local.wmg_bucket
+  batch_container_memory_limit  = 300000
 }
 
 module upload_success_lambda {

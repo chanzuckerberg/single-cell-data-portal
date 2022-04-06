@@ -2,6 +2,8 @@ import { AnchorButton } from "@blueprintjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -12,6 +14,7 @@ import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
+  BetaChip,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
@@ -33,30 +36,44 @@ const Header: FC = () => {
       <MainWrapper>
         <Left>
           <HomepageLink />
-          {isFilterEnabled && (
-            <Nav>
-              <LinkWrapper>
-                <Link href={ROUTES.DATASETS} passHref>
-                  <AnchorButton
-                    active={isRouteActive(pathname, ROUTES.DATASETS)}
-                    href="passHref"
-                    minimal
-                    text="Datasets"
-                  />
-                </Link>
-              </LinkWrapper>
-              <LinkWrapper>
-                <Link href={ROUTES.COLLECTIONS} passHref>
-                  <AnchorButton
-                    active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                    href="passHref"
-                    minimal
-                    text="Collections"
-                  />
-                </Link>
-              </LinkWrapper>
-            </Nav>
-          )}
+          <Nav>
+            {isFilterEnabled && (
+              <>
+                <LinkWrapper>
+                  <Link href={ROUTES.DATASETS} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.DATASETS)}
+                      href="passHref"
+                      minimal
+                      text="Datasets"
+                    />
+                  </Link>
+                </LinkWrapper>
+                <LinkWrapper>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
+                      href="passHref"
+                      minimal
+                      text="Collections"
+                    />
+                  </Link>
+                </LinkWrapper>
+              </>
+            )}
+            <LinkWrapper>
+              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
+                  href="passHref"
+                  minimal
+                  text="scExpression"
+                  onClick={handleWMGClick}
+                />
+              </Link>
+              <BetaChip label="Beta" size="small" />
+            </LinkWrapper>
+          </Nav>
         </Left>
         <Right>
           {isMyCollectionsShown && (
@@ -79,6 +96,10 @@ const Header: FC = () => {
       </MainWrapper>
     </Wrapper>
   );
+
+  function handleWMGClick() {
+    track(EVENTS.WMG_CLICK_NAV);
+  }
 };
 
 /**
