@@ -3,35 +3,30 @@
 ![Push Tests](https://github.com/chanzuckerberg/single-cell-data-portal/workflows/Push%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/chanzuckerberg/single-cell-data-portal/branch/main/graph/badge.svg?token=iIXh8Rw0CH)](https://codecov.io/gh/chanzuckerberg/single-cell-data-portal)
 
-The Single Cell Data Portal enables the publication, discovery and exploration of interoperable single-cell datasets. Data contributors can upload, review and publish datasets for private or public use. Via the portal, data consumers are able to discover, download and connect data to visualization tools such as [cellxgene](https://chanzuckerberg.github.io/cellxgene/posts/cellxgene_cziscience_com) to perform further analysis. The goal of the Data Portal is to catalyze distributed collaboration of single-cell research by providing a large, well-labeled repository of interoperable datasets.
+The Single Cell Data Portal enables the publication, discovery and exploration of interoperable single-cell datasets. Data contributors can upload, review and publish datasets for private or public use. Via the portal, data consumers are able to discover, download and connect data to visualization tools such as [cellxgene Explorer](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md) to perform further analysis. The goal of the Data Portal is to catalyze distributed collaboration of single-cell research by providing a large, well-labeled repository of interoperable datasets.
 
-## Developers
+## Developer Guidelines
 
-### Pre-requisites
+### Pre-requisite installations and setups
 
 1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
-2. [Install and configure awscli](docs/awscli.md)
-3. [Configure ssh access](https://github.com/chanzuckerberg/single-cell-infra#ssh)
-4. [Install pyenv](https://github.com/pyenv/pyenv). Make sure you choose the most recent python version from `pyenv`. If `pyenv` is already installed on your machine, you might have to delete and reinstall it.
-5. Run `source venv/bin/activate` to start up a virtual environment.
+1. Set up you machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the instructions for step 3 to enable AWS CLI access all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
+1. Set up your Python virtual environment. You can choose to do this by [installing pyenv](https://github.com/pyenv/pyenv). Note that we only support Python versions up to and including 3.8. If `pyenv` is already installed on your machine, you might have to delete and reinstall it. You may also choose to set up your Python virtual environment through [`venv`](https://docs.python.org/3/library/venv.html) as an alternative.
+1. Before you begin developing, run `source venv/bin/activate` to start up a virtual environment. After you are finished, you can run `deactivate` to deactivate the virtual environment.
+1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0,
+   and add it somewhere on your path. On Mac, run `brew install chamber`.
 
-### Development quickstart
+### Development Quickstart
 
-**Note:** Make sure you are running your virtual environment from Step 5 above before going through the development guides.
+**Note:** Make sure you are running your virtual environment before going through the development guides.
 
-See [DEV_ENV.md](DEV_ENV.md) for the local development guide.
+Once you have run the pre-requisite sets, you are ready to begin developing for the Data Portal. As you start to change code, you may want to deploy a test instance of the Data Portal so that you can check to see how your changes perform. We have two ways to deploy your changes:
 
-See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
+1. **Creating a local deployment environment.** This environment will be entirely hosted on your own machine and contain a small amount of dummy data. This environment is great to have up and running while you are actively developing. See [this guide](DEV_ENV.md) for instructions on how to set up a local deployment.
 
-### Environment variables
+1. **Creating a remote deployment.** This environment creates a lightweight replica of the Data Portal, hosted by AWS, and provide a more realistic test bed to test your changes before either sending them to a PR or try them out with a cross-functional partner. It takes a longer time to deploy your changes to a remote development environment which is why the local deployment is preferred until your changes are ready for broader review. See [this guide](https://docs.google.com/document/d/1nynGcBS_TA55qlQo9WjINGkcMnE_xIBz7-inmop2bqo/edit#) for instructions on how to set up an rDev environment.
 
-| Name                | Description                                                                                                                                                                               | Values                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests.                                                                                                     | `dev`, `staging`, `prod`              |
-| `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
-| `CORPORA_LOCAL_DEV` | If this variable is set to any value, the Corpora app will look for the database on **localhost:5432** and will use the aws secret _corpora/backend/\${DEPLOYMENT_STAGE}/database_local_. | Any                                   |
-
-### Commands
+### Common Commands
 
 | Command                 | Description                                                                          | Notes                                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
@@ -40,70 +35,50 @@ See [REMOTE_DEV.md](REMOTE_DEV.md) for personal remote deployment guide.
 | `make unit-test`        | Run all unit tests.                                                                  |                                                                                                      |
 | `make functional-tests` | Run all functional tests.                                                            | These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`. |
 
-### Deployment
+### Environment variables
 
-1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. [Deploy Backend](backend/entrypoints/api_server/README.md#Deploy)
-1. [Deploy Cloudfront-invalidator](backend/entrypoints/cloudfront_invalidator/README.md#Deploy)
-1. [Deploy Frontend](frontend/README.md#Deployment)
+Environment variables are set using the command `export <name>=<value>`. For example, `export DEPLOYMENT_STAGE=dev`. These environment variables typically need to be set before you are able to set up your environments (i.e. local, rDev) and before you are able to successfully run any test suite.
+
+| Name                | Description                                                                                                                                                                               | Values                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests.                                                                                                     | `dev`, `staging`, `prod`              |
+| `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
+| `CORPORA_LOCAL_DEV` | If this variable is set to any value, the Corpora app will look for the database on **localhost:5432** and will use the aws secret _corpora/backend/\${DEPLOYMENT_STAGE}/database_local_. | Any                                   |
 
 ### Database Procedures
 
-see [Data Portal Database Procedures](backend/database/README.md)
+If you need to make a change to the Data Portal database, see [Data Portal Database Procedures](backend/database/README.md).
 
 ### Running unittests
 
 1. Set `AWS_PROFILE`
 1. Run the tests `$ make unit-test`
 
-### Installing Chamber
-
-For running functional tests below, you will need to install Chamber on your machine. Chamber
-is a tool for reading secrets stored in AWS Secret Store and Parameter Store.
-
-On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0,
-and add it somewhere on your path.
-
-On Mac, run
-
-```
-brew install chamber
-```
-
 ### Running functional tests
 
-1. Install Chamber, using the instructions above
+1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. In another terminal run `make functional-test`
 
 ### Running local functional tests
 
-1. Install Chamber, using the instructions above
+1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
 1. Run `make local-init` to launch a local dev environment
 1. Run `make functional-test`
 
 ### Upload processing container
 
-The upload processing container is split into 2 parts: a base container that contains R
-libraries, and the Data Portal upload application code that build on top of this.
+The upload processing container is split into 2 parts: a base container that contains R libraries, and the Data Portal upload application code that build on top of this.
 
-Because the base container takes a long time to build and is expected to change
-infrequently, the container is built separately from the standard release process.
+Because the base container takes a long time to build and is expected to change infrequently, the container is built separately from the standard release process.
 
 #### Building the image
 
-The base image is built using Github actions. It is built both nightly, and whenever
-the Dockerfile.processing_base file is changed.
+The base image is built using Github actions. It is built both nightly, and whenever the Dockerfile.processing_base file is changed.
 
-The Data Portal upload application code by default uses the base image tagged with the tag
-"branch-main" (which the nightly and on-change base image build reassigns).
+The Data Portal upload application code by default uses the base image tagged with the tag "branch-main" (which the nightly and on-change base image build reassigns).
 
-If a new base image build is needed but the Dockerfile has no functional change (e.g.
-upstream R libraries versions have changed), the Dockerfile.processing_image can be
-modified with a non-functional to force the build (e.g. adding a blank line).
+If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the Dockerfile.processing_image can be modified with a non-functional to force the build (e.g. adding a blank line).
 
-In the rare event a new build of the base image needs to be built without Github Actions
-(e.g. Github Actions is down), follow the steps
-[Github's documentation](https://docs.github.com/en/packages/guides/pushing-and-pulling-docker-images)
-for creating a personal access token, and build locally and push like any other Docker image.
+In the rare event a new build of the base image needs to be built without Github Actions (e.g. Github Actions is down), follow the steps [Github's documentation](https://docs.github.com/en/packages/guides/pushing-and-pulling-docker-images) for creating a personal access token, and build locally and push like any other Docker image.
