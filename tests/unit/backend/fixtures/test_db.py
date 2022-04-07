@@ -430,7 +430,6 @@ class TestDatabase:
                 dataset_id="test_publish_revision_with_links__revision_dataset",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
