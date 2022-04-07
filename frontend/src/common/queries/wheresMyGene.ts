@@ -1,18 +1,16 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
-  Tissue,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
-import { CELL_TYPE_ORDER_BY_TISSUE } from "./constants/cellTypeOrderByTissue";
 import { ENTITIES } from "./entities";
 
 interface RawPrimaryFilterDimensionsResponse {
@@ -99,14 +97,7 @@ interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
-      [tissueId: string]: {
-        // cell_type_ontology_term_id
-        id: string;
-        me: number;
-        n: number;
-        pc: number;
-        tpc: number;
-      }[];
+      [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
     };
   };
   filter_dims: {
@@ -191,11 +182,19 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+/**
+ * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
+ * returns all available secondary filter options for us to display
+ */
+export function useFilterDimensions(
+  options = { includeAllFilterOptions: false }
+): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const { includeAllFilterOptions } = options;
+
+  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -273,12 +272,11 @@ export function useCellTypesByTissueName(): {
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
-      !termIdLabels
+      !Object.keys(termIdLabels.cell_types).length
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
 
-    const result: Map<Tissue, Map<string, CellType>> = new Map();
     const { tissues } = primaryFilterDimensions;
 
     const tissuesById: { [id: string]: { id: string; name: string } } = {};
@@ -287,47 +285,25 @@ export function useCellTypesByTissueName(): {
       tissuesById[tissue.id] = tissue;
     }
 
-    for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueID, expressionSummaries] of Object.entries(
-        expressionSummaryByTissue
-      )) {
-        const cellTypes = result.get(tissueID) || new Map();
-
-        for (const expressionSummary of expressionSummaries) {
-          const { id } = expressionSummary;
-
-          const cellType = {
-            id,
-            name: termIdLabels.cell_types[tissueID][id],
-          };
-
-          cellTypes.set(id, cellType);
-        }
-
-        result.set(tissueID, cellTypes);
-      }
-    }
-
     const cellTypesByTissueName: { [tissueName: string]: CellType[] } = {};
 
-    for (const [tissueId, cellTypesById] of result.entries()) {
+    for (const [tissueId, rawTissueCellTypes] of Object.entries(
+      termIdLabels.cell_types
+    )) {
       const tissueName = tissuesById[tissueId].name;
 
-      const cellTypeOrder = CELL_TYPE_ORDER_BY_TISSUE[tissueId];
-
-      const cellTypes = Array.from(cellTypesById.values());
-
-      if (cellTypeOrder) {
-        cellTypesByTissueName[tissueName] = cellTypes.sort((a, b) => {
-          const aIndex = cellTypeOrder[a.id];
-          const bIndex = cellTypeOrder[b.id];
-
-          return aIndex - bIndex;
+      const tissueCellTypes = Object.entries(rawTissueCellTypes)
+        // (thuang): Reverse the order, so the first cell type is at the top of
+        // the heat map
+        .reverse()
+        .map(([cellTypeId, cellTypeName]) => {
+          return {
+            id: cellTypeId,
+            name: cellTypeName,
+          };
         });
-      } else {
-        console.warn("No cell type order for tissue", tissueId);
-        cellTypesByTissueName[tissueName] = cellTypes;
-      }
+
+      cellTypesByTissueName[tissueName] = tissueCellTypes;
     }
 
     return {
@@ -423,13 +399,15 @@ export function useGeneExpressionSummariesByTissueName(): {
 function transformCellTypeGeneExpressionSummaryData(
   data: RawCellTypeGeneExpressionSummaryData
 ): CellTypeGeneExpressionSummaryData {
-  const { id, pc, me } = data;
+  const { id, pc, me, tpc, n } = data;
 
   return {
     ...data,
+    expressedCellCount: n,
     id,
     meanExpression: me,
     percentage: pc,
+    tissuePercentage: tpc,
   };
 }
 
@@ -477,7 +455,17 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody() {
+const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: undefined,
+  developmentStages: undefined,
+  diseases: undefined,
+  ethnicities: undefined,
+  sexes: undefined,
+};
+
+function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
+  const { includeAllFilterOptions } = options;
+
   const {
     selectedGenes,
     selectedTissues,
@@ -487,8 +475,13 @@ function useWMGQueryRequestBody() {
 
   const { data } = usePrimaryFilterDimensions();
 
+  /**
+   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
+   * any selected secondary filter options to the query, otherwise BE will return
+   * only the filtered options back to us.
+   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
 
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
@@ -572,5 +565,5 @@ function useWMGQueryRequestBody() {
 function toEntity(item: { [id: string]: string }) {
   const [id, name] = Object.entries(item)[0];
 
-  return { id, name };
+  return { id, name: name || id || "" };
 }
