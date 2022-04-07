@@ -6,5 +6,3 @@
 !/backend/**
 !/tests/**
 !/scripts/**
-!/cube-apr-6/**
-!wmg-bug.py
