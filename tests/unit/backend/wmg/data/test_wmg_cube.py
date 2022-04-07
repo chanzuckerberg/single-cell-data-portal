@@ -8,8 +8,10 @@ from backend.wmg.data.wmg_cube import create_cell_count_cube
 from unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot
 
 
-@unittest.skip("Requires https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/"
-               "chanzuckerberg/single-cell-data-portal/2280")
+@unittest.skip(
+    "Requires https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/"
+    "chanzuckerberg/single-cell-data-portal/2280"
+)
 class TestWmgCube(unittest.TestCase):
     @unittest.skip
     def test_create_cube(self):

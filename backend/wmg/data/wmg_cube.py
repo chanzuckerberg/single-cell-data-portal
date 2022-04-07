@@ -48,7 +48,7 @@ def create_cell_count_cube(tdb_group: str):
         )
         df = df.rename(columns={"size": "n_cells"})
         create_empty_cube(uri, cell_counts_schema)
-        tiledb.from_pandas(uri, df, mode='append')
+        tiledb.from_pandas(uri, df, mode="append")
 
 
 def create_cubes(tdb_group):
