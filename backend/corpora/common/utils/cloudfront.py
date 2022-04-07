@@ -5,16 +5,20 @@ from backend.corpora.common.corpora_config import CorporaCloudfrontConfig
 
 import logging
 
-client = boto3.client('cloudfront')
+client = boto3.client("cloudfront")
+
 
 # Since Cloudfront is only used in deployed environments (dev, staging, prod),
 # only trigger an invalidation if the distribution_id is defined in secrets manager.
 # Otherwise this will be a no-op
 def create_invalidation(paths: list[str]):
-    distribution = CorporaCloudfrontConfig().distribution_id
-    if distribution:
+    try:
+        distribution = CorporaCloudfrontConfig().distribution_id
         return _create_invalidation(distribution, paths)
-    
+    except Exception:
+        logging.warning("No Cloudfront distribution found in secrets, will not invalidate")
+        return None
+
 
 def _create_invalidation(distribution: str, paths: list[str]):
     invalidation_id = str(uuid.uuid4())
@@ -22,13 +26,14 @@ def _create_invalidation(distribution: str, paths: list[str]):
     return client.create_invalidation(
         DistributionId=distribution,
         InvalidationBatch={
-            'Paths': {
-                'Quantity': len(paths),
-                'Items': paths,
-                },
-            'CallerReference': invalidation_id
-            }
-        )
+            "Paths": {
+                "Quantity": len(paths),
+                "Items": paths,
+            },
+            "CallerReference": invalidation_id,
+        },
+    )
+
 
 def create_invalidation_for_index_paths():
     return create_invalidation(["/dp/v1/datasets/index", "/dp/v1/collections/index"])
