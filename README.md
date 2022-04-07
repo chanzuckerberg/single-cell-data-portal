@@ -13,8 +13,7 @@ The Single Cell Data Portal enables the publication, discovery and exploration o
 1. Set up you machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the instructions for step 3 to enable AWS CLI access all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
 1. Set up your Python virtual environment. You can choose to do this by [installing pyenv](https://github.com/pyenv/pyenv). Note that we only support Python versions up to and including 3.8. If `pyenv` is already installed on your machine, you might have to delete and reinstall it. You may also choose to set up your Python virtual environment through [`venv`](https://docs.python.org/3/library/venv.html) as an alternative.
 1. Before you begin developing, run `source venv/bin/activate` to start up a virtual environment. After you are finished, you can run `deactivate` to deactivate the virtual environment.
-1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0,
-   and add it somewhere on your path. On Mac, run `brew install chamber`.
+1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0, and add it somewhere on your path. On Mac, run `brew install chamber`.
 
 ### Development Quickstart
 
