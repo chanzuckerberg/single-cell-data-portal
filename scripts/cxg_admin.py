@@ -24,7 +24,6 @@ from backend.corpora.common.corpora_orm import (
     DbCollectionLink,
     DbDataset,
     DatasetArtifactFileType,
-    DatasetArtifactType,
     DbDatasetArtifact,
     DbProjectLink,
     ProcessingStatus,
@@ -328,7 +327,6 @@ def create_cxg_artifacts(ctx):
                     dataset_id=dataset.id,
                     filename="explorer_cxg",
                     filetype=DatasetArtifactFileType.CXG,
-                    type_enum=DatasetArtifactType.REMIX,
                     user_submitted=True,
                     s3_uri=s3_uri,
                 )

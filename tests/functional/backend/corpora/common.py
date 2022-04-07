@@ -15,10 +15,10 @@ API_URL = {
 }
 
 AUDIENCE = {
-    "prod": "cellxgene.cziscience.com/",
-    "staging": "cellxgene.staging.single-cell.czi.technology/",
-    "test": "cellxgene.dev.single-cell.czi.technology/",
-    "dev": "cellxgene.dev.single-cell.czi.technology/",
+    "prod": "api.cellxgene.cziscience.com",
+    "staging": "api.cellxgene.staging.single-cell.czi.technology",
+    "test": "api.cellxgene.dev.single-cell.czi.technology",
+    "dev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
 

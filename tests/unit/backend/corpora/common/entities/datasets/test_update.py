@@ -1,6 +1,5 @@
 from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
-    DatasetArtifactType,
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
@@ -17,7 +16,6 @@ class TestUpdateDataset(TestDataset):
         artifact_params = dict(
             filename="filename_1",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri="some_uri",
         )
@@ -34,7 +32,6 @@ class TestUpdateDataset(TestDataset):
         new_artifact_params = dict(
             filename="a_different_filename",
             filetype=DatasetArtifactFileType.RDS,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=False,
             s3_uri="a_different_uri",
         )
