@@ -5,6 +5,7 @@ from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFou
 
 from flask import make_response, jsonify, g
 from urllib.parse import urlparse
+import re
 
 import logging
 
@@ -145,7 +146,10 @@ def normalize_and_get_doi(body):
 
     parsed = urlparse(doi)
     if not parsed.scheme and not parsed.netloc:
-        doi_node["link_url"] = f"https://doi.org/{parsed.path}"
+        parsed_doi = parsed.path
+        if not re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", parsed_doi, flags=re.I):
+            raise InvalidParametersHTTPException("Invalid DOI")
+        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
 
     return doi
 
