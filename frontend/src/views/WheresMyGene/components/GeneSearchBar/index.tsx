@@ -1,5 +1,7 @@
 import { Intent } from "@blueprintjs/core";
+import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
@@ -8,7 +10,7 @@ import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
-import { ActionWrapper, Container } from "./style";
+import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
   name: string;
@@ -19,7 +21,7 @@ export default function GeneSearchBar(): JSX.Element {
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
 
-  const { data } = usePrimaryFilterDimensions();
+  const { data, isLoading } = usePrimaryFilterDimensions();
 
   const { genes: rawGenes, tissues } = data || {};
 
@@ -67,7 +69,7 @@ export default function GeneSearchBar(): JSX.Element {
   return (
     <Container>
       <ActionWrapper>
-        <Organism />
+        <Organism isLoading={isLoading} />
 
         <QuickSelect
           items={tissues || EMPTY_ARRAY}
@@ -78,6 +80,8 @@ export default function GeneSearchBar(): JSX.Element {
           label="Add Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
+          isLoading={isLoading}
+          analyticsEvent={EVENTS.WMG_SELECT_TISSUE}
         />
 
         <QuickSelect
@@ -90,7 +94,15 @@ export default function GeneSearchBar(): JSX.Element {
           label="Add Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
+          isLoading={isLoading}
+          analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+
+        {isLoading && (
+          <LoadingIndicatorWrapper>
+            <LoadingIndicator sdsStyle="tag" />
+          </LoadingIndicatorWrapper>
+        )}
       </ActionWrapper>
     </Container>
   );

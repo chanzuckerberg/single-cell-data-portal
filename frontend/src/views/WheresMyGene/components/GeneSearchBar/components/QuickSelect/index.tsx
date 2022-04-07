@@ -17,6 +17,8 @@ import {
 import { pull, uniq } from "lodash";
 import React, { createContext, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
@@ -83,6 +85,8 @@ interface Props<T, Multiple> {
   label: string;
   dataTestId: string;
   placeholder?: string;
+  analyticsEvent: EVENTS;
+  isLoading: boolean;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -97,6 +101,8 @@ export default function QuickSelect<
   label,
   dataTestId,
   placeholder,
+  analyticsEvent,
+  isLoading,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -184,6 +190,7 @@ export default function QuickSelect<
       <ButtonWrapper>
         <Label>{label}</Label>
         <StyledIconButton
+          disabled={isLoading}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
@@ -239,9 +246,17 @@ export default function QuickSelect<
         {...{ component: "div" }}
         isMultiSelect={multiple}
         selected={selected}
+        onClick={onClick}
       >
         {option.name}
       </StyledMenuItem>
     );
+
+    function onClick() {
+      // (thuang): Only track select, not deselect
+      if (selected) return;
+
+      track(analyticsEvent, { payload: option.name });
+    }
   }
 }
