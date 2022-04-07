@@ -8,5 +8,6 @@ export const StyledComplexFilterInputDropdown = styled(
 
   .MuiButton-label {
     margin-left: 0;
+    margin-right: 10px;
   }
 `;
