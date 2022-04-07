@@ -117,7 +117,12 @@ def get_collections_index():
         ],
     )
 
-    return make_response(jsonify(filtered_collection), 200)
+    # Remove entries where the value is None
+    updated_collection = []
+    for d in filtered_collection:
+        updated_collection.append({k: v for k, v in d.items() if v is not None})
+
+    return make_response(jsonify(updated_collection), 200)
 
 
 @dbconnect

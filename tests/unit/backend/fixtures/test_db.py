@@ -1,7 +1,6 @@
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     CollectionLinkType,
-    DatasetArtifactType,
     DatasetArtifactFileType,
     DbCollection,
     DbCollectionLink,
@@ -335,7 +334,6 @@ class TestDatabase:
             dataset_id="test_dataset_id",
             filename="test_filename",
             filetype=DatasetArtifactFileType.H5AD.name,
-            type=DatasetArtifactType.ORIGINAL.name,
             user_submitted=True,
             s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
         )
@@ -350,7 +348,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_one",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
@@ -364,7 +361,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_one",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
@@ -380,7 +376,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_one",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
@@ -396,7 +391,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_two",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
@@ -410,7 +404,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_two",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
@@ -424,7 +417,6 @@ class TestDatabase:
                 dataset_id="test_dataset_for_revisions_two",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
-                type=DatasetArtifactType.ORIGINAL.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )

@@ -68,7 +68,7 @@ class H5ADDataFile:
         logging.info(f"\t...group created, with name {output_cxg_directory}")
 
         convert_dictionary_to_cxg_group(
-            output_cxg_directory, self.generate_cxg_metadata(convert_anndata_colors_to_cxg_colors)
+            output_cxg_directory, self.generate_cxg_metadata(convert_anndata_colors_to_cxg_colors), ctx=ctx
         )
         logging.info("\t...dataset metadata saved")
 

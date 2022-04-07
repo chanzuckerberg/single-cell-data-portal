@@ -12,7 +12,6 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     generate_uuid,
     DatasetArtifactFileType,
-    DatasetArtifactType,
 )
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
@@ -220,14 +219,12 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         artifact_0 = dict(
             filename="filename_0",
             filetype=DatasetArtifactFileType.CXG,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri="s3://mock-bucket/mock-key.cxg",
         )
         artifact_1 = dict(
             filename="filename_1",
             filetype=DatasetArtifactFileType.H5AD,
-            type=DatasetArtifactType.ORIGINAL,
             user_submitted=True,
             s3_uri="s3://mock-bucket/mock-key.h5ad",
         )
@@ -379,7 +376,6 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             artifact_params_0 = dict(
                 filename="filename_x",
                 filetype=DatasetArtifactFileType.CXG,
-                type=DatasetArtifactType.ORIGINAL,
                 user_submitted=True,
                 s3_uri=test_uri_0,
             )
@@ -406,7 +402,6 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             artifact_params_1 = dict(
                 filename="filename_x",
                 filetype=DatasetArtifactFileType.CXG,
-                type=DatasetArtifactType.ORIGINAL,
                 user_submitted=True,
                 s3_uri=test_uri_1,
             )

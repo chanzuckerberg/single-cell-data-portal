@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from backend.corpora.common.corpora_orm import CollectionLinkType
 from backend.corpora.common.entities import Collection

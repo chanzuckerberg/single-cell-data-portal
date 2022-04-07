@@ -207,18 +207,6 @@ class DatasetArtifactFileType(enum.Enum):
     CXG = "cxg"
 
 
-class DatasetArtifactType(enum.Enum):
-    """
-    Enumerates DatasetArtifact types.
-
-    ORIGINAL - A data artifact that adheres to the minimal metadata schema requirements.
-    REMIX - A data artifact that adheres to the Corpora metadata schema requirements.
-    """
-
-    ORIGINAL = "Original"
-    REMIX = "Remix"
-
-
 class DbCollection(Base, AuditMixin, TimestampMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
@@ -335,7 +323,6 @@ class DbDatasetArtifact(Base, AuditMixin):
     dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
     filetype = Column(Enum(DatasetArtifactFileType))
-    type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
 

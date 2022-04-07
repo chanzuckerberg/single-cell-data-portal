@@ -17,6 +17,8 @@ import {
 import { pull, uniq } from "lodash";
 import React, { createContext, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
@@ -82,6 +84,8 @@ interface Props<T, Multiple> {
   onItemNotFound?: (item: string) => void;
   label: string;
   dataTestId: string;
+  placeholder?: string;
+  analyticsEvent: EVENTS;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -95,6 +99,8 @@ export default function QuickSelect<
   onItemNotFound,
   label,
   dataTestId,
+  placeholder,
+  analyticsEvent,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -221,7 +227,7 @@ export default function QuickSelect<
             ) => {
               setInput(event.target.value);
             },
-            placeholder: "Search or paste comma separated gene names",
+            placeholder,
           }}
         />
       </Popper>
@@ -237,9 +243,17 @@ export default function QuickSelect<
         {...{ component: "div" }}
         isMultiSelect={multiple}
         selected={selected}
+        onClick={onClick}
       >
         {option.name}
       </StyledMenuItem>
     );
+
+    function onClick() {
+      // (thuang): Only track select, not deselect
+      if (selected) return;
+
+      track(analyticsEvent, { payload: option.name });
+    }
   }
 }

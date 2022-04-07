@@ -1,5 +1,7 @@
 import { Intent, Spinner } from "@blueprintjs/core";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { State } from "../../common/store";
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import Chart from "./components/Chart";
@@ -19,6 +21,13 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isLoadingAPI: boolean;
+  isScaled: boolean;
+}
+
+enum FirstLoadState {
+  Initial,
+  Loading,
+  Loaded,
 }
 
 export default memo(function HeatMap({
@@ -30,9 +39,27 @@ export default memo(function HeatMap({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isLoadingAPI,
+  isScaled,
 }: Props): JSX.Element {
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
+  const [firstLoad, setFirstLoad] = useState(FirstLoadState.Initial);
+
+  // (thuang): We only want to send `WMG_HEATMAP_LOADED` event the first time it loads
+  useEffect(() => {
+    if (firstLoad === FirstLoadState.Loaded) return;
+    if (firstLoad === FirstLoadState.Initial && isAnyTissueLoading(isLoading)) {
+      setFirstLoad(FirstLoadState.Loading);
+      return;
+    }
+    if (
+      firstLoad === FirstLoadState.Loading &&
+      !isAnyTissueLoading(isLoading)
+    ) {
+      track(EVENTS.WMG_HEATMAP_LOADED);
+      setFirstLoad(FirstLoadState.Loaded);
+    }
+  }, [firstLoad, isLoading]);
 
   const yAxisWrapperHeight = useMemo(() => {
     const yAxisChartHeight = Object.values(cellTypes).reduce(
@@ -75,6 +102,7 @@ export default memo(function HeatMap({
         {Object.entries(cellTypes).map(([tissue, cellTypeSummaries]) => {
           return (
             <Chart
+              isScaled={isScaled}
               key={tissue}
               tissue={tissue}
               cellTypes={cellTypeSummaries}

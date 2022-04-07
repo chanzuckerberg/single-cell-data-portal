@@ -34,6 +34,7 @@ domain = tiledb.Domain(
         for cube_indexed_dim in cube_indexed_dims
     ]
 )
+# TODO: rename cube_ to expression_summary_
 
 # The cube attributes that comprise the core data stored within the cube.
 cube_logical_attrs = [
@@ -50,11 +51,51 @@ cube_physical_attrs = [
     for nonindexed_dim in cube_non_indexed_dims
 ] + cube_logical_attrs
 
-schema = tiledb.ArraySchema(
+expression_summary_schema = tiledb.ArraySchema(
     domain=domain,
     sparse=True,
     allows_duplicates=True,
     attrs=cube_physical_attrs,
+    cell_order="row-major",
+    tile_order="row-major",
+    capacity=10000,
+)
+
+
+# Cell Counts Array
+
+cell_counts_indexed_dims = [
+    "tissue_ontology_term_id",
+    "organism_ontology_term_id",
+]
+cell_counts_non_indexed_dims = cube_non_indexed_dims
+
+cell_counts_logical_dims = cell_counts_indexed_dims + cell_counts_non_indexed_dims
+
+
+cell_counts_domain = tiledb.Domain(
+    [
+        tiledb.Dim(name=cell_counts_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
+        for cell_counts_indexed_dim in cell_counts_indexed_dims
+    ]
+)
+
+cell_counts_logical_attrs = [
+    # total count of cells, regardless of expression level
+    tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters),
+]
+
+cell_counts_physical_attrs = [
+    tiledb.Attr(name=nonindexed_dim, dtype="ascii", var=True, filters=filters)
+    for nonindexed_dim in cube_non_indexed_dims
+] + cell_counts_logical_attrs
+
+
+cell_counts_schema = tiledb.ArraySchema(
+    domain=cell_counts_domain,
+    sparse=True,
+    allows_duplicates=True,
+    attrs=cell_counts_physical_attrs,
     cell_order="row-major",
     tile_order="row-major",
     capacity=10000,
