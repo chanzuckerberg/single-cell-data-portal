@@ -35,4 +35,5 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-CMD gunicorn --worker-class gevent --workers 1 --timeout 180 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 18
+0 --keep-alive 5 --log-level info
