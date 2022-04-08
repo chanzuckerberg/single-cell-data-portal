@@ -1015,6 +1015,7 @@ paths:
                     type: object
         "404":
           $ref: "#/components/responses/404"
+
   /wmg/v1/query:
     post:
       tags:
