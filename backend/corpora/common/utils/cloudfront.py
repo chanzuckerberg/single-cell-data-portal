@@ -15,12 +15,10 @@ client = boto3.client("cloudfront")
 def create_invalidation(paths: List[str]):
     try:
         distribution = CorporaCloudfrontConfig().distribution_id
-        return _create_invalidation(distribution, paths)
-    except RuntimeError: # Will be raised if the attribute is not found (i.e. in rdev)
+    except RuntimeError:  # Will be raised if the attribute is not found (i.e. in rdev)
         logging.debug("No Cloudfront distribution found in secrets, will not invalidate")
         return None
-    except Exception as e:
-        raise RuntimeError("Could not create a Cloudfront invalidation") from e
+    return _create_invalidation(distribution, paths)
 
 
 def _create_invalidation(distribution: str, paths: List[str]):
