@@ -183,6 +183,7 @@ jobs:
   push-image:
     needs:
       - unit-test
+      - smoke-test
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
