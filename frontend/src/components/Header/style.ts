@@ -1,6 +1,7 @@
 import { Classes, Colors } from "@blueprintjs/core";
+import { Chip } from "czifui";
 import styled, { css } from "styled-components";
-import { GRAY, PT_TEXT_COLOR } from "../common/theme";
+import { GRAY, PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 
 export const HEADER_HEIGHT_PX = 48;
 
@@ -81,6 +82,9 @@ export const LinkWrapper = styled.span`
   .${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.ACTIVE} {
     box-shadow: inset 0 -2px 0 ${Colors.WHITE} !important; /* Overrides specificity of BP button active box shadow rule. */
   }
+
+  display: flex;
+  align-items: center;
 `;
 
 export const LearnButtonWrapper = styled.span`
@@ -94,4 +98,11 @@ export const AuthButtonWrapper = styled.span`
     color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
     font-weight: 400; /* Overrides locally defined button font weight rule. */
   }
+`;
+
+export const BetaChip = styled(Chip)`
+  background: #7a41ce;
+  color: white;
+  margin-left: ${PT_GRID_SIZE_PX / 2}px;
+  height: ${PT_GRID_SIZE_PX * 2}px !important;
 `;

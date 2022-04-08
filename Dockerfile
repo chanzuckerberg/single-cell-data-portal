@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20210119
+FROM ubuntu:21.10
 
 ENV APP_NAME=corpora-api
 ENV DEPLOYMENT_STAGE=test
@@ -7,11 +7,11 @@ ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y python3.9 libhdf5-dev gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
+    apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Make python3 the default 'python' executable.
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /corpora-data-portal
@@ -35,4 +35,4 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 30 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info

@@ -1,29 +1,34 @@
 import unittest
-from typing import Tuple
+from typing import NamedTuple
 
-from backend.wmg.data.query import WmgQueryCriteria, WmgQuery, build_dot_plot_matrix
-from tests.unit.backend.wmg.fixtures.cube import (
-    create_temp_wmg_cubes,
+from backend.wmg.api.v1 import build_dot_plot_matrix
+from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
+from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
 )
 
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+
+# TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
+#  WmgQuery methods
 
 
-@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class QueryTest(unittest.TestCase):
+    # FIXME
+    @unittest.skip("failing with 'realloc(): invalid pointer'")
     def test__query_with_no_genes__returns_empty_result(self):
         criteria = WmgQueryCriteria(
             organism_ontology_term_id="organism_ontology_term_id_0",
             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
         )
 
-        dim_size = 3
-        with create_temp_wmg_cubes(
+        dim_size = 1
+        with create_temp_wmg_snapshot(
             dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         expected = {
@@ -38,22 +43,20 @@ class QueryTest(unittest.TestCase):
         }
         self.assertEqual(expected, result.to_dict())
 
-    # This test appears to be hitting a TileDB (<=0.13.1) bug and may fail intermittently
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
         criteria = WmgQueryCriteria(
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
             organism_ontology_term_id="organism_ontology_term_id_1",
-            tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            # TODO: TileDB query bug hit when this is `*_id_2`!
+            tissue_ontology_term_ids=["tissue_ontology_term_id_2"],
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -65,7 +68,7 @@ class QueryTest(unittest.TestCase):
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
@@ -75,7 +78,7 @@ class QueryTest(unittest.TestCase):
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
@@ -85,7 +88,7 @@ class QueryTest(unittest.TestCase):
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
-                "tissue_ontology_term_id": "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells": 729,
                 "n_cells_cell_type": 7290,
@@ -115,12 +118,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -281,12 +284,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -352,12 +355,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -424,12 +427,12 @@ class QueryTest(unittest.TestCase):
         )
 
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
-            query = WmgQuery(cubes)
+        ) as snapshot:
+            query = WmgQuery(snapshot)
             result = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
@@ -490,30 +493,33 @@ class QueryTest(unittest.TestCase):
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
-            result = WmgQuery(cubes).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
+            result = WmgQuery(snapshot).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
             self.assertEquals(["gene_ontology_term_id_0", "gene_ontology_term_id_1", "gene_ontology_term_id_2"], result)
 
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
         dim_size = 3
 
-        # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
-        # without this filtering function, the cube would have the cross-product of organisms * genes
-        def exclude(logical_coord: Tuple) -> bool:
-            return (logical_coord[0], logical_coord[2]) not in {
-                ("gene_ontology_term_id_0", "organism_ontology_term_id_0"),
-                ("gene_ontology_term_id_1", "organism_ontology_term_id_0"),
-                ("gene_ontology_term_id_2", "organism_ontology_term_id_1"),
-            }
+        def exclude_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
+            # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
+            # include gene_ontology_term_id
+            if "gene_ontology_term_id" not in logical_coord._fields:
+                return False
+            return logical_coord.gene_ontology_term_id == logical_coord.organism_ontology_term_id.replace(
+                "organism", "gene"
+            )
 
-        with create_temp_wmg_cubes(dim_size=dim_size, exclude_logical_coord_fn=exclude) as cubes:
-            result = WmgQuery(cubes).list_grouped_primary_filter_dimensions_term_ids(
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size, exclude_logical_coord_fn=exclude_one_gene_per_organism
+        ) as snapshot:
+            result = WmgQuery(snapshot).list_grouped_primary_filter_dimensions_term_ids(
                 "gene_ontology_term_id", "organism_ontology_term_id"
             )
             self.assertEquals(
                 {
-                    "organism_ontology_term_id_0": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
-                    "organism_ontology_term_id_1": ["gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_0": ["gene_ontology_term_id_1", "gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_1": ["gene_ontology_term_id_0", "gene_ontology_term_id_2"],
+                    "organism_ontology_term_id_2": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
                 },
                 result,
             )

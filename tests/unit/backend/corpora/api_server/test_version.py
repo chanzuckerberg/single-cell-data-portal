@@ -1,5 +1,5 @@
 import os
-from mock import patch
+from unittest.mock import patch
 import json
 
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest

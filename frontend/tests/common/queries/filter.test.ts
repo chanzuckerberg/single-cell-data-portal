@@ -94,22 +94,20 @@ describe("filter", () => {
   });
   describe("Calculate Recency", () => {
     it("calculates recency for collection with publisher metadata", () => {
-      const day = 11;
-      const month = 0; // JS month
-      const year = 2022;
+      const publishedAt = 1646092800;
       const collection = {
         publisher_metadata: {
-          published_day: day,
-          published_month: month + 1, // Publisher metadata month
-          published_year: year,
+          published_at: publishedAt,
+          published_day: 11,
+          published_month: 1,
+          published_year: 2022,
         },
       } as CollectionResponse;
       const recency = calculateRecency(
         collection,
         collection.publisher_metadata
       );
-      const expected = new Date(year, month, day).getTime() / 1000; // Seconds since Unix epoch.
-      expect(recency).toEqual(expected);
+      expect(recency).toEqual(publishedAt);
     });
     it("calculates recency for collection with revised at", () => {
       const revisedAt = 1644527777.095609; // JS month

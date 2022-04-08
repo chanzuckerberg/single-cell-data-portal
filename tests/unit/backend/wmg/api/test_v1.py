@@ -1,19 +1,20 @@
 import json
 import unittest
-from typing import Tuple
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
+from backend.wmg.api.v1 import primary_filter_dimensions
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.cube import (
-    create_temp_wmg_cubes,
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
+    reverse_cell_type_ordering,
+    exclude_all_but_one_gene_per_organism,
 )
 
 
-@unittest.skip("TileDB bug (<=0.13.1) causing these to fail")
 class WmgApiV1Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
@@ -30,38 +31,31 @@ class WmgApiV1Tests(unittest.TestCase):
         super().setUpClass()
         cls.maxDiff = None
 
-    @patch("backend.wmg.api.v1.load_cubes")
-    def test__primary_filter_dimensions__returns_200(self, load_cubes):
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__primary_filter_dimensions__returns_200(self, load_snapshot):
         # This test appears to be hitting a TileDB (<=0.13.1) bug and fails (intermittently) if dim_size=3
-        with create_temp_wmg_cubes(dim_size=1) as cubes:
+        with create_temp_wmg_snapshot(dim_size=1) as snapshot:
             # setup up API endpoints to use a mocked cube
-            load_cubes.return_value = cubes
+            load_snapshot.return_value = snapshot
 
+            primary_filter_dimensions.cache_clear()
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         self.assertEqual(200, response.status_code)
 
-    @patch("backend.wmg.data.query.gene_term_label")
-    @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cubes")
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
     def test__primary_filter_dimensions__returns_valid_response_body(
-        self, load_cubes, ontology_term_label, gene_term_label
+        self, load_snapshot, ontology_term_label, gene_term_label
     ):
 
-        # we want disjoint set of genes across organisms, to mimic reality (each organism has its own set of genes);
-        # without this filtering function, the cube would have the cross-product of organisms * genes
-        def exclude(logical_coord: Tuple) -> bool:
-            return (logical_coord[0], logical_coord[2]) not in {
-                ("gene_ontology_term_id_0", "organism_ontology_term_id_0"),
-                ("gene_ontology_term_id_1", "organism_ontology_term_id_1"),
-                ("gene_ontology_term_id_2", "organism_ontology_term_id_2"),
-            }
-
-        # This test appears to be hitting a TileDB (<=0.13.1) bug and fails if dim_size=3
-        with create_temp_wmg_cubes(exclude_logical_coord_fn=exclude, dim_size=1) as cubes:
+        with create_temp_wmg_snapshot(
+            dim_size=3, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
+        ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
-            load_cubes.return_value = cubes
+            load_snapshot.return_value = snapshot
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -69,48 +63,49 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
+            primary_filter_dimensions.cache_clear()
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
             snapshot_id="dummy-snapshot",
             organism_terms=[
                 {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
-                # {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
-                # {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
+                {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
+                {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
             ],
             tissue_terms=[
                 {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                # {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                # {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
             ],
             gene_terms={
                 "organism_ontology_term_id_0": [
                     {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
                 ],
-                # "organism_ontology_term_id_1": [
-                #     {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
-                # ],
-                # "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
+                "organism_ontology_term_id_1": [
+                    {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
+                ],
+                "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
             },
         )
 
         self.assertEqual(expected, json.loads(response.data))
 
-    @patch("backend.wmg.data.query.gene_term_label")
-    @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cubes")
-    def test__query_minimal_valid_request__returns_200_and_empty_expr_summary(
-        self, load_cubes, ontology_term_label, gene_term_label
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_single_primary_dims__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 1
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
+        ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
-            load_cubes.return_value = cubes
+            load_snapshot.return_value = snapshot
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -142,58 +137,32 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                 },
                 "term_id_labels": {
-                    "cell_types": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
+                    "cell_types": {
+                        "tissue_ontology_term_id_0": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}
+                        ]
+                    },
                     "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
                 },
                 "filter_dims": {},
             }
             self.assertEqual(expected_response, json.loads(response.data))
 
-    def test__query_empty_request__returns_400(self):
-        response = self.app.post("/wmg/v1/query", json={})
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
-
-    def test__query_missing_organism__request_returns_400(self):
-        request = dict(
-            filter=dict(
-                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            ),
-        )
-
-        response = self.app.post("/wmg/v1/query", json=request)
-
-        self.assertEqual(400, response.status_code)
-
-    def test__query_missing_tissue_request__returns_400(self):
-        request = dict(
-            filter=dict(
-                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                organism_ontology_term_id="organism_ontology_term_id_0",
-            ),
-        )
-
-        response = self.app.post("/wmg/v1/query", json=request)
-
-        self.assertEqual(400, response.status_code)
-
-    @patch("backend.wmg.data.query.gene_term_label")
-    @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cubes")
-    def test__query_request_primary_dims_only__returns_valid_response_body(
-        self, load_cubes, ontology_term_label, gene_term_label
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_request_multi_primary_dims_only__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 3
-        with create_temp_wmg_cubes(
+        with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as cubes:
+        ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
-            load_cubes.return_value = cubes
+            load_snapshot.return_value = snapshot
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -213,6 +182,8 @@ class WmgApiV1Tests(unittest.TestCase):
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
 
             # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
             # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
@@ -323,11 +294,18 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                 },
                 "term_id_labels": {
-                    "cell_types": [
-                        {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
-                        {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                        {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
-                    ],
+                    "cell_types": {
+                        "tissue_ontology_term_id_1": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                        ],
+                        "tissue_ontology_term_id_2": [
+                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                        ],
+                    },
                     "genes": [
                         {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
                         {"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"},
@@ -337,17 +315,106 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.assertEqual(expected, json.loads(response.data))
 
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_explicit_cell_ordering__returns_correct_cell_ordering(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 2
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+            cell_ordering_generator_fn=reverse_cell_type_ordering,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
+                ),
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "tissue_ontology_term_id_0": [
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                ],
+                "tissue_ontology_term_id_1": [
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                ],
+            }
+            self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
+
+    def test__query_empty_request__returns_400(self):
+        response = self.app.post("/wmg/v1/query", json={})
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("'filter' is a required property", json.loads(response.data)["detail"])
+
+    def test__query_missing_gene__request_returns_400(self):
+        request = dict(
+            filter=dict(
+                organism_ontology_term_id="organism_ontology_term_id_0",
+                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+            ),
+        )
+
+        response = self.app.post("/wmg/v1/query", json=request)
+
+        self.assertEqual(400, response.status_code)
+
+    def test__query_missing_organism__request_returns_400(self):
+        request = dict(
+            filter=dict(
+                gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+            ),
+        )
+
+        response = self.app.post("/wmg/v1/query", json=request)
+
+        self.assertEqual(400, response.status_code)
+
+    def test__query_missing_tissue_request__returns_400(self):
+        request = dict(
+            filter=dict(
+                gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                organism_ontology_term_id="organism_ontology_term_id_0",
+            ),
+        )
+
+        response = self.app.post("/wmg/v1/query", json=request)
+
+        self.assertEqual(400, response.status_code)
+
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
-    @patch("backend.wmg.data.query.gene_term_label")
-    @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cubes")
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__returns_valid_filter_dims(
-        self, load_cubes, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 3
-        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
             # setup up API endpoints to use a mocked cube
-            load_cubes.return_value = cubes
+            load_snapshot.return_value = snapshot
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -415,15 +482,15 @@ class WmgApiV1Tests(unittest.TestCase):
             self.assertEqual(expected, json.loads(response.data)["filter_dims"])
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
-    @patch("backend.wmg.data.query.gene_term_label")
-    @patch("backend.wmg.data.query.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_cubes")
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__returns_elided_filter_dims(
-        self, load_cubes, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 2
-        with create_temp_wmg_cubes(dim_size=dim_size) as cubes:
-            load_cubes.return_value = cubes
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
+            load_snapshot.return_value = snapshot
 
             # mock the functions in the ontology_labels module, so we can assert deterministic values in the
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
