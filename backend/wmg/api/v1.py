@@ -22,7 +22,7 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 #  -portal/2132
 
 
-@cache(max_size=None)
+@cache
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
     qry = WmgQuery(snapshot)
