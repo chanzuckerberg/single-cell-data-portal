@@ -21,6 +21,7 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
+
 @cache(max_size=None)
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
