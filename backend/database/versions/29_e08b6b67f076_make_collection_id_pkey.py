@@ -106,9 +106,6 @@ def downgrade():
     # Add project composite primary key
     op.create_primary_key("project_pkey", "project", ["id", "visibility"])
 
-    # op.drop_index(op.f('ix_geneset_dataset_link_geneset_id'), table_name='geneset_dataset_link')
-    # op.drop_index(op.f('ix_geneset_dataset_link_dataset_id'), table_name='geneset_dataset_link')
-
     # Create foreign keys that reference composite key [project.id, project.visibility]
     remake_collection_id_and_collection_visibility_composite_foreign_key("project_link")
     remake_collection_id_and_collection_visibility_composite_foreign_key("geneset")
