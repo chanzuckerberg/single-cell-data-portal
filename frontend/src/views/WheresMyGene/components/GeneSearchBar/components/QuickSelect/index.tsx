@@ -23,8 +23,8 @@ import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
+const MAX_ITEMS_TO_SHOW = 9.5;
 const LISTBOX_ITEM_HEIGHT_PX = 48;
-const LISTBOX_HEIGHT_PX = 152;
 
 const ListBoxContext = createContext({});
 
@@ -48,11 +48,16 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     const itemData = React.Children.toArray(children);
     const itemCount = itemData.length;
 
+    const height = Math.min(
+      LISTBOX_ITEM_HEIGHT_PX * itemCount,
+      LISTBOX_ITEM_HEIGHT_PX * MAX_ITEMS_TO_SHOW
+    );
+
     return (
       <div ref={ref}>
         <ListBoxContext.Provider value={other}>
           <FixedSizeList
-            height={LISTBOX_HEIGHT_PX}
+            height={height}
             itemCount={itemCount}
             outerElementType={OuterElementType}
             itemSize={LISTBOX_ITEM_HEIGHT_PX}
