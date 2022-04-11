@@ -14,6 +14,9 @@ import numpy as np
 import pandas as pd
 import tiledb
 
+import pathlib
+
+
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
 
@@ -103,6 +106,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     ## TODO break out each array
     """
     uri = f"{corpus_location}/{tdb_group}"
+    pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
     tiledb.group_create(uri)
 
     X_capacity = 128000

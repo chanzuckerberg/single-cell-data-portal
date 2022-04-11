@@ -7,12 +7,13 @@ import { ChartProps } from "./common/types";
 interface Props {
   chart: echarts.ECharts | null;
   chartProps: ChartProps | null;
+  isScaled: boolean;
 }
 
-export function useUpdateChart({ chart, chartProps }: Props): void {
+export function useUpdateChart({ chart, chartProps, isScaled }: Props): void {
   const throttledUpdateChart = useMemo(() => {
     return throttle(
-      ({ chart, chartProps }: Props) => {
+      ({ chart, chartProps, isScaled }: Props) => {
         if (!chart || !chartProps) {
           return;
         }
@@ -28,6 +29,7 @@ export function useUpdateChart({ chart, chartProps }: Props): void {
             cellTypeMetadata,
             chartData,
             geneNames,
+            isScaled,
           })
         );
       },
@@ -47,6 +49,7 @@ export function useUpdateChart({ chart, chartProps }: Props): void {
     throttledUpdateChart({
       chart,
       chartProps,
+      isScaled,
     });
-  }, [chart, chartProps, throttledUpdateChart]);
+  }, [chart, chartProps, throttledUpdateChart, isScaled]);
 }

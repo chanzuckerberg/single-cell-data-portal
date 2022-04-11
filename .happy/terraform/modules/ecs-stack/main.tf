@@ -21,7 +21,7 @@ locals {
   deletion_cmd                 = ["make", "-C", "/corpora-data-portal/backend", "db/delete_remote_dev"]
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "30", "--keep-alive", "5", "--log-level", "info"]
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
   vpc_id                       = local.secret["vpc_id"]
@@ -34,6 +34,7 @@ locals {
   upload_image_repo            = local.secret["ecrs"]["processing"]["url"]
   lambda_upload_success_repo   = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo           = local.secret["ecrs"]["upload_failures"]["url"]
+  wmg_upload_image_repo        = local.secret["ecrs"]["wmg_processing"]["url"]
   batch_role_arn               = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                = local.secret["batch_queues"]["upload"]["queue_arn"]
   external_dns                 = local.secret["external_zone_name"]
@@ -48,6 +49,7 @@ locals {
 
   artifact_bucket              = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  wmg_bucket                   = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
@@ -90,6 +92,7 @@ module frontend_service {
   security_groups   = local.security_groups
   task_role_arn     = local.ecs_role_arn
   service_port      = 9000
+  memory            = var.frontend_memory
   deployment_stage  = local.deployment_stage
   step_function_arn = module.upload_sfn.step_function_arn
   host_match        = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
@@ -161,6 +164,19 @@ module upload_batch {
   cellxgene_bucket  = local.cellxgene_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
+}
+
+module wmg_batch {
+  source                        = "../wmg-batch"
+  image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.batch_role_arn
+  cmd                           = ""
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  wmg_bucket                    = local.wmg_bucket
+  batch_container_memory_limit  = 300000
 }
 
 module upload_success_lambda {

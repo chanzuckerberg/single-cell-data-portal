@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import cache
 from typing import Dict, List, Any, Iterable
 
 import connexion
@@ -21,6 +22,7 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 #  -portal/2132
 
 
+@cache
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
     qry = WmgQuery(snapshot)
