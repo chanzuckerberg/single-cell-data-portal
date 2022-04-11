@@ -99,3 +99,10 @@ variable backend_memory {
   description = "Memory reservation for the backend task"
   default     = 1536
 }
+
+variable frontend_memory {
+  type        = number
+  description = "Memory reservation for the backend task"
+  default     = 1536
+}
+
