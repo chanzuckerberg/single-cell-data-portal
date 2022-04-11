@@ -160,6 +160,17 @@ class TestPublish(BaseAuthAPITest):
 
         self.verify_publish_collection_with_links(collection, revision.id)
 
+    @patch("backend.corpora.common.utils.cloudfront.create_invalidation_for_index_paths")
+    def test_publish_collection_does_cloudfront_invalidation(self, mock_cloudfront):
+        """Publish a new collection with a single dataset."""
+        collection = self.generate_collection(self.session)
+        self.generate_dataset(self.session, collection_id=collection.id, collection_visibility=collection.visibility)
+
+        self.assertIsNone(collection.published_at)
+        self.verify_publish_collection(collection.id, self.mock_published_at)
+
+        mock_cloudfront.assert_called_once()
+
     def test__not_owner__403(self):
         """Publish a collection as a non-owner."""
         collection_id = self.generate_collection(self.session, owner="someone_else").id
