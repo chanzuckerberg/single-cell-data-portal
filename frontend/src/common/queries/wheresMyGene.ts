@@ -269,6 +269,7 @@ export function useCellTypesByTissueName(): {
     if (
       isLoading ||
       !data ||
+      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
