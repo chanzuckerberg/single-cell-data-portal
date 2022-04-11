@@ -313,7 +313,7 @@ class Collection(Entity):
             self.session.add(clone(link, collection_id=revision_collection.id))
         for dataset in self.datasets:
             Dataset(dataset).create_revision(revision_collection.id)
-        self.session.commit()  # why is this happening here and not after creating the Dataset revisions
+        self.session.commit()
         return Collection(revision_collection)
 
     def tombstone_collection(self):
@@ -326,7 +326,7 @@ class Collection(Entity):
             ds.tombstone_dataset_and_delete_child_objects()
         self.session.commit()
 
-    def update(self, links: list = None, keep_links=None, **kwargs) -> None:
+    def update(self, links: list = None, keep_links=False, **kwargs) -> None:
         """
         Update an existing collection to match provided the parameters. The specified columns are replaced.
         :param links: links to create and connect to the collection. If present, the existing attached entries will
