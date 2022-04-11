@@ -220,17 +220,18 @@ module upload_sfn {
 }
 
 module dataset_submission_lambda {
-  source                = "../lambda"
-  image                 = "${local.lambda_dataset_submission_repo}:${local.image_tag}"
-  name                  = "dataset-submission"
-  custom_stack_name     = local.custom_stack_name
-  remote_dev_prefix     = local.remote_dev_prefix
-  deployment_stage      = local.deployment_stage
-  artifact_bucket       = local.artifact_bucket
-  cellxgene_bucket      = local.cellxgene_bucket
-  lambda_execution_role = local.lambda_execution_role
-  subnets               = local.subnets
-  security_groups       = local.security_groups
+  source                    = "../lambda"
+  image                     = "${local.lambda_dataset_submission_repo}:${local.image_tag}"
+  name                      = "dataset-submission"
+  custom_stack_name         = local.custom_stack_name
+  remote_dev_prefix         = local.remote_dev_prefix
+  deployment_stage          = local.deployment_stage
+  artifact_bucket           = local.artifact_bucket
+  cellxgene_bucket          = local.cellxgene_bucket
+  dataset_submission_bucket = local.dataset_submission_bucket
+  lambda_execution_role     = local.lambda_execution_role
+  subnets                   = local.subnets
+  security_groups           = local.security_groups
 }
 
 resource "aws_s3_bucket_notification" "on_dataset_submission_object_created" {
