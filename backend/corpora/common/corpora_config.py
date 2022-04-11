@@ -74,3 +74,10 @@ class CorporaAuthConfig(SecretConfig):
             template["issuer"].append(self.api_signin_url)
 
         return template
+
+
+class CorporaCloudfrontConfig(SecretConfig):
+    environ_source = "CORPORA_CLOUDFRONT_CONFIG"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__("backend", secret_name="cloudfront", **kwargs)
