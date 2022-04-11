@@ -19,5 +19,5 @@ export enum EXTERNAL_LINKS {
   DOCS_DATA_PORTAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md",
   DOCS_ROADMAP = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md",
   DOCS_TUTORIAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/portal/data-portal.md",
-  WMG_DOC = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/pablo-gar/wheres-my-gene/scExpression/scExpression-documentation.md",
+  WMG_DOC = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md",
 }
