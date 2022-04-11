@@ -300,9 +300,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
 
     # Composite FK
-    __table_args__ = (
-        UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),
-    )
+    __table_args__ = (UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),)
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]

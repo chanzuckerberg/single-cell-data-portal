@@ -4,9 +4,6 @@ from unittest.mock import patch
 
 import requests
 
-from backend.corpora.common.corpora_orm import (
-    CollectionVisibility,
-)
 from backend.corpora.dataset_processing import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
