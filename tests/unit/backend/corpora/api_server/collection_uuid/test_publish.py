@@ -164,10 +164,10 @@ class TestPublish(BaseAuthAPITest):
     def test_publish_collection_does_cloudfront_invalidation(self, mock_cloudfront):
         """Publish a new collection with a single dataset."""
         collection = self.generate_collection(self.session)
-        self.generate_dataset(self.session, collection_id=collection.id, collection_visibility=collection.visibility)
+        self.generate_dataset(self.session, collection_id=collection.id)
 
         self.assertIsNone(collection.published_at)
-        self.verify_publish_collection(collection.id, self.mock_published_at)
+        self.verify_publish_collection(collection.id, mock_timestamp=self.mock_published_at)
 
         mock_cloudfront.assert_called_once()
 
