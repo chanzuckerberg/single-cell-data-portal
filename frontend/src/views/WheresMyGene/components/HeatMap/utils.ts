@@ -344,13 +344,13 @@ export function dataToChartFormat({
 
       return {
         cellTypeIndex,
+        expressedCellCount,
         geneIndex,
         id,
         meanExpression,
         percentage,
         scaledMeanExpression,
         tissuePercentage,
-        expressedCellCount,
       } as ChartFormat;
     });
   }

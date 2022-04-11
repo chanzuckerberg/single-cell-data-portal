@@ -31,7 +31,7 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds } = state;
+  const { selectedGenes, selectedCellTypeIds, selectedTissues } = state;
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -52,7 +52,7 @@ export default function WheresMyGene(): JSX.Element {
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
    * and currently selected genes.
-   * We use `selectedGeneData` to subset the data to only the genes that are
+   * We use `selectedGeneExpressionSummariesByTissueName` to subset the data to only the genes that are
    * currently selected.
    */
   const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
@@ -207,12 +207,69 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedGenes = selectedGenes.length > 0;
-  const hasSelectedCellTypes = Object.keys(selectedCellTypeIds).length > 0;
+  const shouldShowGetStarted = useMemo(() => {
+    if (!selectedGenes.length || !selectedTissues.length) {
+      return true;
+    }
+
+    return false;
+  }, [selectedGenes, selectedTissues]);
+
+  const shouldShowEmptyResult = useMemo(() => {
+    if (isLoading) return false;
+
+    if (!Object.keys(selectedGeneExpressionSummariesByTissueName).length) {
+      return true;
+    }
+
+    return false;
+  }, [selectedGeneExpressionSummariesByTissueName, isLoading]);
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes && hasSelectedCellTypes;
-  }, [hasSelectedGenes, hasSelectedCellTypes]);
+    return !shouldShowGetStarted && !shouldShowEmptyResult;
+  }, [shouldShowGetStarted, shouldShowEmptyResult]);
+
+  /**
+   * (thuang): Caching the content, so we don't get heatmap flashes when
+   * users update the filters
+   */
+  const content = useMemo(() => {
+    if (shouldShowGetStarted) {
+      return <GetStarted />;
+    }
+
+    if (shouldShowEmptyResult) {
+      return <div>No expression data available</div>;
+    }
+
+    return (
+      <HeatMap
+        isScaled={isScaled}
+        isLoadingAPI={isLoading}
+        cellTypes={selectedCellTypes}
+        genes={selectedGenes}
+        selectedGeneExpressionSummariesByTissueName={
+          selectedGeneExpressionSummariesByTissueName
+        }
+        tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
+        allTissueCellTypes={cellTypesByTissueName}
+        scaledMeanExpressionMax={scaledMeanExpressionMax}
+        scaledMeanExpressionMin={scaledMeanExpressionMin}
+      />
+    );
+  }, [
+    shouldShowGetStarted,
+    shouldShowEmptyResult,
+    isScaled,
+    isLoading,
+    selectedCellTypes,
+    selectedGenes,
+    selectedGeneExpressionSummariesByTissueName,
+    tissuesWithDeletedCellTypes,
+    cellTypesByTissueName,
+    scaledMeanExpressionMax,
+    scaledMeanExpressionMin,
+  ]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
@@ -256,23 +313,7 @@ export default function WheresMyGene(): JSX.Element {
             <Beta />
           </Top>
 
-          {shouldShowHeatMap ? (
-            <HeatMap
-              isScaled={isScaled}
-              isLoadingAPI={isLoading}
-              cellTypes={selectedCellTypes}
-              genes={selectedGenes}
-              selectedGeneExpressionSummariesByTissueName={
-                selectedGeneExpressionSummariesByTissueName
-              }
-              tissuesWithDeletedCellTypes={tissuesWithDeletedCellTypes}
-              allTissueCellTypes={cellTypesByTissueName}
-              scaledMeanExpressionMax={scaledMeanExpressionMax}
-              scaledMeanExpressionMin={scaledMeanExpressionMin}
-            />
-          ) : (
-            <GetStarted />
-          )}
+          {content}
         </Wrapper>
       </View>
     </>
