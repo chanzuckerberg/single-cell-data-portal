@@ -5,7 +5,7 @@ repos:
       - id: black
         stages: [commit]
   - repo: https://github.com/pycqa/flake8
-    rev: 3.9.2
+    rev: 4.0.1 # Must be kept in sync with flake8 version in requirements.txt
     hooks:
       - id: flake8
         stages: [commit]
