@@ -5,6 +5,8 @@ import {
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { LIGHT_GRAY } from "src/components/common/theme";
 import { State } from "../../common/store";
 import {
   CellType,
@@ -146,7 +148,7 @@ export function convertPercentageToDiameter(percentage: number): number {
 }
 
 const SELECTED_STYLE = {
-  backgroundColor: "#F8F8F8",
+  backgroundColor: LIGHT_GRAY.D,
   fontWeight: "bold" as never,
   padding: 4,
 };
@@ -344,13 +346,13 @@ export function dataToChartFormat({
 
       return {
         cellTypeIndex,
+        expressedCellCount,
         geneIndex,
         id,
         meanExpression,
         percentage,
         scaledMeanExpression,
         tissuePercentage,
-        expressedCellCount,
       } as ChartFormat;
     });
   }
@@ -366,7 +368,9 @@ const HEAT_MAP_BASE_CELL_PX = 20;
  * of the number of genes selected.
  */
 export function getHeatmapWidth(
-  genes: (GeneExpressionSummary | undefined)[] | State["selectedGenes"]
+  genes:
+    | (GeneExpressionSummary | undefined)[]
+    | State["selectedGenes"] = EMPTY_ARRAY
 ): number {
   return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
 }
@@ -374,7 +378,7 @@ export function getHeatmapWidth(
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellType[] = []): number {
+export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
