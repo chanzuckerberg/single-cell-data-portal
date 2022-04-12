@@ -38,7 +38,7 @@ import {
 
 interface Props {
   cellTypes: CellType[];
-  selectedGeneData: (GeneExpressionSummary | undefined)[];
+  selectedGeneData?: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
       [tissue: Tissue]: boolean;
@@ -58,7 +58,7 @@ const TOOLTIP_THROTTLE_MS = 100;
 
 export default memo(function Chart({
   cellTypes,
-  selectedGeneData,
+  selectedGeneData = EMPTY_ARRAY,
   setIsLoading,
   tissue,
   scaledMeanExpressionMax,
@@ -136,7 +136,10 @@ export default memo(function Chart({
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
-      (cellTypes: CellType[], geneData: Props["selectedGeneData"]) => {
+      (
+        cellTypes: CellType[],
+        geneData: Props["selectedGeneData"] = EMPTY_ARRAY
+      ) => {
         setCellTypeSummaries(
           integrateCelTypesAndGenes({
             cellTypes,
@@ -168,7 +171,7 @@ export default memo(function Chart({
     return debounce(
       (
         cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"]
+        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY
       ) => {
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
@@ -280,10 +283,10 @@ export default memo(function Chart({
   return (
     <Wrapper height={heatmapHeight} width={heatmapWidth}>
       <Tooltip
-        placement="right-start"
         classes={tooltipClasses}
         title={tooltipContent || <>No data</>}
         leaveDelay={0}
+        placement="right-end"
         PopperProps={{
           anchorEl: {
             clientHeight: 0,
@@ -316,7 +319,7 @@ export default memo(function Chart({
  */
 function integrateCelTypesAndGenes({
   cellTypes,
-  geneExpressionSummaries,
+  geneExpressionSummaries = EMPTY_ARRAY,
 }: {
   cellTypes: CellType[];
   geneExpressionSummaries: Props["selectedGeneData"];

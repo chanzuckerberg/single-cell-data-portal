@@ -2,6 +2,7 @@ import { Theme } from "@emotion/react";
 import { makeStyles, Popper } from "@material-ui/core";
 import {
   AutocompleteCloseReason,
+  AutocompleteInputChangeReason,
   AutocompleteRenderOptionState,
 } from "@material-ui/lab";
 import {
@@ -15,7 +16,7 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, useRef, useState } from "react";
+import React, { createContext, ReactChild, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -41,8 +42,12 @@ function rowRender(props: ListChildComponentProps) {
   return <div style={style}>{data[index]}</div>;
 }
 
-const ListboxComponent = React.forwardRef<HTMLDivElement>(
-  function ListboxComponent(props, ref) {
+interface ListboxProps {
+  children: ReactChild;
+}
+
+const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(
+  function ListboxComponent(props: ListboxProps, ref) {
     const { children, ...other } = props;
 
     const itemData = React.Children.toArray(children);
@@ -176,6 +181,7 @@ export default function QuickSelect<
       return;
     }
     setOpen(false);
+    setInput("");
   };
   const handleChange = (
     _: React.ChangeEvent<Record<string, never>>,
@@ -189,6 +195,17 @@ export default function QuickSelect<
   };
 
   const ref = useRef(null);
+
+  const handleInputChange = (
+    _: React.ChangeEvent<Record<string, never>>,
+    value: string,
+    reason: AutocompleteInputChangeReason
+  ) => {
+    if (!reason || reason === "reset" || !value) {
+      return;
+    }
+    setInput(value);
+  };
 
   return (
     <>
@@ -230,13 +247,10 @@ export default function QuickSelect<
           renderOption={renderOption}
           onPaste={handlePaste}
           InputBaseProps={{
-            onChange: (
-              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-            ) => {
-              setInput(event.target.value);
-            },
             placeholder,
           }}
+          inputValue={input}
+          onInputChange={handleInputChange}
         />
       </Popper>
     </>

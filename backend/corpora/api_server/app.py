@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, jsonify
+from flask import g, jsonify, request
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -73,6 +73,12 @@ def configure_flask_app(flask_app):
 
 
 app = configure_flask_app(create_flask_app())
+
+
+@app.before_request
+def pre_request_logging():
+    message = json.dumps(dict(url=request.path, method=request.method, schema=request.scheme))
+    app.logger.info(message)
 
 
 @app.teardown_appcontext
