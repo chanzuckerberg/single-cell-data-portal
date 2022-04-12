@@ -2,7 +2,6 @@ import { Theme } from "@emotion/react";
 import { makeStyles, Popper } from "@material-ui/core";
 import {
   AutocompleteCloseReason,
-  AutocompleteInputChangeReason,
   AutocompleteRenderOptionState,
 } from "@material-ui/lab";
 import {
@@ -192,17 +191,6 @@ export default function QuickSelect<
 
   const ref = useRef(null);
 
-  const handleInputChange = (
-    _: React.ChangeEvent<Record<string, never>>,
-    value: string,
-    reason: AutocompleteInputChangeReason
-  ) => {
-    if (!reason || reason === "reset" || !value) {
-      return;
-    }
-    setInput(value);
-  };
-
   return (
     <>
       <ButtonWrapper>
@@ -243,11 +231,14 @@ export default function QuickSelect<
           renderOption={renderOption}
           onPaste={handlePaste}
           InputBaseProps={{
+            onChange: (
+              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+            ) => {
+              setInput(event.target.value);
+            },
             placeholder,
           }}
           inputValue={input}
-          // @ts-expect-error -- We ignore the first attribute and its a pain to type
-          onInputChange={handleInputChange}
         />
       </Popper>
     </>
