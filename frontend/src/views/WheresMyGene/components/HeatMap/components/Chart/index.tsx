@@ -280,10 +280,10 @@ export default memo(function Chart({
   return (
     <Wrapper height={heatmapHeight} width={heatmapWidth}>
       <Tooltip
-        placement="right-start"
         classes={tooltipClasses}
         title={tooltipContent || <>No data</>}
         leaveDelay={0}
+        placement="right-end"
         PopperProps={{
           anchorEl: {
             clientHeight: 0,

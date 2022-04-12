@@ -5,6 +5,7 @@ import {
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
+import { LIGHT_GRAY } from "src/components/common/theme";
 import { State } from "../../common/store";
 import {
   CellType,
@@ -146,7 +147,7 @@ export function convertPercentageToDiameter(percentage: number): number {
 }
 
 const SELECTED_STYLE = {
-  backgroundColor: "#F8F8F8",
+  backgroundColor: LIGHT_GRAY.D,
   fontWeight: "bold" as never,
   padding: 4,
 };
@@ -344,13 +345,13 @@ export function dataToChartFormat({
 
       return {
         cellTypeIndex,
+        expressedCellCount,
         geneIndex,
         id,
         meanExpression,
         percentage,
         scaledMeanExpression,
         tissuePercentage,
-        expressedCellCount,
       } as ChartFormat;
     });
   }
