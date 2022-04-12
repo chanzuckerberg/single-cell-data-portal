@@ -16,6 +16,8 @@ import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { Label } from "../../style";
 import { StyledDropdown, Wrapper } from "./style";
 
+const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
 };
@@ -29,6 +31,16 @@ export default function Organism({ isLoading }: Props): JSX.Element {
   const { selectedOrganismId } = useContext(StateContext);
   const { data } = usePrimaryFilterDimensions();
   const { organisms } = data || {};
+
+  const filteredOrganisms = useMemo(() => {
+    if (!organisms) {
+      return EMPTY_ARRAY;
+    }
+
+    return organisms.filter((organism: IOrganism) =>
+      TEMP_ALLOW_NAME_LIST.includes(organism.name)
+    );
+  }, [organisms]);
 
   useEffect(() => {
     if (!organisms || !dispatch) return;
@@ -61,7 +73,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
       <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
-        options={organisms || EMPTY_ARRAY}
+        options={filteredOrganisms || EMPTY_ARRAY}
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"
