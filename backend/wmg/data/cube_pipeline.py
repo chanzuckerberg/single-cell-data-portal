@@ -38,7 +38,8 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
             tiledb.vacuum(arr_name)
 
 
-def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None):
+def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None,
+                              extract_data=True):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
     open, transform, normalize and concatenate them together as a tiledb object with a global gene index
@@ -55,9 +56,10 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_
     corpus_path = f"{snapshot_path}/{corpus_name}"
     if not tiledb.VFS().is_dir(corpus_path):
         create_tdb(snapshot_path, corpus_name)
-    s3_uris = extract.get_dataset_s3_uris()
-    extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
-    logger.info("Copied datasets to instance")
+    if extract_data:
+        s3_uris = extract.get_dataset_s3_uris()
+        extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
+        logger.info("Copied datasets to instance")
 
     load(path_to_datasets, corpus_path, True)
     logger.info("Loaded datasets into corpus")

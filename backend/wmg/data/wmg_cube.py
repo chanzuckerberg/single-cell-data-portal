@@ -159,8 +159,8 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         ) = grp.tolist()
         mask = cube_nnz[cube_idx] != 0
         n_vals = np.count_nonzero(mask)
-        if n_vals == 0:  # Used to maintain sparsity
-            continue
+        if n_vals == 0:
+            continue # Maintain sparsity
 
         logger.debug(grp)
 
@@ -244,11 +244,11 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
     """
     # TODO
     """
-    for k in range(len(data)):
-        val = data[k]
+    for k in range(len(data)): # data is the expression values from raw X
+        val = data[k] # get particular expression value
         if np.isfinite(val):
-            cidx = col[k]
-            grp_idx = row_groups[row[k]]
+            cidx = col[k] # get the col idx for the specific expression value
+            grp_idx = row_groups[row[k]] # for the row index
             sum_into[grp_idx, cidx] += val
             nnz_into[grp_idx, cidx] += 1
             if val < min_into[grp_idx, cidx]:

@@ -28,8 +28,7 @@ class TestCorpusLoad(unittest.TestCase):
 
         basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
         larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
-        os.mkdir(f"{cls.tmp_dir}/datasets")
-        os.mkdir(f"{cls.tmp_dir}/datasets/basic_test_dataset")
+        os.makedirs(f"{cls.tmp_dir}/datasets/basic_test_dataset", exist_ok=True)
         os.mkdir(f"{cls.tmp_dir}/datasets/larger_test_dataset")
 
         cls.small_anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset/local.h5ad")
@@ -107,7 +106,6 @@ class TestCorpusLoad(unittest.TestCase):
     def test_raw_expression_matrix_normalized_by_rankit(self):
         pass
 
-    @unittest.skip("removed corpus fixture")
     @patch("backend.wmg.data.cube_pipeline.extract.copy_datasets_to_instance")
     @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris")
     def test_corpus_creation_works_as_expected(self, mock_get_uris, mock_copy):
