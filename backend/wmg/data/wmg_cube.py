@@ -100,7 +100,7 @@ def load_data_into_cube(tdb_group, uri: str):
     logger.debug(f"Start loading big cube at : {uri}")
 
     with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
-        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=[], use_arrow=False).df[:]
+        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=['var_idx'], use_arrow=False).df[:]
     n_genes = len(gene_ontology_term_ids)
 
     ##
@@ -164,7 +164,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
 
         logger.debug(grp)
 
-        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+        dims[0][idx : idx + n_vals] = gene_ids.var_idx.values[mask]
         dims[1][idx : idx + n_vals] = tissue_ontology_term_id
         dims[2][idx : idx + n_vals] = organism_ontology_term_id
 
