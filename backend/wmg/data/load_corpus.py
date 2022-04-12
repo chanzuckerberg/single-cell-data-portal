@@ -68,7 +68,7 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
     anndata_object = anndata.read_h5ad(h5ad)
 
     # Apply a low expression gene cell filtering.
-    scanpy.pp.filter_cells(anndata_object, min_genes=MIN_GENE_EXPRESSION_COUNT)
+    scanpy.pp.filter_cells(anndata_object, min_genes=2)
 
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
@@ -77,18 +77,20 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
     var_df = update_global_var(group_name, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
-    global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
-    var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
-    for idx in range(anndata_object.shape[1]):
-        gene_ontology_term_id = anndata_object.var.index.values[idx]
-        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
-        global_var_index[idx] = global_coord
+    local_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
+    var_feature_to_coord_map = {}
+    gene_id_to_idx = var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]
+    for key, value in gene_id_to_idx:
+        var_feature_to_coord_map[key] = value
+    for idx in range(anndata_object.shape[1]): # for all the genes in the dataframe
+        gene_ontology_term_id = anndata_object.var.index.values[idx] # the gene id is also the index values of var
+        local_var_index[idx] = var_feature_to_coord_map[gene_ontology_term_id] # global_var_index feels like a misnomer
 
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{group_name}/obs", obs_labels)
-    save_raw(anndata_object, group_name, global_var_index, first_obs_idx)
-    save_X(anndata_object, group_name, global_var_index, first_obs_idx)
+    save_raw(anndata_object, group_name, local_var_index, first_obs_idx)
+    save_X(anndata_object, group_name, local_var_index, first_obs_idx)
 
     if validate:
         validate_corpus_load(anndata_object, group_name, dataset_id)
@@ -149,7 +151,7 @@ def save_X(anndata_object: anndata.AnnData, group_name: str, global_var_index: n
     Save (pre)normalized expression counts to the tiledb corpus object
     """
     array_name = f"{group_name}/X"
-    expression_matrix = anndata_object.X
+    expression_matrix = anndata_object.X # csr_matrix
     logger.debug(f"saving {array_name}...\n")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
@@ -180,11 +182,17 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
 def save_raw(anndata_object: anndata.AnnData, group_name: str, global_var_index: numpy.ndarray, first_obs_idx: int):
     """
     Apply rankit normalization to raw expression values and save to the tiledb corpus object
+    this function transforms the expression matrix (a csr_matrix) into a coo matrix (coordinate format, see
+    https://scipy-lectures.org/advanced/scipy_sparse/coo_matrix.html
+    then use that to grab the rows (
+
     """
-    array_name = f"{group_name}/raw"
-    expression_matrix = get_X_raw(anndata_object)
-    logger.info(f"saving {array_name}...")
+    expression_matrix = get_X_raw(anndata_object) # csr_matrix
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
+
+    array_name = f"{group_name}/raw"
+    logger.info(f"saving {array_name}...")
+
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, expression_matrix.shape[0], stride):
             end = min(start + stride, expression_matrix.shape[0])

@@ -26,18 +26,40 @@ class TestCorpusLoad(unittest.TestCase):
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
 
-        basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
+        anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
+        anndata_object_0 = create_anndata_test_object(num_genes=3, num_cells=5)
+        anndata_object_1 = create_anndata_test_object(num_genes=6, num_cells=12)
+        anndata_object_2 = create_anndata_test_object(num_genes=4, num_cells=23)
         larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
+
         os.makedirs(f"{cls.tmp_dir}/datasets/basic_test_dataset", exist_ok=True)
+        os.makedirs(f"{cls.tmp_dir}/datasets/basic_test_dataset_0", exist_ok=True)
+        os.makedirs(f"{cls.tmp_dir}/datasets/basic_test_dataset_1", exist_ok=True)
+        os.makedirs(f"{cls.tmp_dir}/datasets/basic_test_dataset_2", exist_ok=True)
+
+
+
         os.mkdir(f"{cls.tmp_dir}/datasets/larger_test_dataset")
 
-        cls.small_anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset/local.h5ad")
+        cls.anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset/local.h5ad")
+        cls.anndata_filename_0 = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset_0/local.h5ad")
+        cls.anndata_filename_1 = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset_1/local.h5ad")
+        cls.anndata_filename_2 = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset_2/local.h5ad")
+
         cls.large_anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/larger_test_dataset/local.h5ad")
 
-        cls.small_anndata_filename.touch()
+        cls.anndata_filename.touch()
+        cls.anndata_filename_0.touch()
+        cls.anndata_filename_1.touch()
+        cls.anndata_filename_2.touch()
+
         cls.large_anndata_filename.touch()
 
-        basic_test_anndata_object.write(cls.small_anndata_filename, compression="gzip")
+        anndata_object.write(cls.anndata_filename, compression="gzip")
+        anndata_object_0.write(cls.anndata_filename_0, compression="gzip")
+        anndata_object_1.write(cls.anndata_filename_1, compression="gzip")
+        anndata_object_2.write(cls.anndata_filename_2, compression="gzip")
+
         larger_test_anndata_object.write(cls.large_anndata_filename, compression="gzip")
 
     @classmethod
@@ -75,7 +97,7 @@ class TestCorpusLoad(unittest.TestCase):
         self.assertEqual(mock_global_var.call_count, 0)
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):
-        load_h5ad(self.small_anndata_filename, self.corpus_path, False)
+        load_h5ad(self.anndata_filename, self.corpus_path, False)
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
@@ -106,11 +128,8 @@ class TestCorpusLoad(unittest.TestCase):
     def test_raw_expression_matrix_normalized_by_rankit(self):
         pass
 
-    @patch("backend.wmg.data.cube_pipeline.extract.copy_datasets_to_instance")
-    @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris")
-    def test_corpus_creation_works_as_expected(self, mock_get_uris, mock_copy):
-        load_data_and_create_cube(self.path_to_datasets, self.corpus_name, self.tmp_dir)
-
+    def test_corpus_creation_works_as_expected(self):
+        load_data_and_create_cube(self.path_to_datasets, self.corpus_name, self.tmp_dir, extract_data=False)
         # check obs
         with tiledb.open(f"{self.corpus_path}/obs", "r") as obs:
             actual_obs_df = obs.df[:]

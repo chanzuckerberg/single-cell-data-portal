@@ -25,7 +25,10 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
     on all files, loading/concatenating the datasets together under the group name
     """
     with tiledb.scope_ctx(create_ctx()):
+        dataset_count = len(os.listdir(dataset_directory))
+        i = 0
         for dataset in os.listdir(dataset_directory):
+            logger.info(f"Processing dataset {i} of {dataset_count}")
             file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             load_h5ad(
                 file_path, group_name, validate

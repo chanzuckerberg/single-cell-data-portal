@@ -20,6 +20,9 @@ V         = [ 5 8 3 6 ]
 COL_INDEX = [ 0 1 2 1 ]
 ROW_INDEX = [ 0 1 2 3 4 ] 
 
+But then there are further ways to optimize including using the indeptr 
+https://stackoverflow.com/questions/52299420/scipy-csr-matrix-understand-indptr
+
 From scipy docs on csr_matrix
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html
 Sparse matrices can be used in arithmetic operations: they support addition, subtraction, multiplication, division, and matrix power.

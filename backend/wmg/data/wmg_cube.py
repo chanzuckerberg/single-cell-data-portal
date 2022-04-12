@@ -100,7 +100,7 @@ def load_data_into_cube(tdb_group, uri: str):
     logger.debug(f"Start loading big cube at : {uri}")
 
     with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
-        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=[], use_arrow=False).df[:]
+        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=["var_idx"], use_arrow=False).df[:]
     n_genes = len(gene_ontology_term_ids)
 
     ##
@@ -247,8 +247,8 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
     for k in range(len(data)): # data is the expression values from raw X
         val = data[k] # get particular expression value
         if np.isfinite(val):
-            cidx = col[k] # get the col idx for the specific expression value
-            grp_idx = row_groups[row[k]] # for the row index
+            cidx = col[k] # get the col (var, gene) idx for the specific expression value
+            grp_idx = row_groups[row[k]] # for the row (obs, cell) index
             sum_into[grp_idx, cidx] += val
             nnz_into[grp_idx, cidx] += 1
             if val < min_into[grp_idx, cidx]:
