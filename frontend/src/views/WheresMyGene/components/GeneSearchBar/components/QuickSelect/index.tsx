@@ -201,7 +201,7 @@ export default function QuickSelect<
     value: string,
     reason: AutocompleteInputChangeReason
   ) => {
-    if (!reason || reason === "reset" || !value) {
+    if (reason === "reset") {
       return;
     }
     setInput(value);
