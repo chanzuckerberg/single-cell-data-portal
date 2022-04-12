@@ -246,7 +246,6 @@ export default function QuickSelect<
             placeholder,
           }}
           inputValue={input}
-          // @ts-expect-error -- We ignore the first attribute and its a pain to type
           onInputChange={handleInputChange}
         />
       </Popper>
