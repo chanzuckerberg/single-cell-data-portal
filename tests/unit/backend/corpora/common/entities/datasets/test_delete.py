@@ -4,7 +4,7 @@ from backend.corpora.common.corpora_orm import (
     DbCollection,
     UploadStatus,
 )
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.dataset import get_cxg_bucket_path
 from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset

@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session
 
 from urllib.parse import urlparse
 
+from . import collection
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
 from ..corpora_orm import (
+    CollectionVisibility,
     DbDataset,
     DbDatasetArtifact,
     DbDatasetProcessingStatus,
@@ -116,6 +118,61 @@ class Dataset(Entity):
                 dataset = _get_by_explorer_url_query(f"{explorer_url}/")
 
         return dataset
+
+    @classmethod
+    def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
+        """
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        """
+
+        attrs = [
+            cls.table.id,
+            cls.table.name,
+            cls.table.collection_id,
+            cls.table.tissue,
+            cls.table.disease,
+            cls.table.assay,
+            cls.table.organism,
+            cls.table.cell_count,
+            cls.table.cell_type,
+            cls.table.sex,
+            cls.table.ethnicity,
+            cls.table.development_stage,
+            cls.table.is_primary_data,
+            cls.table.mean_genes_per_cell,
+            cls.table.schema_version,  # Required for schema manipulation
+            cls.table.explorer_url,
+            cls.table.published_at,
+            cls.table.revised_at,
+        ]
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        filters = [~cls.table.tombstone, collection.Collection.table.visibility == CollectionVisibility.PUBLIC.name]
+
+        results = [
+            to_dict(result)
+            for result in session.query(cls.table)
+            .join(collection.Collection.table)
+            .filter(*filters)
+            .with_entities(*attrs)
+            .all()
+        ]
+
+        for result in results:
+            cls.transform_organism_for_schema_2_0_0(result)
+            cls.transform_sex_for_schema_2_0_0(result)
+            cls.enrich_development_stage_with_ancestors(result)
+
+        return results
 
     def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
         """

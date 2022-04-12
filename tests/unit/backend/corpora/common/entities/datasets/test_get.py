@@ -1,5 +1,5 @@
 from backend.corpora.common.corpora_orm import DbDatasetArtifact, DbDatasetProcessingStatus
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 
 

@@ -13,7 +13,7 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     generate_uuid,
 )
-from backend.corpora.common.entities import Collection
+from backend.corpora.common.entities.collection import Collection
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token

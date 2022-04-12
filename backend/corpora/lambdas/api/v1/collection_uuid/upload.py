@@ -4,7 +4,8 @@ from flask import make_response, g
 from .....common.corpora_config import CorporaConfig
 from .....common.corpora_orm import CollectionVisibility, ProcessingStatus
 from .....common import upload_sfn
-from .....common.entities import Collection, Dataset
+from .....common.entities.collection import Collection
+from .....common.entities.dataset import Dataset
 from .....api_server.db import dbconnect
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import (

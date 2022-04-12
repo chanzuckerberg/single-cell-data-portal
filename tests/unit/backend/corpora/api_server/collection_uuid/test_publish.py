@@ -3,7 +3,7 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from backend.corpora.common.corpora_orm import CollectionLinkType
-from backend.corpora.common.entities import Collection
+from backend.corpora.common.entities.collection import Collection
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
 

@@ -9,7 +9,7 @@ import requests
 import socketserver
 
 from backend.corpora.common.corpora_orm import UploadStatus
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed

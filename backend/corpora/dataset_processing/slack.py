@@ -2,7 +2,7 @@ import json
 
 import os
 
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.json import CustomJSONEncoder
 

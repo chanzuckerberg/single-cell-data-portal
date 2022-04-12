@@ -3,7 +3,7 @@ from furl import furl
 from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.math_utils import GB
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token

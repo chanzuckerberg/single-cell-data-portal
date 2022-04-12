@@ -1,7 +1,9 @@
 import subprocess
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
+from backend.corpora.common.entities.collection import Collection
+from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities.dataset_asset import DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 
 

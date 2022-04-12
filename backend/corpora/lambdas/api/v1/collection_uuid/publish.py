@@ -1,7 +1,7 @@
 from flask import make_response, g
 
 from .....common.corpora_orm import CollectionVisibility
-from .....common.entities import Collection
+from .....common.entities.collection import Collection
 from .....common.utils.exceptions import ConflictException
 
 from .....api_server.db import dbconnect

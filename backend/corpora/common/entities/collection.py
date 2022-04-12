@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from . import Dataset
+from .dataset import Dataset
 from .entity import Entity
 from .geneset import Geneset, CollectionLink
 from ..corpora_orm import (
@@ -147,57 +147,6 @@ class Collection(Entity):
             to_dict(result)
             for result in session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
         ]
-
-        return results
-
-    @classmethod
-    def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
-        """
-        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
-        inside the `dataset` table and doesn't include relationships.
-        """
-
-        attrs = [
-            Dataset.table.id,
-            Dataset.table.name,
-            Dataset.table.collection_id,
-            Dataset.table.tissue,
-            Dataset.table.disease,
-            Dataset.table.assay,
-            Dataset.table.organism,
-            Dataset.table.cell_count,
-            Dataset.table.cell_type,
-            Dataset.table.sex,
-            Dataset.table.ethnicity,
-            Dataset.table.development_stage,
-            Dataset.table.is_primary_data,
-            Dataset.table.mean_genes_per_cell,
-            Dataset.table.schema_version,  # Required for schema manipulation
-            Dataset.table.explorer_url,
-            Dataset.table.published_at,
-            Dataset.table.revised_at,
-        ]
-
-        def to_dict(db_object):
-            _result = {}
-            for _field in db_object._fields:
-                _value = getattr(db_object, _field)
-                if _value is None:
-                    continue
-                _result[_field] = getattr(db_object, _field)
-            return _result
-
-        filters = [~Dataset.table.tombstone, cls.table.visibility == CollectionVisibility.PUBLIC.name]
-
-        results = [
-            to_dict(result)
-            for result in session.query(Dataset.table).join(cls.table).filter(*filters).with_entities(*attrs).all()
-        ]
-
-        for result in results:
-            Dataset.transform_organism_for_schema_2_0_0(result)
-            Dataset.transform_sex_for_schema_2_0_0(result)
-            Dataset.enrich_development_stage_with_ancestors(result)
 
         return results
 

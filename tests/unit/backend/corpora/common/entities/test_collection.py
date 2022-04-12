@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
