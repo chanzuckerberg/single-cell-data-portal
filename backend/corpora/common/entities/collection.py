@@ -331,6 +331,7 @@ class Collection(Entity):
         Update an existing collection to match provided the parameters. The specified columns are replaced.
         :param links: links to create and connect to the collection. If present, the existing attached entries will
          be removed and replaced with new entries.
+        :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
         links = links if links else []

@@ -236,10 +236,9 @@ def delete_collection(collection_uuid: str, user: str):
             if revision:
                 revision.delete()
             collection.tombstone_collection()
-            return "", 204
         else:
             collection.delete()
-            return "", 204
+        return "", 204
     return "", 403
 
 
