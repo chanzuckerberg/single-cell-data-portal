@@ -1,3 +1,4 @@
+import json
 import boto3
 from flask import g, make_response
 
@@ -8,24 +9,27 @@ from backend.corpora.common.utils.exceptions import ForbiddenHTTPException, Meth
 from backend.corpora.lambdas.api.v1.collection import get_collection, _is_user_owner_or_allowed
 
 sts_client = boto3.client("sts")
+logger = logging.getLogger(__name__)
 
-policy = """
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-      	"Sid": "DataPortalUserUploadPolicy",
-           	"Effect": "Allow",
-           	"Action": [
-           	        "s3:PutObject"
-          	    ],
-            "Resource": [
-                    "arn:aws:s3:::{data_bucket}/{collection_id}/*"
+def create_policy(data_bucket: str, collection_id: str) -> str:
+    policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "DataPortalUserUploadPolicy",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:PutObject"
+                ],
+                "Resource": [
+                    f"arn:aws:s3:::{data_bucket}/{collection_id}/*"
                 ]
-        }
-    ]
-}
-"""
+            }
+        ]
+    }
+    return json.dumps(policy)
+
+
 duration = 3600
 
 
@@ -34,15 +38,15 @@ def get_s3_credentials(collection_uuid, user):
     db_session = g.db_session
     config = CorporaConfig()
     # check if they own the collection.
-    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
+    collection = get_collection(db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name,
+                                include_tombstones=True)  # TODO remove private
     if not _is_user_owner_or_allowed(user, collection.owner):
         raise ForbiddenHTTPException()
-    if collection.visibility != CollectionVisibility.PRIVATE.name:
+    if collection.visibility != CollectionVisibility.PRIVATE:
         raise MethodNotAllowedException()
-    credentials = sts_client.assume_role(
-        RoleArn=config.curator_role_arn,
-        RoleSessionName=user,
-        Policy=policy.format(config.submission_bucket, collection_uuid),
-        DurationSeconds=duration,
-    )
+    parameters = dict(RoleArn=config.curator_role_arn,
+                      RoleSessionName=collection_uuid+user.replace('|','-'),
+                      Policy=create_policy(config.submission_bucket, collection_uuid),
+                      DurationSeconds=duration)
+    credentials = sts_client.assume_role(**parameters)
     return make_response(credentials, 201)
