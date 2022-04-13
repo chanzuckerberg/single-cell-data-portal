@@ -46,7 +46,7 @@ const REQUIRED_FIELD_TEXT = "Required";
  * Text displayed when BE has identified DOI as invalid.
  */
 const INVALID_DOI_ERROR_MESSAGE =
-  "We could not resolve this DOI. Please correct or remove it.";
+  "This DOI could not be found. Please correct or remove it.";
 
 interface Props {
   onClose: () => void;
@@ -138,8 +138,10 @@ const Content: FC<Props> = (props) => {
   const { name, description, contact_email, contact_name } = data || {};
 
   const [links, setLinks] = useState<Link[]>([]);
-  // TODO useEffect can be reverted back to useState once isFilterEnabled is removed (#1718). See 7210a51d18b2747ea79b47fcad28579bb5b514b6.
   useEffect(() => {
+    // TODO on remove of filter flag (1718):
+    // 1. useEffect can be reverted back to useState once isFilterEnabled is removed. See 7210a51d18b2747ea79b47fcad28579bb5b514b6.
+    // 2. Review usage of refetchOnWindowFocus in useCollection. See full comments in /common/queries/collections.ts.
     if (isTombstonedCollection(data)) {
       return;
     }

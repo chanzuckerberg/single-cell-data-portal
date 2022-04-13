@@ -1,14 +1,9 @@
 import styled from "@emotion/styled";
-import { Dropdown, fontBodyXxxs, getColors } from "czifui";
+import { fontBodyXxxs, getColors } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
   margin-bottom: 20px;
-`;
-
-export const StyledDropdown = styled(Dropdown)`
-  height: 30px !important;
-  width: 135px;
 `;
 
 export const ActionWrapper = styled.div`
@@ -26,4 +21,9 @@ export const Label = styled.label`
       color: ${colors?.gray[500]}
     `;
   }}
+`;
+
+export const LoadingIndicatorWrapper = styled.div`
+  display: flex;
+  align-items: center;
 `;

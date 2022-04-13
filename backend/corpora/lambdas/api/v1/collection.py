@@ -55,12 +55,17 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
+def get_collection(db_session, collection_uuid, visibility, **kwargs):
+    collection = Collection.get_collection(db_session, collection_uuid, visibility, **kwargs)
+    if not collection:
+        raise ForbiddenHTTPException()
+    return collection
+
+
 @dbconnect
 def get_collection_details(collection_uuid: str, visibility: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
-    if not collection:
-        raise ForbiddenHTTPException()
+    collection = get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
     if collection.tombstone and visibility == CollectionVisibility.PUBLIC.name:
         result = ""
         response = 410
@@ -91,20 +96,23 @@ def get_collections_index():
         ],
     )
 
-    return make_response(jsonify(filtered_collection), 200)
+    # Remove entries where the value is None
+    updated_collection = []
+    for d in filtered_collection:
+        updated_collection.append({k: v for k, v in d.items() if v is not None})
+
+    return make_response(jsonify(updated_collection), 200)
 
 
 @dbconnect
 def post_collection_revision(collection_uuid: str, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         collection_uuid,
         CollectionVisibility.PUBLIC.name,
         owner=_owner_or_allowed(user),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
     try:
         collection_revision = collection.revision()
     except sqlalchemy.exc.IntegrityError as ex:
@@ -232,14 +240,12 @@ def delete_collection(collection_uuid: str, visibility: str, user: str):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, user: str):
     db_session = g.db_session
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         collection_uuid,
         CollectionVisibility.PRIVATE.name,
         owner=_owner_or_allowed(user),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()

@@ -3,7 +3,6 @@ import typing
 from backend.corpora.common.corpora_orm import (
     Base,
     DatasetArtifactFileType,
-    DatasetArtifactType,
     UploadStatus,
     ValidationStatus,
 )
@@ -25,7 +24,6 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
             artifact_params = dict(
                 filename="filename_x",
                 filetype=DatasetArtifactFileType.H5AD,
-                type=DatasetArtifactType.ORIGINAL,
                 user_submitted=True,
                 s3_uri="some_uri",
             )

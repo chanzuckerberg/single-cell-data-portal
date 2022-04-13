@@ -9,6 +9,7 @@ import {
   OnUpdateSearchValueFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
+import { SelectionIcon } from "../../common/style";
 import {
   InputGroupWrapper,
   MAX_DISPLAYABLE_MENU_ITEMS,
@@ -88,7 +89,11 @@ export default function FilterMenu({
             {menuItems.map(({ key, count, label, selected }) => (
               <MenuItemWrapper key={key} isSelected={selected}>
                 <MenuItem
-                  icon={selected ? IconNames.TICK : IconNames.BLANK}
+                  icon={
+                    <SelectionIcon
+                      icon={selected ? IconNames.TICK : IconNames.BLANK}
+                    />
+                  }
                   labelElement={count}
                   onClick={() => onFilter(categoryKey, key)}
                   shouldDismissPopover={!isMultiselect}

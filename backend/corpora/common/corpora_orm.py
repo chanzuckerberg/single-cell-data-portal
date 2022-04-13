@@ -207,18 +207,6 @@ class DatasetArtifactFileType(enum.Enum):
     CXG = "cxg"
 
 
-class DatasetArtifactType(enum.Enum):
-    """
-    Enumerates DatasetArtifact types.
-
-    ORIGINAL - A data artifact that adheres to the minimal metadata schema requirements.
-    REMIX - A data artifact that adheres to the Corpora metadata schema requirements.
-    """
-
-    ORIGINAL = "Original"
-    REMIX = "Remix"
-
-
 class DbCollection(Base, AuditMixin, TimestampMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
@@ -305,6 +293,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     x_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
+    curator_tag = Column(String)
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")
@@ -317,6 +306,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     # Composite FK
     __table_args__ = (
         ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
+        UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),
         {},
     )
 
@@ -339,7 +329,6 @@ class DbDatasetArtifact(Base, AuditMixin):
     dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
     filetype = Column(Enum(DatasetArtifactFileType))
-    type = Column(Enum(DatasetArtifactType))
     user_submitted = Column(Boolean)
     s3_uri = Column(String)
 

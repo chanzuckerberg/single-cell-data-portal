@@ -16,6 +16,7 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
+  ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
@@ -84,7 +85,9 @@ export interface DatasetResponse {
   cell_count: number | null;
   cell_type: Ontology[];
   collection_id: string;
+  development_stage_ancestors: string[];
   disease: Ontology[];
+  ethnicity: Ontology[];
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
@@ -241,7 +244,12 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        development_stage_ancestors: [
+          ...accum.development_stage_ancestors,
+          ...collectionDatasetRow.development_stage_ancestors,
+        ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
+        ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         is_primary_data: [
           ...accum.is_primary_data,
           ...collectionDatasetRow.is_primary_data,
@@ -254,7 +262,9 @@ function aggregateCollectionDatasetRows(
     {
       assay: [],
       cell_type: [],
+      development_stage_ancestors: [],
       disease: [],
+      ethnicity: [],
       is_primary_data: [],
       organism: [],
       sex: [],
@@ -266,7 +276,11 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    development_stage_ancestors: [
+      ...new Set(aggregatedCategoryValues.development_stage_ancestors),
+    ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
+    ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
@@ -466,15 +480,9 @@ export function calculateRecency(
   response: CollectionResponse | DatasetResponse,
   publisherMetadata?: PublisherMetadata
 ): number {
-  // Pull date values from publication metadata if specified.
+  // Pull date value from publication metadata if specified.
   if (publisherMetadata) {
-    const {
-      published_day: day,
-      published_month: month,
-      published_year: year,
-    } = publisherMetadata;
-    const recency = new Date(year, month - 1, day); // Publication months are 1-indexed, JS months are 0-indexed.
-    return recency.getTime() / 1000; // Convert JS date millis to Unix timestamp seconds.
+    return publisherMetadata.published_at;
   }
 
   // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
@@ -696,7 +704,8 @@ function processCollectionResponse(
 }
 
 /**
- * Add defaults for missing filterable values: convert missing ontology values to empty array and is_primary_data to "".
+ * Add defaults for missing filterable values: convert missing ontology values to empty array, is_primary_data to "".
+ * Remove any ethnicity values on the deny list.
  * @param dataset - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
@@ -712,11 +721,26 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       ) {
         return accum;
       }
+
+      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
+        accum.development_stage_ancestors =
+          dataset.development_stage_ancestors ?? [];
+        return accum;
+      }
+
       if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
         accum.is_primary_data = dataset.is_primary_data ?? "";
-      } else {
-        accum[categoryKey] = dataset[categoryKey] ?? [];
+        return accum;
       }
+
+      if (categoryKey === CATEGORY_KEY.ETHNICITY) {
+        accum.ethnicity = (dataset.ethnicity ?? []).filter(
+          (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
+        );
+        return accum;
+      }
+
+      accum[categoryKey] = dataset[categoryKey] ?? [];
       return accum;
     },
     { ...dataset }

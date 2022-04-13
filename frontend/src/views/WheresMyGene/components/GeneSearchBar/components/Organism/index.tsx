@@ -2,7 +2,11 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import { useContext } from "react";
+import { useContext, useEffect, useMemo } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import {
   DispatchContext,
   StateContext,
@@ -12,35 +16,65 @@ import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { Label } from "../../style";
 import { StyledDropdown, Wrapper } from "./style";
 
-const ORGANISMS: { name: IOrganism }[] = [
-  { name: "Homo sapiens" },
-  { name: "mus musculus" },
-];
-
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
 };
 
-export default function Organism(): JSX.Element {
+interface Props {
+  isLoading: boolean;
+}
+
+export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const { selectedOrganism } = useContext(StateContext);
+  const { selectedOrganismId } = useContext(StateContext);
+  const { data } = usePrimaryFilterDimensions();
+  const { organisms } = data || {};
+
+  useEffect(() => {
+    if (!organisms || !dispatch) return;
+
+    const organism = organisms.find(
+      (organism: IOrganism) => organism.name === "Homo sapiens"
+    );
+
+    if (!organism) return;
+
+    dispatch(selectOrganism(organism.id));
+  }, [organisms, dispatch]);
+
+  const organismsById = useMemo(() => {
+    const result: { [id: string]: IOrganism } = {};
+
+    if (!organisms) return result;
+
+    for (const organism of organisms) {
+      result[organism.id] = organism;
+    }
+
+    return result;
+  }, [organisms]);
+
+  const organism = organismsById[selectedOrganismId || ""];
 
   return (
     <Wrapper>
       <Label>Organism</Label>
       <StyledDropdown
-        label={selectedOrganism || "Select"}
-        options={ORGANISMS}
+        label={organism?.name || "Select"}
+        options={organisms || EMPTY_ARRAY}
         onChange={handleOnChange as tempOnChange}
-        InputDropdownProps={InputDropdownProps}
+        InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
+        data-test-id="add-organism"
       />
     </Wrapper>
   );
 
-  function handleOnChange(organism: DefaultMenuSelectOption | null): void {
-    if (!dispatch) return;
+  function handleOnChange(organism: IOrganism | null): void {
+    if (!dispatch || !organism) return;
 
-    dispatch(selectOrganism(organism?.name || null));
+    track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
+
+    dispatch(selectOrganism(organism?.id || null));
   }
 }
 
