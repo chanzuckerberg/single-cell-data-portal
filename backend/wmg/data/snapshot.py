@@ -113,9 +113,10 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
         logger.debug(f"latest snapshot identifier={cached_snapshot.snapshot_identifier}")
         return None
 
+
 def _build_data_path_prefix():
     wmg_config = WmgConfig()
-    rdev_prefix = os.environ.get('REMOTE_DEV_PREFIX')
+    rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
     if rdev_prefix:
         return rdev_prefix.strip("/")
     elif "data_path_prefix" in wmg_config.config:
