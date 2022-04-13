@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from .dataset import Dataset as d
+from . import dataset as d
 from .entity import Entity
 from .geneset import Geneset, CollectionLink
 from ..corpora_orm import (
