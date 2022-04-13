@@ -815,7 +815,8 @@ paths:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        STUB
+        Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
+        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
       responses:
         "200":
@@ -852,6 +853,16 @@ paths:
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
                     mean_genes_per_cell:
+                      type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
                       type: number
         "400":
           $ref: "#/components/responses/400"
