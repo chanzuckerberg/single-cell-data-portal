@@ -1,14 +1,13 @@
+from backend.corpora.lambdas.api.v1.authorization import AuthError
 import connexion
 import json
+import logging
 import os
-
 from connexion import FlaskApi, ProblemException, problem
 from flask import g, jsonify, request
 from flask_cors import CORS
 from urllib.parse import urlparse
 
-import backend.corpora.api_server.logging
-from backend.corpora.lambdas.api.v1.authorization import AuthError
 from backend.corpora.common.utils.json import CustomJSONEncoder
 from backend.corpora.common.utils.aws import AwsSecret
 
@@ -33,6 +32,10 @@ def create_flask_app():
 
 
 def configure_flask_app(flask_app):
+    # configure logging
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    flask_app.logger.handlers = gunicorn_logger.handlers
+    flask_app.logger.setLevel(gunicorn_logger.level)
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
 
     # set the flask secret key, needed for session cookies
@@ -74,12 +77,8 @@ app = configure_flask_app(create_flask_app())
 
 @app.before_request
 def pre_request_logging():
-    app.logger.info(dict(message="REQUEST", url=request.path, method=request.method, schema=request.scheme))
-
-@app.after_request
-def post_request_logging(response):
-    app.logger.info(dict(message="REQUEST", status_code=response.status_code, length=len(response.body)))
-    return response
+    message = json.dumps(dict(url=request.path, method=request.method, schema=request.scheme))
+    app.logger.info(message)
 
 
 @app.teardown_appcontext
