@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from .dataset import Dataset
+from .dataset import Dataset as d
 from .entity import Entity
 from .geneset import Geneset, CollectionLink
 from ..corpora_orm import (
@@ -180,8 +180,8 @@ class Collection(Entity):
             else:
                 datasets.append(dataset)
 
-            Dataset.transform_sex_for_schema_2_0_0(dataset)
-            Dataset.transform_organism_for_schema_2_0_0(dataset)
+            d.Dataset.transform_sex_for_schema_2_0_0(dataset)
+            d.Dataset.transform_organism_for_schema_2_0_0(dataset)
 
         result["datasets"] = datasets
         return result
@@ -223,8 +223,8 @@ class Collection(Entity):
 
         has_dataset_changes = False
         for dataset in self.datasets:
-            revised_dataset = Dataset(dataset)
-            original = Dataset.get(self.session, revised_dataset.original_id) if revised_dataset.original_id else None
+            revised_dataset = d.Dataset(dataset)
+            original = d.Dataset.get(self.session, revised_dataset.original_id) if revised_dataset.original_id else None
             if original and public_collection.check_has_dataset(original):
                 dataset_is_changed = original.publish_revision(revised_dataset, now)
                 if dataset_is_changed:
@@ -261,7 +261,7 @@ class Collection(Entity):
         for link in self.links:
             self.session.add(clone(link, collection_id=revision_collection.id))
         for dataset in self.datasets:
-            Dataset(dataset).create_revision(revision_collection.id)
+            d.Dataset(dataset).create_revision(revision_collection.id)
         self.session.commit()
         return Collection(revision_collection)
 
@@ -270,7 +270,7 @@ class Collection(Entity):
         for geneset in self.genesets:
             Geneset.get(self.session, geneset.id).delete(commit=False)
         for dataset in self.datasets:
-            ds = Dataset.get(self.session, dataset.id, include_tombstones=True)
+            ds = d.Dataset.get(self.session, dataset.id, include_tombstones=True)
             ds.asset_deletion()
             ds.tombstone_dataset_and_delete_child_objects()
         self.session.commit()
@@ -295,13 +295,13 @@ class Collection(Entity):
 
     def delete(self):
         for dataset in self.datasets:
-            ds = Dataset(dataset)
+            ds = d.Dataset(dataset)
             if not ds.published:
                 ds.asset_deletion()
             ds.delete()
         super().delete()
 
-    def check_has_dataset(self, dataset: Dataset) -> bool:
+    def check_has_dataset(self, dataset: d.Dataset) -> bool:
         """Check that a dataset is part of the collection"""
         return self.id == dataset.collection_id
 

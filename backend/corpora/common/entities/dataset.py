@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from urllib.parse import urlparse
 
-from . import collection
+from . import collection as c
 from .dataset_asset import DatasetAsset
 from .entity import Entity
 from .geneset import Geneset
@@ -156,12 +156,12 @@ class Dataset(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = [~cls.table.tombstone, collection.Collection.table.visibility == CollectionVisibility.PUBLIC.name]
+        filters = [~cls.table.tombstone, c.collection.Collection.table.visibility == CollectionVisibility.PUBLIC.name]
 
         results = [
             to_dict(result)
             for result in session.query(cls.table)
-            .join(collection.Collection.table)
+            .join(c.collection.Collection.table)
             .filter(*filters)
             .with_entities(*attrs)
             .all()
