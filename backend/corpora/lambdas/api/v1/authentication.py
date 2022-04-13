@@ -197,7 +197,7 @@ def check_token(token: dict) -> dict:
     return payload
 
 
-def curation_apikey_info_func(token, required_scopes: list=None):
+def curation_apikey_info_func(token, required_scopes: list = None):
     return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
 
 
@@ -208,7 +208,7 @@ def curation_apikey_info_func_lenient(token: str, required_scopes: list) -> dict
     they won't be locked out.
     """
     try:
-        return  assert_authorized_token(token, CorporaAuthConfig().curation_audience)
+        return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
     except Exception:
         return {}
 
