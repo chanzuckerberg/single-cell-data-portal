@@ -1,5 +1,6 @@
 import json
 import boto3
+import logging
 from flask import g, make_response
 
 from backend.corpora.api_server.db import dbconnect
@@ -46,7 +47,7 @@ def get_s3_credentials(collection_uuid, user):
         raise MethodNotAllowedException()
 
     parameters = dict(RoleArn=config.curator_role_arn,
-                      RoleSessionName='-'.join([collection_uuid, user.replace('|','-')]),
+                      RoleSessionName=user.replace('|','-'),
                       Policy=create_policy(config.submission_bucket, collection_uuid),
                       DurationSeconds=duration)
     logger.info(json.dumps(parameters))
