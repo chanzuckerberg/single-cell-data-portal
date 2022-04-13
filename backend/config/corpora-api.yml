@@ -848,6 +848,10 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     development_stage:
                       $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
                     cell_count:
                       type: integer
                     cell_type:
