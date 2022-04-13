@@ -1,13 +1,13 @@
-import { Intent, Spinner } from "@blueprintjs/core";
 import { memo, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { State } from "../../common/store";
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
+import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
-import { ChartWrapper, Container, Loader, YAxisWrapper } from "./style";
+import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { getHeatmapHeight, X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
@@ -76,12 +76,7 @@ export default memo(function HeatMap({
 
   return (
     <Container>
-      {isLoadingAPI || isAnyTissueLoading(isLoading) ? (
-        <Loader>
-          <Spinner intent={Intent.PRIMARY} size={20} />
-          Loading...
-        </Loader>
-      ) : null}
+      {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={genes} />
 

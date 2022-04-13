@@ -2,6 +2,7 @@ import { Theme } from "@emotion/react";
 import { makeStyles, Popper } from "@material-ui/core";
 import {
   AutocompleteCloseReason,
+  AutocompleteInputChangeReason,
   AutocompleteRenderOptionState,
 } from "@material-ui/lab";
 import {
@@ -15,7 +16,7 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, useRef, useState } from "react";
+import React, { createContext, ReactChild, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -23,8 +24,8 @@ import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
+const MAX_ITEMS_TO_SHOW = 9.5;
 const LISTBOX_ITEM_HEIGHT_PX = 48;
-const LISTBOX_HEIGHT_PX = 152;
 
 const ListBoxContext = createContext({});
 
@@ -41,18 +42,27 @@ function rowRender(props: ListChildComponentProps) {
   return <div style={style}>{data[index]}</div>;
 }
 
-const ListboxComponent = React.forwardRef<HTMLDivElement>(
-  function ListboxComponent(props, ref) {
+interface ListboxProps {
+  children: ReactChild;
+}
+
+const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(
+  function ListboxComponent(props: ListboxProps, ref) {
     const { children, ...other } = props;
 
     const itemData = React.Children.toArray(children);
     const itemCount = itemData.length;
 
+    const height = Math.min(
+      LISTBOX_ITEM_HEIGHT_PX * itemCount,
+      LISTBOX_ITEM_HEIGHT_PX * MAX_ITEMS_TO_SHOW
+    );
+
     return (
       <div ref={ref}>
         <ListBoxContext.Provider value={other}>
           <FixedSizeList
-            height={LISTBOX_HEIGHT_PX}
+            height={height}
             itemCount={itemCount}
             outerElementType={OuterElementType}
             itemSize={LISTBOX_ITEM_HEIGHT_PX}
@@ -86,6 +96,7 @@ interface Props<T, Multiple> {
   dataTestId: string;
   placeholder?: string;
   analyticsEvent: EVENTS;
+  isLoading: boolean;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -101,6 +112,7 @@ export default function QuickSelect<
   dataTestId,
   placeholder,
   analyticsEvent,
+  isLoading,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
   const [pendingPaste, setPendingPaste] = useState(false);
@@ -169,6 +181,7 @@ export default function QuickSelect<
       return;
     }
     setOpen(false);
+    setInput("");
   };
   const handleChange = (
     _: React.ChangeEvent<Record<string, never>>,
@@ -183,11 +196,23 @@ export default function QuickSelect<
 
   const ref = useRef(null);
 
+  const handleInputChange = (
+    _: React.ChangeEvent<Record<string, never>>,
+    value: string,
+    reason: AutocompleteInputChangeReason
+  ) => {
+    if (!reason || reason === "reset" || !value) {
+      return;
+    }
+    setInput(value);
+  };
+
   return (
     <>
       <ButtonWrapper>
         <Label>{label}</Label>
         <StyledIconButton
+          disabled={isLoading}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
@@ -222,13 +247,10 @@ export default function QuickSelect<
           renderOption={renderOption}
           onPaste={handlePaste}
           InputBaseProps={{
-            onChange: (
-              event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-            ) => {
-              setInput(event.target.value);
-            },
             placeholder,
           }}
+          inputValue={input}
+          onInputChange={handleInputChange}
         />
       </Popper>
     </>

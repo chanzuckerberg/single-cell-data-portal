@@ -7,12 +7,10 @@ import {
   CellTypeGeneExpressionSummaryData,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
-  Tissue,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
-import { CELL_TYPE_ORDER_BY_TISSUE } from "./constants/cellTypeOrderByTissue";
 import { ENTITIES } from "./entities";
 
 interface RawPrimaryFilterDimensionsResponse {
@@ -271,15 +269,15 @@ export function useCellTypesByTissueName(): {
     if (
       isLoading ||
       !data ||
+      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
-      !termIdLabels
+      !Object.keys(termIdLabels.cell_types).length
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
 
-    const result: Map<Tissue, Map<string, CellType>> = new Map();
     const { tissues } = primaryFilterDimensions;
 
     const tissuesById: { [id: string]: { id: string; name: string } } = {};
@@ -288,47 +286,25 @@ export function useCellTypesByTissueName(): {
       tissuesById[tissue.id] = tissue;
     }
 
-    for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueID, expressionSummaries] of Object.entries(
-        expressionSummaryByTissue
-      )) {
-        const cellTypes = result.get(tissueID) || new Map();
-
-        for (const expressionSummary of expressionSummaries) {
-          const { id } = expressionSummary;
-
-          const cellType = {
-            id,
-            name: termIdLabels.cell_types[tissueID][id],
-          };
-
-          cellTypes.set(id, cellType);
-        }
-
-        result.set(tissueID, cellTypes);
-      }
-    }
-
     const cellTypesByTissueName: { [tissueName: string]: CellType[] } = {};
 
-    for (const [tissueId, cellTypesById] of result.entries()) {
+    for (const [tissueId, rawTissueCellTypes] of Object.entries(
+      termIdLabels.cell_types
+    )) {
       const tissueName = tissuesById[tissueId].name;
 
-      const cellTypeOrder = CELL_TYPE_ORDER_BY_TISSUE[tissueId];
-
-      const cellTypes = Array.from(cellTypesById.values());
-
-      if (cellTypeOrder) {
-        cellTypesByTissueName[tissueName] = cellTypes.sort((a, b) => {
-          const aIndex = cellTypeOrder[a.id];
-          const bIndex = cellTypeOrder[b.id];
-
-          return aIndex - bIndex;
+      const tissueCellTypes = Object.entries(rawTissueCellTypes)
+        // (thuang): Reverse the order, so the first cell type is at the top of
+        // the heat map
+        .reverse()
+        .map(([cellTypeId, cellTypeName]) => {
+          return {
+            id: cellTypeId,
+            name: cellTypeName,
+          };
         });
-      } else {
-        console.warn("No cell type order for tissue", tissueId);
-        cellTypesByTissueName[tissueName] = cellTypes;
-      }
+
+      cellTypesByTissueName[tissueName] = tissueCellTypes;
     }
 
     return {
@@ -428,11 +404,11 @@ function transformCellTypeGeneExpressionSummaryData(
 
   return {
     ...data,
+    expressedCellCount: n,
     id,
     meanExpression: me,
     percentage: pc,
     tissuePercentage: tpc,
-    expressedCellCount: n,
   };
 }
 
@@ -590,5 +566,5 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 function toEntity(item: { [id: string]: string }) {
   const [id, name] = Object.entries(item)[0];
 
-  return { id, name };
+  return { id, name: name || id || "" };
 }

@@ -2,7 +2,7 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -16,15 +16,43 @@ import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { Label } from "../../style";
 import { StyledDropdown, Wrapper } from "./style";
 
+const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
 };
 
-export default function Organism(): JSX.Element {
+interface Props {
+  isLoading: boolean;
+}
+
+export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
   const { data } = usePrimaryFilterDimensions();
   const { organisms } = data || {};
+
+  const filteredOrganisms = useMemo(() => {
+    if (!organisms) {
+      return EMPTY_ARRAY;
+    }
+
+    return organisms.filter((organism: IOrganism) =>
+      TEMP_ALLOW_NAME_LIST.includes(organism.name)
+    );
+  }, [organisms]);
+
+  useEffect(() => {
+    if (!organisms || !dispatch) return;
+
+    const organism = organisms.find(
+      (organism: IOrganism) => organism.name === "Homo sapiens"
+    );
+
+    if (!organism) return;
+
+    dispatch(selectOrganism(organism.id));
+  }, [organisms, dispatch]);
 
   const organismsById = useMemo(() => {
     const result: { [id: string]: IOrganism } = {};
@@ -45,9 +73,9 @@ export default function Organism(): JSX.Element {
       <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
-        options={organisms || EMPTY_ARRAY}
+        options={filteredOrganisms || EMPTY_ARRAY}
         onChange={handleOnChange as tempOnChange}
-        InputDropdownProps={InputDropdownProps}
+        InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"
       />
     </Wrapper>
