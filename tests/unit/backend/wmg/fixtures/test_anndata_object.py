@@ -24,7 +24,8 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     https://stackoverflow.com/questions/52299420/scipy-csr-matrix-understand-indptr
     From scipy docs on csr_matrix
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html
-    Sparse matrices can be used in arithmetic operations: they support addition, subtraction, multiplication, division, and matrix power.
+    Sparse matrices can be used in arithmetic operations: they support addition, subtraction,
+    multiplication, division, and matrix power.
     Advantages of the CSR format
     - efficient arithmetic operations CSR + CSR, CSR * CSR, etc.
     - efficient row slicing

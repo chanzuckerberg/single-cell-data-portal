@@ -41,8 +41,9 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
             tiledb.vacuum(arr_name)
 
 
-def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None,
-                              extract_data=True):
+def load_data_and_create_cube(
+    path_to_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
+):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
     open, transform, normalize and concatenate them together as a tiledb object with a global gene index
