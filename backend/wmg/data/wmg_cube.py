@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.schemas.cube_schema import expression_summary_schema, cube_non_indexed_dims
+from backend.wmg.data.schemas.cube_schema import expression_summary_schema, cube_non_indexed_dims, cell_counts_schema
 from backend.wmg.data.tiledb import create_ctx
 
 logger = logging.getLogger(__name__)
@@ -46,8 +46,9 @@ def create_cell_count_cube(tdb_group: str):
             )
             .size()
         )
-
-        tiledb.from_pandas(uri, df)
+        df = df.rename(columns={"size": "n_cells"})
+        create_empty_cube(uri, cell_counts_schema)
+        tiledb.from_pandas(uri, df, mode="append")
 
 
 def create_cubes(tdb_group):
@@ -64,7 +65,7 @@ def create_expression_summary_cube(tdb_group):
 
     with tiledb.scope_ctx(create_ctx()):
         # Create cube
-        create_empty_cube(uri)
+        create_empty_cube(uri, expression_summary_schema)
 
         # load data
         dims, vals = load_data_into_cube(tdb_group, uri)
@@ -84,11 +85,11 @@ def create_expression_summary_cube(tdb_group):
     logger.info(f"Big cube: time to create {create_cube_sec}, uri={uri}")
 
 
-def create_empty_cube(uri: str):
+def create_empty_cube(uri: str, schema):
     """
     Create an empty cube with expected schema (dimensions and attributes) at given uri
     """
-    tiledb.Array.create(uri, expression_summary_schema, overwrite=True)
+    tiledb.Array.create(uri, schema, overwrite=True)
 
 
 def load_data_into_cube(tdb_group, uri: str):
