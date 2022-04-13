@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 
 from backend.corpora.common.corpora_orm import DbCollection, generate_uuid
-from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from backend.corpora.common.utils.exceptions import CorporaException
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase

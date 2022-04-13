@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities import Collection, Dataset
 from backend.corpora.common.entities.geneset import Geneset, CollectionLink
 from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import (

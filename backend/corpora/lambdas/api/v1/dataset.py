@@ -1,8 +1,7 @@
 from flask import make_response, jsonify, g
 
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
-from ....common.entities.collection import Collection
-from ....common.entities.dataset import Dataset
+from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
 from ....api_server.db import dbconnect
 from ....common.utils.exceptions import (
@@ -80,7 +79,7 @@ def get_status(dataset_uuid: str, user: str):
 @dbconnect
 def get_datasets_index():
     db_session = g.db_session
-    datasets = Dataset.list_public_datasets_for_index(db_session)
+    datasets = Collection.list_public_datasets_for_index(db_session)
     return make_response(jsonify(datasets), 200)
 
 

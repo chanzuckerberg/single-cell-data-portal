@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 import logging
 
 from ....common.corpora_orm import DbCollection, CollectionVisibility
-from ....common.entities.collection import Collection
+from ....common.entities import Collection
 from ....common.utils.exceptions import (
     InvalidParametersHTTPException,
     ForbiddenHTTPException,

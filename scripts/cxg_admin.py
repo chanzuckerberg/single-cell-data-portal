@@ -28,7 +28,7 @@ from backend.corpora.common.corpora_orm import (
     DbProjectLink,
     ProcessingStatus,
 )
-from backend.corpora.common.entities.dataset_asset import DatasetAsset
+from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.utils.s3_buckets import buckets

@@ -11,8 +11,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.common.utils.json import CustomJSONEncoder
