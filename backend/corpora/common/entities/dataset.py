@@ -156,15 +156,11 @@ class Dataset(Entity):
                 _result[_field] = getattr(db_object, _field)
             return _result
 
-        filters = [~cls.table.tombstone, c.collection.Collection.table.visibility == CollectionVisibility.PUBLIC.name]
+        filters = [~cls.table.tombstone, c.Collection.table.visibility == CollectionVisibility.PUBLIC.name]
 
         results = [
             to_dict(result)
-            for result in session.query(cls.table)
-            .join(c.collection.Collection.table)
-            .filter(*filters)
-            .with_entities(*attrs)
-            .all()
+            for result in session.query(cls.table).join(c.Collection.table).filter(*filters).with_entities(*attrs).all()
         ]
 
         for result in results:
