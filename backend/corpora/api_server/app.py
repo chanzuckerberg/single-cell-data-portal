@@ -3,7 +3,7 @@ import json
 import os
 
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, jsonify, request
+from flask import g, jsonify, request, Response
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -74,11 +74,11 @@ app = configure_flask_app(create_flask_app())
 
 @app.before_request
 def pre_request_logging():
-    app.logger.info(dict(message="REQUEST", url=request.path, method=request.method, schema=request.scheme))
+    app.logger.info(dict(message="REQUEST", url=request.path, method=request.method, schema=request.scheme, content_length=request.content_length))
 
 @app.after_request
-def post_request_logging(response):
-    app.logger.info(dict(message="REQUEST", status_code=response.status_code, length=len(response.body)))
+def post_request_logging(response: Response):
+    app.logger.info(dict(message="REQUEST", status_code=response.status_code, content_length=response.content_length))
     return response
 
 
