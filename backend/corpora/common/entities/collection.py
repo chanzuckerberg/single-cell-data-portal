@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from . import Dataset
 from .entity import Entity
-from .geneset import Geneset, CollectionLink
+from .geneset import Geneset
+from .collection_link import CollectionLink
 from ..corpora_orm import (
     CollectionLinkType,
     DbCollection,
