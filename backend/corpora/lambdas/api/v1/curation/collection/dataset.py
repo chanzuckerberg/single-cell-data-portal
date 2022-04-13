@@ -44,9 +44,11 @@ def get_s3_credentials(collection_uuid, user):
         raise ForbiddenHTTPException()
     if collection.visibility != CollectionVisibility.PRIVATE:
         raise MethodNotAllowedException()
+
     parameters = dict(RoleArn=config.curator_role_arn,
-                      RoleSessionName=collection_uuid+user.replace('|','-'),
+                      RoleSessionName='-'.join([collection_uuid, user.replace('|','-')]),
                       Policy=create_policy(config.submission_bucket, collection_uuid),
                       DurationSeconds=duration)
+    logger.info(json.dumps(parameters))
     credentials = sts_client.assume_role(**parameters)
     return make_response(credentials, 201)
