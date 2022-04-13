@@ -71,16 +71,16 @@ class WmgQuery:
 
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
-        if (
-            len(
-                cube.query(
-                    attr_cond=attr_cond, attrs=single_valued_attrs, dims=["organism_ontology_term_id"]
-                ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
-            )
-            == 0
-        ):
-            # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
-            return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
+        # if (
+        #     len(
+        #         cube.query(
+        #             attr_cond=attr_cond, attrs=single_valued_attrs, dims=["organism_ontology_term_id"]
+        #         ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
+        #     )
+        #     == 0
+        # ):
+        #     # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
+        #     return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
         query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
 
