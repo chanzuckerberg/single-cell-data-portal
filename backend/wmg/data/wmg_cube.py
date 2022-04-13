@@ -101,7 +101,8 @@ def load_data_into_cube(tdb_group, uri: str):
     logger.debug(f"Start loading big cube at : {uri}")
 
     with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
-        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=[], use_arrow=False).df[:]
+        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=["var_idx"], use_arrow=False).df[:]
+        gene_ontology_term_ids.sort_values(by="var_idx", inplace=True)
     n_genes = len(gene_ontology_term_ids)
 
     ##
