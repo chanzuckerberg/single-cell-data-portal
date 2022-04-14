@@ -237,10 +237,8 @@ def zero_out_low_expression_count_values(rankit: csr_matrix, raw_counts: coo_mat
     #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
     #  we will need to compute nnz  without assuming all values are zero.
 
-    to_zero_mask = raw_counts.data < RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+    to_zero_mask = raw_counts.data <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
     to_zero_rows = raw_counts.row[to_zero_mask]
     to_zero_cols = raw_counts.col[to_zero_mask]
     rankit[to_zero_rows, to_zero_cols] = 0.0
-    # TODO: Move this to a unit test!
-    assert sum(filter(lambda x: x <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, rankit.data)) == 0
 
