@@ -13,7 +13,7 @@ from scipy import sparse
 import scanpy
 
 from backend.wmg.data.rankit import rankit
-from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels
+from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.utils import get_all_dataset_ids
 from backend.wmg.data.validation import validate_corpus_load
 
@@ -22,8 +22,12 @@ logging.basicConfig(level=logging.INFO)
 
 # Minimum number of expressed genes for a cell to be included in the corpus.
 # See the following document for further details:
-# https://github.com/chanzuckerberg/cellxgene-documentation/blob/pablo-gar/wheres-my-gene/scExpression/scExpression-documentation.md#removal-of-low-coverage-cells
-MIN_GENE_EXPRESSION_COUNT = 500
+# https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-low-coverage-cells
+GENE_EXPRESSION_COUNT_MIN_THRESHOLD = 500
+
+# Minimum value for raw expression counts that will be used to filter out computed RankIt values. Details:
+# https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-noisy-ultra-low-expression-values
+RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 3
 
 
 def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
@@ -68,7 +72,7 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
     anndata_object = anndata.read_h5ad(h5ad_path)
 
     # Apply a low expression gene cell filtering.
-    scanpy.pp.filter_cells(anndata_object, min_genes=MIN_GENE_EXPRESSION_COUNT)
+    scanpy.pp.filter_cells(anndata_object, min_genes=GENE_EXPRESSION_COUNT_MIN_THRESHOLD)
 
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
@@ -185,7 +189,7 @@ def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
     """
     Apply rankit normalization to raw count expression values and save to the tiledb corpus object
     """
-    array_name = f"{corpus_path}/raw"
+    array_name = f"{corpus_path}/{INTEGRATED_ARRAY_NAME}"
     expression_matrix = get_X_raw(anndata_object)
     logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
@@ -197,7 +201,9 @@ def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
             coo_sparse_raw_expression_matrix = csr_sparse_raw_expression_matrix.tocoo(copy=False)
             rows = coo_sparse_raw_expression_matrix.row + start + first_obs_idx
             cols = global_var_index[coo_sparse_raw_expression_matrix.col]
-            raw_data = coo_sparse_raw_expression_matrix.data
+            raw_expr_counts_data = coo_sparse_raw_expression_matrix.data
+
+            # Compute RankIt
             rankit_normalized_coo_sparse_raw_expression_matrix = rankit(csr_sparse_raw_expression_matrix).tocoo(
                 copy=False
             )
@@ -209,13 +215,20 @@ def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
             )
             rankit_data = rankit_normalized_coo_sparse_raw_expression_matrix.data
 
-            array[rows, cols] = {"data": raw_data, "rankit": rankit_data}
+            # Filter out rankit values that were computed from expression values having raw count <= 3.
+
+            # TODO: Ideally, we would just *remove* these elements from rows,cols,rankit_data , but that would
+            #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
+            #  we will compute nnz without assuming all values are zero
+            rankit_data[rankit_data <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD] = 0
+
+            array[rows, cols] = {"rankit": rankit_data}
             del (
                 coo_sparse_raw_expression_matrix,
                 rankit_normalized_coo_sparse_raw_expression_matrix,
                 rows,
                 cols,
-                raw_data,
+                raw_expr_counts_data,
                 rankit_data,
             )
             gc.collect()

@@ -19,6 +19,9 @@ import pathlib
 
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
+# TODO: also define and use constants for obs and var array names
+INTEGRATED_ARRAY_NAME = 'integrated'
+
 
 class LabelType(
     namedtuple(
@@ -144,9 +147,9 @@ def create_tdb(corpus_location: str, tdb_group: str):
         ),
     )
 
-    """ Raw expression and its rankit. """
+    """ rankit expression values """
     tiledb.Array.create(
-        f"{uri}/raw",
+        f"{uri}/{INTEGRATED_ARRAY_NAME}",
         tiledb.ArraySchema(
             domain=tiledb.Domain(
                 [
@@ -169,7 +172,6 @@ def create_tdb(corpus_location: str, tdb_group: str):
             sparse=True,
             allows_duplicates=True,
             attrs=[
-                tiledb.Attr(name="data", dtype=np.float32, filters=filters),
                 tiledb.Attr(name="rankit", dtype=np.float32, filters=filters),
             ],
             cell_order="row-major",

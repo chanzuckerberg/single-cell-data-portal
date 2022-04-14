@@ -10,7 +10,7 @@ import tiledb
 from backend.wmg.data import extract
 from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
-from backend.wmg.data.schemas.corpus_schema import create_tdb
+from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.transform import get_cell_types_by_tissue, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cubes
@@ -33,7 +33,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
             gc.collect()
 
         logger.info("all loaded, now consolidating.")
-        for arr_name in [f"{corpus_path}/{name}" for name in ["obs", "var", "raw", "X"]]:
+        for arr_name in [f"{corpus_path}/{name}" for name in ["obs", "var", INTEGRATED_ARRAY_NAME]]:
             tiledb.consolidate(arr_name)
             tiledb.vacuum(arr_name)
 
