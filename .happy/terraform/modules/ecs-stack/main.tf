@@ -176,7 +176,7 @@ module wmg_batch {
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
   wmg_bucket                    = local.wmg_bucket
-  batch_container_memory_limit  = 300000
+  batch_container_memory_limit  = var.batch_container_memory_limit
 }
 
 module upload_success_lambda {
