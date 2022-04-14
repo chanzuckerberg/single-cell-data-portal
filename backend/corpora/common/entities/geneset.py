@@ -97,5 +97,3 @@ class GenesetDatasetLink(Entity):
         except SQLAlchemyError:
             session.rollback()
             raise CorporaException
-
-
