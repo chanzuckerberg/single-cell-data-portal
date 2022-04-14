@@ -22,12 +22,12 @@ cube_indexed_dims_no_gene_ontology = [
 ]
 
 
-def create_cell_count_cube(tdb_group: str):
+def create_cell_count_cube(corpus_path: str):
     """
     Create cell count cube and write to disk
     """
-    uri = f"{tdb_group}/{CELL_COUNTS_CUBE_NAME}"
-    with tiledb.open(f"{tdb_group}/obs") as obs:
+    uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
+    with tiledb.open(f"{corpus_path}/obs") as obs:
         df = (
             obs.df[:]
             .groupby(
@@ -51,16 +51,16 @@ def create_cell_count_cube(tdb_group: str):
         tiledb.from_pandas(uri, df, mode="append")
 
 
-def create_cubes(tdb_group):
-    create_expression_summary_cube(tdb_group)
-    create_cell_count_cube(tdb_group)
+def create_cubes(corpus_path):
+    create_expression_summary_cube(corpus_path)
+    create_cell_count_cube(corpus_path)
 
 
-def create_expression_summary_cube(tdb_group):
+def create_expression_summary_cube(corpus_path):
     """
     Create queryable cube and write to disk
     """
-    uri = f"{tdb_group}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+    uri = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
     start_time = time.time()
 
     with tiledb.scope_ctx(create_ctx()):
@@ -68,7 +68,7 @@ def create_expression_summary_cube(tdb_group):
         create_empty_cube(uri, expression_summary_schema)
 
         # load data
-        dims, vals = load_data_into_cube(tdb_group, uri)
+        dims, vals = load_data_into_cube(corpus_path, uri)
 
         logger.debug("Saving cube to tiledb")
         with tiledb.open(uri, "w") as cube:

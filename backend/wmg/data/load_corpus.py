@@ -26,17 +26,17 @@ logging.basicConfig(level=logging.INFO)
 MIN_GENE_EXPRESSION_COUNT = 500
 
 
-def is_dataset_already_loaded(dataset_id: str, group_name: str) -> bool:
-    if dataset_id in get_all_dataset_ids(group_name):
+def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
+    if dataset_id in get_all_dataset_ids(corpus_path):
         logger.info("oops, that dataset is already loaded!")
         return True
     return False
 
 
-def get_dataset_id(h5ad: str) -> str:
-    dataset_id = os.path.splitext(os.path.split(h5ad)[1])[0]
+def get_dataset_id(h5ad_path: str) -> str:
+    dataset_id = os.path.splitext(os.path.split(h5ad_path)[1])[0]
     if dataset_id == "local":
-        dataset_id = os.path.split(os.path.split(h5ad)[0])[1]
+        dataset_id = os.path.split(os.path.split(h5ad_path)[0])[1]
     return dataset_id
 
 
@@ -54,18 +54,18 @@ def validate_dataset_properties(anndata_object: anndata.AnnData) -> bool:
     return True
 
 
-def load_h5ad(h5ad: str, group_name: str, validate: bool):
+def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
     """
     Given the location of a h5ad dataset and a group name, check the dataset is not already loaded
     then read the dataset into the tiledb object (under group name), updating the var and feature indexes
     to avoid collisions within the larger tiledb object
     """
-    logger.info(f"Loading {h5ad}...")
-    dataset_id = get_dataset_id(h5ad)
-    if is_dataset_already_loaded(dataset_id, group_name):
+    logger.info(f"Loading {h5ad_path}...")
+    dataset_id = get_dataset_id(h5ad_path)
+    if is_dataset_already_loaded(corpus_path, dataset_id):
         return
 
-    anndata_object = anndata.read_h5ad(h5ad)
+    anndata_object = anndata.read_h5ad(h5ad_path)
 
     # Apply a low expression gene cell filtering.
     scanpy.pp.filter_cells(anndata_object, min_genes=MIN_GENE_EXPRESSION_COUNT)
@@ -74,7 +74,7 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
     if not validate_dataset_properties(anndata_object):
         return
 
-    var_df = update_global_var(group_name, anndata_object.var)
+    var_df = update_global_var(corpus_path, anndata_object.var)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
     global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
@@ -86,21 +86,22 @@ def load_h5ad(h5ad: str, group_name: str, validate: bool):
 
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
-    first_obs_idx = save_axes_labels(obs, f"{group_name}/obs", obs_labels)
-    save_raw(anndata_object, group_name, global_var_index, first_obs_idx)
-    save_X(anndata_object, group_name, global_var_index, first_obs_idx)
+    first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
+    transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
+    # TODO: Remove this is we don't use output TileDB arrays
+    # save_X(anndata_object, group_name, global_var_index, first_obs_idx)
 
     if validate:
-        validate_corpus_load(anndata_object, group_name, dataset_id)
+        validate_corpus_load(anndata_object, corpus_path, dataset_id)
 
 
-def update_global_var(group_name: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
+def update_global_var(corpus_path: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
     """
     Update the global var (gene) array. Adds any gene_ids we have not seen before.
     Returns the global var array as dataframe
     """
 
-    var_array_name = f"{group_name}/var"
+    var_array_name = f"{corpus_path}/var"
     with tiledb.open(var_array_name, "r") as var:
         var_df = var.df[:]
         missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(
@@ -177,11 +178,14 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def save_raw(anndata_object: anndata.AnnData, group_name: str, global_var_index: numpy.ndarray, first_obs_idx: int):
+def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
+                                           corpus_path: str,
+                                           global_var_index: numpy.ndarray,
+                                           first_obs_idx: int):
     """
-    Apply rankit normalization to raw expression values and save to the tiledb corpus object
+    Apply rankit normalization to raw count expression values and save to the tiledb corpus object
     """
-    array_name = f"{group_name}/raw"
+    array_name = f"{corpus_path}/raw"
     expression_matrix = get_X_raw(anndata_object)
     logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
