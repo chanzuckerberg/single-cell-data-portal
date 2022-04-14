@@ -30,7 +30,7 @@ Once you have run the pre-requisite sets, you are ready to begin developing for 
 | `make fmt`              | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes.                                                    |
 | `make lint`             | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes.                                                    |
 | `make unit-test`        | Run all unit tests.                                                                  |                                                                                                      |
-| `make functional-tests` | Run all functional tests.                                                            | These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`. |
+| `make local-functional-test` | Run all functional tests.                                                            | These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`. |
 
 ### Environment variables
 
