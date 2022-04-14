@@ -62,5 +62,5 @@ export const StyledTooltipTable = styled(TooltipTable)`
 export const tooltipCss = css`
   margin: 0;
   margin-top: 20px;
-  max-width: 400px !important;
+  max-width: 500px !important;
 `;
