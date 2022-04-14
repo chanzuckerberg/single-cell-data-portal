@@ -19,7 +19,7 @@ The Single Cell Data Portal enables the publication, discovery and exploration o
 
 Once you have run the pre-requisite sets, you are ready to begin developing for the Data Portal. As you start to change code, you may want to deploy a test instance of the Data Portal so that you can check to see how your changes perform. We have two ways to deploy your changes:
 
-1. **Creating a local deployment environment.** This environment will be entirely hosted on your own machine and contain a small amount of dummy data. This environment is great to have up and running while you are actively developing. See [this guide](DEV_ENV.md) for instructions on how to set up a local deployment.
+1. **Creating a local deployment environment.** This environment will be entirely hosted on your own machine. It relies upon Docker to run both Portal servers, Portal unit tests, and infrastructure service dependencies (AWS, Postgres, OIDC). The environment will be initialized with a small amount of dummy data. This environment is great to have up and running while you are actively developing. See [this guide](DEV_ENV.md) for instructions on how to set up a local deployment.
 
 1. **Creating a remote deployment.** This environment creates a lightweight replica of the Data Portal, hosted by AWS, and provide a more realistic test bed to test your changes before either sending them to a PR or try them out with a cross-functional partner. It takes a longer time to deploy your changes to a remote development environment which is why the local deployment is preferred until your changes are ready for broader review. See [this guide](https://docs.google.com/document/d/1nynGcBS_TA55qlQo9WjINGkcMnE_xIBz7-inmop2bqo/edit#) for instructions on how to set up an rDev environment.
 
