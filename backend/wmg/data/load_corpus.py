@@ -11,6 +11,7 @@ import tiledb
 from anndata._core.views import ArrayView
 from scipy import sparse
 import scanpy
+from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
@@ -197,42 +198,26 @@ def transform_dataset_raw_counts_to_rankit(
             end = min(start + stride, expression_matrix.shape[0])
             csr_sparse_raw_expression_matrix = sparse.csr_matrix(expression_matrix[start:end, :])
 
-            coo_sparse_raw_expression_matrix = csr_sparse_raw_expression_matrix.tocoo(copy=False)
-            rows = coo_sparse_raw_expression_matrix.row + start + first_obs_idx
-            cols = global_var_index[coo_sparse_raw_expression_matrix.col]
-            raw_expr_counts_data = coo_sparse_raw_expression_matrix.data
+            raw_expression_coo_matrix = csr_sparse_raw_expression_matrix.tocoo(copy=False)
+            rows = raw_expression_coo_matrix.row + start + first_obs_idx
+            cols = global_var_index[raw_expression_coo_matrix.col]
+            raw_expr_counts_data = raw_expression_coo_matrix.data
 
             # Compute RankIt
-            rankit_normalized_coo_sparse_raw_expression_matrix = rankit(csr_sparse_raw_expression_matrix).tocoo(
-                copy=False
-            )
-            assert np.array_equal(
-                coo_sparse_raw_expression_matrix.row, rankit_normalized_coo_sparse_raw_expression_matrix.row
-            )
-            assert np.array_equal(
-                coo_sparse_raw_expression_matrix.col, rankit_normalized_coo_sparse_raw_expression_matrix.col
-            )
+            rankit_integrated_csr_matrix = rankit(csr_sparse_raw_expression_matrix)
 
-            # # Filter out rankit values that were computed from expression values having raw count <= 3.
-            # # TODO: Ideally, we would just *remove* these elements from rows,cols,rankit_data , but that would
-            # #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
-            # #  we will compute nnz without assuming all values are zero
-            #
-            # def zero_out_low_expression_count_values(a, min_value):
-            #     nonzero_mask = np.array(a[a.nonzero()] <= min_value)[0]
-            #     rows = a.nonzero()[0][nonzero_mask]
-            #     cols = a.nonzero()[1][nonzero_mask]
-            #     a[rows, cols] = 0
+            zero_out_low_expression_count_values(rankit_integrated_csr_matrix, raw_expression_coo_matrix)
 
-            # zero_out_low_expression_count_values(rankit_normalized_coo_sparse_raw_expression_matrix,
-            #                                      RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD)
+            rankit_integrated_coo_matrix = rankit_integrated_csr_matrix.tocoo(copy=False)
+            assert np.array_equal(raw_expression_coo_matrix.row, rankit_integrated_coo_matrix.row)
+            assert np.array_equal(raw_expression_coo_matrix.col, rankit_integrated_coo_matrix.col)
 
-            rankit_data = rankit_normalized_coo_sparse_raw_expression_matrix.data
+            rankit_data = rankit_integrated_coo_matrix.data
 
             array[rows, cols] = {"rankit": rankit_data}
             del (
-                coo_sparse_raw_expression_matrix,
-                rankit_normalized_coo_sparse_raw_expression_matrix,
+                raw_expression_coo_matrix,
+                rankit_integrated_coo_matrix,
                 rows,
                 cols,
                 raw_expr_counts_data,
@@ -241,3 +226,21 @@ def transform_dataset_raw_counts_to_rankit(
             gc.collect()
 
     logger.debug(f"Saved {array_name}.")
+
+
+def zero_out_low_expression_count_values(rankit: csr_matrix, raw_counts: coo_matrix):
+    """
+    Zero-out rankit values that were computed from expression values having raw count <= 3. This updates the `rankit`
+    matrix in-place.
+    """
+    # TODO: Ideally, we would just *remove* these elements from rankit matrix, but that would
+    #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
+    #  we will need to compute nnz  without assuming all values are zero.
+
+    to_zero_mask = raw_counts.data < RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+    to_zero_rows = raw_counts.row[to_zero_mask]
+    to_zero_cols = raw_counts.col[to_zero_mask]
+    rankit[to_zero_rows, to_zero_cols] = 0.0
+    # TODO: Move this to a unit test!
+    assert sum(filter(lambda x: x <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, rankit.data)) == 0
+
