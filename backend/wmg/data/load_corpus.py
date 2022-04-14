@@ -213,14 +213,22 @@ def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
             assert np.array_equal(
                 coo_sparse_raw_expression_matrix.col, rankit_normalized_coo_sparse_raw_expression_matrix.col
             )
+
+            # # Filter out rankit values that were computed from expression values having raw count <= 3.
+            # # TODO: Ideally, we would just *remove* these elements from rows,cols,rankit_data , but that would
+            # #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
+            # #  we will compute nnz without assuming all values are zero
+            #
+            # def zero_out_low_expression_count_values(a, min_value):
+            #     nonzero_mask = np.array(a[a.nonzero()] <= min_value)[0]
+            #     rows = a.nonzero()[0][nonzero_mask]
+            #     cols = a.nonzero()[1][nonzero_mask]
+            #     a[rows, cols] = 0
+
+            # zero_out_low_expression_count_values(rankit_normalized_coo_sparse_raw_expression_matrix,
+            #                                      RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD)
+
             rankit_data = rankit_normalized_coo_sparse_raw_expression_matrix.data
-
-            # Filter out rankit values that were computed from expression values having raw count <= 3.
-
-            # TODO: Ideally, we would just *remove* these elements from rows,cols,rankit_data , but that would
-            #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
-            #  we will compute nnz without assuming all values are zero
-            rankit_data[rankit_data <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD] = 0
 
             array[rows, cols] = {"rankit": rankit_data}
             del (
