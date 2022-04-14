@@ -13,8 +13,8 @@ module stack {
   frontend_url                 = "https://cellxgene.dev.single-cell.czi.technology"
   backend_url                  = "https://api.cellxgene.dev.single-cell.czi.technology"
   stack_prefix                 = ""
-  batch_container_memory_limit = 230000
-  backend_memory               = 65000
+  batch_container_memory_limit = 60000
+  backend_memory               = 50000
   frontend_memory              = 4096
   backend_instance_count       = 1
 
