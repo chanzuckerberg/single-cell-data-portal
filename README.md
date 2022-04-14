@@ -25,22 +25,22 @@ Once you have run the pre-requisite sets, you are ready to begin developing for 
 
 ### Common Commands
 
-| Command                 | Description                                                                          | Notes                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `make fmt`              | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes.                                                    |
-| `make lint`             | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes.                                                    |
-| `make unit-test`        | Run all unit tests.                                                                  |                                                                                                      |
+| Command                      | Description                                                                          | Notes                                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `make fmt`                   | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes.                                                    |
+| `make lint`                  | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes.                                                    |
+| `make unit-test`             | Run all unit tests.                                                                  |                                                                                                      |
 | `make local-functional-test` | Run all functional tests.                                                            | These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`. |
 
 ### Environment variables
 
 Environment variables are set using the command `export <name>=<value>`. For example, `export DEPLOYMENT_STAGE=dev`. These environment variables typically need to be set before you are able to set up your environments (i.e. local, rDev) and before you are able to successfully run any test suite.
 
-| Name                | Description                                                                                                                                                                               | Values                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests. The `test` value implies local Docker development environment (and should probably be renamed `local`).                                                                                                    | `test`, `dev`, `staging`, `prod`              |
-| `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
-| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret _corpora/backend/\${DEPLOYMENT_STAGE}/database_local_. | Any                                   |
+| Name                | Description                                                                                                                                                                                   | Values                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests. The `test` value implies local Docker development environment (and should probably be renamed `local`). | `test`, `dev`, `staging`, `prod`      |
+| `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via the awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
+| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret `corpora/backend/\${DEPLOYMENT_STAGE}/database_local`.       | Any                                   |
 
 ### Database Procedures
 
