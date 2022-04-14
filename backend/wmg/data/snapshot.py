@@ -89,7 +89,7 @@ def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     wmg_config = WmgConfig()
     wmg_config.load()
-    prefixed_relative_path = os.path.join(wmg_config.data_path_prefix, relative_path or "")
+    prefixed_relative_path = os.path.join(_build_data_path_prefix(), relative_path or "")
     s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
 
@@ -114,11 +114,23 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
         return None
 
 
+def _build_data_path_prefix():
+    wmg_config = WmgConfig()
+    rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
+    if rdev_prefix:
+        return rdev_prefix.strip("/")
+    elif "data_path_prefix" in wmg_config.config:
+        return wmg_config.data_path_prefix
+    else:
+        return ""
+
+
 def _build_snapshot_base_uri(snapshot_identifier: str):
     wmg_config = WmgConfig()
+    data_path_prefix = _build_data_path_prefix()
     return os.path.join(
         "s3://",
         wmg_config.bucket,
-        wmg_config.data_path_prefix if "data_path_prefix" in wmg_config.config else "",
+        data_path_prefix,
         snapshot_identifier,
     )
