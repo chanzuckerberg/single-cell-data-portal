@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def load(dataset_directory: List, group_name: str, validate: bool = False):
+def load(dataset_directory: List, corpus_path: str, validate: bool = False):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name
@@ -30,20 +30,20 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
         for dataset in os.listdir(dataset_directory):
             logger.info(f"Processing dataset {i} of {dataset_count}")
             i += 1
-            file_path = f"{dataset_directory}/{dataset}/local.h5ad"
+            h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             load_h5ad(
-                file_path, group_name, validate
+                h5ad_file_path, corpus_path, validate
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
 
         logger.info("all loaded, now consolidating.")
-        for arr_name in [f"{group_name}/{name}" for name in ["obs", "var", "raw", "X"]]:
+        for arr_name in [f"{corpus_path}/{name}" for name in ["obs", "var", "raw", "X"]]:
             tiledb.consolidate(arr_name)
             tiledb.vacuum(arr_name)
 
 
 def load_data_and_create_cube(
-    path_to_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
+    path_to_h5ad_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
@@ -63,10 +63,10 @@ def load_data_and_create_cube(
         create_tdb(snapshot_path, corpus_name)
     if extract_data:
         s3_uris = extract.get_dataset_s3_uris()
-        extract.copy_datasets_to_instance(s3_uris, path_to_datasets)
+        extract.copy_datasets_to_instance(s3_uris, path_to_h5ad_datasets)
         logger.info("Copied datasets to instance")
 
-    load(path_to_datasets, corpus_path, True)
+    load(path_to_h5ad_datasets, corpus_path, True)
     logger.info("Loaded datasets into corpus")
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
