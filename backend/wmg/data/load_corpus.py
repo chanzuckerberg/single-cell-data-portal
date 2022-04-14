@@ -235,7 +235,7 @@ def zero_out_low_expression_count_values(rankit: csr_matrix, raw_counts: coo_mat
     """
     # TODO: Ideally, we would just *remove* these elements from rankit matrix, but that would
     #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
-    #  we will need to compute nnz  without assuming all values are zero.
+    #  we will also need to ignore zero values when computing nnz attribute of the expression summary cube.
 
     to_zero_mask = raw_counts.data <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
     to_zero_rows = raw_counts.row[to_zero_mask]
