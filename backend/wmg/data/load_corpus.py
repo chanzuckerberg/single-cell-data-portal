@@ -182,10 +182,9 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def transform_dataset_raw_counts_to_rankit(anndata_object: anndata.AnnData,
-                                           corpus_path: str,
-                                           global_var_index: numpy.ndarray,
-                                           first_obs_idx: int):
+def transform_dataset_raw_counts_to_rankit(
+    anndata_object: anndata.AnnData, corpus_path: str, global_var_index: numpy.ndarray, first_obs_idx: int
+):
     """
     Apply rankit normalization to raw count expression values and save to the tiledb corpus object
     """

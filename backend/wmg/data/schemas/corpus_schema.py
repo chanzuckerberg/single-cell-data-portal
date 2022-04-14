@@ -20,7 +20,7 @@ import pathlib
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
 # TODO: also define and use constants for obs and var array names
-INTEGRATED_ARRAY_NAME = 'integrated'
+INTEGRATED_ARRAY_NAME = "integrated"
 
 
 class LabelType(
