@@ -72,5 +72,5 @@ def load_data_and_create_cube(path_to_datasets: str, corpus_name: str = "corpus_
 
 
 if __name__ == "__main__":
-    load_data_and_create_cube("datasets")
+    load_data_and_create_cube("datasets", ".")
     sys.exit()
