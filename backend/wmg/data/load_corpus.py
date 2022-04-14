@@ -237,9 +237,6 @@ def filter_out_rankits_with_low_expression_counts(
 ) -> coo_matrix:
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
-
-    @param expect_majority_filtered: Set this to True if the caller expects the majority of rankit values will be
-    filtered, as we can then use an optimal implementation
     """
 
     rankits_nnz_orig = rankits.nnz

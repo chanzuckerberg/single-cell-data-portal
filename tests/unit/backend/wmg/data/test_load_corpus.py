@@ -14,6 +14,7 @@ from backend.wmg.data.load_corpus import (
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
     filter_out_rankits_with_low_expression_counts,
 )
+
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
@@ -219,3 +220,4 @@ class TestCorpusLoad(unittest.TestCase):
         # check the cell count is one less than the starting count
         # because we replaced the assay type for one cell in the original anndata object
         self.assertEqual(corpus_cell_count, CELL_COUNT - 1)
+
