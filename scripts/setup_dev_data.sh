@@ -5,7 +5,7 @@ export AWS_ACCESS_KEY_ID=nonce
 export AWS_SECRET_ACCESS_KEY=nonce
 
 export FRONTEND_URL=http://frontend.corporanet.local:3000
-export BACKEND_URL=http://backend.corporanet.local:5000
+export BACKEND_URL=http://backend.corporanet.local:5050
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
 # If you need to run it directly on your laptop for some reason, change
