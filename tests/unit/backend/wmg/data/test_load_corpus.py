@@ -65,8 +65,8 @@ class TestCorpusLoad(unittest.TestCase):
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
         load(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
-        self.assertEqual(mock_vacuum.call_count, 4)
-        self.assertEqual(mock_consolidate.call_count, 4)
+        self.assertEqual(mock_vacuum.call_count, 3)
+        self.assertEqual(mock_consolidate.call_count, 3)
 
     @patch("backend.wmg.data.load_corpus.update_global_var")
     @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
