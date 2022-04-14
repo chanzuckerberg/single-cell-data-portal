@@ -10,14 +10,12 @@ The Single Cell Data Portal enables the publication, discovery and exploration o
 ### Pre-requisite installations and setups
 
 1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
-1. Set up you machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the step 3 `AWS CLI access` instructions all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
-1. Set up your Python virtual environment. You can choose to do this by [installing pyenv](https://github.com/pyenv/pyenv). Note that we only support Python versions up to and including 3.8. If `pyenv` is already installed on your machine, you might have to delete and reinstall it. You may also choose to set up your Python virtual environment through [`venv`](https://docs.python.org/3/library/venv.html) as an alternative.
-1. Before you begin developing, run `source venv/bin/activate` to start up a virtual environment. After you are finished, you can run `deactivate` to deactivate the virtual environment.
+1. Set up your machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the step 3 `AWS CLI access` instructions all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
 1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0, and add it somewhere on your path. On Mac, run `brew install chamber`.
 
 ### Development Quickstart
 
-**Note:** Make sure you are running your virtual environment before going through the development guides.
+**Note:** Make sure you are running your Python virtual environment before going through the development guides.
 
 Once you have run the pre-requisite sets, you are ready to begin developing for the Data Portal. As you start to change code, you may want to deploy a test instance of the Data Portal so that you can check to see how your changes perform. We have two ways to deploy your changes:
 
