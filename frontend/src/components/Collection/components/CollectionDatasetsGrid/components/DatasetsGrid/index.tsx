@@ -1,10 +1,10 @@
-/* Copied from src/components/Collections/components/Grid/components/DatasetsGrid and modified as an intermediate
+/* Copied from src/components/Collections/components/Grid/components/DatasetsGrid and modified as an intermediate 
    upgrade to the collection datasets table while keeping the existing core datasets grid outside of the filter feature
    flag untouched. Once filter feature flag is removed, the existing core datasets grid can be deleted and replaced
    with this version. Ideally collection datasets table should be moved to react-table but requires changes to how
    dataset information (statuses etc) is calculated and rolled out. */
 import { FC } from "react";
-import { UseMutateAsyncFunction } from "react-query";
+import { MutateFunction } from "react-query";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { ReuploadLink } from "src/common/queries/collections";
 import DatasetRow from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow";
@@ -22,20 +22,10 @@ interface Props {
   accessType?: Collection["access_type"];
   isRevision: boolean;
   onUploadFile: (
-    reuploadDataset?: UseMutateAsyncFunction<
-      unknown,
-      unknown,
-      ReuploadLink,
-      unknown
-    >,
+    reuploadDataset?: MutateFunction<string, unknown, ReuploadLink>,
     datasetId?: string
   ) => ChooserProps["onUploadFile"];
-  reuploadDataset: UseMutateAsyncFunction<
-    unknown,
-    unknown,
-    ReuploadLink,
-    unknown
-  >;
+  reuploadDataset: MutateFunction<string, unknown, ReuploadLink>;
 }
 
 const DatasetsGrid: FC<Props> = ({

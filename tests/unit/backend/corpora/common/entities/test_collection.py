@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.collection import Collection
@@ -15,8 +17,9 @@ class TestCollection(DataPortalTestCase):
         super().setUp()
 
     def test__get__ok(self):
+        key = (self.uuid, self.visibility)
 
-        collection = Collection.get(self.session, self.uuid)
+        collection = Collection.get(self.session, key)
 
         # Verify Columns
         self.assertEqual(collection.name, "test_collection_name")
@@ -34,14 +37,14 @@ class TestCollection(DataPortalTestCase):
         self.assertEqual(collection.links[0].id, "test_collection_doi_link_id")
 
     def test__get__does_not_exist(self):
-        non_existent_key = "non_existent_id"
+        non_existent_key = ("non_existent_id", self.visibility)
 
         self.assertEqual(Collection.get(self.session, non_existent_key), None)
 
-    # def test__get__invalid_visibility(self):
-    #     invalid_visibility_key = (self.uuid, "invalid_visibility")
-    #     with self.assertRaises(SQLAlchemyError):
-    #         Collection.get(self.session, invalid_visibility_key)
+    def test__get__invalid_visibility(self):
+        invalid_visibility_key = (self.uuid, "invalid_visibility")
+        with self.assertRaises(SQLAlchemyError):
+            Collection.get(self.session, invalid_visibility_key)
 
     def test__create_collection_creates_associated_links(self):
         """
@@ -55,13 +58,14 @@ class TestCollection(DataPortalTestCase):
             with self.subTest(i):
                 collection = Collection.create(self.session, links=[link_params] * i, **collection_params)
 
+                collection_key = (collection.id, collection.visibility)
                 expected_links = collection.links
 
                 # Expire all local object and retrieve them from the DB to make sure the transactions went through.
                 self.session.expire_all()
 
-                actual_collection = Collection.get(self.session, collection.id)
-                self.assertEqual(collection.id, actual_collection.id)
+                actual_collection = Collection.get(self.session, collection_key)
+                self.assertEqual(collection_key, (actual_collection.id, actual_collection.visibility))
                 self.assertCountEqual(expected_links, actual_collection.links)
 
     def test__list_in_time_range__ok(self):
@@ -197,7 +201,9 @@ class TestCollection(DataPortalTestCase):
         expected_collection_id = test_collection.id
         test_dataset = Dataset.create(
             self.session,
-            **BogusDatasetParams.get(collection_id=test_collection.id),
+            **BogusDatasetParams.get(
+                collection_id=test_collection.id, collection_visibility=test_collection.visibility
+            ),
         )
         expected_dataset_id = test_dataset.id
 

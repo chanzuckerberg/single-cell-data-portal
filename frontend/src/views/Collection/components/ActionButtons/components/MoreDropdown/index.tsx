@@ -1,19 +1,17 @@
 import { Position } from "@blueprintjs/core";
 import { useMemo } from "react";
-import { Collection } from "src/common/entities";
 import RawMoreDropdown from "src/components/common/MoreDropdown";
 import Menu from "./components/Menu";
 
 interface Props {
   id: string;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
-const MoreDropdown = ({ id = "", isRevision, visibility }: Props) => {
+const MoreDropdown = ({ id = "", isRevision }: Props) => {
   const popoverProps = useMemo(() => {
     return {
-      content: <Menu id={id} isRevision={isRevision} visibility={visibility} />,
+      content: <Menu id={id} isRevision={isRevision} />,
       position: Position.BOTTOM,
     };
   }, [id, isRevision]);

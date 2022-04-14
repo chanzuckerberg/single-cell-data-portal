@@ -9,7 +9,6 @@ class DataPortalTestCase(GenerateDataMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.reinitialize_database()  # danieljhegeman -- use clean db for each test case; negligible time cost
         TestDatabaseManager.initialize_db()
 
     def setUp(self):

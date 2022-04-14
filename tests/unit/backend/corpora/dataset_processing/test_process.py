@@ -302,8 +302,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         collection = Collection.create(self.session, visibility=CollectionVisibility.PRIVATE)
         dataset = Dataset.create(
-            self.session,
-            collection_id=collection.id,
+            self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE
         )
         dataset_id = dataset.id
 

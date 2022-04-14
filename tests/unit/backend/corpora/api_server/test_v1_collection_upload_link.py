@@ -20,7 +20,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
     def test__link__202(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+            path = "/dp/v1/collections/test_collection_id/upload-links"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             body = {"url": self.good_link}
 
@@ -127,12 +127,13 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         pub_dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=pub_collection.id,
+            collection_visibility=pub_collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
         pub_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        rev_collection = pub_collection.create_revision()
-        path = f"/dp/v1/collections/{rev_collection.id}/upload-links"
+        rev_collection = pub_collection.revision()
+        path = f"/dp/v1/collections/{pub_collection.id}/upload-links"
         body = {"url": self.good_link, "id": rev_collection.datasets[0].id}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
@@ -150,6 +151,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -173,6 +175,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -192,6 +195,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         pub_dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -213,6 +217,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             processing_status={"processing_status": ProcessingStatus.PENDING},
         )
         s3_objects = self.get_s3_object_paths_from_dataset(dataset)
@@ -231,6 +236,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -285,6 +291,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
+            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )

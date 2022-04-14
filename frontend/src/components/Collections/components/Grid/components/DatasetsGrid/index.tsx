@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { UseMutateAsyncFunction } from "react-query";
+import { MutateFunction } from "react-query";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { ReuploadLink } from "src/common/queries/collections";
 import {
@@ -20,20 +20,10 @@ interface Props {
   accessType?: Collection["access_type"];
   isRevision: boolean;
   onUploadFile: (
-    reuploadDataset?: UseMutateAsyncFunction<
-      unknown,
-      unknown,
-      ReuploadLink,
-      unknown
-    >,
+    reuploadDataset?: MutateFunction<string, unknown, ReuploadLink>,
     datasetId?: string
   ) => ChooserProps["onUploadFile"];
-  reuploadDataset: UseMutateAsyncFunction<
-    unknown,
-    unknown,
-    ReuploadLink,
-    unknown
-  >;
+  reuploadDataset: MutateFunction<string, unknown, ReuploadLink>;
 }
 
 const DatasetsGrid: FC<Props> = ({

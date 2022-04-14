@@ -4,13 +4,10 @@ import xorWith from "lodash/xorWith";
 import { Collection, Dataset } from "../entities";
 
 const IGNORED_COLLECTION_FIELDS = [
-  "id",
   "visibility",
   "created_at",
   "updated_at",
-  "revisioning_in",
-  "revision_of",
-  "id",
+  "has_revision",
   "revision_diff",
   "datasets",
   "genesets",
@@ -22,7 +19,6 @@ const IGNORED_DATASET_FIELDS = [
   "collection_visibility",
   "original_uuid",
   "id",
-  "collection_id",
   "processing_status",
   "dataset_assets",
   "dataset_deployments",

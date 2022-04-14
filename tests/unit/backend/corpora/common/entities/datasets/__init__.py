@@ -48,7 +48,13 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         """
         self.session.expire_all()
         for p_key, table in tests:
-            actual = [i for i in self.session.query(table).filter(table.id == p_key)]
+            if len(p_key) == 2:
+                # handle the special case for collections with a composite primary key
+                actual = [
+                    i for i in self.session.query(table).filter(table.id == p_key[0], table.visibility == p_key[1])
+                ]
+            else:
+                actual = [i for i in self.session.query(table).filter(table.id == p_key)]
             self.assertFalse(actual, f"Row not deleted {table.__name__}:{p_key}")
 
     def assertRowsExist(self, tests):
@@ -58,5 +64,11 @@ class TestDataset(CorporaTestCaseUsingMockAWS):
         """
         self.session.expire_all()
         for p_key, table in tests:
-            actual = [i for i in self.session.query(table).filter(table.id == p_key)]
+            if len(p_key) == 2:
+                # handle the special case for collections with a composite primary key
+                actual = [
+                    i for i in self.session.query(table).filter(table.id == p_key[0], table.visibility == p_key[1])
+                ]
+            else:
+                actual = [i for i in self.session.query(table).filter(table.id == p_key)]
             self.assertTrue(actual, f"Row does not exist {table.__name__}:{p_key}")

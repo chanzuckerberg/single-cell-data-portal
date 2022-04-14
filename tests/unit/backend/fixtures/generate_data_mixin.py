@@ -1,15 +1,7 @@
-from sqlalchemy.orm import Session
-
 from backend.corpora.common.entities import Collection, Dataset
 from backend.corpora.common.entities.geneset import Geneset
-from backend.corpora.common.entities.collection_link import CollectionLink
 from backend.corpora.common.utils.db_session import db_session_manager
-from tests.unit.backend.utils import (
-    BogusCollectionParams,
-    BogusDatasetParams,
-    BogusGenesetParams,
-    BogusDbCollectionLinkParams,
-)
+from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams, BogusGenesetParams
 
 
 class GenerateDataMixin:
@@ -18,15 +10,15 @@ class GenerateDataMixin:
     """
 
     @staticmethod
-    def delete_collection(uuid):
+    def delete_collection(uuid, visibility):
         with db_session_manager() as session:
-            col = Collection.get(session, uuid)
+            col = Collection.get(session, (uuid, visibility))
             if col:
                 col.delete()
 
-    def generate_collection(self, session: Session, **params) -> Collection:
+    def generate_collection(self, session, **params) -> Collection:
         _collection = Collection.create(session, **BogusCollectionParams.get(**params))
-        self.addCleanup(self.delete_collection, _collection.id)
+        self.addCleanup(self.delete_collection, _collection.id, _collection.visibility)
         return _collection
 
     @staticmethod
@@ -36,7 +28,7 @@ class GenerateDataMixin:
             if dat:
                 dat.delete()
 
-    def generate_dataset(self, session: Session, **params) -> Dataset:
+    def generate_dataset(self, session, **params) -> Dataset:
         _dataset = Dataset.create(session, **BogusDatasetParams.get(**params))
         self.addCleanup(self.delete_dataset, _dataset.id)
         return _dataset
@@ -48,19 +40,7 @@ class GenerateDataMixin:
             if geneset:
                 geneset.delete()
 
-    def generate_geneset(self, session: Session, **params) -> Geneset:
+    def generate_geneset(self, session, **params) -> Geneset:
         _geneset = Geneset.create(session, **BogusGenesetParams.get(**params))
         self.addCleanup(self.delete_geneset, _geneset.id)
         return _geneset
-
-    @staticmethod
-    def delete_link(uuid):
-        with db_session_manager() as session:
-            link = CollectionLink.get(session, uuid)
-            if link:
-                link.delete()
-
-    def generate_link(self, session: Session, **params) -> CollectionLink:
-        _link = CollectionLink.create(session, **BogusDbCollectionLinkParams.get(**params))
-        self.addCleanup(self.delete_link, _link.id)
-        return _link

@@ -2,7 +2,11 @@ import { Button, Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import { FC, Fragment, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
+import {
+  Collection,
+  COLLECTION_LINK_TYPE,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useUserInfo } from "src/common/queries/auth";
@@ -91,7 +95,6 @@ const emailValidation = (value: string) => {
   return emailRegex.test(value) || "Invalid email";
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const Content: FC<Props> = (props) => {
   const isEditCollection = !!props.id;
   const initialBooleanState = isEditCollection;
@@ -124,16 +127,11 @@ const Content: FC<Props> = (props) => {
 
   let { data } = useCollection({
     id: props.id,
+    visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
-  const publishedID =
-    data && "revision_of" in data ? data.revision_of : undefined;
-
   const { mutateAsync: mutateCreateCollection } = useCreateCollection();
-  const { mutateAsync: mutateEditCollection } = useEditCollection(
-    props.id,
-    publishedID
-  );
+  const { mutateAsync: mutateEditCollection } = useEditCollection(props.id);
 
   // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
   if (isTombstonedCollection(data)) data = null;
@@ -364,7 +362,7 @@ const Content: FC<Props> = (props) => {
     }
 
     if (collectionId) {
-      router.push(ROUTES.COLLECTION.replace(":id", collectionId));
+      router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", collectionId));
     }
   }
 

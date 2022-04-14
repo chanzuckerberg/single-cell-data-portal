@@ -1,4 +1,5 @@
 from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
     DbDataset,
     DbDatasetArtifact,
     DbCollection,
@@ -18,12 +19,13 @@ class TestDeleteDataset(TestDataset):
             self.session,
             **BogusDatasetParams.get(
                 collection_id="test_collection_id",
+                collection_visibility=CollectionVisibility.PUBLIC.name,
                 artifacts=[{}],
             ),
         )
         test_dataset_ids = [(test_dataset.id, DbDataset)]
         test_artifact_ids = [(art.id, DbDatasetArtifact) for art in test_dataset.artifacts]
-        test_collection_ids = [("test_collection_id", DbCollection)]
+        test_collection_ids = [(("test_collection_id", CollectionVisibility.PUBLIC.name), DbCollection)]
 
         with self.subTest("verify everything exists"):
             expected_exists = test_collection_ids + test_dataset_ids + test_artifact_ids

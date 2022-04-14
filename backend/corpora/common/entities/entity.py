@@ -2,7 +2,6 @@ import logging
 import typing
 
 from sqlalchemy import inspect
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +29,9 @@ class Entity:
         self.session = inspect(db_object).session
 
     @classmethod
-    def get(cls, session: Session, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
+    def get(cls, session, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
         """
         Retrieves an entity from the database given its primary key if found.
-        :param session: The SQLAlchemy database Session
         :param key: Simple or composite primary key
         :return: Entity or None
         """
@@ -45,7 +43,7 @@ class Entity:
             return None
 
     @classmethod
-    def list(cls, session: Session) -> "Entity":
+    def list(cls, session) -> "Entity":
         """
         Retrieves a list of entities from the database
         :return: list of Entity

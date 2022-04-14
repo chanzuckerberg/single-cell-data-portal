@@ -4,7 +4,7 @@ from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 class TestDatasetRevision(TestDataset):
     def test__create_dataset_revision(self):
         dataset = self.generate_dataset_with_s3_resources(self.session, published=True)
-        rev_dataset = dataset.create_revision("test_collection_id_revision").to_dict()
+        rev_dataset = dataset.create_revision().to_dict()
         dataset = dataset.to_dict()
 
         with self.subTest("artifacts are correctly created and point to correct s3 uri"):
@@ -36,7 +36,9 @@ class TestDatasetRevision(TestDataset):
             self.assertNotEqual(revision_collection, dataset_1_collection)
         with self.subTest("metadata of revised matches original"):
             for key in rev_dataset.keys():
-                self.compare_original_and_revision(dataset, rev_dataset, key, ("original_id", "id", "collection_id"))
+                self.compare_original_and_revision(
+                    dataset, rev_dataset, key, ("original_id", "id", "collection_visibility")
+                )
 
     def compare_original_and_revision(self, original, revision, key, unique_fields):
         if key in unique_fields:

@@ -55,7 +55,9 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         with self.subTest("With collection"):
             # create a geneset
-            geneset = self.generate_geneset(self.session, collection_id=collection.id)
+            geneset = self.generate_geneset(
+                self.session, collection_id=collection.id, collection_visibility=collection.visibility
+            )
 
             # get geneset
             actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
@@ -65,10 +67,14 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         with self.subTest("With dataset"):
             # create dataset
-            dataset = self.generate_dataset(self.session, collection_id=collection.id)
+            dataset = self.generate_dataset(
+                self.session, collection_id=collection.id, collection_visibility=collection.visibility
+            )
 
             # create a geneset
-            geneset = self.generate_geneset(self.session, collection_id=collection.id)
+            geneset = self.generate_geneset(
+                self.session, collection_id=collection.id, collection_visibility=collection.visibility
+            )
             GenesetDatasetLink.create(self.session, geneset.id, dataset.id)
 
             # get geneset
@@ -90,7 +96,9 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         # create a geneset
-        geneset = self.generate_geneset(self.session, collection_id=collection.id)
+        geneset = self.generate_geneset(
+            self.session, collection_id=collection.id, collection_visibility=collection.visibility
+        )
 
         # get geneset
         actual_geneset_ids = self._get_geneset_ids(collection.id, headers)
@@ -113,7 +121,9 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         # create a geneset
-        geneset = self.generate_geneset(self.session, collection_id=collection.id)
+        geneset = self.generate_geneset(
+            self.session, collection_id=collection.id, collection_visibility=collection.visibility
+        )
 
         # get geneset
         actual_geneset_ids = self._get_geneset_ids(collection.id, headers, True)
@@ -147,7 +157,9 @@ class TestGenesetsCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS)
         )
 
         # create a geneset
-        geneset = self.generate_geneset(self.session, collection_id=collection.id)
+        geneset = self.generate_geneset(
+            self.session, collection_id=collection.id, collection_visibility=collection.visibility
+        )
 
         # get geneset
         actual_geneset_ids = self._get_geneset_ids(collection.id, headers)

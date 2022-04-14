@@ -1,7 +1,6 @@
 import logging
 
 from backend.corpora.common.corpora_orm import Base, DbDatasetProcessingStatus
-from sqlalchemy.orm import Session
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ def clone(model: Base, primary_key: dict = None, **kwargs) -> Base:
     return model.__class__(**data)
 
 
-def processing_status_updater(session: Session, uuid: str, updates: dict):
+def processing_status_updater(session, uuid: str, updates: dict):
     """
     Updates the DbDatasetProcessingStatus object with the specified statuses
     Note: The uuid parameter is the ID of the dataset_processing_status row, _NOT_ the dataset!

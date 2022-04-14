@@ -79,7 +79,7 @@ def get_status(dataset_uuid: str, user: str):
 @dbconnect
 def get_datasets_index():
     db_session = g.db_session
-    datasets = Collection.list_public_datasets_for_index(db_session)
+    datasets = Dataset.list_for_index(db_session)
     return make_response(jsonify(datasets), 200)
 
 
@@ -95,11 +95,12 @@ def delete_dataset(dataset_uuid: str, user: str):
     collection = Collection.get_collection(
         db_session,
         dataset.collection.id,
+        dataset.collection.visibility,
         owner=_owner_or_allowed(user),
     )
     if not collection:
         raise ForbiddenHTTPException()
-    if dataset.collection.visibility == CollectionVisibility.PUBLIC:
+    if dataset.collection_visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
     if dataset.tombstone is False:
         if dataset.published:
@@ -107,7 +108,7 @@ def delete_dataset(dataset_uuid: str, user: str):
         else:
             if dataset.original_id:
                 original = Dataset.get(db_session, dataset.original_id)
-                original.create_revision(dataset.collection.id)
+                original.create_revision()
             dataset.asset_deletion()
             dataset.delete()
     return "", 202
@@ -126,7 +127,7 @@ def get_dataset_identifiers(url: str):
         "s3_uri": s3_uri,
         "dataset_id": dataset.id,
         "collection_id": dataset.collection_id,
-        "collection_visibility": dataset.collection.visibility,
+        "collection_visibility": dataset.collection_visibility,
         "tombstoned": dataset.tombstone,
     }
     return make_response(jsonify(dataset_identifiers), 200)
@@ -152,6 +153,7 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
         x.to_dict(
             remove_attr=[
                 "collection",
+                "collection_visibility",
                 "collection_id",
                 "created_at",
                 "updated_at",

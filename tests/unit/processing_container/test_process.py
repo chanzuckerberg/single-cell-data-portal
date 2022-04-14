@@ -4,6 +4,9 @@ from unittest.mock import patch
 
 import requests
 
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+)
 from backend.corpora.dataset_processing import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -60,7 +63,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         """
         mock_download_from_dropbox.return_value = self.h5ad_raw
 
-        dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+        dataset = self.generate_dataset(
+            self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
+        )
 
         process.process(
             dataset.id,

@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { FC } from "react";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCreateRevision,
@@ -49,12 +49,13 @@ const conditionalPopover = (
 const CollectionRow: FC<Props> = (props) => {
   const { data: collection } = useCollection({
     id: props.id,
+    visibility: props.visibility,
   });
 
   const router = useRouter();
 
-  const navigateToRevision = (id: Collection["id"]) => {
-    router.push(ROUTES.COLLECTION.replace(":id", id));
+  const navigateToRevision = () => {
+    router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
   };
 
   const { mutate, isLoading } = useCreateRevision(navigateToRevision);
@@ -62,10 +63,10 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    if (!collection?.revisioning_in) {
+    if (collection?.has_revision === false) {
       mutate(id);
     } else {
-      navigateToRevision(collection?.revisioning_in || collection.id);
+      navigateToRevision();
     }
   };
 
@@ -84,7 +85,10 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow data-test-id="collection-row">
       <StyledCell>
-        <Link href={`/collections/${id}`} passHref>
+        <Link
+          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
+          passHref
+        >
           <CollectionTitleText data-test-id="collection-link" href="passHref">
             {name}
           </CollectionTitleText>
@@ -99,7 +103,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.revisioning_in && (
+            {props.revisionsEnabled && collection.has_revision && (
               <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
                 Revision Pending
               </Tag>
@@ -114,7 +118,7 @@ const CollectionRow: FC<Props> = (props) => {
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          revisionId={collection.revisioning_in}
+          isRevision={collection.has_revision}
           handleRevisionClick={handleRevisionClick}
           isLoading={isLoading}
         />
@@ -126,13 +130,13 @@ const CollectionRow: FC<Props> = (props) => {
 };
 
 const RevisionCell = ({
+  isRevision,
   handleRevisionClick,
   isLoading,
-  revisionId,
 }: {
+  isRevision?: boolean;
   handleRevisionClick: () => void;
   isLoading: boolean;
-  revisionId: Collection["revisioning_in"];
 }) => {
   return (
     <RightAlignedDetailsCell>
@@ -143,7 +147,7 @@ const RevisionCell = ({
         onClick={handleRevisionClick}
         data-test-id="revision-action-button"
       >
-        {revisionId ? "Continue" : "Start Revision"}
+        {isRevision ? "Continue" : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
   );

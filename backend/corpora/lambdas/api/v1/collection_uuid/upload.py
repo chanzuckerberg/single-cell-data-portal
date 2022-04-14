@@ -49,20 +49,18 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
     if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
 
-    # Get the Collection
+    # Create dataset
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
-        visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
+        CollectionVisibility.PRIVATE,
         owner=_owner_or_allowed(user),
     )
     if not collection:
         raise ForbiddenHTTPException
-
     if dataset_id:
-        # Update dataset
         dataset = Dataset.get(db_session, dataset_id)
-        if collection_uuid == dataset.collection_id:
+        if collection_uuid == dataset.collection_id and CollectionVisibility.PRIVATE == dataset.collection_visibility:
             if dataset.processing_status.processing_status in [ProcessingStatus.SUCCESS, ProcessingStatus.FAILURE]:
                 dataset.reprocess()
             else:
@@ -71,7 +69,6 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
             raise NotFoundHTTPException
 
     else:
-        # Add new dataset
         dataset = Dataset.create(db_session, collection=collection)
     dataset.update(processing_status=dataset.new_processing_status())
     # Start processing link

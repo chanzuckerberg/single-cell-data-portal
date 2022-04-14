@@ -5,8 +5,6 @@ import typing
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePosixPath
-from sqlalchemy.orm import Session
-
 from urllib.parse import urlparse
 
 from .dataset_asset import DatasetAsset
@@ -19,6 +17,7 @@ from ..corpora_orm import (
     UploadStatus,
     ProcessingStatus,
     DbGenesetDatasetLink,
+    CollectionVisibility,
     generate_uuid,
     DatasetArtifactFileType,
     ConversionStatus,
@@ -39,7 +38,7 @@ class Dataset(Entity):
     @classmethod
     def create(
         cls,
-        session: Session,
+        session,
         revision: int = 0,
         name: str = "",
         artifacts: list = None,
@@ -86,10 +85,11 @@ class Dataset(Entity):
                 if processing_status:
                     new_obj = DbDatasetProcessingStatus(dataset_id=self.id, **processing_status)
                     self.session.add(new_obj)
+
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session: Session, dataset_uuid, include_tombstones=False) -> "Dataset":
+    def get(cls, session, dataset_uuid, include_tombstones=False) -> "Dataset":
         dataset = super().get(session, dataset_uuid)
         if not include_tombstones:
             if dataset and dataset.tombstone is True:
@@ -97,7 +97,7 @@ class Dataset(Entity):
         return dataset
 
     @classmethod
-    def get_by_explorer_url(cls, session: Session, explorer_url):
+    def get_by_explorer_url(cls, session, explorer_url):
         """
         Return the most recently created dataset with the given explorer_url or None
         """
@@ -160,6 +160,55 @@ class Dataset(Entity):
         if unique_ancestors:
             dataset["development_stage_ancestors"] = unique_ancestors
 
+    @classmethod
+    def list_for_index(cls, session) -> typing.List[typing.Dict]:
+        """
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        """
+
+        attrs = [
+            DbDataset.id,
+            DbDataset.name,
+            DbDataset.collection_id,
+            DbDataset.tissue,
+            DbDataset.disease,
+            DbDataset.assay,
+            DbDataset.organism,
+            DbDataset.cell_count,
+            DbDataset.cell_type,
+            DbDataset.sex,
+            DbDataset.ethnicity,
+            DbDataset.development_stage,
+            DbDataset.is_primary_data,
+            DbDataset.mean_genes_per_cell,
+            DbDataset.schema_version,  # Required for schema manipulation
+            DbDataset.explorer_url,
+            DbDataset.published_at,
+            DbDataset.revised_at,
+        ]
+        table = cls.table
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        filters = [~DbDataset.tombstone, DbDataset.collection_visibility == CollectionVisibility.PUBLIC]
+
+        results = [to_dict(result) for result in session.query(table).filter(*filters).with_entities(*attrs).all()]
+
+        for result in results:
+            Dataset.transform_organism_for_schema_2_0_0(result)
+            Dataset.transform_sex_for_schema_2_0_0(result)
+            Dataset.enrich_development_stage_with_ancestors(result)
+
+        return results
+
     def _create_new_explorer_url(self, new_uuid: str) -> str:
         if self.explorer_url is None:
             return None
@@ -170,10 +219,10 @@ class Dataset(Entity):
         # Note: the final slash is mandatory, otherwise the explorer won't load this link
         return f"{new_url}/"
 
-    def create_revision(self, revision_collection_id: str) -> "Dataset":
+    def create_revision(self) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
-        :param revision_collection_id: specify the collection revision to which this dataset revision belongs
+        :param dataset_id: specify the uuid if the revision, otherwise one is generated.
         :return: dataset revision.
 
         """
@@ -182,7 +231,8 @@ class Dataset(Entity):
         revision_dataset = clone(
             self.db_object,
             id=revision_dataset_uuid,
-            collection_id=revision_collection_id,
+            collection_id=self.collection_id,
+            collection_visibility=CollectionVisibility.PRIVATE,
             original_id=self.id,
             explorer_url=revision_explorer_url,
         )
@@ -279,8 +329,7 @@ class Dataset(Entity):
         with the provided datetime.
         :param now: Datetime to populate dataset's published_at.
         """
-        collection_id = self.collection.revision_of if self.collection.revision_of else self.collection.id
-        self.update(collection_id=collection_id, published=True, published_at=now, commit=False)
+        self.update(collection_visibility=CollectionVisibility.PUBLIC, published=True, published_at=now, commit=False)
 
     def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
         """
@@ -311,8 +360,8 @@ class Dataset(Entity):
                 remove_attr=[
                     "updated_at",
                     "created_at",
+                    "collection_visibility",
                     "id",
-                    "collection_id",
                     "original_id",
                     "published",
                     "revised_at",
@@ -328,6 +377,7 @@ class Dataset(Entity):
                 self.update(commit=False, **updates, revised_at=now)
 
             return True
+
         return False
 
 
