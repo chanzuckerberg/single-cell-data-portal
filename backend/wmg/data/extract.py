@@ -42,7 +42,7 @@ def get_dataset_s3_uris():
                 dataset_ids.append(dataset[0])
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
-    return s3_uris.values()
+    return s3_uris
 
 
 def copy_datasets_to_instance(s3_uris, dataset_directory):
