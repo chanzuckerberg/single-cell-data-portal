@@ -51,7 +51,7 @@ If you need to make a change to the Data Portal database, see [Data Portal Datab
 1. Set `AWS_PROFILE`
 1. Run the tests `$ make unit-test`
 
-### Running functional tests
+### Running functional tests against a deployment env (dev, staging, prod)
 
 1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
 1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
