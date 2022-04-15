@@ -239,7 +239,7 @@ def make_cube_index(tdb_group, cube_dims):
 
 """
 TODO: this could be further optimize by parallel chunking.  Might help large
-arrays if compute ends up being a bottlneck.
+arrays if compute ends up being a bottleneck.
 """
 
 
@@ -254,7 +254,7 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
             cidx = col[k]
             grp_idx = row_groups[row[k]]
             sum_into[grp_idx, cidx] += val
-            nnz_into[grp_idx, cidx] += 1 if val else 0  # count only non-zero values
+            nnz_into[grp_idx, cidx] += 1
             if val < min_into[grp_idx, cidx]:
                 min_into[grp_idx, cidx] = val
             if val > max_into[grp_idx, cidx]:

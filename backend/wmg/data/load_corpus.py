@@ -1,16 +1,17 @@
 import gc
 import logging
 import os
+import time
 from typing import List, Union
 
 import anndata
 import numpy
 import numpy as np
 import pandas as pd
+import scanpy
 import tiledb
 from anndata._core.views import ArrayView
 from scipy import sparse
-import scanpy
 from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.rankit import rankit
@@ -93,8 +94,6 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
-    # TODO: Remove this is we don't use output TileDB arrays
-    # save_X(anndata_object, group_name, global_var_index, first_obs_idx)
 
     if validate:
         validate_corpus_load(anndata_object, corpus_path, dataset_id)
@@ -196,31 +195,30 @@ def transform_dataset_raw_counts_to_rankit(
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, expression_matrix.shape[0], stride):
             end = min(start + stride, expression_matrix.shape[0])
-            csr_sparse_raw_expression_matrix = sparse.csr_matrix(expression_matrix[start:end, :])
-
-            raw_expression_coo_matrix = csr_sparse_raw_expression_matrix.tocoo(copy=False)
-            rows = raw_expression_coo_matrix.row + start + first_obs_idx
-            cols = global_var_index[raw_expression_coo_matrix.col]
-            raw_expr_counts_data = raw_expression_coo_matrix.data
+            raw_expression_csr_matrix = sparse.csr_matrix(expression_matrix[start:end, :])
 
             # Compute RankIt
-            rankit_integrated_csr_matrix = rankit(csr_sparse_raw_expression_matrix)
+            rankit_integrated_csr_matrix = rankit(raw_expression_csr_matrix)
 
-            zero_out_low_expression_count_values(rankit_integrated_csr_matrix, raw_expression_coo_matrix)
+            rankit_integrated_coo_matrix = \
+                filter_out_rankits_with_low_expression_counts(rankit_integrated_csr_matrix, raw_expression_csr_matrix,
+                                                              expect_majority_filtered=True)
 
-            rankit_integrated_coo_matrix = rankit_integrated_csr_matrix.tocoo(copy=False)
-            assert np.array_equal(raw_expression_coo_matrix.row, rankit_integrated_coo_matrix.row)
-            assert np.array_equal(raw_expression_coo_matrix.col, rankit_integrated_coo_matrix.col)
+            global_rows = rankit_integrated_coo_matrix.row + start + first_obs_idx
+            global_cols = global_var_index[rankit_integrated_coo_matrix.col]
 
             rankit_data = rankit_integrated_coo_matrix.data
 
-            array[rows, cols] = {"rankit": rankit_data}
+            assert len(rankit_data) == len(global_rows)
+            assert len(rankit_data) == len(global_cols)
+
+            # array[global_rows, global_cols] = {"rankit": rankit_data}
             del (
-                raw_expression_coo_matrix,
+                raw_expression_csr_matrix,
                 rankit_integrated_coo_matrix,
-                rows,
-                cols,
-                raw_expr_counts_data,
+                rankit_integrated_csr_matrix,
+                global_rows,
+                global_cols,
                 rankit_data,
             )
             gc.collect()
@@ -228,17 +226,46 @@ def transform_dataset_raw_counts_to_rankit(
     logger.debug(f"Saved {array_name}.")
 
 
-def zero_out_low_expression_count_values(rankit: csr_matrix, raw_counts: coo_matrix):
+def filter_out_rankits_with_low_expression_counts(rankits: csr_matrix, raw_counts_csr: csr_matrix,
+                                                  expect_majority_filtered=True) -> coo_matrix:
     """
-    Zero-out rankit values that were computed from expression values having raw count <= 3. This updates the `rankit`
-    matrix in-place.
+    Keep only rankit values that were computed from expression values above the desired threshold.
+
+    @param expect_majority_filtered: Set this to True if the caller expects the majority of rankit values will be
+    filtered, as we can then use an optimal implementation
     """
-    # TODO: Ideally, we would just *remove* these elements from rankit matrix, but that would
-    #  require also adjusting the `obs` matrix and first_obs_idx, which are already updated. For now,
-    #  we will also need to ignore zero values when computing nnz attribute of the expression summary cube.
 
-    to_zero_mask = raw_counts.data <= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
-    to_zero_rows = raw_counts.row[to_zero_mask]
-    to_zero_cols = raw_counts.col[to_zero_mask]
-    rankit[to_zero_rows, to_zero_cols] = 0.0
+    rankits_nnz_orig = rankits.nnz
+    raw_counts = raw_counts_csr.tocoo(copy=False)
+    to_keep_mask = raw_counts.data > RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
+    # Unfortunately, it seems to take longer to decide which strategy to use than it does to just run either one.
+    # start = time.time()
+    # expect_majority_filtered = to_keep_mask.sum() < rankits_nnz_orig / 2
+    # end = time.time()
+    # logger.info(f"filter_out_rankits_with_low_expression_counts(): use extract strategy={expect_majority_filtered}; "
+    #             f"decision time={end - start}")
+
+    start = time.time()
+
+    if expect_majority_filtered:
+        rows_to_keep = raw_counts.row[to_keep_mask]
+        cols_to_keep = raw_counts.col[to_keep_mask]
+        rankits_to_keep = rankits.data[to_keep_mask]
+        rankits_filtered = coo_matrix((rankits_to_keep, (rows_to_keep, cols_to_keep)))
+    else:
+        to_filter_mask = ~to_keep_mask
+        rows_to_filter = raw_counts.row[to_filter_mask]
+        cols_to_filter = raw_counts.col[to_filter_mask]
+        rankits[rows_to_filter, cols_to_filter] = 0.0
+        rankits.eliminate_zeros()
+        rankits_filtered = rankits.tocoo()
+
+    end = time.time()
+
+    logger.info(f"filter duration={end - start}, "
+                 f"orig size={rankits_nnz_orig}, "
+                 f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
+                 f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}")
+
+    return rankits_filtered
