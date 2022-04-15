@@ -1,10 +1,3 @@
-# Error handler
-class AuthError(Exception):
-    def __init__(self, error, status_code):
-        self.error = error
-        self.status_code = status_code
-
-
 def has_scope(required_scope, token_info):
     try:
         if token_info.get("scope"):

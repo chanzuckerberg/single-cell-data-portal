@@ -1,10 +1,9 @@
-from backend.corpora.lambdas.api.v1.authorization import AuthError
 import connexion
 import json
 import logging
 import os
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, jsonify, request
+from flask import g, request
 from flask_cors import CORS
 from urllib.parse import urlparse
 
@@ -84,13 +83,6 @@ def pre_request_logging():
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
-
-
-@app.errorhandler(AuthError)
-def handle_auth_error(ex):
-    response = jsonify(ex.error)
-    response.status_code = ex.status_code
-    return response
 
 
 @app.errorhandler(ProblemException)
