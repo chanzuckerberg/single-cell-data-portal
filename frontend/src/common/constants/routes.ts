@@ -4,7 +4,6 @@ export enum ROUTES {
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
   DATASETS = "/datasets",
-  PRIVATE_COLLECTION = "/collections/:id/private",
   TOS = "/tos/",
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",

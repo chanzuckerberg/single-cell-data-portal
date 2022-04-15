@@ -1,8 +1,13 @@
-import { Checkbox } from "czifui";
+import { Checkbox, Icon, Tooltip } from "czifui";
 import Image from "next/image";
 import { Content, Header, LowHigh } from "../../common/style";
 import plasmaImage from "./plasma.png";
-import { ContentWrapper, StyledFormControlLabel, Wrapper } from "./style";
+import {
+  ContentWrapper,
+  LabelWrapper,
+  StyledFormControlLabel,
+  Wrapper,
+} from "./style";
 
 const CONTENT_WIDTH_PX = 100;
 
@@ -42,7 +47,16 @@ export default function RelativeGeneExpression({
               stage={isScaled ? "checked" : "unchecked"}
             />
           }
-          label="Scaled"
+          label={
+            <LabelWrapper>
+              <span>Scaled</span>
+              <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
+                <span>
+                  <Icon sdsIcon="infoCircle" sdsSize="xs" sdsType="static" />
+                </span>
+              </Tooltip>
+            </LabelWrapper>
+          }
         />
       </ContentWrapper>
     </Wrapper>
