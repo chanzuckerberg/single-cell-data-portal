@@ -121,7 +121,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
-            revision_uuid = res.json()['id']
+            revision_uuid = res.json()["id"]
             self.assertEqual(res.status_code, 201)
 
             # Upload a new dataset
@@ -153,7 +153,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
-            revision_uuid = res.json()['id']
+            revision_uuid = res.json()["id"]
 
             # This only works if you pick the non replaced dataset.
             dataset_to_delete = res.json()["datasets"][1]
