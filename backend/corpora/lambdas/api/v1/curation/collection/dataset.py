@@ -6,8 +6,7 @@ from flask import g, make_response, jsonify
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.utils.exceptions import ForbiddenHTTPException, MethodNotAllowedException
-from backend.corpora.lambdas.api.v1.collection import get_collection, _is_user_owner_or_allowed
+from backend.corpora.lambdas.api.v1.common import is_user_owner_or_allowed, get_collection, owner_or_allowed
 
 sts_client = boto3.client("sts")
 logger = logging.getLogger(__name__)
@@ -32,21 +31,17 @@ duration = 3600
 
 
 @dbconnect
-def get_s3_credentials(collection_uuid, user):
+def get_s3_credentials(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
-    # check if they own the collection.
-    collection = get_collection(
-        db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, include_tombstones=True
-    )  # TODO remove private
-    if collection.visibility != CollectionVisibility.PRIVATE:
-        raise MethodNotAllowedException()
-    if not _is_user_owner_or_allowed(user, collection.owner):
-        raise ForbiddenHTTPException()
+    # Raise an error if they are not allow to modify the collection.
+    get_collection(
+        db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
+    )
 
     parameters = dict(
         RoleArn=config.curator_role_arn,
-        RoleSessionName=user.replace("|", "-"),
+        RoleSessionName=token_info["sub"].replace("|", "-"),
         Policy=create_policy(config.submission_bucket, collection_uuid),
         DurationSeconds=duration,
     )

@@ -15,7 +15,7 @@ from .....common.utils.exceptions import (
     NotFoundHTTPException,
 )
 from .....common.utils.math_utils import GB
-from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+from ..common import owner_or_allowed
 
 
 def link(collection_uuid: str, body: dict, user: str):
@@ -29,7 +29,7 @@ def relink(collection_uuid: str, body: dict, user: str):
 
 
 @dbconnect
-def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str = None):
+def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None):
     db_session = g.db_session
     # Verify Dropbox URL
     valid_link = from_url(url)
@@ -54,7 +54,7 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException

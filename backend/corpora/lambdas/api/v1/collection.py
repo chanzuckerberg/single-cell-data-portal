@@ -8,33 +8,18 @@ from urllib.parse import urlparse
 
 import logging
 
+from .common import is_user_owner_or_allowed, owner_or_allowed, get_collection
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import (
     InvalidParametersHTTPException,
-    ForbiddenHTTPException,
     ConflictException,
 )
 from ....api_server.db import dbconnect
-from backend.corpora.lambdas.api.v1.authorization import has_scope
-
-
-def _is_user_owner_or_allowed(user, owner):
-    """
-    Check if the user has ownership on a collection, or if it has superuser permissions
-    """
-    return (user and user == owner) or (has_scope("write:collections"))
-
-
-def _owner_or_allowed(user):
-    """
-    Returns None if the user is superuser, `user` otherwise. Used for where conditions
-    """
-    return None if has_scope("write:collections") else user
 
 
 @dbconnect
-def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
+def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
     db_session = g.db_session
     all_collections = Collection.list_attributes_in_time_range(
         db_session,
@@ -55,7 +40,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
         owner = coll_dict["owner"]
         if visibility == CollectionVisibility.PUBLIC:
             collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
-        elif _is_user_owner_or_allowed(user, owner):
+        elif is_user_owner_or_allowed(token_info, owner):
             collections.append(
                 dict(
                     id=coll_dict["id"],
@@ -74,29 +59,21 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
-def get_collection(db_session, collection_uuid, visibility, **kwargs):
-    collection = Collection.get_collection(db_session, collection_uuid, visibility, **kwargs)
-    if not collection:
-        raise ForbiddenHTTPException()
-    return collection
-
-
 @dbconnect
-def get_collection_details(collection_uuid: str, user: str):
+def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
-    if not collection:
-        raise ForbiddenHTTPException()
+    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
     if collection.tombstone:
         result = ""
         response = 410
     else:
         get_tombstone_datasets = (
-            _is_user_owner_or_allowed(user, collection.owner) and collection.visibility == CollectionVisibility.PRIVATE
+            is_user_owner_or_allowed(token_info, collection.owner)
+            and collection.visibility == CollectionVisibility.PRIVATE
         )
         result = collection.reshape_for_api(get_tombstone_datasets)
         response = 200
-        result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
+        result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
     return make_response(jsonify(result), response)
 
 
@@ -126,13 +103,13 @@ def get_collections_index():
 
 
 @dbconnect
-def post_collection_revision(collection_uuid: str, user: str):
+def post_collection_revision(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
         collection_uuid,
-        CollectionVisibility.PUBLIC,
-        owner=_owner_or_allowed(user),
+        visibility=CollectionVisibility.PUBLIC,
+        owner=owner_or_allowed(token_info),
     )
     try:
         collection_revision = collection.create_revision()
@@ -213,43 +190,37 @@ def create_collection(body: object, user: str):
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
-def get_collection_dataset(dataset_uuid: str):
-    raise NotImplementedError
-
-
 @dbconnect
-def delete_collection(collection_uuid: str, user: str):
+def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         collection_uuid,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
         include_tombstones=True,
     )
-    if collection:
-        if collection.visibility == CollectionVisibility.PUBLIC:
-            revision = Collection.get_collection(
-                db_session,
-                revision_of=collection_uuid,
-                owner=_owner_or_allowed(user),
-            )
-            if revision:
-                revision.delete()
-            collection.tombstone_collection()
-        else:
-            collection.delete()
-        return "", 204
-    return "", 403
+    if collection.visibility == CollectionVisibility.PUBLIC:
+        revision = Collection.get_collection(
+            db_session,
+            revision_of=collection_uuid,
+            owner=owner_or_allowed(token_info),
+        )
+        if revision:
+            revision.delete()
+        collection.tombstone_collection()
+    else:
+        collection.delete()
+    return "", 204
 
 
 @dbconnect
-def update_collection(collection_uuid: str, body: dict, user: str):
+def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE.name,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
 
     # Compute the diff between old and new DOI

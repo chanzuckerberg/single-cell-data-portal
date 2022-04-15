@@ -29,10 +29,10 @@ class TestAuthToken(BaseAPITest):
             _test({"sub": "test_user_id"})
 
         with self.subTest("super curator"):
-            _test({"sub": "not_test_user_id", "scope": ["write:collections"]})
+            _test({"sub": "not_test_user_id", "scope": "write:collections"})
 
     @patch("backend.corpora.lambdas.api.v1.authentication.assert_authorized_token")
-    def test__generate_s3_credentials__Forbidden(self, assert_authorized_token: Mock):
+    def test__generate_s3_credentials__Not_Owner(self, assert_authorized_token: Mock):
         assert_authorized_token.return_value = {"sub": "test_user_id"}
         collection = self.generate_collection(self.session, owner="not_test_user")
         headers = {"Authorization": "Bearer fake_access_token"}
@@ -42,14 +42,14 @@ class TestAuthToken(BaseAPITest):
         self.assertEqual(403, response.status_code)
 
     @patch("backend.corpora.lambdas.api.v1.authentication.assert_authorized_token")
-    def test__generate_s3_credentials__MethodNotAllowedException(self, assert_authorized_token: Mock):
+    def test__generate_s3_credentials__Not_Private(self, assert_authorized_token: Mock):
         assert_authorized_token.return_value = {"sub": "test_user_id"}
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
         headers = {"Authorization": "Bearer fake_access_token"}
         response = self.app.get(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
         )
-        self.assertEqual(405, response.status_code)
+        self.assertEqual(403, response.status_code)
 
 
 if __name__ == "__main__":
