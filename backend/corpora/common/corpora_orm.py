@@ -3,12 +3,12 @@ import enum
 from datetime import datetime
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     Enum,
     Float,
     ForeignKey,
-    ForeignKeyConstraint,
     Integer,
     String,
     UniqueConstraint,
@@ -216,7 +216,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     # the tablename is "project" instead of "collection" to avoid migrating the database
     __tablename__ = "project"
 
-    visibility = Column(Enum(CollectionVisibility), primary_key=True, nullable=False)
+    visibility = Column(Enum(CollectionVisibility), nullable=False)
     owner = Column(StrippedString, nullable=False)
     name = Column(StrippedString)
     description = Column(StrippedString)
@@ -226,11 +226,15 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     data_submission_policy_version = Column(StrippedString, nullable=True)
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
+    revision_of = Column(String, ForeignKey("project.id"), nullable=True, unique=True)
 
     # Relationships
+    revision = relationship("DbCollection", cascade="all, delete-orphan", uselist=False)
     links = relationship("DbProjectLink", back_populates="collection", cascade="all, delete-orphan")
     datasets = relationship("DbDataset", back_populates="collection", cascade="all, delete-orphan")
     genesets = relationship("DbGeneset", back_populates="collection", cascade="all, delete-orphan")
+
+    __table_args__ = (CheckConstraint("revision_of IS NULL OR visibility = 'PRIVATE'", "ck_project_private_revision"),)
 
 
 class DbProjectLink(Base, AuditMixin):
@@ -241,20 +245,13 @@ class DbProjectLink(Base, AuditMixin):
     # the tablename is "project_link" instead of "collection_link" to avoid migrating the database
     __tablename__ = "project_link"
 
-    collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
+    collection_id = Column(String, ForeignKey("project.id"), nullable=False)
     link_name = Column(StrippedString)
     link_url = Column(StrippedString)
     link_type = Column(Enum(CollectionLinkType))
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="links")
-
-    # Composite FK
-    __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        {},
-    )
 
 
 # provide a consistent name
@@ -283,8 +280,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     cell_count = Column(Integer)
     is_valid = Column(Boolean, default=False)
     is_primary_data = Column(Enum(IsPrimaryData))
-    collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
+    collection_id = Column(String, ForeignKey("project.id"), nullable=False)
     tombstone = Column(Boolean, default=False, nullable=False)
     original_id = Column(String)
     published = Column(Boolean, default=False)
@@ -304,11 +300,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
 
     # Composite FK
-    __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),
-        {},
-    )
+    __table_args__ = (UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),)
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]
@@ -326,7 +318,7 @@ class DbDatasetArtifact(Base, AuditMixin):
     __tablename__ = "dataset_artifact"
     __mapper_args__ = {"confirm_deleted_rows": False}
 
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)
     filename = Column(String)
     filetype = Column(Enum(DatasetArtifactFileType))
     user_submitted = Column(Boolean)
@@ -418,7 +410,7 @@ class DbDatasetProcessingStatus(Base, AuditMixin):
 
     __tablename__ = "dataset_processing_status"
 
-    dataset_id = Column(ForeignKey("dataset.id"), nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)
     upload_status = Column(Enum(UploadStatus))
     upload_progress = Column(Float)
     upload_message = Column(String)
@@ -443,15 +435,11 @@ class DbGeneset(Base, AuditMixin):
     name = Column(String, nullable=False)
     description = Column(String)
     genes = Column(JSONB)
-    collection_id = Column(String, nullable=False)
-    collection_visibility = Column(Enum(CollectionVisibility), nullable=False)
+    collection_id = Column(String, ForeignKey("project.id"), nullable=False)
     collection = relationship("DbCollection", uselist=False, back_populates="genesets")
     datasets = relationship("DbDataset", secondary="geneset_dataset_link", back_populates="genesets")
 
-    __table_args__ = (
-        ForeignKeyConstraint([collection_id, collection_visibility], [DbCollection.id, DbCollection.visibility]),
-        UniqueConstraint("name", "collection_id", "collection_visibility", name="_geneset_name__collection_uc"),
-    )
+    __table_args__ = (UniqueConstraint("name", "collection_id", name="_geneset_name__collection_uc"),)
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["datasets"]
@@ -467,5 +455,5 @@ class DbGenesetDatasetLink(Base, AuditMixin):
 
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey("geneset.id"), index=True)
-    dataset_id = Column(String, ForeignKey("dataset.id"), index=True)
+    geneset_id = Column(String, ForeignKey("geneset.id"), index=True, nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), index=True, nullable=False)

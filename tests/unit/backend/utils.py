@@ -8,6 +8,7 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     ValidationStatus,
     XApproximateDistribution,
+    CollectionLinkType,
 )
 
 
@@ -63,13 +64,25 @@ class BogusDatasetParams:
             cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
             explorer_url="test_url",
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
         )
 
+        bogus_data.update(**kwargs)
+        return bogus_data
+
+
+class BogusDbCollectionLinkParams:
+    @classmethod
+    def get(cls, **kwargs):
+        bogus_data = dict(
+            collection_id="test_collection_id",
+            link_name="link_name",
+            link_url="link_url",
+            link_type=CollectionLinkType.DOI,
+        )
         bogus_data.update(**kwargs)
         return bogus_data
 
@@ -95,7 +108,6 @@ class BogusGenesetParams:
             name=cls.generate_random_string(7),
             genes=genes,
             collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
 
         bogus_data.update(**kwargs)
