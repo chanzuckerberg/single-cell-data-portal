@@ -172,7 +172,7 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
 def create_dataset(dataset_id_ordinal: int) -> str:
     coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
     with db_session_manager() as session:
-        if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
+        if coll := Collection.get(session, coll_id):
             Collection.delete(coll)
 
         collection = DbCollection(
@@ -186,7 +186,6 @@ def create_dataset(dataset_id_ordinal: int) -> str:
             id=f"dataset_id_{dataset_id_ordinal}",
             name=f"dataset_name_{dataset_id_ordinal}",
             collection_id=coll_id,
-            collection_visibility=CollectionVisibility.PUBLIC,
         )
         session.add(dataset)
         return dataset.id

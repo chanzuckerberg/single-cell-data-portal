@@ -33,3 +33,10 @@ export const StyledFormControlLabel = styled(FormControlLabel)`
   left: 110px;
   top: -10px;
 `;
+
+export const LabelWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+`;
