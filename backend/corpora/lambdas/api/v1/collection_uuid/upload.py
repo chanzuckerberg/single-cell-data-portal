@@ -18,13 +18,13 @@ from .....common.utils.math_utils import GB
 from ..common import owner_or_allowed
 
 
-def link(collection_uuid: str, body: dict, user: str):
-    dataset_id = upload_from_link(collection_uuid, user, body["url"])
+def link(collection_uuid: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
-def relink(collection_uuid: str, body: dict, user: str):
-    dataset_id = upload_from_link(collection_uuid, user, body["url"], body["id"])
+def relink(collection_uuid: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], body["id"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
