@@ -9,6 +9,8 @@ The Single Cell Data Portal enables the publication, discovery and exploration o
 
 ### Pre-requisite installations and setups
 
+**Note**: Before you begin to install any Python packages, make sure you have activated your Python virtual environment.
+
 1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
 1. Set up your machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the step 3 `AWS CLI access` instructions all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
 1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0, and add it somewhere on your path. On Mac, run `brew install chamber`.
@@ -48,21 +50,16 @@ If you need to make a change to the Data Portal database, see [Data Portal Datab
 
 ### Running unittests
 
-1. Set `AWS_PROFILE`
-1. Run the tests `$ make unit-test`
+1. Set `AWS_PROFILE`.
+1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
+1. Run the tests using the command `$ make unit-test`.
 
 ### Running functional tests against a deployment env (dev, staging, prod)
 
 1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
-1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. In another terminal run `make functional-test`
-
-### Running local functional tests
-
-1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
-1. Set `DEPLOYMENT_STAGE` and `AWS_PROFILE` according to the environment to be deployed.
-1. Run `make local-init` to launch a local dev environment
-1. Run `make functional-test`
+1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
+1. If you are running the functional tests locally, set `DEPLOYMENT_STAGE` to be `test`. If you are running the functional test against a deployment environment, then set `DEPLOYMENT_STAGE` to the environment (i.e. `dev`, `staging`, `prod`) and also set `AWS_PROFILE` respectively according to the above table.
+1. Run `make functional-test`.
 
 ### Upload processing container
 
