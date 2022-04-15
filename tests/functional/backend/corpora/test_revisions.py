@@ -75,7 +75,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
-            revision_uuid = res.json()['id']
+            revision_uuid = res.json()["id"]
             private_dataset_id = res.json()["datasets"][0]["id"]
 
             meta_payload_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
