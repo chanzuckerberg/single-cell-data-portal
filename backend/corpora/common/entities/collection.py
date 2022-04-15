@@ -1,11 +1,19 @@
 import typing
 from datetime import datetime
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from ..corpora_orm import CollectionLinkType, DbCollection, DbCollectionLink, CollectionVisibility
+from .collection_link import CollectionLink
+from ..corpora_orm import (
+    CollectionLinkType,
+    DbCollection,
+    DbCollectionLink,
+    CollectionVisibility,
+    generate_uuid,
+)
 from ..utils.db_helpers import clone
 
 
@@ -19,7 +27,7 @@ class Collection(Entity):
     @classmethod
     def create(
         cls,
-        session,
+        session: Session,
         visibility: CollectionVisibility,
         name: str = "",
         description: str = "",
@@ -50,10 +58,7 @@ class Collection(Entity):
             publisher_metadata=publisher_metadata,
             **kwargs,
         )
-
-        new_db_object.links = [
-            DbCollectionLink(collection_id=new_db_object.id, collection_visibility=visibility, **link) for link in links
-        ]
+        new_db_object.links = [DbCollectionLink(collection_id=new_db_object.id, **link) for link in links]
         session.add(new_db_object)
         session.commit()
         return cls(new_db_object)
@@ -61,9 +66,10 @@ class Collection(Entity):
     @classmethod
     def get_collection(
         cls,
-        session,
-        collection_uuid: str,
-        visibility: str = CollectionVisibility.PUBLIC.name,
+        session: Session,
+        collection_uuid: str = None,
+        visibility: CollectionVisibility = None,
+        revision_of: str = None,
         include_tombstones: bool = False,
         owner: typing.Optional[str] = None,
     ) -> typing.Union["Collection", None]:
@@ -72,33 +78,47 @@ class Collection(Entity):
         :param session: the database session object.
         :param collection_uuid:
         :param visibility: the visibility of the collection
+        :param revision_of: the id of the associated public collection iff this collection is a revision
         :param include_tombstones: If true, the collection is returned even if it has been tombstoned.
         :param owner: A user id use to check if the user is the owner of the collection. If the user id matches the
         owner then the collection is returned. If this parameters is not included then owner is not used as a filter.
         :return: the collection if it matches the filter.
         """
-        filters = [cls.table.id == collection_uuid, cls.table.visibility == visibility]
+        filters = []
+        if visibility:
+            filters.append(cls.table.visibility == visibility)
+        if collection_uuid:
+            filters.append(cls.table.id == collection_uuid)
+        if revision_of:
+            filters.append(cls.table.revision_of == revision_of)
         if owner:
             filters.append(cls.table.owner == owner)
         if not include_tombstones:
             filters.append(cls.table.tombstone == False)  # noqa
         collection = session.query(cls.table).filter(*filters).one_or_none()
+
         return cls(collection) if collection else None
 
     @classmethod
-    def list_collections_in_time_range(cls, session, *args, **kwargs):
+    def list_collections_in_time_range(cls, session: Session, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             session, *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
         )
 
     @classmethod
     def list_attributes_in_time_range(
-        cls, session, to_date: int = None, from_date: int = None, filters: list = None, list_attributes: list = None
+        cls,
+        session: Session,
+        to_date: int = None,
+        from_date: int = None,
+        filters: list = None,
+        list_attributes: list = None,
     ) -> typing.List[typing.Dict]:
         """
         Queries the database for Entities that have been created within the specified time range. Return only the
         entity attributes in `list_attributes`.
 
+        :param session: The SQLAlchemy database Session
         :param to_date: If provided, only lists collections that were created before this date. Format of param is Unix
         timestamp since the epoch in UTC timezone.
         :param from_date: If provided, only lists collections that were created after this date. Format of param is Unix
@@ -128,6 +148,57 @@ class Collection(Entity):
             to_dict(result)
             for result in session.query(table).with_entities(*list_attributes).filter(and_(*filters)).all()
         ]
+
+        return results
+
+    @classmethod
+    def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
+        """
+        Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
+        inside the `dataset` table and doesn't include relationships.
+        """
+
+        attrs = [
+            Dataset.table.id,
+            Dataset.table.name,
+            Dataset.table.collection_id,
+            Dataset.table.tissue,
+            Dataset.table.disease,
+            Dataset.table.assay,
+            Dataset.table.organism,
+            Dataset.table.cell_count,
+            Dataset.table.cell_type,
+            Dataset.table.sex,
+            Dataset.table.ethnicity,
+            Dataset.table.development_stage,
+            Dataset.table.is_primary_data,
+            Dataset.table.mean_genes_per_cell,
+            Dataset.table.schema_version,  # Required for schema manipulation
+            Dataset.table.explorer_url,
+            Dataset.table.published_at,
+            Dataset.table.revised_at,
+        ]
+
+        def to_dict(db_object):
+            _result = {}
+            for _field in db_object._fields:
+                _value = getattr(db_object, _field)
+                if _value is None:
+                    continue
+                _result[_field] = getattr(db_object, _field)
+            return _result
+
+        filters = [~Dataset.table.tombstone, cls.table.visibility == CollectionVisibility.PUBLIC.name]
+
+        results = [
+            to_dict(result)
+            for result in session.query(Dataset.table).join(cls.table).filter(*filters).with_entities(*attrs).all()
+        ]
+
+        for result in results:
+            Dataset.transform_organism_for_schema_2_0_0(result)
+            Dataset.transform_sex_for_schema_2_0_0(result)
+            Dataset.enrich_development_stage_with_ancestors(result)
 
         return results
 
@@ -174,74 +245,76 @@ class Collection(Entity):
         # Timestamp for published_at and revised_at
         now = datetime.utcnow()
         # Create a public collection with the same uuid and same fields
-        public_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PUBLIC)
         is_existing_collection = False
-
-        if public_collection:
+        if self.revision_of:
+            # This is a revision of a published Collection
+            public_collection = Collection.get_collection(self.session, collection_uuid=self.revision_of)
             revision = self.to_dict(
-                remove_attr=("updated_at", "created_at", "visibility", "id"), remove_relationships=True
+                remove_attr=("updated_at", "created_at", "visibility", "id", "revision_of", "published_at"),
+                remove_relationships=True,
             )
             revision["data_submission_policy_version"] = data_submission_policy_version
             public_collection.update(
                 commit=False,
                 **revision,
             )
+            for link in self.links:
+                CollectionLink(link).update(collection_id=self.revision_of, commit=False)
+            public_collection.links = self.links
             is_existing_collection = True
-        # A published collection with the same uuid does not already exist.
-        # This is a new collection.
-        else:
-            public_collection = Collection(
-                clone(
-                    self.db_object,
-                    primary_key=dict(id=self.id, visibility=CollectionVisibility.PUBLIC),
-                    # We want to update published_at only when the collection is first published.
-                    published_at=now,
-                    data_submission_policy_version=data_submission_policy_version,
-                )
-            )
-            self.session.add(public_collection)
 
-        # Copy over relationships
-        for link in self.links:
-            link.collection_visibility = CollectionVisibility.PUBLIC
+        else:
+            # This is the first publishing of this Collection
+            self.update(
+                commit=False,
+                visibility=CollectionVisibility.PUBLIC,
+                published_at=now,
+                data_submission_policy_version=data_submission_policy_version,
+                keep_links=True,
+            )
 
         has_dataset_changes = False
         for dataset in self.datasets:
-            revision = Dataset(dataset)
-            original = Dataset.get(self.session, revision.original_id) if revision.original_id else None
+            revised_dataset = Dataset(dataset)
+            original = Dataset.get(self.session, revised_dataset.original_id) if revised_dataset.original_id else None
             if original and public_collection.check_has_dataset(original):
-                dataset_is_changed = original.publish_revision(revision, now)
+                dataset_is_changed = original.publish_revision(revised_dataset, now)
                 if dataset_is_changed:
                     has_dataset_changes = True
             else:
                 # The dataset is new
-                revision.publish_new(now)
+                revised_dataset.publish_new(now)
                 has_dataset_changes = True
 
-        if is_existing_collection and has_dataset_changes:
-            public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
+        self.session.flush()
+        self.session.expire_all()
+
+        if is_existing_collection:
+            if has_dataset_changes:
+                public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
+            self.delete()
+            self.db_object = public_collection.db_object
 
         self.session.commit()
-        # commit expires the session, need to retrieve the original private collection to delete it
-        private_collection = Collection.get_collection(self.session, self.id, CollectionVisibility.PRIVATE)
-        private_collection.delete()
-        self.db_object = public_collection.db_object
 
-    def revision(self) -> "Collection":
+    def create_revision(self) -> "Collection":
         """
         Generate a collection revision from a public collection
         :return: collection revision.
 
         """
         revision_collection = clone(
-            self.db_object, primary_key=dict(id=self.id, visibility=CollectionVisibility.PRIVATE)
+            self.db_object,
+            primary_key=dict(id=generate_uuid()),
+            visibility=CollectionVisibility.PRIVATE,
+            revision_of=self.id,
         )
         self.session.add(revision_collection)
         for link in self.links:
-            self.session.add(clone(link, collection_id=self.id, collection_visibility=CollectionVisibility.PRIVATE))
-        self.session.commit()
+            self.session.add(clone(link, collection_id=revision_collection.id))
         for dataset in self.datasets:
-            Dataset(dataset).create_revision()
+            Dataset(dataset).create_revision(revision_collection.id)
+        self.session.commit()
         return Collection(revision_collection)
 
     def tombstone_collection(self):
@@ -254,19 +327,20 @@ class Collection(Entity):
             ds.tombstone_dataset_and_delete_child_objects()
         self.session.commit()
 
-    def update(self, links: list = None, **kwargs) -> None:
+    def update(self, links: list = None, keep_links=False, **kwargs) -> None:
         """
         Update an existing collection to match provided the parameters. The specified columns are replaced.
         :param links: links to create and connect to the collection. If present, the existing attached entries will
          be removed and replaced with new entries.
+        :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
         links = links if links else []
-        for link in self.links:
-            self.session.delete(link)
-        new_objs = [
-            DbCollectionLink(collection_id=self.id, collection_visibility=self.visibility, **link) for link in links
-        ]
+        if not keep_links:
+            for link in self.links:
+                self.session.delete(link)
+
+        new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]
         self.session.add_all(new_objs)
 
         super().update(**kwargs)
@@ -281,7 +355,7 @@ class Collection(Entity):
 
     def check_has_dataset(self, dataset: Dataset) -> bool:
         """Check that a dataset is part of the collection"""
-        return all([self.id == dataset.collection_id, self.visibility == dataset.collection_visibility])
+        return self.id == dataset.collection_id
 
     def get_doi(self) -> str:
         doi = [link for link in self.links if link.link_type == CollectionLinkType.DOI]
