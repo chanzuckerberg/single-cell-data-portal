@@ -115,8 +115,8 @@ export default function QuickSelect<
   isLoading,
 }: Props<T, Multiple>): JSX.Element {
   const [open, setOpen] = useState(false);
-  const [pendingPaste, setPendingPaste] = useState(false);
   const [input, setInput] = useState("");
+  const [hasComma, setHasComma] = useState(false);
 
   const useStyles = makeStyles((theme: Theme) => {
     const colors = getColors({ theme });
@@ -146,16 +146,17 @@ export default function QuickSelect<
 
   const classes = useStyles();
 
-  // `HandleEnter()` handles the enter key press when there is a pending paste in the search bar
+  // `HandleEnter()` handles the enter key press when we detect comma(",") in the search bar
   // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>
   const handleEnter =
     !multiple || !("length" in selected) || onItemNotFound === undefined
       ? noop
       : (event: React.KeyboardEvent<HTMLInputElement>) => {
-          if (event.key === "Enter" && pendingPaste) {
+          if (event.key === "Enter" && hasComma) {
             event.preventDefault();
             const newSelected = [...(selected as T[])];
             const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
+
             parsedPaste.map((item) => {
               const newItem = itemsByName.get(item);
               if (!newItem) {
@@ -163,15 +164,12 @@ export default function QuickSelect<
               } else if (!newSelected.includes(newItem))
                 newSelected.push(newItem);
             });
-            setPendingPaste(false);
+
             setOpen(false);
+
             return setSelected(newSelected as Value<T, Multiple>);
           }
         };
-
-  const handlePaste = () => {
-    setPendingPaste(true);
-  };
 
   const handleClose = (
     _: React.ChangeEvent<Record<string, never>>,
@@ -204,7 +202,16 @@ export default function QuickSelect<
     if (reason === "reset") {
       return;
     }
+
     setInput(value);
+
+    if (value.includes(",")) {
+      if (hasComma) return;
+      setHasComma(true);
+    } else {
+      if (!hasComma) return;
+      setHasComma(false);
+    }
   };
 
   return (
@@ -245,12 +252,16 @@ export default function QuickSelect<
             >
           }
           renderOption={renderOption}
-          onPaste={handlePaste}
           InputBaseProps={{
             placeholder,
           }}
           inputValue={input}
           onInputChange={handleInputChange}
+          noOptionsText={
+            hasComma
+              ? "You can add multiple genes using a comma-separated list. Press enter to add."
+              : "No options"
+          }
         />
       </Popper>
     </>
