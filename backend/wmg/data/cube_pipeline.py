@@ -28,6 +28,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
         dataset_count = len(os.listdir(dataset_directory))
         i = 0
         for dataset in os.listdir(dataset_directory):
+            i += 1
             logger.info(f"Processing dataset {i} of {dataset_count}")
             i += 1
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
