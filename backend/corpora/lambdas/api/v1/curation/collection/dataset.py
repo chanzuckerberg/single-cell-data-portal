@@ -1,7 +1,7 @@
 import json
 import boto3
 import logging
-from flask import g, make_response
+from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
@@ -39,10 +39,10 @@ def get_s3_credentials(collection_uuid, user):
     collection = get_collection(
         db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, include_tombstones=True
     )  # TODO remove private
-    if not _is_user_owner_or_allowed(user, collection.owner):
-        raise ForbiddenHTTPException()
     if collection.visibility != CollectionVisibility.PRIVATE:
         raise MethodNotAllowedException()
+    if not _is_user_owner_or_allowed(user, collection.owner):
+        raise ForbiddenHTTPException()
 
     parameters = dict(
         RoleArn=config.curator_role_arn,
@@ -52,4 +52,4 @@ def get_s3_credentials(collection_uuid, user):
     )
     logger.info(json.dumps(parameters))
     credentials = sts_client.assume_role(**parameters)
-    return make_response(credentials, 201)
+    return make_response(jsonify(credentials), 200)
