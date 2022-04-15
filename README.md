@@ -48,13 +48,13 @@ Environment variables are set using the command `export <name>=<value>`. For exa
 
 If you need to make a change to the Data Portal database, see [Data Portal Database Procedures](backend/database/README.md).
 
-### Running unittests
+### Running Unit Tests
 
 1. Set `AWS_PROFILE`.
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
 1. Run the tests using the command `$ make unit-test`.
 
-### Running functional tests against a deployment env (dev, staging, prod)
+### Running Functional Tests
 
 1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
