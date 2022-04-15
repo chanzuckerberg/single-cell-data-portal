@@ -6,7 +6,7 @@ from .....common.utils.exceptions import ConflictException
 
 from .....api_server.db import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException
-from ..common import owner_or_allowed
+from ..authorization import owner_or_allowed
 
 from backend.corpora.common.utils import cloudfront
 

@@ -6,7 +6,7 @@ from ....api_server.db import dbconnect
 from ....common.utils.exceptions import (
     ForbiddenHTTPException,
 )
-from .common import is_user_owner_or_allowed
+from .authorization import is_user_owner_or_allowed
 
 
 @dbconnect

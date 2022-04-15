@@ -10,7 +10,7 @@ from ....common.utils.exceptions import (
     ForbiddenHTTPException,
     CorporaException,
 )
-from .common import owner_or_allowed
+from .authorization import owner_or_allowed
 
 
 @dbconnect

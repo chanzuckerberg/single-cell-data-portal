@@ -11,3 +11,17 @@ def has_scope(required_scope, token_info):
         return False
     except Exception:
         return False
+
+
+def is_user_owner_or_allowed(token_info, owner):
+    """
+    Check if the user has ownership on a collection, or if it has superuser permissions
+    """
+    return (token_info.get("sub") and token_info.get("sub") == owner) or (has_scope("write:collections", token_info))
+
+
+def owner_or_allowed(token_info):
+    """
+    Returns None if the user is superuser, `user` otherwise. Used for SQL Query where conditions
+    """
+    return None if has_scope("write:collections", token_info) else token_info.get("sub")

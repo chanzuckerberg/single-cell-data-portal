@@ -6,7 +6,7 @@ from .....common.entities import Collection
 from .....common.entities.geneset import Geneset
 from .....api_server.db import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from ..common import owner_or_allowed
+from ..authorization import owner_or_allowed
 
 
 @dbconnect

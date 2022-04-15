@@ -8,7 +8,8 @@ from urllib.parse import urlparse
 
 import logging
 
-from .common import is_user_owner_or_allowed, owner_or_allowed, get_collection
+from .common import get_collection
+from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
 from ....common.utils.exceptions import (

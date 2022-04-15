@@ -15,7 +15,7 @@ from .....common.utils.exceptions import (
     NotFoundHTTPException,
 )
 from .....common.utils.math_utils import GB
-from ..common import owner_or_allowed
+from ..authorization import owner_or_allowed
 
 
 def link(collection_uuid: str, body: dict, token_info: dict):
