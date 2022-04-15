@@ -200,9 +200,9 @@ def transform_dataset_raw_counts_to_rankit(
             # Compute RankIt
             rankit_integrated_csr_matrix = rankit(raw_expression_csr_matrix)
 
-            rankit_integrated_coo_matrix = \
-                filter_out_rankits_with_low_expression_counts(rankit_integrated_csr_matrix, raw_expression_csr_matrix,
-                                                              expect_majority_filtered=True)
+            rankit_integrated_coo_matrix = filter_out_rankits_with_low_expression_counts(
+                rankit_integrated_csr_matrix, raw_expression_csr_matrix, expect_majority_filtered=True
+            )
 
             global_rows = rankit_integrated_coo_matrix.row + start + first_obs_idx
             global_cols = global_var_index[rankit_integrated_coo_matrix.col]
@@ -212,7 +212,7 @@ def transform_dataset_raw_counts_to_rankit(
             assert len(rankit_data) == len(global_rows)
             assert len(rankit_data) == len(global_cols)
 
-            # array[global_rows, global_cols] = {"rankit": rankit_data}
+            array[global_rows, global_cols] = {"rankit": rankit_data}
             del (
                 raw_expression_csr_matrix,
                 rankit_integrated_coo_matrix,
@@ -226,8 +226,9 @@ def transform_dataset_raw_counts_to_rankit(
     logger.debug(f"Saved {array_name}.")
 
 
-def filter_out_rankits_with_low_expression_counts(rankits: csr_matrix, raw_counts_csr: csr_matrix,
-                                                  expect_majority_filtered=True) -> coo_matrix:
+def filter_out_rankits_with_low_expression_counts(
+    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True
+) -> coo_matrix:
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
 
@@ -263,9 +264,11 @@ def filter_out_rankits_with_low_expression_counts(rankits: csr_matrix, raw_count
 
     end = time.time()
 
-    logger.info(f"filter duration={end - start}, "
-                 f"orig size={rankits_nnz_orig}, "
-                 f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
-                 f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}")
+    logger.info(
+        f"filter duration={end - start}, "
+        f"orig size={rankits_nnz_orig}, "
+        f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
+        f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
+    )
 
     return rankits_filtered
