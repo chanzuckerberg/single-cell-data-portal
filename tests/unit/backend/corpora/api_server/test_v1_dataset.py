@@ -115,28 +115,38 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.assertEqual(json.loads(response.data)["upload_status"], status.name)
 
     def test__get_all_datasets_for_index(self):
+        test_dataset_id = "test_dataset_id_for_index"
         dataset = self.generate_dataset(
             self.session,
-            id="test_dataset_id_for_index",
+            id=test_dataset_id,
             cell_count=42,
             mean_genes_per_cell=0.05,
             published_at=datetime.now(),
             revised_at=datetime.now(),
         )
         self.generate_dataset(self.session, id="test_dataset_id_for_index_tombstone", tombstone=True)
-        self.generate_dataset(self.session, id="test_dataset_id_for_index_private", collection_visibility="PRIVATE")
+        self.generate_dataset(
+            self.session,
+            id="test_dataset_id_for_index_private",
+            collection_id="test_collection_id_revision",
+        )
         test_url = furl(path="/dp/v1/datasets/index")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
 
-        ids = [dataset["id"] for dataset in body]
+        ids = [d["id"] for d in body]
         self.assertIn("test_dataset_id_for_index", ids)
         self.assertNotIn("test_dataset_id_for_index_tombstone", ids)
         self.assertNotIn("test_dataset_id_for_index_private", ids)
 
-        actual_dataset = body[-1]  # last added dataset
+        actual_dataset = None
+        for d in body:
+            if d["id"] == test_dataset_id:
+                actual_dataset = d
+        self.assertIsNotNone(actual_dataset)
+
         self.assertEqual(actual_dataset["id"], dataset.id)
         self.assertEqual(actual_dataset["name"], dataset.name)
         self.assertNotIn("description", actual_dataset)
@@ -176,9 +186,10 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertNotIn("development_stage_ancestors", dataset)
 
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
+        test_dataset_id = "test_dataset_id_for_index_2"
         dataset = self.generate_dataset(
             self.session,
-            id="test_dataset_id_for_index_2",
+            id=test_dataset_id,
             cell_count=42,
             development_stage=[{"ontology_term_id": "HsapDv:0000008", "label": "Test"}],
             published_at=datetime.now(),
@@ -192,7 +203,11 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
 
-        actual_dataset = body[-1]  # last added dataset
+        actual_dataset = None
+        for d in body:
+            if d["id"] == test_dataset_id:
+                actual_dataset = d
+        self.assertIsNotNone(actual_dataset)
 
         self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
         self.assertEqual(
