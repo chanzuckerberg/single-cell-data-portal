@@ -210,6 +210,7 @@ def transform_dataset_raw_counts_to_rankit(
                 rankit_integrated_csr_matrix, raw_expression_csr_matrix, expect_majority_filtered=True
             )
 
+
             global_rows = rankit_integrated_coo_matrix.row + start + first_obs_idx
             global_cols = global_var_index[rankit_integrated_coo_matrix.col]
 
@@ -219,6 +220,7 @@ def transform_dataset_raw_counts_to_rankit(
             assert len(rankit_data) == len(global_cols)
 
             array[global_rows, global_cols] = {"rankit": rankit_data}
+
             del (
                 raw_expression_csr_matrix,
                 rankit_integrated_coo_matrix,
@@ -238,6 +240,7 @@ def filter_out_rankits_with_low_expression_counts(
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
     """
+
 
     rankits_nnz_orig = rankits.nnz
     raw_counts = raw_counts_csr.tocoo(copy=False)
