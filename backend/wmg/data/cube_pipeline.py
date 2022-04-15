@@ -29,6 +29,7 @@ def load(dataset_directory: List, group_name: str, validate: bool = False):
         i = 0
         for dataset in os.listdir(dataset_directory):
             logger.info(f"Processing dataset {i} of {dataset_count}")
+            i += 1
             file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             load_h5ad(
                 file_path, group_name, validate
