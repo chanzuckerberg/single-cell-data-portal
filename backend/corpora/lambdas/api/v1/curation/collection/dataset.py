@@ -6,7 +6,7 @@ from flask import g, make_response, jsonify
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.lambdas.api.v1.common import is_user_owner_or_allowed, get_collection, owner_or_allowed
+from backend.corpora.lambdas.api.v1.common import get_collection, owner_or_allowed
 
 sts_client = boto3.client("sts")
 logger = logging.getLogger(__name__)
