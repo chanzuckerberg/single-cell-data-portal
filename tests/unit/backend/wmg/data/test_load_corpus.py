@@ -9,8 +9,11 @@ import tiledb
 from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
-from backend.wmg.data.load_corpus import load_h5ad, \
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, filter_out_rankits_with_low_expression_counts
+from backend.wmg.data.load_corpus import (
+    load_h5ad,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    filter_out_rankits_with_low_expression_counts,
+)
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
@@ -150,9 +153,9 @@ class TestCorpusLoad(unittest.TestCase):
         rankits = [0.5, 0.7, 0.9]  # 0.5 and 0.7 should be filtered
         raw_counts = [
             RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,      # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1   # should not be filtered
-            ]
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,  # should be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
         rankit_csr_matrix = csr_matrix((rankits, (row, col)))
         raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
 
@@ -166,13 +169,14 @@ class TestCorpusLoad(unittest.TestCase):
         rankits = [0.7, 0.9]  # 0.5 and 0.7 should be filtered
         raw_counts = [
             RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1   # should not be filtered
-            ]
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
         rankit_csr_matrix = csr_matrix((rankits, (row, col)))
         raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
 
-        rankits_filtered = filter_out_rankits_with_low_expression_counts(rankit_csr_matrix, raw_counts_coo_matrix,
-                                                                         expect_majority_filtered=True)
+        rankits_filtered = filter_out_rankits_with_low_expression_counts(
+            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=True
+        )
 
         self.assertEqual(0.9, sum(rankits_filtered.data))
 
@@ -184,12 +188,13 @@ class TestCorpusLoad(unittest.TestCase):
             RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
             RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
             RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1   # should not be filtered
-            ]
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
         rankit_csr_matrix = csr_matrix((rankits, (row, col)))
         raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
 
-        rankits_filtered = filter_out_rankits_with_low_expression_counts(rankit_csr_matrix, raw_counts_coo_matrix,
-                                                                         expect_majority_filtered=False)
+        rankits_filtered = filter_out_rankits_with_low_expression_counts(
+            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=False
+        )
 
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
