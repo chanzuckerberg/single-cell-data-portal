@@ -5,6 +5,7 @@ import {
   MenuItem,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
 import styled from "styled-components";
@@ -43,6 +44,7 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 interface Props {
   id?: string;
   isRevision: boolean;
+  visibility: Collection["visibility"];
 }
 
 const StyledMenu = styled(RawMenu)`
@@ -53,11 +55,16 @@ const StyledMenu = styled(RawMenu)`
   }
 `;
 
-const Menu = ({ id = "", isRevision }: Props) => {
+const Menu = ({ id = "", isRevision, visibility }: Props) => {
   return (
     <StyledMenu>
       <CreateCollection id={id} Button={EditButton} />
-      <DeleteCollection id={id} isRevision={isRevision} Button={DeleteButton} />
+      <DeleteCollection
+        id={id}
+        isRevision={isRevision}
+        Button={DeleteButton}
+        visibility={visibility}
+      />
     </StyledMenu>
   );
 };
