@@ -36,6 +36,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
             logger.info(f"Processing dataset {i} of {dataset_count}")
 
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
+            i += 1
             load_h5ad(
                 h5ad_file_path, corpus_path, validate
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
