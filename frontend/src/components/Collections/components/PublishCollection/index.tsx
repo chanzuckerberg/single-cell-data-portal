@@ -20,13 +20,13 @@ const AsyncAlert = loadable(
 interface Props {
   id: Collection["id"];
   isPublishable: boolean;
-  isRevision: boolean;
+  revisionOf: Collection["revision_of"];
 }
 
 const PublishCollection: FC<Props> = ({
   id = "",
   isPublishable,
-  isRevision,
+  revisionOf,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
@@ -35,7 +35,11 @@ const PublishCollection: FC<Props> = ({
   const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   if (isSuccess) {
-    router.push(ROUTES.COLLECTION.replace(":id", id));
+    console.log(
+      "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
+    );
+    if (revisionOf) router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
+    else router.reload();
   }
 
   const toggleAlert = () => setIsOpen(!isOpen);
@@ -48,8 +52,9 @@ const PublishCollection: FC<Props> = ({
       { id, payload },
       {
         onSuccess: () => {
-          //if revision show  revision toast
-          if (isRevision) {
+          //if revision show revision toast
+          if (revisionOf) {
+            console.log("Published a revision");
             Toast.show({
               icon: IconNames.TICK,
               intent: Intent.SUCCESS,
@@ -85,7 +90,7 @@ const PublishCollection: FC<Props> = ({
         <AsyncAlert
           cancelButtonText={"Cancel"}
           confirmButtonText={
-            isRevision ? "Publish Revision" : "Publish Collection"
+            revisionOf ? "Publish Revision" : "Publish Collection"
           }
           intent={Intent.PRIMARY}
           isOpen={isOpen}
@@ -93,7 +98,7 @@ const PublishCollection: FC<Props> = ({
           onConfirm={handleConfirm}
           loading={isLoading}
         >
-          {isRevision ? (
+          {revisionOf ? (
             <>
               <H6>
                 Are you sure you want to publish a revision to this collection?
