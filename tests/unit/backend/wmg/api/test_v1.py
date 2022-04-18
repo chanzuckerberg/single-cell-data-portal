@@ -67,28 +67,34 @@ class WmgApiV1Tests(unittest.TestCase):
             response = self.app.get("/wmg/v1/primary_filter_dimensions")
 
         expected = dict(
-                snapshot_id="dummy-snapshot",
-                organism_terms=[
-                    {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
-                    {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
-                    {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
+            snapshot_id="dummy-snapshot",
+            organism_terms=[
+                {"organism_ontology_term_id_0": "organism_ontology_term_id_0_label"},
+                {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
+                {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
+            ],
+            tissue_terms={
+                "organism_ontology_term_id_0": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
                 ],
-                tissue_terms={
-                    "organism_ontology_term_id_0": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                                                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                                                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"}],
-                    "organism_ontology_term_id_1": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                                                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                                                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"}],
-                    "organism_ontology_term_id_2": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                                                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                                                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"}]
-                },
-                gene_terms={
-                    "organism_ontology_term_id_0": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
-                    "organism_ontology_term_id_1": [{"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"}],
-                    "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
-                },
+                "organism_ontology_term_id_1": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                ],
+                "organism_ontology_term_id_2": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                ],
+            },
+            gene_terms={
+                "organism_ontology_term_id_0": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
+                "organism_ontology_term_id_1": [{"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"}],
+                "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
+            },
         )
 
         self.assertEqual(expected, json.loads(response.data))
