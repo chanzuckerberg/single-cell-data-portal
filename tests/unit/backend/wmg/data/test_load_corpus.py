@@ -16,7 +16,7 @@ from backend.wmg.data.load_corpus import (
     filter_out_rankits_with_low_expression_counts,
 )
 
-from backend.wmg.data.schemas.corpus_schema import create_tdb
+from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
 
@@ -84,7 +84,7 @@ class TestCorpusLoad(unittest.TestCase):
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):
         load_h5ad(self.small_anndata_filename, self.corpus_path, False)
-        with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+        with tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
         small_gene_count = 3
@@ -93,7 +93,7 @@ class TestCorpusLoad(unittest.TestCase):
         load_h5ad(self.large_anndata_filename, self.corpus_path, False)
 
         large_gene_count = 1000  # overlapping genes should only be counted once
-        with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+        with tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
         self.assertEqual(large_gene_count, total_stored_genes)
@@ -121,9 +121,9 @@ class TestCorpusLoad(unittest.TestCase):
         load_data_and_create_cube(self.path_to_datasets, self.corpus_name, self.tmp_dir)
 
         # check obs
-        with tiledb.open(f"{self.corpus_path}/obs", "r") as obs:
+        with tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r") as obs:
             actual_obs_df = obs.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/obs"), "r") as obs:
+        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/{OBS_ARRAY_NAME}"), "r") as obs:
             expected_obs_df = obs.df[:]
 
         self.assertTrue(
@@ -134,9 +134,9 @@ class TestCorpusLoad(unittest.TestCase):
         self.assertTrue(expected_obs_df.dataset_local_cell_id.equals(actual_obs_df.dataset_local_cell_id))
 
         # check vars
-        with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+        with tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}", "r") as var:
             actual_var_df = var.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/var"), "r") as var:
+        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/{VAR_ARRAY_NAME}"), "r") as var:
             expected_var_df = var.df[:]
 
         self.assertTrue(expected_var_df.equals(actual_var_df))

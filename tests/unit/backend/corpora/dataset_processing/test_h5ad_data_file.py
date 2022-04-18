@@ -172,8 +172,8 @@ class TestH5ADDataFile(unittest.TestCase):
         main_x_array_location = f"{cxg_directory}/X"
         embedding_array_location = f"{cxg_directory}/emb"
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
-        obs_array_location = f"{cxg_directory}/obs"
-        var_array_location = f"{cxg_directory}/var"
+        obs_array_location = f"{cxg_directory}/{OBS_ARRAY_NAME}"
+        var_array_location = f"{cxg_directory}/{VAR_ARRAY_NAME}"
         x_col_shift_array_location = f"{cxg_directory}/X_col_shift"
 
         # Assert CXG structure
@@ -236,7 +236,7 @@ class TestH5ADDataFile(unittest.TestCase):
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
-        var_array_location = f"{cxg_directory}/var"
+        var_array_location = f"{cxg_directory}/{VAR_ARRAY_NAME}"
         with tiledb.open(var_array_location, mode="r") as var_array:
             actual_index_name = json.loads(var_array.meta["cxg_schema"])["index"]
             self.assertEqual(actual_index_name, expected_index_name)

@@ -6,6 +6,7 @@ It is a roadmap item.  Currently supported:
 Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
+import pathlib
 # Hints on how to map between H5AD and TDB schemas.
 from collections import namedtuple
 from typing import Union, List
@@ -14,14 +15,12 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-import pathlib
-
-
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
-# TODO: also define and use constants for obs and var array names
 
 INTEGRATED_ARRAY_NAME = "integrated"
+OBS_ARRAY_NAME = "obs"
+VAR_ARRAY_NAME = "var"
 
 
 class LabelType(
@@ -117,38 +116,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     X_extent = [512, 2048]  # guess - needs tuning
     filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
 
-    """ Optional array, normalized X from original dataset. """
-    tiledb.Array.create(
-        f"{uri}/X",
-        tiledb.ArraySchema(
-            domain=tiledb.Domain(
-                [
-                    tiledb.Dim(
-                        name="obs_idx",
-                        domain=uint32_domain,
-                        tile=X_extent[0],
-                        dtype=np.uint32,
-                        filters=filters,
-                    ),
-                    tiledb.Dim(
-                        name="var_idx",
-                        domain=uint32_domain,
-                        tile=X_extent[1],
-                        dtype=np.uint32,
-                        filters=filters,
-                    ),
-                ]
-            ),
-            sparse=True,
-            allows_duplicates=True,
-            attrs=[tiledb.Attr(name="data", dtype=np.float32, filters=filters)],
-            cell_order="row-major",
-            tile_order="col-major",
-            capacity=X_capacity,
-        ),
-    )
-
-    """ rankit expression values """
+    """ integrated corpus (rankit expression values) """
     tiledb.Array.create(
         f"{uri}/{INTEGRATED_ARRAY_NAME}",
         tiledb.ArraySchema(
@@ -185,7 +153,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     obs/cell axes labels
     """
     tiledb.Array.create(
-        f"{uri}/obs",
+        f"{uri}/{OBS_ARRAY_NAME}",
         tiledb.ArraySchema(
             domain=tiledb.Domain(create_axes_label_dims(obs_labels)),
             sparse=True,
@@ -205,7 +173,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     var/feature/gene axes labels.
     """
     tiledb.Array.create(
-        f"{uri}/var",
+        f"{uri}/{VAR_ARRAY_NAME}",
         tiledb.ArraySchema(
             domain=tiledb.Domain(create_axes_label_dims(var_labels)),
             sparse=True,
