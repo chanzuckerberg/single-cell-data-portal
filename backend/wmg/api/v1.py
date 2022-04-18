@@ -174,7 +174,10 @@ def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]
 
 
 def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
-    return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
+    return [
+        {ontology_term_id: ontology_term_label(ontology_term_id)}
+        for ontology_term_id in ontology_term_ids
+    ]
 
 
 def build_ordered_cell_types_by_tissue(
