@@ -41,8 +41,8 @@ def primary_filter_dimensions():
         "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
     )
     organism_tissue_terms = {
-        organism_term_id: build_ontology_term_id_label_mapping(organism_tissue_ids)
-        for organism_term_id, organism_tissue_ids in organism_tissue_ids.items()
+        organism_term_id: build_ontology_term_id_label_mapping(tissue_term_ids)
+        for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
     }
 
     result = dict(
