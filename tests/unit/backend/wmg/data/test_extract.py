@@ -130,8 +130,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                 if asset.filetype == DatasetArtifactFileType.H5AD:
                     expected_s3_uris.append(asset.s3_uri)
 
-        
-
         s3_uris = set(extract.get_dataset_s3_uris().values())
         print(s3_uris)
         print(expected_s3_uris)
