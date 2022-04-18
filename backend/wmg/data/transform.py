@@ -1,4 +1,5 @@
 import gc
+import logging
 import time
 from typing import Dict
 
@@ -10,12 +11,14 @@ import pandas as pd
 from scipy import sparse
 from scipy.sparse import csr_matrix, coo_matrix
 
-from backend.wmg.data.load_corpus import get_X_raw, logger
+from backend.wmg.data.load_corpus import get_X_raw
 from backend.wmg.data.wmg_constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.rankit import rankit
 
 from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     """
