@@ -978,7 +978,7 @@ def update(ctx, stack_name, tag, wait, skip_migrations):
 
     stack_meta = stack.meta
     # Reset the configsecret if it has changed
-    stack_meta.load({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
+    stack_meta.load_datasets({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
     stack_meta.update(tag, stackmgr)
     success = stack.apply(wait or not skip_migrations)
     if not success:
