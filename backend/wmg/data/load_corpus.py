@@ -73,7 +73,7 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
 
     anndata_object = anndata.read_h5ad(h5ad_path)
 
-    # Apply a low expression gene cell filtering.
+    # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=GENE_EXPRESSION_COUNT_MIN_THRESHOLD)
 
     logger.info(f"loaded: shape={anndata_object.shape}")
