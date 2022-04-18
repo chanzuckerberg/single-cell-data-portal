@@ -31,8 +31,8 @@ class TestCorpusLoad(unittest.TestCase):
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
 
-        basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
-        larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
+        basic_test_anndata_object = create_anndata_test_object(num_cells=5, num_genes=3)
+        larger_test_anndata_object = create_anndata_test_object(num_cells=5000, num_genes=1000)
         os.mkdir(f"{cls.tmp_dir}/datasets")
         os.mkdir(f"{cls.tmp_dir}/datasets/basic_test_dataset")
         os.mkdir(f"{cls.tmp_dir}/datasets/larger_test_dataset")

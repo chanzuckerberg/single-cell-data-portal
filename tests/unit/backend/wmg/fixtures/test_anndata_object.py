@@ -5,7 +5,7 @@ import anndata as ad
 from scipy.sparse import csr_matrix
 
 
-def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
+def create_anndata_test_object(num_cells: int = 5, num_genes: int = 3):
     """
     Notes on csr_matrix from https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_(CSR,_CRS_or_Yale_format)
     csr = compressed sparse row matrix
