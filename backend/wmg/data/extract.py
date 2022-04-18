@@ -40,9 +40,9 @@ def get_dataset_s3_uris():
             )
             .all()
         )
-        for dataset in published_dataset_non_null_assays:
-            if dataset[1]["ontology_term_id"] in included_assay_ontologies:
-                dataset_ids.append(dataset[0])
+        for dataset_id, assays in published_dataset_non_null_assays:
+            if any(assay["ontology_term_id"] for assay in assays):
+                dataset_ids.append(dataset_id)
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
     return s3_uris
