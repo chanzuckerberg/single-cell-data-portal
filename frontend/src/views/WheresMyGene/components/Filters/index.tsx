@@ -10,6 +10,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -22,11 +23,18 @@ import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import { StyledComplexFilterInputDropdown } from "./style";
 
+/**
+ * NOTE(thuang): Update this count to match the amount of filters we render,
+ * so that we don't accidentally clear filters when people collapse the sidebar
+ */
+const FILTERS_COUNT = 4;
+
 const MenuSelectProps = {
   getOptionSelected,
 };
 
 export default memo(function Filters(): JSX.Element {
+  const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
   const [availableFilters, setAvailableFilters] =
@@ -106,6 +114,18 @@ export default memo(function Filters(): JSX.Element {
       return (options: DefaultMenuSelectOption[] | null): void => {
         if (!dispatch || !options) return;
 
+        /**
+         * (thuang): We don't want to dispatch empty selection at the following
+         * times:
+         * 1. At mount
+         * 2. When we have just loaded available filter options
+         * Thus, FILTERS_COUNT * 2 (conditions)
+         */
+        if (readyFilterCount.current !== FILTERS_COUNT * 2) {
+          readyFilterCount.current++;
+          return;
+        }
+
         dispatch(
           selectFilters(
             key,
@@ -114,7 +134,7 @@ export default memo(function Filters(): JSX.Element {
         );
       };
     },
-    [dispatch]
+    [dispatch, readyFilterCount]
   );
 
   const handleDatasetsChange = useMemo(

@@ -21,7 +21,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=True,
             is_primary_data="PRIMARY",
@@ -32,7 +31,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=True,
             is_primary_data="PRIMARY",
@@ -45,7 +43,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=True,
             is_primary_data="PRIMARY",
@@ -56,7 +53,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=True,
             is_primary_data="SECONDARY",
@@ -68,7 +64,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=False,
             is_primary_data="PRIMARY",
@@ -79,7 +74,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PUBLIC",
             collection_id=pub_collection.id,
             published=True,
             is_primary_data="PRIMARY",
@@ -92,7 +86,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.session,
             artifacts=True,
             explorer_s3_object=False,
-            collection_visibility="PRIVATE",
             collection_id=private_collection.id,
             published=True,
             is_primary_data="PRIMARY",
@@ -133,7 +126,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                 if asset.filetype == DatasetArtifactFileType.H5AD:
                     expected_s3_uris.append(asset.s3_uri)
 
-        s3_uris = set(extract.get_dataset_s3_uris())
+        s3_uris = set(extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)
 
         @unittest.skip

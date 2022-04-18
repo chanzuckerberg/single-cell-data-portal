@@ -1,7 +1,7 @@
 import subprocess
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import Dataset, DatasetAsset
+from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 
 
@@ -16,6 +16,8 @@ included_assay_ontologies = {
     "EFO:0030004": "10x 5' transcription profiling",
     "EFO:0008919": "Seq-Well",
     "EFO:0008995": "10x technology",
+    "EFO:0008722": "Drop-seq",
+    "EFO:0010010": "CEL-seq2",
 }
 
 
@@ -28,11 +30,12 @@ def get_dataset_s3_uris():
         dataset_ids = []
         published_dataset_non_null_assays = (
             session.query(Dataset.table.id, Dataset.table.assay)
+            .join(Dataset.table.collection)
             .filter(
                 Dataset.table.assay != "null",
                 Dataset.table.published == "TRUE",
                 Dataset.table.is_primary_data == "PRIMARY",
-                Dataset.table.collection_visibility == "PUBLIC",
+                Collection.table.visibility == "PUBLIC",
                 Dataset.table.tombstone == "FALSE",
             )
             .all()
@@ -42,7 +45,7 @@ def get_dataset_s3_uris():
                 dataset_ids.append(dataset[0])
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
-    return s3_uris.values()
+    return s3_uris
 
 
 def copy_datasets_to_instance(s3_uris, dataset_directory):

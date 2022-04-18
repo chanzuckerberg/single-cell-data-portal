@@ -283,6 +283,7 @@ export default memo(function Chart({
   return (
     <Wrapper height={heatmapHeight} width={heatmapWidth}>
       <Tooltip
+        width="wide"
         classes={tooltipClasses}
         title={tooltipContent || <>No data</>}
         leaveDelay={0}
