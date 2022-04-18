@@ -136,6 +136,41 @@ services:
        corporanet:
           aliases:
             - uploadsuccess.corporanet.local
+  dataset_submission:
+    image: "${DOCKER_REPO}dataset-submission"
+    platform: linux/amd64
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}dataset-submission:branch-main"
+      dockerfile: Dockerfile.handle_dataset_submission
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+    restart: "no"
+    ports:
+      - "9002:8080"
+    volumes:
+      - ./backend/corpora/dataset_submission:/var/task
+      - ./backend/corpora/common:/var/task/backend/corpora/common
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
+      - DATASET_SUBMISSION_BUCKET=cellxgene-dataset-submission
+    networks:
+       corporanet:
+          aliases:
+            - dataset_submission.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64
