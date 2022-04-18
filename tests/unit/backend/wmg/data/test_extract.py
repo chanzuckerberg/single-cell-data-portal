@@ -131,8 +131,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                     expected_s3_uris.append(asset.s3_uri)
 
         s3_uris = set(extract.get_dataset_s3_uris().values())
-        print(s3_uris)
-        print(expected_s3_uris)
         self.assertEquals(set(expected_s3_uris), s3_uris)
 
         @unittest.skip
