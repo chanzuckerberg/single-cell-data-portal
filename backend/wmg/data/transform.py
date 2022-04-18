@@ -1,9 +1,9 @@
 import gc
 import logging
 import time
-from typing import Dict
+from typing import Dict, Union
+from anndata._core.views import ArrayView
 
-import anndata
 import numpy
 import numpy as np
 import tiledb
@@ -11,7 +11,6 @@ import pandas as pd
 from scipy import sparse
 from scipy.sparse import csr_matrix, coo_matrix
 
-from backend.wmg.data.load_corpus import get_X_raw
 from backend.wmg.data.wmg_constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.rankit import rankit
 
@@ -153,13 +152,12 @@ def filter_out_rankits_with_low_expression_counts(
 
 # Transform the expression matrix
 def transform_expression_raw_counts_to_rankit(
-        anndata_object: anndata.AnnData, corpus_path: str, global_var_index: numpy.ndarray, first_obs_idx: int
+        expression_matrix: Union[np.ndarray, sparse.spmatrix, ArrayView], corpus_path: str, global_var_index: numpy.ndarray, first_obs_idx: int
 ):
     """
     Apply rankit normalization to raw count expression values and save to the tiledb corpus object
     """
     array_name = f"{corpus_path}/{INTEGRATED_ARRAY_NAME}"
-    expression_matrix = get_X_raw(anndata_object)
     logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:

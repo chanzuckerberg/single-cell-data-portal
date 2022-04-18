@@ -85,7 +85,8 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
-    transform_expression_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
+    expression_matrix = get_X_raw(anndata_object)
+    transform_expression_raw_counts_to_rankit(expression_matrix, corpus_path, global_var_index, first_obs_idx)
 
     if validate:
         validate_corpus_load(anndata_object, corpus_path, dataset_id)
