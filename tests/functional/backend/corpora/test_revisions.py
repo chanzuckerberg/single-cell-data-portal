@@ -75,6 +75,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
+            revision_uuid = res.json()["id"]
             private_dataset_id = res.json()["datasets"][0]["id"]
 
             meta_payload_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -85,7 +86,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Upload a new dataset
             new_dataset_id = self.upload_and_wait(
-                collection_uuid,
+                revision_uuid,
                 dataset_2_dropbox_url,
                 existing_dataset_id=private_dataset_id,
             )
@@ -100,7 +101,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
@@ -120,10 +121,11 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            revision_uuid = res.json()["id"]
             self.assertEqual(res.status_code, 201)
 
             # Upload a new dataset
-            another_dataset_id = self.upload_and_wait(collection_uuid, dataset_1_dropbox_url)
+            another_dataset_id = self.upload_and_wait(revision_uuid, dataset_1_dropbox_url)
 
             # Get datasets for the collection (after uploading)
             public_datasets_after = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"]
@@ -136,7 +138,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
@@ -151,6 +153,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Start a revision
             res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
+            revision_uuid = res.json()["id"]
 
             # This only works if you pick the non replaced dataset.
             dataset_to_delete = res.json()["datasets"][1]
@@ -174,7 +177,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)

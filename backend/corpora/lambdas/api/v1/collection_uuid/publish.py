@@ -8,6 +8,8 @@ from .....api_server.db import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException
 from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
 
+from backend.corpora.common.utils import cloudfront
+
 
 @dbconnect
 def post(collection_uuid: str, body: object, user: str):
@@ -22,7 +24,8 @@ def post(collection_uuid: str, body: object, user: str):
         raise ForbiddenHTTPException()
     if all([dataset.tombstone for dataset in collection.datasets]):
         raise ConflictException(detail="The collection must have a least one dataset.")
-
+    collection_id = collection.revision_of if collection.revision_of else collection.id
     data_submission_policy_version = body["data_submission_policy_version"]
     collection.publish(data_submission_policy_version=data_submission_policy_version)
-    return make_response({"collection_uuid": collection.id, "visibility": collection.visibility}, 202)
+    cloudfront.create_invalidation_for_index_paths()
+    return make_response({"collection_uuid": collection_id, "visibility": CollectionVisibility.PUBLIC}, 202)
