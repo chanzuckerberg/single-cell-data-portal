@@ -1,5 +1,5 @@
 from backend.corpora.common.utils.math_utils import MB
-from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
+from backend.wmg.data.wmg_constants import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 
 import concurrent

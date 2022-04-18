@@ -8,13 +8,13 @@ from unittest.mock import patch
 import tiledb
 from scipy.sparse import coo_matrix, csr_matrix
 
-from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
+from backend.wmg.data.cube_pipeline import load_datasets, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
-    filter_out_rankits_with_low_expression_counts,
 )
-from backend.wmg.data.schemas.corpus_schema import create_tdb
+from backend.wmg.data.wmg_constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+from backend.wmg.data.transform import filter_out_rankits_with_low_expression_counts
+from backend.wmg.data.schemas.corpus_schema import create_tdb_corpus
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
 
@@ -57,7 +57,7 @@ class TestCorpusLoad(unittest.TestCase):
         self.corpus_name = "test-group"
         self.corpus_path = f"{self.tmp_dir}/{self.corpus_name}"
         if not tiledb.VFS().is_dir(self.corpus_path):
-            create_tdb(self.tmp_dir, self.corpus_name)
+            create_tdb_corpus(self.tmp_dir, self.corpus_name)
             # self.pbmc3k_anndata_object = get_test_anndata_dataset()
 
     def tearDown(self) -> None:
@@ -68,7 +68,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.cube_pipeline.tiledb.vacuum")
     @patch("backend.wmg.data.cube_pipeline.load_h5ad")
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
-        load(self.path_to_datasets, self.corpus_path)
+        load_datasets(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
@@ -77,7 +77,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
-        load(self.path_to_datasets, self.corpus_path)
+        load_datasets(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):

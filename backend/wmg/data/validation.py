@@ -1,22 +1,23 @@
 import gc
 import logging
-from typing import Union, List
 
 import numpy as np
-import pandas as pd
 import tiledb
 from scipy import sparse
 
-from backend.wmg.cube_creation.corpus_schema import obs_labels
+from backend.wmg.data.load_corpus import get_X_raw
+from backend.wmg.data.schemas.corpus_schema import obs_labels, create_local_to_global_gene_coord_index
 
 logger = logging.getLogger(__name__)
 
 
-def validate_load(ad, group_name, dataset_id):
+def validate_corpus_load(ad, group_name, dataset_id):
     """
-    Validate that the load looks sane
+    Validate that the load matches base assumptions
+    - no duplicates in gene table (var)
+    - all obs_idx for a dataset are contiguous
+    -
     """
-    from backend.wmg.cube_creation.loader import get_X_raw # avoid circular imports
     logger.info(f"validating...{group_name}, {dataset_id}")
     with tiledb.open(f"{group_name}/var") as var:
         with tiledb.open(f"{group_name}/obs") as obs:
@@ -52,7 +53,7 @@ def validate_load(ad, group_name, dataset_id):
 
                 ## Validate X
                 logger.debug("\tchecking raw X...")
-                var_idx_map = create_local_to_global_feature_coord_index(all_features, ad.var.index)
+                var_idx_map = create_local_to_global_gene_coord_index(all_features, ad.var.index)
                 stride = 100_000
                 starting_obs_idx = obs.df[dataset_id].obs_idx.min()
                 for start in range(0, ad.n_obs, stride):
@@ -84,18 +85,5 @@ def validate_load(ad, group_name, dataset_id):
                     gc.collect()
 
 
-def create_local_to_global_feature_coord_index(
-        var_df: pd.DataFrame, gene_ontology_term_ids: Union[List[str], np.ndarray]
-) -> np.ndarray:
-    """
-    Create an array mapping feature ids local to global index
-    """
-    n_features = len(gene_ontology_term_ids)
-    local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
-    var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
-    for idx in range(n_features):
-        gene_ontology_term_id = gene_ontology_term_ids[idx]
-        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
-        local_to_global_feature_coord[idx] = global_coord
-
-    return local_to_global_feature_coord
+def validate_rankit_transformation():
+    pass

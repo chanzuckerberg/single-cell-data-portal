@@ -10,7 +10,8 @@ import tiledb
 from backend.wmg.data import extract
 from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
-from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
+from backend.wmg.data.schemas.corpus_schema import create_tdb_corpus
+from backend.wmg.data.wmg_constants import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.transform import get_cell_types_by_tissue, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cubes
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def load(dataset_directory: List, corpus_path: str, validate: bool = False):
+def load_datasets(dataset_directory: List, corpus_path: str, validate: bool = False):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name
@@ -60,20 +61,19 @@ def load_data_and_create_cube(
         snapshot_path = f"{pathlib.Path().resolve()}/{timestamp}"
     corpus_path = f"{snapshot_path}/{corpus_name}"
     if not tiledb.VFS().is_dir(corpus_path):
-        create_tdb(snapshot_path, corpus_name)
+        create_tdb_corpus(snapshot_path, corpus_name)
 
     if extract_data:
         s3_uris = extract.get_dataset_s3_uris()
         extract.copy_datasets_to_instance(s3_uris, path_to_h5ad_datasets)
         logger.info("Copied datasets to instance")
 
-    load(path_to_h5ad_datasets, corpus_path, True)
+    load_datasets(path_to_h5ad_datasets, corpus_path, True)
     logger.info("Loaded datasets into corpus")
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
 
-    cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
-    generate_cell_ordering(snapshot_path, cell_type_by_tissue)
+    generate_cell_ordering(snapshot_path, corpus_path)
     logger.info("Generated cell ordering json file")
     update_s3_resources(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")

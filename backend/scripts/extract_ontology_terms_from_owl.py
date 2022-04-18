@@ -12,7 +12,7 @@ def extract_ontology_terms_from_file(input_file):
     logging.info(f"Reading in input OWL file {input_file}")
     ontology_file_object = open(input_file, "rb")
     ontology_object = get_ontology("")
-    ontology_object.load(fileobj=ontology_file_object)
+    ontology_object.load_datasets(fileobj=ontology_file_object)
 
     ontology_classes = [ontology_class.name.replace("_", ":") for ontology_class in list(ontology_object.classes())]
     logging.info(f"Completed loading OWL file and found {len(ontology_classes)} ontology classes.")

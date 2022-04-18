@@ -2,7 +2,7 @@ import unittest
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data import extract
-from backend.wmg.data.extract import included_assay_ontologies
+from backend.wmg.data.wmg_constants import included_assay_ontologies
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 

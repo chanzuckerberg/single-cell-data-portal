@@ -3,22 +3,7 @@ import subprocess
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
-
-
-included_assay_ontologies = {
-    "EFO:0010550": "sci-RNA-seq",
-    "EFO:0009901": "10x 3' v1",
-    "EFO:0011025": "10x 5' v1",
-    "EFO:0009899": "10x 3' v2",
-    "EFO:0009900": "10x 5' v2",
-    "EFO:0009922": "10x 3' v3",
-    "EFO_0030003": "10x 3' transcription profiling",
-    "EFO:0030004": "10x 5' transcription profiling",
-    "EFO:0008919": "Seq-Well",
-    "EFO:0008995": "10x technology",
-    "EFO:0008722": "Drop-seq",
-    "EFO:0010010": "CEL-seq2",
-}
+from backend.wmg.data.wmg_constants import included_assay_ontologies
 
 
 def get_dataset_s3_uris():

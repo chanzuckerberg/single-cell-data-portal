@@ -16,11 +16,12 @@ import tiledb
 
 import pathlib
 
+from backend.wmg.data.load_corpus import logger
+from backend.wmg.data.wmg_constants import INTEGRATED_ARRAY_NAME
 
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
-# TODO: also define and use constants for obs and var array names
-INTEGRATED_ARRAY_NAME = "integrated"
+# TODO: define and use constants for obs and var array names
 
 
 class LabelType(
@@ -97,18 +98,19 @@ obs_labels = [
 var_labels = [
     # var_idx is the join index with the X array
     LabelType("var_idx", np.uint32, domain=uint32_domain, custom_decoder=gen_idx),
+    # what if we just remove this and use the gen ontololgy id as an index
     LabelType("gene_ontology_term_id", "ascii", decode_from_index=True, encode_as_dim=True),
     LabelType("feature_reference", "ascii", var=True),
     LabelType("feature_name", "ascii", var=True),
 ]
 
 
-def create_tdb(corpus_location: str, tdb_group: str):
+def create_tdb_corpus(corpus_location: str, corpus_name: str):
     """
     Create the empty tiledb object for the corpus
     ## TODO break out each array
     """
-    uri = f"{corpus_location}/{tdb_group}"
+    uri = f"{corpus_location}/{corpus_name}"
     pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
     tiledb.group_create(uri)
 
@@ -236,3 +238,70 @@ def create_axes_label_dims(labels: List[LabelType]) -> List[tiledb.Dim]:
             )
         dims.append(dim)
     return dims
+
+
+def create_local_to_global_gene_coord_index(
+        var_df: pd.DataFrame, gene_ontology_term_ids: Union[List[str], np.ndarray]
+) -> np.ndarray:
+    """
+    Create an array mapping feature ids local to global index
+    """
+    n_features = len(gene_ontology_term_ids)
+    local_to_global_feature_coord = np.zeros((n_features,), dtype=np.uint32)
+    var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
+    for idx in range(n_features):
+        gene_ontology_term_id = gene_ontology_term_ids[idx]
+        global_coord = var_feature_to_coord_map[gene_ontology_term_id]
+        local_to_global_feature_coord[idx] = global_coord
+
+    return local_to_global_feature_coord
+
+
+def update_global_var(corpus_path: str, src_var_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Update the global var (gene) array. Adds any gene_ids we have not seen before.
+    Returns the global var array as dataframe
+    """
+
+    var_array_name = f"{corpus_path}/var"
+    with tiledb.open(var_array_name, "r") as var:
+        var_df = var.df[:]
+        missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(
+            var_df["gene_ontology_term_id"].to_numpy(dtype=str)
+        )
+
+    if len(missing_var) > 0:
+        logger.info(f"Adding {len(missing_var)} gene records...")
+        missing_var_df = src_var_df[src_var_df.index.isin(missing_var)]
+        save_axes_labels(missing_var_df, var_array_name, var_labels)
+    with tiledb.open(var_array_name, "r") as var:
+        var_df = var.df[:]
+        var_df.index = var_df.gene_ontology_term_id
+
+    logger.info(f"Global var index length: {var_df.shape}")
+    return var_df
+
+
+def save_axes_labels(df: pd.DataFrame, array_name: str, label_info: List) -> int:
+    """
+    # TODO
+    """
+    logger.info(f"Saving {array_name}...\n")
+
+    with tiledb.open(array_name) as array:
+        next_join_index = array.meta.get("next_join_index", 0)
+
+    with tiledb.open(array_name, mode="w") as array:
+        data = {}
+        coords = []
+        for lbl in label_info:
+            datum = lbl.decode(df, next_join_index)
+            if lbl.encode_as_dim:
+                coords.append(datum)
+            else:
+                data[lbl.key] = datum
+        array[tuple(coords)] = data
+        array.meta["next_join_index"] = next_join_index + len(coords[0])
+
+    logger.info("saved.")
+    return next_join_index
