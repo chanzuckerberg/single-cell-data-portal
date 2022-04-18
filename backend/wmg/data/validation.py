@@ -5,7 +5,6 @@ import numpy as np
 import tiledb
 from scipy import sparse
 
-from backend.wmg.data.load_corpus import get_X_raw
 from backend.wmg.data.schemas.corpus_schema import obs_labels, create_local_to_global_gene_coord_index
 
 logger = logging.getLogger(__name__)
@@ -18,6 +17,8 @@ def validate_corpus_load(ad, group_name, dataset_id):
     - all obs_idx for a dataset are contiguous
     -
     """
+    from backend.wmg.data.load_corpus import get_X_raw
+
     logger.info(f"validating...{group_name}, {dataset_id}")
     with tiledb.open(f"{group_name}/var") as var:
         with tiledb.open(f"{group_name}/obs") as obs:
