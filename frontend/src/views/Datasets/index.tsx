@@ -186,11 +186,6 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
-        filter: "includesSome",
-      },
-      // Hidden, required for filter.
-      {
         accessor: CATEGORY_KEY.MEAN_GENES_PER_CELL,
         filter: "between",
       },
@@ -230,7 +225,6 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.MEAN_GENES_PER_CELL,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,

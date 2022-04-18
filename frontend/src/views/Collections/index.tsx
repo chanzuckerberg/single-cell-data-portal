@@ -158,13 +158,6 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: (collectionRow: CollectionRow) =>
-          collectionRow.is_primary_data,
-        filter: "includesSome",
-        id: CATEGORY_KEY.IS_PRIMARY_DATA,
-      },
-      // Hidden, required for filter.
-      {
         accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
         filter: "includesSome",
         id: CATEGORY_KEY.PUBLICATION_AUTHORS,
@@ -199,7 +192,6 @@ export default function Collections(): JSX.Element {
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
