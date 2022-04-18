@@ -85,12 +85,8 @@ class WmgApiV1Tests(unittest.TestCase):
                                                     {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"}]
                 },
                 gene_terms={
-                    "organism_ontology_term_id_0": [
-                        {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
-                    ],
-                    "organism_ontology_term_id_1": [
-                        {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
-                    ],
+                    "organism_ontology_term_id_0": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
+                    "organism_ontology_term_id_1": [{"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"}],
                     "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
                 },
         )
