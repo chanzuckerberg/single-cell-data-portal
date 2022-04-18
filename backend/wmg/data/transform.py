@@ -1,7 +1,9 @@
 from typing import Dict
-import tiledb
-import pandas as pd
 
+import pandas as pd
+import tiledb
+
+from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 
 
@@ -10,7 +12,7 @@ def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     Return a list of all associated cell type ontologies for each tissue contained in the
     provided corpus
     """
-    with tiledb.open(f"{corpus_group}/obs", "r") as obs:
+    with tiledb.open(f"{corpus_group}/{OBS_ARRAY_NAME}", "r") as obs:
         tissue_cell_types = (
             obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
             .df[:]

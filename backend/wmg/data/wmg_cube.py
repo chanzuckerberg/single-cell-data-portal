@@ -1,5 +1,5 @@
 from backend.corpora.common.utils.math_utils import MB
-from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
+from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 
 import concurrent
@@ -28,7 +28,7 @@ def create_cell_count_cube(corpus_path: str):
     Create cell count cube and write to disk
     """
     uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
-    with tiledb.open(f"{corpus_path}/obs") as obs:
+    with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
         df = (
             obs.df[:]
             .groupby(
@@ -101,7 +101,7 @@ def load_data_into_cube(tdb_group, uri: str):
     start_time = time.time()
     logger.debug(f"Start loading big cube at : {uri}")
 
-    with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
+    with tiledb.open(f"{tdb_group}/{VAR_ARRAY_NAME}", ctx=ctx) as var:
         gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=["var_idx"], use_arrow=False).df[:]
         gene_ontology_term_ids.sort_values(by="var_idx", inplace=True)
     n_genes = len(gene_ontology_term_ids)
@@ -216,7 +216,7 @@ def make_cube_index(tdb_group, cube_dims):
     """
     Create index for queryable dimensions
     """
-    with tiledb.open(f"{tdb_group}/obs") as obs:
+    with tiledb.open(f"{tdb_group}/{OBS_ARRAY_NAME}") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
     cell_labels.sort_values(by=["obs_idx"], inplace=True, ignore_index=True)
 

@@ -15,7 +15,8 @@ from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.rankit import rankit
-from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
+from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, \
+    VAR_ARRAY_NAME
 from backend.wmg.data.utils import get_all_dataset_ids
 from backend.wmg.data.validation import validate_corpus_load
 
@@ -92,7 +93,7 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool):
 
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
-    first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
+    first_obs_idx = save_axes_labels(obs, f"{corpus_path}/{OBS_ARRAY_NAME}", obs_labels)
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
 
     if validate:
@@ -105,7 +106,7 @@ def update_global_var(corpus_path: str, src_var_df: pd.DataFrame) -> pd.DataFram
     Returns the global var array as dataframe
     """
 
-    var_array_name = f"{corpus_path}/var"
+    var_array_name = f"{corpus_path}/{VAR_ARRAY_NAME}"
     with tiledb.open(var_array_name, "r") as var:
         var_df = var.df[:]
         missing_var = set(src_var_df.index.to_numpy(dtype=str)) - set(
@@ -147,29 +148,6 @@ def save_axes_labels(df: pd.DataFrame, array_name: str, label_info: List) -> int
 
     logger.info("saved.")
     return next_join_index
-
-
-def save_X(anndata_object: anndata.AnnData, group_name: str, global_var_index: np.ndarray, first_obs_idx: int):
-    """
-    Save (pre)normalized expression counts to the tiledb corpus object
-    """
-    array_name = f"{group_name}/X"
-    expression_matrix = anndata_object.X
-    logger.debug(f"saving {array_name}...\n")
-    stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
-    with tiledb.open(array_name, mode="w") as array:
-        for start in range(0, expression_matrix.shape[0], stride):
-            end = min(start + stride, expression_matrix.shape[0])
-            sparse_expression_matrix = sparse.coo_matrix(expression_matrix[start:end, :])
-            rows = sparse_expression_matrix.row + start + first_obs_idx
-            cols = global_var_index[sparse_expression_matrix.col]
-            data = sparse_expression_matrix.data
-
-            array[rows, cols] = data
-            del sparse_expression_matrix, rows, cols, data
-            gc.collect()
-
-    logger.debug(f"Saved {group_name}.")
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
