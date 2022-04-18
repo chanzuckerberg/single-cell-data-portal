@@ -7,6 +7,7 @@ Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
 # Hints on how to map between H5AD and TDB schemas.
+import logging
 from collections import namedtuple
 from typing import Union, List
 
@@ -16,11 +17,11 @@ import tiledb
 
 import pathlib
 
-from backend.wmg.data.load_corpus import logger
 from backend.wmg.data.wmg_constants import INTEGRATED_ARRAY_NAME
 
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
-
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 # TODO: define and use constants for obs and var array names
 
 
