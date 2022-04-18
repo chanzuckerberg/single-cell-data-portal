@@ -1,4 +1,5 @@
 from backend.corpora.common.utils.math_utils import MB
+from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 
 import concurrent
@@ -22,12 +23,12 @@ cube_indexed_dims_no_gene_ontology = [
 ]
 
 
-def create_cell_count_cube(tdb_group: str):
+def create_cell_count_cube(corpus_path: str):
     """
     Create cell count cube and write to disk
     """
-    uri = f"{tdb_group}/{CELL_COUNTS_CUBE_NAME}"
-    with tiledb.open(f"{tdb_group}/obs") as obs:
+    uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
+    with tiledb.open(f"{corpus_path}/obs") as obs:
         df = (
             obs.df[:]
             .groupby(
@@ -51,16 +52,16 @@ def create_cell_count_cube(tdb_group: str):
         tiledb.from_pandas(uri, df, mode="append")
 
 
-def create_cubes(tdb_group):
-    create_expression_summary_cube(tdb_group)
-    create_cell_count_cube(tdb_group)
+def create_cubes(corpus_path):
+    create_expression_summary_cube(corpus_path)
+    create_cell_count_cube(corpus_path)
 
 
-def create_expression_summary_cube(tdb_group):
+def create_expression_summary_cube(corpus_path):
     """
     Create queryable cube and write to disk
     """
-    uri = f"{tdb_group}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+    uri = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
     start_time = time.time()
 
     with tiledb.scope_ctx(create_ctx()):
@@ -68,7 +69,7 @@ def create_expression_summary_cube(tdb_group):
         create_empty_cube(uri, expression_summary_schema)
 
         # load data
-        dims, vals = load_data_into_cube(tdb_group, uri)
+        dims, vals = load_data_into_cube(corpus_path, uri)
 
         logger.debug("Saving cube to tiledb")
         with tiledb.open(uri, "w") as cube:
@@ -114,6 +115,7 @@ def load_data_into_cube(tdb_group, uri: str):
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
+    # TODO: These do not appear to be used. Remove?
     cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
@@ -191,16 +193,16 @@ def reduce_X(tdb_group, start_time, cube_indices, *accum):
             "py.init_buffer_bytes": 512 * MB,
             "py.exact_init_buffer_bytes": "true",
         }
-        with tiledb.open(f"{tdb_group}/raw", ctx=create_ctx(config_overrides=cfg)) as X:
-            iterable = X.query(return_incomplete=True, order="U", attrs=["data"])
+        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as X:
+            iterable = X.query(return_incomplete=True, order="U", attrs=["rankit"])
             future = None
             for i, result in enumerate(iterable.df[:]):
-                logger.info(f"reduce raw X, iter {i}, {time.time() - start_time}")
+                logger.info(f"reduce integrated expression data, iter {i}, {time.time() - start_time}")
                 if future is not None:
                     future.result()  # forces a wait
                 future = tp.submit(
                     coo_cube_pass1_into,
-                    result["data"].values,
+                    result["rankit"].values,
                     result["obs_idx"].values,
                     result["var_idx"].values,
                     cube_indices,
@@ -237,7 +239,7 @@ def make_cube_index(tdb_group, cube_dims):
 
 """
 TODO: this could be further optimize by parallel chunking.  Might help large
-arrays if compute ends up being a bottlneck.
+arrays if compute ends up being a bottleneck.
 """
 
 
