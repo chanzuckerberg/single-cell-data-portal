@@ -243,6 +243,5 @@ resource "aws_s3_bucket_notification" "on_dataset_submission_object_created" {
   lambda_function {
     lambda_function_arn = module.dataset_submission_lambda.arn
     events = ["s3:ObjectCreated:*"]
-    filter_suffix = ".h5ad"
   }
 }
