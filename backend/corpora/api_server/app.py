@@ -112,7 +112,7 @@ def pre_request_logging():
     message = json.dumps(dict(url=request.path, method=request.method, schema=request.scheme))
     app.logger.info(message)
 
-    
+
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
