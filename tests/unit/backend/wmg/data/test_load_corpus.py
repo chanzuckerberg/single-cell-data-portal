@@ -8,16 +8,11 @@ from unittest.mock import patch
 import tiledb
 from scipy.sparse import coo_matrix, csr_matrix
 
-
-from backend.wmg.data.load_corpus import (
-    load_h5ad,
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
-    filter_out_rankits_with_low_expression_counts,
-)
-
+from backend.atlas_asset_pipelines.concat_corpus.load import load_h5ad
+from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
-from backend.wmg.data.cube_pipeline import load_data_and_create_cube
-from backend.atlas_asset_pipelines.concat_corpus.load import load_h5ad_datasets, process_h5ad_for_corpus
+from backend.wmg.data.scex_asset_pipeline import scex_asset_pipeline
+from backend.atlas_asset_pipelines.concat_corpus.job import build_concat_corpus, process_h5ad_for_corpus
 from backend.atlas_asset_pipelines.concat_corpus.transform import filter_out_rankits_with_low_expression_counts
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
@@ -72,7 +67,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.cube_pipeline.tiledb.vacuum")
     @patch("backend.wmg.data.cube_pipeline.load_h5ad")
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
-        load_h5ad_datasets(self.path_to_datasets, self.corpus_path)
+        build_concat_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
@@ -81,7 +76,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
-        load_h5ad_datasets(self.path_to_datasets, self.corpus_path)
+        build_concat_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):
@@ -121,7 +116,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.cube_pipeline.extract.copy_datasets_to_instance")
     @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris")
     def test_corpus_creation_works_as_expected(self, mock_get_uris, mock_copy):
-        load_data_and_create_cube(self.path_to_datasets, self.corpus_name, self.tmp_dir)
+        scex_asset_pipeline(self.path_to_datasets, self.corpus_name, self.tmp_dir)
 
         # check obs
         with tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r") as obs:

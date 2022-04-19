@@ -2,7 +2,6 @@ import boto3
 import os
 import subprocess
 
-
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
 artifact_bucket_name = os.environ.get("ARTIFACT_BUCKET")
