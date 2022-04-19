@@ -323,7 +323,7 @@ function buildCollectionMetadataLink(
 
 function isPrivateRevision(collection: Collection) {
   return (
-    collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision
+    collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.revision_of
   );
 }
 

@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import connexion
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, jsonify
+from flask import g, jsonify, request
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
 
@@ -107,6 +107,12 @@ def apis_landing_page() -> str:
     """
 
 
+@app.before_request
+def pre_request_logging():
+    message = json.dumps(dict(url=request.path, method=request.method, schema=request.scheme))
+    app.logger.info(message)
+
+    
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)

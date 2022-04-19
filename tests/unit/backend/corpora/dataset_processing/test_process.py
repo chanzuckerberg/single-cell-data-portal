@@ -17,7 +17,6 @@ from moto import mock_s3
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
-    DatasetArtifactType,
     DatasetArtifactFileType,
     UploadStatus,
     ValidationStatus,
@@ -303,7 +302,8 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         collection = Collection.create(self.session, visibility=CollectionVisibility.PRIVATE)
         dataset = Dataset.create(
-            self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE
+            self.session,
+            collection_id=collection.id,
         )
         dataset_id = dataset.id
 
@@ -319,7 +319,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         artifact = {
             "filename": "test_filename",
             "filetype": DatasetArtifactFileType.H5AD,
-            "type": DatasetArtifactType.REMIX,
             "user_submitted": True,
             "s3_uri": "s3://test_uri",
         }
@@ -409,7 +408,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertTrue(all(a.user_submitted for a in artifacts))
         self.assertTrue(all(a.s3_uri.startswith(f"s3://{artifact_bucket}/{bucket_prefix}/") for a in artifacts))
         self.assertEqual(len(set(a.filetype for a in artifacts)), 2)
-        self.assertTrue(all(a.type == DatasetArtifactType.REMIX for a in artifacts))
 
         resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
         s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]

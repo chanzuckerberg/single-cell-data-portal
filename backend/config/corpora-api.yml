@@ -19,12 +19,12 @@ paths:
         - wmg
       summary: Get WMG cell types (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of all genes
       operationId: backend.corpora.lambdas.api.v1.wmg.get_cell_types
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: OK
@@ -50,12 +50,12 @@ paths:
         - wmg
       summary: Get WMG genes (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of all cell types
       operationId: backend.corpora.lambdas.api.v1.wmg.get_genes
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: OK
@@ -81,18 +81,18 @@ paths:
         - wmg
       summary: Get WMG gene expression for a given gene name (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of gene expression for a given gene
       operationId: backend.corpora.lambdas.api.v1.wmg.get_gene_expression
       parameters:
-      - name: gene_name
-        in: path
-        required: true
-        schema:
-          type: string
-        description: The name of the gene
+        - name: gene_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the gene
       responses:
         "200":
           description: OK
@@ -235,7 +235,6 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -338,7 +337,6 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -396,7 +394,7 @@ paths:
       description: >-
         An authenticated user can upload a file from a shared link to replace an existing dataset in their collection.
 
-        The existing dataset must be in an error start or completely uploaded before a replacement can be attempted.
+        The existing dataset must be in an error state or completely uploaded before a replacement can be attempted.
         Once the upload of the replacement dataset is complete, the previous version of the dataset is removed and is
         no longer available for downloading through this collection. The replacement datasets are not publicly available
         until the collection revision is published. The old datasets are available in the public collection until the
@@ -546,7 +544,13 @@ paths:
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
-                    created_at:
+                    name: 
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                    revised_at:
                       type: number
         "400":
           $ref: "#/components/responses/400"
@@ -809,7 +813,8 @@ paths:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        STUB
+        Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
+        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
       responses:
         "200":
@@ -841,11 +846,25 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     development_stage:
                       $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
                     cell_count:
                       type: integer
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
                     mean_genes_per_cell:
+                      type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
                       type: number
         "400":
           $ref: "#/components/responses/400"
@@ -987,7 +1006,7 @@ paths:
         "200":
           $ref: "#/components/responses/200"
 
-
+          
 components:
   schemas:
     user_uuid:
@@ -1086,6 +1105,8 @@ components:
           type: string
         data_submission_policy_version:
           type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         datasets:
           type: array
           items:
@@ -1094,6 +1115,36 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/gene_set"
+    publisher_metadata:
+      type: object
+      required:
+        - authors
+        - is_preprint
+        - journal
+        - published_year
+      properties:
+        authors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              given:
+                type: string
+              family:
+                type: string
+        is_preprint:
+          type: boolean
+        journal:
+          type: string
+        published_day:
+          type: number
+        published_month:
+          type: number
+        published_year:
+          type: number
+
     ontology_element:
       type: object
       properties:
@@ -1112,7 +1163,6 @@ components:
         - name
         - revision
         - collection_id
-        - collection_visibility
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -1151,8 +1201,6 @@ components:
             $ref: "#/components/schemas/dataset_asset"
         collection_id:
           $ref: "#/components/schemas/collection_uuid"
-        collection_visibility:
-          $ref: "#/components/schemas/visibility"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         cell_type:
@@ -1179,9 +1227,6 @@ components:
           enum: [H5AD, RDS, CXG]
         filename:
           type: string
-        type:
-          type: string
-          enum: [REMIX, ORIGINAL]
         s3_uri:
           type: string
     gene_set:
@@ -1265,7 +1310,6 @@ components:
     wmg_snapshot_id:
       type: string
       format: uuid
-
 
   parameters:
     path_collection_uuid:

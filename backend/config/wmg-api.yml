@@ -22,7 +22,7 @@ paths:
       tags:
         - wmg
       operationId: backend.wmg.api.v1.primary_filter_dimensions
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: OK
@@ -48,7 +48,7 @@ paths:
       tags:
         - wmg
       operationId: backend.wmg.api.v1.query
-      parameters: [ ]
+      parameters: []
       requestBody:
         content:
           application/json:
@@ -261,8 +261,7 @@ components:
     wmg_snapshot_id:
       type: string
       format: uuid
-
-
+  
   parameters: {}
 
   responses:
