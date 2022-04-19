@@ -98,7 +98,7 @@ def create_empty_cube(uri: str, schema):
 
 def load_data_into_cube(tdb_group, uri: str):
     """
-    Load data from the concatenated corpus into the queryable cube
+    Load data from the concat_corpus into the queryable expression summary cube
     """
     ctx = create_ctx()
     start_time = time.time()
@@ -118,7 +118,6 @@ def load_data_into_cube(tdb_group, uri: str):
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
-    # TODO: These do not appear to be used. Remove?
     cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
@@ -233,7 +232,7 @@ def make_cube_index(tdb_group, cube_dims):
 
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
 
-    # we failed to correctly create the corpus if these are false
+    # we failed to correctly create the cube if these are false
     assert len(cell_labels.index) == cell_labels.index[-1] + 1
     assert cell_labels.index[0] == 0
 

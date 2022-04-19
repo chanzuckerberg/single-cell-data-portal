@@ -1,15 +1,15 @@
 import unittest
 
+import backend.atlas_asset_pipelines.concat_corpus.extract
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.wmg.data import extract
-from backend.wmg.data.extract import included_assay_ontologies
+from backend.wmg.data.constants import included_assay_ontologies
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     """
-    Test case for extracting data to load into corpus to compute gene exression summary statistic cube
+    Test case for extracting data to load into concat_corpus to compute gene exression summary statistic cube
     """
 
     def setUp(self):
@@ -130,7 +130,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                 if asset.filetype == DatasetArtifactFileType.H5AD:
                     expected_s3_uris.append(asset.s3_uri)
 
-        s3_uris = set(extract.get_dataset_s3_uris().values())
+        s3_uris = set(backend.atlas_asset_pipelines.corpus.extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)
 
         @unittest.skip

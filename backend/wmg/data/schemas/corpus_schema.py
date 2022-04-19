@@ -106,7 +106,7 @@ var_labels = [
 
 def create_tdb(corpus_location: str, tdb_group: str):
     """
-    Create the empty tiledb object for the corpus
+    Create the empty tiledb object for the concat_corpus
     ## TODO break out each array
     """
     uri = f"{corpus_location}/{tdb_group}"

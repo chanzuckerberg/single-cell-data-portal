@@ -1,24 +1,15 @@
 import subprocess
+from typing import Union
+
+import anndata
+import numpy as np
+from anndata._core.views import ArrayView
+from scipy import sparse
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
+from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
-
-
-included_assay_ontologies = {
-    "EFO:0010550": "sci-RNA-seq",
-    "EFO:0009901": "10x 3' v1",
-    "EFO:0011025": "10x 5' v1",
-    "EFO:0009899": "10x 3' v2",
-    "EFO:0009900": "10x 5' v2",
-    "EFO:0009922": "10x 3' v3",
-    "EFO_0030003": "10x 3' transcription profiling",
-    "EFO:0030004": "10x 5' transcription profiling",
-    "EFO:0008919": "Seq-Well",
-    "EFO:0008995": "10x technology",
-    "EFO:0008722": "Drop-seq",
-    "EFO:0010010": "CEL-seq2",
-}
+from backend.wmg.data.constants import included_assay_ontologies
 
 
 def get_dataset_s3_uris():
@@ -53,3 +44,13 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
     for dataset in s3_uris:
         copy_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
         subprocess.run(copy_command)
+
+
+def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
+    """
+    Current rules for our curated H5ADs:
+    * if there is a .raw, it is the raw counts, and .X is transformed/normalized (by author) or is == to .raw.X
+    * if there is no .raw, ad.X contains the raw counts
+    """
+    raw_expression_matrix = getattr(anndata_object.raw, "X", None)
+    return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X

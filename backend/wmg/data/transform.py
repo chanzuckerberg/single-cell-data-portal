@@ -16,7 +16,7 @@ from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     """
     Return a list of all associated cell type ontologies for each tissue contained in the
-    provided corpus
+    provided concat_corpus
     """
     with tiledb.open(f"{corpus_group}/{OBS_ARRAY_NAME}", "r") as obs:
         tissue_cell_types = (
