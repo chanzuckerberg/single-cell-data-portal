@@ -560,9 +560,11 @@ export interface OntologyCategoryValueView extends SelectCategoryValueView {
  * View model of ontology category.
  */
 export interface OntologyCategoryView {
+  isDisabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
   species: OntologyCategorySpeciesView[];
+  tooltip?: string;
 }
 
 /**
@@ -581,12 +583,14 @@ export type OntologyView = { [K in SPECIES_KEY]: OntologyNode[] };
  * View model of range metadata key.
  */
 export interface RangeCategoryView {
+  isDisabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
   max: number;
   min: number;
   selectedMax?: number;
   selectedMin?: number;
+  tooltip?: string;
 }
 
 /**
@@ -633,7 +637,7 @@ export interface SelectCategoryValueView {
  * Metadata values grouped by metadata key, for single or multiselect categories.
  */
 export interface SelectCategoryView {
-  disabled?: boolean;
+  isDisabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
   tooltip?: string;
