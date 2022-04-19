@@ -115,7 +115,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected_response = {
                 "snapshot_id": "dummy-snapshot",
-                "expression_summary_cube": {
+                "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_0": [
                             {"id": "cell_type_ontology_term_id_0", "me": 1.0, "n": 1, "pc": 0.1, "tpc": 0.1}
@@ -181,7 +181,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "snapshot_id": "dummy-snapshot",
-                "expression_summary_cube": {
+                "expression_summary": {
                     "gene_ontology_term_id_0": {
                         "tissue_ontology_term_id_1": [
                             {

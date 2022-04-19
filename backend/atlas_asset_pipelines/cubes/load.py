@@ -2,13 +2,11 @@ import logging
 import time
 
 import numpy as np
-import tiledb
 
-from backend.atlas_asset_pipelines.cubes.transform import reduce_X
+from backend.atlas_asset_pipelines.cubes.extract import extract_var_data
+from backend.atlas_asset_pipelines.cubes.transform import reduce_X, make_cube_index
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.wmg_cube import make_cube_index
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -28,16 +26,15 @@ def load_data_into_cube(tdb_group, uri: str):
     start_time = time.time()
     logger.debug(f"Start loading big cube at : {uri}")
 
-    with tiledb.open(f"{tdb_group}/var", ctx=ctx) as var:
-        gene_ontology_term_ids = var.query(dims=["gene_ontology_term_id"], attrs=["var_idx"], use_arrow=False).df[:]
-        gene_ontology_term_ids.sort_values(by="var_idx", inplace=True)
+    # extract
+    gene_ontology_term_ids = extract_var_data(tdb_group, ctx)
     n_genes = len(gene_ontology_term_ids)
 
     ##
     # Reduce X
     ##
-    big_cube_atts = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
-    cell_labels, cube_index = make_cube_index(tdb_group, big_cube_atts)
+    cube_dims = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
+    cell_labels, cube_index = make_cube_index(tdb_group, cube_dims)
     n_groups = len(cube_index)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)

@@ -10,8 +10,10 @@ import tiledb
 from scipy import sparse
 from scipy.sparse import csr_matrix, coo_matrix
 
-from backend.wmg.data.constants import GENE_EXPRESSION_COUNT_MIN_THRESHOLD, \
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+from backend.wmg.data.constants import (
+    GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+)
 from backend.atlas_asset_pipelines.concat_corpus.extract import get_X_raw
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME

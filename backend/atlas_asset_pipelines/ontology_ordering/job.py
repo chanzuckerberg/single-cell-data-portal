@@ -19,9 +19,9 @@ def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     with tiledb.open(f"{corpus_group}/obs", "r") as obs:
         tissue_cell_types = (
             obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
-                .df[:]
-                .drop_duplicates()
-                .sort_values(by="tissue_ontology_term_id")
+            .df[:]
+            .drop_duplicates()
+            .sort_values(by="tissue_ontology_term_id")
         )
     unique_tissue_ontology_term_id = tissue_cell_types.tissue_ontology_term_id.unique()
     cell_type_by_tissue = {}

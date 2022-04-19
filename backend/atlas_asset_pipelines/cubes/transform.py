@@ -4,9 +4,11 @@ import time
 
 import numba as nb
 import numpy as np
+import pandas as pd
 
 import tiledb
 
+from backend.atlas_asset_pipelines.cubes.extract import extract_obs_data
 from backend.corpora.common.utils.math_utils import MB
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -65,3 +67,23 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
                 min_into[grp_idx, cidx] = val
             if val > max_into[grp_idx, cidx]:
                 max_into[grp_idx, cidx] = val
+
+
+def make_cube_index(tdb_group, cube_dims):
+    """
+    Create index for queryable dimensions
+    """
+    cell_labels = extract_obs_data(tdb_group, cube_dims)
+
+    # number of cells with specific tuple of dims
+    cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
+    cube_index["cube_idx"] = range(len(cube_index))
+
+    #
+    cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
+
+    # we failed to correctly create the cube if these are false
+    assert len(cell_labels.index) == cell_labels.index[-1] + 1
+    assert cell_labels.index[0] == 0
+
+    return cell_labels, cube_index

@@ -3,7 +3,8 @@ import scipy.stats
 import scipy.sparse
 import numba as nb
 
-# todo best place to put this file?
+# todo find best place to put this file?
+
 
 @nb.jit
 def quantiles(n: int) -> np.ndarray:

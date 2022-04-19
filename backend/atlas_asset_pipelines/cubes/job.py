@@ -6,11 +6,11 @@ import tiledb
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema, expression_summary_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.wmg_cube import logger
 from backend.atlas_asset_pipelines.cubes.load import load_data_into_cube
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 def create_empty_cube(uri: str, schema):
     """
@@ -32,7 +32,7 @@ def create_cell_count_cube(corpus_path: str):
     with tiledb.open(f"{corpus_path}/obs") as obs:
         df = (
             obs.df[:]
-                .groupby(
+            .groupby(
                 by=[
                     "dataset_id",
                     "cell_type_ontology_term_id",
@@ -46,7 +46,7 @@ def create_cell_count_cube(corpus_path: str):
                 ],
                 as_index=False,
             )
-                .size()
+            .size()
         )
         df = df.rename(columns={"size": "n_cells"})
         create_empty_cube(uri, cell_counts_schema)
@@ -80,6 +80,3 @@ def create_expression_summary_cube(corpus_path):
     logger.debug("Cube creation complete")
     create_cube_sec = time.time() - cube_creation_start_time
     logger.info(f"Expression summary cube: time to create {create_cube_sec}, uri={uri}")
-
-
-

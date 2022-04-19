@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def scex_asset_pipeline(
-        path_to_h5ad_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
+    path_to_h5ad_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,

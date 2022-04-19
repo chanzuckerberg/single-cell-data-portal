@@ -1,4 +1,5 @@
-included_assay_ontologies = {
+# todo rename gene_length_normalized_assays?
+INCLUDED_ASSAYS = {
     "EFO:0010550": "sci-RNA-seq",
     "EFO:0009901": "10x 3' v1",
     "EFO:0011025": "10x 5' v1",
@@ -12,8 +13,6 @@ included_assay_ontologies = {
     "EFO:0008722": "Drop-seq",
     "EFO:0010010": "CEL-seq2",
 }
-
-
 
 # Minimum number of expressed genes for a cell to be included in the concat_corpus.
 # See the following document for further details:

@@ -122,6 +122,7 @@ class TestCorpusLoad(unittest.TestCase):
         with tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r") as obs:
             actual_obs_df = obs.df[:]
         with tiledb.open(self.fixture_file_path("fixtures/small-corpus/{OBS_ARRAY_NAME}"), "r") as obs:
+
             expected_obs_df = obs.df[:]
 
         self.assertTrue(
@@ -135,6 +136,7 @@ class TestCorpusLoad(unittest.TestCase):
         with tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}", "r") as var:
             actual_var_df = var.df[:]
         with tiledb.open(self.fixture_file_path("fixtures/small-corpus/{VAR_ARRAY_NAME}"), "r") as var:
+
             expected_var_df = var.df[:]
 
         self.assertTrue(expected_var_df.equals(actual_var_df))
@@ -142,7 +144,7 @@ class TestCorpusLoad(unittest.TestCase):
         # check expression matrix
         with tiledb.open(f"{self.corpus_path}/X", "r") as x:
             actual_x_df = x.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-concat_corpus/X"), "r") as x:
+        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/X"), "r") as x:
             expected_x_df = x.df[:]
 
         self.assertTrue(expected_x_df.equals(actual_x_df))

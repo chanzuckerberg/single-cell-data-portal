@@ -9,7 +9,7 @@ from scipy import sparse
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.constants import included_assay_ontologies
+from backend.wmg.data.constants import INCLUDED_ASSAYS
 
 
 def get_dataset_s3_uris():
@@ -32,7 +32,7 @@ def get_dataset_s3_uris():
             .all()
         )
         for dataset_id, assays in published_dataset_non_null_assays:
-            if any(assay["ontology_term_id"] in included_assay_ontologies for assay in assays):
+            if any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in assays):
                 dataset_ids.append(dataset_id)
 
         s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
