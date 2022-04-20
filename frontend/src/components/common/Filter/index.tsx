@@ -27,8 +27,7 @@ export default function Filter({ categories, onFilter }: Props): JSX.Element {
   return (
     <>
       {categories.map((categoryView: CategoryView) => {
-        const { key } = categoryView;
-        const isDisabled = isCategoryNA(categoryView);
+        const { isDisabled = false, key } = categoryView;
         return (
           <BasicFilter
             content={buildBasicFilterContent(categoryView, onFilter)}
@@ -97,11 +96,7 @@ function buildFilterLabel(
   categoryView: CategoryView,
   isDisabled: boolean
 ): ReactNode {
-  const { label } = categoryView;
-  let tooltip;
-  if (isSelectCategoryView(categoryView)) {
-    tooltip = categoryView.tooltip;
-  }
+  const { label, tooltip } = categoryView;
 
   return (
     <FilterLabel isDisabled={isDisabled} label={label} tooltip={tooltip} />
@@ -242,21 +237,6 @@ function filterCategoryValuesWithCount(
 }
 
 /**
- * Returns true if category is not applicable.
- * @param categoryView
- * @returns true when category  is not applicable.
- */
-function isCategoryNA(categoryView: CategoryView): boolean {
-  if (isSelectCategoryView(categoryView)) {
-    return isSelectCategoryNA(categoryView);
-  }
-  if (isOntologyCategoryView(categoryView)) {
-    return isOntologyCategoryViewNA(categoryView);
-  }
-  return isRangeCategoryNA(categoryView);
-}
-
-/**
  * Determine if the given category view is an ontology category view and not a select or range category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
@@ -266,42 +246,6 @@ function isOntologyCategoryView(
   categoryView: CategoryView
 ): categoryView is OntologyCategoryView {
   return (categoryView as OntologyCategoryView).species !== undefined;
-}
-
-/**
- * Returns true if ontology category is not applicable, that is, there are no species ontology trees or species
- * ontology trees with values that have a count.
- * @param categoryView
- * @returns True when there are no species or the count of children for each species is 0.
- */
-function isOntologyCategoryViewNA(categoryView: OntologyCategoryView): boolean {
-  const { species } = categoryView;
-  if (!species || species.length === 0) {
-    return true;
-  }
-  return !species.some(
-    (s) => s.children.filter((child) => child.count > 0).length > 0
-  );
-}
-
-/**
- * Returns true if range category is not applicable, that is, range min and max are both 0 or both equal.
- * @param categoryView
- * @returns true when range min and max are both 0 or both equal.
- */
-function isRangeCategoryNA(categoryView: RangeCategoryView): boolean {
-  const { max, min } = categoryView;
-  return (min === 0 && max === 0) || min === max;
-}
-
-/**
- * Returns true if select category is not applicable, that is, the category is disabled or all values have a count of 0.
- * @param categoryView
- * @returns true when the category is disabled or all category values have a count of 0.
- */
-function isSelectCategoryNA(categoryView: SelectCategoryView): boolean {
-  const { disabled, values } = categoryView;
-  return disabled || values?.every((value) => value.count === 0);
 }
 
 /**
