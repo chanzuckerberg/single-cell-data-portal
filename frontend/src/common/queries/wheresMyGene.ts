@@ -13,29 +13,33 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
+interface OntologyTerm {
+  [id: string]: string;
+}
+
+interface OntologyTermsByOrganism {
+  [organismId: string]: Array<OntologyTerm>;
+}
 interface RawPrimaryFilterDimensionsResponse {
-  gene_terms: { [organismId: string]: Array<{ [id: string]: string }> };
-  organism_terms: { [id: string]: string }[];
+  gene_terms: OntologyTermsByOrganism;
+  organism_terms: Array<OntologyTerm>;
   snapshot_id: string;
-  tissue_terms: { [id: string]: string }[];
+  tissue_terms: OntologyTermsByOrganism;
+}
+
+interface OntologyTermEntity {
+  id: string;
+  name: string;
+}
+interface FlattenedOntologyTermsByOrganism {
+  [organismID: string]: OntologyTermEntity[];
 }
 
 export interface PrimaryFilterDimensionsResponse {
-  genes: {
-    [organismId: string]: {
-      id: string;
-      name: string;
-    }[];
-  };
-  organisms: {
-    id: string;
-    name: string;
-  }[];
+  genes: FlattenedOntologyTermsByOrganism;
+  organisms: OntologyTerm[];
   snapshotId: string;
-  tissues: {
-    id: string;
-    name: string;
-  }[];
+  tissues: FlattenedOntologyTermsByOrganism;
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
@@ -46,19 +50,25 @@ export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimen
   return transformPrimaryFilterDimensions(response);
 }
 
+const flattenOntologyTermsByOrganism = (
+  termsObject: OntologyTermsByOrganism
+): FlattenedOntologyTermsByOrganism => {
+  return Object.entries(termsObject).reduce((memo, [organismId, genes]) => {
+    memo[organismId] = genes.map(toEntity);
+    return memo;
+  }, {} as FlattenedOntologyTermsByOrganism);
+};
+
 function transformPrimaryFilterDimensions(
   response: RawPrimaryFilterDimensionsResponse
 ): PrimaryFilterDimensionsResponse {
   const { gene_terms, organism_terms, snapshot_id, tissue_terms } = response;
 
   return {
-    genes: Object.entries(gene_terms).reduce((memo, [organismId, genes]) => {
-      memo[organismId] = genes.map(toEntity);
-      return memo;
-    }, {} as { [organismId: string]: { id: string; name: string }[] }),
+    genes: flattenOntologyTermsByOrganism(gene_terms),
     organisms: organism_terms.map(toEntity),
     snapshotId: snapshot_id,
-    tissues: tissue_terms.map(toEntity),
+    tissues: flattenOntologyTermsByOrganism(tissue_terms),
   };
 }
 
@@ -563,7 +573,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   ]);
 }
 
-function toEntity(item: { [id: string]: string }) {
+function toEntity(item: OntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
