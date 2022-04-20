@@ -741,11 +741,11 @@ function buildOntologyCategoryView(
   );
 
   // Build up the ontology category view model.
-  const ontologyView = {
+  const ontologyView: OntologyCategoryView = {
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     species: speciesViews,
-  } as OntologyCategoryView;
+  };
 
   // Check if ontology category is disabled.
   if (isOntologyCategoryViewDisabled(ontologyView)) {
@@ -821,14 +821,14 @@ function buildRangeCategoryView(
   rangeCategory: RangeCategory
 ): RangeCategoryView {
   // Build view model of range category.
-  const rangeView = {
+  const rangeView: RangeCategoryView = {
     key: categoryKey as CategoryKey,
     label: CATEGORY_LABEL[categoryKey],
     max: rangeCategory.max,
     min: rangeCategory.min,
     selectedMax: rangeCategory.selectedMax,
     selectedMin: rangeCategory.selectedMin,
-  } as RangeCategoryView;
+  };
 
   // Determine if range view is disabled.
   if (isRangeCategoryDisabled(rangeView)) {
@@ -862,11 +862,11 @@ function buildSelectCategoryView(
     .sort(sortCategoryValueViews);
 
   // Build view model of select category.
-  const selectView = {
+  const selectView: SelectCategoryView = {
     key: categoryKey as CategoryKey,
     label: CATEGORY_LABEL[categoryKey],
     values: categoryValueViews,
-  } as SelectCategoryView;
+  };
 
   // Handle special cases where select category may be disabled.
   if (
@@ -1123,9 +1123,7 @@ function isOntologyCategoryViewDisabled(
   if (!species || species.length === 0) {
     return true;
   }
-  return !species.some(
-    (s) => s.children.filter((child) => child.count > 0).length > 0
-  );
+  return !species.some((s) => s.children.some((child) => child.count > 0));
 }
 
 /**
