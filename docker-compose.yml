@@ -166,7 +166,7 @@ services:
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
-      - DATASET_SUBMISSIONS_BUCKET=cellxgene-dataset-submission
+      - DATASET_SUBMISSIONS_BUCKET=cellxgene-dataset-submissions
     networks:
        corporanet:
           aliases:
