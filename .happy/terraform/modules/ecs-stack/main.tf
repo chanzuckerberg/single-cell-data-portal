@@ -237,6 +237,14 @@ module dataset_submissions_lambda {
   security_groups            = local.security_groups
 }
 
+resource "aws_lambda_permission" "allow_dataset_submissions_lambda_execution" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = module.dataset_submissions_lambda.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = try(local.secret["s3_buckets"]["dataset_submissions"]["arn"], "")
+}
+
 resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
   bucket = local.dataset_submissions_bucket
 
@@ -244,4 +252,6 @@ resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
     lambda_function_arn = module.dataset_submissions_lambda.arn
     events = ["s3:ObjectCreated:*"]
   }
+
+  depends_on = [aws_lambda_permission.allow_dataset_submissions_lambda_execution]
 }

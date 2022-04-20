@@ -8,11 +8,11 @@ resource aws_lambda_function lambda_job_def {
   timeout       = 60
   environment {
     variables = {
-      ARTIFACT_BUCKET           = var.artifact_bucket,
-      CELLXGENE_BUCKET          = var.cellxgene_bucket,
+      ARTIFACT_BUCKET            = var.artifact_bucket,
+      CELLXGENE_BUCKET           = var.cellxgene_bucket,
       DATASET_SUBMISSIONS_BUCKET = var.dataset_submissions_bucket,
-      DEPLOYMENT_STAGE          = var.deployment_stage,
-      REMOTE_DEV_PREFIX         = var.remote_dev_prefix
+      DEPLOYMENT_STAGE           = var.deployment_stage,
+      REMOTE_DEV_PREFIX          = var.remote_dev_prefix
     }
   }
   vpc_config {
