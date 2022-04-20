@@ -505,6 +505,7 @@ export enum IS_PRIMARY_DATA_LABEL {
  */
 export enum ORGANISM {
   "HOMO_SAPIENS" = "Homo sapiens",
+  "MUS_MUSCULUS" = "Mus musculus",
 }
 
 /**
