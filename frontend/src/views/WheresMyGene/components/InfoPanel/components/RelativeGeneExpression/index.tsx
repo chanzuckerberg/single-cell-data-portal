@@ -51,9 +51,7 @@ export default function RelativeGeneExpression({
             <LabelWrapper>
               <span>Scaled</span>
               <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-                <span>
-                  <Icon sdsIcon="infoCircle" sdsSize="xs" sdsType="static" />
-                </span>
+                <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
               </Tooltip>
             </LabelWrapper>
           }
