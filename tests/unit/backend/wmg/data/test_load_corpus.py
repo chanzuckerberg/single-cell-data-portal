@@ -8,7 +8,6 @@ from unittest.mock import patch
 import tiledb
 from scipy.sparse import coo_matrix, csr_matrix
 
-import backend.wmg.data.load_corpus
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
