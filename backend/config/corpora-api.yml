@@ -1227,7 +1227,6 @@ paths:
                       ethnicity_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
->>>>>>> a9e81484 (feat: group tissues by organism in primary_filter_dimensions endpoint)
 components:
   schemas:
     user_uuid:
