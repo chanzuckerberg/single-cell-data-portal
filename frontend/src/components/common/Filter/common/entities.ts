@@ -75,7 +75,7 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
 }
 
 /*
- * Ontology keys for species. For exmaple, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
+ * Ontology keys for species. For example, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
  */
 export enum SPECIES_KEY {
   "HsapDv" = "HsapDv",
@@ -485,6 +485,7 @@ type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
  */
 export enum ORGANISM {
   "HOMO_SAPIENS" = "Homo sapiens",
+  "MUS_MUSCULUS" = "Mus musculus",
 }
 
 /**

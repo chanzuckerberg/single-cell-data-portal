@@ -1,7 +1,7 @@
 import loadable from "@loadable/component";
 import Head from "next/head";
-import React, { useMemo } from "react";
-import { Column, useFilters, useSortBy, useTable } from "react-table";
+import React, { useEffect, useMemo } from "react";
+import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -10,7 +10,9 @@ import {
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchCollectionRows } from "src/common/queries/filter";
+import { KEYS } from "src/common/sessionStorage/set";
 import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import Filter from "src/components/common/Filter";
@@ -178,12 +180,18 @@ export default function Collections(): JSX.Element {
     []
   );
 
+  // Handle initial filter state and save of filter state beyond component scope.
+  const [initialFilters, storeFilters] = useSessionStorage<
+    Filters<CollectionRow>
+  >(KEYS.FILTER_COLLECTIONS, []);
+
   // Table init
   const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
       data: collectionRows,
       initialState: {
+        filters: initialFilters,
         // Only display tissue, disease and organism values.
         hiddenColumns: [
           COLLECTION_ID,
@@ -236,6 +244,17 @@ export default function Collections(): JSX.Element {
     setFilter
   );
 
+  // Store latest filter state.
+  useEffect(() => {
+    storeFilters(filters);
+  }, [filters, storeFilters]);
+
+  // Handle side bar open/closed state beyond scope of component.
+  const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
+    KEYS.SIDE_BAR_COLLECTIONS,
+    true
+  );
+
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   if (!isFilterEnabled) {
@@ -250,7 +269,11 @@ export default function Collections(): JSX.Element {
       </Head>
       {isError || isLoading ? null : (
         <>
-          <SideBar label="Filters" isOpen>
+          <SideBar
+            label="Filters"
+            isOpen={isSideBarOpen}
+            onToggle={storeIsSideBarOpen}
+          >
             <Filter {...filterInstance} />
           </SideBar>
           <View>
