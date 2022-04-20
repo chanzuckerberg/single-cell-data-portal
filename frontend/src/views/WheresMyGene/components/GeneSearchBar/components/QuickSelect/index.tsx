@@ -224,6 +224,7 @@ export default function QuickSelect<
           ref={ref}
           onClick={handleClick}
           sdsType="primary"
+          sdsSize="small"
         >
           <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
         </StyledIconButton>
