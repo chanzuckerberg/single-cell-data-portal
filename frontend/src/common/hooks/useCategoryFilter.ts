@@ -822,7 +822,7 @@ function buildRangeCategoryView(
 ): RangeCategoryView {
   // Build view model of range category.
   const rangeView: RangeCategoryView = {
-    key: categoryKey as CategoryKey,
+    key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     max: rangeCategory.max,
     min: rangeCategory.min,
@@ -856,14 +856,14 @@ function buildSelectCategoryView(
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
-      label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
+      label: buildCategoryValueLabel(categoryKey, key),
       selected: selected,
     }))
     .sort(sortCategoryValueViews);
 
   // Build view model of select category.
   const selectView: SelectCategoryView = {
-    key: categoryKey as CategoryKey,
+    key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     values: categoryValueViews,
   };
