@@ -26,7 +26,7 @@ export default function RelativeGeneExpression({
         <Content>
           <Image
             src={plasmaImage}
-            alt="visualization color scale: interpolatePlasma(1.0 - meanExpression)"
+            alt="visualization color scale: interpolateMagma(1.0 - meanExpression)"
             width={CONTENT_WIDTH_PX}
           />
           <LowHigh>
