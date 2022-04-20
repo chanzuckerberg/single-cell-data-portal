@@ -1,6 +1,6 @@
 import unittest
 
-from backend.atlas_asset_pipelines.concat_corpus import extract
+from backend.atlas_asset_pipelines.integrated_corpus import extract
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
@@ -9,7 +9,7 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 
 class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     """
-    Test case for extracting data to load into concat_corpus to compute gene exression summary statistic cube
+    Test case for extracting data to load into integrated_corpus to compute gene exression summary statistic cube
     """
 
     def setUp(self):

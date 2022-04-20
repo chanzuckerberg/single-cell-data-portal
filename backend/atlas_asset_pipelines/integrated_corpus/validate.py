@@ -1,8 +1,10 @@
 import logging
+import os
 
 import anndata
 from scipy import sparse
 
+from backend.wmg.data.utils import get_all_dataset_ids
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -27,3 +29,24 @@ def validate_corpus_load(anndata_object: anndata.AnnData, group_name: str, datas
     Validate that the load looks sane
     """
     pass
+
+
+def should_load_dataset(h5ad_path, corpus_path):
+    dataset_id = get_dataset_id(h5ad_path)
+    if is_dataset_already_loaded(corpus_path, dataset_id):
+        return None
+    return dataset_id
+
+
+def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
+    if dataset_id in get_all_dataset_ids(corpus_path):
+        logger.info("oops, that dataset is already loaded!")
+        return True
+    return False
+
+
+def get_dataset_id(h5ad_path: str) -> str:
+    dataset_id = os.path.splitext(os.path.split(h5ad_path)[1])[0]
+    if dataset_id == "local":
+        dataset_id = os.path.split(os.path.split(h5ad_path)[0])[1]
+    return dataset_id

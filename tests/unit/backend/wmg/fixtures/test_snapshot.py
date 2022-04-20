@@ -104,7 +104,7 @@ def exclude_random_coords_75pct(_) -> bool:
 # genes); without this filtering function, the cube would have the cross-product of organisms * genes
 # noinspection PyUnresolvedReferences
 def exclude_all_but_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
-    # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
+    # HACK: method called during building of both "expr summary" and "cell count" expression_summary_cube, but the latter does not
     # include gene_ontology_term_id
     if "gene_ontology_term_id" not in logical_coord._fields:
         return False

@@ -1,3 +1,4 @@
+import logging
 import subprocess
 from typing import Union
 
@@ -10,6 +11,9 @@ from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.constants import INCLUDED_ASSAYS
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def get_dataset_s3_uris():
@@ -54,3 +58,8 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     """
     raw_expression_matrix = getattr(anndata_object.raw, "X", None)
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
+
+
+def extract_h5ad(h5ad_path: str):
+    logger.info(f"Loading {h5ad_path}...")
+    return anndata.read_h5ad(h5ad_path)

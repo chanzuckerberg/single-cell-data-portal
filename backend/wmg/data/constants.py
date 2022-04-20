@@ -14,11 +14,11 @@ INCLUDED_ASSAYS = {
     "EFO:0010010": "CEL-seq2",
 }
 
-# Minimum number of expressed genes for a cell to be included in the concat_corpus.
+# Minimum number of expressed genes for a cell to be included in the integrated_corpus.
 # See the following document for further details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-low-coverage-cells
 GENE_EXPRESSION_COUNT_MIN_THRESHOLD = 500
 
 # Minimum value for raw expression counts that will be used to filter out computed RankIt values. Details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-noisy-ultra-low-expression-values
-RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 3
+RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 2

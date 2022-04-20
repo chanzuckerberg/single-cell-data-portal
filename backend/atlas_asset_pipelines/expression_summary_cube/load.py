@@ -1,51 +1,9 @@
 import logging
-import time
 
 import numpy as np
 
-from backend.atlas_asset_pipelines.cubes.extract import extract_var_data
-from backend.atlas_asset_pipelines.cubes.transform import reduce_X, make_cube_index
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
-from backend.wmg.data.tiledb import create_ctx
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-cube_indexed_dims_no_gene_ontology = [
-    "tissue_ontology_term_id",
-    "organism_ontology_term_id",
-]
-
-
-def load_data_into_cube(tdb_group, uri: str):
-    """
-    Load data from the concat_corpus into the queryable expression summary cube
-    """
-    ctx = create_ctx()
-    start_time = time.time()
-    logger.debug(f"Start loading big cube at : {uri}")
-
-    # extract
-    gene_ontology_term_ids = extract_var_data(tdb_group, ctx)
-    n_genes = len(gene_ontology_term_ids)
-
-    ##
-    # Reduce X
-    ##
-    cube_dims = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
-    cell_labels, cube_index = make_cube_index(tdb_group, cube_dims)
-    n_groups = len(cube_index)
-
-    cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
-    cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
-    cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
-    cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
-
-    # pass 1 - sum, nnz, min, max
-    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
-
-    return build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
 
 
 def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):

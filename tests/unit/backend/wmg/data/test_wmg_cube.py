@@ -4,7 +4,7 @@ import unittest
 from backend.wmg.data import tiledb
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
-from backend.atlas_asset_pipelines.cubes.job import create_cell_count_cube
+from backend.atlas_asset_pipelines.cell_count_cube.job import create_cell_count_cube
 from tests.unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot
 
 

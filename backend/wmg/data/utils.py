@@ -12,3 +12,10 @@ def get_all_dataset_ids(tdb_group: str) -> List[str]:
         all_dataset_ids = obs.query(attrs=[], dims=["dataset_id"]).df[:].dataset_id.unique()
     all_dataset_ids.sort()
     return all_dataset_ids
+
+
+def create_empty_cube(uri: str, schema):
+    """
+    Create an empty cube with expected schema (dimensions and attributes) at given uri
+    """
+    tiledb.Array.create(uri, schema, overwrite=True)

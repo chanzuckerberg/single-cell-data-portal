@@ -7,7 +7,7 @@ Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
 import pathlib
-# Hints on how to map between H5AD and TDB schemas.
+
 from collections import namedtuple
 from typing import Union, List
 
@@ -21,7 +21,6 @@ uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 INTEGRATED_ARRAY_NAME = "integrated"
 OBS_ARRAY_NAME = "obs"
 VAR_ARRAY_NAME = "var"
-
 
 
 class LabelType(
@@ -106,7 +105,7 @@ var_labels = [
 
 def create_tdb(corpus_location: str, tdb_group: str):
     """
-    Create the empty tiledb object for the concat_corpus
+    Create the empty tiledb object for the integrated_corpus
     ## TODO break out each array
     """
     uri = f"{corpus_location}/{tdb_group}"
