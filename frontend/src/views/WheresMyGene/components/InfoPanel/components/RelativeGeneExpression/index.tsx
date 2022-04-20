@@ -4,6 +4,7 @@ import { Content, Header, LowHigh } from "../../common/style";
 import plasmaImage from "./plasma.png";
 import {
   ContentWrapper,
+  FlexDiv,
   LabelWrapper,
   StyledFormControlLabel,
   Wrapper,
@@ -51,7 +52,9 @@ export default function RelativeGeneExpression({
             <LabelWrapper>
               <span>Scaled</span>
               <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-                <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
+                <FlexDiv>
+                  <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
+                </FlexDiv>
               </Tooltip>
             </LabelWrapper>
           }
